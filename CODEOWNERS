@@ -1,0 +1,27 @@
+# Security-Sensitive Paths Requiring Maintainer Review (OSR-06 §5.1)
+* @shiapeng
+
+# Authentication, Authorization, Visibility & Redaction Gate (S1, S2, S4, S5, S6)
+/apps/api/src/auth/ @shiapeng
+/apps/api/src/routes/entries.ts @shiapeng
+/apps/api/src/routes/import.ts @shiapeng
+/apps/api/src/app.ts @shiapeng
+/apps/web/src/renderer.ts @shiapeng
+
+# AI Budget Governor, Data-Class Privacy Router & Verification (G1-G8, B1-B4, S7)
+/packages/core/src/gateAndRoute.ts @shiapeng
+/packages/core/src/temporal.ts @shiapeng
+/packages/ai/src/governor/ @shiapeng
+/packages/ai/src/verification/ @shiapeng
+
+# Database Schema, Migrations & Repository Boundary (P1-P6)
+/packages/db/ @shiapeng
+/packages/config/ @shiapeng
+
+# Audit Governance, Conformance & CI/CD Workflows (DR-AUD-001, OSR-001)
+/docs/audits/ @shiapeng
+/docs/governance/ @shiapeng
+/scripts/ @shiapeng
+/.github/ @shiapeng
+/docker/ @shiapeng
+/deploy/ @shiapeng

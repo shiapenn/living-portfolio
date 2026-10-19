@@ -9,18 +9,20 @@ import {
 } from '@living-portfolio/core';
 
 import type { RuntimeSettingsState } from './settings.js';
+import type { AuthManager } from '../auth/security.js';
 
 export interface AskEngineConfig {
   repo: IPortfolioRepository;
   governor: BudgetGovernor;
   providers: ModelProvider[];
+  auth?: AuthManager;
   tier1Floor?: number;
   tier2Floor?: number;
   getRuntimeSettings?: () => RuntimeSettingsState;
 }
 
 export function createAskRoutes(config: AskEngineConfig) {
-  const { repo, governor, providers, tier1Floor = 0.82, tier2Floor = 0.55, getRuntimeSettings } = config;
+  const { repo, governor, providers, auth, tier1Floor = 0.82, tier2Floor = 0.55, getRuntimeSettings } = config;
   const router = new Hono();
 
   router.post('/', async (c) => {
@@ -31,7 +33,7 @@ export function createAskRoutes(config: AskEngineConfig) {
       return c.json({ error: 'Invalid query', details: parsed.error.issues }, 400);
     }
 
-    const { query, as_of_date, facets: visitorFacets, session_id, scope_entry_slug } = parsed.data;
+    const { query, as_of_date, facets: visitorFacets, scope_entry_slug } = parsed.data;
     const runtime = getRuntimeSettings?.();
 
     // Check owner kill-switch (§1 Product Principles: "One setting disables automated answering instantly")
@@ -45,8 +47,8 @@ export function createAskRoutes(config: AskEngineConfig) {
       });
     }
 
-    // 1. Abuse & rate limiting
-    const visitorId = session_id || c.req.header('x-forwarded-for') || 'default-session';
+    // 1. Abuse & rate limiting by daily-salted SHA-256 hash of client address (S4; never trust client session_id)
+    const visitorId = auth ? auth.getHashedClientIp(c) : 'default-hashed-ip';
     const rateCheck = governor.checkVisitorRateLimit(visitorId);
     if (!rateCheck.allowed) {
       return c.json({

@@ -1,0 +1,1426 @@
+# Cumulative Audit Findings & Open-Source Release Task Register (DR-AUD-001 §5, OSR-001 §7)
+# Remediation Plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+# Open-Source Plan: docs/plans/osr-001-open-source-release.md
+# Covers all 29 §5 findings (S1–S7, G1–G8, B1–B4, P1–P6, F1–F4), 11 matrix findings (M1–M11),
+# and 23 Open-Source Release tasks (OSR-01..OSR-23).
+- id: S1
+  audit: AUD-2026-10-19
+  title: No authentication or authorization across API and admin routes
+  spec_sections:
+    - "0"
+    - "1"
+    - "3.11"
+    - "13.4"
+    - "15"
+  severity: P0
+  status: fixed
+  owner: A
+  fix_ids:
+    - 1
+    - 2
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in Gate 1a (Fixes 1, 2, 5, 6); awaiting auditor re-audit
+        (verified_by: null)"
+  verified_by: null
+- id: S2
+  audit: AUD-2026-10-19
+  title: Private data reached the Ask surface after unauthenticated visibility
+    mutation
+  spec_sections:
+    - "3.11"
+    - "10.4"
+    - "15"
+  severity: P0
+  status: fixed
+  owner: A
+  fix_ids:
+    - 1
+    - 2
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in Gate 1a (Fixes 1, 2, 5, 6); awaiting auditor re-audit
+        (verified_by: null)"
+  verified_by: null
+- id: S3
+  audit: AUD-2026-10-19
+  title: DOM XSS in the Ask widget via unescaped innerHTML writes
+  spec_sections:
+    - "8"
+    - "12"
+    - "15"
+  severity: P0
+  status: fixed
+  owner: A
+  fix_ids:
+    - 5
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in Gate 1a (Fixes 1, 2, 5, 6); awaiting auditor re-audit
+        (verified_by: null)"
+  verified_by: null
+- id: S4
+  audit: AUD-2026-10-19
+  title: Rate limit bypass via client-supplied session_id and unhashed x-forwarded-for
+  spec_sections:
+    - "13.5"
+    - "13.8"
+    - "15"
+  severity: P0
+  status: fixed
+  owner: A
+  fix_ids:
+    - 6
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in Gate 1a (Fixes 1, 2, 5, 6); awaiting auditor re-audit
+        (verified_by: null)"
+  verified_by: null
+- id: S5
+  audit: AUD-2026-10-19
+  title: Open wildcard CORS, missing security headers, and no bot challenge
+  spec_sections:
+    - "13.5"
+    - "13.8"
+    - "15"
+  severity: P0
+  status: fixed
+  owner: A
+  fix_ids:
+    - 6
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in Gate 1a (Fixes 1, 2, 5, 6); awaiting auditor re-audit
+        (verified_by: null)"
+  verified_by: null
+- id: S6
+  audit: AUD-2026-10-19
+  title: "Evidence links allow javascript: protocol URLs in href attributes"
+  spec_sections:
+    - "3.8"
+    - "12"
+    - "15"
+  severity: P0
+  status: fixed
+  owner: A
+  fix_ids:
+    - 5
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in Gate 1a (Fixes 1, 2, 5, 6); awaiting auditor re-audit
+        (verified_by: null)"
+  verified_by: null
+- id: S7
+  audit: AUD-2026-10-19
+  title: Enrichment job bypasses data-class privacy routing, governor, and
+    redaction gate
+  spec_sections:
+    - "4.3"
+    - "8"
+    - "13.5"
+    - "15"
+  severity: P1
+  status: open
+  owner: A
+  fix_ids:
+    - 13
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: G1
+  audit: AUD-2026-10-19
+  title: Entry-side unknown facets are silently skipped in checkGate instead of
+    returning INDETERMINATE
+  spec_sections:
+    - "10.5"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 4
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: G2
+  audit: AUD-2026-10-19
+  title: Routing inputs in ask.ts hard-code hasEvidence, hasVerifiedEvidence,
+    outcomeStatus, and hasScope
+  spec_sections:
+    - "10.5"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 4
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: G3
+  audit: AUD-2026-10-19
+  title: Confirmed scoped constraints are never loaded in ask.ts and not evaluated
+    by value/scope in checkGate
+  spec_sections:
+    - "10.5"
+    - "11"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 4
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: G4
+  audit: AUD-2026-10-19
+  title: Hard facets are hard-coded (database, stack) instead of loaded from
+    domain configuration
+  spec_sections:
+    - "3.7"
+    - "10.5"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 4
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: G5
+  audit: AUD-2026-10-19
+  title: Time-travel anachronism is detected by verifier but unredacted
+    verifiedText is still delivered at Tier 1
+  spec_sections:
+    - "10.6"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 4
+    - 14
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: G6
+  audit: AUD-2026-10-19
+  title: Indeterminate gate skips asking visitor once for missing facets
+    (Needs-context state) and escalates directly
+  spec_sections:
+    - "6.1"
+    - "10.5"
+    - "12.6"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 4
+    - 15
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: G7
+  audit: AUD-2026-10-19
+  title: Tier 2 inbox drafts use a placeholder string instead of verified model
+    synthesis
+  spec_sections:
+    - "6.1"
+    - "10.5"
+    - "10.6"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 4
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: G8
+  audit: AUD-2026-10-19
+  title: BudgetGovernor.acquire() runs before tier selection, spending quota on
+    Tier 2/3 or extractive paths
+  spec_sections:
+    - "10.5"
+    - "13.5"
+  severity: P1
+  status: open
+  owner: A
+  fix_ids:
+    - 11
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: B1
+  audit: AUD-2026-10-19
+  title: BudgetGovernor lacks owner-interactive reserve and priority enforcement
+  spec_sections:
+    - "13.5"
+  severity: P1
+  status: open
+  owner: A
+  fix_ids:
+    - 11
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: B2
+  audit: AUD-2026-10-19
+  title: Default visitorShare (0.6) blocks visitors before softThreshold (0.8)
+    smaller-model step is reachable
+  spec_sections:
+    - "10.8"
+    - "13.5"
+  severity: P1
+  status: open
+  owner: A
+  fix_ids:
+    - 11
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: B3
+  audit: AUD-2026-10-19
+  title: Visitor share is computed against total tokens across all callers rather
+    than visitor token allocation
+  spec_sections:
+    - "13.5"
+  severity: P1
+  status: open
+  owner: A
+  fix_ids:
+    - 11
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: B4
+  audit: AUD-2026-10-19
+  title: Hard threshold, per-minute limits, response header learning, 429
+    integration, and token reconciliation are unwired
+  spec_sections:
+    - "13.5"
+  severity: P1
+  status: open
+  owner: A
+  fix_ids:
+    - 11
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: P1
+  audit: AUD-2026-10-19
+  title: All storage is in-memory and server.ts unconditionally seeds fictional
+    Alex Rivera demo data on boot
+  spec_sections:
+    - "9"
+    - "13"
+    - "20"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 7
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: P2
+  audit: AUD-2026-10-19
+  title: Drizzle schema has no Postgres connection, migrations, schema_info boot
+    check, or PostgresRepository
+  spec_sections:
+    - "9"
+    - "10.4"
+    - "19"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 7
+    - 10
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: P3
+  audit: AUD-2026-10-19
+  title: Worker has no process entrypoint, no pg-boss queue registration, and does
+    not persist ONNX embeddings
+  spec_sections:
+    - "7"
+    - "8"
+    - "10.4"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 8
+    - 10
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: P4
+  audit: AUD-2026-10-19
+  title: createEntry overwrites written_at with valid_from for non-hindsight
+    entries; body_hash is not real SHA-256
+  spec_sections:
+    - "3.1"
+    - "3.9"
+    - "9"
+    - "10.4"
+  severity: P1
+  status: open
+  owner: A
+  fix_ids:
+    - 9
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: P5
+  audit: AUD-2026-10-19
+  title: Worker buildsToday counter never resets at UTC midnight and static build
+    does not emit real files
+  spec_sections:
+    - "13.7"
+  severity: P2
+  status: open
+  owner: A
+  fix_ids:
+    - 19
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: P6
+  audit: AUD-2026-10-19
+  title: Revisions are mutable via updateEntry and duplicate entry slugs are not
+    rejected
+  spec_sections:
+    - "3.11"
+    - "9"
+  severity: P1
+  status: open
+  owner: A
+  fix_ids:
+    - 9
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: F1
+  audit: AUD-2026-10-19
+  title: apps/web renderer was not mounted by createApp() in apps/api (only in
+    server.ts) and lacked sub-routes
+  spec_sections:
+    - "5"
+    - "7"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 8
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: F2
+  audit: AUD-2026-10-19
+  title: docker-compose.hobbyist.yml references missing docker/Dockerfile.api and
+    docker/Dockerfile.worker
+  spec_sections:
+    - "13.1"
+    - "13.10"
+    - "13.13"
+    - "20"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 8
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: F3
+  audit: AUD-2026-10-19
+  title: /healthz is wired to a constant async () => true callback without
+    checking DB, queue, disk, or backup age
+  spec_sections:
+    - "13.9"
+  severity: P0
+  status: open
+  owner: A
+  fix_ids:
+    - 8
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: F4
+  audit: AUD-2026-10-19
+  title: Markdown rendering only handles basic headings and paragraphs rather than
+    full CommonMark/GFM with sanitization
+  spec_sections:
+    - "4"
+    - "12"
+  severity: P2
+  status: open
+  owner: A
+  fix_ids:
+    - 22
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit
+  verified_by: null
+- id: M1
+  audit: AUD-2026-10-19
+  title: Fabricated success responses in evaluation, backup drill, worker backup
+    job, calibration parameters, and federation manifest
+  spec_sections:
+    - "0"
+    - "11"
+    - "13.9"
+    - "17"
+    - "18.2"
+  severity: P0
+  status: fixed
+  owner: A
+  fix_ids:
+    - 3
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/simulated-501.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit (Section 2 headline finding 2, Section 7 Fix 3)
+    - date: 2026-10-19
+      status: fixed
+      note: Marked simulated paths with SIMULATED(M1) and changed routes to return 501
+        Not Implemented and worker backup job to throw per AUD-17..AUD-19
+  verified_by: null
+- id: M2
+  audit: AUD-2026-10-19
+  title: Degradation ladder missing answer cache (step 2), distinct fallback
+    provider (step 3), and DB-down handoff (step 6)
+  spec_sections:
+    - "10.8"
+  severity: P1
+  status: open
+  owner: A
+  fix_ids:
+    - 12
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit (Section 4 §10.8, Section 7 Fix 12)
+  verified_by: null
+- id: M3
+  audit: AUD-2026-10-19
+  title: Pre-delivery verification lacks entailment check, assertion stripping,
+    citedScopes wiring, and reconstruction label
+  spec_sections:
+    - "10.6"
+  severity: P1
+  status: open
+  owner: A
+  fix_ids:
+    - 4
+    - 14
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit (Section 3, Section 4 §10.6, Section 7 Fix 14)
+  verified_by: null
+- id: M4
+  audit: AUD-2026-10-19
+  title: Query classification uses substring heuristics defaulting to lookup
+    instead of advisory, and lacks about path
+  spec_sections:
+    - "10.3"
+  severity: P1
+  status: open
+  owner: A
+  fix_ids:
+    - 4
+    - 15
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit (Section 4 §10.3, Section 7 Fix 15)
+  verified_by: null
+- id: M5
+  audit: AUD-2026-10-19
+  title: Self-calibration missing routing calibration, sliding window, held-out
+    validation, ECE, freeze guard, and real state rollback
+  spec_sections:
+    - "11"
+  severity: P2
+  status: open
+  owner: A
+  fix_ids:
+    - 16
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit (Section 3, Section 4 §11, Section 7 Fix 16)
+  verified_by: null
+- id: M6
+  audit: AUD-2026-10-19
+  title: Topology audit uses a static fixture and constraint mining lacks
+    automated detector and owner-only write test
+  spec_sections:
+    - "11"
+    - "18.1"
+  severity: P2
+  status: open
+  owner: A
+  fix_ids:
+    - 17
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit (Section 4 §11, Section 7 Fix 17)
+  verified_by: null
+- id: M7
+  audit: AUD-2026-10-19
+  title: Later-thinking staleness detector ignores scope overlap and lacks
+    recompute-on-accept trigger
+  spec_sections:
+    - "10.7"
+  severity: P2
+  status: open
+  owner: A
+  fix_ids:
+    - 18
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit (Section 3, Section 4 §10.7, Section 7 Fix 18)
+  verified_by: null
+- id: M8
+  audit: AUD-2026-10-19
+  title: Real pg_dump + age encrypted backup, scratch-container restore drill,
+    retention, and notification digest not implemented
+  spec_sections:
+    - "13.9"
+    - "18.1"
+    - "20"
+  severity: P2
+  status: open
+  owner: A
+  fix_ids:
+    - 20
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit (Section 3, Section 4 §13.9, Section 7 Fix 20)
+  verified_by: null
+- id: M9
+  audit: AUD-2026-10-19
+  title: Import planner ignores configured budgets and lacks resumable jobs, core
+    connectors, and concrete notification adapters
+  spec_sections:
+    - "4"
+    - "13.6"
+    - "14"
+  severity: P2
+  status: open
+  owner: A
+  fix_ids:
+    - 21
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit (Section 4 §4/§13.6/§14, Section 7 Fix 21)
+  verified_by: null
+- id: M10
+  audit: AUD-2026-10-19
+  title: Missing Apache-2.0 LICENSE, GOVERNANCE.md, CONTRIBUTING.md,
+    CODE_OF_CONDUCT.md, THIRD_PARTY_NOTICES, and §19 documentation set
+  spec_sections:
+    - "2"
+    - "7"
+    - "19"
+  severity: P3
+  status: open
+  owner: A
+  fix_ids:
+    - 23
+    - 24
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit (Section 4 §2/§7/§19, Section 7 Fixes 23 & 24)
+  verified_by: null
+- id: M11
+  audit: AUD-2026-10-19
+  title: Missing CI supply-chain/SBOM checks, §18.1 security/chaos/Playwright/axe
+    test suites, and §18.2 labeled evaluation runner
+  spec_sections:
+    - "18.1"
+    - "18.2"
+  severity: P3
+  status: open
+  owner: A
+  fix_ids:
+    - 25
+    - 26
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Raised by audit (Section 4 §18.1/§18.2, Section 7 Fixes 25 & 26)
+  verified_by: null
+- id: OSR-01
+  audit: OSR-001
+  title: Hard-code inventory script, report and fixes (Gate G0)
+  spec_sections:
+    - "13.12"
+    - "19"
+  severity: P1
+  status: fixed
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: scripts/hardcode-check
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in concurrent G0/G1 execution alongside Gate 1a; awaiting
+        auditor verification (verified_by: null)"
+- id: OSR-02
+  audit: OSR-001
+  title: packages/config with Zod schema, fail-fast boot, *_FILE secrets, PUBLIC_
+    rule (Gate G0)
+  spec_sections:
+    - "13.12"
+  severity: P1
+  status: fixed
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: packages/config/src/config.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in concurrent G0/G1 execution alongside Gate 1a; awaiting
+        auditor verification (verified_by: null)"
+- id: OSR-03
+  audit: OSR-001
+  title: Generate .env.example from schema; CI drift check (Gate G0)
+  spec_sections:
+    - "13.12"
+    - "13.13"
+  severity: P2
+  status: fixed
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: packages/config/src/config.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in concurrent G0/G1 execution alongside Gate 1a; awaiting
+        auditor verification (verified_by: null)"
+- id: OSR-04
+  audit: OSR-001
+  title: Move demo seed to examples/; remove default seeding and hard-coded owner
+    identity (Gate G0)
+  spec_sections:
+    - "9"
+    - "13"
+    - "20"
+  severity: P0
+  status: fixed
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: apps/api/src/api.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in concurrent G0/G1 execution alongside Gate 1a; awaiting
+        auditor verification (verified_by: null)"
+- id: OSR-05
+  audit: OSR-001
+  title: Clean initial commit procedure (§3.1), working-tree scans, credential
+    rotation checklist (Gate G0)
+  spec_sections:
+    - "15"
+    - "19"
+  severity: P1
+  status: fixed
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: scripts/clean-export.sh
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in concurrent G0/G1 execution alongside Gate 1a; awaiting
+        auditor verification (verified_by: null)"
+- id: OSR-06
+  audit: OSR-001
+  title: Add LICENSE, THIRD_PARTY_NOTICES, DCO, SECURITY.md, CODEOWNERS,
+    TRADEMARKS.md, KNOWN_ISSUES.md, templates (Gate G0)
+  spec_sections:
+    - "2"
+    - "19"
+  severity: P2
+  status: fixed
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: scripts/audit-check
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in concurrent G0/G1 execution alongside Gate 1a; awaiting
+        auditor verification (verified_by: null)"
+- id: OSR-07
+  audit: OSR-001
+  title: Pre-commit hooks and CI baseline (typecheck, unit, audit-check, dco,
+    secret scan, CodeQL, deps) pinned by SHA (Gate G0)
+  spec_sections:
+    - "18.1"
+    - "19"
+  severity: P1
+  status: fixed
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: scripts/dco-check
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in concurrent G0/G1 execution alongside Gate 1a; awaiting
+        auditor verification (verified_by: null)"
+- id: OSR-08
+  audit: OSR-001
+  title: "Private-phase controls: agent identity, agent/* branch convention, merge
+    checklist in CONTRIBUTING.md (Gate G0)"
+  spec_sections:
+    - "2"
+    - "19"
+  severity: P2
+  status: fixed
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: scripts/audit-check
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in concurrent G0/G1 execution alongside Gate 1a; awaiting
+        auditor verification (verified_by: null)"
+- id: OSR-09
+  audit: OSR-001
+  title: Branding as configuration; segregate brand/ assets; unofficial-fork
+    footer slot; self-host guide (Gate G1)
+  spec_sections:
+    - "2"
+    - "12"
+    - "19"
+  severity: P1
+  status: fixed
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: packages/config/src/config.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in concurrent G0/G1 execution alongside Gate 1a; awaiting
+        auditor verification (verified_by: null)"
+- id: OSR-10
+  audit: OSR-001
+  title: Flip-day checklist and rulesets as code in docs/governance/rulesets/
+    (Gate G1)
+  spec_sections:
+    - "2"
+    - "19"
+  severity: P1
+  status: fixed
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: scripts/audit-check
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in concurrent G0/G1 execution alongside Gate 1a; awaiting
+        auditor verification (verified_by: null)"
+- id: OSR-11
+  audit: OSR-001
+  title: README alpha warning, admin UI banner, release-notes template (Gate G1)
+  spec_sections:
+    - "12"
+    - "19"
+    - "20"
+  severity: P1
+  status: fixed
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: scripts/audit-check
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+    - date: 2026-10-19
+      status: fixed
+      note: "Claimed fixed in concurrent G0/G1 execution alongside Gate 1a; awaiting
+        auditor verification (verified_by: null)"
+- id: OSR-12
+  audit: OSR-001
+  title: Versioned API (/api/v1), committed OpenAPI, generated client (Gate G2)
+  spec_sections:
+    - "7"
+    - "8"
+  severity: P1
+  status: open
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+- id: OSR-13
+  audit: OSR-001
+  title: Decouple web from API; remove web mounting from createApp(); optional
+    bundled mode behind flag (Gate G2)
+  spec_sections:
+    - "5"
+    - "7"
+  severity: P1
+  status: open
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+- id: OSR-14
+  audit: OSR-001
+  title: Repository conformance suite over in-memory and Postgres (Gate G2)
+  spec_sections:
+    - "9"
+    - "18.1"
+  severity: P1
+  status: open
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+- id: OSR-15
+  audit: OSR-001
+  title: Integration and E2E lanes with Postgres service container and local
+    embeddings (Gate G2)
+  spec_sections:
+    - "18.1"
+  severity: P1
+  status: open
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+- id: OSR-16
+  audit: OSR-001
+  title: Dockerfiles, compose stack, quickstart test in CI; release workflow with
+    signed multi-arch images & SBOM (Gate G2)
+  spec_sections:
+    - "13.1"
+    - "13.10"
+    - "20"
+  severity: P0
+  status: open
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+- id: OSR-17
+  audit: OSR-001
+  title: Hosting provider spike and ADR (image by digest, credential model,
+    pgvector, pg_dump) (Gate G3)
+  spec_sections:
+    - "13.1"
+    - "19"
+  severity: P2
+  status: open
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+- id: OSR-18
+  audit: OSR-001
+  title: Provider config in deploy/<provider>/, staging deploy workflow, scoped
+    deploy credential (Gate G3)
+  spec_sections:
+    - "13.1"
+  severity: P2
+  status: open
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+- id: OSR-19
+  audit: OSR-001
+  title: Staging safeguards (§6.4) and DEPLOYMENT_CLASS handling (Gate G3)
+  spec_sections:
+    - "13.1"
+    - "15"
+  severity: P1
+  status: open
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+- id: OSR-20
+  audit: OSR-001
+  title: Real backups and restore drill, backup-age alert (Gate G4)
+  spec_sections:
+    - "13.9"
+    - "18.1"
+    - "20"
+  severity: P1
+  status: open
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+- id: OSR-21
+  audit: OSR-001
+  title: Observability, budget caps and alerts (Gate G4)
+  spec_sections:
+    - "13.5"
+    - "13.9"
+  severity: P2
+  status: open
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+- id: OSR-22
+  audit: OSR-001
+  title: Production deploy workflow with required reviewer, health gate,
+    auto-rollback (Gate G4)
+  spec_sections:
+    - "13.1"
+    - "19"
+  severity: P2
+  status: open
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register
+- id: OSR-23
+  audit: OSR-001
+  title: Self-host guide, config reference, upgrade guide, contributor guide, and
+    ADRs (Gates G2 & G4)
+  spec_sections:
+    - "19"
+  severity: P3
+  status: open
+  owner: A
+  verified_by: null
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/osr-001-open-source-release.md
+  regression_test: null
+  history:
+    - date: 2026-10-19
+      status: open
+      note: Added from OSR-001 §7 task register

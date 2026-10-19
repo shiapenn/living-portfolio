@@ -184,12 +184,18 @@ importers:
       '@living-portfolio/ai':
         specifier: workspace:*
         version: link:../../packages/ai
+      '@living-portfolio/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@living-portfolio/core':
         specifier: workspace:*
         version: link:../../packages/core
       '@living-portfolio/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@living-portfolio/web':
+        specifier: workspace:*
+        version: link:../web
       hono:
         specifier: ^4.7.2
         version: 4.13.13
@@ -212,6 +218,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@living-portfolio/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@living-portfolio/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -263,6 +272,25 @@ importers:
         specifier: ^3.24.2
         version: 3.25.76
     devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.7
+        version: 3.2.7(@types/node@22.20.5)(tsx@4.23.15)(yaml@2.9.1)
+
+  packages/config:
+    dependencies:
+      yaml:
+        specifier: ^2.7.0
+        version: 2.9.1
+      zod:
+        specifier: ^3.24.2
+        version: 3.25.76
+    devDependencies:
+      '@types/node':
+        specifier: ^22.13.4
+        version: 22.20.5
       typescript:
         specifier: ^5.7.3
         version: 5.9.3

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Pre-commit hook (OSR-07 §2.2 & §5.1)
+# Runs secret/hard-code inventory scan, typecheck, and audit governance check.
+set -euo pipefail
+
+node scripts/hardcode-check
+node scripts/audit-check

@@ -1,5 +1,7 @@
 # The Living Portfolio (Open Source)
 
+> **Alpha version with known defects. Do not use in production or input real sensitive data.**
+
 A self-hosted personal site that works as a tech blog, a design portfolio, and a showcase for shipped ventures—backed by a time-aware knowledge graph of the owner's actual records.
 
 ## Core Principles (§0, §1)
@@ -10,29 +12,35 @@ A self-hosted personal site that works as a tech blog, a design portfolio, and a
 
 ## Monorepo Architecture (§7, §8)
 
+- [`packages/config`](./packages/config): Zod-validated configuration contract (`loadConfig`), fail-fast boot checks, `*_FILE` secret mounts, `PUBLIC_` browser-safe variable extraction, and deterministic `.env.example` generator (`OSR-02`, `OSR-03`).
 - [`packages/core`](./packages/core): Kernel types, Zod schemas, Role Profiles (`case-study`, `decision-record`, `design-project`, `research-note`, `how-to`, `freeform`), structure-aware Markdown chunking & text-quote re-anchoring (§10.1), Gap Questions (§10.2), Bitemporal validity (§10.4), Constraint Gate & Tier 1–3 Routing (§10.5), Later-Thinking staleness detection (§10.7), Self-Calibration engine (§11), and Plugin SDK contracts (§14).
 - [`packages/ai`](./packages/ai): `ModelProvider` interface, data-class policy router (`public`, `unpublished`, `private`, `sensitive`), `BudgetGovernor` (§13.5), faithfulness & anachronism verification (§10.6), and local redaction scanner (§4.3, §15).
-- [`packages/db`](./packages/db): PostgreSQL + `pgvector` Drizzle ORM schema (§9), `InMemoryPortfolioRepository` with Reciprocal Rank Fusion (RRF) hybrid search and recursive temporal graph expansion, and `seedDemoPortfolio`.
-- [`apps/api`](./apps/api): Hono HTTP server exposing `/healthz`, `/api/entries`, `/api/structure`, `/api/ask`, `/api/timeline`, `/api/inbox`, `/api/calibration`, `/api/audit`, `/api/import`, `/api/settings` (including portable Markdown + JSON sidecar export and §18.2 evaluation harness), `/.well-known/living-portfolio.json`, `/rss.xml`, and `/sitemap.xml`.
-- [`apps/worker`](./apps/worker): Asynchronous pipeline worker (`INGEST` → `EMBED` → `ENRICH` → debounced `PUBLISH` → `BACKUP` with scratch restore drill → cascading `DELETE`).
+- [`packages/db`](./packages/db): PostgreSQL + `pgvector` Drizzle ORM schema (§9) and `InMemoryPortfolioRepository` with Reciprocal Rank Fusion (RRF) search and temporal graph expansion.
+- [`apps/api`](./apps/api): Hono HTTP server exposing `/healthz`, `/api/auth`, `/api/entries`, `/api/structure`, `/api/ask`, `/api/timeline`, `/api/inbox`, `/api/calibration`, `/api/audit`, `/api/import`, `/api/settings`, `/.well-known/living-portfolio.json`, `/rss.xml`, and `/sitemap.xml`.
+- [`apps/worker`](./apps/worker): Asynchronous pipeline worker (`INGEST` → `EMBED` → `ENRICH` → debounced `PUBLISH` → `BACKUP` → cascading `DELETE`).
 - [`apps/web`](./apps/web): Strata Design System (§12) static-first HTML renderer and 3-pane Owner Admin Workspace (`/admin`).
+- [`examples/seed-demo.ts`](./examples/seed-demo.ts): Synthetic multi-year demo portfolio seed, executed only when explicitly requested (`SEED_DEMO=true` or `pnpm seed:demo`, `OSR-04`).
 
 ## Quickstart (§13.13)
 
 ```bash
 pnpm build
 pnpm test
+pnpm audit:check
+pnpm hardcode:check
 ```
 
-To start the API server with the seeded multi-year portfolio corpus:
+To start the development server (with optional synthetic demo data via `SEED_DEMO=true`):
 
 ```bash
-pnpm --filter @living-portfolio/api dev
+SEED_DEMO=true pnpm --filter @living-portfolio/api dev
 ```
 
-Or deploy via Docker Compose (§13.10):
+## Specification, Audits, Plans & Governance (`AUD-06`, `AUD-23`, `OSR-001`)
 
-```bash
-cp .env.example .env
-docker compose -f docker/docker-compose.hobbyist.yml up -d
-```
+- **Governing Specification:** [`docs/spec/The_Living_Portfolio_Open_Source_Spec.md`](./docs/spec/The_Living_Portfolio_Open_Source_Spec.md)
+- **Audit Tracking & Conformance Register:** [`docs/audits/README.md`](./docs/audits/README.md) ([`register.yml`](./docs/audits/register.yml) | [`conformance.yml`](./docs/audits/conformance.yml))
+- **Remediation & Open-Source Release Plans:** [`docs/plans/remediation-plan-AUD-2026-10-19.md`](./docs/plans/remediation-plan-AUD-2026-10-19.md) | [`docs/plans/osr-001-open-source-release.md`](./docs/plans/osr-001-open-source-release.md)
+- **Audit Governance Specification:** [`docs/governance/DR-AUD-001.md`](./docs/governance/DR-AUD-001.md) | [`Flip-Day Checklist`](./docs/governance/flip-day-checklist.md) | [`Governance Changelog`](./docs/governance/CHANGELOG.md)
+- **Execution Reports:** [`A002 (Current Honest Baseline)`](./docs/execution-reports/A002.md) | [`OSR-05 (Clean Tree & Rotation)`](./docs/execution-reports/OSR-05-clean-tree-and-rotation.md) | [`A001 (Superseded)`](./docs/execution-reports/A001.md)
+- **Known Issues, Security, Trademarks & Self-Hosting:** [`KNOWN_ISSUES.md`](./KNOWN_ISSUES.md) | [`SECURITY.md`](./SECURITY.md) | [`TRADEMARKS.md`](./TRADEMARKS.md) | [`docs/self-hosting.md`](./docs/self-hosting.md) | [`CONTRIBUTING.md`](./CONTRIBUTING.md)

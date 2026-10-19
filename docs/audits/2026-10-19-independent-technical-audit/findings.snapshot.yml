@@ -1,0 +1,32 @@
+# Immutable Findings & Prioritized Fixes Snapshot for AUD-2026-10-19 (DR-AUD-001 AUD-02, AUD-03)
+audit_id: AUD-2026-10-19
+audit_date: "2026-10-19"
+report: "report.md"
+
+prioritized_fixes:
+  - { fix_id: 1, priority: P0, owner: A, status: open, finding_ids: ["S1", "S2"], summary: "Add default-deny auth middleware, separate public/admin routers, setup-wizard admin account, Argon2id, sessions, TOTP" }
+  - { fix_id: 2, priority: P0, owner: A, status: open, finding_ids: ["S1", "S2"], summary: "Make visibility enforcement structural in repository and require redaction-preview confirmation before public visibility" }
+  - { fix_id: 3, priority: P0, owner: A, status: open, finding_ids: ["M1"], summary: "Remove fabricated results or return 501 Not Implemented with SIMULATED(...) markers" }
+  - { fix_id: 4, priority: P0, owner: A, status: open, finding_ids: ["G1", "G2", "G3", "G4", "G5", "G6", "G7", "M3", "M4"], summary: "Fix Ask safety: real routing inputs, entry-side unknown gate check, scoped constraints, verification downgrade on anachronism, advisory default" }
+  - { fix_id: 5, priority: P0, owner: A, status: open, finding_ids: ["S3", "S6"], summary: "Escape or sanitize all innerHTML writes in Ask widget and reject non-http(s) evidence URLs" }
+  - { fix_id: 6, priority: P0, owner: A, status: open, finding_ids: ["S4", "S5"], summary: "Rate-limit by hashed IP address, restrict CORS origins, and add CSP and security headers" }
+  - { fix_id: 7, priority: P0, owner: A, status: open, finding_ids: ["P1", "P2"], summary: "Implement Postgres repository, migrations, schema_info boot check, and remove unconditional demo seeding" }
+  - { fix_id: 8, priority: P0, owner: A, status: open, finding_ids: ["F1", "F2", "F3", "P3"], summary: "Provide Dockerfiles, mount web renderer, give worker a real entrypoint, and implement real /healthz checks" }
+  - { fix_id: 9, priority: P1, owner: A, status: open, finding_ids: ["P4", "P6"], summary: "Fix time semantics (written_at vs valid_from, hindsight exclusion, decay weights, temporalExpand visibility/supersedes, slug uniqueness, immutable revisions)" }
+  - { fix_id: 10, priority: P1, owner: A, status: open, finding_ids: ["P2", "P3"], summary: "Real hybrid retrieval (pgvector + Postgres FTS with RRF) and persisted local ONNX embeddings" }
+  - { fix_id: 11, priority: P1, owner: A, status: open, finding_ids: ["G8", "B1", "B2", "B3", "B4"], summary: "BudgetGovernor owner reserve/priority, visitor-share and soft/hard threshold semantics, token reconciliation, 429 learning" }
+  - { fix_id: 12, priority: P1, owner: A, status: open, finding_ids: ["M2"], summary: "Implement degradation ladder steps 2 (answer cache), 3 (distinct fallback provider), and 6 (DB/embeddings down handoff)" }
+  - { fix_id: 13, priority: P1, owner: A, status: open, finding_ids: ["S7"], summary: "Route enrichment through data-class policy router, governor, and exclusion rules; replace keyword claim extraction" }
+  - { fix_id: 14, priority: P1, owner: A, status: open, finding_ids: ["G5", "M3"], summary: "Real pre-delivery verification (entailment judge/cross-encoder, assertion stripping, scope check, entity/version anachronisms, reconstruction label)" }
+  - { fix_id: 15, priority: P1, owner: A, status: open, finding_ids: ["G6", "M4"], summary: "Provider-based query classification with labeled test set, about path, and Needs-context state (§12.6)" }
+  - { fix_id: 16, priority: P2, owner: A, status: open, finding_ids: ["M5"], summary: "Complete self-calibration: routing calibration, sliding window, held-out validation, ECE, freeze guard, guarded apply, real state rollback" }
+  - { fix_id: 17, priority: P2, owner: A, status: open, finding_ids: ["M6"], summary: "Real topology conflict detector and constraint mining that only propose; test that no path writes active relations/constraints without owner action" }
+  - { fix_id: 18, priority: P2, owner: A, status: open, finding_ids: ["M7"], summary: "Staleness scope-overlap check and recompute-on-accept trigger" }
+  - { fix_id: 19, priority: P2, owner: A, status: open, finding_ids: ["P5"], summary: "Real static build, direct-upload publish, build-time keyword index, and daily UTC reset of build counter" }
+  - { fix_id: 20, priority: P2, owner: A, status: open, finding_ids: ["M8"], summary: "Real pg_dump + age backups, scratch-container restore drill, retention policy, notifications, and digest" }
+  - { fix_id: 21, priority: P2, owner: A, status: open, finding_ids: ["M9"], summary: "Import planner using configured budgets, resumable per-document jobs, core connectors (GitHub, RSS, file drop), notification adapters" }
+  - { fix_id: 22, priority: P2, owner: A, status: open, finding_ids: ["F4"], summary: "Self-host fonts with @font-face, rich editor, keyboard triage (J/K/A/R/D/S), i18n, WCAG contrast & no-JS theme conformance" }
+  - { fix_id: 23, priority: P3, owner: A, status: open, finding_ids: ["M10"], summary: "Add Apache-2.0 LICENSE, GOVERNANCE.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md, THIRD_PARTY_NOTICES, issue templates" }
+  - { fix_id: 24, priority: P3, owner: A, status: open, finding_ids: ["M10"], summary: "Write the 12 documentation files in §19 and ADRs for deliberate stack deviations" }
+  - { fix_id: 25, priority: P3, owner: A, status: open, finding_ids: ["M11"], summary: "CI supply-chain audit and SBOM, §18.1 test categories, Playwright flows, axe accessibility, and §18.2 evaluation runner" }
+  - { fix_id: 26, priority: P3, owner: A, status: open, finding_ids: ["M11"], summary: "Add regression tests for every P0 and P1 item and replace vacuous backup test" }

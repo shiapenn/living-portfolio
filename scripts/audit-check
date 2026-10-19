@@ -1,0 +1,299 @@
+#!/usr/bin/env node
+/**
+ * Audit Governance & Conformance Gate (`scripts/audit-check`)
+ * Implements DR-AUD-001 requirements AUD-01 through AUD-21.
+ */
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { resolve, relative } from 'node:path';
+import { parse as parseYaml } from '../packages/core/node_modules/yaml/browser/index.js';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const isReleaseTag =
+  process.argv.includes('--release') ||
+  process.env.GITHUB_REF_TYPE === 'tag' ||
+  (process.env.GITHUB_REF && process.env.GITHUB_REF.startsWith('refs/tags/'));
+
+const errors = [];
+function fail(msg) {
+  errors.push(msg);
+  console.error(`  ✗ ${msg}`);
+}
+function pass(msg) {
+  console.log(`  ✓ ${msg}`);
+}
+
+console.log('=== Living Portfolio Audit Governance Check (DR-AUD-001) ===\n');
+
+// 1. Verify required layout (AUD-01, AUD-02, AUD-05, AUD-06, A.1, OSR-06..OSR-11)
+const requiredPaths = [
+  'docs/spec/The_Living_Portfolio_Open_Source_Spec.md',
+  'docs/governance/DR-AUD-001.md',
+  'docs/governance/flip-day-checklist.md',
+  'docs/governance/CHANGELOG.md',
+  'docs/governance/rulesets/main-branch-ruleset.json',
+  'docs/governance/rulesets/release-tag-ruleset.json',
+  'docs/plans/remediation-plan-AUD-2026-10-19.md',
+  'docs/plans/osr-001-open-source-release.md',
+  'docs/execution-reports/A001.md',
+  'docs/execution-reports/A002.md',
+  'docs/execution-reports/OSR-05-clean-tree-and-rotation.md',
+  'docs/audits/README.md',
+  'docs/audits/register.yml',
+  'docs/audits/conformance.yml',
+  'docs/audits/hardcode-inventory.md',
+  'docs/audits/2026-10-19-independent-technical-audit/report.md',
+  'docs/audits/2026-10-19-independent-technical-audit/findings.snapshot.yml',
+  'docs/audits/2026-10-19-independent-technical-audit/repro/p0-probes.ts',
+  'LICENSE',
+  'THIRD_PARTY_NOTICES',
+  'DCO',
+  'SECURITY.md',
+  'CODEOWNERS',
+  'TRADEMARKS.md',
+  'KNOWN_ISSUES.md',
+  'CONTRIBUTING.md',
+  '.github/pull_request_template.md',
+  '.github/release-template.md',
+];
+
+for (const rel of requiredPaths) {
+  if (!existsSync(resolve(ROOT, rel))) {
+    fail(`[AUD-02/OSR-06] Missing required path: ${rel}`);
+  }
+}
+if (errors.length === 0) {
+  pass('[AUD-01..AUD-06, A.1, OSR-06..11] Required docs/, governance, plans, and open-source release files verified.');
+}
+
+// 2. Verify closed audit folder immutability (AUD-03, AUD-21)
+const CLOSED_AUDIT_HASHES = {
+  'docs/audits/2026-10-19-independent-technical-audit/report.md':
+    '65ebe5b57ccd25c836a80862c4ead510e9e2a00b0bbd947f6a4cc4d3d151ed49',
+  'docs/audits/2026-10-19-independent-technical-audit/findings.snapshot.yml':
+    'cc0c198af28bd0bc59602eb8e7a078d338b08be712165d9f484f45922901d47a',
+  'docs/audits/2026-10-19-independent-technical-audit/repro/p0-probes.ts':
+    'aa9d5b1ddfad2409234846a2650bf291ef7f83a5bffd47f0e3393929ea5af444',
+};
+
+let immutabilityOk = true;
+for (const [rel, expectedHash] of Object.entries(CLOSED_AUDIT_HASHES)) {
+  const full = resolve(ROOT, rel);
+  if (!existsSync(full)) continue;
+  const actualHash = createHash('sha256').update(readFileSync(full)).digest('hex');
+  if (actualHash !== expectedHash) {
+    immutabilityOk = false;
+    fail(`[AUD-03/AUD-21] Closed audit file modified: ${rel} (expected ${expectedHash}, got ${actualHash})`);
+  }
+}
+if (immutabilityOk) {
+  pass('[AUD-03/AUD-21] Closed audit folder (2026-10-19-independent-technical-audit) checksums intact.');
+}
+
+// 3. Parse and validate register.yml (AUD-07..AUD-10, AUD-14, AUD-16, AUD-21)
+const registerRaw = readFileSync(resolve(ROOT, 'docs/audits/register.yml'), 'utf8');
+const register = parseYaml(registerRaw);
+if (!Array.isArray(register)) {
+  fail('[AUD-08] register.yml must parse to a top-level YAML list.');
+} else {
+  const seenIds = new Set();
+  const coveredFixIds = new Set();
+  const validSeverities = new Set(['P0', 'P1', 'P2', 'P3']);
+  const validStatuses = new Set(['open', 'in-progress', 'fixed', 'accepted-risk', 'wont-fix']);
+  const findingMap = new Map();
+
+  for (const item of register) {
+    if (!item.id || seenIds.has(item.id)) {
+      fail(`[AUD-07] Duplicate or missing finding ID: ${item.id}`);
+    }
+    seenIds.add(item.id);
+    findingMap.set(item.id, item);
+
+    if (!validSeverities.has(item.severity)) {
+      fail(`[AUD-08] Invalid severity '${item.severity}' on finding ${item.id}`);
+    }
+    if (!validStatuses.has(item.status)) {
+      fail(`[AUD-08] Invalid status '${item.status}' on finding ${item.id}`);
+    }
+    if (!item.owner) {
+      fail(`[AUD-08] Missing owner on finding ${item.id}`);
+    }
+    if (!Array.isArray(item.history) || item.history.length === 0) {
+      fail(`[AUD-09] Missing history on finding ${item.id}`);
+    }
+    if (Array.isArray(item.fix_ids)) {
+      for (const fId of item.fix_ids) coveredFixIds.add(fId);
+    }
+
+    // AUD-10: accepted-risk and wont-fix require rationale and approved_by
+    if (item.status === 'accepted-risk' || item.status === 'wont-fix') {
+      if (!item.rationale || !item.approved_by) {
+        fail(`[AUD-10] Finding ${item.id} is '${item.status}' but lacks rationale or approved_by.`);
+      }
+    }
+
+    // D.4: verified_by field must exist on every register entry
+    if (!('verified_by' in item)) {
+      fail(`[D.4] Finding ${item.id} is missing required 'verified_by' field in register.yml.`);
+    }
+
+    // AUD-14 & AUD-21: fixed findings must have an existing regression_test file
+    if (item.status === 'fixed') {
+      if (!item.regression_test || !existsSync(resolve(ROOT, item.regression_test))) {
+        fail(`[AUD-14/AUD-21] Fixed finding ${item.id} lacks an existing regression_test file (${item.regression_test}).`);
+      }
+    }
+
+    // AUD-16 & AUD-21: no P0 can be open on a tagged release
+    if (isReleaseTag && item.severity === 'P0' && (item.status === 'open' || item.status === 'in-progress')) {
+      fail(`[AUD-16/AUD-21] Release gate blocked: P0 finding ${item.id} is '${item.status}'.`);
+    }
+  }
+
+  // Verify all 29 §5 IDs exist
+  const requiredReportIds = [
+    'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7',
+    'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8',
+    'B1', 'B2', 'B3', 'B4',
+    'P1', 'P2', 'P3', 'P4', 'P5', 'P6',
+    'F1', 'F2', 'F3', 'F4',
+  ];
+  for (const reqId of requiredReportIds) {
+    if (!seenIds.has(reqId)) {
+      fail(`[AUD-07] Missing required AUD-2026-10-19 finding ID in register.yml: ${reqId}`);
+    }
+  }
+
+  // Verify all 26 prioritized fixes are mapped
+  for (let fixNum = 1; fixNum <= 26; fixNum++) {
+    if (!coveredFixIds.has(fixNum)) {
+      fail(`[Criterion-2] Prioritized fix #${fixNum} is not mapped to any finding in register.yml.`);
+    }
+  }
+
+  pass(`[AUD-07..AUD-16, D.4] register.yml parsed (${register.length} entries, all 26 fixes mapped, verified_by present, fixed-finding tests verified).`);
+
+  // 4. Parse and validate conformance.yml (AUD-11..AUD-13, AUD-21)
+  const conformanceRaw = readFileSync(resolve(ROOT, 'docs/audits/conformance.yml'), 'utf8');
+  const conformance = parseYaml(conformanceRaw);
+  const validConformanceStatuses = new Set([
+    'implemented',
+    'partial',
+    'stub',
+    'missing',
+    'misleading',
+    'non-conformant',
+    'deviates',
+  ]);
+
+  if (!Array.isArray(conformance) || conformance.length === 0) {
+    fail('[AUD-11] conformance.yml must parse to a non-empty list of spec sections.');
+  } else {
+    for (const row of conformance) {
+      if (!validConformanceStatuses.has(row.status)) {
+        fail(`[AUD-11] Invalid conformance status '${row.status}' on section ${row.section}`);
+      }
+      if (!row.last_scored) {
+        fail(`[AUD-11] Missing last_scored on section ${row.section}`);
+      }
+      if (!Array.isArray(row.findings)) {
+        fail('[AUD-11] Missing findings array on section ' + row.section);
+      } else {
+        for (const fId of row.findings) {
+          if (!findingMap.has(fId)) {
+            fail(`[AUD-11] Section ${row.section} references unknown finding ID '${fId}'`);
+          }
+        }
+        // AUD-13: A section MAY be scored implemented only when its finding IDs are all fixed
+        if (row.status === 'implemented') {
+          for (const fId of row.findings) {
+            const f = findingMap.get(fId);
+            if (f && f.status !== 'fixed') {
+              fail(`[AUD-13] Section ${row.section} is marked 'implemented' but finding ${fId} has status '${f.status}'.`);
+            }
+          }
+        }
+      }
+    }
+    pass(`[AUD-11..AUD-13] conformance.yml parsed (${conformance.length} spec section rows validated).`);
+  }
+}
+
+// 5. Verify SIMULATED(...) markers in API routes return 501 (AUD-17..AUD-19)
+function walkTsFiles(dir) {
+  const results = [];
+  for (const entry of readdirSync(dir)) {
+    const full = resolve(dir, entry);
+    if (statSync(full).isDirectory()) {
+      if (entry !== 'node_modules' && entry !== 'dist' && entry !== 'conformance') {
+        results.push(...walkTsFiles(full));
+      }
+    } else if (entry.endsWith('.ts') && !entry.endsWith('.test.ts')) {
+      results.push(full);
+    }
+  }
+  return results;
+}
+
+const apiSourceFiles = walkTsFiles(resolve(ROOT, 'apps/api/src'));
+let simulatedMarkersCount = 0;
+for (const file of apiSourceFiles) {
+  const content = readFileSync(file, 'utf8');
+  const lines = content.split('\n');
+  lines.forEach((line, idx) => {
+    const match = line.match(/SIMULATED\(([A-Za-z0-9_-]+)\)/);
+    if (match) {
+      simulatedMarkersCount++;
+      // Verify 501 status is returned within the surrounding 15 lines of the handler
+      const windowText = lines.slice(idx, idx + 15).join('\n');
+      if (!windowText.includes('501')) {
+        fail(
+          `[AUD-19] SIMULATED(${match[1]}) marker in ${relative(ROOT, file)}:${idx + 1} does not return HTTP 501 within handler.`
+        );
+      }
+    }
+  });
+}
+if (simulatedMarkersCount === 0) {
+  fail('[AUD-17] Expected SIMULATED(...) markers in apps/api/src but found none.');
+} else {
+  pass(`[AUD-17..AUD-19] Verified ${simulatedMarkersCount} SIMULATED(...) route markers in apps/api/src all return 501.`);
+}
+
+// 6. Verify A002 tags statements per AUD-20 and B.1 ([implemented], [partial], [simulated], [not-started])
+const a002Content = readFileSync(resolve(ROOT, 'docs/execution-reports/A002.md'), 'utf8');
+if (
+  !a002Content.includes('[implemented]') ||
+  !a002Content.includes('[partial]') ||
+  !a002Content.includes('[simulated]') ||
+  !a002Content.includes('[not-started]')
+) {
+  fail('[AUD-20/B.1] docs/execution-reports/A002.md must tag statements with [implemented], [partial], [simulated], and [not-started].');
+} else {
+  pass('[AUD-20/B.1] Execution report A002.md statement tags ([implemented], [partial], [simulated], [not-started]) verified.');
+}
+
+// 7. Verify P0 probes cannot be silently skipped in apps/api/package.json (D.1)
+const apiPkg = JSON.parse(readFileSync(resolve(ROOT, 'apps/api/package.json'), 'utf8'));
+if (apiPkg.scripts?.test?.includes('--exclude') || apiPkg.scripts?.test?.includes('p0-probes')) {
+  fail('[D.1] apps/api/package.json test script must run all tests without excluding p0-probes.conformance.test.ts.');
+} else {
+  pass('[D.1] Verified apps/api test script runs p0-probes.conformance.test.ts without exclusions.');
+}
+
+// 8. Verify mandatory alpha warning in README.md, admin UI renderer, and release template (OSR-11)
+const ALPHA_WARNING = 'Alpha version with known defects. Do not use in production or input real sensitive data.';
+for (const rel of ['README.md', 'apps/web/src/renderer.ts', '.github/release-template.md']) {
+  const txt = readFileSync(resolve(ROOT, rel), 'utf8');
+  if (!txt.includes(ALPHA_WARNING)) {
+    fail(`[OSR-11] Missing mandatory alpha warning text in ${rel}`);
+  }
+}
+pass('[OSR-11] Mandatory alpha warning verified in README.md, admin UI renderer, and release-notes template.');
+
+if (errors.length > 0) {
+  console.error(`\nAudit check FAILED with ${errors.length} error(s).`);
+  process.exit(1);
+} else {
+  console.log('\nAll DR-AUD-001 & OSR-001 audit governance checks PASSED.');
+}

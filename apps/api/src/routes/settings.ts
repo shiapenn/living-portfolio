@@ -157,31 +157,30 @@ export function createSettingsRoutes(repo?: IPortfolioRepository, sharedState?: 
 
   // Test notification channel
   router.post('/notifications/test', async (c) => {
-    const { channel, target } = await c.req.json();
-    return c.json({
-      success: true,
-      message: `Test alert sent to ${channel || 'ntfy'} (${target || 'living-portfolio-alerts'})`,
-      deliveredAt: new Date().toISOString(),
-    });
+    // SIMULATED(M1): Concrete notification adapter (ntfy/webhook/email) is not yet implemented.
+    return c.json(
+      {
+        error: 'Not Implemented',
+        code: 'SIMULATED',
+        finding: 'M1',
+        message: 'Notification channel delivery adapter is not yet implemented.',
+      },
+      501
+    );
   });
 
   // Run Encrypted Backup & Automated Restore Test Drill (§13.9, §18.1)
   router.post('/backups/run-drill', async (c) => {
-    const entries = repo ? await repo.listEntries({ visibility: ['public', 'unlisted', 'private'] }) : [];
-    const ventures = repo ? await repo.listVentures() : [];
-    return c.json({
-      status: 'passed',
-      encryptedWith: 'age (X25519)',
-      format: 'pg_dump custom + incremental media + JSON sidecar',
-      scratchContainerVerified: true,
-      checks: {
-        entriesCount: entries.length,
-        venturesCount: ventures.length,
-        embeddingsPresent: true,
-        mediaChecksumsMatch: true,
+    // SIMULATED(M1): Encrypted pg_dump + age backup and scratch-container restore drill are not yet implemented.
+    return c.json(
+      {
+        error: 'Not Implemented',
+        code: 'SIMULATED',
+        finding: 'M1',
+        message: 'Encrypted pg_dump + age backup and scratch-container restore verification are not yet implemented.',
       },
-      completedAt: new Date().toISOString(),
-    });
+      501
+    );
   });
 
   // Portable Export (§9: Markdown with front matter + JSON sidecar)
@@ -251,50 +250,16 @@ export function createSettingsRoutes(repo?: IPortfolioRepository, sharedState?: 
 
   // Model-Quality Evaluation Harness (§18.2)
   router.get('/evaluation', (c) => {
-    return c.json({
-      evaluatedAt: '2026-10-19T00:00:00Z',
-      datasetVersion: 'eval-v1.2 (48 documents, 140 labeled queries)',
-      annotationQuality: {
-        roles: { precision: 0.91, recall: 0.88, f1: 0.895, ci95: '±0.03' },
-        facets: { precision: 0.94, recall: 0.90, f1: 0.920, ci95: '±0.02' },
-        claims: { precision: 0.89, recall: 0.85, f1: 0.870, ci95: '±0.04' },
-        outcomeStatus: { precision: 0.96, recall: 0.93, f1: 0.945, ci95: '±0.02' },
+    // SIMULATED(M1): Labeled evaluation dataset and runner (§18.2) are not yet implemented.
+    return c.json(
+      {
+        error: 'Not Implemented',
+        code: 'SIMULATED',
+        finding: 'M1',
+        message: 'Model-quality evaluation harness runner and labeled dataset (§18.2) are not yet implemented.',
       },
-      baselineComparison: [
-        {
-          pipeline: 'Full Living Portfolio Pipeline (Hybrid + Gate + Verification)',
-          answerCorrectness: 0.92,
-          citationAccuracy: 0.97,
-          applicabilityErrorRate: 0.02,
-          confidentButInapplicableRate: 0.01,
-        },
-        {
-          pipeline: 'Plain Chunk Retrieval (No Structure / No Gate)',
-          answerCorrectness: 0.78,
-          citationAccuracy: 0.84,
-          applicabilityErrorRate: 0.19,
-          confidentButInapplicableRate: 0.14,
-        },
-        {
-          pipeline: 'General Model (No Retrieval)',
-          answerCorrectness: 0.41,
-          citationAccuracy: 0.0,
-          applicabilityErrorRate: 0.38,
-          confidentButInapplicableRate: 0.31,
-        },
-      ],
-      structureAblation: [
-        { feature: 'Structured Constraint Gate (§10.5)', deltaVsBaseline: '+17.0% applicability accuracy', status: 'enabled_by_default' },
-        { feature: 'Claim-level Retrieval & Supersedes Check (§10.4)', deltaVsBaseline: '+14.2% temporal faithfulness', status: 'enabled_by_default' },
-        { feature: 'Structured Case-Study View (§5.2)', deltaVsBaseline: '+11.5% reader comprehension', status: 'enabled_by_default' },
-        { feature: 'Role-Aware Retrieval Boost (friction/decision)', deltaVsBaseline: '+4.8% advisory recall', status: 'enabled_behind_flag' },
-      ],
-      calibrationAndLeakage: {
-        expectedCalibrationError: 0.034,
-        timeTravelAnachronismLeakageRate: 0.0,
-        extractiveFallbackUsefulness: 0.86,
-      },
-    });
+      501
+    );
   });
 
   return router;

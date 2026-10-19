@@ -264,22 +264,11 @@ export class PortfolioWorker {
    * 5. BACKUP & RESTORE DRILL (§13.9, §18.1):
    * Nightly pg_dump + media sync encrypted with `age`, plus monthly automated restore test.
    */
-  async runBackupAndRestoreDrillJob() {
-    const allEntries = await this.repo.listEntries({ visibility: ['public', 'unlisted', 'private'] });
-    const ventures = await this.repo.listVentures();
-
-    return {
-      backupKey: `backup-${new Date().toISOString().slice(0, 10)}.age`,
-      encryptedWith: 'age' as const,
-      restoreDrillPassed: true,
-      verifiedRowCounts: {
-        entries: allEntries.length,
-        ventures: ventures.length,
-      },
-      embeddingsVerified: true,
-      mediaChecksumsVerified: true,
-      completedAt: new Date().toISOString(),
-    };
+  async runBackupAndRestoreDrillJob(): Promise<never> {
+    // SIMULATED(M1): Real pg_dump + age encryption and scratch-container restore verification are not yet implemented.
+    throw new Error(
+      '501 Not Implemented [SIMULATED(M1)]: Encrypted pg_dump + age backup and scratch-container restore verification are not yet implemented.'
+    );
   }
 
   /**

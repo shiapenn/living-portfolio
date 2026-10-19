@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
 import type { IPortfolioRepository } from '@living-portfolio/db';
 import { chunkMarkdown } from '@living-portfolio/core';
+import { scanForConfidentialData } from '@living-portfolio/ai';
+import { AuthManager, sha256Hex } from '../auth/security.js';
 
-export function createImportRoutes(repo: IPortfolioRepository) {
+export function createImportRoutes(repo: IPortfolioRepository, auth: AuthManager) {
   const router = new Hono();
 
   // Import Planner estimate (§13.6)
@@ -20,7 +22,7 @@ export function createImportRoutes(repo: IPortfolioRepository) {
     const estTokens = Math.ceil(totalChars / 4);
     const freeDailyTokenBudget = 100000;
     const daysWithinFree = Math.max(1, Math.ceil(estTokens / freeDailyTokenBudget));
-    const paidFastCostUsd = Number(((estTokens / 1000000) * 0.15).toFixed(2)); // ~$0.15 / M tokens
+    const paidFastCostUsd = Number(((estTokens / 1000000) * 0.15).toFixed(2));
 
     return c.json({
       documentCount: documents.length,
@@ -30,14 +32,37 @@ export function createImportRoutes(repo: IPortfolioRepository) {
     });
   });
 
-  // Bulk import items
+  // Bulk import items (Requires signed redactionPreviewToken per item when publishAsIs is true: Fix 2, B.4, C.4)
   router.post('/batch', async (c) => {
     const { items, publishAsIs } = await c.req.json();
     if (!Array.isArray(items)) return c.json({ error: 'Items array required' }, 400);
 
+    if (publishAsIs) {
+      for (const item of items) {
+        const bodyMd = String(item.body_md || '');
+        const warnings = scanForConfidentialData(bodyMd);
+        const check = auth.verifyRedactionPreviewToken(item.redactionPreviewToken, {
+          entryId: item.slug || 'draft',
+          bodyMd,
+          warnings,
+        });
+        if (!check.valid) {
+          return c.json(
+            {
+              error: 'Redaction preview confirmation token required for publishAsIs import',
+              slug: item.slug,
+              reason: check.reason,
+            },
+            400
+          );
+        }
+      }
+    }
+
     const imported = [];
     for (const item of items) {
       const slug = item.slug || `import-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const bodyMd = String(item.body_md || '');
       const { entry, revision } = await repo.createEntry(
         {
           slug,
@@ -49,8 +74,8 @@ export function createImportRoutes(repo: IPortfolioRepository) {
           current_revision_id: null,
         },
         {
-          body_md: item.body_md || '',
-          body_hash: 'hash',
+          body_md: bodyMd,
+          body_hash: sha256Hex(bodyMd),
           temporal_level: item.temporal_level || 'estimated',
           valid_from: item.valid_from,
           valid_to: null,
@@ -58,7 +83,7 @@ export function createImportRoutes(repo: IPortfolioRepository) {
         }
       );
 
-      const chunks = chunkMarkdown(revision.id, item.body_md || '');
+      const chunks = chunkMarkdown(revision.id, bodyMd);
       await repo.saveSpans(chunks);
 
       imported.push({ entry, revision, chunksCount: chunks.length });

@@ -129,6 +129,17 @@ export function createStructureRoutes(repo: IPortfolioRepository) {
     const parsed = EvidenceUpsertSchema.safeParse(body);
     if (!parsed.success) return c.json({ error: 'Invalid evidence data', details: parsed.error.issues }, 400);
 
+    if (parsed.data.url) {
+      try {
+        const u = new URL(parsed.data.url);
+        if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+          return c.json({ error: 'Invalid evidence URL: only http and https protocols are allowed' }, 400);
+        }
+      } catch {
+        return c.json({ error: 'Invalid evidence URL format' }, 400);
+      }
+    }
+
     const ev = await repo.saveEvidence(parsed.data);
     return c.json({ evidence: ev }, 201);
   });

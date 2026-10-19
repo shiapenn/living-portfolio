@@ -8,22 +8,16 @@ export function createCalibrationRoutes(repo: IPortfolioRepository) {
 
   // Current parameters
   router.get('/parameters', async (c) => {
-    return c.json({
-      parameters: {
-        tier1_floor: 0.82,
-        tier2_floor: 0.55,
-        facet_known_threshold: 0.9,
-        lookup_threshold: 0.70,
-        w1: 1.0,
-        w2: 0.5,
-        w3: 0.5,
+    // SIMULATED(M1): Persisted calibration parameter store and live routing state binding are not yet implemented.
+    return c.json(
+      {
+        error: 'Not Implemented',
+        code: 'SIMULATED',
+        finding: 'M1',
+        message: 'Persisted calibration parameter store is not yet implemented.',
       },
-      shippedDefaults: {
-        tier1_floor: 0.82,
-        tier2_floor: 0.55,
-      },
-      warning: null, // Admin shows warning if tier1_floor < 0.82
-    });
+      501
+    );
   });
 
   // Pending proposals
@@ -39,16 +33,16 @@ export function createCalibrationRoutes(repo: IPortfolioRepository) {
 
   // Apply proposal
   router.post('/apply', async (c) => {
-    const body = await c.req.json();
-    const change = await repo.saveCalibrationChange({
-      parameter: body.parameter,
-      old_value: body.old_value,
-      new_value: body.new_value,
-      evidence_count: body.evidence_count || 1,
-      applied_by: body.applied_by || 'owner',
-      reversible: true,
-    });
-    return c.json({ change }, 201);
+    // SIMULATED(M5): Guarded calibration application and live parameter persistence (§11, Fix 16) are not yet implemented.
+    return c.json(
+      {
+        error: 'Not Implemented',
+        code: 'SIMULATED',
+        finding: 'M5',
+        message: 'Guarded calibration parameter application (§11) is not yet implemented.',
+      },
+      501
+    );
   });
 
   // History
@@ -59,17 +53,16 @@ export function createCalibrationRoutes(repo: IPortfolioRepository) {
 
   // One-click rollback (§11)
   router.post('/rollback/:id', async (c) => {
-    const id = c.req.param('id');
-    const history = await repo.getCalibrationChanges();
-    const change = history.find((h) => h.id === id);
-
-    if (!change) return c.json({ error: 'Change record not found' }, 404);
-    if (!change.reversible) return c.json({ error: 'This change is not reversible' }, 400);
-
-    const rollbackData = engine.createRollbackChange(change);
-    const rollbackRecord = await repo.saveCalibrationChange(rollbackData);
-
-    return c.json({ rollback: rollbackRecord });
+    // SIMULATED(M5): Stateful calibration parameter rollback (§11, Fix 16) is not yet implemented.
+    return c.json(
+      {
+        error: 'Not Implemented',
+        code: 'SIMULATED',
+        finding: 'M5',
+        message: 'Stateful calibration parameter rollback (§11) is not yet implemented.',
+      },
+      501
+    );
   });
 
   return router;

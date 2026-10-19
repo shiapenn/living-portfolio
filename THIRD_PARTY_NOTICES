@@ -1,0 +1,16 @@
+# Third-Party Notices
+
+This project is licensed under the Apache License, Version 2.0 (except for segregated brand assets in `brand/`, which are governed by `TRADEMARKS.md` and `brand/LICENSE`).
+
+Direct runtime and build dependencies distributed or linked by this repository use permissive open-source licenses compatible with Apache-2.0 (§2.1):
+
+| Package | License | Repository / Copyright |
+| --- | --- | --- |
+| `hono` | MIT | Copyright (c) Yusuke Wada and Hono contributors |
+| `@hono/node-server` | MIT | Copyright (c) Yusuke Wada and Hono contributors |
+| `drizzle-orm` | Apache-2.0 | Copyright (c) Drizzle Team |
+| `zod` | MIT | Copyright (c) Colin McDonnell |
+| `yaml` | ISC | Copyright (c) Eemeli Aro |
+| `typescript` | Apache-2.0 | Copyright (c) Microsoft Corporation |
+| `vitest` | MIT | Copyright (c) Anthony Fu and Matias Capeletto |
+| `turbo` | MIT | Copyright (c) Vercel, Inc. |

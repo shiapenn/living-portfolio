@@ -63,18 +63,9 @@ describe('PortfolioWorker Pipeline (§8, §13.7, §13.9, §15)', () => {
     expect(manual.built).toBe(true);
   });
 
-  it('executes encrypted backup and scratch restore verification drill (§13.9)', async () => {
+  it('throws 501 Not Implemented on simulated backup and restore drill job per AUD-18 (§13.9)', async () => {
     const worker = new PortfolioWorker();
-    await worker.runIngestJob({
-      slug: 'test-backup-entry',
-      title: 'Backup Test Entry',
-      body_md: 'Testing backup and restore drill.',
-    });
-
-    const drill = await worker.runBackupAndRestoreDrillJob();
-    expect(drill.encryptedWith).toBe('age');
-    expect(drill.restoreDrillPassed).toBe(true);
-    expect(drill.verifiedRowCounts.entries).toBe(1);
+    await expect(worker.runBackupAndRestoreDrillJob()).rejects.toThrow(/501 Not Implemented \[SIMULATED\(M1\)\]/);
   });
 
   it('deletes entry and all derived records in a single cascading job (§15)', async () => {

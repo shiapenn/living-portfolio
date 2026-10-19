@@ -41,8 +41,8 @@ export interface IPortfolioRepository {
 
   // Entries & Revisions
   createEntry(e: Omit<Entry, 'id' | 'created_at'>, rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'> & { written_at?: string }): Promise<{ entry: Entry; revision: EntryRevision }>;
-  getEntryBySlug(slug: string): Promise<{ entry: Entry; currentRevision: EntryRevision | null } | null>;
-  getEntry(id: string): Promise<{ entry: Entry; currentRevision: EntryRevision | null } | null>;
+  getEntryBySlug(slug: string, allowedVisibilities?: Visibility[]): Promise<{ entry: Entry; currentRevision: EntryRevision | null } | null>;
+  getEntry(id: string, allowedVisibilities?: Visibility[]): Promise<{ entry: Entry; currentRevision: EntryRevision | null } | null>;
   updateEntry(id: string, updates: Partial<Entry>): Promise<Entry | null>;
   deleteEntry(id: string): Promise<{ deletedRevisions: number; deletedSpans: number; deletedClaims: number; deletedRelations: number; deletedFacets: number }>;
   listEntries(filter?: { visibility?: Visibility[]; venture_id?: string }): Promise<Entry[]>;
@@ -164,9 +164,15 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     return { entry, revision };
   }
 
-  async getEntryBySlug(slug: string): Promise<{ entry: Entry; currentRevision: EntryRevision | null } | null> {
+  async getEntryBySlug(
+    slug: string,
+    allowedVisibilities?: Visibility[]
+  ): Promise<{ entry: Entry; currentRevision: EntryRevision | null } | null> {
     for (const entry of this.entries.values()) {
       if (entry.slug === slug) {
+        if (allowedVisibilities && !allowedVisibilities.includes(entry.visibility)) {
+          return null;
+        }
         const rev = entry.current_revision_id ? this.revisions.get(entry.current_revision_id) || null : null;
         return { entry, currentRevision: rev };
       }
@@ -174,9 +180,15 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     return null;
   }
 
-  async getEntry(id: string): Promise<{ entry: Entry; currentRevision: EntryRevision | null } | null> {
+  async getEntry(
+    id: string,
+    allowedVisibilities?: Visibility[]
+  ): Promise<{ entry: Entry; currentRevision: EntryRevision | null } | null> {
     const entry = this.entries.get(id);
     if (!entry) return null;
+    if (allowedVisibilities && !allowedVisibilities.includes(entry.visibility)) {
+      return null;
+    }
     const rev = entry.current_revision_id ? this.revisions.get(entry.current_revision_id) || null : null;
     return { entry, currentRevision: rev };
   }

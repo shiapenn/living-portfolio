@@ -1,12 +1,20 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createApp } from './app.js';
+import { computeTotpCode } from './auth/security.js';
 
 describe('Living Portfolio API Integration Tests', () => {
-  let app: any;
+  let app: ReturnType<typeof createApp>['app'];
+  let adminToken: string;
+  let authHeaders: Record<string, string>;
 
   beforeEach(() => {
     const instance = createApp();
     app = instance.app;
+    adminToken = instance.adminToken;
+    authHeaders = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${adminToken}`,
+    };
   });
 
   it('GET /healthz returns healthy system status', async () => {
@@ -18,10 +26,10 @@ describe('Living Portfolio API Integration Tests', () => {
     expect(body.version).toBe('0.1.0');
   });
 
-  it('POST /api/entries creates entry, revision, chunks, and redaction warnings', async () => {
+  it('POST /api/entries creates entry, revision, chunks, redaction warnings, and signed redactionPreviewToken', async () => {
     const res = await app.request('/api/entries', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         slug: 'high-concurrency-postgres',
         title: 'High Concurrency PostgreSQL Advisory Locks',
@@ -39,13 +47,13 @@ describe('Living Portfolio API Integration Tests', () => {
     expect(body.entry.slug).toBe('high-concurrency-postgres');
     expect(body.spansCount).toBeGreaterThan(0);
     expect(Array.isArray(body.redactionWarnings)).toBe(true);
+    expect(typeof body.redactionPreviewToken).toBe('string');
   });
 
   it('GET /api/entries/:slug computes structure level and gap questions', async () => {
-    // 1. Create entry
     await app.request('/api/entries', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         slug: 'distributed-locks',
         title: 'Distributed Locks in Practice',
@@ -57,7 +65,6 @@ describe('Living Portfolio API Integration Tests', () => {
       }),
     });
 
-    // 2. Fetch entry
     const res = await app.request('/api/entries/distributed-locks');
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -69,10 +76,9 @@ describe('Living Portfolio API Integration Tests', () => {
   });
 
   it('POST /api/ask handles lookup and advisory queries with citations', async () => {
-    // 1. Ingest published entry
     await app.request('/api/entries', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         slug: 'cache-stampede-solution',
         title: 'Mitigating Cache Stampedes',
@@ -85,7 +91,6 @@ describe('Living Portfolio API Integration Tests', () => {
       }),
     });
 
-    // 2. Ask question
     const res = await app.request('/api/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -102,10 +107,9 @@ describe('Living Portfolio API Integration Tests', () => {
   });
 
   it('GET /api/timeline returns Strata Timeline layers and as_of filtering', async () => {
-    // Ingest historical entry
     await app.request('/api/entries', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         slug: 'early-days-2020',
         title: 'Early Days Architecture',
@@ -118,10 +122,9 @@ describe('Living Portfolio API Integration Tests', () => {
       }),
     });
 
-    // Ingest newer entry
     await app.request('/api/entries', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
         slug: 'modern-era-2025',
         title: 'Modern Architecture',
@@ -141,5 +144,195 @@ describe('Living Portfolio API Integration Tests', () => {
     expect(body.timeTravelView).not.toBeNull();
     expect(body.timeTravelView.visibleEntries.some((e: any) => e.slug === 'early-days-2020')).toBe(true);
     expect(body.timeTravelView.futureExcludedCount).toBeGreaterThan(0);
+  });
+
+  it('[C.3] enforces first-run admin setup, TOTP login, CSRF protection, login throttling, and revocable Bearer tokens', async () => {
+    // 1. Setup owner account
+    const setupRes = await app.request('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'owner',
+        password: 'correct-horse-battery-staple',
+      }),
+    });
+    expect(setupRes.status).toBe(201);
+    const setupData = await setupRes.json();
+    expect(setupData.totpSecret).toBeTruthy();
+
+    // Second setup call is rejected with 409
+    const duplicateSetup = await app.request('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'owner2', password: 'another-long-password' }),
+    });
+    expect(duplicateSetup.status).toBe(409);
+
+    // 2. Login with valid password + TOTP code
+    const totpCode = computeTotpCode(setupData.totpSecret);
+    const loginRes = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'owner',
+        password: 'correct-horse-battery-staple',
+        totpCode,
+      }),
+    });
+    expect(loginRes.status).toBe(200);
+    const loginData = await loginRes.json();
+    const setCookie = loginRes.headers.get('set-cookie') || '';
+    const sessionCookie = setCookie.split(';')[0];
+
+    // 3. State-changing request with session cookie but WITHOUT X-CSRF-Token fails with 403
+    const noCsrfRes = await app.request('/api/settings/routing', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: sessionCookie,
+      },
+      body: JSON.stringify({ tier1_floor: 0.85 }),
+    });
+    expect(noCsrfRes.status).toBe(403);
+
+    // With valid X-CSRF-Token succeeds
+    const withCsrfRes = await app.request('/api/settings/routing', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: sessionCookie,
+        'X-CSRF-Token': loginData.csrfToken,
+      },
+      body: JSON.stringify({ tier1_floor: 0.85 }),
+    });
+    expect(withCsrfRes.status).toBe(200);
+
+    // 4. Issue and revoke a Bearer token
+    const tokenRes = await app.request('/api/auth/tokens', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ label: 'ci-runner' }),
+    });
+    expect(tokenRes.status).toBe(201);
+    const tokenData = await tokenRes.json();
+
+    const checkValidToken = await app.request('/api/settings', {
+      headers: { Authorization: `Bearer ${tokenData.token}` },
+    });
+    expect(checkValidToken.status).toBe(200);
+
+    const revokeRes = await app.request(`/api/auth/tokens/${tokenData.id}`, {
+      method: 'DELETE',
+      headers: authHeaders,
+    });
+    expect(revokeRes.status).toBe(200);
+
+    const checkRevokedToken = await app.request('/api/settings', {
+      headers: { Authorization: `Bearer ${tokenData.token}` },
+    });
+    expect(checkRevokedToken.status).toBe(401);
+
+    // 5. Login throttling after 5 failed attempts returns 429
+    for (let i = 0; i < 5; i++) {
+      const badLogin = await app.request('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'owner', password: 'wrong-password-123', totpCode: '000000' }),
+      });
+      expect(badLogin.status).toBe(401);
+    }
+    const throttledLogin = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'owner',
+        password: 'correct-horse-battery-staple',
+        totpCode,
+      }),
+    });
+    expect(throttledLogin.status).toBe(429);
+  });
+
+  it('[C.4] requires a signed redactionPreviewToken bound to entryId, bodyHash, and scan result before publishing private entry to public', async () => {
+    const createRes = await app.request('/api/entries', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        slug: 'confidential-draft',
+        title: 'Confidential Draft',
+        profile: 'case-study',
+        view: 'article',
+        visibility: 'private',
+        body_md: 'Internal architecture notes before public release.',
+        temporal_level: 'exact',
+        valid_from: '2025-02-01T00:00:00Z',
+      }),
+    });
+    expect(createRes.status).toBe(201);
+    const created = await createRes.json();
+    const entryId = created.entry.id;
+
+    // 1. Attempting to flip visibility to public with a boolean or missing token fails with 400
+    const booleanAttempt = await app.request(`/api/entries/${entryId}`, {
+      method: 'PUT',
+      headers: authHeaders,
+      body: JSON.stringify({ visibility: 'public', redactionPreviewConfirmed: true }),
+    });
+    expect(booleanAttempt.status).toBe(400);
+
+    // 2. Attempting with a token bound to different body text fails with 400
+    const mismatchedPreview = await app.request('/api/entries/redaction-preview', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ entryId, text: 'Some other body text' }),
+    });
+    const mismatchedData = await mismatchedPreview.json();
+    const mismatchedAttempt = await app.request(`/api/entries/${entryId}`, {
+      method: 'PUT',
+      headers: authHeaders,
+      body: JSON.stringify({ visibility: 'public', redactionPreviewToken: mismatchedData.redactionPreviewToken }),
+    });
+    expect(mismatchedAttempt.status).toBe(400);
+
+    // 3. Valid signed token bound to entryId, exact body_md, and scan result succeeds
+    const validPreview = await app.request('/api/entries/redaction-preview', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ entryId, text: 'Internal architecture notes before public release.' }),
+    });
+    const validData = await validPreview.json();
+    const validAttempt = await app.request(`/api/entries/${entryId}`, {
+      method: 'PUT',
+      headers: authHeaders,
+      body: JSON.stringify({ visibility: 'public', redactionPreviewToken: validData.redactionPreviewToken }),
+    });
+    expect(validAttempt.status).toBe(200);
+    const updated = await validAttempt.json();
+    expect(updated.entry.visibility).toBe('public');
+  });
+
+  it('[C.9] preserves working owner kill-switch and routing floor warning behind admin authentication', async () => {
+    const patchRes = await app.request('/api/settings/routing', {
+      method: 'PATCH',
+      headers: authHeaders,
+      body: JSON.stringify({
+        automatedAnsweringEnabled: false,
+        tier1_floor: 0.75,
+      }),
+    });
+    expect(patchRes.status).toBe(200);
+    const patchData = await patchRes.json();
+    expect(patchData.runtime.automatedAnsweringEnabled).toBe(false);
+    expect(patchData.routing.warning).toContain('below the shipped default (0.82)');
+
+    // Verify /api/ask immediately honors the kill-switch
+    const askRes = await app.request('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: 'Test question while kill-switch is active' }),
+    });
+    expect(askRes.status).toBe(200);
+    const askData = await askRes.json();
+    expect(askData.tier).toBe('disabled');
   });
 });

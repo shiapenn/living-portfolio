@@ -7,6 +7,11 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "test": "turbo run test",
+    "audit:check": "node scripts/audit-check",
+    "hardcode:check": "node scripts/hardcode-check",
+    "dco:check": "node scripts/dco-check",
+    "config:generate-env": "node scripts/generate-env-example",
+    "seed:demo": "npx tsx examples/seed-demo.ts",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean"

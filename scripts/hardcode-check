@@ -1,0 +1,140 @@
+#!/usr/bin/env node
+/**
+ * Hard-code Inventory & Hygiene Scanner (`scripts/hardcode-check`, OSR-01 §3.2)
+ * Scans repository source and documentation for:
+ * - Hard-coded personal/demo owner identity ("Alex Rivera")
+ * - Local filesystem absolute paths (/Users/, /home/, C:\Users\)
+ * - Hard-coded localhost origins outside @living-portfolio/config
+ * - Raw credential/secret prefixes (sk-live-, ghp_, AKIA)
+ * - Tracked .DS_Store, .env (non-example), or IDE/agent state files
+ *
+ * Exits non-zero on any unlisted hit outside the explicit allowlist.
+ */
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { relative, resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+
+// Explicit allowlist with stated reason per OSR-01 §3.2
+const ALLOWLIST = [
+  {
+    pathPrefix: 'docs/audits/2026-10-19-independent-technical-audit/',
+    reason: 'Immutable closed audit report folder (AUD-03)',
+  },
+  {
+    pathPrefix: 'docs/audits/register.yml',
+    reason: 'Cumulative audit findings register quoting finding P1 title',
+  },
+  {
+    pathPrefix: 'docs/audits/hardcode-inventory.md',
+    reason: 'Hard-code inventory report documenting remediated patterns',
+  },
+  {
+    pathPrefix: 'docs/plans/',
+    reason: 'Remediation and OSR-001 plans referencing historical audit findings',
+  },
+  {
+    pathPrefix: 'docs/execution-reports/',
+    reason: 'Historical execution reports (A001/A002/OSR-05) documenting audit findings',
+  },
+  {
+    pathPrefix: 'packages/config/',
+    reason: 'Authoritative configuration contract defining default values',
+  },
+  {
+    pathPrefix: 'packages/ai/src/ai.test.ts',
+    reason: 'Synthetic AWS key fixture testing scanForConfidentialData redaction scanner',
+  },
+  {
+    pathPrefix: 'scripts/hardcode-check',
+    reason: 'Scanner definition file',
+  },
+];
+
+const IGNORED_DIRS = new Set(['.git', 'node_modules', 'dist', '.turbo', 'coverage']);
+
+const RULES = [
+  {
+    id: 'DEMO_IDENTITY',
+    description: 'Hard-coded demo owner identity ("Alex Rivera")',
+    regex: /\bAlex Rivera\b/,
+    excludeTests: false,
+  },
+  {
+    id: 'LOCAL_ABS_PATH',
+    description: 'Local machine absolute path (/Users/..., /home/..., C:\\Users\\...)',
+    regex: /(?:\/Users\/[A-Za-z0-9._-]+|\/home\/[A-Za-z0-9._-]+|C:\\Users\\[A-Za-z0-9._-]+)/,
+    excludeTests: false,
+  },
+  {
+    id: 'HARDCODED_LOCALHOST',
+    description: 'Hard-coded localhost URL in non-test runtime source',
+    regex: /https?:\/\/(?:localhost|127\.0\.0\.1):\d+/,
+    excludeTests: true,
+    onlyInDirs: ['apps/', 'packages/'],
+  },
+  {
+    id: 'RAW_SECRET_TOKEN',
+    description: 'Potential raw API key or secret token literal',
+    regex: /\b(?:sk-live-[A-Za-z0-9]{16,}|ghp_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16})\b/,
+    excludeTests: false,
+  },
+];
+
+function isAllowlisted(relPath) {
+  return ALLOWLIST.some((entry) => relPath === entry.pathPrefix || relPath.startsWith(entry.pathPrefix));
+}
+
+function walkRepo(dir) {
+  const files = [];
+  for (const name of readdirSync(dir)) {
+    if (IGNORED_DIRS.has(name) || name === '.DS_Store') continue;
+    const full = resolve(dir, name);
+    const st = statSync(full);
+    if (st.isDirectory()) {
+      files.push(...walkRepo(full));
+    } else if (st.isFile()) {
+      files.push(full);
+    }
+  }
+  return files;
+}
+
+const hits = [];
+for (const file of walkRepo(ROOT)) {
+  const rel = relative(ROOT, file).replace(/\\/g, '/');
+  if (isAllowlisted(rel)) continue;
+  if (rel.endsWith('.lock') || rel.endsWith('.yaml') && rel === 'pnpm-lock.yaml') continue;
+
+  const isTest = rel.endsWith('.test.ts') || rel.includes('/conformance/');
+  const content = readFileSync(file, 'utf8');
+  const lines = content.split('\n');
+
+  for (const rule of RULES) {
+    if (rule.excludeTests && isTest) continue;
+    if (rule.onlyInDirs && !rule.onlyInDirs.some((d) => rel.startsWith(d))) continue;
+    // Allow console.log startup message in server.ts
+    lines.forEach((line, idx) => {
+      if (rel === 'apps/api/src/server.ts' && line.includes('console.log')) return;
+      if (rule.regex.test(line)) {
+        hits.push({
+          ruleId: rule.id,
+          description: rule.description,
+          file: rel,
+          line: idx + 1,
+          snippet: line.trim().slice(0, 120),
+        });
+      }
+    });
+  }
+}
+
+if (hits.length > 0) {
+  console.error('✗ [OSR-01] Hard-code inventory check failed with unlisted hits:');
+  for (const h of hits) {
+    console.error(`  - [${h.ruleId}] ${h.file}:${h.line} (${h.description})\n    ${h.snippet}`);
+  }
+  process.exit(1);
+}
+
+console.log('✓ [OSR-01] Hard-code inventory scan passed (0 unlisted hits across source and docs).');

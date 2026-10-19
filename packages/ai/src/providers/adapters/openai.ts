@@ -4,7 +4,7 @@ export interface OpenAICompatibleConfig {
   id?: string;
   name?: string;
   apiKey: string;
-  baseURL?: string; // e.g. https://api.groq.com/openai/v1 or https://api.openai.com/v1 or http://localhost:11434/v1
+  baseURL?: string; // e.g. https://api.groq.com/openai/v1 or https://api.openai.com/v1 or local Ollama /v1 endpoint
   dataPolicy?: Partial<DataPolicy>;
   limits?: Partial<ProviderLimits>;
 }

@@ -17,6 +17,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@living-portfolio/config": "workspace:*",
     "@living-portfolio/core": "workspace:*",
     "@living-portfolio/db": "workspace:*"
   },

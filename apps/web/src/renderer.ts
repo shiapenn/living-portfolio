@@ -1,3 +1,4 @@
+import { loadConfig } from '@living-portfolio/config';
 import {
   computeStructureLevel,
   detectLaterThinking,
@@ -9,12 +10,32 @@ import {
 import type { IPortfolioRepository } from '@living-portfolio/db';
 import { STRATA_DESIGN_SYSTEM_CSS } from './styles.js';
 
+export const ALPHA_WARNING_TEXT =
+  'Alpha version with known defects. Do not use in production or input real sensitive data.';
+
 function escapeHtml(str: string): string {
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+export function sanitizeHttpUrl(rawUrl?: string | null): string | null {
+  if (!rawUrl || typeof rawUrl !== 'string') return null;
+  const trimmed = rawUrl.trim();
+  if (trimmed.startsWith('/') && !trimmed.startsWith('//')) {
+    return trimmed;
+  }
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.toString();
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 function renderMarkdownToHtml(md: string): string {
@@ -35,6 +56,7 @@ function renderMarkdownToHtml(md: string): string {
 }
 
 function renderLayout(title: string, activePath: string, mainContentHtml: string): string {
+  const cfg = loadConfig();
   const navItems = [
     { href: '/work', label: 'Work' },
     { href: '/writing', label: 'Writing' },
@@ -53,18 +75,33 @@ function renderLayout(title: string, activePath: string, mainContentHtml: string
     )
     .join('\n          ');
 
+  const safeLogoUrl = sanitizeHttpUrl(cfg.PUBLIC_SITE_LOGO_URL);
+  const brandHtml = safeLogoUrl
+    ? `<img src="${escapeHtml(safeLogoUrl)}" alt="${escapeHtml(cfg.PUBLIC_OWNER_NAME)}" style="height:24px;vertical-align:middle;margin-right:8px" />${escapeHtml(cfg.PUBLIC_OWNER_NAME)}`
+    : escapeHtml(cfg.PUBLIC_OWNER_NAME);
+
+  const stagingBannerHtml =
+    cfg.DEPLOYMENT_CLASS === 'staging'
+      ? `<div class="as-of-banner" data-banner="staging-synthetic-only" role="status" style="margin:0;border-radius:0;justify-content:center"><strong>Staging: synthetic data only.</strong></div>`
+      : '';
+
+  const unofficialForkSlotHtml = cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE
+    ? `<div class="unofficial-fork-slot" data-slot="unofficial-fork-notice" style="margin-top:6px;font-size:13px;color:var(--text-muted)">${escapeHtml(cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE)}</div>`
+    : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(title)} — The Living Portfolio</title>
+  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_NAME)}</title>
   <style>${STRATA_DESIGN_SYSTEM_CSS}</style>
 </head>
 <body>
+  ${stagingBannerHtml}
   <header class="site-header">
     <nav class="site-nav" aria-label="Primary navigation">
-      <a href="/" class="site-brand">Alex Rivera</a>
+      <a href="/" class="site-brand">${brandHtml}</a>
       <div class="nav-links">
         ${navHtml}
         <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle color theme">◐ Theme</button>
@@ -74,6 +111,10 @@ function renderLayout(title: string, activePath: string, mainContentHtml: string
   <main class="site-main" id="main-content">
     ${mainContentHtml}
   </main>
+  <footer class="site-footer" style="max-width:var(--layout-max);margin:48px auto 24px;padding:16px 24px;border-top:1px solid var(--rule);font-size:14px;color:var(--text-muted)">
+    <div>${escapeHtml(cfg.PUBLIC_SITE_FOOTER_TEXT)}</div>
+    ${unofficialForkSlotHtml}
+  </footer>
   <script>
     (function() {
       const btn = document.getElementById('theme-toggle');
@@ -236,9 +277,10 @@ export async function renderHomePage(repo: IPortfolioRepository): Promise<string
     </li>`);
   }
 
+  const cfg = loadConfig();
   const content = `
     <p class="owner-statement">
-      I design and build fault-tolerant distributed storage systems,PostgreSQL infrastructure, and legible knowledge interfaces.
+      ${escapeHtml(cfg.PUBLIC_OWNER_STATEMENT)}
     </p>
 
     ${strataHtml}
@@ -360,16 +402,20 @@ export async function renderEntryDetailPage(
   const evidenceHtml =
     evidence.length > 0
       ? evidence
-          .map(
-            (ev) => `<div style="margin-bottom:8px">
-              <a href="${escapeHtml(ev.url || '#')}" target="_blank" rel="noopener">${escapeHtml(ev.url || ev.kind)}</a>
+          .map((ev) => {
+            const safeUrl = sanitizeHttpUrl(ev.url);
+            const linkMarkup = safeUrl
+              ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">${escapeHtml(ev.url || ev.kind)}</a>`
+              : `<span class="chip" data-unsafe-url="blocked">Blocked non-HTTP(S) URL (${escapeHtml(ev.kind)})</span>`;
+            return `<div style="margin-bottom:8px">
+              ${linkMarkup}
               ${
                 ev.verified_at
                   ? `<div class="chip" style="margin-top:4px;border-color:var(--role-outcome)" title="Verification proves the artifact exists and who authored it; it does not prove the surrounding narrative fits your situation.">✓ Verified (${escapeHtml(ev.verification?.label || 'artifact')})</div>`
                   : ''
               }
-            </div>`
-          )
+            </div>`;
+          })
           .join('\n')
       : '<p style="color:var(--text-muted);margin:0">No external artifacts attached.</p>';
 
@@ -642,8 +688,24 @@ export async function renderAskPage(
         const region = document.getElementById('ask-live-region');
         const scopeSlug = ${JSON.stringify(scopeSlug || null)};
 
+        function esc(str) {
+          return String(str == null ? '' : str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        function safePath(url) {
+          const s = String(url == null ? '' : url).trim();
+          if (s.startsWith('/') && !s.startsWith('//')) return esc(s);
+          if (/^https?:\/\//i.test(s)) return esc(s);
+          return '#';
+        }
+
         async function runQuery(queryText) {
-          region.innerHTML = '<div class="strata-section"><p style="margin:0">Searching records and verifying citations...</p></div>';
+          region.textContent = 'Searching records and verifying citations...';
           const facets = {};
           if (dbInput && dbInput.value.trim()) facets.database = dbInput.value.trim();
           if (stackInput && stackInput.value.trim()) facets.stack = stackInput.value.trim();
@@ -664,29 +726,28 @@ export async function renderAskPage(
             const data = await res.json();
 
             const tierLabels = {
-              tier1: 'Automated answer from the owner\\'s records (Tier 1)',
-              tier2: 'Needs the owner\\'s review (Tier 2 Escalation)',
-              tier3: 'Better as a live conversation (Tier 3 Handoff)',
+              tier1: 'Automated answer from the owner\\'s records',
+              tier2: 'Needs the owner\\'s review',
+              tier3: 'Better as a live conversation',
               extractive: 'Reduced mode — Extractive excerpts only',
               no_match: 'Not in records',
               disabled: 'Automated answers paused'
             };
 
             const citationsHtml = (data.citations || []).map(function(c) {
-              return '<li style="margin-bottom:6px"><strong>[' + c.citationId + ']</strong> <a href="/work/' + c.slug + '">' + c.title + '</a>: <em>"' + c.text + '"</em></li>';
+              return '<li style="margin-bottom:6px"><strong>[' + esc(c.citationId) + ']</strong> <a href="/work/' + encodeURIComponent(String(c.slug || '')) + '">' + esc(c.title) + '</a>: <em>"' + esc(c.text) + '"</em></li>';
             }).join('');
 
             region.innerHTML =
               '<div class="strata-section">' +
                 '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">' +
-                  '<span class="chip"><strong>' + (tierLabels[data.tier] || data.tier) + '</strong></span>' +
-                  (data.queryClass ? '<span class="chip">Query class: ' + data.queryClass + '</span>' : '') +
+                  '<span class="chip"><strong>' + esc(tierLabels[data.tier] || data.tier) + '</strong></span>' +
                 '</div>' +
-                (data.basis ? '<p style="font-size:13px;color:var(--text-muted);margin:0 0 8px 0">' + data.basis + '</p>' : '') +
-                '<div class="reading-column" style="white-space:pre-wrap;margin-bottom:16px">' + data.answer + '</div>' +
+                (data.basis ? '<p style="font-size:13px;color:var(--text-muted);margin:0 0 8px 0">' + esc(data.basis) + '</p>' : '') +
+                '<div class="reading-column" style="white-space:pre-wrap;margin-bottom:16px">' + esc(data.answer) + '</div>' +
                 (citationsHtml ? '<div style="border-top:1px solid var(--rule);padding-top:12px"><strong style="font-size:14px">Cited passages:</strong><ul style="margin:8px 0 0;padding-left:20px;font-size:14px">' + citationsHtml + '</ul></div>' : '') +
-                (data.bookingUrl ? '<div style="margin-top:12px"><a href="' + data.bookingUrl + '" class="btn" style="display:inline-block;text-decoration:none">Book live session with prefilled context →</a></div>' : '') +
-                (data.aiDisclosure ? '<p style="font-size:12px;color:var(--text-muted);margin:16px 0 0 0;border-top:1px solid var(--rule);padding-top:8px">AI Disclosure: ' + data.aiDisclosure + '</p>' : '') +
+                (data.bookingUrl ? '<div style="margin-top:12px"><a href="' + safePath(data.bookingUrl) + '" class="btn" style="display:inline-block;text-decoration:none">Book live session with prefilled context →</a></div>' : '') +
+                (data.aiDisclosure ? '<p style="font-size:12px;color:var(--text-muted);margin:16px 0 0 0;border-top:1px solid var(--rule);padding-top:8px">AI Disclosure: ' + esc(data.aiDisclosure) + '</p>' : '') +
               '</div>';
           } catch (err) {
             region.innerHTML = '<div class="strata-section"><p>Origin unreachable. <a href="/book">Book a session or leave a message</a>.</p></div>';
@@ -734,12 +795,17 @@ export function renderStaticPage(page: 'now' | 'about' | 'uses' | 'book', queryP
     );
   }
   if (page === 'about') {
+    const cfg = loadConfig();
+    const forkNoticeHtml = cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE
+      ? `<p class="unofficial-fork-slot" data-slot="unofficial-fork-notice"><em>${escapeHtml(cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE)}</em></p>`
+      : '';
     return renderLayout(
       'About & Verified Credentials',
       '/about',
       `<div class="reading-column">
-        <h1>About Alex Rivera</h1>
-        <p>Systems engineer and design technologist with 10+ years building storage engines, developer tools, and accessible interfaces.</p>
+        <h1>About ${escapeHtml(cfg.PUBLIC_OWNER_NAME)}</h1>
+        <p>${escapeHtml(cfg.PUBLIC_OWNER_BIO)}</p>
+        ${forkNoticeHtml}
         <h2>Verified credentials (§6.1)</h2>
         <p>Badges appear only for artifacts with cryptographic or host-level verification records:</p>
         <ul>
@@ -849,6 +915,9 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
       : '<p style="color:var(--text-muted)">No pending escalations.</p>';
 
   const content = `
+    <div class="later-thinking-banner" data-banner="alpha-warning" role="alert" style="margin-bottom:16px">
+      <strong>${escapeHtml(ALPHA_WARNING_TEXT)}</strong>
+    </div>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px">
       <div>
         <h1 style="font-family:var(--font-reading);font-size:28px;margin:0">Owner Admin Workspace</h1>

@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+import { writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { generateEnvExample } from '../packages/config/dist/index.js';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const target = resolve(ROOT, '.env.example');
+writeFileSync(target, generateEnvExample(), 'utf8');
+console.log('✓ Updated .env.example from @living-portfolio/config schema.');

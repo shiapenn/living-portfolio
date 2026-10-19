@@ -1,9 +1,11 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
+import { loadConfig } from '@living-portfolio/config';
 import { InMemoryPortfolioRepository, seedDemoPortfolio } from '@living-portfolio/db';
 import { BudgetGovernor, MockModelProvider } from '@living-portfolio/ai';
 import { DEFAULT_STRATA_THEME } from '@living-portfolio/core';
+import { AuthManager, createAuthRoutes } from './auth/security.js';
 import { createHealthRoutes } from './routes/health.js';
 import { createEntriesRoutes } from './routes/entries.js';
 import { createStructureRoutes } from './routes/structure.js';
@@ -15,11 +17,28 @@ import { createAuditRoutes } from './routes/audit.js';
 import { createImportRoutes } from './routes/import.js';
 import { createSettingsRoutes, type RuntimeSettingsState } from './routes/settings.js';
 
-export function createApp(customRepo?: InMemoryPortfolioRepository) {
+export function createApp(
+  customRepo?: InMemoryPortfolioRepository,
+  options?: { signingKey?: string; bootstrapAdminToken?: string; allowedOrigins?: string[] }
+) {
   const app = new Hono();
+  const cfg = loadConfig();
   const repo = customRepo ?? new InMemoryPortfolioRepository();
   const governor = new BudgetGovernor();
   const mockProvider = new MockModelProvider();
+  const adminToken =
+    options?.bootstrapAdminToken || cfg.ADMIN_API_TOKEN || 'lp_pat_default_test_admin_token_001';
+  const auth = new AuthManager({
+    signingKey: options?.signingKey || (cfg.SESSION_SECRET ? cfg.SESSION_SECRET : undefined),
+    bootstrapAdminToken: adminToken,
+  });
+
+  const configuredOrigins = [
+    ...cfg.SITE_ORIGIN.split(',').map((s) => s.trim()),
+    ...cfg.ADMIN_ORIGIN.split(',').map((s) => s.trim()),
+  ].filter(Boolean);
+  const primarySiteOrigin = configuredOrigins[0] || cfg.SITE_ORIGIN;
+  const allowedOrigins = new Set(options?.allowedOrigins ?? configuredOrigins);
 
   const runtimeState: RuntimeSettingsState = {
     automatedAnsweringEnabled: true,
@@ -32,35 +51,71 @@ export function createApp(customRepo?: InMemoryPortfolioRepository) {
     theme: structuredClone(DEFAULT_STRATA_THEME),
   };
 
-  // Global middleware
+  // Global middleware: logging, security headers + CSP (S5), and origin-restricted CORS (S5)
   app.use('*', logger());
-  app.use('*', cors({
-    origin: '*',
-    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
-  }));
+  app.use('*', async (c, next) => {
+    c.header(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; frame-ancestors 'none'; base-uri 'self'"
+    );
+    c.header('X-Content-Type-Options', 'nosniff');
+    c.header('X-Frame-Options', 'DENY');
+    c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+    await next();
+  });
+  app.use(
+    '*',
+    cors({
+      origin: (requestOrigin) => {
+        if (!requestOrigin) return primarySiteOrigin;
+        return allowedOrigins.has(requestOrigin) ? requestOrigin : null;
+      },
+      allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+      credentials: true,
+    })
+  );
 
-  // Mount routes
+  // Public & Auth routes
   app.route('/healthz', createHealthRoutes(async () => true));
-  app.route('/api/entries', createEntriesRoutes(repo));
-  app.route('/api/structure', createStructureRoutes(repo));
-  app.route('/api/ask', createAskRoutes({
-    repo,
-    governor,
-    providers: [mockProvider],
-    tier1Floor: 0.82,
-    tier2Floor: 0.55,
-    getRuntimeSettings: () => runtimeState,
-  }));
+  app.route('/api/auth', createAuthRoutes(auth));
+  app.route('/api/entries', createEntriesRoutes(repo, auth));
+  app.route(
+    '/api/ask',
+    createAskRoutes({
+      repo,
+      governor,
+      providers: [mockProvider],
+      auth,
+      tier1Floor: 0.82,
+      tier2Floor: 0.55,
+      getRuntimeSettings: () => runtimeState,
+    })
+  );
   app.route('/api/timeline', createTimelineRoutes(repo));
+
+  // Admin-only routes protected by default-deny auth middleware (Fix 1 / S1, S2)
+  app.use('/api/structure/*', auth.requireAdminMiddleware());
+  app.use('/api/inbox', auth.requireAdminMiddleware());
+  app.use('/api/inbox/*', auth.requireAdminMiddleware());
+  app.use('/api/calibration/*', auth.requireAdminMiddleware());
+  app.use('/api/audit/*', auth.requireAdminMiddleware());
+  app.use('/api/import/*', auth.requireAdminMiddleware());
+  app.use('/api/settings', auth.requireAdminMiddleware());
+  app.use('/api/settings/*', auth.requireAdminMiddleware());
+
+  app.route('/api/structure', createStructureRoutes(repo));
   app.route('/api/inbox', createInboxRoutes(repo));
   app.route('/api/calibration', createCalibrationRoutes(repo));
   app.route('/api/audit', createAuditRoutes(repo));
-  app.route('/api/import', createImportRoutes(repo));
+  app.route('/api/import', createImportRoutes(repo, auth));
   app.route('/api/settings', createSettingsRoutes(repo, runtimeState));
 
-  // Seed demo portfolio on demand
-  app.post('/api/seed', async (c) => {
+  // Seed demo portfolio on demand (Admin-only, S1; disabled in production per OSR-04)
+  app.post('/api/seed', auth.requireAdminMiddleware(), async (c) => {
+    if (cfg.DEPLOYMENT_CLASS === 'production') {
+      return c.json({ error: 'Demo seeding is disabled in production (OSR-04).' }, 403);
+    }
     await seedDemoPortfolio(repo);
     const entries = await repo.listEntries({ visibility: ['public', 'unlisted', 'private'] });
     return c.json({ seeded: true, entriesCount: entries.length });
@@ -68,21 +123,16 @@ export function createApp(customRepo?: InMemoryPortfolioRepository) {
 
   // Federation manifest (§17)
   app.get('/.well-known/living-portfolio.json', async (c) => {
-    const publicEntries = await repo.listEntries({ visibility: ['public'] });
-    return c.json({
-      schema_version: 'qrxp_v1.0.0',
-      owner: {
-        name: 'Alex Rivera',
-        statement: 'Distributed systems engineer & design technologist building time-aware software.',
+    // SIMULATED(M1): Cryptographic credential verification for federation manifest (§17) is not yet implemented.
+    return c.json(
+      {
+        error: 'Not Implemented',
+        code: 'SIMULATED',
+        finding: 'M1',
+        message: 'Federation manifest credential verification (§17) is not yet implemented.',
       },
-      domains: ['Database Infrastructure', 'Knowledge Systems', 'Design Systems & Accessibility'],
-      public_entries_count: publicEntries.length,
-      verified_credentials: [
-        { type: 'github_gpg_commits', verified: true },
-        { type: 'domain_dns_txt', verified: true },
-      ],
-      discoverable: false, // opt-in only per §17
-    });
+      501
+    );
   });
 
   // RSS Feed (§5.1)
@@ -91,10 +141,10 @@ export function createApp(customRepo?: InMemoryPortfolioRepository) {
     const items = entries
       .map(
         (e) =>
-          `    <item>\n      <title>${e.title}</title>\n      <link>https://portfolio.example.com/writing/${e.slug}</link>\n      <pubDate>${new Date(e.created_at).toUTCString()}</pubDate>\n    </item>`
+          `    <item>\n      <title>${e.title}</title>\n      <link>${primarySiteOrigin}/writing/${e.slug}</link>\n      <pubDate>${new Date(e.created_at).toUTCString()}</pubDate>\n    </item>`
       )
       .join('\n');
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>\n    <title>The Living Portfolio</title>\n    <link>https://portfolio.example.com</link>\n    <description>Time-aware personal portfolio and engineering log</description>\n${items}\n  </channel>\n</rss>`;
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>\n    <title>${cfg.PUBLIC_SITE_NAME}</title>\n    <link>${primarySiteOrigin}</link>\n    <description>Time-aware personal portfolio and engineering log</description>\n${items}\n  </channel>\n</rss>`;
     return c.text(xml, 200, { 'Content-Type': 'application/rss+xml; charset=utf-8' });
   });
 
@@ -102,22 +152,22 @@ export function createApp(customRepo?: InMemoryPortfolioRepository) {
   app.get('/sitemap.xml', async (c) => {
     const entries = await repo.listEntries({ visibility: ['public'] });
     const urls = entries
-      .map((e) => `  <url><loc>https://portfolio.example.com/work/${e.slug}</loc></url>`)
+      .map((e) => `  <url><loc>${primarySiteOrigin}/work/${e.slug}</loc></url>`)
       .join('\n');
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://portfolio.example.com/</loc></url>\n  <url><loc>https://portfolio.example.com/work</loc></url>\n  <url><loc>https://portfolio.example.com/writing</loc></url>\n  <url><loc>https://portfolio.example.com/build</loc></url>\n  <url><loc>https://portfolio.example.com/timeline</loc></url>\n  <url><loc>https://portfolio.example.com/ask</loc></url>\n${urls}\n</urlset>`;
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${primarySiteOrigin}/</loc></url>\n  <url><loc>${primarySiteOrigin}/work</loc></url>\n  <url><loc>${primarySiteOrigin}/writing</loc></url>\n  <url><loc>${primarySiteOrigin}/build</loc></url>\n  <url><loc>${primarySiteOrigin}/timeline</loc></url>\n  <url><loc>${primarySiteOrigin}/ask</loc></url>\n${urls}\n</urlset>`;
     return c.text(xml, 200, { 'Content-Type': 'application/xml; charset=utf-8' });
   });
 
   // Root welcome
   app.get('/', (c) => {
     return c.json({
-      name: 'The Living Portfolio API',
-      version: '0.1.0',
+      name: cfg.PUBLIC_SITE_NAME,
+      version: '0.1.0-alpha.0',
       status: 'online',
       schema_version: 'qrxp_v1.0.0',
       docs: '/healthz',
     });
   });
 
-  return { app, repo, governor, mockProvider, runtimeState };
+  return { app, repo, governor, mockProvider, runtimeState, auth, adminToken };
 }

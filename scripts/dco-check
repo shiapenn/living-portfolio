@@ -1,0 +1,43 @@
+#!/usr/bin/env node
+/**
+ * Developer Certificate of Origin (DCO) Sign-Off Verifier (`scripts/dco-check`, OSR-07 §5.1)
+ * Verifies that commit messages (or a commit-msg file passed as $1) contain a valid
+ * `Signed-off-by: Full Name <email@domain>` trailer.
+ */
+import { readFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+
+const DCO_REGEX = /^Signed-off-by:\s+.+\s+<[^@\s]+@[^@\s]+>/m;
+
+export function verifyDcoMessage(message) {
+  return DCO_REGEX.test(message);
+}
+
+const arg = process.argv[2];
+
+if (arg && !arg.startsWith('--')) {
+  // Invoked as a git `commit-msg` hook with path to `.git/COMMIT_EDITMSG`
+  const msg = readFileSync(arg, 'utf8');
+  if (!verifyDcoMessage(msg)) {
+    console.error('✗ [OSR-07 DCO] Commit rejected: missing valid "Signed-off-by: Name <email>" trailer.');
+    console.error('  Use `git commit -s` to sign off your commit under the Developer Certificate of Origin (DCO).');
+    process.exit(1);
+  }
+  console.log('✓ [OSR-07 DCO] Commit message sign-off verified.');
+  process.exit(0);
+}
+
+// Otherwise check the latest commit (or range in CI)
+const range = process.env.DCO_COMMIT_RANGE || 'HEAD -n 1';
+try {
+  const latestMsg = execSync(`git log ${range} --format=%B`, { encoding: 'utf8' });
+  if (!verifyDcoMessage(latestMsg)) {
+    console.error('✗ [OSR-07 DCO] Commit lacks a valid "Signed-off-by: Name <email>" trailer.');
+    console.error('  Amend with `git commit --amend -s` before pushing.');
+    process.exit(1);
+  }
+  console.log('✓ [OSR-07 DCO] HEAD commit carries valid Signed-off-by trailer.');
+} catch (err) {
+  console.error('✗ [OSR-07 DCO] Failed to inspect git commit log:', err.message);
+  process.exit(1);
+}

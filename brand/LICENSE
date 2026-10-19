@@ -1,0 +1,5 @@
+Proprietary Brand Asset License
+
+All files within the `brand/` directory (including official project names, wordmarks, and logos) are proprietary and reserved exclusively for the official hosted service.
+
+These assets are NOT licensed under the Apache License, Version 2.0. No permission is granted to use, copy, modify, or distribute files in `brand/` in third-party deployments or forks. See `../TRADEMARKS.md` for full trademark policy.

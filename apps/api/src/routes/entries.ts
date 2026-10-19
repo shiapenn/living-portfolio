@@ -8,11 +8,14 @@ import {
   getProfile,
   getStructureLevelDetails,
   reanchorSpan,
+  EntryCreateSchema,
+  EntryUpdateSchema,
+  RevisionCreateSchema,
 } from '@living-portfolio/core';
 import { scanForConfidentialData } from '@living-portfolio/ai';
-import { EntryCreateSchema, EntryUpdateSchema, RevisionCreateSchema } from '@living-portfolio/core';
+import { AuthManager, sha256Hex } from '../auth/security.js';
 
-export function createEntriesRoutes(repo: IPortfolioRepository) {
+export function createEntriesRoutes(repo: IPortfolioRepository, auth: AuthManager) {
   const router = new Hono();
 
   // List entries with computed structure levels and facets
@@ -21,10 +24,17 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
     const ventureId = c.req.query('venture_id');
 
     let visibility: ('private' | 'unlisted' | 'public')[] = ['public'];
-    if (visibilityQuery === 'all') {
-      visibility = ['private', 'unlisted', 'public'];
-    } else if (visibilityQuery) {
-      visibility = visibilityQuery.split(',') as any;
+    if (visibilityQuery) {
+      const requested =
+        visibilityQuery === 'all'
+          ? (['private', 'unlisted', 'public'] as const)
+          : (visibilityQuery.split(',').map((v) => v.trim()) as ('private' | 'unlisted' | 'public')[]);
+
+      const requestsNonPublic = requested.some((v) => v !== 'public');
+      if (requestsNonPublic && !auth.isAdminAuthenticated(c).authenticated) {
+        return c.json({ error: 'Unauthorized: admin authentication required for non-public visibility filter' }, 401);
+      }
+      visibility = [...requested];
     }
 
     const rawEntries = await repo.listEntries({ visibility, venture_id: ventureId });
@@ -32,7 +42,7 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
 
     const entries = await Promise.all(
       rawEntries.map(async (entry) => {
-        const full = await repo.getEntry(entry.id);
+        const full = await repo.getEntry(entry.id, visibility);
         const currentRevision = full?.currentRevision ?? null;
         const profile = getProfile(entry.profile);
         const [facets, annotations, claims, evidence] = currentRevision
@@ -74,10 +84,44 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
     return c.json({ entries });
   });
 
-  // Get entry by slug
+  // Redaction preview & signed confirmation token issuer (Protected admin route, C.4)
+  router.post('/redaction-preview', auth.requireAdminMiddleware(), async (c) => {
+    const { entryId, text } = await c.req.json();
+    if (typeof text !== 'string') {
+      return c.json({ error: 'Text string required' }, 400);
+    }
+    const warnings = scanForConfidentialData(text);
+    const { token, payload } = auth.issueRedactionPreviewToken({
+      entryId: typeof entryId === 'string' && entryId ? entryId : 'draft',
+      bodyMd: text,
+      warnings,
+    });
+    return c.json({
+      warnings,
+      redactionPreviewToken: token,
+      tokenPayload: payload,
+    });
+  });
+
+  // Get entry by slug (Structural visibility enforcement: S1, S2)
   router.get('/:slug', async (c) => {
     const slug = c.req.param('slug');
-    const result = await repo.getEntryBySlug(slug);
+    const isAdmin = auth.isAdminAuthenticated(c).authenticated;
+
+    if (!isAdmin) {
+      const unguarded = await repo.getEntryBySlug(slug);
+      if (!unguarded || !unguarded.currentRevision) {
+        return c.json({ error: 'Entry not found' }, 404);
+      }
+      if (unguarded.entry.visibility === 'private') {
+        return c.json({ error: 'Unauthorized: private entry requires admin authentication' }, 401);
+      }
+    }
+
+    const allowedVisibilities: ('private' | 'unlisted' | 'public')[] = isAdmin
+      ? ['private', 'unlisted', 'public']
+      : ['public', 'unlisted'];
+    const result = await repo.getEntryBySlug(slug, allowedVisibilities);
 
     if (!result || !result.currentRevision) {
       return c.json({ error: 'Entry not found' }, 404);
@@ -97,7 +141,6 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
     const annotations = await repo.listAnnotationsForRevision(currentRevision.id);
     const acceptedRelations = await repo.listAcceptedRelations();
 
-    // Compute structure level
     const structureLevel = computeStructureLevel({
       revision: currentRevision,
       profile,
@@ -107,14 +150,12 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
     });
     const levelDetails = getStructureLevelDetails(structureLevel);
 
-    // Compute gap questions (§10.2)
     const gapQuestions = generateGapQuestions({
       revision: currentRevision,
       facets,
       claims,
     });
 
-    // Check for later-thinking alerts (§10.7)
     const laterThinkingAlerts = detectLaterThinking(
       claims.map((cl) => ({ ...cl, entry_id: entry.id, entry_slug: entry.slug })),
       acceptedRelations
@@ -136,8 +177,8 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
     });
   });
 
-  // Create entry (L0 Markdown ingest)
-  router.post('/', async (c) => {
+  // Create entry (Admin-only L0 Markdown ingest)
+  router.post('/', auth.requireAdminMiddleware(), async (c) => {
     const body = await c.req.json();
     const parsed = EntryCreateSchema.safeParse(body);
 
@@ -146,9 +187,8 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
     }
 
     const data = parsed.data;
-    const bodyHash = (await import('crypto')).createHash('sha256').update(data.body_md).digest('hex');
+    const bodyHash = sha256Hex(data.body_md);
 
-    // 1. Create entry & initial revision
     const { entry, revision } = await repo.createEntry(
       {
         slug: data.slug,
@@ -170,29 +210,59 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
       }
     );
 
-    // 2. Chunk markdown into spans
     const chunks = chunkMarkdown(revision.id, data.body_md);
     const savedSpans = await repo.saveSpans(chunks);
-
-    // 3. Scan for redaction preview
     const redactionWarnings = scanForConfidentialData(data.body_md);
+    const { token: redactionPreviewToken } = auth.issueRedactionPreviewToken({
+      entryId: entry.id,
+      bodyMd: data.body_md,
+      warnings: redactionWarnings,
+    });
 
-    return c.json({
-      entry,
-      revision,
-      spansCount: savedSpans.length,
-      redactionWarnings,
-    }, 201);
+    return c.json(
+      {
+        entry,
+        revision,
+        spansCount: savedSpans.length,
+        redactionWarnings,
+        redactionPreviewToken,
+      },
+      201
+    );
   });
 
-  // Update entry metadata
-  router.put('/:id', async (c) => {
-    const id = c.req.param('id');
+  // Update entry metadata (Admin-only; visibility transition to public requires signed redaction token per Fix 2 & C.4)
+  router.put('/:id', auth.requireAdminMiddleware(), async (c) => {
+    const id = c.req.param('id') || '';
     const body = await c.req.json();
     const parsed = EntryUpdateSchema.safeParse(body);
 
     if (!parsed.success) {
       return c.json({ error: 'Validation failed', details: parsed.error.issues }, 400);
+    }
+
+    const existing = await repo.getEntry(id, ['private', 'unlisted', 'public']);
+    if (!existing || !existing.currentRevision) {
+      return c.json({ error: 'Entry not found' }, 404);
+    }
+
+    if (parsed.data.visibility === 'public' && existing.entry.visibility !== 'public') {
+      const currentBody = existing.currentRevision.body_md;
+      const warnings = scanForConfidentialData(currentBody);
+      const tokenCheck = auth.verifyRedactionPreviewToken(body.redactionPreviewToken, {
+        entryId: id,
+        bodyMd: currentBody,
+        warnings,
+      });
+      if (!tokenCheck.valid) {
+        return c.json(
+          {
+            error: 'Redaction preview confirmation required before changing visibility to public',
+            reason: tokenCheck.reason,
+          },
+          400
+        );
+      }
     }
 
     const updatedEntry = await repo.updateEntry(id, {
@@ -204,10 +274,10 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
     return c.json({ entry: updatedEntry });
   });
 
-  // Delete entry and all derived records (§15 Deletion)
-  router.delete('/:id', async (c) => {
-    const id = c.req.param('id');
-    const existing = await repo.getEntry(id);
+  // Delete entry and all derived records (§15 Deletion, Admin-only)
+  router.delete('/:id', auth.requireAdminMiddleware(), async (c) => {
+    const id = c.req.param('id') || '';
+    const existing = await repo.getEntry(id, ['private', 'unlisted', 'public']);
     if (!existing) return c.json({ error: 'Entry not found' }, 404);
 
     const report = await repo.deleteEntry(id);
@@ -219,9 +289,9 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
     });
   });
 
-  // Create new revision for entry (Immutable revision with span re-anchoring)
-  router.post('/:id/revisions', async (c) => {
-    const entryId = c.req.param('id');
+  // Create new revision for entry (Admin-only, immutable revision with span re-anchoring)
+  router.post('/:id/revisions', auth.requireAdminMiddleware(), async (c) => {
+    const entryId = c.req.param('id') || '';
     const body = await c.req.json();
     const parsed = RevisionCreateSchema.safeParse({ ...body, entry_id: entryId });
 
@@ -230,13 +300,13 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
     }
 
     const data = parsed.data;
-    const existing = await repo.getEntry(entryId);
+    const existing = await repo.getEntry(entryId, ['private', 'unlisted', 'public']);
     if (!existing) return c.json({ error: 'Entry not found' }, 404);
 
     const oldRev = existing.currentRevision;
     const oldSpans = oldRev ? await repo.getSpans(oldRev.id) : [];
 
-    const bodyHash = (await import('crypto')).createHash('sha256').update(data.body_md).digest('hex');
+    const bodyHash = sha256Hex(data.body_md);
     const newRevision = await repo.createRevision(entryId, {
       body_md: data.body_md,
       body_hash: bodyHash,
@@ -247,11 +317,9 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
       is_hindsight: data.is_hindsight,
     });
 
-    // Chunk new revision
     const newChunks = chunkMarkdown(newRevision.id, data.body_md);
     const savedNewSpans = await repo.saveSpans(newChunks);
 
-    // Re-anchor annotations from old revision if present
     const reanchorResults = [];
     if (oldRev) {
       const oldAnnotations = await repo.listAnnotationsForRevision(oldRev.id);
@@ -260,10 +328,9 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
         if (oldSpan) {
           const match = reanchorSpan(oldSpan, data.body_md);
           if (match.found) {
-            // Find corresponding new span
-            const matchingNewSpan = savedNewSpans.find(
-              (s) => s.start_off <= match.start_off && s.end_off >= match.end_off
-            ) || savedNewSpans[0];
+            const matchingNewSpan =
+              savedNewSpans.find((s) => s.start_off <= match.start_off && s.end_off >= match.end_off) ||
+              savedNewSpans[0];
 
             if (matchingNewSpan) {
               await repo.saveAnnotation({
@@ -283,21 +350,14 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
       }
     }
 
-    return c.json({
-      revision: newRevision,
-      spans: savedNewSpans,
-      reanchorSummary: reanchorResults,
-    }, 201);
-  });
-
-  // Redaction preview
-  router.post('/redaction-preview', async (c) => {
-    const { text } = await c.req.json();
-    if (typeof text !== 'string') {
-      return c.json({ error: 'Text string required' }, 400);
-    }
-    const warnings = scanForConfidentialData(text);
-    return c.json({ warnings });
+    return c.json(
+      {
+        revision: newRevision,
+        spans: savedNewSpans,
+        reanchorSummary: reanchorResults,
+      },
+      201
+    );
   });
 
   return router;

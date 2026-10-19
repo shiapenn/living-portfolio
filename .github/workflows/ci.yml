@@ -1,0 +1,60 @@
+name: CI & Audit Conformance Gate
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci-and-audit-gate:
+    name: Typecheck, Unit, Security Regression, DCO & Audit Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 12.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages (typecheck)
+        run: pnpm build
+
+      - name: Verify .env.example is in sync with @living-portfolio/config (OSR-03)
+        run: |
+          node scripts/generate-env-example
+          git diff --exit-code .env.example
+
+      - name: Run Hard-Code Inventory Scanner (OSR-01)
+        run: node scripts/hardcode-check
+
+      - name: Verify Developer Certificate of Origin sign-off (OSR-07 dco)
+        run: node scripts/dco-check
+
+      - name: Run Audit Governance & Conformance Check (DR-AUD-001 AUD-21)
+        run: pnpm audit:check
+
+      - name: Run Unit, Conformance & P0 Regression Suites (AUD-14, AUD-15, D.1, D.2)
+        run: pnpm test

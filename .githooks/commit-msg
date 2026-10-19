@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Commit-msg hook enforcing DCO Signed-off-by trailer (OSR-07 §2.2 & §5.1)
+set -euo pipefail
+
+node scripts/dco-check "$1"

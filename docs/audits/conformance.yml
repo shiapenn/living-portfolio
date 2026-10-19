@@ -1,0 +1,315 @@
+# Specification Conformance Table (DR-AUD-001 §6, AUD-11..AUD-13)
+# Snapshot derived from AUD-2026-10-19 (§4 Specification-conformance matrix) covering §0–§21.
+# Allowed status values (AUD-11): implemented | partial | stub | missing | misleading | non-conformant | deviates
+
+- section: "0-1"
+  title: "Summary and principles"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["S1", "M1", "M2"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Owner kill-switch exists but is unauthenticated (S1). Simulated endpoints replaced with 501 per AUD-18 (M1). Degradation ladder only partly implemented (M2)."
+
+- section: "2"
+  title: "Licensing and governance"
+  status: missing
+  audit_matrix_status: "Missing"
+  findings: ["M10"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Missing Apache-2.0 LICENSE, GOVERNANCE.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md, issue templates, and THIRD_PARTY_NOTICES (SECURITY.md added per AUD-23)."
+
+- section: "3.1-3.3"
+  title: "Kernel objects, structure levels"
+  status: implemented
+  audit_matrix_status: "Implemented"
+  findings: []
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Types, Zod schemas, L0–L3 computation implemented and tested in packages/core/src/algorithms.test.ts."
+
+- section: "3.4"
+  title: "Role profiles"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["M10"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Six built-in profiles present as TypeScript objects; not loaded from YAML with JSON Schema validation."
+
+- section: "3.5-3.8"
+  title: "Annotations, claims, facets, evidence"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["S1", "S6"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Entities and status lifecycles exist. Relation creation does not require scope for supersedes; unauthenticated routes allow client to set status: accepted directly."
+
+- section: "3.9"
+  title: "Time"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["P4"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Hindsight branch in temporal.ts is preceded by written_at > t_q check; createEntry sets written_at = valid_from for non-hindsight entries."
+
+- section: "3.10"
+  title: "Ventures"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["F1"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Entity, seed, and Build page exist; dedicated venture detail page with live embed and dev-log feed not yet implemented."
+
+- section: "3.11"
+  title: "Visibility and revisions"
+  status: non-conformant
+  audit_matrix_status: "Non-conformant"
+  findings: ["S1", "S2", "P6"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "API exposes private entries without auth, allows unauthenticated visibility mutation without redaction preview, and does not enforce revision immutability."
+
+- section: "4"
+  title: "Authoring and input"
+  status: stub
+  audit_matrix_status: "Stub"
+  findings: ["S1", "F4", "M9"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Regex redaction scan only; missing exclusion rules, NDA prompt, first-run walkthrough, quick log, 3,000-word cap, HTML/MDX sanitizer, and import preview gate."
+
+- section: "5"
+  title: "Information architecture"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["F1"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Renderers exist for main routes; missing venture detail and /admin/* sub-routes; createApp() did not mount web routes at audit time."
+
+- section: "6"
+  title: "Task flows"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["G6", "G7", "F4"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Ask, time-travel, inbox, and triage endpoints exist; inbox approve does not send notification reply; quick log and keyboard triage (J/K/A/R/D/S) missing."
+
+- section: "7"
+  title: "Technology stack"
+  status: deviates
+  audit_matrix_status: "Deviates"
+  findings: ["P2", "P3", "M10"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Uses TypeScript, pnpm, Turborepo, Hono, Zod, Vitest. Does not yet wire Astro, React, pg-boss, ONNX Runtime, pino, Argon2/TOTP/WebAuthn, or age; ADRs needed."
+
+- section: "8"
+  title: "Pipelines"
+  status: stub
+  audit_matrix_status: "Stub"
+  findings: ["S7", "P3", "P4"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Six methods on PortfolioWorker without process entrypoint, pg-boss queue, retries, or checkpoints; enrichment skips data-class router and governor."
+
+- section: "9"
+  title: "Data model"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["P1", "P2", "P6"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Drizzle schema declared but no migrations, schema_info boot check, PostgresRepository, or runtime slug uniqueness check."
+
+- section: "10.1"
+  title: "Chunking and anchoring"
+  status: implemented
+  audit_matrix_status: "Implemented"
+  findings: []
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Structure-aware Markdown chunking and text-quote re-anchoring implemented and tested in packages/core/src/algorithms.test.ts."
+
+- section: "10.2"
+  title: "Gap questions"
+  status: implemented
+  audit_matrix_status: "Implemented"
+  findings: []
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Value-of-information gap question generator implemented and tested in packages/core/src/algorithms.test.ts."
+
+- section: "10.3"
+  title: "Query classification"
+  status: stub
+  audit_matrix_status: "Stub, wrong default"
+  findings: ["M4"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Uses substring heuristics in ask.ts defaulting to lookup instead of advisory; missing about path."
+
+- section: "10.4"
+  title: "Retrieval and expansion"
+  status: partial
+  audit_matrix_status: "Partial / Stub"
+  findings: ["P2", "P4", "G2"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "In-memory keyword search only; decay weights not applied to ranking; temporalExpand not called in /api/ask and lacks visibility/superseded-before-t_q checks."
+
+- section: "10.5"
+  title: "Gate and routing"
+  status: partial
+  audit_matrix_status: "Partial, defective"
+  findings: ["G1", "G2", "G3", "G4", "G6", "G7", "G8"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Entry-side unknown facets skipped, routing inputs hard-coded in ask.ts, scoped constraints not loaded, hard facets hard-coded, governor called before tier routing."
+
+- section: "10.6"
+  title: "Verification"
+  status: stub
+  audit_matrix_status: "Stub"
+  findings: ["G5", "M3"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Checks span existence and 4-digit year regex only; failed check does not downgrade tier or strip assertions; citedScopes passed as empty array."
+
+- section: "10.7"
+  title: "Staleness"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["M7"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Later-thinking banner triggers on accepted supersedes/contradicts relations without checking scope overlap or recomputing on accept."
+
+- section: "10.8"
+  title: "Degradation ladder"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["B2", "M2"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Steps 1, 4 (flag), and 5 (extractive) exist; missing step 2 (answer cache), step 3 (distinct fallback provider), and step 6 (DB-down handoff)."
+
+- section: "11"
+  title: "Self-calibration"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["M1", "M5", "M6"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Role suggestion threshold proposals implemented; missing routing calibration, sliding window, held-out validation, ECE, freeze guard, and real state rollback."
+
+- section: "12"
+  title: "UI design system"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["S3", "S6", "F4"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Strata CSS tokens, dark mode, focus ring, and timeline exist; Ask widget uses unescaped innerHTML (S3), no self-hosted font files, internal tier jargon exposed."
+
+- section: "13.1-13.4"
+  title: "Deployment goals, profiles, topology"
+  status: missing
+  audit_matrix_status: "Missing"
+  findings: ["S1", "F2"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Missing Dockerfiles, backup container service, interactive setup wizard, and admin/public hostname routing split."
+
+- section: "13.5"
+  title: "Provider strategy and governor"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["S4", "G8", "B1", "B2", "B3", "B4"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Data-class router and ledger exist; missing owner reserve, correct visitor-share vs softThreshold ordering, token reconciliation, and 429 header learning."
+
+- section: "13.6"
+  title: "Media and imports"
+  status: stub
+  audit_matrix_status: "Stub"
+  findings: ["M9"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Import planner uses fixed 100k token constant; no ffmpeg, OCR, ASR, resumability, or per-document checkpoints."
+
+- section: "13.7"
+  title: "Static build and publish"
+  status: stub
+  audit_matrix_status: "Stub"
+  findings: ["P5"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Debounce and daily build cap counters exist in memory; buildsToday never resets; no static HTML bundle or keyword index emitted to disk."
+
+- section: "13.8-13.9"
+  title: "Edge security and operations"
+  status: missing
+  audit_matrix_status: "Missing / Stub"
+  findings: ["S4", "S5", "F3", "M1", "M8"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Wildcard CORS, no CSP/security headers, shallow /healthz, and unimplemented pg_dump + age backup/restore drill (now returning 501 per AUD-18)."
+
+- section: "13.10-13.13"
+  title: "Sizing, free-tier register, presets, quickstart"
+  status: missing
+  audit_matrix_status: "Missing"
+  findings: ["F2", "M10"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: ".env.example exists; missing preset loader, docs/hosting-free-tier.md, and Dockerfiles required by docker compose up."
+
+- section: "14"
+  title: "Plugin and extension SDK"
+  status: stub
+  audit_matrix_status: "Interfaces only"
+  findings: ["M9"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "TypeScript interfaces and theme token/slot checks exist; no concrete connector, notification, or backup adapters."
+
+- section: "15"
+  title: "Security and privacy"
+  status: non-conformant
+  audit_matrix_status: "Non-conformant"
+  findings: ["S1", "S2", "S3", "S4", "S5", "S6", "S7"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Missing authentication, secrets-at-rest encryption, bot challenge, CSP, XSS sanitization, and enrichment privacy routing."
+
+- section: "16"
+  title: "Monetization"
+  status: stub
+  audit_matrix_status: "Interface only"
+  findings: []
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "PaymentProviderSDK interface defined and off by default as specified."
+
+- section: "17"
+  title: "Federation"
+  status: misleading
+  audit_matrix_status: "Misleading"
+  findings: ["M1"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Manifest previously returned unverified credentials as verified: true; now returns 501 Not Implemented with SIMULATED(M1) per AUD-18."
+
+- section: "18.1"
+  title: "Automated tests"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["M11"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Unit tests and P0 conformance probes exist; missing chaos, soak, migration, outbound-call interception, Playwright, axe, and Lighthouse suites."
+
+- section: "18.2"
+  title: "Evaluation harness"
+  status: misleading
+  audit_matrix_status: "Misleading"
+  findings: ["M1", "M11"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "Previously returned hard-coded metrics; now returns 501 Not Implemented with SIMULATED(M1) per AUD-18 until labeled dataset and runner are built."
+
+- section: "19"
+  title: "Versioning, migrations, docs"
+  status: missing
+  audit_matrix_status: "Missing"
+  findings: ["P2", "M10"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "docs/spec, docs/audits, and docs/execution-reports established per DR-AUD-001; remaining 12 operational docs and DB migrations still open."
+
+- section: "20"
+  title: "Roadmap exit criteria (v0.1)"
+  status: non-conformant
+  audit_matrix_status: "Not met"
+  findings: ["S1", "S2", "P1", "P2", "F2", "M8"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: "v0.1 exit criteria gated by open P0 findings (S1–S6, G1–G7, P1–P3, F1–F3)."
+
+- section: "21"
+  title: "Reference configuration and appendices"
+  status: partial
+  audit_matrix_status: "Partial"
+  findings: ["F2", "M10"]
+  last_scored: "2026-10-19"
+  evidence_and_gaps: ".env.example and docker-compose.hobbyist.yml exist; preset YAML loader and Dockerfiles remain open."
