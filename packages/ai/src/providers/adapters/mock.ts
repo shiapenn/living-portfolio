@@ -35,18 +35,18 @@ export class MockModelProvider implements ModelProvider {
       } else {
         responseText = '{"class": "lookup"}';
       }
-    } else if (lastMessage.includes('Extract facets')) {
+    } else if (lastMessage.includes('Extract facets') || lastMessage.includes('Extract structured context facets')) {
       responseText = JSON.stringify({
         facets: [
           { key: 'stack', value: 'PostgreSQL, Node.js', confidence: 0.95, quote: 'We built with Postgres and Node' },
           { key: 'scale', value: '100k DAU', confidence: 0.92, quote: 'serving 100k daily active users' },
         ],
       });
-    } else if (lastMessage.includes('Suggest roles')) {
+    } else if (lastMessage.includes('Suggest roles') || lastMessage.includes('Given the role profile')) {
       responseText = JSON.stringify({
         roles: [
-          { role: 'goal', confidence: 0.94 },
-          { role: 'decision', confidence: 0.88 },
+          { spanOrdinal: 0, role: 'goal', confidence: 0.94 },
+          { spanOrdinal: 0, role: 'decision', confidence: 0.88 },
         ],
       });
     } else {
@@ -77,7 +77,7 @@ export class MockModelProvider implements ModelProvider {
     });
   }
 
-  async transcribe(_audioBuffer: Buffer): Promise<{ text: string; durationSec: number }> {
+  async transcribe(_audioBuffer: Uint8Array): Promise<{ text: string; durationSec: number }> {
     return {
       text: 'This is a test transcription from the mock audio processor.',
       durationSec: 15,

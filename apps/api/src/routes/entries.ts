@@ -15,7 +15,7 @@ import { EntryCreateSchema, EntryUpdateSchema, RevisionCreateSchema } from '@liv
 export function createEntriesRoutes(repo: IPortfolioRepository) {
   const router = new Hono();
 
-  // List entries
+  // List entries with computed structure levels and facets
   router.get('/', async (c) => {
     const visibilityQuery = c.req.query('visibility');
     const ventureId = c.req.query('venture_id');
@@ -27,7 +27,50 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
       visibility = visibilityQuery.split(',') as any;
     }
 
-    const entries = await repo.listEntries({ visibility, venture_id: ventureId });
+    const rawEntries = await repo.listEntries({ visibility, venture_id: ventureId });
+    const acceptedRelations = await repo.listAcceptedRelations();
+
+    const entries = await Promise.all(
+      rawEntries.map(async (entry) => {
+        const full = await repo.getEntry(entry.id);
+        const currentRevision = full?.currentRevision ?? null;
+        const profile = getProfile(entry.profile);
+        const [facets, annotations, claims, evidence] = currentRevision
+          ? await Promise.all([
+              repo.getFacetsForEntry(entry.id),
+              repo.listAnnotationsForRevision(currentRevision.id),
+              repo.getClaimsForRevision(currentRevision.id),
+              repo.getEvidenceForEntry(entry.id),
+            ])
+          : [[], [], [], []];
+
+        const structureLevel = currentRevision
+          ? computeStructureLevel({
+              revision: currentRevision,
+              profile,
+              facets,
+              annotations,
+              claims,
+            })
+          : 'L0';
+
+        const laterThinkingAlerts = detectLaterThinking(
+          claims.map((cl) => ({ ...cl, entry_id: entry.id, entry_slug: entry.slug })),
+          acceptedRelations
+        );
+
+        return {
+          ...entry,
+          revision: currentRevision,
+          facets,
+          claims,
+          evidence,
+          structureLevel,
+          laterThinkingAlerts,
+        };
+      })
+    );
+
     return c.json({ entries });
   });
 
@@ -43,11 +86,12 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
     const { entry, currentRevision } = result;
     const profile = getProfile(entry.profile);
 
-    const [spans, facets, claims, evidence] = await Promise.all([
+    const [spans, facets, claims, evidence, revisions] = await Promise.all([
       repo.getSpans(currentRevision.id),
       repo.getFacetsForEntry(entry.id),
       repo.getClaimsForRevision(currentRevision.id),
       repo.getEvidenceForEntry(entry.id),
+      repo.getRevisions(entry.id),
     ]);
 
     const annotations = await repo.listAnnotationsForRevision(currentRevision.id);
@@ -72,13 +116,14 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
 
     // Check for later-thinking alerts (§10.7)
     const laterThinkingAlerts = detectLaterThinking(
-      claims.map((c) => ({ ...c, entry_id: entry.id, entry_slug: entry.slug })),
+      claims.map((cl) => ({ ...cl, entry_id: entry.id, entry_slug: entry.slug })),
       acceptedRelations
     );
 
     return c.json({
       entry,
       revision: currentRevision,
+      revisions,
       spans,
       annotations,
       facets,
@@ -101,7 +146,7 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
     }
 
     const data = parsed.data;
-    const bodyHash = crypto.createHash ? (await import('crypto')).createHash('sha256').update(data.body_md).digest('hex') : 'hash';
+    const bodyHash = (await import('crypto')).createHash('sha256').update(data.body_md).digest('hex');
 
     // 1. Create entry & initial revision
     const { entry, revision } = await repo.createEntry(
@@ -150,12 +195,28 @@ export function createEntriesRoutes(repo: IPortfolioRepository) {
       return c.json({ error: 'Validation failed', details: parsed.error.issues }, 400);
     }
 
+    const updatedEntry = await repo.updateEntry(id, {
+      ...parsed.data,
+      ...(body.title ? { title: body.title } : {}),
+    });
+    if (!updatedEntry) return c.json({ error: 'Entry not found' }, 404);
+
+    return c.json({ entry: updatedEntry });
+  });
+
+  // Delete entry and all derived records (§15 Deletion)
+  router.delete('/:id', async (c) => {
+    const id = c.req.param('id');
     const existing = await repo.getEntry(id);
     if (!existing) return c.json({ error: 'Entry not found' }, 404);
 
-    const updatedEntry = { ...existing.entry, ...parsed.data };
-    // In our repository, update in memory/db
-    return c.json({ entry: updatedEntry });
+    const report = await repo.deleteEntry(id);
+    return c.json({
+      deleted: true,
+      entryId: id,
+      slug: existing.entry.slug,
+      report,
+    });
   });
 
   // Create new revision for entry (Immutable revision with span re-anchoring)

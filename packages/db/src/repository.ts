@@ -40,26 +40,31 @@ export interface IPortfolioRepository {
   listVentures(): Promise<Venture[]>;
 
   // Entries & Revisions
-  createEntry(e: Omit<Entry, 'id' | 'created_at'>, rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'>): Promise<{ entry: Entry; revision: EntryRevision }>;
+  createEntry(e: Omit<Entry, 'id' | 'created_at'>, rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'> & { written_at?: string }): Promise<{ entry: Entry; revision: EntryRevision }>;
   getEntryBySlug(slug: string): Promise<{ entry: Entry; currentRevision: EntryRevision | null } | null>;
   getEntry(id: string): Promise<{ entry: Entry; currentRevision: EntryRevision | null } | null>;
+  updateEntry(id: string, updates: Partial<Entry>): Promise<Entry | null>;
+  deleteEntry(id: string): Promise<{ deletedRevisions: number; deletedSpans: number; deletedClaims: number; deletedRelations: number; deletedFacets: number }>;
   listEntries(filter?: { visibility?: Visibility[]; venture_id?: string }): Promise<Entry[]>;
-  createRevision(entry_id: string, rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'>): Promise<EntryRevision>;
+  createRevision(entry_id: string, rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'> & { written_at?: string }): Promise<EntryRevision>;
   getRevisions(entry_id: string): Promise<EntryRevision[]>;
 
   // Spans & Annotations
   saveSpans(spans: Omit<Span, 'id'>[]): Promise<Span[]>;
   getSpans(revision_id: string): Promise<Span[]>;
   saveAnnotation(a: Omit<Annotation, 'id' | 'created_at'>): Promise<Annotation>;
+  updateAnnotation(id: string, updates: Partial<Annotation>): Promise<Annotation | null>;
   getAnnotations(span_id: string): Promise<Annotation[]>;
   listAnnotationsForRevision(revision_id: string): Promise<Annotation[]>;
 
   // Facets
   saveFacet(f: Omit<Facet, 'id'>): Promise<Facet>;
+  updateFacet(id: string, updates: Partial<Facet>): Promise<Facet | null>;
   getFacetsForEntry(entry_id: string): Promise<Facet[]>;
 
   // Claims & Relations
   saveClaim(c: Omit<Claim, 'id' | 'recorded_at'>): Promise<Claim>;
+  updateClaim(id: string, updates: Partial<Claim>): Promise<Claim | null>;
   getClaimsForRevision(revision_id: string): Promise<Claim[]>;
   listClaimsForEntry(entry_id: string): Promise<Claim[]>;
   saveRelation(r: Omit<Relation, 'id' | 'recorded_at'>): Promise<Relation>;
@@ -133,17 +138,18 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
 
   async createEntry(
     e: Omit<Entry, 'id' | 'created_at'>,
-    rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'>
+    rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'> & { written_at?: string }
   ): Promise<{ entry: Entry; revision: EntryRevision }> {
     const entryId = crypto.randomUUID();
     const revId = crypto.randomUUID();
     const now = new Date().toISOString();
+    const writtenAt = rev.written_at ?? (!rev.is_hindsight && rev.valid_from ? rev.valid_from : now);
 
     const revision: EntryRevision = {
       ...rev,
       id: revId,
       entry_id: entryId,
-      written_at: now,
+      written_at: writtenAt,
     };
     this.revisions.set(revId, revision);
 
@@ -151,7 +157,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
       ...e,
       id: entryId,
       current_revision_id: revId,
-      created_at: now,
+      created_at: writtenAt,
     };
     this.entries.set(entryId, entry);
 
@@ -175,6 +181,78 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     return { entry, currentRevision: rev };
   }
 
+  async updateEntry(id: string, updates: Partial<Entry>): Promise<Entry | null> {
+    const existing = this.entries.get(id);
+    if (!existing) return null;
+    const updated = { ...existing, ...updates, id };
+    this.entries.set(id, updated);
+    return updated;
+  }
+
+  async deleteEntry(id: string): Promise<{ deletedRevisions: number; deletedSpans: number; deletedClaims: number; deletedRelations: number; deletedFacets: number }> {
+    let deletedRevisions = 0;
+    let deletedSpans = 0;
+    let deletedClaims = 0;
+    let deletedRelations = 0;
+    let deletedFacets = 0;
+
+    const revIds = new Set<string>();
+    for (const [revId, rev] of this.revisions.entries()) {
+      if (rev.entry_id === id) {
+        revIds.add(revId);
+        this.revisions.delete(revId);
+        deletedRevisions++;
+      }
+    }
+
+    const spanIds = new Set<string>();
+    for (const [spanId, span] of this.spans.entries()) {
+      if (revIds.has(span.revision_id)) {
+        spanIds.add(spanId);
+        this.spans.delete(spanId);
+        deletedSpans++;
+      }
+    }
+
+    for (const [annId, ann] of this.annotations.entries()) {
+      if (spanIds.has(ann.span_id)) {
+        this.annotations.delete(annId);
+      }
+    }
+
+    const claimIds = new Set<string>();
+    for (const [claimId, claim] of this.claims.entries()) {
+      if (revIds.has(claim.revision_id)) {
+        claimIds.add(claimId);
+        this.claims.delete(claimId);
+        deletedClaims++;
+      }
+    }
+
+    for (const [relId, rel] of this.relations.entries()) {
+      if (claimIds.has(rel.src_claim) || claimIds.has(rel.dst_claim)) {
+        this.relations.delete(relId);
+        deletedRelations++;
+      }
+    }
+
+    for (const [facetId, facet] of this.facets.entries()) {
+      if (facet.entry_id === id) {
+        this.facets.delete(facetId);
+        deletedFacets++;
+      }
+    }
+
+    for (const [evId, ev] of this.evidence.entries()) {
+      if (ev.entry_id === id) {
+        this.evidence.delete(evId);
+      }
+    }
+
+    this.entries.delete(id);
+    return { deletedRevisions, deletedSpans, deletedClaims, deletedRelations, deletedFacets };
+  }
+
   async listEntries(filter?: { visibility?: Visibility[]; venture_id?: string }): Promise<Entry[]> {
     let result = Array.from(this.entries.values());
     if (filter?.visibility && filter.visibility.length > 0) {
@@ -188,14 +266,14 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
 
   async createRevision(
     entry_id: string,
-    rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'>
+    rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'> & { written_at?: string }
   ): Promise<EntryRevision> {
     const revId = crypto.randomUUID();
     const revision: EntryRevision = {
       ...rev,
       id: revId,
       entry_id,
-      written_at: new Date().toISOString(),
+      written_at: rev.written_at ?? new Date().toISOString(),
     };
     this.revisions.set(revId, revision);
 
@@ -234,6 +312,14 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     return annotation;
   }
 
+  async updateAnnotation(id: string, updates: Partial<Annotation>): Promise<Annotation | null> {
+    const existing = this.annotations.get(id);
+    if (!existing) return null;
+    const updated = { ...existing, ...updates, id };
+    this.annotations.set(id, updated);
+    return updated;
+  }
+
   async getAnnotations(span_id: string): Promise<Annotation[]> {
     return Array.from(this.annotations.values()).filter((a) => a.span_id === span_id);
   }
@@ -254,6 +340,14 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     return facet;
   }
 
+  async updateFacet(id: string, updates: Partial<Facet>): Promise<Facet | null> {
+    const existing = this.facets.get(id);
+    if (!existing) return null;
+    const updated = { ...existing, ...updates, id };
+    this.facets.set(id, updated);
+    return updated;
+  }
+
   async getFacetsForEntry(entry_id: string): Promise<Facet[]> {
     return Array.from(this.facets.values()).filter((f) => f.entry_id === entry_id);
   }
@@ -263,6 +357,14 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     const claim: Claim = { ...c, id, recorded_at: new Date().toISOString() };
     this.claims.set(id, claim);
     return claim;
+  }
+
+  async updateClaim(id: string, updates: Partial<Claim>): Promise<Claim | null> {
+    const existing = this.claims.get(id);
+    if (!existing) return null;
+    const updated = { ...existing, ...updates, id };
+    this.claims.set(id, updated);
+    return updated;
   }
 
   async getClaimsForRevision(revision_id: string): Promise<Claim[]> {
@@ -292,7 +394,19 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   }
 
   async listAcceptedRelations(): Promise<Relation[]> {
-    return Array.from(this.relations.values()).filter((r) => r.status === 'accepted');
+    return Array.from(this.relations.values())
+      .filter((r) => r.status === 'accepted')
+      .map((r) => {
+        const dstClaim = this.claims.get(r.dst_claim);
+        const dstRev = dstClaim ? this.revisions.get(dstClaim.revision_id) : undefined;
+        const dstEntry = dstRev ? this.entries.get(dstRev.entry_id) : undefined;
+        return {
+          ...r,
+          ...(dstClaim ? { dst_claim_text: dstClaim.text } : {}),
+          ...(dstEntry ? { dst_entry_slug: dstEntry.slug, dst_entry_title: dstEntry.title } : {}),
+          ...(dstRev ? { dst_written_at: dstRev.written_at } : {}),
+        };
+      });
   }
 
   async saveEvidence(ev: Omit<Evidence, 'id'>): Promise<Evidence> {

@@ -36,8 +36,8 @@ export interface ModelProvider {
   listModels(): Promise<string[]>;
   complete(req: CompletionRequest): Promise<CompletionResponse>;
   embed(texts: string[]): Promise<number[][]>;
-  transcribe?(audioBuffer: Buffer): Promise<{ text: string; durationSec: number }>;
-  vision?(imageBuffer: Buffer, prompt: string): Promise<string>;
+  transcribe?(audioBuffer: Uint8Array): Promise<{ text: string; durationSec: number }>;
+  vision?(imageBuffer: Uint8Array, prompt: string): Promise<string>;
 }
 
 export function isPolicyAllowedForDataClass(policy: DataPolicy, dataClass: DataClass): boolean {

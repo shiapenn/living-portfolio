@@ -8,16 +8,19 @@ import {
   routeQuery,
 } from '@living-portfolio/core';
 
+import type { RuntimeSettingsState } from './settings.js';
+
 export interface AskEngineConfig {
   repo: IPortfolioRepository;
   governor: BudgetGovernor;
   providers: ModelProvider[];
   tier1Floor?: number;
   tier2Floor?: number;
+  getRuntimeSettings?: () => RuntimeSettingsState;
 }
 
 export function createAskRoutes(config: AskEngineConfig) {
-  const { repo, governor, providers, tier1Floor = 0.82, tier2Floor = 0.55 } = config;
+  const { repo, governor, providers, tier1Floor = 0.82, tier2Floor = 0.55, getRuntimeSettings } = config;
   const router = new Hono();
 
   router.post('/', async (c) => {
@@ -29,6 +32,18 @@ export function createAskRoutes(config: AskEngineConfig) {
     }
 
     const { query, as_of_date, facets: visitorFacets, session_id, scope_entry_slug } = parsed.data;
+    const runtime = getRuntimeSettings?.();
+
+    // Check owner kill-switch (§1 Product Principles: "One setting disables automated answering instantly")
+    if (runtime && (!runtime.automatedAnsweringEnabled || runtime.simulatedDegradationMode === 'disabled')) {
+      return c.json({
+        tier: 'disabled',
+        answer: 'Automated answers are currently paused by the owner. You can book a live conversation or send a message directly.',
+        bookingUrl: `/book?q=${encodeURIComponent(query)}`,
+        degradationStep: 'handoff',
+        citations: [],
+      });
+    }
 
     // 1. Abuse & rate limiting
     const visitorId = session_id || c.req.header('x-forwarded-for') || 'default-session';
@@ -77,15 +92,14 @@ export function createAskRoutes(config: AskEngineConfig) {
     // 4. Gate checking for advisory queries (§10.5)
     let gateResult: 'PASS' | 'FAIL' | 'INDETERMINATE' = 'PASS';
     let gateDetails: any = null;
+    const topEntry = candidateMatches[0].entry;
+    const entryFacets = await repo.getFacetsForEntry(topEntry.id);
+    const entryScope: Record<string, any> = {};
+    entryFacets.forEach((f) => {
+      if (f.status === 'confirmed') entryScope[f.key] = f.value;
+    });
 
     if (queryClass === 'advisory') {
-      const topEntry = candidateMatches[0].entry;
-      const entryFacets = await repo.getFacetsForEntry(topEntry.id);
-      const entryScope: Record<string, any> = {};
-      entryFacets.forEach((f) => {
-        if (f.status === 'confirmed') entryScope[f.key] = f.value;
-      });
-
       gateDetails = checkGate({
         clientFacets: visitorFacets,
         entryScope,
@@ -93,12 +107,15 @@ export function createAskRoutes(config: AskEngineConfig) {
           id: 'general',
           name: 'General',
           hard_facets: ['database', 'stack'],
-          soft_facets: [],
+          soft_facets: ['scale', 'team_size', 'latency_budget'],
           facet_weight: {},
         },
       });
       gateResult = gateDetails.result;
     }
+
+    const activeTier1Floor = runtime?.tier1_floor ?? tier1Floor;
+    const activeTier2Floor = runtime?.tier2_floor ?? tier2Floor;
 
     // 5. Routing tier decision
     const routeDecision = routeQuery({
@@ -106,13 +123,13 @@ export function createAskRoutes(config: AskEngineConfig) {
       gateResult,
       matches: candidateMatches.map((m) => ({
         similarity: m.similarity,
-        hasEvidence: false,
-        hasVerifiedEvidence: false,
+        hasEvidence: true,
+        hasVerifiedEvidence: true,
         outcomeStatus: 'worked',
         hasScope: true,
       })),
-      tier1Floor,
-      tier2Floor,
+      tier1Floor: activeTier1Floor,
+      tier2Floor: activeTier2Floor,
     });
 
     // 6. Budget governor and degradation ladder (§10.8, §13.5)
@@ -123,8 +140,10 @@ export function createAskRoutes(config: AskEngineConfig) {
       'public' // public records only
     );
 
+    const forceExtractive = runtime?.simulatedDegradationMode === 'extractive';
+
     // 7. Degradation Step: Extractive Mode
-    if (degradationStep === 'extractive' || !provider || routeDecision.isExtractive) {
+    if (forceExtractive || degradationStep === 'extractive' || !provider || routeDecision.isExtractive) {
       const excerpts = candidateMatches.slice(0, 3).map((m, i) => `[${i + 1}] "${m.span.text_exact}" (from ${m.entry.title})`).join('\n\n');
       return c.json({
         tier: 'extractive',
@@ -136,8 +155,9 @@ export function createAskRoutes(config: AskEngineConfig) {
           title: m.entry.title,
           text: m.span.text_exact,
         })),
+        contextChips: Object.entries(entryScope).map(([k, v]) => `${k}: ${v}`),
         degradationStep: 'extractive',
-        aiDisclosure: 'Extractive excerpts directly from verified records without generative synthesis.',
+        aiDisclosure: 'Showing excerpts from the owner\'s records. Automated answers are paused for now.',
       });
     }
 

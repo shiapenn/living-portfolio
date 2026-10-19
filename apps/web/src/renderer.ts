@@ -1,0 +1,1071 @@
+import {
+  computeStructureLevel,
+  detectLaterThinking,
+  generateGapQuestions,
+  getProfile,
+  getStructureLevelDetails,
+  isTemporallyValid,
+} from '@living-portfolio/core';
+import type { IPortfolioRepository } from '@living-portfolio/db';
+import { STRATA_DESIGN_SYSTEM_CSS } from './styles.js';
+
+function escapeHtml(str: string): string {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function renderMarkdownToHtml(md: string): string {
+  return md
+    .split(/\n\s*\n/)
+    .map((block) => {
+      const trimmed = block.trim();
+      if (!trimmed) return '';
+      if (trimmed.startsWith('## ')) {
+        return `<h2>${escapeHtml(trimmed.slice(3))}</h2>`;
+      }
+      if (trimmed.startsWith('# ')) {
+        return `<h2>${escapeHtml(trimmed.slice(2))}</h2>`;
+      }
+      return `<p>${escapeHtml(trimmed)}</p>`;
+    })
+    .join('\n');
+}
+
+function renderLayout(title: string, activePath: string, mainContentHtml: string): string {
+  const navItems = [
+    { href: '/work', label: 'Work' },
+    { href: '/writing', label: 'Writing' },
+    { href: '/build', label: 'Build' },
+    { href: '/timeline', label: 'Timeline' },
+    { href: '/ask', label: 'Ask' },
+    { href: '/now', label: 'Now' },
+    { href: '/about', label: 'About' },
+    { href: '/admin', label: 'Admin' },
+  ];
+
+  const navHtml = navItems
+    .map(
+      (item) =>
+        `<a href="${item.href}"${activePath.startsWith(item.href) ? ' aria-current="page"' : ''}>${item.label}</a>`
+    )
+    .join('\n          ');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>${escapeHtml(title)} — The Living Portfolio</title>
+  <style>${STRATA_DESIGN_SYSTEM_CSS}</style>
+</head>
+<body>
+  <header class="site-header">
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a href="/" class="site-brand">Alex Rivera</a>
+      <div class="nav-links">
+        ${navHtml}
+        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle color theme">◐ Theme</button>
+      </div>
+    </nav>
+  </header>
+  <main class="site-main" id="main-content">
+    ${mainContentHtml}
+  </main>
+  <script>
+    (function() {
+      const btn = document.getElementById('theme-toggle');
+      const saved = localStorage.getItem('strata-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+      if (btn) {
+        btn.addEventListener('click', function() {
+          const current = document.documentElement.getAttribute('data-theme');
+          const next = current === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+          localStorage.setItem('strata-theme', next);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>`;
+}
+
+export async function renderStrataTimelineSection(
+  repo: IPortfolioRepository,
+  asOfParam?: string | null
+): Promise<{ html: string; visibleSlugs: Set<string> | null }> {
+  const entries = await repo.listEntries({ visibility: ['public'] });
+  const buckets: Record<string, { yearMonth: string; count: number; titles: string[]; slugs: string[]; profiles: string[] }> = {};
+  let visibleSlugs: Set<string> | null = null;
+
+  if (asOfParam) {
+    visibleSlugs = new Set<string>();
+  }
+
+  for (const entry of entries) {
+    const full = await repo.getEntry(entry.id);
+    if (!full || !full.currentRevision) continue;
+    const rev = full.currentRevision;
+    const d = rev.valid_from ? new Date(rev.valid_from) : new Date(rev.written_at);
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+    if (!buckets[ym]) {
+      buckets[ym] = { yearMonth: ym, count: 0, titles: [], slugs: [], profiles: [] };
+    }
+    buckets[ym].count++;
+    buckets[ym].titles.push(entry.title);
+    buckets[ym].slugs.push(entry.slug);
+    buckets[ym].profiles.push(entry.profile);
+
+    if (asOfParam && visibleSlugs) {
+      const check = isTemporallyValid(rev, new Date(asOfParam));
+      if (check.valid) visibleSlugs.add(entry.slug);
+    }
+  }
+
+  const sorted = Object.values(buckets).sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
+
+  const asOfBanner = asOfParam
+    ? `<div class="as-of-banner" role="status">
+         <span><strong>Viewing as of ${escapeHtml(asOfParam.slice(0, 7))}</strong> — Later entries and hindsight retrospectives written after this date are excluded.</span>
+         <a href="/timeline">Reset to present</a>
+       </div>`
+    : '';
+
+  const bandsHtml = sorted
+    .map((b) => {
+      const heightPx = Math.min(110, 44 + b.count * 24);
+      const dimmed = asOfParam ? b.yearMonth > asOfParam.slice(0, 7) : false;
+      return `<button type="button" class="strata-band" style="height:${heightPx}px" data-ym="${b.yearMonth}" data-slug="${b.slugs[0]}" data-dimmed="${dimmed}" onclick="window.location.href='/timeline?as_of=${b.yearMonth}-28T23:59:59Z'" aria-label="${b.yearMonth}: ${b.count} entries (${b.profiles.join(', ')})">
+        <div style="font-weight:700;font-size:13px">${b.yearMonth}</div>
+        <div style="font-size:12px;color:var(--text-muted)">${b.count} layer${b.count > 1 ? 's' : ''}</div>
+      </button>`;
+    })
+    .join('\n      ');
+
+  const textListHtml = sorted
+    .map((b) => {
+      const visibleIndices = b.slugs
+        .map((s, idx) => (!visibleSlugs || visibleSlugs.has(s) ? idx : -1))
+        .filter((idx) => idx !== -1);
+      if (visibleIndices.length === 0) return '';
+      return `<li><strong>${b.yearMonth}</strong> (${visibleIndices.length}): ${visibleIndices
+        .map((i) => `<a href="/work/${b.slugs[i]}">${escapeHtml(b.titles[i])}</a>`)
+        .join(', ')}</li>`;
+    })
+    .filter(Boolean)
+    .join('\n        ');
+
+  const html = `<section class="strata-section" aria-labelledby="strata-heading">
+    <div class="strata-header">
+      <div>
+        <h2 id="strata-heading" style="margin:0;font-size:18px;font-family:var(--font-reading)">Strata timeline (2021–2026)</h2>
+        <span style="font-size:14px;color:var(--text-muted)">Select any layer to scrub the knowledge graph to that point in time.</span>
+      </div>
+      <form method="GET" action="/timeline" style="display:flex;gap:8px;align-items:center">
+        <label for="as-of-input" style="font-size:14px">Time-travel as of:</label>
+        <input id="as-of-input" name="as_of" type="date" value="${asOfParam ? escapeHtml(asOfParam.slice(0, 10)) : '2026-10-19'}" class="ask-input" style="padding:4px 8px;width:auto" />
+        <button type="submit" class="btn btn-secondary" style="min-height:34px;padding:4px 12px">Apply</button>
+      </form>
+    </div>
+    ${asOfBanner}
+    <div class="strata-layers" role="region" aria-label="Chronological strata layers">
+      ${bandsHtml}
+    </div>
+    <div class="strata-legend">
+      <span>■ Case study</span>
+      <span>◆ Decision record</span>
+      <span>▲ Design project</span>
+      <span>Keyboard: Left/Right arrows move by layer, Enter time-travels to layer</span>
+    </div>
+    <details style="margin-top:12px;font-size:14px">
+      <summary style="cursor:pointer;color:var(--text-muted)">Text-equivalent accessible timeline list</summary>
+      <ul style="margin-top:8px">
+        ${textListHtml}
+      </ul>
+    </details>
+  </section>`;
+
+  return { html, visibleSlugs };
+}
+
+export async function renderHomePage(repo: IPortfolioRepository): Promise<string> {
+  const { html: strataHtml } = await renderStrataTimelineSection(repo);
+  const publicEntries = await repo.listEntries({ visibility: ['public'] });
+  const acceptedRelations = await repo.listAcceptedRelations();
+
+  const rowsHtml: string[] = [];
+  for (const entry of publicEntries) {
+    const full = await repo.getEntry(entry.id);
+    if (!full || !full.currentRevision) continue;
+    const rev = full.currentRevision;
+    const [facets, annotations, claims] = await Promise.all([
+      repo.getFacetsForEntry(entry.id),
+      repo.listAnnotationsForRevision(rev.id),
+      repo.getClaimsForRevision(rev.id),
+    ]);
+    const level = computeStructureLevel({
+      revision: rev,
+      profile: getProfile(entry.profile),
+      facets,
+      annotations,
+      claims,
+    });
+    const alerts = detectLaterThinking(
+      claims.map((c) => ({ ...c, entry_id: entry.id, entry_slug: entry.slug })),
+      acceptedRelations
+    );
+
+    const dateLabel = (rev.valid_from || rev.written_at).slice(0, 10);
+    const firstSentence = rev.body_md.replace(/#+\s+[^\n]+\n+/g, '').split('.')[0] + '.';
+
+    rowsHtml.push(`<li class="entry-row">
+      <div class="entry-row-top">
+        <a href="/work/${entry.slug}" class="entry-title-link">${escapeHtml(entry.title)}</a>
+        <div class="entry-meta">
+          <time datetime="${dateLabel}">${dateLabel}</time>
+          <span class="chip">${level} · ${escapeHtml(entry.profile)}</span>
+          ${rev.is_hindsight ? '<span class="chip">Hindsight retrospective</span>' : ''}
+          ${alerts.length > 0 ? '<span class="chip" style="border-color:var(--status-warn)">Updated later</span>' : ''}
+        </div>
+      </div>
+      <div style="color:var(--text-muted);max-width:65ch">${escapeHtml(firstSentence)}</div>
+    </li>`);
+  }
+
+  const content = `
+    <p class="owner-statement">
+      I design and build fault-tolerant distributed storage systems,PostgreSQL infrastructure, and legible knowledge interfaces.
+    </p>
+
+    ${strataHtml}
+
+    <section aria-labelledby="featured-heading">
+      <h2 id="featured-heading" style="font-family:var(--font-reading);font-size:21px;margin-bottom:12px">Recent and featured work</h2>
+      <ul class="entry-list">
+        ${rowsHtml.join('\n')}
+      </ul>
+    </section>
+
+    <section class="ask-box" aria-labelledby="home-ask-heading">
+      <h2 id="home-ask-heading" style="margin:0;font-family:var(--font-reading);font-size:21px">Ask about my work</h2>
+      <p style="margin:4px 0 0;color:var(--text-muted);font-size:15px">
+        Answered from my actual records with inline citations, scope verification, and explicit uncertainty.
+      </p>
+      <form action="/ask" method="GET" class="ask-input-row">
+        <input type="text" name="q" class="ask-input" placeholder="e.g., What did you use to replace Redis distributed locks?" aria-label="Ask a question about my work" required />
+        <button type="submit" class="btn">Ask records</button>
+      </form>
+    </section>
+  `;
+
+  return renderLayout('Home', '/', content);
+}
+
+export async function renderEntryDetailPage(
+  repo: IPortfolioRepository,
+  slug: string,
+  requestedView?: string
+): Promise<{ status: number; html: string }> {
+  const result = await repo.getEntryBySlug(slug);
+  if (!result || !result.currentRevision || result.entry.visibility === 'private') {
+    return {
+      status: 404,
+      html: renderLayout('Entry not found', '/work', `<p>Entry not found. <a href="/work">Browse all work</a>.</p>`),
+    };
+  }
+
+  const { entry, currentRevision: rev } = result;
+  const profile = getProfile(entry.profile);
+  const [spans, facets, claims, evidence, annotations, acceptedRelations] = await Promise.all([
+    repo.getSpans(rev.id),
+    repo.getFacetsForEntry(entry.id),
+    repo.getClaimsForRevision(rev.id),
+    repo.getEvidenceForEntry(entry.id),
+    repo.listAnnotationsForRevision(rev.id),
+    repo.listAcceptedRelations(),
+  ]);
+
+  const structureLevel = computeStructureLevel({
+    revision: rev,
+    profile,
+    facets,
+    annotations,
+    claims,
+  });
+
+  // §5.3 Confirmed facets only; machine-extracted unconfirmed facets are never shown as facts
+  const confirmedFacets = facets.filter((f) => f.status === 'confirmed');
+  const contextStripHtml =
+    confirmedFacets.length > 0
+      ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0" aria-label="Confirmed context conditions">
+          ${confirmedFacets.map((f) => `<span class="chip"><strong>${escapeHtml(f.key)}:</strong> ${escapeHtml(String(f.value))}</span>`).join('\n          ')}
+         </div>`
+      : '';
+
+  // §5.3 Later-thinking banner when an accepted relation supersedes or contradicts a claim here
+  const laterAlerts = detectLaterThinking(
+    claims.map((c) => ({ ...c, entry_id: entry.id, entry_slug: entry.slug })),
+    acceptedRelations
+  );
+  const laterBannerHtml = laterAlerts
+    .map(
+      (a) => `<div class="later-thinking-banner" role="note">
+        <strong>${escapeHtml(a.message)}</strong>
+        <a href="/work/${a.newer_entry_slug}" style="margin-left:8px">Read "${escapeHtml(a.newer_entry_title)}" →</a>
+      </div>`
+    )
+    .join('\n');
+
+  // §5.2 Structured view qualifies when entry reaches L2 or L3
+  const qualifiesForStructured = structureLevel === 'L2' || structureLevel === 'L3';
+  const activeView = requestedView === 'article' ? 'article' : qualifiesForStructured && entry.view === 'structured' ? 'structured' : 'article';
+
+  let bodyHtml = '';
+  if (activeView === 'structured' && profile.roles.length > 0) {
+    const sectionsHtml = profile.roles
+      .map((roleDef) => {
+        const matchingSpanIds = new Set(
+          annotations.filter((a) => a.role === roleDef.id && a.status === 'accepted').map((a) => a.span_id)
+        );
+        const matchingSpans = spans.filter((s) => matchingSpanIds.has(s.id));
+        const sectionText =
+          matchingSpans.length > 0
+            ? matchingSpans.map((s) => renderMarkdownToHtml(s.text_exact)).join('\n')
+            : '';
+        if (!sectionText) return '';
+        return `<section style="margin-bottom:24px;padding-left:16px;border-left:3px solid var(--role-${roleDef.id}, var(--accent))">
+          <h2 style="font-size:18px;margin:0 0 8px 0" title="Schema role: ${roleDef.id}">${escapeHtml(roleDef.label)}</h2>
+          <div class="reading-column">${sectionText}</div>
+        </section>`;
+      })
+      .filter(Boolean)
+      .join('\n');
+
+    bodyHtml = sectionsHtml || `<div class="reading-column">${renderMarkdownToHtml(rev.body_md)}</div>`;
+  } else {
+    bodyHtml = `<div class="reading-column">${renderMarkdownToHtml(rev.body_md)}</div>`;
+  }
+
+  const happenedDate = (rev.valid_from || rev.written_at).slice(0, 10);
+  const writtenDate = rev.written_at.slice(0, 10);
+  const dateDisplay =
+    happenedDate !== writtenDate
+      ? `Happened ${happenedDate} · Written ${writtenDate}${rev.is_hindsight ? ', looking back (hindsight)' : ''}`
+      : `Happened & written ${happenedDate}`;
+
+  const evidenceHtml =
+    evidence.length > 0
+      ? evidence
+          .map(
+            (ev) => `<div style="margin-bottom:8px">
+              <a href="${escapeHtml(ev.url || '#')}" target="_blank" rel="noopener">${escapeHtml(ev.url || ev.kind)}</a>
+              ${
+                ev.verified_at
+                  ? `<div class="chip" style="margin-top:4px;border-color:var(--role-outcome)" title="Verification proves the artifact exists and who authored it; it does not prove the surrounding narrative fits your situation.">✓ Verified (${escapeHtml(ev.verification?.label || 'artifact')})</div>`
+                  : ''
+              }
+            </div>`
+          )
+          .join('\n')
+      : '<p style="color:var(--text-muted);margin:0">No external artifacts attached.</p>';
+
+  const claimsHtml =
+    claims.filter((c) => c.status === 'accepted').length > 0
+      ? claims
+          .filter((c) => c.status === 'accepted')
+          .map(
+            (c) => `<div style="margin-bottom:8px;padding:8px;border:1px solid var(--rule);background:var(--surface-raised)">
+              <div style="font-size:12px;color:var(--text-muted)">${escapeHtml(c.kind.toUpperCase())} · Outcome: <strong>${escapeHtml(c.outcome_status || 'unknown')}</strong></div>
+              <div style="font-size:14px;margin-top:4px">${escapeHtml(c.text)}</div>
+            </div>`
+          )
+          .join('\n')
+      : '';
+
+  const content = `
+    <article>
+      <header style="margin-bottom:24px;border-bottom:1px solid var(--rule);padding-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px">
+          <h1 style="font-family:var(--font-reading);font-size:30px;margin:0">${escapeHtml(entry.title)}</h1>
+          <div style="display:flex;gap:8px">
+            <span class="chip">Structure: ${structureLevel}</span>
+            ${
+              qualifiesForStructured
+                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}" class="btn btn-secondary" style="padding:4px 10px;min-height:30px;font-size:13px;text-decoration:none">Switch to ${activeView === 'structured' ? 'Article' : 'Structured'} view</a>`
+                : ''
+            }
+          </div>
+        </div>
+        <p style="color:var(--text-muted);margin:8px 0 0;font-size:15px">${escapeHtml(dateDisplay)}</p>
+        ${contextStripHtml}
+      </header>
+
+      ${laterBannerHtml}
+
+      <div class="entry-layout">
+        <div>
+          ${bodyHtml}
+        </div>
+        <aside class="margin-rail" aria-label="Entry evidence, claims, and scoped ask">
+          <h3 style="margin:0 0 8px;font-size:15px">Evidence</h3>
+          ${evidenceHtml}
+
+          ${claimsHtml ? `<h3 style="margin:20px 0 8px;font-size:15px">Key claims & outcomes</h3>${claimsHtml}` : ''}
+
+          <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--rule)">
+            <h3 style="margin:0 0 8px;font-size:15px">Ask about this entry</h3>
+            <form action="/ask" method="GET">
+              <input type="hidden" name="scope" value="${escapeHtml(entry.slug)}" />
+              <input type="text" name="q" class="ask-input" style="width:100%;margin-bottom:8px" placeholder="Question about this entry..." aria-label="Ask about this entry" required />
+              <button type="submit" class="btn" style="width:100%">Ask scoped record</button>
+            </form>
+          </div>
+        </aside>
+      </div>
+    </article>
+  `;
+
+  return { status: 200, html: renderLayout(entry.title, '/work', content) };
+}
+
+export async function renderWorkOrWritingPage(
+  repo: IPortfolioRepository,
+  mode: 'work' | 'writing',
+  filterOutcome?: string
+): Promise<string> {
+  const entries = await repo.listEntries({ visibility: ['public'] });
+  const rows: string[] = [];
+
+  for (const entry of entries) {
+    if (mode === 'work' && entry.profile === 'freeform') continue;
+    const full = await repo.getEntry(entry.id);
+    if (!full || !full.currentRevision) continue;
+    const rev = full.currentRevision;
+    const [facets, annotations, claims] = await Promise.all([
+      repo.getFacetsForEntry(entry.id),
+      repo.listAnnotationsForRevision(rev.id),
+      repo.getClaimsForRevision(rev.id),
+    ]);
+
+    if (filterOutcome && !claims.some((c) => c.outcome_status === filterOutcome)) {
+      continue;
+    }
+
+    const level = computeStructureLevel({
+      revision: rev,
+      profile: getProfile(entry.profile),
+      facets,
+      annotations,
+      claims,
+    });
+    const dateLabel = (rev.valid_from || rev.written_at).slice(0, 10);
+    const confirmedChips = facets
+      .filter((f) => f.status === 'confirmed')
+      .map((f) => `<span class="chip">${escapeHtml(f.key)}: ${escapeHtml(String(f.value))}</span>`)
+      .join(' ');
+
+    rows.push(`<li class="entry-row">
+      <div class="entry-row-top">
+        <a href="/work/${entry.slug}" class="entry-title-link">${escapeHtml(entry.title)}</a>
+        <div class="entry-meta">
+          <time datetime="${dateLabel}">${dateLabel}</time>
+          <span class="chip">${level} · ${escapeHtml(entry.profile)}</span>
+        </div>
+      </div>
+      ${confirmedChips ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${confirmedChips}</div>` : ''}
+    </li>`);
+  }
+
+  const title = mode === 'work' ? 'Work & Case Studies' : 'Writing & Chronological Log';
+  const filterBar =
+    mode === 'work'
+      ? `<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:14px;color:var(--text-muted)">Filter by outcome:</span>
+          <a href="/work" class="chip">All</a>
+          <a href="/work?outcome=worked" class="chip">Worked</a>
+          <a href="/work?outcome=partly" class="chip">Worked partly</a>
+          <a href="/work?outcome=failed" class="chip">What didn't work (Failed)</a>
+        </div>`
+      : '';
+
+  const content = `
+    <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">${title}</h1>
+    <p style="color:var(--text-muted);margin:0 0 24px 0">
+      ${mode === 'work' ? 'Structured case studies, architecture decisions, and design projects with verified evidence.' : 'All public entries ordered chronologically.'}
+    </p>
+    ${filterBar}
+    <ul class="entry-list">
+      ${rows.length > 0 ? rows.join('\n') : '<li class="entry-row">No matching entries found.</li>'}
+    </ul>
+  `;
+
+  return renderLayout(title, `/${mode}`, content);
+}
+
+export async function renderBuildPage(repo: IPortfolioRepository): Promise<string> {
+  const ventures = await repo.listVentures();
+  const entries = await repo.listEntries({ visibility: ['public'] });
+
+  const ventureBlocks = ventures
+    .map((v) => {
+      const devLog = entries.filter((e) => e.venture_id === v.id);
+      const facetChips = v.facets
+        ? Object.entries(v.facets)
+            .map(([k, val]) => `<span class="chip">${escapeHtml(k)}: ${escapeHtml(String(val))}</span>`)
+            .join(' ')
+        : '';
+
+      return `<section class="strata-section" style="margin-bottom:24px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
+          <h2 style="font-family:var(--font-reading);font-size:24px;margin:0">${escapeHtml(v.name)}</h2>
+          <span class="chip">Status: <strong>${escapeHtml(v.status)}</strong></span>
+        </div>
+        <p style="margin:8px 0 12px;max-width:65ch">${escapeHtml(v.description || '')}</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${facetChips}</div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)">
+          <strong style="font-size:14px">Attached dev-log entries (${devLog.length}):</strong>
+          <ul style="margin:6px 0 0;padding-left:20px">
+            ${devLog.map((e) => `<li><a href="/work/${e.slug}">${escapeHtml(e.title)}</a></li>`).join('\n            ')}
+          </ul>
+        </div>
+      </section>`;
+    })
+    .join('\n');
+
+  const content = `
+    <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Build — Ventures & Shipped Products</h1>
+    <p style="color:var(--text-muted);margin:0 0 24px 0">Long-running products and open-source tools with linked dev-logs and constraint facets.</p>
+    ${ventureBlocks}
+  `;
+
+  return renderLayout('Build', '/build', content);
+}
+
+export async function renderTimelinePage(
+  repo: IPortfolioRepository,
+  asOfParam?: string | null
+): Promise<string> {
+  const { html: strataHtml, visibleSlugs } = await renderStrataTimelineSection(repo, asOfParam);
+  const allPublic = await repo.listEntries({ visibility: ['public'] });
+
+  const filtered = visibleSlugs ? allPublic.filter((e) => visibleSlugs.has(e.slug)) : allPublic;
+  const excludedCount = allPublic.length - filtered.length;
+
+  const listHtml = filtered
+    .map(
+      (e) => `<li class="entry-row">
+        <div class="entry-row-top">
+          <a href="/work/${e.slug}" class="entry-title-link">${escapeHtml(e.title)}</a>
+          <span class="chip">${escapeHtml(e.profile)}</span>
+        </div>
+      </li>`
+    )
+    .join('\n');
+
+  const content = `
+    <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Time-Travel Knowledge Graph</h1>
+    <p style="color:var(--text-muted);margin:0 0 24px 0">
+      Scrub the timeline to see only what was recorded and believed as of that date. Hindsight entries written later are automatically filtered out.
+    </p>
+    ${strataHtml}
+    <section>
+      <h2 style="font-family:var(--font-reading);font-size:21px;margin:0 0 12px 0">
+        Records active ${asOfParam ? `as of ${escapeHtml(asOfParam.slice(0, 10))}` : 'at present'} (${filtered.length} visible${excludedCount > 0 ? `, ${excludedCount} future/hindsight excluded` : ''})
+      </h2>
+      <ul class="entry-list">
+        ${listHtml}
+      </ul>
+    </section>
+  `;
+
+  return renderLayout('Timeline', '/timeline', content);
+}
+
+export async function renderAskPage(
+  initialQuery?: string,
+  scopeSlug?: string
+): Promise<string> {
+  const content = `
+    <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Ask the Portfolio</h1>
+    <p style="color:var(--text-muted);margin:0 0 24px 0;max-width:65ch">
+      Answers are synthesized strictly from public records with inline citations, scope applicability checks, and explicit uncertainty. Numeric confidence scores are never shown.
+    </p>
+
+    <div class="ask-box" style="margin-top:0">
+      <form id="ask-form">
+        <label for="ask-q" style="font-weight:600;display:block;margin-bottom:6px">Your question</label>
+        <div class="ask-input-row" style="margin-top:0">
+          <input id="ask-q" name="q" type="text" class="ask-input" value="${escapeHtml(initialQuery || '')}" placeholder="e.g., Should we use PostgreSQL advisory locks or Redis for webhook coordination?" required />
+          <button type="submit" class="btn">Ask</button>
+        </div>
+
+        <details style="margin-top:16px" ${initialQuery?.toLowerCase().includes('should') ? 'open' : ''}>
+          <summary style="cursor:pointer;font-size:14px;color:var(--text-muted)">Optional context facets (for advisory questions — skippable)</summary>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px">
+            <div>
+              <label for="facet-db" style="font-size:13px;display:block">Database engine (hard constraint)</label>
+              <input id="facet-db" type="text" class="ask-input" style="width:100%;padding:6px" placeholder="e.g., PostgreSQL or MySQL" />
+            </div>
+            <div>
+              <label for="facet-stack" style="font-size:13px;display:block">Stack</label>
+              <input id="facet-stack" type="text" class="ask-input" style="width:100%;padding:6px" placeholder="e.g., Node.js, PgBouncer" />
+            </div>
+            <div>
+              <label for="facet-asof" style="font-size:13px;display:block">Time-travel as of date</label>
+              <input id="facet-asof" type="date" class="ask-input" style="width:100%;padding:6px" />
+            </div>
+          </div>
+        </details>
+      </form>
+
+      <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:13px;color:var(--text-muted)">Examples from records:</span>
+        <button type="button" class="chip example-q" style="cursor:pointer">What did you use to replace Redis distributed locks?</button>
+        <button type="button" class="chip example-q" style="cursor:pointer">Should I use PostgreSQL advisory locks for webhook workers?</button>
+        <button type="button" class="chip example-q" style="cursor:pointer">How fast are local ONNX embeddings on Arm64?</button>
+      </div>
+    </div>
+
+    <div id="ask-live-region" aria-live="polite" style="margin-top:24px"></div>
+
+    <script>
+      (function() {
+        const form = document.getElementById('ask-form');
+        const qInput = document.getElementById('ask-q');
+        const dbInput = document.getElementById('facet-db');
+        const stackInput = document.getElementById('facet-stack');
+        const asOfInput = document.getElementById('facet-asof');
+        const region = document.getElementById('ask-live-region');
+        const scopeSlug = ${JSON.stringify(scopeSlug || null)};
+
+        async function runQuery(queryText) {
+          region.innerHTML = '<div class="strata-section"><p style="margin:0">Searching records and verifying citations...</p></div>';
+          const facets = {};
+          if (dbInput && dbInput.value.trim()) facets.database = dbInput.value.trim();
+          if (stackInput && stackInput.value.trim()) facets.stack = stackInput.value.trim();
+
+          const payload = {
+            query: queryText,
+            facets: Object.keys(facets).length > 0 ? facets : undefined,
+            as_of_date: asOfInput && asOfInput.value ? new Date(asOfInput.value).toISOString() : undefined,
+            scope_entry_slug: scopeSlug || undefined
+          };
+
+          try {
+            const res = await fetch('/api/ask', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            const tierLabels = {
+              tier1: 'Automated answer from the owner\\'s records (Tier 1)',
+              tier2: 'Needs the owner\\'s review (Tier 2 Escalation)',
+              tier3: 'Better as a live conversation (Tier 3 Handoff)',
+              extractive: 'Reduced mode — Extractive excerpts only',
+              no_match: 'Not in records',
+              disabled: 'Automated answers paused'
+            };
+
+            const citationsHtml = (data.citations || []).map(function(c) {
+              return '<li style="margin-bottom:6px"><strong>[' + c.citationId + ']</strong> <a href="/work/' + c.slug + '">' + c.title + '</a>: <em>"' + c.text + '"</em></li>';
+            }).join('');
+
+            region.innerHTML =
+              '<div class="strata-section">' +
+                '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">' +
+                  '<span class="chip"><strong>' + (tierLabels[data.tier] || data.tier) + '</strong></span>' +
+                  (data.queryClass ? '<span class="chip">Query class: ' + data.queryClass + '</span>' : '') +
+                '</div>' +
+                (data.basis ? '<p style="font-size:13px;color:var(--text-muted);margin:0 0 8px 0">' + data.basis + '</p>' : '') +
+                '<div class="reading-column" style="white-space:pre-wrap;margin-bottom:16px">' + data.answer + '</div>' +
+                (citationsHtml ? '<div style="border-top:1px solid var(--rule);padding-top:12px"><strong style="font-size:14px">Cited passages:</strong><ul style="margin:8px 0 0;padding-left:20px;font-size:14px">' + citationsHtml + '</ul></div>' : '') +
+                (data.bookingUrl ? '<div style="margin-top:12px"><a href="' + data.bookingUrl + '" class="btn" style="display:inline-block;text-decoration:none">Book live session with prefilled context →</a></div>' : '') +
+                (data.aiDisclosure ? '<p style="font-size:12px;color:var(--text-muted);margin:16px 0 0 0;border-top:1px solid var(--rule);padding-top:8px">AI Disclosure: ' + data.aiDisclosure + '</p>' : '') +
+              '</div>';
+          } catch (err) {
+            region.innerHTML = '<div class="strata-section"><p>Origin unreachable. <a href="/book">Book a session or leave a message</a>.</p></div>';
+          }
+        }
+
+        if (form) {
+          form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (qInput.value.trim()) runQuery(qInput.value.trim());
+          });
+        }
+
+        document.querySelectorAll('.example-q').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            qInput.value = btn.textContent;
+            runQuery(btn.textContent);
+          });
+        });
+
+        if (qInput && qInput.value.trim()) {
+          runQuery(qInput.value.trim());
+        }
+      })();
+    </script>
+  `;
+
+  return renderLayout('Ask', '/ask', content);
+}
+
+export function renderStaticPage(page: 'now' | 'about' | 'uses' | 'book', queryParam?: string): string {
+  if (page === 'now') {
+    return renderLayout(
+      'Now',
+      '/now',
+      `<div class="reading-column">
+        <h1>What I'm focused on now</h1>
+        <p><em>Updated October 2026</em></p>
+        <ul>
+          <li>Refining local ONNX embedding pipelines for zero-maintenance personal knowledge graphs.</li>
+          <li>Publishing benchmark suites comparing PostgreSQL 16 advisory locks and pg-boss queues against external brokers.</li>
+          <li>Maintaining the open-source Strata Design System for static-first technical portfolios.</li>
+        </ul>
+      </div>`
+    );
+  }
+  if (page === 'about') {
+    return renderLayout(
+      'About & Verified Credentials',
+      '/about',
+      `<div class="reading-column">
+        <h1>About Alex Rivera</h1>
+        <p>Systems engineer and design technologist with 10+ years building storage engines, developer tools, and accessible interfaces.</p>
+        <h2>Verified credentials (§6.1)</h2>
+        <p>Badges appear only for artifacts with cryptographic or host-level verification records:</p>
+        <ul>
+          <li><span class="chip" style="border-color:var(--role-outcome)">✓ Verified GPG Commits</span> Signed commits verified against GitHub repository history.</li>
+          <li><span class="chip" style="border-color:var(--role-outcome)">✓ Verified Domain Ownership</span> DNS TXT &amp; /.well-known/living-portfolio.json manifest.</li>
+        </ul>
+      </div>`
+    );
+  }
+  if (page === 'uses') {
+    return renderLayout(
+      'Uses & Stack',
+      '/uses',
+      `<div class="reading-column">
+        <h1>Tools &amp; Stack</h1>
+        <ul>
+          <li><strong>Database &amp; Queue:</strong> PostgreSQL 16 + pgvector + pg-boss</li>
+          <li><strong>Runtime &amp; API:</strong> TypeScript, Node.js LTS, Hono, Drizzle ORM</li>
+          <li><strong>Local AI:</strong> ONNX Runtime (bge-small-en-v1.5 embeddings), Tesseract OCR</li>
+          <li><strong>Typography:</strong> Literata, Atkinson Hyperlegible Next, JetBrains Mono (SIL OFL)</li>
+        </ul>
+      </div>`
+    );
+  }
+  return renderLayout(
+    'Book a Live Session',
+    '/book',
+    `<div class="reading-column">
+      <h1>Book a Live Conversation (Tier 3)</h1>
+      <p>When your architectural constraints differ from my documented records, a direct conversation avoids bad extrapolation.</p>
+      <form class="strata-section" onsubmit="event.preventDefault(); alert('Session request submitted with your context facets.');">
+        <div style="margin-bottom:12px">
+          <label for="book-q" style="display:block;font-weight:600;margin-bottom:4px">Topic / Question (pre-filled from Ask)</label>
+          <input id="book-q" type="text" class="ask-input" style="width:100%" value="${escapeHtml(queryParam || '')}" placeholder="Describe your architecture constraint..." />
+        </div>
+        <button type="submit" class="btn">Request 30-minute architecture review</button>
+      </form>
+    </div>`
+  );
+}
+
+export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Promise<string> {
+  const entries = await repo.listEntries({ visibility: ['public', 'unlisted', 'private'] });
+  const escalations = await repo.getEscalations();
+  const scopedConstraints = await repo.getScopedConstraints();
+
+  const firstEntry = entries[0];
+  const fullFirst = firstEntry ? await repo.getEntry(firstEntry.id) : null;
+  const firstRev = fullFirst?.currentRevision ?? null;
+  const firstFacets = firstEntry ? await repo.getFacetsForEntry(firstEntry.id) : [];
+  const firstAnnotations = firstRev ? await repo.listAnnotationsForRevision(firstRev.id) : [];
+  const firstClaims = firstRev ? await repo.getClaimsForRevision(firstRev.id) : [];
+
+  const firstLevel =
+    firstEntry && firstRev
+      ? computeStructureLevel({
+          revision: firstRev,
+          profile: getProfile(firstEntry.profile),
+          facets: firstFacets,
+          annotations: firstAnnotations,
+          claims: firstClaims,
+        })
+      : 'L0';
+  const levelDetails = getStructureLevelDetails(firstLevel);
+  const gapQuestions = firstRev
+    ? generateGapQuestions({ revision: firstRev, facets: firstFacets, claims: firstClaims })
+    : [];
+
+  const entriesListHtml = entries
+    .map(
+      (e) => `<li style="padding:8px 0;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <a href="/work/${e.slug}" style="font-weight:600;text-decoration:none;color:var(--text)">${escapeHtml(e.title)}</a>
+        <span class="chip">${escapeHtml(e.visibility)}</span>
+      </li>`
+    )
+    .join('\n');
+
+  const facetsInspectorHtml = firstFacets
+    .map(
+      (f) => `<div style="margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+        <span class="chip ${f.status === 'suggested' ? 'chip-suggested' : ''}">
+          ${escapeHtml(f.key)}: ${escapeHtml(String(f.value))} (${f.status === 'suggested' ? 'suggested' : 'confirmed'})
+        </span>
+      </div>`
+    )
+    .join('\n');
+
+  const gapHtml =
+    gapQuestions.length > 0
+      ? gapQuestions.map((g) => `<li style="margin-bottom:4px">${escapeHtml(g.question)} <em>(unlocks higher tier)</em></li>`).join('\n')
+      : '<li>All core context and outcome fields are present for this entry.</li>';
+
+  const escalationsHtml =
+    escalations.length > 0
+      ? escalations
+          .map(
+            (esc) => `<div style="border:1px solid var(--rule);padding:12px;margin-bottom:12px;background:var(--surface-page)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                <strong>Visitor Question (${escapeHtml(esc.query_class)}):</strong>
+                <span class="chip">${escapeHtml(esc.status)}</span>
+              </div>
+              <p style="margin:0 0 8px 0">${escapeHtml(esc.question)}</p>
+              <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px">Draft: ${escapeHtml(esc.draft || '')}</div>
+            </div>`
+          )
+          .join('\n')
+      : '<p style="color:var(--text-muted)">No pending escalations.</p>';
+
+  const content = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+      <div>
+        <h1 style="font-family:var(--font-reading);font-size:28px;margin:0">Owner Admin Workspace</h1>
+        <p style="color:var(--text-muted);margin:4px 0 0;font-size:14px">
+          Entry-first authoring, machine-suggested structure inspector, routing kill-switch, self-calibration, and encrypted backups.
+        </p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn btn-secondary" id="btn-killswitch">Pause Automated Answering</button>
+        <button type="button" class="btn btn-secondary" id="btn-backup-drill">Run Backup &amp; Restore Drill</button>
+        <a href="/api/settings/export" target="_blank" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center">Export Markdown + Sidecar</a>
+      </div>
+    </div>
+
+    <div id="admin-status-banner" role="status" aria-live="polite" style="margin-bottom:16px"></div>
+
+    <!-- §12.6 Three-Pane Entry Workspace -->
+    <div class="admin-shell">
+      <!-- Pane 1: Entries & Filters -->
+      <aside class="admin-pane" aria-label="Entries list and filters">
+        <h2 style="font-size:16px;margin:0 0 12px 0">Entries (${entries.length})</h2>
+        <ul style="list-style:none;padding:0;margin:0;font-size:14px">
+          ${entriesListHtml}
+        </ul>
+      </aside>
+
+      <!-- Pane 2: Editor (Rich Text / Markdown, Hindsight Question, Redaction Preview, Publish as is) -->
+      <section class="admin-pane" aria-label="Entry editor">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <h2 style="font-size:18px;margin:0">Author / Paste Entry (L0 Immediate Publish)</h2>
+          <span class="chip">Mode: Paste / Guided / Freeform</span>
+        </div>
+
+        <form id="admin-entry-form">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+            <div>
+              <label for="entry-title" style="font-size:13px;font-weight:600;display:block">Title</label>
+              <input id="entry-title" type="text" class="ask-input" style="width:100%;padding:6px" placeholder="e.g., Zero-Downtime Queue Cutover" required />
+            </div>
+            <div>
+              <label for="entry-slug" style="font-size:13px;font-weight:600;display:block">Slug</label>
+              <input id="entry-slug" type="text" class="ask-input" style="width:100%;padding:6px" placeholder="zero-downtime-queue-cutover" required />
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+            <div>
+              <label for="entry-profile" style="font-size:13px;font-weight:600;display:block">Role profile (§3.4)</label>
+              <select id="entry-profile" class="ask-input" style="width:100%;padding:6px">
+                <option value="case-study">Case study (default)</option>
+                <option value="decision-record">Decision record</option>
+                <option value="design-project">Design project</option>
+                <option value="research-note">Research note</option>
+                <option value="how-to">How-to</option>
+                <option value="freeform">Freeform (L0/L1 only)</option>
+              </select>
+            </div>
+            <div>
+              <label for="entry-date" style="font-size:13px;font-weight:600;display:block">When it happened</label>
+              <input id="entry-date" type="date" class="ask-input" style="width:100%;padding:6px" value="2026-10-19" />
+            </div>
+            <div style="display:flex;align-items:flex-end;padding-bottom:6px">
+              <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input id="entry-hindsight" type="checkbox" />
+                Happened earlier? (Hindsight §3.9)
+              </label>
+            </div>
+          </div>
+
+          <div style="margin-bottom:12px">
+            <label for="entry-body" style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">
+              Body (Markdown + GFM — only a body and date are required; structure is optional)
+            </label>
+            <textarea id="entry-body" rows="8" class="ask-input" style="width:100%;font-family:var(--font-code);font-size:14px" placeholder="Paste any existing write-up or answer the profile prompts..."></textarea>
+          </div>
+
+          <div id="redaction-preview-box" style="margin-bottom:12px"></div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <div style="display:flex;gap:8px">
+              <button type="submit" class="btn">Publish as is (L0)</button>
+              <button type="button" class="btn btn-secondary" id="btn-redaction-check">Preview Redaction (§4.3)</button>
+            </div>
+            <span style="font-size:13px;color:var(--text-muted)">"Good enough" exit always active — structure never blocks publishing.</span>
+          </div>
+        </form>
+      </section>
+
+      <!-- Pane 3: Structure Inspector & Answerability Preview (§12.6) -->
+      <aside class="admin-pane" aria-label="Structure inspector and answerability preview">
+        <h2 style="font-size:16px;margin:0 0 8px 0">Inspector: ${escapeHtml(firstEntry?.title || 'Sample')}</h2>
+        <div style="font-size:13px;color:var(--text-muted)">Four-step structure map (never a percentage score):</div>
+        <div class="level-steps" role="list" aria-label="Structure level indicator">
+          <div class="level-step" role="listitem" data-active="${firstLevel === 'L0' || firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">L0 Text</div>
+          <div class="level-step" role="listitem" data-active="${firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">L1 Context</div>
+          <div class="level-step" role="listitem" data-active="${firstLevel === 'L2' || firstLevel === 'L3'}">L2 Roles</div>
+          <div class="level-step" role="listitem" data-active="${firstLevel === 'L3'}">L3 Claims</div>
+        </div>
+        <p style="font-size:13px;margin:4px 0 12px 0"><strong>Unlocks:</strong> ${escapeHtml(levelDetails.unlocked.join(', '))}</p>
+
+        <h3 style="font-size:14px;margin:12px 0 6px 0">Context facets (dashed = machine suggested)</h3>
+        ${facetsInspectorHtml}
+
+        <h3 style="font-size:14px;margin:16px 0 6px 0">Answerability &amp; Gap Questions (§10.2)</h3>
+        <ul style="font-size:13px;padding-left:18px;margin:0">
+          ${gapHtml}
+        </ul>
+      </aside>
+    </div>
+
+    <!-- Operational Panels: Inbox Escalations, Audit, Routing & Calibration -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px;margin-top:24px">
+      <section class="admin-pane" aria-labelledby="inbox-heading">
+        <h2 id="inbox-heading" style="font-size:18px;margin:0 0 12px 0">Escalation Inbox — Tier 2 Review (${escalations.length})</h2>
+        ${escalationsHtml}
+      </section>
+
+      <section class="admin-pane" aria-labelledby="audit-heading">
+        <h2 id="audit-heading" style="font-size:18px;margin:0 0 12px 0">Topology Audit &amp; Scoped Constraints (§11)</h2>
+        <div style="border:1px solid var(--rule);padding:12px;background:var(--surface-page);margin-bottom:12px">
+          <strong style="font-size:14px">Detected Claim Conflict:</strong>
+          <p style="font-size:13px;margin:6px 0">
+            <em>2021:</em> "Use Redis Redlock leases for distributed job coordination."<br/>
+            <em>2024:</em> "PostgreSQL advisory locks outperform external Redis locks under 50k TPS."
+          </p>
+          <p style="font-size:13px;color:var(--text-muted);margin:0 0 8px 0">
+            Question: Does the later claim supersede the earlier one, or do they apply to different situations?
+          </p>
+        </div>
+        <h3 style="font-size:14px;margin:12px 0 6px 0">Mined Scoped Constraints (${scopedConstraints.length})</h3>
+        ${scopedConstraints
+          .map(
+            (sc) => `<div style="font-size:13px;padding:8px;border:1px dashed var(--rule)">
+              Quote: "${escapeHtml(sc.source_quote || '')}" · Status: <strong>${escapeHtml(sc.status)}</strong>
+            </div>`
+          )
+          .join('\n')}
+      </section>
+    </div>
+
+    <script>
+      (function() {
+        const banner = document.getElementById('admin-status-banner');
+        const form = document.getElementById('admin-entry-form');
+        const redactBtn = document.getElementById('btn-redaction-check');
+        const redactBox = document.getElementById('redaction-preview-box');
+        const killBtn = document.getElementById('btn-killswitch');
+        const drillBtn = document.getElementById('btn-backup-drill');
+        let answeringEnabled = true;
+
+        if (redactBtn) {
+          redactBtn.addEventListener('click', async function() {
+            const text = document.getElementById('entry-body').value;
+            const res = await fetch('/api/entries/redaction-preview', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text })
+            });
+            const data = await res.json();
+            if (data.warnings && data.warnings.length > 0) {
+              redactBox.innerHTML = '<div class="later-thinking-banner"><strong>Redaction Preview Warnings:</strong> ' +
+                data.warnings.map(function(w) { return w.type + ' ("' + w.match + '")'; }).join(', ') +
+                ' — Confirm none of this is under NDA before publishing.</div>';
+            } else {
+              redactBox.innerHTML = '<div class="chip" style="border-color:var(--role-outcome)">✓ No confidential secrets or NDA markers detected.</div>';
+            }
+          });
+        }
+
+        if (form) {
+          form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const payload = {
+              title: document.getElementById('entry-title').value,
+              slug: document.getElementById('entry-slug').value,
+              profile: document.getElementById('entry-profile').value,
+              body_md: document.getElementById('entry-body').value || 'Published stub entry.',
+              valid_from: new Date(document.getElementById('entry-date').value).toISOString(),
+              is_hindsight: document.getElementById('entry-hindsight').checked,
+              temporal_level: 'exact',
+              visibility: 'public',
+              view: 'article'
+            };
+            const res = await fetch('/api/entries', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+              banner.innerHTML = '<div class="as-of-banner">Published "' + payload.title + '" at L0. Background enrichment queued. <a href="/work/' + payload.slug + '">View entry →</a></div>';
+            }
+          });
+        }
+
+        if (killBtn) {
+          killBtn.addEventListener('click', async function() {
+            answeringEnabled = !answeringEnabled;
+            await fetch('/api/settings/routing', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ automatedAnsweringEnabled: answeringEnabled })
+            });
+            killBtn.textContent = answeringEnabled ? 'Pause Automated Answering' : 'Resume Automated Answering';
+            banner.innerHTML = '<div class="as-of-banner">Automated answering is now <strong>' + (answeringEnabled ? 'ENABLED' : 'PAUSED (Handoff only)') + '</strong>.</div>';
+          });
+        }
+
+        if (drillBtn) {
+          drillBtn.addEventListener('click', async function() {
+            const res = await fetch('/api/settings/backups/run-drill', { method: 'POST' });
+            const data = await res.json();
+            banner.innerHTML = '<div class="as-of-banner">Encrypted Backup (' + data.encryptedWith + ') &amp; Scratch Restore Drill: <strong>' + data.status.toUpperCase() + '</strong> (' + data.checks.entriesCount + ' entries verified).</div>';
+          });
+        }
+      })();
+    </script>
+  `;
+
+  return renderLayout('Admin Workspace', '/admin', content);
+}

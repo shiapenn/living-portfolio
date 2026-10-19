@@ -38,7 +38,7 @@ export function chunkMarkdown(
   // Split by headers and double newlines (paragraphs)
   // Preserve offsets accurately
   const paragraphs: { text: string; start: number; end: number }[] = [];
-  const regex = /(?:^|\n)(#{1,6}\s+[^\n]+|(?:\n*[^\n]+)+)/g;
+  const regex = /#{1,6}\s+[^\n]+|[^\n]+(?:\n(?!#{1,6}\s|\s*\n)[^\n]+)*/g;
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(bodyMd)) !== null) {

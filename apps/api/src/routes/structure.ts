@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import type { IPortfolioRepository } from '@living-portfolio/db';
 import {
   AnnotationUpdateSchema,
+  BUILTIN_PROFILES,
   ClaimUpsertSchema,
   EvidenceUpsertSchema,
   FacetUpsertSchema,
@@ -10,6 +11,11 @@ import {
 
 export function createStructureRoutes(repo: IPortfolioRepository) {
   const router = new Hono();
+
+  // Profiles (§3.4)
+  router.get('/profiles', (c) => {
+    return c.json({ profiles: Object.values(BUILTIN_PROFILES) });
+  });
 
   // Spans & Annotations
   router.get('/revisions/:revId/spans', async (c) => {
@@ -32,9 +38,12 @@ export function createStructureRoutes(repo: IPortfolioRepository) {
   });
 
   router.patch('/annotations/:id', async (c) => {
+    const id = c.req.param('id');
     const body = await c.req.json();
     const parsed = AnnotationUpdateSchema.safeParse(body);
     if (!parsed.success) return c.json({ error: 'Invalid update' }, 400);
+
+    const updated = await repo.updateAnnotation(id, parsed.data);
 
     // Save correction log (§11)
     await repo.saveCorrection({
@@ -43,7 +52,7 @@ export function createStructureRoutes(repo: IPortfolioRepository) {
       owner_action: parsed.data.status === 'accepted' ? 'accept' : 'reject',
     });
 
-    return c.json({ updated: true });
+    return c.json({ updated: true, annotation: updated });
   });
 
   // Facets
@@ -58,8 +67,21 @@ export function createStructureRoutes(repo: IPortfolioRepository) {
     const parsed = FacetUpsertSchema.safeParse(body);
     if (!parsed.success) return c.json({ error: 'Invalid facet data', details: parsed.error.issues }, 400);
 
-    const facet = await repo.saveFacet(parsed.data);
+    const facet = await repo.saveFacet({ ...parsed.data, value: parsed.data.value ?? '' });
     return c.json({ facet }, 201);
+  });
+
+  router.patch('/facets/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    const updated = await repo.updateFacet(id, body);
+    if (!updated) return c.json({ error: 'Facet not found' }, 404);
+
+    await repo.saveCorrection({
+      kind: 'facet',
+      owner_action: body.status === 'confirmed' ? 'accept' : 'reject',
+    });
+    return c.json({ facet: updated });
   });
 
   // Claims & Relations
@@ -76,6 +98,14 @@ export function createStructureRoutes(repo: IPortfolioRepository) {
 
     const claim = await repo.saveClaim(parsed.data);
     return c.json({ claim }, 201);
+  });
+
+  router.patch('/claims/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    const updated = await repo.updateClaim(id, body);
+    if (!updated) return c.json({ error: 'Claim not found' }, 404);
+    return c.json({ claim: updated });
   });
 
   router.post('/relations', async (c) => {
@@ -112,7 +142,9 @@ export function createStructureRoutes(repo: IPortfolioRepository) {
   router.post('/ventures', async (c) => {
     const body = await c.req.json();
     const venture = await repo.createVenture({
+      slug: body.slug || body.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
       name: body.name,
+      description: body.description || '',
       status: body.status || 'building',
       links: body.links || {},
       started_at: body.started_at || new Date().toISOString(),

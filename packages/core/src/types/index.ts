@@ -32,7 +32,9 @@ export type DegradationStep =
 
 export interface Venture {
   id: string;
+  slug?: string;
   name: string;
+  description?: string;
   status: 'idea' | 'building' | 'live' | 'maintained' | 'sunset';
   links?: Record<string, string> | null;
   started_at?: string | null;
@@ -42,6 +44,7 @@ export interface Venture {
 export interface Entry {
   id: string;
   slug: string;
+  title: string;
   profile: string;
   view: EntryView;
   visibility: Visibility;
