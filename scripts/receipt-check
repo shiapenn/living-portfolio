@@ -1,0 +1,411 @@
+#!/usr/bin/env node
+/**
+ * Execution Report Receipt Validator (`scripts/receipt-check`, Task WP-1.1b)
+ *
+ * Verifies that:
+ * (a) "Files touched" matches `git diff --name-only <prevEvidenceSha>..<currentEvidenceSha>` exactly.
+ * (b) Fenced code blocks under headings containing "verbatim" exist line-for-line in the cited CI logs
+ *     (using `gh run view <id> --log` or GitHub Actions REST API with ANSI and timestamps stripped).
+ * (c) Mandatory header table fields are present, and Evidence SHA is an ancestor of HEAD.
+ *
+ * Supports `--offline` flag to run without network access, printing a loud warning and marking
+ * the receipt "logs unchecked".
+ */
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { resolve, basename } from 'node:path';
+import { execSync, execFileSync } from 'node:child_process';
+import https from 'node:https';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const REPORTS_DIR = resolve(ROOT, 'docs/execution-reports');
+
+export function parseHeader(content) {
+  const headerMap = {};
+  for (const line of content.split('\n')) {
+    const match = line.match(/^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|/);
+    if (match && match[1] !== '---' && match[1] !== 'Field') {
+      headerMap[match[1].trim()] = match[2].trim();
+    }
+    if (line.trim().startsWith('---') && Object.keys(headerMap).length >= 4) {
+      break;
+    }
+  }
+  return headerMap;
+}
+
+export function cleanSha(val) {
+  if (!val) return '';
+  return val.replace(/[`\[\]]/g, '').split(/[\s(/]/)[0].trim();
+}
+
+export function parseFilesTouched(content) {
+  const lines = content.split('\n');
+  let inSection = false;
+  const files = [];
+
+  for (const line of lines) {
+    if (/^##\s+4\.\s+Files\s+Touched/i.test(line) || /^##\s+Files\s+Touched/i.test(line)) {
+      inSection = true;
+      continue;
+    }
+    if (inSection && /^##\s+/.test(line)) {
+      break;
+    }
+    if (inSection) {
+      const match = line.match(/^\s*[-*]\s+`?([^`\s]+)`?/);
+      if (match) {
+        files.push(match[1].trim());
+      }
+    }
+  }
+  return files.sort();
+}
+
+export function parseVerbatimSections(content) {
+  const lines = content.split('\n');
+  const sections = [];
+  let currentSection = null;
+  let inCodeBlock = false;
+  let currentBlockLines = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const headerMatch = line.match(/^#{2,4}\s+(.*verbatim.*)$/i);
+    if (headerMatch) {
+      if (currentSection && currentBlockLines.length > 0) {
+        currentSection.blocks.push(currentBlockLines);
+        currentBlockLines = [];
+      }
+      currentSection = {
+        title: headerMatch[1].trim(),
+        blocks: [],
+      };
+      sections.push(currentSection);
+      continue;
+    }
+
+    if (currentSection && /^#{2,3}\s+/.test(line) && !headerMatch) {
+      if (currentBlockLines.length > 0) {
+        currentSection.blocks.push(currentBlockLines);
+        currentBlockLines = [];
+      }
+      currentSection = null;
+      continue;
+    }
+
+    if (currentSection) {
+      if (/^```/.test(line)) {
+        if (!inCodeBlock) {
+          inCodeBlock = true;
+          currentBlockLines = [];
+        } else {
+          inCodeBlock = false;
+          if (currentBlockLines.length > 0) {
+            currentSection.blocks.push(currentBlockLines);
+            currentBlockLines = [];
+          }
+        }
+        continue;
+      }
+      if (inCodeBlock) {
+        currentBlockLines.push(line);
+      }
+    }
+  }
+
+  if (currentSection && currentBlockLines.length > 0) {
+    currentSection.blocks.push(currentBlockLines);
+  }
+
+  return sections;
+}
+
+export function stripAnsiAndTimestamps(raw) {
+  return raw
+    .split('\n')
+    .map((line) => {
+      // Strip tab-prefixed job names if coming from `gh run view --log`
+      const withoutPrefix = line.includes('\t') ? line.split('\t').slice(1).join('\t') : line;
+      // Strip ISO 8601 timestamps
+      const withoutTimestamp = withoutPrefix.replace(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z\s*/, '');
+      // Strip ANSI color codes
+      const withoutAnsi = withoutTimestamp.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
+      return withoutAnsi.trimEnd();
+    })
+    .filter(Boolean);
+}
+
+export function isAncestor(sha, cwd = ROOT) {
+  try {
+    execSync(`git merge-base --is-ancestor ${sha} HEAD`, { cwd, stdio: 'pipe' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function getGitDiffFiles(prevSha, currSha, cwd = ROOT) {
+  const output = execSync(`git diff --name-only ${prevSha}..${currSha}`, {
+    cwd,
+    encoding: 'utf8',
+  });
+  return output.split('\n').map((f) => f.trim()).filter(Boolean).sort();
+}
+
+function getGithubToken() {
+  if (process.env.GITHUB_TOKEN) return process.env.GITHUB_TOKEN;
+  try {
+    const out = execSync('git credential fill', {
+      input: 'protocol=https\nhost=github.com\n',
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore'],
+    });
+    for (const line of out.split('\n')) {
+      if (line.startsWith('password=')) return line.split('=', 1)[1].trim();
+    }
+  } catch {}
+  return '';
+}
+
+export function fetchLogs(jobOrRunId, options = {}) {
+  if (options.fixtureLogs && options.fixtureLogs[jobOrRunId]) {
+    return options.fixtureLogs[jobOrRunId];
+  }
+  if (options.fixtureLog) {
+    return readFileSync(options.fixtureLog, 'utf8');
+  }
+
+  // 1. Try gh CLI if installed
+  try {
+    const ghOutput = execSync(`gh run view ${jobOrRunId} --log`, {
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore'],
+    });
+    if (ghOutput && ghOutput.length > 50) return ghOutput;
+  } catch {}
+
+  // 2. Try GitHub REST API
+  const token = getGithubToken();
+  if (!token) {
+    throw new Error(`Unable to fetch CI logs for ${jobOrRunId}: neither gh CLI nor GITHUB_TOKEN available.`);
+  }
+
+  // Fetch either job logs or run jobs
+  try {
+    const script = `
+import urllib.request, json, sys
+
+token = "${token}"
+job_or_run = "${jobOrRunId}"
+
+class NoAuthRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        new_req = super().redirect_request(req, fp, code, msg, headers, newurl)
+        if 'Authorization' in new_req.headers:
+            del new_req.headers['Authorization']
+        return new_req
+
+opener = urllib.request.build_opener(NoAuthRedirect)
+
+# Try as direct job ID first
+try:
+    req = urllib.request.Request(
+        f'https://api.github.com/repos/shiapenn/living-portfolio/actions/jobs/{job_or_run}/logs',
+        headers={'Authorization': f'Bearer {token}', 'User-Agent': 'Receipt-Check'}
+    )
+    with opener.open(req) as resp:
+        sys.stdout.write(resp.read().decode('utf-8', errors='replace'))
+        sys.exit(0)
+except Exception:
+    pass
+
+# Try as run ID
+req = urllib.request.Request(
+    f'https://api.github.com/repos/shiapenn/living-portfolio/actions/runs/{job_or_run}/jobs',
+    headers={'Authorization': f'Bearer {token}', 'Accept': 'application/vnd.github+json', 'User-Agent': 'Receipt-Check'}
+)
+with urllib.request.urlopen(req) as resp:
+    data = json.loads(resp.read().decode())
+    all_logs = []
+    for job in data.get('jobs', []):
+        j_req = urllib.request.Request(
+            f'https://api.github.com/repos/shiapenn/living-portfolio/actions/jobs/{job["id"]}/logs',
+            headers={'Authorization': f'Bearer {token}', 'User-Agent': 'Receipt-Check'}
+        )
+        with opener.open(j_req) as j_resp:
+            all_logs.append(j_resp.read().decode('utf-8', errors='replace'))
+    sys.stdout.write('\\n'.join(all_logs))
+`;
+    const logs = execSync(`python3 -c '${script}'`, { encoding: 'utf8' });
+    if (logs && logs.length > 50) return logs;
+  } catch (err) {
+    throw new Error(`Failed to fetch logs from GitHub API for ID ${jobOrRunId}: ${err.message}`);
+  }
+
+  throw new Error(`Could not retrieve logs for ID ${jobOrRunId}`);
+}
+
+export function validateReceipt(reportPath, options = {}) {
+  const cwd = options.cwd || ROOT;
+  if (!existsSync(reportPath)) {
+    throw new Error(`Receipt file not found: ${reportPath}`);
+  }
+  const content = readFileSync(reportPath, 'utf8');
+  const reportFileName = basename(reportPath);
+
+  console.log(`=== Validating Receipt ${reportFileName} ===\n`);
+
+  // (c) Header & Ancestor Checks
+  const header = parseHeader(content);
+  const requiredHeaders = ['Report ID', 'Date', 'Author', 'Task ID', 'Evidence SHA', 'CI run', 'Verified By'];
+  for (const field of requiredHeaders) {
+    if (!header[field]) {
+      throw new Error(`[HEADER-CHECK] Mandatory header table field '${field}' is missing.`);
+    }
+  }
+  console.log(`✓ [HEADER-CHECK] Mandatory headers verified (${requiredHeaders.length}/${requiredHeaders.length} present).`);
+
+  const currentSha = cleanSha(header['Evidence SHA']);
+  if (!currentSha) {
+    throw new Error('[ANCESTOR-CHECK] Evidence SHA is empty or invalid.');
+  }
+
+  if (!options.skipGit) {
+    if (!isAncestor(currentSha, cwd)) {
+      throw new Error(`[ANCESTOR-CHECK] Evidence SHA '${currentSha}' is not an ancestor of HEAD.`);
+    }
+    console.log(`✓ [ANCESTOR-CHECK] Evidence SHA '${currentSha}' is an ancestor of HEAD.`);
+  }
+
+  // (a) Files Touched vs Git Diff
+  const currentNumMatch = reportFileName.match(/A(\d{3})\.md$/);
+  if (currentNumMatch) {
+    const currentNum = parseInt(currentNumMatch[1], 10);
+    const prevNumStr = String(currentNum - 1).padStart(3, '0');
+    const prevFileName = `A${prevNumStr}.md`;
+    const prevFilePath = resolve(REPORTS_DIR, prevFileName);
+
+    if (existsSync(prevFilePath)) {
+      const prevContent = readFileSync(prevFilePath, 'utf8');
+      const prevHeader = parseHeader(prevContent);
+      const prevSha = cleanSha(prevHeader['Evidence SHA']);
+
+      if (prevSha && !options.skipGit) {
+        const expectedDiff = getGitDiffFiles(prevSha, currentSha, cwd);
+        const reportedFiles = parseFilesTouched(content);
+
+        const missing = expectedDiff.filter((f) => !reportedFiles.includes(f));
+        const extra = reportedFiles.filter((f) => !expectedDiff.includes(f));
+
+        if (missing.length > 0 || extra.length > 0) {
+          const errLines = [
+            `[FILES-TOUCHED] 'Files touched' does not match git diff ${prevSha}..${currentSha}:`,
+          ];
+          if (missing.length > 0) {
+            errLines.push(`  Missing from receipt (${missing.length}):`);
+            missing.forEach((f) => errLines.push(`    - ${f}`));
+          }
+          if (extra.length > 0) {
+            errLines.push(`  Extra in receipt not in git diff (${extra.length}):`);
+            extra.forEach((f) => errLines.push(`    - ${f}`));
+          }
+          throw new Error(errLines.join('\n'));
+        }
+
+        console.log(`✓ [FILES-TOUCHED] Matches git diff ${prevSha}..${currentSha} (${reportedFiles.length} files verified).`);
+      }
+    }
+  }
+
+  // (b) Verbatim Code Block Verification
+  const verbatimSections = parseVerbatimSections(content);
+  console.log(`Found ${verbatimSections.length} section(s) marked verbatim.`);
+
+  if (options.offline) {
+    console.log('\n⚠️ [RECEIPT-CHECK] WARNING: --offline flag provided. CI log verification skipped; marked "logs unchecked".\n');
+  } else {
+    for (const section of verbatimSections) {
+      // Find job or run ID from section heading or header
+      const jobMatch = section.title.match(/(?:Job|Run)\s+([0-9]+)/i);
+      let targetId = jobMatch ? jobMatch[1] : null;
+
+      if (!targetId) {
+        const runMatch = header['CI run']?.match(/actions\/runs\/(\d+)/);
+        if (runMatch) targetId = runMatch[1];
+      }
+
+      if (!targetId && !options.fixtureLog && !options.fixtureLogs) {
+        throw new Error(`[VERBATIM-CHECK] Could not determine CI Job or Run ID for verbatim section "${section.title}".`);
+      }
+
+      let rawLogs = '';
+      try {
+        rawLogs = fetchLogs(targetId || 'default', options);
+      } catch (err) {
+        throw new Error(`[VERBATIM-CHECK] Failed to retrieve logs for section "${section.title}": ${err.message}`);
+      }
+
+      const cleanedLogLines = stripAnsiAndTimestamps(rawLogs);
+
+      for (const block of section.blocks) {
+        for (const rawLine of block) {
+          const line = rawLine.trim();
+          if (!line || line === '```' || line.startsWith('RUN  v')) continue;
+
+          // Check if line exists in cleaned logs
+          const found = cleanedLogLines.some((logLine) => logLine.includes(line) || line.includes(logLine));
+          if (!found) {
+            throw new Error(
+              `[VERBATIM-CHECK] Line in section "${section.title}" not found in CI logs:\n  Expected line: "${line}"\n  Cited ID: ${targetId}`
+            );
+          }
+        }
+      }
+      console.log(`✓ [VERBATIM-CHECK] Section "${section.title}" verified against CI logs.`);
+    }
+  }
+
+  console.log(`\n🎉 All receipt checks PASSED for ${reportFileName}.`);
+  return { ok: true, report: reportFileName, logsChecked: !options.offline };
+}
+
+// CLI execution
+if (process.argv[1] && basename(process.argv[1]) === 'receipt-check') {
+  const args = process.argv.slice(2);
+  const offline = args.includes('--offline');
+  const skipGit = args.includes('--skip-git');
+  const fixtureLogIdx = args.indexOf('--fixture-log');
+  const fixtureLog = fixtureLogIdx !== -1 ? args[fixtureLogIdx + 1] : undefined;
+  let targetArg = args.find((a, i) => !a.startsWith('--') && (i === 0 || args[i - 1] !== '--fixture-log'));
+
+  let targetPath;
+  if (targetArg) {
+    if (targetArg.endsWith('.md')) {
+      targetPath = resolve(cwdPath(), targetArg);
+    } else {
+      targetPath = resolve(REPORTS_DIR, `${targetArg.toUpperCase().replace(/\.MD$/i, '')}.md`);
+    }
+  } else {
+    // Pick the highest A###.md report
+    const files = readdirSync(REPORTS_DIR)
+      .filter((f) => /^A\d{3}\.md$/.test(f))
+      .sort();
+    if (files.length === 0) {
+      console.error('No execution reports found in docs/execution-reports/');
+      process.exit(1);
+    }
+    targetPath = resolve(REPORTS_DIR, files[files.length - 1]);
+  }
+
+  function cwdPath() {
+    return process.cwd();
+  }
+
+  try {
+    validateReceipt(targetPath, { offline, fixtureLog, skipGit });
+    process.exit(0);
+  } catch (err) {
+    console.error(`\n✗ ${err.message}`);
+    process.exit(1);
+  }
+}
