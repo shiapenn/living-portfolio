@@ -100,6 +100,10 @@ export class AuthManager {
     return this.account !== null;
   }
 
+  isConfigured(): boolean {
+    return this.isSetupCompleted();
+  }
+
   setupAdminAccount(username: string, password: string, customTotpSecretHex?: string): {
     username: string;
     totpSecret: string;

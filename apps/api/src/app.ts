@@ -29,6 +29,7 @@ export function createApp(
     bootstrapAdminToken?: string;
     allowedOrigins?: string[];
     providers?: ModelProvider[];
+    databaseKind?: 'in-memory' | 'postgres';
   }
 ) {
   const app = new Hono();
@@ -65,7 +66,7 @@ export function createApp(
     tier1_floor: 0.82,
     tier2_floor: 0.55,
     facet_known_threshold: 0.9,
-    setupWizardCompleted: true,
+    setupWizardCompleted: auth.isConfigured(),
     theme: structuredClone(DEFAULT_STRATA_THEME),
   };
 
@@ -95,7 +96,14 @@ export function createApp(
   );
 
   // Public & Auth routes
-  app.route('/healthz', createHealthRoutes(async () => true));
+  const providerNames = providers.map((p) => p.name);
+  app.route(
+    '/healthz',
+    createHealthRoutes(async () => true, {
+      databaseKind: options?.databaseKind ?? 'in-memory',
+      configuredProviders: providerNames,
+    })
+  );
   app.route('/api/auth', createAuthRoutes(auth));
   app.route('/api/entries', createEntriesRoutes(repo, auth));
   app.route(
@@ -127,7 +135,7 @@ export function createApp(
   app.route('/api/calibration', createCalibrationRoutes(repo));
   app.route('/api/audit', createAuditRoutes(repo));
   app.route('/api/import', createImportRoutes(repo, auth));
-  app.route('/api/settings', createSettingsRoutes(repo, runtimeState));
+  app.route('/api/settings', createSettingsRoutes(repo, runtimeState, auth));
 
   // Seed demo portfolio on demand (Admin-only, S1; disabled in production per OSR-04)
   app.post('/api/seed', auth.requireAdminMiddleware(), async (c) => {

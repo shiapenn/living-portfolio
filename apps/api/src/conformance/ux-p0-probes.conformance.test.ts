@@ -136,7 +136,7 @@ describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/a
 
   registerBoundProbe(
     '20261020-UX-05',
-    '[P0-9] admin workspace removes hard-coded Detected Claim Conflict card, removes false background enrichment queued claim, and healthz reports not_configured instead of fabricated passed',
+    '[P0-9] admin workspace removes hard-coded Detected Claim Conflict card, removes false background enrichment queued claim, and healthz and settings.ts report not_configured with zero invented passed or verified statuses',
     async () => {
       const repo = new InMemoryPortfolioRepository();
       const html = await renderAdminWorkspacePage(repo);
@@ -149,10 +149,45 @@ describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/a
       // Kill-switch button must carry aria-pressed reflecting server state
       expect(html).toContain('aria-pressed=');
 
+      // 1. Verify unconfigured /healthz endpoint contains no invented statuses
       const { app } = createApp();
       const healthRes = await app.request('/healthz');
       const healthBody = await healthRes.json();
       expect(healthBody.backup.lastRestoreTestStatus).toBe('not_configured');
+      expect(healthBody.queue.status).toBe('not_configured');
+      expect(healthBody.providers.status).toBe('not_configured');
+      expect(healthBody.providers.active).toEqual([]);
+
+      // Verify no field in healthz has invented "passed" or "verified"
+      const healthValues = JSON.stringify(healthBody).toLowerCase();
+      expect(healthValues).not.toContain('"passed"');
+      expect(healthValues).not.toContain('"verified"');
+
+      // 2. Verify /api/settings contains no invented statuses
+      const adminToken = 'admin_token_for_settings_test';
+      const { app: adminApp, auth: adminAuth } = createApp(undefined, { bootstrapAdminToken: adminToken });
+      const settingsResBefore = await adminApp.request('/api/settings', {
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      expect(settingsResBefore.status).toBe(200);
+      const settingsBody = await settingsResBefore.json();
+      expect(settingsBody.notifications.testStatus).toBe('not_configured');
+      expect(settingsBody.backups.lastRestoreTest).toBe('not_configured');
+      expect(settingsBody.backups.lastBackupAt).toBeNull();
+      // Before setup wizard runs, setupWizardCompleted must be false
+      expect(settingsBody.runtime.setupWizardCompleted).toBe(false);
+
+      // After completing setup wizard, setupWizardCompleted reflects true
+      adminAuth.setupAdminAccount('owner', 'SecurePassword123!');
+      const settingsResAfter = await adminApp.request('/api/settings', {
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      const settingsBodyAfter = await settingsResAfter.json();
+      expect(settingsBodyAfter.runtime.setupWizardCompleted).toBe(true);
+
+      const settingsValues = JSON.stringify(settingsBody).toLowerCase();
+      expect(settingsValues).not.toContain('"passed"');
+      expect(settingsValues).not.toContain('"verified"');
     }
   );
 });

@@ -13,7 +13,11 @@ export interface RuntimeSettingsState {
   theme: typeof DEFAULT_STRATA_THEME;
 }
 
-export function createSettingsRoutes(repo?: IPortfolioRepository, sharedState?: RuntimeSettingsState) {
+export function createSettingsRoutes(
+  repo?: IPortfolioRepository,
+  sharedState?: RuntimeSettingsState,
+  auth?: { isConfigured: () => boolean }
+) {
   const router = new Hono();
 
   const state: RuntimeSettingsState = sharedState ?? {
@@ -23,7 +27,7 @@ export function createSettingsRoutes(repo?: IPortfolioRepository, sharedState?: 
     tier1_floor: 0.82,
     tier2_floor: 0.55,
     facet_known_threshold: 0.9,
-    setupWizardCompleted: true,
+    setupWizardCompleted: false,
     theme: structuredClone(DEFAULT_STRATA_THEME),
   };
 
@@ -34,13 +38,15 @@ export function createSettingsRoutes(repo?: IPortfolioRepository, sharedState?: 
         ? `Warning: Tier 1 floor (${state.tier1_floor}) is set below the shipped default (0.82). Unverified advisory answers may be served without owner review.`
         : null;
 
+    const setupWizardCompleted = auth ? auth.isConfigured() : state.setupWizardCompleted;
+
     return c.json({
       preset: 'free-cloud',
       runtime: {
         automatedAnsweringEnabled: state.automatedAnsweringEnabled,
         calibrationFrozen: state.calibrationFrozen,
         simulatedDegradationMode: state.simulatedDegradationMode,
-        setupWizardCompleted: state.setupWizardCompleted,
+        setupWizardCompleted,
       },
       routing: {
         tier1_floor: state.tier1_floor,

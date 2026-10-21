@@ -1,14 +1,19 @@
 import { Hono } from 'hono';
 
+export interface HealthRouteOptions {
+  databaseKind?: 'in-memory' | 'postgres';
+  configuredProviders?: string[];
+}
+
 /**
  * Health endpoint (P0-9 / 20261020-UX-05): every field must come from a measured source.
- * Queue, worker and backup subsystems are not wired yet, so they report `not_configured`
+ * Queue, worker, backup, and model subsystems report `not_configured` when not wired
  * instead of fabricated values (previously: activeWorkers=1, lastRestoreTestStatus='passed',
- * and a made-up lastBackup timestamp 12 hours in the past).
+ * providers.mock='available', and a made-up lastBackup timestamp 12 hours in the past).
  */
 export function createHealthRoutes(
   repoHealthCheck: () => Promise<boolean>,
-  options?: { databaseKind?: 'in-memory' | 'postgres' }
+  options?: HealthRouteOptions
 ) {
   const router = new Hono();
 
@@ -19,6 +24,8 @@ export function createHealthRoutes(
     } catch {
       dbOk = false;
     }
+
+    const configuredProviders = options?.configuredProviders ?? [];
 
     const health = {
       status: dbOk ? 'healthy' : 'degraded',
@@ -36,7 +43,8 @@ export function createHealthRoutes(
         lastRestoreTestStatus: 'not_configured',
       },
       providers: {
-        mock: 'available',
+        status: configuredProviders.length > 0 ? 'configured' : 'not_configured',
+        active: configuredProviders,
       },
     };
 
