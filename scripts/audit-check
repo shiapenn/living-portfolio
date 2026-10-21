@@ -42,6 +42,7 @@ const requiredPaths = [
   'docs/execution-reports/A004.md',
   'docs/execution-reports/A005.md',
   'docs/execution-reports/A006.md',
+  'docs/execution-reports/A007.md',
   'docs/execution-reports/OSR-05-clean-tree-and-rotation.md',
   'docs/audits/README.md',
   'docs/audits/register.yml',
@@ -49,9 +50,11 @@ const requiredPaths = [
   'docs/audits/hardcode-inventory.md',
   'docs/audits/sarif-baseline.json',
   'scripts/historical-sha-map.json',
+  'scripts/gitleaks-checksums.json',
   'scripts/sarif-gate',
   'scripts/gitleaks-scan',
   'scripts/verify-all',
+  'apps/api/src/conformance/sarif-gate.conformance.test.ts',
   'docs/audits/2026-10-19-independent-technical-audit/report.md',
   'docs/audits/2026-10-19-independent-technical-audit/findings.snapshot.yml',
   'docs/audits/2026-10-19-independent-technical-audit/repro/p0-probes.ts',
@@ -270,18 +273,78 @@ if (simulatedMarkersCount === 0) {
   pass(`[AUD-17..AUD-19] Verified ${simulatedMarkersCount} SIMULATED(...) route markers in apps/api/src all return 501.`);
 }
 
-// 6. Verify A002 tags statements per AUD-20 and B.1 ([implemented], [partial], [simulated], [not-started])
-const a002Content = readFileSync(resolve(ROOT, 'docs/execution-reports/A002.md'), 'utf8');
-if (
-  !a002Content.includes('[implemented]') ||
-  !a002Content.includes('[partial]') ||
-  !a002Content.includes('[simulated]') ||
-  !a002Content.includes('[not-started]')
-) {
-  fail('[AUD-20/B.1] docs/execution-reports/A002.md must tag statements with [implemented], [partial], [simulated], and [not-started].');
-} else {
-  pass('[AUD-20/B.1] Execution report A002.md statement tags ([implemented], [partial], [simulated], [not-started]) verified.');
+// Helper: Historical SHA mapping and commit ancestor verification (DR-AUD-001 / Rewrite Errata)
+const shaMapFile = resolve(import.meta.dirname, 'historical-sha-map.json');
+const HISTORICAL_SHA_MAP = existsSync(shaMapFile)
+  ? JSON.parse(readFileSync(shaMapFile, 'utf8'))
+  : {};
+
+function resolveSha(sha) {
+  return HISTORICAL_SHA_MAP[sha] || sha;
 }
+
+function isAncestor(sha) {
+  const target = resolveSha(sha);
+  try {
+    execSync(`git merge-base --is-ancestor ${target} HEAD`, { stdio: 'pipe' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// 6. Multi-Report Governance Validation (A002..A007, AUD-20, B.1, A007-4, A007-5)
+const reportFiles = ['A002.md', 'A003.md', 'A004.md', 'A005.md', 'A006.md', 'A007.md'];
+const mandatoryTags = ['[implemented]', '[partial]', '[simulated]', '[not-started]'];
+let reportsValidated = 0;
+
+for (const reportFile of reportFiles) {
+  const reportPath = resolve(ROOT, 'docs/execution-reports', reportFile);
+  if (!existsSync(reportPath)) {
+    fail(`[AUD-REPORT] Missing required execution report: docs/execution-reports/${reportFile}`);
+    continue;
+  }
+  const content = readFileSync(reportPath, 'utf8');
+
+  // Tag validation
+  for (const tag of mandatoryTags) {
+    if (!content.includes(tag)) {
+      fail(`[AUD-20/B.1] docs/execution-reports/${reportFile} is missing mandatory statement tag '${tag}'.`);
+    }
+  }
+
+  // Header table validation
+  const headerMap = {};
+  for (const line of content.split('\n')) {
+    const match = line.match(/^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|/);
+    if (match && match[1] !== '---' && match[1] !== 'Field') {
+      headerMap[match[1].trim()] = match[2].trim();
+    }
+    if (line.startsWith('---') && Object.keys(headerMap).length > 2) break;
+  }
+
+  const requiredHeaderKeys = ['Report ID', 'Date', 'Author', 'Evidence SHA', 'CI run'];
+  for (const key of requiredHeaderKeys) {
+    if (!headerMap[key]) {
+      fail(`[A007-4] docs/execution-reports/${reportFile} header table is missing mandatory field '${key}'.`);
+    }
+  }
+
+  // Evidence SHA ancestor verification
+  if (headerMap['Evidence SHA']) {
+    const cleanSha = headerMap['Evidence SHA'].replace(/[`\[\]]/g, '').split(/[\s(/]/)[0];
+    if (!isAncestor(cleanSha)) {
+      fail(
+        `[A007-4/AUD-COMMIT] docs/execution-reports/${reportFile} Evidence SHA '${cleanSha}' is not an ancestor of HEAD.`
+      );
+    }
+  }
+  reportsValidated++;
+}
+
+pass(
+  `[AUD-20/B.1/A007-4/5] Validated ${reportsValidated} execution reports (A002..A007) tags, headers, and Evidence SHA ancestors.`
+);
 
 // 7. Verify P0 probes cannot be silently skipped in apps/api/package.json (D.1)
 const apiPkg = JSON.parse(readFileSync(resolve(ROOT, 'apps/api/package.json'), 'utf8'));
@@ -302,25 +365,6 @@ for (const rel of ['README.md', 'apps/web/src/renderer.ts', '.github/release-tem
 pass('[OSR-11] Mandatory alpha warning verified in README.md, admin UI renderer, and release-notes template.');
 
 // 9. Historical SHA mapping and commit ancestor verification (DR-AUD-001 / Rewrite Errata)
-const shaMapFile = resolve(import.meta.dirname, 'historical-sha-map.json');
-const HISTORICAL_SHA_MAP = existsSync(shaMapFile)
-  ? JSON.parse(readFileSync(shaMapFile, 'utf8'))
-  : {};
-
-function resolveSha(sha) {
-  return HISTORICAL_SHA_MAP[sha] || sha;
-}
-
-function isAncestor(sha) {
-  const target = resolveSha(sha);
-  try {
-    execSync(`git merge-base --is-ancestor ${target} HEAD`, { stdio: 'pipe' });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 // Verify that historical SHAs cited in older reports (A002, A003) resolve to valid ancestors of HEAD
 const citedHistoricalShas = ['196deb5', '76f2823', '6073d6c'];
 let ancestorsOk = true;
