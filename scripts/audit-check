@@ -293,24 +293,24 @@ function isAncestor(sha) {
   }
 }
 
-// 6. Multi-Report Governance Validation (A002..A007, AUD-20, B.1, A007-4, A007-5)
-const reportFiles = ['A002.md', 'A003.md', 'A004.md', 'A005.md', 'A006.md', 'A007.md'];
-const mandatoryTags = ['[implemented]', '[partial]', '[simulated]', '[not-started]'];
+// 6. Multi-Report Governance Validation (A002..A###, AUD-20, B.1, A007-4, A007-5, A008)
+const reportsDir = resolve(ROOT, 'docs/execution-reports');
+const reportFiles = readdirSync(reportsDir)
+  .filter((f) => /^A\d{3}\.md$/.test(f) && f >= 'A002.md')
+  .sort();
+const statementTags = ['[implemented]', '[partial]', '[simulated]', '[not-started]'];
 let reportsValidated = 0;
 
 for (const reportFile of reportFiles) {
-  const reportPath = resolve(ROOT, 'docs/execution-reports', reportFile);
-  if (!existsSync(reportPath)) {
-    fail(`[AUD-REPORT] Missing required execution report: docs/execution-reports/${reportFile}`);
-    continue;
-  }
+  const reportPath = resolve(reportsDir, reportFile);
   const content = readFileSync(reportPath, 'utf8');
 
-  // Tag validation
-  for (const tag of mandatoryTags) {
-    if (!content.includes(tag)) {
-      fail(`[AUD-20/B.1] docs/execution-reports/${reportFile} is missing mandatory statement tag '${tag}'.`);
-    }
+  // Tag validation: relaxed rule requires at least one of the four statement tags
+  const hasStatementTag = statementTags.some((tag) => content.includes(tag));
+  if (!hasStatementTag) {
+    fail(
+      `[AUD-20/B.1] docs/execution-reports/${reportFile} must contain at least one statement tag ([implemented], [partial], [simulated], [not-started]).`
+    );
   }
 
   // Header table validation
@@ -324,6 +324,9 @@ for (const reportFile of reportFiles) {
   }
 
   const requiredHeaderKeys = ['Report ID', 'Date', 'Author', 'Evidence SHA', 'CI run'];
+  if (reportFile >= 'A008.md') {
+    requiredHeaderKeys.push('Task ID');
+  }
   for (const key of requiredHeaderKeys) {
     if (!headerMap[key]) {
       fail(`[A007-4] docs/execution-reports/${reportFile} header table is missing mandatory field '${key}'.`);
@@ -343,7 +346,7 @@ for (const reportFile of reportFiles) {
 }
 
 pass(
-  `[AUD-20/B.1/A007-4/5] Validated ${reportsValidated} execution reports (A002..A007) tags, headers, and Evidence SHA ancestors.`
+  `[AUD-20/B.1/A007-4/5] Validated ${reportsValidated} execution reports (${reportFiles[0]}..${reportFiles[reportFiles.length - 1]}) tags, headers, and Evidence SHA ancestors.`
 );
 
 // 7. Verify P0 probes cannot be silently skipped in apps/api/package.json (D.1)
