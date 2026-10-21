@@ -9,5 +9,7 @@ build/
 .env
 .env.local
 coverage/
+test-results/
+playwright-report/
 data/
 uploads/

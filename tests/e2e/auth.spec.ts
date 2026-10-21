@@ -1,0 +1,177 @@
+import { test, expect } from '@playwright/test';
+import { createHmac } from 'node:crypto';
+
+/**
+ * RFC 6238 TOTP helper matching server implementation in apps/api/src/auth/security.ts
+ */
+function computeTotp(secretHex: string, timestampMs = Date.now()): string {
+  const counter = Math.floor(timestampMs / 1000 / 30);
+  const buf = Buffer.alloc(8);
+  buf.writeBigUInt64BE(BigInt(counter));
+  const key = Buffer.from(secretHex, 'hex');
+  const hmac = createHmac('sha1', key).update(buf).digest();
+  const offset = hmac[hmac.length - 1] & 0x0f;
+  const binary =
+    ((hmac[offset] & 0x7f) << 24) |
+    ((hmac[offset + 1] & 0xff) << 16) |
+    ((hmac[offset + 2] & 0xff) << 8) |
+    (hmac[offset + 3] & 0xff);
+  return (binary % 1_000_000).toString().padStart(6, '0');
+}
+
+const TEST_USERNAME = 'admin_tester';
+const TEST_PASSWORD = 'StrongMasterPassword2026!';
+let sharedTotpSecret = '';
+
+test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', () => {
+  test('1. First-run setup wizard completes owner account creation', async ({ page }) => {
+    // Navigating unauthenticated to /admin redirects to /admin/setup
+    await page.goto('/admin');
+    await expect(page).toHaveURL(/\/admin\/setup$/);
+    await expect(page.locator('h1')).toContainText('Owner Account Setup');
+
+    // Fill in setup form (leave TOTP secret blank to exercise server-side random generation)
+    await page.fill('#setup-username', TEST_USERNAME);
+    await page.fill('#setup-password', TEST_PASSWORD);
+
+    await page.click('button[type="submit"]');
+
+    // Setup success banner appears with confirmation and generated TOTP secret
+    const statusBox = page.locator('#setup-status');
+    await expect(statusBox).toBeVisible();
+    await expect(statusBox).toContainText('Setup Completed!');
+    
+    const secretCode = statusBox.locator('code').first();
+    await expect(secretCode).toBeVisible();
+    sharedTotpSecret = (await secretCode.innerText()).trim();
+    expect(sharedTotpSecret).toMatch(/^[a-f0-9]{40}$/i);
+
+    await expect(page.locator('a[href="/admin/login"]')).toBeVisible();
+  });
+
+  test('2. /admin/setup is locked down once configured', async ({ page, request }) => {
+    // Attempting to visit /admin/setup in browser redirects to /admin/login
+    await page.goto('/admin/setup');
+    await expect(page).toHaveURL(/\/admin\/login$/);
+
+    // API endpoint /api/auth/setup returns 409 Conflict
+    const response = await request.post('/api/auth/setup', {
+      data: {
+        username: 'intruder',
+        password: 'AnotherPassword123!',
+      },
+    });
+    expect(response.status()).toBe(409);
+    const body = await response.json();
+    expect(body.error).toContain('already configured');
+  });
+
+  test('3. Open redirect prevention sanitizes `next` parameter upon login', async ({ page }) => {
+    const totpCode = computeTotp(sharedTotpSecret);
+
+    // Test A: External URL attempt (https://evil.example.com) -> must redirect safely to /admin
+    await page.goto('/admin/login?next=https://evil.example.com/exploit');
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.fill('#login-totp', totpCode);
+    await page.click('button[type="submit"]');
+    await page.waitForURL((url) => url.pathname === '/admin');
+    expect(new URL(page.url()).pathname).toBe('/admin');
+
+    // Clear session cookies for next test
+    await page.context().clearCookies();
+
+    // Test B: Protocol-relative attempt (//evil.example.com) -> must redirect to /admin
+    await page.goto('/admin/login?next=//evil.example.com');
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.fill('#login-totp', computeTotp(sharedTotpSecret));
+    await page.click('button[type="submit"]');
+    await page.waitForURL((url) => url.pathname === '/admin');
+    expect(new URL(page.url()).pathname).toBe('/admin');
+
+    // Clear session cookies
+    await page.context().clearCookies();
+
+    // Test C: Valid internal relative destination (/timeline) -> correctly redirects to /timeline
+    await page.goto('/admin/login?next=/timeline');
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.fill('#login-totp', computeTotp(sharedTotpSecret));
+    await page.click('button[type="submit"]');
+    await page.waitForURL((url) => url.pathname === '/timeline');
+    expect(new URL(page.url()).pathname).toBe('/timeline');
+  });
+
+  test('4. Standard login flow authenticates with password + TOTP to /admin', async ({ page }) => {
+    await page.goto('/admin/login');
+    await expect(page.locator('h1')).toContainText('Owner Sign in');
+
+    const totpCode = computeTotp(sharedTotpSecret);
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.fill('#login-totp', totpCode);
+    await page.click('button[type="submit"]');
+
+    await page.waitForURL((url) => url.pathname === '/admin');
+    await expect(page.locator('h1')).toContainText('Admin Workspace');
+    await expect(page.locator('#btn-killswitch')).toBeVisible();
+  });
+
+  test('5. CSRF token is stored in sessionStorage and validated on admin requests', async ({ page }) => {
+    // Log in to admin
+    await page.goto('/admin/login');
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.fill('#login-totp', computeTotp(sharedTotpSecret));
+    await page.click('button[type="submit"]');
+    await page.waitForURL((url) => url.pathname === '/admin');
+
+    // Inspect sessionStorage for lp_csrf_token
+    const storedCsrf = await page.evaluate(() => sessionStorage.getItem('lp_csrf_token'));
+    expect(storedCsrf).toBeTruthy();
+    expect(typeof storedCsrf).toBe('string');
+    expect(storedCsrf!.length).toBeGreaterThan(16);
+
+    // Request with valid CSRF token in X-CSRF-Token succeeds (200)
+    const successResult = await page.evaluate(async (token) => {
+      const res = await fetch('/api/settings/routing', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': token,
+        },
+        body: JSON.stringify({ automatedAnsweringEnabled: true }),
+      });
+      return { status: res.status, ok: res.ok };
+    }, storedCsrf);
+    expect(successResult.status).toBe(200);
+
+    // State-changing request without X-CSRF-Token fails with 403 Forbidden
+    const noTokenResult = await page.evaluate(async () => {
+      const res = await fetch('/api/settings/routing', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ automatedAnsweringEnabled: false }),
+      });
+      return { status: res.status };
+    });
+    expect(noTokenResult.status).toBe(403);
+
+    // State-changing request with forged/invalid X-CSRF-Token fails with 403 Forbidden
+    const badTokenResult = await page.evaluate(async () => {
+      const res = await fetch('/api/settings/routing', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': 'forged_csrf_token_12345',
+        },
+        body: JSON.stringify({ automatedAnsweringEnabled: false }),
+      });
+      return { status: res.status };
+    });
+    expect(badTokenResult.status).toBe(403);
+  });
+});
