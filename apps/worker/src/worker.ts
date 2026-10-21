@@ -192,7 +192,14 @@ export class PortfolioWorker {
     const discoveredUrls = full.currentRevision.body_md.match(urlRegex) ?? [];
     const savedEvidence = [];
     for (const url of discoveredUrls) {
-      const kind = url.includes('github.com') && (url.includes('/pull/') || url.includes('/commit/')) ? 'commit' : 'url';
+      let isGitHub = false;
+      try {
+        const parsed = new URL(url);
+        isGitHub = parsed.hostname === 'github.com' || parsed.hostname.endsWith('.github.com');
+      } catch {
+        isGitHub = false;
+      }
+      const kind = isGitHub && (url.includes('/pull/') || url.includes('/commit/')) ? 'commit' : 'url';
       const ev = await this.repo.saveEvidence({
         entry_id: entryId,
         kind,

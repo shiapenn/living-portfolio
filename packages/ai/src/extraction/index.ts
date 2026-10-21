@@ -56,7 +56,7 @@ export function scanForConfidentialData(text: string): RedactionPreviewItem[] {
   }
 
   // Emails
-  const emailRegex = /[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/g;
+  const emailRegex = /\b[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]{2,}\b/g;
   while ((match = emailRegex.exec(text)) !== null) {
     items.push({ type: 'email', match: match[0], index: match.index });
   }

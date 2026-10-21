@@ -36,26 +36,54 @@ export function chunkMarkdown(
   }
 
   // Split by headers and double newlines (paragraphs)
-  // Preserve offsets accurately
+  // Preserve offsets accurately without catastrophic backtracking
   const paragraphs: { text: string; start: number; end: number }[] = [];
-  const regex = /#{1,6}\s+[^\n]+|[^\n]+(?:\n(?!#{1,6}\s|\s*\n)[^\n]+)*/g;
-  let match: RegExpExecArray | null;
+  const lines = bodyMd.split('\n');
+  let blockLines: string[] = [];
+  let blockStart = 0;
+  let cursor = 0;
 
-  while ((match = regex.exec(bodyMd)) !== null) {
-    const raw = match[0];
-    const trimmed = raw.trim();
-    if (trimmed.length > 0) {
-      const matchIndex = match.index;
-      const leadingWhitespace = raw.indexOf(trimmed);
-      const start = matchIndex + leadingWhitespace;
-      const end = start + trimmed.length;
-      paragraphs.push({
-        text: trimmed,
-        start,
-        end,
-      });
+  function flushBlock() {
+    if (blockLines.length > 0) {
+      const blockRaw = blockLines.join('\n');
+      const trimmed = blockRaw.trim();
+      if (trimmed.length > 0) {
+        const lead = blockRaw.indexOf(trimmed);
+        paragraphs.push({
+          text: trimmed,
+          start: blockStart + lead,
+          end: blockStart + lead + trimmed.length,
+        });
+      }
+      blockLines = [];
     }
   }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const lineStart = cursor;
+    cursor += line.length + 1; // + 1 for newline
+
+    if (line.trim().length === 0) {
+      flushBlock();
+      blockStart = cursor;
+    } else if (/^#{1,6}\s/.test(line.trim())) {
+      flushBlock();
+      const trimmed = line.trim();
+      paragraphs.push({
+        text: trimmed,
+        start: lineStart + line.indexOf(trimmed),
+        end: lineStart + line.indexOf(trimmed) + trimmed.length,
+      });
+      blockStart = cursor;
+    } else {
+      if (blockLines.length === 0) {
+        blockStart = lineStart;
+      }
+      blockLines.push(line);
+    }
+  }
+  flushBlock();
 
   // If no paragraphs matched, fallback to full text
   if (paragraphs.length === 0) {
@@ -116,8 +144,8 @@ export function chunkMarkdown(
     // If a single paragraph is too large (> maxTokens), flush current and split paragraph
     if (paraTokens > maxTokens) {
       flushGroup();
-      // Split large paragraph into sentences
-      const sentences = para.text.match(/[^.!?]+[.!?]+(\s+|$)|[^.!?]+$/g) || [para.text];
+      // Split large paragraph into sentences without polynomial backtracking
+      const sentences = para.text.split(/(?<=[.!?])\s+/).filter(Boolean);
       let subTokens = 0;
       let subStart = para.start;
 

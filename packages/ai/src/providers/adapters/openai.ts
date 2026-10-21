@@ -21,7 +21,11 @@ export class OpenAICompatibleProvider implements ModelProvider {
     this.id = config.id ?? 'openai-compatible';
     this.name = config.name ?? 'OpenAI-Compatible Provider';
     this.apiKey = config.apiKey;
-    this.baseURL = (config.baseURL ?? 'https://api.openai.com/v1').replace(/\/+$/, '');
+    let rawBaseURL = config.baseURL ?? 'https://api.openai.com/v1';
+    while (rawBaseURL.endsWith('/')) {
+      rawBaseURL = rawBaseURL.slice(0, -1);
+    }
+    this.baseURL = rawBaseURL;
     this.dataPolicy = {
       trainsOnInputs: config.dataPolicy?.trainsOnInputs ?? false,
       retentionDays: config.dataPolicy?.retentionDays ?? 30,
