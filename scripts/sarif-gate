@@ -12,24 +12,21 @@
  */
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve, join } from 'node:path';
-import { parse as parseYaml } from '../packages/core/node_modules/yaml/browser/index.js';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const BASELINE_PATH = resolve(ROOT, 'docs/audits/sarif-baseline.json');
 const REGISTER_PATH = resolve(ROOT, 'docs/audits/register.yml');
 
-// 1. Verify and parse register.yml
+// 1. Verify and parse register.yml without external dependencies
 if (!existsSync(REGISTER_PATH)) {
   console.error(`✗ [SARIF-GATE] Missing register file: ${REGISTER_PATH}`);
   process.exit(1);
 }
 const registerRaw = readFileSync(REGISTER_PATH, 'utf8');
-const register = parseYaml(registerRaw);
-if (!Array.isArray(register)) {
-  console.error('✗ [SARIF-GATE] register.yml must parse to an array.');
-  process.exit(1);
+const validFindingIds = new Set();
+for (const match of registerRaw.matchAll(/^[ \t]*-?[ \t]*id:[ \t]*([^\s#]+)/gm)) {
+  validFindingIds.add(match[1]);
 }
-const validFindingIds = new Set(register.map((r) => r.id));
 
 // 2. Verify and parse sarif-baseline.json
 if (!existsSync(BASELINE_PATH)) {
