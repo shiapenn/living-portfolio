@@ -148,7 +148,12 @@ export function createApp(
   });
 
   // Admin UI routes (UX P0-1, 20261020-UX-01 / V1)
-  app.get('/admin/setup', (c) => c.html(renderAdminSetupPage()));
+  app.get('/admin/setup', (c) => {
+    if (auth.isSetupCompleted()) {
+      return c.redirect('/admin/login', 302);
+    }
+    return c.html(renderAdminSetupPage());
+  });
   app.get('/admin/login', (c) => c.html(renderAdminLoginPage()));
   app.get('/admin', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminWorkspacePage(repo)));
 

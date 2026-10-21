@@ -1233,8 +1233,22 @@ export function renderAdminLoginPage(): string {
               if (data.csrfToken) {
                 sessionStorage.setItem('lp_csrf_token', data.csrfToken);
               }
-              const next = new URLSearchParams(window.location.search).get('next') || '/admin';
-              window.location.href = next;
+              function sanitizeNext(target) {
+                if (!target || typeof target !== 'string') return '/admin';
+                const trimmed = target.trim();
+                if (!trimmed.startsWith('/') || trimmed.startsWith('//') || trimmed.startsWith('/\\\\')) {
+                  return '/admin';
+                }
+                try {
+                  const u = new URL(trimmed, window.location.origin);
+                  if (u.origin !== window.location.origin) return '/admin';
+                  return u.pathname + u.search + u.hash;
+                } catch {
+                  return '/admin';
+                }
+              }
+              const rawNext = new URLSearchParams(window.location.search).get('next');
+              window.location.href = sanitizeNext(rawNext);
             } else {
               errBox.className = 'later-thinking-banner';
               errBox.textContent = data.error || ('Sign-in failed (HTTP ' + res.status + ')');
