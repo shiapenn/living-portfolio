@@ -3,7 +3,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { loadConfig } from '@living-portfolio/config';
 import { InMemoryPortfolioRepository, seedDemoPortfolio } from '@living-portfolio/db';
-import { BudgetGovernor, MockModelProvider } from '@living-portfolio/ai';
+import { BudgetGovernor, MockModelProvider, OpenAICompatibleProvider, type ModelProvider } from '@living-portfolio/ai';
 import { DEFAULT_STRATA_THEME } from '@living-portfolio/core';
 import {
   renderAdminLoginPage,
@@ -24,13 +24,27 @@ import { createSettingsRoutes, type RuntimeSettingsState } from './routes/settin
 
 export function createApp(
   customRepo?: InMemoryPortfolioRepository,
-  options?: { signingKey?: string; bootstrapAdminToken?: string; allowedOrigins?: string[] }
+  options?: {
+    signingKey?: string;
+    bootstrapAdminToken?: string;
+    allowedOrigins?: string[];
+    providers?: ModelProvider[];
+  }
 ) {
   const app = new Hono();
   const cfg = loadConfig();
   const repo = customRepo ?? new InMemoryPortfolioRepository();
   const governor = new BudgetGovernor();
   const mockProvider = new MockModelProvider();
+
+  // Resolve model providers strictly from configuration or explicit options (Spec §10.8, §13.5)
+  // With none configured, providers is empty and Ask degrades to extractive excerpts with disclosure.
+  let providers: ModelProvider[] = [];
+  if (options?.providers) {
+    providers = options.providers;
+  } else if (cfg.OPENAI_API_KEY) {
+    providers = [new OpenAICompatibleProvider({ apiKey: cfg.OPENAI_API_KEY })];
+  }
   const adminToken = options?.bootstrapAdminToken || cfg.ADMIN_API_TOKEN || '';
   const auth = new AuthManager({
     signingKey: options?.signingKey || (cfg.SESSION_SECRET ? cfg.SESSION_SECRET : undefined),
@@ -89,7 +103,7 @@ export function createApp(
     createAskRoutes({
       repo,
       governor,
-      providers: [mockProvider],
+      providers,
       auth,
       tier1Floor: 0.82,
       tier2Floor: 0.55,
@@ -178,5 +192,5 @@ export function createApp(
     });
   });
 
-  return { app, repo, governor, mockProvider, runtimeState, auth, adminToken };
+  return { app, repo, governor, mockProvider, providers, runtimeState, auth, adminToken };
 }

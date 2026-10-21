@@ -1,15 +1,21 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { MockModelProvider } from '@living-portfolio/ai';
 import { createApp } from './app.js';
 import { computeTotpCode } from './auth/security.js';
 
 describe('Living Portfolio API Integration Tests', () => {
   let app: ReturnType<typeof createApp>['app'];
+  let repo: ReturnType<typeof createApp>['repo'];
   let adminToken: string;
   let authHeaders: Record<string, string>;
 
   beforeEach(() => {
-    const instance = createApp(undefined, { bootstrapAdminToken: 'test-admin-token-suite-001' });
+    const instance = createApp(undefined, {
+      bootstrapAdminToken: 'test-admin-token-suite-001',
+      providers: [new MockModelProvider()],
+    });
     app = instance.app;
+    repo = instance.repo;
     adminToken = instance.adminToken;
     authHeaders = {
       'Content-Type': 'application/json',
@@ -135,6 +141,37 @@ describe('Living Portfolio API Integration Tests', () => {
     expect(body.tier).toBe('tier1');
     expect(body.citations.length).toBeGreaterThan(0);
     expect(body.aiDisclosure).toContain('Automated answer');
+  });
+
+  it('[Spec §10.8 / 20261021-AI-01] with no configured model provider, /api/ask degrades to extractive excerpts and discloses it', async () => {
+    await createPublicEntry({
+      slug: 'cache-stampede-unconfigured',
+      title: 'Mitigating Cache Stampedes (Degraded Mode)',
+      profile: 'case-study',
+      view: 'article',
+      visibility: 'public',
+      body_md: `We solved cache stampedes using probabilistic early expiration algorithms with Redis and Node.js. It worked reliably under 50k requests per second.`,
+      temporal_level: 'exact',
+      valid_from: '2023-05-01T00:00:00Z',
+    });
+
+    // Unconfigured createApp has providers = []
+    const unconfigured = createApp(repo);
+    const res = await unconfigured.app.request('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: 'What did you use to solve cache stampedes?',
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.tier).toBe('extractive');
+    expect(body.degradationStep).toBe('extractive');
+    expect(body.aiDisclosure).toBe("Showing excerpts from the owner's records. Automated answers are paused for now.");
+    expect(body.answer).toContain("Showing excerpts from the owner's records. Automated answers are paused for now.");
+    expect(body.answer).not.toContain("Based on the owner's records, this project utilized");
   });
 
   it('GET /api/timeline returns Strata Timeline layers and as_of filtering', async () => {

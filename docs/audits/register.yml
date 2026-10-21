@@ -1610,7 +1610,7 @@
   severity: P1
   status: open
   owner: A
-  ux_priority_id: P1-8
+  ux_priority_id: P1-6
   related_to:
     - M1
     - F3
@@ -1726,7 +1726,7 @@
   severity: P0
   status: partial
   owner: A
-  ux_priority_id: P0-11
+  ux_priority_id: P1-8
   related_to:
     - G7
     - M9
@@ -1753,7 +1753,7 @@
   severity: P1
   status: open
   owner: A
-  ux_priority_id: P1-1
+  ux_priority_id: P1-7
   related_to:
     - P4
     - G5
@@ -1806,7 +1806,7 @@
   severity: P0
   status: open
   owner: A
-  ux_priority_id: P0-5
+  ux_priority_id: P0-11
   related_to:
     - F1
     - OSR-04
@@ -1886,7 +1886,7 @@
   severity: P1
   status: open
   owner: A
-  ux_priority_id: P1-8
+  ux_priority_id: P1-10
   related_to:
     - M11
   links:
@@ -2326,4 +2326,27 @@
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-07 / P2-7; staged before G5)
+  verified_by: null
+- id: 20261021-AI-01
+  audit: AUD-2026-10-21
+  title: 'createApp() hardcoded MockModelProvider at runtime producing synthetic text claiming to be owner records without real model configuration'
+  spec_sections:
+    - "10.8"
+    - "13.5"
+  severity: P1
+  status: fixed
+  owner: A
+  ux_priority_id: P1-8
+  related_to:
+    - G7
+    - 20261020-CP-07
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/api.test.ts
+  history:
+    - date: 2026-10-21
+      status: fixed
+      note: "Disclosed during A006 review. createApp() unconditionally instantiated MockModelProvider whose default completion text falsely asserted 'Based on the owner records...'. Fixed in A007: providers strictly resolved from configuration/options; with none configured, Ask degrades to extractive excerpts with disclosure (Spec §10.8); MockModelProvider text purged of owner record claims."
   verified_by: null

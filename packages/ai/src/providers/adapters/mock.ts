@@ -50,7 +50,7 @@ export class MockModelProvider implements ModelProvider {
         ],
       });
     } else {
-      responseText = `Based on the owner's records, this project utilized PostgreSQL with advisory locks to handle concurrency under high load [cite:1]. Matches: PostgreSQL, high load. Not verified: cluster deployment.`;
+      responseText = `[SIMULATED] Mock model synthesis for query [cite:1]. Matches: test scenario query context. Not verified: cluster deployment.`;
     }
 
     return {
