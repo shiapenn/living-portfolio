@@ -195,4 +195,92 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     });
     expect(badTokenResult.status).toBe(403);
   });
+
+  test('6. Admin workspace apiClient error handling: forced 401, 403, 500 show recovery messages and suppress success banner', async ({ page }) => {
+    // Navigate to admin workspace (already authenticated in session or re-authenticate)
+    await page.goto('/admin');
+    if (page.url().includes('/admin/login')) {
+      await page.fill('#login-username', TEST_USERNAME);
+      await page.fill('#login-password', TEST_PASSWORD);
+      await page.fill('#login-totp', computeTotp(sharedTotpSecret));
+      await page.click('button[type="submit"]');
+      await page.waitForURL((url) => url.pathname === '/admin');
+    }
+
+    const banner = page.locator('#admin-status-banner');
+    const killBtn = page.locator('#btn-killswitch');
+    await expect(killBtn).toBeVisible();
+
+    // 1. Forced 401: session expired recovery message shown, success message suppressed
+    await page.route('**/api/settings/routing', (route) =>
+      route.fulfill({
+        status: 401,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Session expired or unauthenticated' }),
+      })
+    );
+    await killBtn.click();
+    await expect(banner).toBeVisible();
+    await expect(banner.locator('[data-error="401"]')).toBeVisible();
+    await expect(banner).toContainText('Your session has expired');
+    await expect(banner.locator('a[href="/admin/login"]')).toBeVisible();
+    await expect(banner).not.toContainText('Automated answering is now');
+
+    await page.unroute('**/api/settings/routing');
+
+    // 2. Forced 403: CSRF security check failure recovery message shown, success message suppressed
+    await page.route('**/api/settings/routing', (route) =>
+      route.fulfill({
+        status: 403,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'CSRF token invalid or missing' }),
+      })
+    );
+    await killBtn.click();
+    await expect(banner.locator('[data-error="403"]')).toBeVisible();
+    await expect(banner).toContainText('Security check failed (CSRF token invalid or missing)');
+    await expect(banner).not.toContainText('Automated answering is now');
+
+    await page.unroute('**/api/settings/routing');
+
+    // 3. Forced 500: server error recovery message shown, success message suppressed
+    await page.route('**/api/settings/routing', (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Internal Server Error' }),
+      })
+    );
+    await killBtn.click();
+    await expect(banner.locator('[data-error="500"]')).toBeVisible();
+    await expect(banner).toContainText('Server error (HTTP 500)');
+    await expect(banner).not.toContainText('Automated answering is now');
+
+    await page.unroute('**/api/settings/routing');
+
+    // 4. Redaction preview error handling: forced 401 on redaction preview
+    const redactBtn = page.locator('#btn-redaction-check');
+    const redactBox = page.locator('#redaction-preview-box');
+    await page.fill('#entry-body', 'Draft text for testing error recovery');
+
+    await page.route('**/api/entries/redaction-preview', (route) =>
+      route.fulfill({
+        status: 401,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Unauthorized' }),
+      })
+    );
+    await redactBtn.click();
+    await expect(redactBox.locator('[data-error="401"]')).toBeVisible();
+    await expect(redactBox).toContainText('Your session has expired');
+    await expect(redactBox).not.toContainText('No confidential secrets or NDA markers detected');
+
+    await page.unroute('**/api/entries/redaction-preview');
+
+    // 5. Successful unintercepted request: success banner renders only when res.ok is true
+    await killBtn.click();
+    await expect(banner.locator('.as-of-banner')).toBeVisible();
+    await expect(banner).toContainText('Automated answering is now');
+    await expect(banner.locator('[data-error]')).toHaveCount(0);
+  });
 });

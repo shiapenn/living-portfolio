@@ -847,6 +847,19 @@ export function renderStaticPage(page: 'now' | 'about' | 'uses' | 'book', queryP
   );
 }
 
+export const ADMIN_API_CLIENT_SCRIPT = `
+        async function apiClient(url, options) {
+          var opts = options || {};
+          var csrf = sessionStorage.getItem('lp_csrf_token') || '';
+          var headers = Object.assign({
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrf
+          }, opts.headers || {});
+          return window.fetch(url, Object.assign({}, opts, { headers: headers }));
+        }
+        window.apiClient = apiClient;
+`;
+
 export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Promise<string> {
   const entries = await repo.listEntries({ visibility: ['public', 'unlisted', 'private'] });
   const escalations = await repo.getEscalations();
@@ -1058,14 +1071,19 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
         const drillBtn = document.getElementById('btn-backup-drill');
         let answeringEnabled = true;
 
-        async function apiClient(url, options) {
-          const opts = options || {};
-          const csrf = sessionStorage.getItem('lp_csrf_token') || '';
-          const headers = Object.assign({
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': csrf
-          }, opts.headers || {});
-          return fetch(url, Object.assign({}, opts, { headers }));
+        ${ADMIN_API_CLIENT_SCRIPT}
+
+        function renderAdminError(res) {
+          if (res.status === 401) {
+            return '<div class="later-thinking-banner" role="alert" data-error="401">Your session has expired. <a href="/admin/login" style="margin-left:8px;font-weight:600">Sign in again →</a></div>';
+          }
+          if (res.status === 403) {
+            return '<div class="later-thinking-banner" role="alert" data-error="403">Security check failed (CSRF token invalid or missing). Please refresh and retry.</div>';
+          }
+          if (res.status >= 500) {
+            return '<div class="later-thinking-banner" role="alert" data-error="500">Server error (HTTP ' + res.status + '). Please retry your request.</div>';
+          }
+          return '<div class="later-thinking-banner" role="alert" data-error="' + res.status + '">Request failed (HTTP ' + res.status + '). Please check inputs and retry.</div>';
         }
 
         // Initialize killswitch state from server settings
@@ -1082,23 +1100,27 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
         if (redactBtn) {
           redactBtn.addEventListener('click', async function() {
             const text = document.getElementById('entry-body').value;
-            const res = await apiClient('/api/entries/redaction-preview', {
-              method: 'POST',
-              body: JSON.stringify({ text })
-            });
-            if (!res.ok) {
-              redactBox.innerHTML = '<div class="later-thinking-banner" role="alert">Couldn\'t check for private details. Server returned HTTP ' + res.status + '.</div>';
-              return;
-            }
-            const data = await res.json();
-            if (Array.isArray(data.warnings) && data.warnings.length > 0) {
-              redactBox.innerHTML = '<div class="later-thinking-banner"><strong>Redaction Preview Warnings:</strong> ' +
-                data.warnings.map(function(w) { return w.type + ' ("' + w.match + '")'; }).join(', ') +
-                ' — Confirm none of this is under NDA before publishing.</div>';
-            } else if (Array.isArray(data.warnings)) {
-              redactBox.innerHTML = '<div class="chip" style="border-color:var(--role-outcome)">✓ No confidential secrets or NDA markers detected.</div>';
-            } else {
-              redactBox.innerHTML = '<div class="later-thinking-banner" role="alert">Couldn\'t check for private details.</div>';
+            try {
+              const res = await apiClient('/api/entries/redaction-preview', {
+                method: 'POST',
+                body: JSON.stringify({ text })
+              });
+              if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data.warnings) && data.warnings.length > 0) {
+                  redactBox.innerHTML = '<div class="later-thinking-banner"><strong>Redaction Preview Warnings:</strong> ' +
+                    data.warnings.map(function(w) { return w.type + ' ("' + w.match + '")'; }).join(', ') +
+                    ' — Confirm none of this is under NDA before publishing.</div>';
+                } else if (Array.isArray(data.warnings)) {
+                  redactBox.innerHTML = '<div class="chip" style="border-color:var(--role-outcome)">✓ No confidential secrets or NDA markers detected.</div>';
+                } else {
+                  redactBox.innerHTML = "<div class='later-thinking-banner' role='alert'>Couldn't check for private details.</div>";
+                }
+              } else {
+                redactBox.innerHTML = renderAdminError(res);
+              }
+            } catch (err) {
+              redactBox.innerHTML = '<div class="later-thinking-banner" role="alert">Network error connecting to server. Please retry.</div>';
             }
           });
         }
@@ -1137,41 +1159,56 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
               view: 'article',
               redactionPreviewToken: previewToken
             };
-            const res = await apiClient('/api/entries', {
-              method: 'POST',
-              body: JSON.stringify(payload)
-            });
-            if (res.ok) {
-              banner.innerHTML = '<div class="as-of-banner">Published "' + payload.title + '" at L0. <a href="/work/' + payload.slug + '">View entry →</a></div>';
-            } else {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Failed to publish entry (HTTP ' + res.status + '). Check authentication or redaction status.</div>';
+            try {
+              const res = await apiClient('/api/entries', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+              });
+              if (res.ok) {
+                banner.innerHTML = '<div class="as-of-banner">Published "' + payload.title + '" at L0. <a href="/work/' + payload.slug + '">View entry →</a></div>';
+              } else {
+                banner.innerHTML = renderAdminError(res);
+              }
+            } catch (err) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error connecting to server. Please retry.</div>';
             }
           });
         }
 
         if (killBtn) {
           killBtn.addEventListener('click', async function() {
-            answeringEnabled = !answeringEnabled;
-            const res = await apiClient('/api/settings/routing', {
-              method: 'PATCH',
-              body: JSON.stringify({ automatedAnsweringEnabled: answeringEnabled })
-            });
-            if (res.ok) {
-              killBtn.setAttribute('aria-pressed', answeringEnabled ? 'true' : 'false');
-              killBtn.textContent = answeringEnabled ? 'Pause Automated Answering' : 'Resume Automated Answering';
-              banner.innerHTML = '<div class="as-of-banner">Automated answering is now <strong>' + (answeringEnabled ? 'ENABLED' : 'PAUSED (Handoff only)') + '</strong>.</div>';
+            const nextState = !answeringEnabled;
+            try {
+              const res = await apiClient('/api/settings/routing', {
+                method: 'PATCH',
+                body: JSON.stringify({ automatedAnsweringEnabled: nextState })
+              });
+              if (res.ok) {
+                answeringEnabled = nextState;
+                killBtn.setAttribute('aria-pressed', answeringEnabled ? 'true' : 'false');
+                killBtn.textContent = answeringEnabled ? 'Pause Automated Answering' : 'Resume Automated Answering';
+                banner.innerHTML = '<div class="as-of-banner">Automated answering is now <strong>' + (answeringEnabled ? 'ENABLED' : 'PAUSED (Handoff only)') + '</strong>.</div>';
+              } else {
+                banner.innerHTML = renderAdminError(res);
+              }
+            } catch (err) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error connecting to server. Please retry.</div>';
             }
           });
         }
 
         if (drillBtn) {
           drillBtn.addEventListener('click', async function() {
-            const res = await apiClient('/api/settings/backups/run-drill', { method: 'POST' });
-            if (res.ok) {
-              const data = await res.json();
-              banner.innerHTML = '<div class="as-of-banner">Encrypted Backup (' + data.encryptedWith + ') &amp; Scratch Restore Drill: <strong>' + data.status.toUpperCase() + '</strong> (' + data.checks.entriesCount + ' entries verified).</div>';
-            } else {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Backup drill failed (HTTP ' + res.status + ').</div>';
+            try {
+              const res = await apiClient('/api/settings/backups/run-drill', { method: 'POST' });
+              if (res.ok) {
+                const data = await res.json();
+                banner.innerHTML = '<div class="as-of-banner">Encrypted Backup (' + data.encryptedWith + ') &amp; Scratch Restore Drill: <strong>' + data.status.toUpperCase() + '</strong> (' + data.checks.entriesCount + ' entries verified).</div>';
+              } else {
+                banner.innerHTML = renderAdminError(res);
+              }
+            } catch (err) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error connecting to server. Please retry.</div>';
             }
           });
         }
@@ -1215,6 +1252,9 @@ export function renderAdminLoginPage(): string {
       (function() {
         const form = document.getElementById('admin-login-form');
         const errBox = document.getElementById('login-error');
+
+        ${ADMIN_API_CLIENT_SCRIPT}
+
         form.addEventListener('submit', async function(e) {
           e.preventDefault();
           errBox.style.display = 'none';
@@ -1223,9 +1263,8 @@ export function renderAdminLoginPage(): string {
           const totpCode = document.getElementById('login-totp').value;
 
           try {
-            const res = await fetch('/api/auth/login', {
+            const res = await apiClient('/api/auth/login', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username, password, totpCode })
             });
             const data = await res.json();
@@ -1270,6 +1309,18 @@ export function renderAdminLoginPage(): string {
               }
               const rawNext = new URLSearchParams(window.location.search).get('next');
               window.location.href = sanitizeNext(rawNext);
+            } else if (res.status === 401) {
+              errBox.className = 'later-thinking-banner';
+              errBox.textContent = data.error || 'Invalid credentials or TOTP code.';
+              errBox.style.display = 'block';
+            } else if (res.status === 403) {
+              errBox.className = 'later-thinking-banner';
+              errBox.textContent = data.error || 'Access forbidden (security check failed).';
+              errBox.style.display = 'block';
+            } else if (res.status >= 500) {
+              errBox.className = 'later-thinking-banner';
+              errBox.textContent = 'Server error during sign-in. Please retry.';
+              errBox.style.display = 'block';
             } else {
               errBox.className = 'later-thinking-banner';
               errBox.textContent = data.error || ('Sign-in failed (HTTP ' + res.status + ')');
@@ -1318,6 +1369,9 @@ export function renderAdminSetupPage(): string {
       (function() {
         const form = document.getElementById('admin-setup-form');
         const statusBox = document.getElementById('setup-status');
+
+        ${ADMIN_API_CLIENT_SCRIPT}
+
         form.addEventListener('submit', async function(e) {
           e.preventDefault();
           statusBox.style.display = 'none';
@@ -1326,9 +1380,8 @@ export function renderAdminSetupPage(): string {
           const totpSecret = document.getElementById('setup-totp-secret').value || undefined;
 
           try {
-            const res = await fetch('/api/auth/setup', {
+            const res = await apiClient('/api/auth/setup', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username, password, totpSecret })
             });
             const data = await res.json();
@@ -1337,6 +1390,14 @@ export function renderAdminSetupPage(): string {
               statusBox.innerHTML = '<strong>Setup Completed!</strong> Save your TOTP secret hex: <code>' + data.totpSecret + '</code>. Your initial API bearer token is: <code>' + data.bearerToken + '</code>. <br/><a href="/admin/login" class="btn" style="display:inline-block;margin-top:8px">Proceed to Sign in →</a>';
               statusBox.style.display = 'block';
               form.style.display = 'none';
+            } else if (res.status === 409) {
+              statusBox.className = 'later-thinking-banner';
+              statusBox.textContent = data.error || 'Account setup already completed.';
+              statusBox.style.display = 'block';
+            } else if (res.status >= 500) {
+              statusBox.className = 'later-thinking-banner';
+              statusBox.textContent = 'Server error during setup. Please retry.';
+              statusBox.style.display = 'block';
             } else {
               statusBox.className = 'later-thinking-banner';
               statusBox.textContent = data.error || ('Setup failed (HTTP ' + res.status + ')');
