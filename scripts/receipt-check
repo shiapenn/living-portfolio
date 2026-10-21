@@ -161,7 +161,7 @@ function getGithubToken() {
       stdio: ['pipe', 'pipe', 'ignore'],
     });
     for (const line of out.split('\n')) {
-      if (line.startsWith('password=')) return line.split('=', 1)[1].trim();
+      if (line.startsWith('password=')) return line.slice('password='.length).trim();
     }
   } catch {}
   return '';
@@ -192,51 +192,58 @@ export function fetchLogs(jobOrRunId, options = {}) {
 
   // Fetch either job logs or run jobs
   try {
-    const script = `
-import urllib.request, json, sys
+    const pythonCode = `
+import urllib.request, urllib.error, json, sys
 
-token = "${token}"
+token = """${token}"""
 job_or_run = "${jobOrRunId}"
 
-class NoAuthRedirect(urllib.request.HTTPRedirectHandler):
+class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        new_req = super().redirect_request(req, fp, code, msg, headers, newurl)
-        if 'Authorization' in new_req.headers:
-            del new_req.headers['Authorization']
-        return new_req
+        return None
 
-opener = urllib.request.build_opener(NoAuthRedirect)
+opener = urllib.request.build_opener(NoRedirect)
 
-# Try as direct job ID first
-try:
+def fetch_job_log(jid):
     req = urllib.request.Request(
-        f'https://api.github.com/repos/shiapenn/living-portfolio/actions/jobs/{job_or_run}/logs',
-        headers={'Authorization': f'Bearer {token}', 'User-Agent': 'Receipt-Check'}
+        f"https://api.github.com/repos/shiapenn/living-portfolio/actions/jobs/{jid}/logs",
+        headers={"Authorization": f"Bearer {token}", "User-Agent": "Receipt-Check"}
     )
-    with opener.open(req) as resp:
-        sys.stdout.write(resp.read().decode('utf-8', errors='replace'))
-        sys.exit(0)
+    try:
+        opener.open(req)
+    except urllib.error.HTTPError as e:
+        if e.code == 302:
+            s3_url = e.headers["Location"]
+            with urllib.request.urlopen(s3_url) as s3_resp:
+                return s3_resp.read().decode("utf-8", errors="replace")
+    return ""
+
+# Try direct job ID
+log = fetch_job_log(job_or_run)
+if log:
+    sys.stdout.write(log)
+    sys.exit(0)
+
+# Try as workflow run ID
+req = urllib.request.Request(
+    f"https://api.github.com/repos/shiapenn/living-portfolio/actions/runs/{job_or_run}/jobs",
+    headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json", "User-Agent": "Receipt-Check"}
+)
+try:
+    with urllib.request.urlopen(req) as resp:
+        data = json.loads(resp.read().decode())
+        all_logs = []
+        for job in data.get("jobs", []):
+            jlog = fetch_job_log(job["id"])
+            if jlog:
+                all_logs.append(jlog)
+        if all_logs:
+            sys.stdout.write("\\n".join(all_logs))
+            sys.exit(0)
 except Exception:
     pass
-
-# Try as run ID
-req = urllib.request.Request(
-    f'https://api.github.com/repos/shiapenn/living-portfolio/actions/runs/{job_or_run}/jobs',
-    headers={'Authorization': f'Bearer {token}', 'Accept': 'application/vnd.github+json', 'User-Agent': 'Receipt-Check'}
-)
-with urllib.request.urlopen(req) as resp:
-    data = json.loads(resp.read().decode())
-    all_logs = []
-    for job in data.get('jobs', []):
-        j_req = urllib.request.Request(
-            f'https://api.github.com/repos/shiapenn/living-portfolio/actions/jobs/{job["id"]}/logs',
-            headers={'Authorization': f'Bearer {token}', 'User-Agent': 'Receipt-Check'}
-        )
-        with opener.open(j_req) as j_resp:
-            all_logs.append(j_resp.read().decode('utf-8', errors='replace'))
-    sys.stdout.write('\\n'.join(all_logs))
 `;
-    const logs = execSync(`python3 -c '${script}'`, { encoding: 'utf8' });
+    const logs = execSync('python3', { input: pythonCode, encoding: 'utf8' });
     if (logs && logs.length > 50) return logs;
   } catch (err) {
     throw new Error(`Failed to fetch logs from GitHub API for ID ${jobOrRunId}: ${err.message}`);
