@@ -10,6 +10,7 @@
     "test:e2e": "playwright test",
     "verify": "node scripts/verify-all",
     "audit:check": "node scripts/audit-check",
+    "receipt:check": "node scripts/receipt-check",
     "hardcode:check": "node scripts/hardcode-check",
     "dco:check": "node scripts/dco-check",
     "config:generate-env": "node scripts/generate-env-example",

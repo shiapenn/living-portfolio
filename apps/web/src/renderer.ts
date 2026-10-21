@@ -1235,15 +1235,36 @@ export function renderAdminLoginPage(): string {
               }
               function sanitizeNext(target) {
                 if (!target || typeof target !== 'string') return '/admin';
-                const trimmed = target.trim();
-                if (!trimmed.startsWith('/') || trimmed.startsWith('//') || trimmed.startsWith('/\\\\')) {
-                  return '/admin';
+                var trimmed = target.trim();
+                if (!trimmed || !trimmed.startsWith('/')) return '/admin';
+                var bslash = String.fromCharCode(92);
+                if (trimmed.startsWith('//') || trimmed.startsWith('/' + bslash) || trimmed.startsWith(bslash)) return '/admin';
+                var decoded = trimmed;
+                for (var i = 0; i < 3; i++) {
+                  try {
+                    var nextDecoded = decodeURIComponent(decoded);
+                    if (nextDecoded === decoded) break;
+                    decoded = nextDecoded;
+                  } catch (_) {
+                    return '/admin';
+                  }
                 }
+                decoded = decoded.trim();
+                if (!decoded.startsWith('/') || decoded.startsWith('//') || decoded.startsWith('/' + bslash) || decoded.startsWith(bslash)) return '/admin';
+                for (var j = 0; j < decoded.length; j++) {
+                  var code = decoded.charCodeAt(j);
+                  if (code <= 32 || code === 127) return '/admin';
+                }
+                if (decoded.indexOf(bslash) !== -1) return '/admin';
                 try {
-                  const u = new URL(trimmed, window.location.origin);
+                  var u = new URL(trimmed, window.location.origin);
                   if (u.origin !== window.location.origin) return '/admin';
+                  if (u.protocol !== window.location.protocol) return '/admin';
+                  if (!u.pathname.startsWith('/') || u.pathname.startsWith('//') || u.pathname.indexOf(bslash) !== -1) {
+                    return '/admin';
+                  }
                   return u.pathname + u.search + u.hash;
-                } catch {
+                } catch (_) {
                   return '/admin';
                 }
               }

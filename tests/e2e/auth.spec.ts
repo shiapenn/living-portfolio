@@ -67,22 +67,36 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
   });
 
   test('3. Open redirect prevention sanitizes `next` parameter upon login', async ({ page }) => {
-    const totpCode = computeTotp(sharedTotpSecret);
+    // Helper to log in with a given next parameter and assert resulting pathname
+    async function testLoginWithNext(nextParam: string, expectedPathname: string) {
+      await page.context().clearCookies();
+      // Use encodeURI or raw query string as passed
+      const nextQuery = nextParam ? `?next=${encodeURIComponent(nextParam)}` : '';
+      await page.goto(`/admin/login${nextQuery}`);
+      await page.fill('#login-username', TEST_USERNAME);
+      await page.fill('#login-password', TEST_PASSWORD);
+      await page.fill('#login-totp', computeTotp(sharedTotpSecret));
+      await page.click('button[type="submit"]');
+      await page.waitForURL((url) => url.pathname === expectedPathname);
+      expect(new URL(page.url()).pathname).toBe(expectedPathname);
+    }
 
-    // Test A: External URL attempt (https://evil.example.com) -> must redirect safely to /admin
-    await page.goto('/admin/login?next=https://evil.example.com/exploit');
-    await page.fill('#login-username', TEST_USERNAME);
-    await page.fill('#login-password', TEST_PASSWORD);
-    await page.fill('#login-totp', totpCode);
-    await page.click('button[type="submit"]');
-    await page.waitForURL((url) => url.pathname === '/admin');
-    expect(new URL(page.url()).pathname).toBe('/admin');
+    // Required adversarial next cases:
+    // 1. Protocol-relative //evil.com -> safe /admin fallback
+    await testLoginWithNext('//evil.com', '/admin');
 
-    // Clear session cookies for next test
+    // 2. Backslash prefix /\evil.com -> safe /admin fallback
+    await testLoginWithNext('/\\evil.com', '/admin');
+
+    // 3. Absolute external URL https://evil.com -> safe /admin fallback
+    await testLoginWithNext('https://evil.com', '/admin');
+
+    // 4. JavaScript URI javascript:alert(1) -> safe /admin fallback
+    await testLoginWithNext('javascript:alert(1)', '/admin');
+
+    // 5. URL-encoded backslash /%5Cevil.com -> safe /admin fallback
     await page.context().clearCookies();
-
-    // Test B: Protocol-relative attempt (//evil.example.com) -> must redirect to /admin
-    await page.goto('/admin/login?next=//evil.example.com');
+    await page.goto('/admin/login?next=/%5Cevil.com');
     await page.fill('#login-username', TEST_USERNAME);
     await page.fill('#login-password', TEST_PASSWORD);
     await page.fill('#login-totp', computeTotp(sharedTotpSecret));
@@ -90,17 +104,24 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.waitForURL((url) => url.pathname === '/admin');
     expect(new URL(page.url()).pathname).toBe('/admin');
 
-    // Clear session cookies
+    // 6. URL-encoded double slash /%2F%2Fevil.com -> safe /admin fallback
     await page.context().clearCookies();
-
-    // Test C: Valid internal relative destination (/timeline) -> correctly redirects to /timeline
-    await page.goto('/admin/login?next=/timeline');
+    await page.goto('/admin/login?next=/%2F%2Fevil.com');
     await page.fill('#login-username', TEST_USERNAME);
     await page.fill('#login-password', TEST_PASSWORD);
     await page.fill('#login-totp', computeTotp(sharedTotpSecret));
     await page.click('button[type="submit"]');
-    await page.waitForURL((url) => url.pathname === '/timeline');
-    expect(new URL(page.url()).pathname).toBe('/timeline');
+    await page.waitForURL((url) => url.pathname === '/admin');
+    expect(new URL(page.url()).pathname).toBe('/admin');
+
+    // 7. Whitespace-prefixed malicious variant -> safe /admin fallback
+    await testLoginWithNext('   //evil.com', '/admin');
+
+    // 8. Whitespace-prefixed valid relative target -> trimmed and allowed
+    await testLoginWithNext('   /admin/entries', '/admin/entries');
+
+    // 9. Valid relative on-site destination (/admin/entries) -> must pass
+    await testLoginWithNext('/admin/entries', '/admin/entries');
   });
 
   test('4. Standard login flow authenticates with password + TOTP to /admin', async ({ page }) => {
