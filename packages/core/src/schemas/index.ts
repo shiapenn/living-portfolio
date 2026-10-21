@@ -20,12 +20,13 @@ export const EntryCreateSchema = z.object({
   view: EntryViewSchema.default('article'),
   visibility: VisibilitySchema.default('private'),
   venture_id: z.string().uuid().nullable().optional(),
-  body_md: z.string().min(1),
+  body_md: z.string().trim().min(1, 'Body content cannot be empty or whitespace'),
   valid_from: z.string().datetime().nullable().optional(),
   valid_to: z.string().datetime().nullable().optional(),
   temporal_level: TemporalLevelSchema.default('estimated'),
   valid_from_range_end: z.string().datetime().nullable().optional(),
   is_hindsight: z.boolean().default(false),
+  redactionPreviewToken: z.string().optional(),
 });
 
 export const EntryUpdateSchema = z.object({
@@ -33,11 +34,12 @@ export const EntryUpdateSchema = z.object({
   view: EntryViewSchema.optional(),
   visibility: VisibilitySchema.optional(),
   venture_id: z.string().uuid().nullable().optional(),
+  redactionPreviewToken: z.string().optional(),
 });
 
 export const RevisionCreateSchema = z.object({
   entry_id: z.string().uuid(),
-  body_md: z.string().min(1),
+  body_md: z.string().trim().min(1, 'Body content cannot be empty or whitespace'),
   valid_from: z.string().datetime().nullable().optional(),
   valid_to: z.string().datetime().nullable().optional(),
   temporal_level: TemporalLevelSchema.default('estimated'),

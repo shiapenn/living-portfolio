@@ -8,7 +8,7 @@ describe('Living Portfolio API Integration Tests', () => {
   let authHeaders: Record<string, string>;
 
   beforeEach(() => {
-    const instance = createApp();
+    const instance = createApp(undefined, { bootstrapAdminToken: 'test-admin-token-suite-001' });
     app = instance.app;
     adminToken = instance.adminToken;
     authHeaders = {
@@ -16,6 +16,23 @@ describe('Living Portfolio API Integration Tests', () => {
       Authorization: `Bearer ${adminToken}`,
     };
   });
+
+  async function createPublicEntry(entryData: any) {
+    const previewRes = await app.request('/api/entries/redaction-preview', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ text: entryData.body_md }),
+    });
+    const previewData = await previewRes.json();
+    return app.request('/api/entries', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        ...entryData,
+        redactionPreviewToken: previewData.redactionPreviewToken,
+      }),
+    });
+  }
 
   it('GET /healthz returns healthy system status', async () => {
     const res = await app.request('/healthz');
@@ -27,6 +44,14 @@ describe('Living Portfolio API Integration Tests', () => {
   });
 
   it('POST /api/entries creates entry, revision, chunks, redaction warnings, and signed redactionPreviewToken', async () => {
+    const text = `# The Goal\n\nWe needed to synchronize workers across our distributed cluster.\n\n# The Decision\n\nWe decided to use Postgres advisory locks instead of Redis.\n\n# What Happened\n\nIt reduced p99 latency by 40%.`;
+    const previewRes = await app.request('/api/entries/redaction-preview', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ text }),
+    });
+    const previewData = await previewRes.json();
+
     const res = await app.request('/api/entries', {
       method: 'POST',
       headers: authHeaders,
@@ -36,9 +61,10 @@ describe('Living Portfolio API Integration Tests', () => {
         profile: 'case-study',
         view: 'article',
         visibility: 'public',
-        body_md: `# The Goal\n\nWe needed to synchronize workers across our distributed cluster.\n\n# The Decision\n\nWe decided to use Postgres advisory locks instead of Redis.\n\n# What Happened\n\nIt reduced p99 latency by 40%.`,
+        body_md: text,
         temporal_level: 'exact',
         valid_from: '2024-03-01T00:00:00Z',
+        redactionPreviewToken: previewData.redactionPreviewToken,
       }),
     });
 
@@ -51,6 +77,14 @@ describe('Living Portfolio API Integration Tests', () => {
   });
 
   it('GET /api/entries/:slug computes structure level and gap questions', async () => {
+    const text = `We investigated distributed locking for our fleet.`;
+    const previewRes = await app.request('/api/entries/redaction-preview', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ text }),
+    });
+    const previewData = await previewRes.json();
+
     await app.request('/api/entries', {
       method: 'POST',
       headers: authHeaders,
@@ -60,8 +94,9 @@ describe('Living Portfolio API Integration Tests', () => {
         profile: 'case-study',
         view: 'article',
         visibility: 'public',
-        body_md: `We investigated distributed locking for our fleet.`,
+        body_md: text,
         temporal_level: 'estimated',
+        redactionPreviewToken: previewData.redactionPreviewToken,
       }),
     });
 
@@ -76,19 +111,15 @@ describe('Living Portfolio API Integration Tests', () => {
   });
 
   it('POST /api/ask handles lookup and advisory queries with citations', async () => {
-    await app.request('/api/entries', {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({
-        slug: 'cache-stampede-solution',
-        title: 'Mitigating Cache Stampedes',
-        profile: 'case-study',
-        view: 'article',
-        visibility: 'public',
-        body_md: `We solved cache stampedes using probabilistic early expiration algorithms with Redis and Node.js. It worked reliably under 50k requests per second.`,
-        temporal_level: 'exact',
-        valid_from: '2023-05-01T00:00:00Z',
-      }),
+    await createPublicEntry({
+      slug: 'cache-stampede-solution',
+      title: 'Mitigating Cache Stampedes',
+      profile: 'case-study',
+      view: 'article',
+      visibility: 'public',
+      body_md: `We solved cache stampedes using probabilistic early expiration algorithms with Redis and Node.js. It worked reliably under 50k requests per second.`,
+      temporal_level: 'exact',
+      valid_from: '2023-05-01T00:00:00Z',
     });
 
     const res = await app.request('/api/ask', {
@@ -107,34 +138,26 @@ describe('Living Portfolio API Integration Tests', () => {
   });
 
   it('GET /api/timeline returns Strata Timeline layers and as_of filtering', async () => {
-    await app.request('/api/entries', {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({
-        slug: 'early-days-2020',
-        title: 'Early Days Architecture',
-        profile: 'case-study',
-        view: 'article',
-        visibility: 'public',
-        body_md: `Architecture decisions in 2020.`,
-        temporal_level: 'exact',
-        valid_from: '2020-04-15T00:00:00Z',
-      }),
+    await createPublicEntry({
+      slug: 'early-days-2020',
+      title: 'Early Days Architecture',
+      profile: 'case-study',
+      view: 'article',
+      visibility: 'public',
+      body_md: `Architecture decisions in 2020.`,
+      temporal_level: 'exact',
+      valid_from: '2020-04-15T00:00:00Z',
     });
 
-    await app.request('/api/entries', {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({
-        slug: 'modern-era-2025',
-        title: 'Modern Architecture',
-        profile: 'case-study',
-        view: 'article',
-        visibility: 'public',
-        body_md: `Architecture decisions in 2025.`,
-        temporal_level: 'exact',
-        valid_from: '2025-08-01T00:00:00Z',
-      }),
+    await createPublicEntry({
+      slug: 'modern-era-2025',
+      title: 'Modern Architecture',
+      profile: 'case-study',
+      view: 'article',
+      visibility: 'public',
+      body_md: `Architecture decisions in 2025.`,
+      temporal_level: 'exact',
+      valid_from: '2025-08-01T00:00:00Z',
     });
 
     const res = await app.request('/api/timeline?as_of=2021-01-01T00:00:00Z');

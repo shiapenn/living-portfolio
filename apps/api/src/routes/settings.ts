@@ -81,18 +81,21 @@ export function createSettingsRoutes(repo?: IPortfolioRepository, sharedState?: 
         fallback: 'extractive',
         per_visitor: { questions_per_hour: 10, bot_challenge: true },
       },
+      // P0-9 (20261020-UX-05): no status string without a measured source. Notification and backup
+      // adapters are not implemented yet (findings M1 / M8), so report `not_configured` instead of
+      // fabricated "verified" / "passed" values and a made-up last-backup timestamp.
       notifications: {
-        channel: 'ntfy',
-        topic: 'living-portfolio-alerts',
-        testStatus: 'verified',
+        channel: null,
+        topic: null,
+        testStatus: 'not_configured',
       },
       backups: {
-        schedule: '03:30',
-        destinations: ['object-storage', 'git-portable-export'],
+        schedule: null,
+        destinations: [],
         encrypt: 'age',
         retention: { daily: 7, weekly: 4, monthly: 6 },
-        lastRestoreTest: 'passed',
-        lastBackupAt: new Date(Date.now() - 4 * 3600 * 1000).toISOString(),
+        lastRestoreTest: 'not_configured',
+        lastBackupAt: null,
       },
       theme: state.theme,
       themeConformance: verifyThemeConformance(state.theme),

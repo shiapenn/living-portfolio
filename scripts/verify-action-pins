@@ -1,0 +1,104 @@
+#!/usr/bin/env node
+/**
+ * Pinned GitHub Action SHA Verifier (`scripts/verify-action-pins`, 20261020 CI fix 3a)
+ *
+ * Fails (exit 1) when any `uses:` reference in `.github/workflows/*.yml`:
+ *   - is not pinned to a full 40-character commit SHA (local `./` actions and `docker://` are skipped), or
+ *   - points at a SHA that does not resolve in the upstream repository (GitHub API returns non-200), or
+ *   - carries a `# vX.Y.Z` comment whose tag resolves to a different commit than the pinned SHA.
+ *
+ * Motivation: CodeQL failed in CI because `github/codeql-action@b56ba49e...` did not exist upstream.
+ * Uses `GITHUB_TOKEN` (if set) to avoid anonymous API rate limits.
+ */
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
+
+const WORKFLOW_DIR = '.github/workflows';
+const USES_RE = /^\s*-?\s*uses:\s*([^\s#]+)(?:\s*#\s*(\S+))?/;
+const SHA_RE = /^[0-9a-f]{40}$/;
+
+export function parseUses(text, file) {
+  const refs = [];
+  text.split('\n').forEach((line, i) => {
+    const m = line.match(USES_RE);
+    if (!m) return;
+    const spec = m[1].replace(/^["']|["']$/g, '');
+    if (spec.startsWith('./') || spec.startsWith('docker://')) return;
+    const [path, ref = ''] = spec.split('@');
+    const [owner, repo] = path.split('/');
+    refs.push({ file, line: i + 1, spec, owner, repo, ref, tagComment: m[2] });
+  });
+  return refs;
+}
+
+async function shaExists(owner, repo, sha) {
+  const headers = { Accept: 'application/vnd.github+json', 'User-Agent': 'living-portfolio-pin-check' };
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits/${sha}`, { headers });
+      return res.status;
+    } catch (err) {
+      if (attempt === 3) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
+    }
+  }
+  return 500;
+}
+
+function tagCommit(owner, repo, tag) {
+  try {
+    const out = execFileSync(
+      'git',
+      ['ls-remote', `https://github.com/${owner}/${repo}.git`, `refs/tags/${tag}`, `refs/tags/${tag}^{}`],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }
+    );
+    const lines = out.trim().split('\n').filter(Boolean);
+    if (lines.length === 0) return null;
+    // Prefer the peeled (^{}) commit for annotated tags.
+    const peeled = lines.find((l) => l.endsWith('^{}')) ?? lines[0];
+    return peeled.split('\t')[0];
+  } catch {
+    return null;
+  }
+}
+
+async function main() {
+  const files = readdirSync(WORKFLOW_DIR).filter((f) => /\.ya?ml$/.test(f));
+  const refs = files.flatMap((f) => parseUses(readFileSync(join(WORKFLOW_DIR, f), 'utf8'), f));
+  const failures = [];
+
+  for (const r of refs) {
+    const where = `${WORKFLOW_DIR}/${r.file}:${r.line} ${r.spec}`;
+    if (!SHA_RE.test(r.ref)) {
+      failures.push(`${where} — not pinned to a full 40-char commit SHA`);
+      continue;
+    }
+    const status = await shaExists(r.owner, r.repo, r.ref);
+    if (status !== 200) {
+      failures.push(`${where} — SHA does not resolve upstream (GitHub API HTTP ${status})`);
+      continue;
+    }
+    if (r.tagComment) {
+      const tagSha = tagCommit(r.owner, r.repo, r.tagComment);
+      if (tagSha && tagSha !== r.ref) {
+        failures.push(`${where} — comment says ${r.tagComment} but that tag resolves to ${tagSha}`);
+        continue;
+      }
+    }
+    console.log(`✓ ${where}`);
+  }
+
+  if (failures.length) {
+    console.error(`\n✗ [CI-3a] ${failures.length} unresolvable or mismatched action pin(s):`);
+    failures.forEach((f) => console.error(`  - ${f}`));
+    process.exit(1);
+  }
+  console.log(`\n✓ [CI-3a] All ${refs.length} action pins resolve upstream.`);
+}
+
+main().catch((err) => {
+  console.error('✗ [CI-3a] Pin verification crashed:', err);
+  process.exit(1);
+});

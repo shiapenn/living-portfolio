@@ -23,23 +23,36 @@ export interface ExtractedClaim {
 }
 
 export interface RedactionPreviewItem {
-  type: 'secret' | 'email' | 'phone' | 'ip' | 'name';
+  type: 'secret' | 'email' | 'phone' | 'ip' | 'name' | 'nda' | 'client';
   match: string;
   index: number;
 }
 
 /**
- * Local Redaction Preview (§4.3, §15)
+ * Local Redaction Preview (§4.3, §15, UX P0-3 / V3)
  * Runs locally before sending content to third-party model providers.
+ * Catches API keys (including sk- keys), NDA markers, client names, emails, IPs.
  */
 export function scanForConfidentialData(text: string): RedactionPreviewItem[] {
   const items: RedactionPreviewItem[] = [];
 
-  // API keys / tokens (generic bearer, AWS, JWT patterns)
-  const tokenRegex = /(?:bearer\s+[a-zA-Z0-9_\-\.]{15,}|AKIA[0-9A-Z]{16}|ey[a-zA-Z0-9_\-]{15,}\.[a-zA-Z0-9_\-]{15,})/gi;
+  // API keys / tokens (generic bearer, OpenAI sk- keys, AWS, JWT patterns)
+  const tokenRegex = /(?:bearer\s+[a-zA-Z0-9_\-\.]{15,}|sk-[a-zA-Z0-9_\-]{10,}|AKIA[0-9A-Z]{16}|ey[a-zA-Z0-9_\-]{15,}\.[a-zA-Z0-9_\-]{15,})/gi;
   let match: RegExpExecArray | null;
   while ((match = tokenRegex.exec(text)) !== null) {
     items.push({ type: 'secret', match: match[0], index: match.index });
+  }
+
+  // NDA / confidentiality markers
+  const ndaRegex = /\b(?:nda|non-disclosure|strictly\s+confidential|confidential(?:\s+under\s+nda)?)\b/gi;
+  while ((match = ndaRegex.exec(text)) !== null) {
+    items.push({ type: 'nda', match: match[0], index: match.index });
+  }
+
+  // Client names & client references
+  const clientRegex = /\b(?:Acme(?:\s+Corp)?|Client\s+[A-Z][a-zA-Z0-9_-]+|internal\s+client\s+[A-Z][a-zA-Z0-9_-]+)\b/gi;
+  while ((match = clientRegex.exec(text)) !== null) {
+    items.push({ type: 'client', match: match[0], index: match.index });
   }
 
   // Emails

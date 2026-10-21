@@ -926,7 +926,7 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
         </p>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button type="button" class="btn btn-secondary" id="btn-killswitch">Pause Automated Answering</button>
+        <button type="button" class="btn btn-secondary" id="btn-killswitch" aria-pressed="true">Pause Automated Answering</button>
         <button type="button" class="btn btn-secondary" id="btn-backup-drill">Run Backup &amp; Restore Drill</button>
         <a href="/api/settings/export" target="_blank" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center">Export Markdown + Sidecar</a>
       </div>
@@ -1037,24 +1037,14 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
 
       <section class="admin-pane" aria-labelledby="audit-heading">
         <h2 id="audit-heading" style="font-size:18px;margin:0 0 12px 0">Topology Audit &amp; Scoped Constraints (§11)</h2>
-        <div style="border:1px solid var(--rule);padding:12px;background:var(--surface-page);margin-bottom:12px">
-          <strong style="font-size:14px">Detected Claim Conflict:</strong>
-          <p style="font-size:13px;margin:6px 0">
-            <em>2021:</em> "Use Redis Redlock leases for distributed job coordination."<br/>
-            <em>2024:</em> "PostgreSQL advisory locks outperform external Redis locks under 50k TPS."
-          </p>
-          <p style="font-size:13px;color:var(--text-muted);margin:0 0 8px 0">
-            Question: Does the later claim supersede the earlier one, or do they apply to different situations?
-          </p>
-        </div>
         <h3 style="font-size:14px;margin:12px 0 6px 0">Mined Scoped Constraints (${scopedConstraints.length})</h3>
-        ${scopedConstraints
+        ${scopedConstraints.length > 0 ? scopedConstraints
           .map(
             (sc) => `<div style="font-size:13px;padding:8px;border:1px dashed var(--rule)">
               Quote: "${escapeHtml(sc.source_quote || '')}" · Status: <strong>${escapeHtml(sc.status)}</strong>
             </div>`
           )
-          .join('\n')}
+          .join('\n') : '<p style="color:var(--text-muted);font-size:13px">No active scoped constraints recorded.</p>'}
       </section>
     </div>
 
@@ -1068,21 +1058,47 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
         const drillBtn = document.getElementById('btn-backup-drill');
         let answeringEnabled = true;
 
+        async function apiClient(url, options) {
+          const opts = options || {};
+          const csrf = sessionStorage.getItem('lp_csrf_token') || '';
+          const headers = Object.assign({
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrf
+          }, opts.headers || {});
+          return fetch(url, Object.assign({}, opts, { headers }));
+        }
+
+        // Initialize killswitch state from server settings
+        apiClient('/api/settings').then(function(res) {
+          if (res.ok) return res.json();
+        }).then(function(data) {
+          if (data && data.runtime && killBtn) {
+            answeringEnabled = data.runtime.automatedAnsweringEnabled;
+            killBtn.setAttribute('aria-pressed', answeringEnabled ? 'true' : 'false');
+            killBtn.textContent = answeringEnabled ? 'Pause Automated Answering' : 'Resume Automated Answering';
+          }
+        }).catch(function() {});
+
         if (redactBtn) {
           redactBtn.addEventListener('click', async function() {
             const text = document.getElementById('entry-body').value;
-            const res = await fetch('/api/entries/redaction-preview', {
+            const res = await apiClient('/api/entries/redaction-preview', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ text })
             });
+            if (!res.ok) {
+              redactBox.innerHTML = '<div class="later-thinking-banner" role="alert">Couldn\'t check for private details. Server returned HTTP ' + res.status + '.</div>';
+              return;
+            }
             const data = await res.json();
-            if (data.warnings && data.warnings.length > 0) {
+            if (Array.isArray(data.warnings) && data.warnings.length > 0) {
               redactBox.innerHTML = '<div class="later-thinking-banner"><strong>Redaction Preview Warnings:</strong> ' +
                 data.warnings.map(function(w) { return w.type + ' ("' + w.match + '")'; }).join(', ') +
                 ' — Confirm none of this is under NDA before publishing.</div>';
-            } else {
+            } else if (Array.isArray(data.warnings)) {
               redactBox.innerHTML = '<div class="chip" style="border-color:var(--role-outcome)">✓ No confidential secrets or NDA markers detected.</div>';
+            } else {
+              redactBox.innerHTML = '<div class="later-thinking-banner" role="alert">Couldn\'t check for private details.</div>';
             }
           });
         }
@@ -1090,24 +1106,45 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
         if (form) {
           form.addEventListener('submit', async function(e) {
             e.preventDefault();
+            const text = document.getElementById('entry-body').value;
+            if (!text || !text.trim()) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Body content is required before publishing.</div>';
+              return;
+            }
+
+            // Preview redaction first to acquire preview token
+            let previewToken = '';
+            try {
+              const previewRes = await apiClient('/api/entries/redaction-preview', {
+                method: 'POST',
+                body: JSON.stringify({ text })
+              });
+              if (previewRes.ok) {
+                const prevData = await previewRes.json();
+                previewToken = prevData.redactionPreviewToken || '';
+              }
+            } catch (_) {}
+
             const payload = {
               title: document.getElementById('entry-title').value,
               slug: document.getElementById('entry-slug').value,
               profile: document.getElementById('entry-profile').value,
-              body_md: document.getElementById('entry-body').value || 'Published stub entry.',
+              body_md: text,
               valid_from: new Date(document.getElementById('entry-date').value).toISOString(),
               is_hindsight: document.getElementById('entry-hindsight').checked,
               temporal_level: 'exact',
               visibility: 'public',
-              view: 'article'
+              view: 'article',
+              redactionPreviewToken: previewToken
             };
-            const res = await fetch('/api/entries', {
+            const res = await apiClient('/api/entries', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload)
             });
             if (res.ok) {
-              banner.innerHTML = '<div class="as-of-banner">Published "' + payload.title + '" at L0. Background enrichment queued. <a href="/work/' + payload.slug + '">View entry →</a></div>';
+              banner.innerHTML = '<div class="as-of-banner">Published "' + payload.title + '" at L0. <a href="/work/' + payload.slug + '">View entry →</a></div>';
+            } else {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Failed to publish entry (HTTP ' + res.status + '). Check authentication or redaction status.</div>';
             }
           });
         }
@@ -1115,21 +1152,27 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
         if (killBtn) {
           killBtn.addEventListener('click', async function() {
             answeringEnabled = !answeringEnabled;
-            await fetch('/api/settings/routing', {
+            const res = await apiClient('/api/settings/routing', {
               method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ automatedAnsweringEnabled: answeringEnabled })
             });
-            killBtn.textContent = answeringEnabled ? 'Pause Automated Answering' : 'Resume Automated Answering';
-            banner.innerHTML = '<div class="as-of-banner">Automated answering is now <strong>' + (answeringEnabled ? 'ENABLED' : 'PAUSED (Handoff only)') + '</strong>.</div>';
+            if (res.ok) {
+              killBtn.setAttribute('aria-pressed', answeringEnabled ? 'true' : 'false');
+              killBtn.textContent = answeringEnabled ? 'Pause Automated Answering' : 'Resume Automated Answering';
+              banner.innerHTML = '<div class="as-of-banner">Automated answering is now <strong>' + (answeringEnabled ? 'ENABLED' : 'PAUSED (Handoff only)') + '</strong>.</div>';
+            }
           });
         }
 
         if (drillBtn) {
           drillBtn.addEventListener('click', async function() {
-            const res = await fetch('/api/settings/backups/run-drill', { method: 'POST' });
-            const data = await res.json();
-            banner.innerHTML = '<div class="as-of-banner">Encrypted Backup (' + data.encryptedWith + ') &amp; Scratch Restore Drill: <strong>' + data.status.toUpperCase() + '</strong> (' + data.checks.entriesCount + ' entries verified).</div>';
+            const res = await apiClient('/api/settings/backups/run-drill', { method: 'POST' });
+            if (res.ok) {
+              const data = await res.json();
+              banner.innerHTML = '<div class="as-of-banner">Encrypted Backup (' + data.encryptedWith + ') &amp; Scratch Restore Drill: <strong>' + data.status.toUpperCase() + '</strong> (' + data.checks.entriesCount + ' entries verified).</div>';
+            } else {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Backup drill failed (HTTP ' + res.status + ').</div>';
+            }
           });
         }
       })();
@@ -1137,4 +1180,141 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
   `;
 
   return renderLayout('Admin Workspace', '/admin', content);
+}
+
+export function renderAdminLoginPage(): string {
+  const content = `
+    <div style="max-width:440px;margin:48px auto;padding:24px;border:1px solid var(--rule);background:var(--surface-page)">
+      <h1 style="font-size:24px;margin:0 0 8px 0">Owner Sign in</h1>
+      <p style="font-size:14px;color:var(--text-muted);margin:0 0 20px 0">
+        Enter your admin credentials and 6-digit TOTP code to access the workspace.
+      </p>
+
+      <div id="login-error" role="alert" style="margin-bottom:16px;display:none"></div>
+
+      <form id="admin-login-form">
+        <div style="margin-bottom:12px">
+          <label for="login-username" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Username</label>
+          <input id="login-username" type="text" class="ask-input" style="width:100%;padding:8px" autocomplete="username" required />
+        </div>
+        <div style="margin-bottom:12px">
+          <label for="login-password" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Password</label>
+          <input id="login-password" type="password" class="ask-input" style="width:100%;padding:8px" autocomplete="current-password" required />
+        </div>
+        <div style="margin-bottom:16px">
+          <label for="login-totp" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Authenticator (TOTP) Code</label>
+          <input id="login-totp" type="text" pattern="[0-9]{6}" maxlength="6" class="ask-input" style="width:100%;padding:8px;font-family:var(--font-code);letter-spacing:2px" placeholder="123456" autocomplete="one-time-code" required />
+        </div>
+        <button type="submit" class="btn" style="width:100%;padding:10px">Sign in</button>
+      </form>
+      <div style="margin-top:16px;font-size:12px;color:var(--text-muted);line-height:1.4">
+        Login attempts are rate-limited to 5 per 15 minutes. If throttled: "Too many failed login attempts. Try again later."
+      </div>
+    </div>
+    <script>
+      (function() {
+        const form = document.getElementById('admin-login-form');
+        const errBox = document.getElementById('login-error');
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          errBox.style.display = 'none';
+          const username = document.getElementById('login-username').value;
+          const password = document.getElementById('login-password').value;
+          const totpCode = document.getElementById('login-totp').value;
+
+          try {
+            const res = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username, password, totpCode })
+            });
+            const data = await res.json();
+            if (res.ok) {
+              if (data.csrfToken) {
+                sessionStorage.setItem('lp_csrf_token', data.csrfToken);
+              }
+              const next = new URLSearchParams(window.location.search).get('next') || '/admin';
+              window.location.href = next;
+            } else {
+              errBox.className = 'later-thinking-banner';
+              errBox.textContent = data.error || ('Sign-in failed (HTTP ' + res.status + ')');
+              errBox.style.display = 'block';
+            }
+          } catch (err) {
+            errBox.className = 'later-thinking-banner';
+            errBox.textContent = 'Network error connecting to login server.';
+            errBox.style.display = 'block';
+          }
+        });
+      })();
+    </script>
+  `;
+  return renderLayout('Sign in', '/admin/login', content);
+}
+
+export function renderAdminSetupPage(): string {
+  const content = `
+    <div style="max-width:560px;margin:40px auto;padding:24px;border:1px solid var(--rule);background:var(--surface-page)">
+      <span class="chip" style="margin-bottom:8px">Step 1 of 6 · First-Run Wizard (§13.13)</span>
+      <h1 style="font-size:26px;margin:4px 0 12px 0">Owner Account Setup</h1>
+      <p style="font-size:14px;color:var(--text-muted);margin:0 0 20px 0">
+        Initialize your private administrative account. Subsequent steps configure hosting preset, provider keys, notification adapter, backup destination, and theme.
+      </p>
+
+      <div id="setup-status" role="alert" style="margin-bottom:16px;display:none"></div>
+
+      <form id="admin-setup-form">
+        <div style="margin-bottom:12px">
+          <label for="setup-username" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Owner Username</label>
+          <input id="setup-username" type="text" class="ask-input" style="width:100%;padding:8px" required />
+        </div>
+        <div style="margin-bottom:12px">
+          <label for="setup-password" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Master Password (min 12 chars)</label>
+          <input id="setup-password" type="password" minlength="12" class="ask-input" style="width:100%;padding:8px" required />
+        </div>
+        <div style="margin-bottom:16px">
+          <label for="setup-totp-secret" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">TOTP Secret Hex (optional, generated if blank)</label>
+          <input id="setup-totp-secret" type="text" class="ask-input" style="width:100%;padding:8px;font-family:var(--font-code)" placeholder="Leave blank to generate 20-byte random secret" />
+        </div>
+        <button type="submit" class="btn" style="width:100%;padding:10px">Complete Account Setup &amp; View TOTP</button>
+      </form>
+    </div>
+    <script>
+      (function() {
+        const form = document.getElementById('admin-setup-form');
+        const statusBox = document.getElementById('setup-status');
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          statusBox.style.display = 'none';
+          const username = document.getElementById('setup-username').value;
+          const password = document.getElementById('setup-password').value;
+          const totpSecret = document.getElementById('setup-totp-secret').value || undefined;
+
+          try {
+            const res = await fetch('/api/auth/setup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username, password, totpSecret })
+            });
+            const data = await res.json();
+            if (res.ok) {
+              statusBox.className = 'as-of-banner';
+              statusBox.innerHTML = '<strong>Setup Completed!</strong> Save your TOTP secret hex: <code>' + data.totpSecret + '</code>. Your initial API bearer token is: <code>' + data.bearerToken + '</code>. <br/><a href="/admin/login" class="btn" style="display:inline-block;margin-top:8px">Proceed to Sign in →</a>';
+              statusBox.style.display = 'block';
+              form.style.display = 'none';
+            } else {
+              statusBox.className = 'later-thinking-banner';
+              statusBox.textContent = data.error || ('Setup failed (HTTP ' + res.status + ')');
+              statusBox.style.display = 'block';
+            }
+          } catch (err) {
+            statusBox.className = 'later-thinking-banner';
+            statusBox.textContent = 'Network error during setup.';
+            statusBox.style.display = 'block';
+          }
+        });
+      })();
+    </script>
+  `;
+  return renderLayout('First-Run Setup', '/admin/setup', content);
 }

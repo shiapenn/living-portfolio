@@ -286,6 +286,11 @@ export class AuthManager {
         if (check.csrfFailed) {
           return c.json({ error: 'Forbidden: missing or invalid CSRF token' }, 403);
         }
+        const accept = c.req.header('accept') || c.req.header('Accept') || '';
+        if (accept.includes('text/html')) {
+          const target = this.isSetupCompleted() ? '/admin/login' : '/admin/setup';
+          return c.redirect(target, 302);
+        }
         return c.json({ error: 'Unauthorized: admin authentication required' }, 401);
       }
       await next();
@@ -347,7 +352,10 @@ export class AuthManager {
       return { valid: false, reason: 'Redaction preview token has expired' };
     }
     if (payload.entryId !== expected.entryId) {
-      return { valid: false, reason: 'Redaction preview token entryId mismatch' };
+      const isDraftMatch = payload.entryId === 'draft' || expected.entryId === 'draft';
+      if (!isDraftMatch) {
+        return { valid: false, reason: 'Redaction preview token entryId mismatch' };
+      }
     }
     const expectedBodyHash = sha256Hex(expected.bodyMd);
     if (payload.bodyHash !== expectedBodyHash) {

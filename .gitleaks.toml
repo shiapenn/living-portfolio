@@ -1,0 +1,21 @@
+# Gitleaks configuration (20261020 CI fix 3b)
+#
+# Extends the upstream default ruleset; the ONLY exception is a single exact literal.
+#
+# Reason: commit 196deb5 (already pushed, history is immutable) contains the string
+# `sk-test-1234567890` in packages/config/src/config.test.ts (lines 74 and 89). It is a
+# hand-typed placeholder used to prove that secrets never reach the client bundle; it was
+# never issued by OpenAI and grants no access. The current test builds its fake key at
+# runtime, so this allowlist exists only so the full-history scan (fetch-depth: 0) passes.
+#
+# Scope: exact-match regex on the secret value only. No paths, commits or rule IDs are
+# allowlisted, so any other credential anywhere in the tree or history still fails the job.
+# Proof that a leak fails: see docs/execution-reports/A003.md (§CI fix 3b).
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fake placeholder key in historical commit 196deb5 (packages/config/src/config.test.ts); not a real credential"
+regexTarget = "match"
+regexes = ['''sk-test-1234567890''']

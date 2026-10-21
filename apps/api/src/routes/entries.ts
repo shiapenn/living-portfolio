@@ -187,6 +187,26 @@ export function createEntriesRoutes(repo: IPortfolioRepository, auth: AuthManage
     }
 
     const data = parsed.data;
+
+    // Server-side publish gate (UX P0-3, Fix 2 / S2): public entries require a valid signed redactionPreviewToken
+    if (data.visibility === 'public') {
+      const warnings = scanForConfidentialData(data.body_md);
+      const tokenCheck = auth.verifyRedactionPreviewToken(body.redactionPreviewToken, {
+        entryId: 'draft',
+        bodyMd: data.body_md,
+        warnings,
+      });
+      if (!tokenCheck.valid) {
+        return c.json(
+          {
+            error: 'Redaction preview confirmation required before publishing as public',
+            reason: tokenCheck.reason,
+          },
+          400
+        );
+      }
+    }
+
     const bodyHash = sha256Hex(data.body_md);
 
     const { entry, revision } = await repo.createEntry(

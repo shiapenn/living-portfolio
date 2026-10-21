@@ -50,7 +50,15 @@ jobs:
       - name: Run Hard-Code Inventory Scanner (OSR-01)
         run: node scripts/hardcode-check
 
-      - name: Verify Developer Certificate of Origin sign-off (OSR-07 dco)
+      - name: Verify every pinned action SHA resolves upstream (CI fix 3a)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/verify-action-pins
+
+      - name: Verify Developer Certificate of Origin sign-off on every commit in range (OSR-07 dco, CI fix 3c)
+        env:
+          DCO_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          DCO_HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: node scripts/dco-check
 
       - name: Run Audit Governance & Conformance Check (DR-AUD-001 AUD-21)

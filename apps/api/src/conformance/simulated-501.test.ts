@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { createApp } from '../app.js';
 
 describe('AUD-18 / AUD-19 Honest Reporting for Simulated Endpoints (Findings M1, M5, M6 / Fix 3)', () => {
-  const { app, adminToken } = createApp();
+  const { app, adminToken } = createApp(undefined, { bootstrapAdminToken: 'simulated-admin-token-501' });
   const authHeaders = {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${adminToken}`,

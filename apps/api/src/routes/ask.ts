@@ -91,7 +91,7 @@ export function createAskRoutes(config: AskEngineConfig) {
       if (candidateMatches.length === 0) candidateMatches = searchResults.slice(0, 2);
     }
 
-    // 4. Gate checking for advisory queries (§10.5)
+    // 4. Gate checking for advisory queries (§10.5, G1, G3, G4)
     let gateResult: 'PASS' | 'FAIL' | 'INDETERMINATE' = 'PASS';
     let gateDetails: any = null;
     const topEntry = candidateMatches[0].entry;
@@ -101,35 +101,69 @@ export function createAskRoutes(config: AskEngineConfig) {
       if (f.status === 'confirmed') entryScope[f.key] = f.value;
     });
 
+    const domainConfig = {
+      id: 'systems',
+      name: 'Systems & Architecture',
+      hard_facets: ['database', 'stack'],
+      soft_facets: ['scale', 'team_size', 'latency_budget', 'throughput_tps'],
+      facet_weight: { database: 1.0, stack: 0.8 },
+    };
+
+    const scopedConstraints = await repo.getScopedConstraints('confirmed');
+
     if (queryClass === 'advisory') {
       gateDetails = checkGate({
         clientFacets: visitorFacets,
         entryScope,
-        domain: {
-          id: 'general',
-          name: 'General',
-          hard_facets: ['database', 'stack'],
-          soft_facets: ['scale', 'team_size', 'latency_budget'],
-          facet_weight: {},
-        },
+        domain: domainConfig,
+        scopedConstraints,
       });
       gateResult = gateDetails.result;
+
+      // G6: Advisory query with INDETERMINATE gate returns needs_context asking visitor once
+      if (gateResult === 'INDETERMINATE') {
+        const missingFacets = gateDetails?.unknown || [];
+        const contextAlreadyAsked = Boolean(body.context_asked || (visitorFacets && Object.keys(visitorFacets).length > 0));
+        if (!contextAlreadyAsked && missingFacets.length > 0) {
+          return c.json({
+            tier: 'needs_context',
+            queryClass,
+            answer: 'To advise accurately on this question, please provide the following details about your architecture or environment:',
+            missingFacets,
+            degradationStep: 'normal',
+            citations: [],
+          });
+        }
+      }
     }
 
     const activeTier1Floor = runtime?.tier1_floor ?? tier1Floor;
     const activeTier2Floor = runtime?.tier2_floor ?? tier2Floor;
 
-    // 5. Routing tier decision
+    // 5. Routing tier decision (G2: computed dynamically from repository)
+    const routeMatches = await Promise.all(
+      candidateMatches.map(async (m) => {
+        const claims = await repo.getClaimsForRevision(m.span.revision_id);
+        const evList = await repo.getEvidenceForEntry(m.entry.id);
+        const claim = claims.find((c) => c.source_span_id === m.span.id) || claims[0];
+        const hasEvidence = evList.length > 0;
+        const hasVerifiedEvidence = evList.some((e) => e.verified_at != null || e.verification != null);
+        const outcomeStatus = claim?.outcome_status ?? null;
+        const hasScope = Boolean(claim?.scope && Object.keys(claim.scope).length > 0);
+        return {
+          similarity: m.similarity,
+          hasEvidence,
+          hasVerifiedEvidence,
+          outcomeStatus,
+          hasScope,
+        };
+      })
+    );
+
     const routeDecision = routeQuery({
       queryClass,
       gateResult,
-      matches: candidateMatches.map((m) => ({
-        similarity: m.similarity,
-        hasEvidence: true,
-        hasVerifiedEvidence: true,
-        outcomeStatus: 'worked',
-        hasScope: true,
-      })),
+      matches: routeMatches,
       tier1Floor: activeTier1Floor,
       tier2Floor: activeTier2Floor,
     });
@@ -163,14 +197,44 @@ export function createAskRoutes(config: AskEngineConfig) {
       });
     }
 
-    // 8. Tier 2: Needs owner review
+    // 8. Tier 2: Needs owner review (G7: synthesize escalation draft via provider + verification)
     if (routeDecision.tier === 'tier2') {
-      // Create escalation record
+      let escalationDraft = '';
+      if (provider) {
+        const promptContext = candidateMatches
+          .map((m, idx) => `[cite:${idx + 1}] From "${m.entry.title}": ${m.span.text_exact}`)
+          .join('\n\n');
+        const draftCompletion = await provider.complete({
+          model: 'default',
+          messages: [
+            {
+              role: 'system',
+              content: "You synthesize an accurate preliminary response draft for the owner's review based on the provided records.",
+            },
+            {
+              role: 'user',
+              content: `Question: ${query}\n\nOwner records:\n${promptContext}`,
+            },
+          ],
+          temperature: 0.1,
+        });
+        const vDraft = verifyAnswerBeforeDelivery({
+          draftText: draftCompletion.text,
+          citedSpans: candidateMatches.map((m) => m.span),
+          visitorFacets,
+          citedScopes: [],
+          asOfDate: as_of_date,
+        });
+        escalationDraft = vDraft.verifiedText;
+      } else {
+        escalationDraft = candidateMatches.slice(0, 2).map((m) => m.span.text_exact).join('\n\n');
+      }
+
       await repo.saveEscalation({
         question: query,
         query_class: queryClass,
         facets: visitorFacets,
-        draft: `Preliminary draft regarding ${candidateMatches[0].entry.title}`,
+        draft: escalationDraft,
         status: 'pending',
         due_at: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
       });
@@ -215,7 +279,7 @@ export function createAskRoutes(config: AskEngineConfig) {
       temperature: 0.1,
     });
 
-    // Verification check (§10.6)
+    // Verification check (§10.6, G5: downgrade to extractive on failed verification)
     const verification = verifyAnswerBeforeDelivery({
       draftText: completion.text,
       citedSpans: candidateMatches.map((m) => m.span),
@@ -223,6 +287,24 @@ export function createAskRoutes(config: AskEngineConfig) {
       citedScopes: [],
       asOfDate: as_of_date,
     });
+
+    if (!verification.passed) {
+      const excerpts = candidateMatches.slice(0, 3).map((m, i) => `[${i + 1}] "${m.span.text_exact}" (from ${m.entry.title})`).join('\n\n');
+      return c.json({
+        tier: 'extractive',
+        queryClass,
+        answer: `Showing extractive excerpts from the owner's records (synthesis verification downgraded: ${verification.anachronismDetails || 'faithfulness unverified'}).\n\n${excerpts}`,
+        citations: candidateMatches.slice(0, 3).map((m, i) => ({
+          citationId: i + 1,
+          slug: m.entry.slug,
+          title: m.entry.title,
+          text: m.span.text_exact,
+        })),
+        degradationStep: 'extractive',
+        verificationPassed: false,
+        aiDisclosure: 'Synthesis downgraded to extractive mode per verification gate.',
+      });
+    }
 
     const finalAnswer = verification.verifiedText;
     const citations = candidateMatches.map((m, idx) => ({

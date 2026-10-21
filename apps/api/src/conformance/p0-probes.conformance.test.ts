@@ -48,7 +48,7 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
 
   registerBoundProbe(
     'S1',
-    'rejects unauthenticated access to private entries, visibility=all, settings mutation, inbox, and seed',
+    'rejects unauthenticated access to private entries, visibility=all, settings mutation, inbox, seed, and default fallback token lp_pat_default_test_admin_token_001',
     async () => {
       const listAll = await app.request('/api/entries?visibility=all');
       const privateSlug = await app.request('/api/entries/private-nda-architecture-notes');
@@ -65,12 +65,18 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
       expect(patchRouting.status).toBe(401);
       expect(inbox.status).toBe(401);
       expect(seed.status).toBe(401);
+
+      // Reopened S1 / V5: unconfigured createApp() must NOT accept the old fallback token
+      const defaultTokenProbe = await app.request('/api/entries?visibility=all', {
+        headers: { Authorization: 'Bearer lp_pat_default_test_admin_token_001' },
+      });
+      expect(defaultTokenProbe.status).toBe(401);
     }
   );
 
   registerBoundProbe(
     'S2',
-    'prevents unauthenticated visibility escalation of private NDA entry into /api/ask citations',
+    'prevents unauthenticated visibility escalation and requires a signed redactionPreviewToken on POST /api/entries when visibility=public',
     async () => {
       const allEntries = await repo.listEntries({ visibility: ['private'] });
       const privateEntry = allEntries.find((e) => e.slug === 'private-nda-architecture-notes')!;
@@ -81,6 +87,27 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
         body: JSON.stringify({ visibility: 'public' }),
       });
       expect(putRes.status).toBe(401);
+
+      // Strengthened S2 / V4: authenticated POST /api/entries with visibility='public' and no redactionPreviewToken must fail (400)
+      const authedInstance = createApp(undefined, { bootstrapAdminToken: 'explicit_test_token_for_s2_probe_999' });
+      const postPublicNoToken = await authedInstance.app.request('/api/entries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer explicit_test_token_for_s2_probe_999',
+        },
+        body: JSON.stringify({
+          slug: 'unscanned-public-entry',
+          title: 'Unscanned Public Entry',
+          profile: 'case-study',
+          view: 'article',
+          visibility: 'public',
+          body_md: 'Built a real-time billing pipeline for Acme Corp under NDA.',
+          temporal_level: 'exact',
+          valid_from: '2026-01-01T00:00:00Z',
+        }),
+      });
+      expect(postPublicNoToken.status).toBe(400);
     }
   );
 
@@ -165,14 +192,61 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
     const res = checkGate({
       clientFacets: { database: 'PostgreSQL', stack: 'Node.js' },
       entryScope: {},
-      domain: { name: 'Systems', hard_facets: ['database', 'stack'], soft_facets: [] },
+      domain: { id: 'systems', name: 'Systems', hard_facets: ['database', 'stack'], soft_facets: [], facet_weight: {} },
     });
     expect(res.result).toBe('INDETERMINATE');
   });
 
   registerBoundProbe(
+    'G2',
+    'ask route computes hasEvidence, hasVerifiedEvidence, outcomeStatus, and hasScope dynamically from repository rather than hard-coding true/worked',
+    async () => {
+      const askSource = readFileSync(resolve(rootDir, 'apps/api/src/routes/ask.ts'), 'utf8');
+      expect(askSource).not.toContain('hasEvidence: true,\n        hasVerifiedEvidence: true,\n        outcomeStatus: \'worked\',\n        hasScope: true,');
+      expect(askSource).toContain('getClaimsForRevision');
+      expect(askSource).toContain('getEvidenceForEntry');
+    }
+  );
+
+  registerBoundProbe(
+    'G3',
+    'checkGate evaluates confirmed scoped_constraints by scope and constraint value, and ask.ts loads scopedConstraints from repo',
+    () => {
+      const res = checkGate({
+        clientFacets: { database: 'PostgreSQL', stack: 'Node.js', throughput_tps: '100000' },
+        entryScope: { database: 'PostgreSQL', stack: 'Node.js' },
+        domain: { id: 'systems', name: 'Systems', hard_facets: ['database', 'stack'], soft_facets: [], facet_weight: {} },
+        scopedConstraints: [
+          {
+            id: 'sc1',
+            entry_id: 'e1',
+            claim_id: 'c1',
+            scope: { database: 'PostgreSQL' },
+            constraint: { throughput_tps: '50000' },
+            source_quote: 'Only valid up to 50k TPS',
+            status: 'confirmed',
+            created_at: '2026-01-01T00:00:00Z',
+          },
+        ],
+      });
+      expect(res.result).toBe('FAIL');
+      const askSource = readFileSync(resolve(rootDir, 'apps/api/src/routes/ask.ts'), 'utf8');
+      expect(askSource).toContain('getScopedConstraints');
+    }
+  );
+
+  registerBoundProbe(
+    'G4',
+    'ask.ts loads hard_facets and soft_facets from domain configuration rather than hard-coding only [database, stack]',
+    () => {
+      const askSource = readFileSync(resolve(rootDir, 'apps/api/src/routes/ask.ts'), 'utf8');
+      expect(askSource).toContain('domainConfig');
+    }
+  );
+
+  registerBoundProbe(
     'G5',
-    'verifyAnswerBeforeDelivery strips or blocks anachronistic years from verifiedText in time-travel mode',
+    'verifyAnswerBeforeDelivery strips or blocks anachronistic years from verifiedText in time-travel mode and ask.ts downgrades failed verification to extractive',
     () => {
       const res = verifyAnswerBeforeDelivery({
         draftText: 'In 2025 we migrated to Postgres 17.',
@@ -183,6 +257,35 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
       });
       expect(res.anachronismDetected).toBe(true);
       expect(res.verifiedText).not.toContain('2025');
+    }
+  );
+
+  registerBoundProbe(
+    'G6',
+    'advisory query with INDETERMINATE gate returns needs_context asking visitor once for missing facets before escalating',
+    async () => {
+      const res = await app.request('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: 'How should I design a distributed lock for job coordination?',
+          facets: {},
+        }),
+      });
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.tier).toBe('needs_context');
+      expect(Array.isArray(body.missingFacets)).toBe(true);
+      expect(body.missingFacets.length).toBeGreaterThan(0);
+    }
+  );
+
+  registerBoundProbe(
+    'G7',
+    'Tier 2 escalation synthesizes inbox draft via model provider + verifyAnswerBeforeDelivery instead of static Preliminary draft placeholder',
+    async () => {
+      const askSource = readFileSync(resolve(rootDir, 'apps/api/src/routes/ask.ts'), 'utf8');
+      expect(askSource).not.toContain('`Preliminary draft regarding ${candidateMatches[0].entry.title}`');
     }
   );
 

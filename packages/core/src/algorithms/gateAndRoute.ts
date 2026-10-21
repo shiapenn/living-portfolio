@@ -20,8 +20,24 @@ export interface GateDetails {
   unknown: string[];
 }
 
+function scopeMatches(
+  scScope: Record<string, any>,
+  clientFacets: Record<string, any>,
+  entryScope: Record<string, any>
+): boolean {
+  for (const [k, v] of Object.entries(scScope)) {
+    const valInClient = clientFacets[k];
+    const valInEntry = entryScope[k];
+    const val = valInClient !== undefined && valInClient !== null ? valInClient : valInEntry;
+    if (val === undefined || val === null || String(val).toLowerCase() !== String(v).toLowerCase()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /**
- * Checks whether client facets satisfy the hard constraints of the domain and active scoped constraints (§10.5).
+ * Checks whether client facets satisfy the hard constraints of the domain and active scoped constraints (§10.5, G1, G3).
  */
 export function checkGate(input: GateInput): GateDetails {
   const { clientFacets, entryScope = {}, domain, scopedConstraints = [] } = input;
@@ -32,32 +48,58 @@ export function checkGate(input: GateInput): GateDetails {
 
   const hardDimensions = new Set<string>(domain?.hard_facets ?? []);
 
-  // Check applicable scoped constraints
-  for (const sc of scopedConstraints) {
-    if (sc.status === 'confirmed') {
-      for (const [key, val] of Object.entries(sc.constraint)) {
-        hardDimensions.add(key);
-      }
-    }
-  }
-
+  // Check hard domain dimensions
   for (const dim of hardDimensions) {
     const clientVal = clientFacets[dim];
     const entryVal = entryScope?.[dim];
 
-    // If either value is unknown
+    // G1: If client facet is unknown
     if (clientVal === undefined || clientVal === null || clientVal === '') {
       unknown.push(dim);
       continue;
     }
 
-    if (entryVal !== undefined && entryVal !== null && entryVal !== '') {
-      // Check compatibility (exact match, array inclusion, or numeric threshold)
-      const isCompat = checkFacetCompatibility(clientVal, entryVal);
-      if (isCompat) {
-        matched[dim] = clientVal;
-      } else {
-        mismatched[dim] = { expected: entryVal, actual: clientVal };
+    // G1: If entry-side hard facet is unknown, also record as unknown (returns INDETERMINATE)
+    if (entryVal === undefined || entryVal === null || entryVal === '') {
+      unknown.push(dim);
+      continue;
+    }
+
+    // Check compatibility (exact match, array inclusion, or numeric threshold)
+    const isCompat = checkFacetCompatibility(clientVal, entryVal);
+    if (isCompat) {
+      matched[dim] = clientVal;
+    } else {
+      mismatched[dim] = { expected: entryVal, actual: clientVal };
+    }
+  }
+
+  // G3: Check confirmed scoped constraints
+  for (const sc of scopedConstraints) {
+    if (sc.status !== 'confirmed') continue;
+    if (scopeMatches(sc.scope, clientFacets, entryScope || {})) {
+      for (const [cKey, cVal] of Object.entries(sc.constraint)) {
+        const clientVal = clientFacets[cKey];
+        if (clientVal === undefined || clientVal === null || clientVal === '') {
+          unknown.push(cKey);
+          continue;
+        }
+
+        const numClient = Number(clientVal);
+        const numConstraint = Number(cVal);
+        if (!isNaN(numClient) && !isNaN(numConstraint)) {
+          if (numClient > numConstraint) {
+            mismatched[cKey] = { expected: `<= ${cVal}`, actual: clientVal };
+          } else {
+            matched[cKey] = clientVal;
+          }
+        } else {
+          if (String(clientVal).toLowerCase() !== String(cVal).toLowerCase()) {
+            mismatched[cKey] = { expected: cVal, actual: clientVal };
+          } else {
+            matched[cKey] = clientVal;
+          }
+        }
       }
     }
   }

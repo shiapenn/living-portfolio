@@ -1,8 +1,9 @@
-# Cumulative Audit Findings & Open-Source Release Task Register (DR-AUD-001 §5, OSR-001 §7)
+# Cumulative Audit Findings & Open-Source Release Task Register (DR-AUD-001 §5, OSR-001 §7, AUD-2026-10-20)
 # Remediation Plan: docs/plans/remediation-plan-AUD-2026-10-19.md
 # Open-Source Plan: docs/plans/osr-001-open-source-release.md
-# Covers all 29 §5 findings (S1–S7, G1–G8, B1–B4, P1–P6, F1–F4), 11 matrix findings (M1–M11),
-# and 23 Open-Source Release tasks (OSR-01..OSR-23).
+# Covers all 29 AUD-2026-10-19 §5 findings (S1–S7, G1–G8, B1–B4, P1–P6, F1–F4), 11 matrix findings (M1–M11),
+# 23 Open-Source Release tasks (OSR-01..OSR-23), and 33 AUD-2026-10-20 UX/UI/Copy findings
+# (20261020-UX-01..16, 20261020-UI-01..10, 20261020-CP-01..07).
 - id: S1
   audit: AUD-2026-10-19
   title: No authentication or authorization across API and admin routes
@@ -18,6 +19,10 @@
   fix_ids:
     - 1
     - 2
+  related_to:
+    - 20261020-UX-01
+    - 20261020-UX-02
+    - OSR-01
   links:
     issue: null
     pr: null
@@ -31,6 +36,14 @@
       status: fixed
       note: "Claimed fixed in Gate 1a (Fixes 1, 2, 5, 6); awaiting auditor re-audit
         (verified_by: null)"
+    - date: 2026-10-20
+      status: open
+      note: "Reopened by AUD-2026-10-20 (20261020-UX-01 / probe V5): createApp() fell
+        back to hard-coded default bearer token lp_pat_default_test_admin_token_001
+        when ADMIN_API_TOKEN was unset, and /admin had no browser login or setup UI"
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+: removed hard-coded fallback admin token from createApp(), mounted HTML login & first-run setup routes with 302 redirect for browser navigation, and verified default token rejection."
   verified_by: null
 - id: S2
   audit: AUD-2026-10-19
@@ -46,6 +59,8 @@
   fix_ids:
     - 1
     - 2
+  related_to:
+    - 20261020-UX-03
   links:
     issue: null
     pr: null
@@ -59,6 +74,14 @@
       status: fixed
       note: "Claimed fixed in Gate 1a (Fixes 1, 2, 5, 6); awaiting auditor re-audit
         (verified_by: null)"
+    - date: 2026-10-20
+      status: open
+      note: "Reopened by AUD-2026-10-20 (20261020-UX-03 / probe V4): POST /api/entries
+        allowed creating an entry with visibility='public' without a signed
+        redactionPreviewToken"
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+: server-side publish gate requires signed redactionPreviewToken bound to bodyHash and rejects empty/whitespace body_md on POST /api/entries."
   verified_by: null
 - id: S3
   audit: AUD-2026-10-19
@@ -195,7 +218,7 @@
   spec_sections:
     - "10.5"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 4
@@ -208,6 +231,9 @@
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+ (Fix 4): checkGate returns INDETERMINATE when entry-side hard facet is unknown/missing."
   verified_by: null
 - id: G2
   audit: AUD-2026-10-19
@@ -216,7 +242,7 @@
   spec_sections:
     - "10.5"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 4
@@ -229,6 +255,9 @@
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+ (Fix 4): routing inputs (hasEvidence, hasVerifiedEvidence, outcomeStatus, hasScope) computed dynamically from repository rather than hard-coded."
   verified_by: null
 - id: G3
   audit: AUD-2026-10-19
@@ -238,7 +267,7 @@
     - "10.5"
     - "11"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 4
@@ -251,6 +280,9 @@
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+ (Fix 4): checkGate evaluates confirmed scoped constraints against visitor facets/values and ask.ts loads scopedConstraints from repo."
   verified_by: null
 - id: G4
   audit: AUD-2026-10-19
@@ -260,7 +292,7 @@
     - "3.7"
     - "10.5"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 4
@@ -273,6 +305,9 @@
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+ (Fix 4): ask.ts loads domainConfig hard/soft facets instead of hard-coded inline arrays."
   verified_by: null
 - id: G5
   audit: AUD-2026-10-19
@@ -281,7 +316,7 @@
   spec_sections:
     - "10.6"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 4
@@ -295,6 +330,9 @@
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+ (Fix 4): verifyAnswerBeforeDelivery strips future-year references from verifiedText in time-travel mode, and ask.ts downgrades unverified synthesis to extractive response."
   verified_by: null
 - id: G6
   audit: AUD-2026-10-19
@@ -305,7 +343,7 @@
     - "10.5"
     - "12.6"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 4
@@ -319,6 +357,9 @@
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+ (Fix 4): advisory queries with INDETERMINATE gate return needs_context asking visitor once for missing facets."
   verified_by: null
 - id: G7
   audit: AUD-2026-10-19
@@ -329,7 +370,7 @@
     - "10.5"
     - "10.6"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 4
@@ -342,6 +383,9 @@
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+ (Fix 4): Tier 2 escalation synthesizes draft via model provider + verifyAnswerBeforeDelivery instead of static placeholder string."
   verified_by: null
 - id: G8
   audit: AUD-2026-10-19
@@ -1424,3 +1468,881 @@
     - date: 2026-10-19
       status: open
       note: Added from OSR-001 §7 task register
+
+- id: 20261020-UX-01
+  audit: AUD-2026-10-20
+  title: There is no login page, no setup wizard UI, and a default bearer token is
+    baked into createApp
+  spec_sections:
+    - "3.11"
+    - "4.4"
+    - "5.2"
+    - "6.2"
+    - "13.4"
+    - "15"
+  severity: P0
+  status: fixed
+  owner: A
+  ux_priority_id: P0-1
+  related_to:
+    - S1
+    - F1
+    - OSR-01
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/ux-p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-01, probes V1 & V5)
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+ (UX P0-1): implemented /admin/login and /admin/setup HTML views, 302 redirect from /admin when unauthenticated, and removed createApp default fallback token."
+  verified_by: null
+- id: 20261020-UX-02
+  audit: AUD-2026-10-20
+  title: Admin browser fetches send neither session/CSRF headers nor bearer auth,
+    and the UI reports success when the API returns 401/403
+  spec_sections:
+    - "4.2"
+    - "6.2"
+    - "6.3"
+    - "6.4"
+    - "13.8"
+    - "15"
+  severity: P0
+  status: fixed
+  owner: A
+  ux_priority_id: P0-2
+  related_to:
+    - S1
+    - M1
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/ux-p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-02, probe V2)
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+ (UX P0-2): admin workspace apiClient attaches X-CSRF-Token, verifies res.ok, and shows specific error message without false green confidentiality on 401/error."
+  verified_by: null
+- id: 20261020-UX-03
+  audit: AUD-2026-10-20
+  title: The pre-publish confidentiality scan can show a false green check, misses
+    sk- keys and NDA/client terms, and does not block publishing
+  spec_sections:
+    - "0"
+    - "1"
+    - "3.11"
+    - "4.3"
+    - "6.2"
+    - "15"
+    - "20"
+  severity: P0
+  status: fixed
+  owner: A
+  ux_priority_id: P0-3
+  related_to:
+    - S2
+    - M1
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/ux-p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-03, probes V2, V3 & V4)
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+ (UX P0-3): broadened scanForConfidentialData to catch sk- keys, NDA markers, and client names; enforced server-side publish gate on POST /api/entries rejecting public create without token and empty body."
+  verified_by: null
+- id: 20261020-UX-04
+  audit: AUD-2026-10-20
+  title: The ten-screen admin information architecture in §5.2 is collapsed into
+    one 3-column page; seven admin routes do not exist
+  spec_sections:
+    - "5.2"
+    - "6.2"
+    - "6.3"
+    - "6.4"
+    - "11"
+    - "13.5"
+    - "13.6"
+    - "13.9"
+  severity: P0
+  status: open
+  owner: A
+  ux_priority_id: P0-4
+  related_to:
+    - F1
+    - OSR-13
+    - 20261020-UI-10
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-04; staged in G2 alpha inside OSR-13)
+  verified_by: null
+- id: 20261020-UX-05
+  audit: AUD-2026-10-20
+  title: The admin workspace renders fabricated conflicts, false
+    background-enrichment confirmations, and unpersisted kill-switch state
+  spec_sections:
+    - "0"
+    - "1"
+    - "6.2"
+    - "6.3"
+    - "11"
+    - "13.9"
+  severity: P0
+  status: fixed
+  owner: A
+  ux_priority_id: P0-9
+  related_to:
+    - M1
+    - F3
+    - P3
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: apps/api/src/conformance/ux-p0-probes.conformance.test.ts
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-05 / P0-9)
+    - date: 2026-10-21
+      status: fixed
+      note: "Fixed in Gate 1b+ (UX P0-9): removed hard-coded Detected Claim Conflict card, removed false background enrichment queued claim, reflected server kill-switch aria-pressed state, and healthz reports not_configured for unconfigured subsystems."
+  verified_by: null
+- id: 20261020-UX-06
+  audit: AUD-2026-10-20
+  title: Triage accepts and rejects claims without span highlights, source passage
+    context, confidence scores, conflict comparison, or keyboard shortcuts
+  spec_sections:
+    - "3.5"
+    - "3.6"
+    - "3.7"
+    - "6.3"
+    - "12.5"
+    - "12.8"
+  severity: P0
+  status: open
+  owner: A
+  ux_priority_id: P0-6
+  related_to:
+    - F4
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-06 / P0-6; staged before G4)
+  verified_by: null
+- id: 20261020-UX-07
+  audit: AUD-2026-10-20
+  title: The Ask page lacks the Needs-context facet prompt, conversation history,
+    citation jump-to-highlight, and progressive streaming
+  spec_sections:
+    - "6.1"
+    - "10.3"
+    - "10.5"
+    - "10.6"
+    - "12.5"
+    - "12.6"
+  severity: P0
+  status: open
+  owner: A
+  ux_priority_id: P0-8
+  related_to:
+    - G1
+    - G5
+    - G6
+    - M3
+    - M4
+    - 20261020-UI-07
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-07 / P0-8; staged before G4)
+  verified_by: null
+- id: 20261020-UX-08
+  audit: AUD-2026-10-20
+  title: "Visitor escalation is not a user choice: Tier 2 auto-creates an anonymous
+    inbox item and Tier 3 offers no contact form"
+  spec_sections:
+    - "6.1"
+    - "6.4"
+    - "10.5"
+    - "12.6"
+    - "13.8"
+    - "15"
+  severity: P0
+  status: open
+  owner: A
+  ux_priority_id: P0-10
+  related_to:
+    - S5
+    - G6
+    - G7
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-08 / P0-10; staged before G4)
+  verified_by: null
+- id: 20261020-UX-09
+  audit: AUD-2026-10-20
+  title: Admin Inbox has no edit-before-send, no Add-to-FAQ action, no
+    Reject-with-reason, and Approve never notifies the visitor
+  spec_sections:
+    - "6.4"
+    - "11"
+    - "14"
+  severity: P0
+  status: open
+  owner: A
+  ux_priority_id: P0-11
+  related_to:
+    - G7
+    - M9
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-09 / P0-11; staged before G4)
+  verified_by: null
+- id: 20261020-UX-10
+  audit: AUD-2026-10-20
+  title: Time-travel omits the URL ?as_of= state, banner count + Reset button, and
+    card dimming for post-cutoff and unverified entries
+  spec_sections:
+    - "3.9"
+    - "6.5"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-1
+  related_to:
+    - P4
+    - G5
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-10 / P1-1; staged in v0.2)
+  verified_by: null
+- id: 20261020-UX-11
+  audit: AUD-2026-10-20
+  title: Entry detail pages lack the Scope Strip, Outcome Badge, Claim Drawer,
+    Evidence Drawer, and Revision history view
+  spec_sections:
+    - "3.6"
+    - "3.7"
+    - "3.8"
+    - "3.11"
+    - "5.1"
+    - "10.7"
+    - "12.5"
+  severity: P0
+  status: open
+  owner: A
+  ux_priority_id: P0-7
+  related_to:
+    - F1
+    - M7
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-11 / P0-7; staged in G2 alpha)
+  verified_by: null
+- id: 20261020-UX-12
+  audit: AUD-2026-10-20
+  title: "Public route gaps: /venture/:slug is missing, /work has no filters or
+    search, and empty states do not adapt when seed data is absent"
+  spec_sections:
+    - "3.10"
+    - "5.1"
+    - "12.3"
+    - "20"
+  severity: P0
+  status: open
+  owner: A
+  ux_priority_id: P0-5
+  related_to:
+    - F1
+    - OSR-04
+    - OSR-13
+    - 20261020-UI-01
+    - 20261020-CP-05
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-12 / P0-5; staged in G2 alpha inside OSR-13)
+  verified_by: null
+- id: 20261020-UX-13
+  audit: AUD-2026-10-20
+  title: Authoring lacks Profile and View selectors, temporal precision controls,
+    hindsight toggle, live preview, 3,000-word warn, and Cmd+K Quick Log
+  spec_sections:
+    - "3.2"
+    - "3.4"
+    - "3.9"
+    - "4.1"
+    - "4.2"
+    - "6.2"
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-2
+  related_to:
+    - F4
+    - P4
+    - 20261020-CP-06
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-13 / P1-2 & P1-3; staged in v0.2)
+  verified_by: null
+- id: 20261020-UX-14
+  audit: AUD-2026-10-20
+  title: "Responsive layout breaks below 900px: fixed 3-column grids,
+    non-collapsing header nav, and 26px touch targets"
+  spec_sections:
+    - "6.3"
+    - "12.3"
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-9
+  related_to:
+    - F4
+    - 20261020-UI-09
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-14 / P1-9; staged in v0.2)
+  verified_by: null
+- id: 20261020-UX-15
+  audit: AUD-2026-10-20
+  title: "Accessibility baseline gaps: no skip link, unassociated form labels, div
+    timeline semantics, non-modal drawer, and missing aria-live regions"
+  spec_sections:
+    - "12.5"
+    - "12.8"
+    - "18.1"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-8
+  related_to:
+    - M11
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-15 / P1-8; staged in v0.2)
+  verified_by: null
+- id: 20261020-UX-16
+  audit: AUD-2026-10-20
+  title: Destructive and state-changing actions have no confirmation, no undo, and
+    no unsaved-changes guard
+  spec_sections:
+    - "3.11"
+    - "6.2"
+    - "6.3"
+    - "11"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-14
+  related_to:
+    - P6
+    - M5
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-16 / P1-14; staged in v0.2)
+  verified_by: null
+- id: 20261020-UI-01
+  audit: AUD-2026-10-20
+  title: Public navigation omits Resume, embeds a technical tag inside the brand
+    link, and gives Ask equal weight with secondary tabs
+  spec_sections:
+    - "5.1"
+    - "12.1"
+    - "12.3"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-11
+  related_to:
+    - F1
+    - 20261020-UX-12
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-01 / P0-5 & P1-11)
+  verified_by: null
+- id: 20261020-UI-02
+  audit: AUD-2026-10-20
+  title: Custom web fonts (Fraunces, Source Serif 4, Plus Jakarta Sans, JetBrains
+    Mono) are named in CSS variables but never loaded
+  spec_sections:
+    - "12.2"
+    - "13.7"
+    - "15"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-10
+  related_to:
+    - F4
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-02 / P1-10; staged in v0.2)
+  verified_by: null
+- id: 20261020-UI-03
+  audit: AUD-2026-10-20
+  title: Typographic hierarchy and 68ch reading measure are bypassed by inline font
+    sizes and unconstrained card paragraphs
+  spec_sections:
+    - "12.2"
+    - "12.3"
+  severity: P2
+  status: open
+  owner: A
+  ux_priority_id: P2-2
+  related_to:
+    - F4
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-03 / P2-2; staged before G5)
+  verified_by: null
+- id: 20261020-UI-04
+  audit: AUD-2026-10-20
+  title: "Color tokens are frequently bypassed by hard-coded hex values (#92400E, #991B1B, #DCFCE7, #FEF2F2) that fail dark-mode adaptation"
+  spec_sections:
+    - "12.4"
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-11
+  related_to:
+    - OSR-01
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-04 / P1-11; staged in v0.2)
+  verified_by: null
+- id: 20261020-UI-05
+  audit: AUD-2026-10-20
+  title: Public cards and badges suffer from metadata overload, exposing internal
+    taxonomy enums and crowding card headers
+  spec_sections:
+    - "12.1"
+    - "12.3"
+    - "12.5"
+  severity: P2
+  status: open
+  owner: A
+  ux_priority_id: P2-1
+  related_to:
+    - 20261020-CP-01
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-05 / P2-1; staged before G5)
+  verified_by: null
+- id: 20261020-UI-06
+  audit: AUD-2026-10-20
+  title: "Entry body Markdown rendering only parses #, ##, ###, and paragraphs; lists, code blocks, links, blockquotes, and tables render as raw text"
+  spec_sections:
+    - "4.2"
+    - "12.2"
+    - "12.3"
+    - "15"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-12
+  related_to:
+    - F4
+    - S6
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-06 / P1-12; staged in v0.2)
+  verified_by: null
+- id: 20261020-UI-07
+  audit: AUD-2026-10-20
+  title: Ask citation cards display the full entry body instead of the cited
+    passage span and have no highlight-and-scroll anchor
+  spec_sections:
+    - "3.5"
+    - "6.1"
+    - "10.6"
+    - "12.5"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P0-8
+  related_to:
+    - 20261020-UX-07
+    - M3
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-07 / P0-8; staged before G4)
+  verified_by: null
+- id: 20261020-UI-08
+  audit: AUD-2026-10-20
+  title: Theme toggle has no persistence across page loads and resets to OS
+    preference on every navigation
+  spec_sections:
+    - "12.4"
+  severity: P2
+  status: open
+  owner: A
+  ux_priority_id: P2-3
+  related_to:
+    - F4
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-08 / P2-3; staged before G5)
+  verified_by: null
+- id: 20261020-UI-09
+  audit: AUD-2026-10-20
+  title: Interactive controls lack hover, active, disabled, and loading visual
+    states across public and admin views
+  spec_sections:
+    - "12.4"
+    - "12.7"
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  ux_priority_id: P2-4
+  related_to:
+    - 20261020-UX-14
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-09 / P2-4; staged before G5)
+  verified_by: null
+- id: 20261020-UI-10
+  audit: AUD-2026-10-20
+  title: Admin 3-column dashboard packs 7 unrelated cards with inconsistent
+    spacing, competing CTAs, and nested scroll regions
+  spec_sections:
+    - "5.2"
+    - "12.1"
+    - "12.3"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P0-4
+  related_to:
+    - 20261020-UX-04
+    - OSR-13
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-10 / P0-4; staged in G2 alpha)
+  verified_by: null
+- id: 20261020-CP-01
+  audit: AUD-2026-10-20
+  title: Internal system jargon (Tier 1, Tier 2, Tier 3, L3/4, temporal_level,
+    exact, valid_from) is exposed directly to visitors
+  spec_sections:
+    - "3.2"
+    - "3.9"
+    - "10.5"
+    - "12.5"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-13
+  related_to:
+    - F4
+    - 20261020-UI-05
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-01 / P1-13; staged in v0.2)
+  verified_by: null
+- id: 20261020-CP-02
+  audit: AUD-2026-10-20
+  title: Public footer and page subtitles read like a developer test harness
+    (Seeded with Alex Rivera demo data · Try the Ask page or Admin Triage)
+  spec_sections:
+    - "5.1"
+    - "12.1"
+    - "20"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-13
+  related_to:
+    - P1
+    - OSR-04
+    - 20261020-UX-12
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-02 / P0-5 & P1-13)
+  verified_by: null
+- id: 20261020-CP-03
+  audit: AUD-2026-10-20
+  title: The Ask widget returns raw HTTP status strings (HTTP 429) instead of
+    recovery-oriented human copy
+  spec_sections:
+    - "6.1"
+    - "10.8"
+    - "12.6"
+    - "13.8"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-13
+  related_to:
+    - S4
+    - 20261020-UX-07
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-03 / P0-8 & P1-13)
+  verified_by: null
+- id: 20261020-CP-04
+  audit: AUD-2026-10-20
+  title: The alpha safety banner is rendered identically on public visitor pages
+    and admin pages, alarming visitors and competing with page hierarchy
+  spec_sections:
+    - "12.1"
+  severity: P2
+  status: open
+  owner: A
+  ux_priority_id: P2-5
+  related_to:
+    - OSR-11
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-04 / P2-5; staged before G5)
+  verified_by: null
+- id: 20261020-CP-05
+  audit: AUD-2026-10-20
+  title: Empty states across public and admin views are passive dead ends with no
+    explanation or next action
+  spec_sections:
+    - "4.4"
+    - "6.2"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  ux_priority_id: P1-13
+  related_to:
+    - 20261020-UX-12
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-05 / P0-5 & P1-13)
+  verified_by: null
+- id: 20261020-CP-06
+  audit: AUD-2026-10-20
+  title: Form labels, placeholders, and button labels in Admin use inconsistent
+    verbs and developer shorthand (slug, body_md, valid_from)
+  spec_sections:
+    - "4.2"
+    - "6.2"
+    - "12.6"
+  severity: P2
+  status: open
+  owner: A
+  ux_priority_id: P2-6
+  related_to:
+    - 20261020-UX-13
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-06 / P2-6; staged before G5)
+  verified_by: null
+- id: 20261020-CP-07
+  audit: AUD-2026-10-20
+  title: The AI boundary and verification meaning are under-explained on first
+    encounter; visitors are not told how citations or scope checks work
+  spec_sections:
+    - "0"
+    - "1"
+    - "6.1"
+    - "10.6"
+    - "12.1"
+    - "12.6"
+  severity: P2
+  status: open
+  owner: A
+  ux_priority_id: P2-7
+  related_to:
+    - M3
+    - 20261020-UX-07
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/remediation-plan-AUD-2026-10-19.md
+  regression_test: null
+  history:
+    - date: 2026-10-20
+      status: open
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-07 / P2-7; staged before G5)
+  verified_by: null

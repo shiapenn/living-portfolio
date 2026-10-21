@@ -336,7 +336,7 @@ IDs use the prefix `OSR-` and are tracked in `docs/audits/register.yml` like fin
 | OSR-10 | Flip-day checklist and rulesets as code in `docs/governance/rulesets/` | Direct push to `main` rejected; fork PR has no secrets (tested) | G1 |
 | OSR-11 | README alpha warning, admin UI banner, release-notes template | Warning text present in all three | G1 |
 | OSR-12 | Versioned API (`/api/v1`), committed OpenAPI, generated client | Web uses the client; CI fails on drift | G2 |
-| OSR-13 | Decouple web from API; remove web mounting from `createApp()`; optional bundled mode behind a flag | Dependency-rule check passes; web runs against a remote API URL | G2 |
+| OSR-13 | Decouple web from API; remove web mounting from `createApp()`; optional bundled mode behind a flag. **Note:** OSR-13 means strict HTTP decoupling (`/api/v1`), NOT the Astro/React framework migration. | Dependency-rule check passes; web runs against a remote API URL | G2 |
 | OSR-14 | Repository conformance suite over in-memory and Postgres | Same suite passes on both | G2 |
 | OSR-15 | Integration and E2E lanes with Postgres service container and local embeddings | Required checks; no secrets needed | G2 |
 | OSR-16 | Dockerfiles, compose stack, quickstart test in CI; release workflow with multi-arch images, SBOM, provenance, signing | Fresh-clone quickstart passes; tagged build produces signed images (closes F2) | G2 |
@@ -349,6 +349,18 @@ IDs use the prefix `OSR-` and are tracked in `docs/audits/register.yml` like fin
 | OSR-23 | Docs: self-host guide, config reference, upgrade guide, contributor guide, ADRs (API boundary, config contract, hosting adapters, provider choice) | Present and linked from README | G2 and G4 |
 
 Housekeeping: record each `OSR-` task in `register.yml`; keep this plan under change control in `docs/plans/`; keep reports, plans and review letters in the repository, not only in chat or assistant artifacts.
+
+### 7.1 Cross-Audit Staging Alignment (AUD-2026-10-19 & AUD-2026-10-20)
+
+To maintain rigorous alignment between technical security fixes and design/UX specification remediation, the roadmap is staged as follows:
+
+| Stage / Gate | Release Target | Scope & Roadmap Bindings | Notes & Rules |
+| --- | --- | --- | --- |
+| **Gate 1b+** | Pre-Public Baseline | **Fix 4 (Ask safety, G1–G7) + UX P0-1, P0-2, P0-3, P0-9** | Completed in repo: login/setup HTML flows, removal of every default token, admin `apiClient` with CSRF & `res.ok`, server-side publish gate, expanded scanner, honest status cards & healthz. |
+| **G2 alpha** | `v0.1.0-alpha.1` | **UX P0-4, P0-5, P0-7 + route trees inside OSR-13** | **Architecture invariant:** OSR-13 means strict HTTP decoupling (`/api/v1`), **not** an Astro/React migration. Each fix merges alongside its Playwright test spec. |
+| **Pre-G4** | Staging / Pre-Release | **UX P0-6, P0-8, P0-10, P0-11** | Triage keyboard mechanics, structure review inspector, booking confirmation persistence, site-wide time travel. |
+| **v0.2** | Minor Release | **UX P1 Findings** (`20261020-UX-12`..`16`, `20261020-UI-01`..`06`) | Structural and information-architecture refactoring. |
+| **Pre-G5** | `v0.1.0` GA Final | **UX P2 Findings** (`20261020-UI-07`..`10`, `20261020-CP-01`..`07`) | Visual tokens, micro-interactions, copy linting. |
 
 ---
 

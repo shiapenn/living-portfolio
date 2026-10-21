@@ -94,8 +94,28 @@ export function verifyAnswerBeforeDelivery(input: VerificationInput): Verificati
   const passed = faithfulnessPassed && !anachronismDetected;
 
   let verifiedText = draftText;
+
+  // G5: strip/redact future-year references from verifiedText in time-travel mode
+  if (anachronismDetected && asOfDate) {
+    const queryYear = new Date(asOfDate).getFullYear();
+    const sentences = verifiedText.split(/(?<=[.!?])\s+/);
+    const cleaned = sentences.filter((s) => {
+      const ym = s.match(/\b(20[2-9][0-9])\b/g);
+      if (!ym) return true;
+      return !ym.some((y) => parseInt(y, 10) > queryYear);
+    });
+    verifiedText = cleaned.join(' ').trim();
+    if (verifiedText.includes(String(new Date(asOfDate).getFullYear()))) {
+      // Keep valid text
+    } else {
+      verifiedText = verifiedText.replace(/\b(20[2-9][0-9])\b/g, (y) => {
+        return parseInt(y, 10) > queryYear ? '[redacted]' : y;
+      });
+    }
+  }
+
   if (applicabilityNote && !draftText.includes(applicabilityNote)) {
-    verifiedText = `${draftText}\n\n*${applicabilityNote}*`;
+    verifiedText = `${verifiedText}\n\n*${applicabilityNote}*`;
   }
 
   return {

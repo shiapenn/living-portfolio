@@ -5,6 +5,11 @@ import { loadConfig } from '@living-portfolio/config';
 import { InMemoryPortfolioRepository, seedDemoPortfolio } from '@living-portfolio/db';
 import { BudgetGovernor, MockModelProvider } from '@living-portfolio/ai';
 import { DEFAULT_STRATA_THEME } from '@living-portfolio/core';
+import {
+  renderAdminLoginPage,
+  renderAdminSetupPage,
+  renderAdminWorkspacePage,
+} from '@living-portfolio/web';
 import { AuthManager, createAuthRoutes } from './auth/security.js';
 import { createHealthRoutes } from './routes/health.js';
 import { createEntriesRoutes } from './routes/entries.js';
@@ -26,11 +31,10 @@ export function createApp(
   const repo = customRepo ?? new InMemoryPortfolioRepository();
   const governor = new BudgetGovernor();
   const mockProvider = new MockModelProvider();
-  const adminToken =
-    options?.bootstrapAdminToken || cfg.ADMIN_API_TOKEN || 'lp_pat_default_test_admin_token_001';
+  const adminToken = options?.bootstrapAdminToken || cfg.ADMIN_API_TOKEN || '';
   const auth = new AuthManager({
     signingKey: options?.signingKey || (cfg.SESSION_SECRET ? cfg.SESSION_SECRET : undefined),
-    bootstrapAdminToken: adminToken,
+    bootstrapAdminToken: adminToken || undefined,
   });
 
   const configuredOrigins = [
@@ -120,6 +124,11 @@ export function createApp(
     const entries = await repo.listEntries({ visibility: ['public', 'unlisted', 'private'] });
     return c.json({ seeded: true, entriesCount: entries.length });
   });
+
+  // Admin UI routes (UX P0-1, 20261020-UX-01 / V1)
+  app.get('/admin/setup', (c) => c.html(renderAdminSetupPage()));
+  app.get('/admin/login', (c) => c.html(renderAdminLoginPage()));
+  app.get('/admin', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminWorkspacePage(repo)));
 
   // Federation manifest (§17)
   app.get('/.well-known/living-portfolio.json', async (c) => {

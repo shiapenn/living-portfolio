@@ -3,14 +3,34 @@
  * Developer Certificate of Origin (DCO) Sign-Off Verifier (`scripts/dco-check`, OSR-07 §5.1)
  * Verifies that commit messages (or a commit-msg file passed as $1) contain a valid
  * `Signed-off-by: Full Name <email@domain>` trailer.
+ *
+ * CI mode (20261020 CI fix 3c): verifies EVERY non-merge commit in the range, not only HEAD.
+ * Range resolution order:
+ *   1. `DCO_COMMIT_RANGE` (e.g. `origin/main..HEAD`), if set
+ *   2. `DCO_BASE_SHA..DCO_HEAD_SHA` (set by CI from the pull_request / push event)
+ *   3. `HEAD~1..HEAD` (local fallback; a single commit)
  */
 import { readFileSync } from 'node:fs';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 
 const DCO_REGEX = /^Signed-off-by:\s+.+\s+<[^@\s]+@[^@\s]+>/m;
+const ZERO_SHA = /^0{40}$/;
 
 export function verifyDcoMessage(message) {
   return DCO_REGEX.test(message);
+}
+
+function git(args) {
+  return execFileSync('git', args, { encoding: 'utf8' }).trim();
+}
+
+export function resolveRange(env = process.env) {
+  if (env.DCO_COMMIT_RANGE) return env.DCO_COMMIT_RANGE;
+  const base = env.DCO_BASE_SHA;
+  const head = env.DCO_HEAD_SHA || 'HEAD';
+  if (base && !ZERO_SHA.test(base)) return `${base}..${head}`;
+  // New branch push (base is all zeros) or local run: check the tip commit only.
+  return `${head}~1..${head}`;
 }
 
 const arg = process.argv[2];
@@ -27,17 +47,22 @@ if (arg && !arg.startsWith('--')) {
   process.exit(0);
 }
 
-// Otherwise check the latest commit (or range in CI)
-const range = process.env.DCO_COMMIT_RANGE || 'HEAD -n 1';
+const range = resolveRange();
 try {
-  const latestMsg = execSync(`git log ${range} --format=%B`, { encoding: 'utf8' });
-  if (!verifyDcoMessage(latestMsg)) {
-    console.error('✗ [OSR-07 DCO] Commit lacks a valid "Signed-off-by: Name <email>" trailer.');
-    console.error('  Amend with `git commit --amend -s` before pushing.');
+  let shas = git(['rev-list', '--no-merges', range]).split('\n').filter(Boolean);
+  if (shas.length === 0) {
+    // Root commit has no parent, so `HEAD~1..HEAD` can fail/return nothing; fall back to HEAD itself.
+    shas = [git(['rev-parse', 'HEAD'])];
+  }
+  const missing = shas.filter((sha) => !verifyDcoMessage(git(['log', '-1', '--format=%B', sha])));
+  if (missing.length) {
+    console.error(`✗ [OSR-07 DCO] ${missing.length} of ${shas.length} commit(s) in ${range} lack a valid "Signed-off-by: Name <email>" trailer:`);
+    for (const sha of missing) console.error(`  - ${git(['log', '-1', '--format=%h %s', sha])}`);
+    console.error('  Fix with `git rebase --signoff <base>` (or `git commit --amend -s` for a single commit).');
     process.exit(1);
   }
-  console.log('✓ [OSR-07 DCO] HEAD commit carries valid Signed-off-by trailer.');
+  console.log(`✓ [OSR-07 DCO] All ${shas.length} commit(s) in ${range} carry a valid Signed-off-by trailer.`);
 } catch (err) {
-  console.error('✗ [OSR-07 DCO] Failed to inspect git commit log:', err.message);
+  console.error(`✗ [OSR-07 DCO] Failed to inspect git commit range ${range}:`, err.message);
   process.exit(1);
 }

@@ -16,22 +16,26 @@
 | Version | Date | Author | Summary of Changes |
 | --- | --- | --- | --- |
 | 1.0 | 2026-10-19 | A | Initial 4-phase optimization & remediation plan covering all 29 §5 findings (`S1`–`S7`, `G1`–`G8`, `B1`–`B4`, `P1`–`P6`, `F1`–`F4`), 11 matrix findings (`M1`–`M11`), and 26 prioritized fixes (`Fix 1`–`Fix 26`). |
-| 1.1 | 2026-10-19 | A | Applied auditor review amendments (`A.1`–`A.3`, `B.1`–`B.6`, `C.1`–`C.12`, `D.1`–`D.4`) and integrated concurrent Open-Source Release gates `G0` and `G1` (`OSR-01`–`OSR-11`) from [`osr-001-open-source-release.md`](./osr-001-open-source-release.md). Completed Gate 1a (`Fixes 1, 2, 5, 6`) and G0/G1 repository tasks (`OSR-01`–`OSR-11`). |
+| 1.1 | 2026-10-19 | A | Applied auditor review amendments (`A.1`–`A.3`, `B.1`–`B.6`, `C.1`–`C.12`, `D.1`–`D.4`) and integrated concurrent Open-Source Release gates `G0` and `G1` (`OSR-01`–`OSR-11`). Completed Gate 1a (`Fixes 1, 2, 5, 6`) and G0/G1 repository tasks (`OSR-01`–`OSR-11`). |
+| 1.2 | 2026-10-21 | A | Staged Gate 1b+ (Fix 4 + UX P0-1, P0-2, P0-3, P0-9) and aligned with AUD-2026-10-20 UX findings: G2 alpha (`P0-4`, `P0-5`, `P0-7`, route trees inside `OSR-13`), before G4 (`P0-6`, `P0-8`, `P0-10`, `P0-11`), v0.2 (`P1`), and before G5 (`P2`). Clarified that `OSR-13` means HTTP decoupling, not Astro/React migration. Each fix merges with its Playwright spec. |
 
 ---
 
-## 1. Phase & Gate Sequencing (`C.1`, `C.2`, `C.10`, `OSR-001` §2.1)
+## 1. Phase & Gate Sequencing (`C.1`, `C.2`, `C.10`, `OSR-001` §2.1, AUD-2026-10-20)
 
 > **Release Readiness Rule (`C.10` & `OSR-001` §1.4):** Closing all P0 findings is necessary but **not sufficient** for `v0.1.0` (Spec §20 also requires a passing encrypted backup/restore drill, interactive setup wizard, import planner, rich editor, concrete notifications, and direct-upload publishing). The Phase 1 deliverable is therefore a **pre-release (`v0.1.0-alpha.1` / `v0.1.0-rc`)** governed by the alpha warning and synthetic-data rules in `OSR-001` §1.4.
+>
+> **Decoupling Architecture Note (`OSR-13`):** `OSR-13` represents strict HTTP API decoupling between the web layer and API server (`/api/v1`), **not** an Astro/React framework migration. Each remediation fix merges alongside its corresponding Playwright spec (per Spec §18.1 and AUD-2026-10-20 Appendix B).
 
-| Phase / Gate | OSR Stage Gate | Scope (Prioritized Fixes & OSR Tasks) | Findings / Tasks Addressed | Current Status |
+| Phase / Gate | OSR Stage Gate | Scope (Prioritized Fixes & UX Roadmap Items) | Findings / Tasks Addressed | Current Status |
 | --- | --- | --- | --- | --- |
 | **Phase 0** | — | **Fix 3** (`SIMULATED(...)` `501` gate), **Fix 25** (P0 conformance probes & `scripts/audit-check`) | `M1`, `AUD-01`–`AUD-23`, `D.1`–`D.4` | **Claimed Fixed** (`verified_by: null`) |
 | **Gate 1a** | **G0 + G1 (Part 1)** | **Fixes 1, 2, 5, 6** + **OSR-01..OSR-11** (Auth, setup flow, CSRF, login throttling, revocable Bearer tokens, structural visibility, signed `redactionPreviewToken`, XSS/URL sanitization, hashed IP rate limit, CORS/CSP, `@living-portfolio/config`, clean baseline, governance & rulesets) | `S1`, `S2`, `S3`, `S4`, `S5`, `S6`, `OSR-01`–`OSR-11` | **Claimed Fixed** (`verified_by: null`) |
-| **Gate 1b** | **G1 (Public Flip)** | **Fix 4** (`/api/ask` safety: `checkGate` unknown facets -> `INDETERMINATE`, dynamic routing inputs, confirmed scoped constraints, domain hard facets, `G5` extractive downgrade, single-turn `needs_context`, verified Tier 2 draft) | `G1`, `G2`, `G3`, `G4`, `G5`, `G6`, `G7` | **Next Up (`open`)** |
-| **Gate 1c** | **G2 (`v0.1.0-alpha.1`)** | **Fixes 7, 8** + **OSR-12..OSR-16** (Postgres + `pgvector` repository, migrations, `schema_info` boot check, `pg-boss` worker, real ONNX embeddings, decoupled `/api/v1` web client, Dockerfiles, deep `/healthz`) | `P1`, `P2`, `P3`, `F1`, `F2`, `F3`, `OSR-12`–`OSR-16` | Planned (`open`) |
-| **Phase 2** | **G3 (Staging)** | **Fixes 9, 10, 11, 12, 13, 14, 15** + **OSR-17..OSR-19** (Bitemporal `written_at` + seed fixture override, slug uniqueness & revision immutability, Postgres-backed `BudgetGovernor` with owner reserve, degradation ladder cache/fallback, enrichment privacy router, entailment verifier, query classifier) | `P4`, `P6`, `G8`, `B1`–`B4`, `M2`, `S7`, `M3`, `M4`, `OSR-17`–`OSR-19` | Planned (`open`) |
-| **Phase 3** | **G4 / G5 (`v0.1.0`)** | **Fixes 16–24, 26** + **OSR-20..OSR-23** (Calibration sliding window/ECE/rollback, topology conflict detector, scope-aware staleness, real static HTML emitter, `pg_dump` + `age` backup & scratch restore drill, import planner, CommonMark/GFM sanitizer, §19 docs, §18.2 eval harness) | `M5`–`M11`, `P5`, `F4`, `OSR-20`–`OSR-23` | Planned (`open`) |
+| **Gate 1b+** | **G1 (Pre-Public)** | **Fix 4** (`/api/ask` safety: `G1`–`G7`) + **UX P0-1, P0-2, P0-3, P0-9** (Login page, first-run wizard, removal of every default token, admin `apiClient` with CSRF & `res.ok` check, server-side publish gate, expanded scanner, removal of hardcoded status cards & honest `healthz`) | `S1`, `S2`, `G1`–`G7`, `20261020-UX-01`, `20261020-UX-02`, `20261020-UX-03`, `20261020-UX-05` | **Claimed Fixed** (`verified_by: null`) |
+| **Gate 1c** | **G2 (`v0.1.0-alpha.1`)** | **Fixes 7, 8** + **OSR-12..OSR-16** + **UX P0-4, P0-5, P0-7** (Postgres + `pgvector`, migrations, `pg-boss` worker, ONNX embeddings, route trees and HTTP decoupling inside `OSR-13`, Markdown fidelity, structured text view; merges with Playwright specs) | `P1`, `P2`, `P3`, `F1`–`F3`, `20261020-UX-04`, `20261020-UX-07`, `OSR-12`–`OSR-16` | Planned (`open`) |
+| **Phase 2 (Pre-G4)** | **Before G4** | **UX P0-6, P0-8, P0-10, P0-11** + **Fixes 9–15** + **OSR-17..OSR-19** (Triage keyboard UX, structure review inspector, booking confirmation, time-travel site-wide mode; bitemporal time, revision immutability, BudgetGovernor owner reserve, privacy router) | `20261020-UX-06`, `20261020-UX-08`, `20261020-UX-10`, `20261020-UX-11`, `P4`, `P6`, `G8`, `B1`–`B4`, `M2`–`M4`, `S7`, `OSR-17`–`OSR-19` | Planned (`open`) |
+| **Phase 3 (v0.2)** | **v0.2** | **UX P1 Findings** (Structural & information-architecture refactoring: import triage, visitor ask states, axe accessibility on all routes) | `20261020-UX-12`–`16`, `20261020-UI-01`–`06` | Planned (`open`) |
+| **Phase 4 (Pre-G5)** | **Before G5 (`v0.1.0`)** | **UX P2 Findings** (Visual polish, token architecture, micro-interactions, copy linting) + **Fixes 16–24, 26** + **OSR-20..OSR-23** | `20261020-UI-07`–`10`, `20261020-CP-01`–`07`, `M5`–`M11`, `P5`, `F4`, `OSR-20`–`OSR-23` | Planned (`open`) |
 
 ---
 

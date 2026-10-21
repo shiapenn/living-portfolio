@@ -53,7 +53,7 @@ const ALLOWLIST = [
 
 const IGNORED_DIRS = new Set(['.git', 'node_modules', 'dist', '.turbo', 'coverage']);
 
-const RULES = [
+export const RULES = [
   {
     id: 'DEMO_IDENTITY',
     description: 'Hard-coded demo owner identity ("Alex Rivera")',
@@ -79,13 +79,44 @@ const RULES = [
     regex: /\b(?:sk-live-[A-Za-z0-9]{16,}|ghp_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16})\b/,
     excludeTests: false,
   },
+  {
+    id: 'CREDENTIAL_LITERAL_NON_TEST',
+    description: 'Credential-like or default bearer token literal in non-test code (e.g. missed lp_pat_default_test_admin_token_001)',
+    regex: /\b(?:lp_pat_[A-Za-z0-9_-]{16,}|sk-(?:live|test|proj|ant)-[A-Za-z0-9_-]{16,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16})\b/,
+    excludeTests: true,
+    onlyInDirs: ['apps/', 'packages/', 'docker/'],
+  },
 ];
 
-function isAllowlisted(relPath) {
+export function isAllowlisted(relPath) {
   return ALLOWLIST.some((entry) => relPath === entry.pathPrefix || relPath.startsWith(entry.pathPrefix));
 }
 
-function walkRepo(dir) {
+export function scanContent(content, rel) {
+  const isTest = rel.endsWith('.test.ts') || rel.includes('/conformance/');
+  const lines = content.split('\n');
+  const hits = [];
+
+  for (const rule of RULES) {
+    if (rule.excludeTests && isTest) continue;
+    if (rule.onlyInDirs && !rule.onlyInDirs.some((d) => rel.startsWith(d))) continue;
+    lines.forEach((line, idx) => {
+      if (rel === 'apps/api/src/server.ts' && line.includes('console.log')) return;
+      if (rule.regex.test(line)) {
+        hits.push({
+          ruleId: rule.id,
+          description: rule.description,
+          file: rel,
+          line: idx + 1,
+          snippet: line.trim().slice(0, 120),
+        });
+      }
+    });
+  }
+  return hits;
+}
+
+export function walkRepo(dir) {
   const files = [];
   for (const name of readdirSync(dir)) {
     if (IGNORED_DIRS.has(name) || name === '.DS_Store') continue;
@@ -100,41 +131,28 @@ function walkRepo(dir) {
   return files;
 }
 
-const hits = [];
-for (const file of walkRepo(ROOT)) {
-  const rel = relative(ROOT, file).replace(/\\/g, '/');
-  if (isAllowlisted(rel)) continue;
-  if (rel.endsWith('.lock') || rel.endsWith('.yaml') && rel === 'pnpm-lock.yaml') continue;
+export function runHardcodeCheck() {
+  const hits = [];
+  for (const file of walkRepo(ROOT)) {
+    const rel = relative(ROOT, file).replace(/\\/g, '/');
+    if (isAllowlisted(rel)) continue;
+    if (rel.endsWith('.lock') || (rel.endsWith('.yaml') && rel === 'pnpm-lock.yaml')) continue;
 
-  const isTest = rel.endsWith('.test.ts') || rel.includes('/conformance/');
-  const content = readFileSync(file, 'utf8');
-  const lines = content.split('\n');
-
-  for (const rule of RULES) {
-    if (rule.excludeTests && isTest) continue;
-    if (rule.onlyInDirs && !rule.onlyInDirs.some((d) => rel.startsWith(d))) continue;
-    // Allow console.log startup message in server.ts
-    lines.forEach((line, idx) => {
-      if (rel === 'apps/api/src/server.ts' && line.includes('console.log')) return;
-      if (rule.regex.test(line)) {
-        hits.push({
-          ruleId: rule.id,
-          description: rule.description,
-          file: rel,
-          line: idx + 1,
-          snippet: line.trim().slice(0, 120),
-        });
-      }
-    });
+    const content = readFileSync(file, 'utf8');
+    hits.push(...scanContent(content, rel));
   }
+  return hits;
 }
 
-if (hits.length > 0) {
-  console.error('✗ [OSR-01] Hard-code inventory check failed with unlisted hits:');
-  for (const h of hits) {
-    console.error(`  - [${h.ruleId}] ${h.file}:${h.line} (${h.description})\n    ${h.snippet}`);
+// When executed directly as CLI script
+if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename || 'scripts/hardcode-check')) {
+  const hits = runHardcodeCheck();
+  if (hits.length > 0) {
+    console.error('✗ [OSR-01] Hard-code inventory check failed with unlisted hits:');
+    for (const h of hits) {
+      console.error(`  - [${h.ruleId}] ${h.file}:${h.line} (${h.description})\n    ${h.snippet}`);
+    }
+    process.exit(1);
   }
-  process.exit(1);
+  console.log('✓ [OSR-01] Hard-code inventory scan passed (0 unlisted hits across source and docs).');
 }
-
-console.log('✓ [OSR-01] Hard-code inventory scan passed (0 unlisted hits across source and docs).');

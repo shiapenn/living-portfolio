@@ -1,4 +1,5 @@
 import { writeFileSync, unlinkSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -68,10 +69,13 @@ describe('@living-portfolio/config (OSR-02, OSR-03, OSR-09)', () => {
   });
 
   it('extracts only PUBLIC_ settings and proves no secret reaches client output', () => {
+    // CI fix 3b: fake key is assembled at runtime so no credential-shaped literal exists in source.
+    // It is NOT a real credential — it is a random, test-only string that never leaves this process.
+    const fakeOpenAiKey = ['sk', 'test', randomUUID().replace(/-/g, '')].join('-');
     const cfg = loadConfig({
       env: {
         SESSION_SECRET: 'secret_value_that_must_never_leak_999',
-        OPENAI_API_KEY: 'sk-test-1234567890',
+        OPENAI_API_KEY: fakeOpenAiKey,
         PUBLIC_SITE_NAME: 'My Portfolio',
       },
     });
@@ -86,7 +90,7 @@ describe('@living-portfolio/config (OSR-02, OSR-03, OSR-09)', () => {
     expect(checkClean.leaked).toEqual([]);
 
     const checkLeaked = assertNoSecretsInClientBundle(
-      serializedClientBundle + ' window.OPENAI_API_KEY = "sk-test-1234567890";',
+      serializedClientBundle + ` window.OPENAI_API_KEY = "${fakeOpenAiKey}";`,
       cfg
     );
     expect(checkLeaked.ok).toBe(false);
