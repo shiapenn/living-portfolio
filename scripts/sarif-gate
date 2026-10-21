@@ -1,0 +1,136 @@
+#!/usr/bin/env node
+/**
+ * CodeQL SARIF Baseline Gate (`scripts/sarif-gate`, Instruction 4)
+ *
+ * Verifies that:
+ * 1. The baseline file (`docs/audits/sarif-baseline.json`) exists and each entry cites a valid
+ *    finding ID present in `docs/audits/register.yml`.
+ * 2. Any SARIF files produced by CodeQL contain only alerts that are covered by the baseline.
+ *    Any unbaselined static analysis alert immediately fails the gate.
+ */
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { resolve, join } from 'node:path';
+import { parse as parseYaml } from '../packages/core/node_modules/yaml/browser/index.js';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const BASELINE_PATH = resolve(ROOT, 'docs/audits/sarif-baseline.json');
+const REGISTER_PATH = resolve(ROOT, 'docs/audits/register.yml');
+
+// 1. Verify and parse register.yml
+if (!existsSync(REGISTER_PATH)) {
+  console.error(`✗ [SARIF-GATE] Missing register file: ${REGISTER_PATH}`);
+  process.exit(1);
+}
+const registerRaw = readFileSync(REGISTER_PATH, 'utf8');
+const register = parseYaml(registerRaw);
+if (!Array.isArray(register)) {
+  console.error('✗ [SARIF-GATE] register.yml must parse to an array.');
+  process.exit(1);
+}
+const validFindingIds = new Set(register.map((r) => r.id));
+
+// 2. Verify and parse sarif-baseline.json
+if (!existsSync(BASELINE_PATH)) {
+  console.error(`✗ [SARIF-GATE] Missing SARIF baseline file: ${BASELINE_PATH}`);
+  process.exit(1);
+}
+let baseline;
+try {
+  baseline = JSON.parse(readFileSync(BASELINE_PATH, 'utf8'));
+} catch (err) {
+  console.error(`✗ [SARIF-GATE] Invalid JSON in baseline file: ${err.message}`);
+  process.exit(1);
+}
+
+if (!Array.isArray(baseline.baselined_alerts)) {
+  console.error('✗ [SARIF-GATE] sarif-baseline.json must contain a "baselined_alerts" array.');
+  process.exit(1);
+}
+
+const baselinedRules = new Map();
+for (const entry of baseline.baselined_alerts) {
+  if (!entry.rule_id || !entry.register_finding) {
+    console.error(`✗ [SARIF-GATE] Baseline entry missing rule_id or register_finding: ${JSON.stringify(entry)}`);
+    process.exit(1);
+  }
+  if (!validFindingIds.has(entry.register_finding)) {
+    console.error(
+      `✗ [SARIF-GATE] Baseline entry cites unknown register finding ID '${entry.register_finding}'`
+    );
+    process.exit(1);
+  }
+  baselinedRules.set(entry.rule_id, entry);
+}
+
+console.log(
+  `✓ [SARIF-GATE] Baseline verified: ${baselinedRules.size} rule(s) mapped to valid register findings.`
+);
+
+// 3. Inspect target SARIF files if provided
+const targetArg = process.argv[2];
+if (!targetArg) {
+  console.log('✓ [SARIF-GATE] No SARIF path specified; baseline validation PASSED.');
+  process.exit(0);
+}
+
+const targetPath = resolve(process.cwd(), targetArg);
+const sarifFiles = [];
+
+if (existsSync(targetPath)) {
+  const stat = statSync(targetPath);
+  if (stat.isDirectory()) {
+    for (const f of readdirSync(targetPath)) {
+      if (f.endsWith('.sarif') || f.endsWith('.sarif.json')) {
+        sarifFiles.push(join(targetPath, f));
+      }
+    }
+  } else if (stat.isFile()) {
+    sarifFiles.push(targetPath);
+  }
+}
+
+if (sarifFiles.length === 0) {
+  console.log(`✓ [SARIF-GATE] No SARIF files found at ${targetArg}; gate PASSED.`);
+  process.exit(0);
+}
+
+let totalAlerts = 0;
+const unbaselinedAlerts = [];
+
+for (const file of sarifFiles) {
+  let sarif;
+  try {
+    sarif = JSON.parse(readFileSync(file, 'utf8'));
+  } catch (err) {
+    console.error(`✗ [SARIF-GATE] Failed to parse SARIF file ${file}: ${err.message}`);
+    process.exit(1);
+  }
+
+  const runs = sarif.runs || [];
+  for (const run of runs) {
+    const results = run.results || [];
+    for (const result of results) {
+      totalAlerts++;
+      const ruleId = result.ruleId || result.rule?.id;
+      if (!ruleId || !baselinedRules.has(ruleId)) {
+        const loc = result.locations?.[0]?.physicalLocation?.artifactLocation?.uri || 'unknown location';
+        const msg = result.message?.text || 'No message';
+        unbaselinedAlerts.push({ file, ruleId, loc, msg });
+      }
+    }
+  }
+}
+
+if (unbaselinedAlerts.length > 0) {
+  console.error(`\n✗ [SARIF-GATE] ${unbaselinedAlerts.length} unbaselined CodeQL alert(s) detected:`);
+  for (const u of unbaselinedAlerts) {
+    console.error(`  - Rule [${u.ruleId}] at ${u.loc}: ${u.msg}`);
+  }
+  console.error('\nEvery static analysis alert must be mapped to an approved register finding in docs/audits/sarif-baseline.json.');
+  process.exit(1);
+}
+
+console.log(
+  `✓ [SARIF-GATE] All ${totalAlerts} CodeQL alert(s) across ${sarifFiles.length} file(s) match baselined register findings.`
+);
+process.exit(0);

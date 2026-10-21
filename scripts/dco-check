@@ -8,6 +8,8 @@
  * Range resolution order:
  *   1. `DCO_COMMIT_RANGE` (e.g. `origin/main..HEAD`), if set
  *   2. `DCO_BASE_SHA..DCO_HEAD_SHA` (set by CI from the pull_request / push event)
+ *      - If base is unreachable or all zeros (force push, rewritten history, new branch),
+ *        falls back to checking full history and prints an explicit notice.
  *   3. `HEAD~1..HEAD` (local fallback; a single commit)
  */
 import { readFileSync } from 'node:fs';
@@ -24,13 +26,49 @@ function git(args) {
   return execFileSync('git', args, { encoding: 'utf8' }).trim();
 }
 
-export function resolveRange(env = process.env) {
-  if (env.DCO_COMMIT_RANGE) return env.DCO_COMMIT_RANGE;
-  const base = env.DCO_BASE_SHA;
+export function isCommitReachable(sha) {
+  if (!sha || ZERO_SHA.test(sha)) return false;
+  try {
+    execFileSync('git', ['cat-file', '-e', `${sha}^{commit}`], { stdio: 'pipe' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function resolveCommitList(env = process.env) {
   const head = env.DCO_HEAD_SHA || 'HEAD';
-  if (base && !ZERO_SHA.test(base)) return `${base}..${head}`;
-  // New branch push (base is all zeros) or local run: check the tip commit only.
-  return `${head}~1..${head}`;
+  if (env.DCO_COMMIT_RANGE) {
+    const range = env.DCO_COMMIT_RANGE;
+    const shas = git(['rev-list', '--no-merges', range]).split('\n').filter(Boolean);
+    return { shas, rangeDescription: range };
+  }
+
+  const base = env.DCO_BASE_SHA;
+  if (base) {
+    if (ZERO_SHA.test(base) || !isCommitReachable(base)) {
+      console.log(
+        `[OSR-07 DCO] Notice: Base commit (${base}) is unreachable or all zeros (force push / rewritten history / new branch). Falling back to checking full repository history.`
+      );
+      const shas = git(['rev-list', '--no-merges', head]).split('\n').filter(Boolean);
+      return { shas, rangeDescription: `full history up to ${head}` };
+    }
+    const range = `${base}..${head}`;
+    const shas = git(['rev-list', '--no-merges', range]).split('\n').filter(Boolean);
+    return { shas, rangeDescription: range };
+  }
+
+  // Local fallback: tip commit
+  try {
+    const range = `${head}~1..${head}`;
+    let shas = git(['rev-list', '--no-merges', range]).split('\n').filter(Boolean);
+    if (shas.length === 0) {
+      shas = [git(['rev-parse', head])];
+    }
+    return { shas, rangeDescription: range };
+  } catch {
+    return { shas: [git(['rev-parse', head])], rangeDescription: head };
+  }
 }
 
 const arg = process.argv[2];
@@ -47,22 +85,21 @@ if (arg && !arg.startsWith('--')) {
   process.exit(0);
 }
 
-const range = resolveRange();
 try {
-  let shas = git(['rev-list', '--no-merges', range]).split('\n').filter(Boolean);
+  const { shas, rangeDescription } = resolveCommitList();
   if (shas.length === 0) {
-    // Root commit has no parent, so `HEAD~1..HEAD` can fail/return nothing; fall back to HEAD itself.
-    shas = [git(['rev-parse', 'HEAD'])];
+    console.log(`✓ [OSR-07 DCO] No non-merge commits found in ${rangeDescription}.`);
+    process.exit(0);
   }
   const missing = shas.filter((sha) => !verifyDcoMessage(git(['log', '-1', '--format=%B', sha])));
   if (missing.length) {
-    console.error(`✗ [OSR-07 DCO] ${missing.length} of ${shas.length} commit(s) in ${range} lack a valid "Signed-off-by: Name <email>" trailer:`);
+    console.error(`✗ [OSR-07 DCO] ${missing.length} of ${shas.length} commit(s) in ${rangeDescription} lack a valid "Signed-off-by: Name <email>" trailer:`);
     for (const sha of missing) console.error(`  - ${git(['log', '-1', '--format=%h %s', sha])}`);
     console.error('  Fix with `git rebase --signoff <base>` (or `git commit --amend -s` for a single commit).');
     process.exit(1);
   }
-  console.log(`✓ [OSR-07 DCO] All ${shas.length} commit(s) in ${range} carry a valid Signed-off-by trailer.`);
+  console.log(`✓ [OSR-07 DCO] All ${shas.length} commit(s) in ${rangeDescription} carry a valid Signed-off-by trailer.`);
 } catch (err) {
-  console.error(`✗ [OSR-07 DCO] Failed to inspect git commit range ${range}:`, err.message);
+  console.error(`✗ [OSR-07 DCO] Failed to inspect git commit range:`, err.message);
   process.exit(1);
 }

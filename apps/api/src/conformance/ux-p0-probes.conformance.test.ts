@@ -27,11 +27,7 @@ function registerBoundProbe(findingId: string, description: string, fn: () => Pr
   if (!status) {
     throw new Error(`[D.1] Finding ${findingId} not found in docs/audits/register.yml`);
   }
-  if (status === 'fixed') {
-    it(`[${findingId}] (status=fixed) ${description}`, fn);
-  } else {
-    it.fails(`[${findingId}] (expected-failure while status=${status}) ${description}`, fn);
-  }
+  it(`[${findingId}] (status=${status}) ${description}`, fn);
 }
 
 describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/audits/register.yml)', () => {

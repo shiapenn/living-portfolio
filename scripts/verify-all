@@ -1,0 +1,39 @@
+#!/usr/bin/env node
+/**
+ * Unified Local Verification Suite (`scripts/verify-all`, Instruction 7)
+ * Runs all required repository gates in sequence.
+ */
+import { execSync } from 'node:child_process';
+import { resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+
+const steps = [
+  { name: 'Build & Typecheck', command: 'pnpm build' },
+  { name: 'Environment Sync (OSR-03)', command: 'node scripts/generate-env-example && git diff --exit-code .env.example' },
+  { name: 'Hard-Code Inventory Scan (OSR-01)', command: 'node scripts/hardcode-check' },
+  { name: 'Developer Certificate of Origin (OSR-07 dco)', command: 'node scripts/dco-check' },
+  { name: 'Audit Governance & Conformance Check (DR-AUD-001 AUD-21)', command: 'node scripts/audit-check' },
+  { name: 'SARIF Static Analysis Baseline Gate', command: 'node scripts/sarif-gate' },
+  { name: 'Gitleaks Secret Scan (Instruction 5)', command: 'node scripts/gitleaks-scan' },
+  { name: 'GitHub Action SHA Pins Verification (CI fix 3a)', command: 'node scripts/verify-action-pins' },
+  { name: 'Unit, Conformance & P0 Regression Suites (AUD-14, AUD-15, D.1, D.2)', command: 'pnpm test' },
+];
+
+console.log('=== Living Portfolio Unified Verification Suite (pnpm verify) ===\n');
+
+for (let i = 0; i < steps.length; i++) {
+  const step = steps[i];
+  console.log(`[${i + 1}/${steps.length}] Running ${step.name}...`);
+  try {
+    execSync(step.command, { cwd: ROOT, stdio: 'inherit' });
+    console.log(`✓ [${i + 1}/${steps.length}] ${step.name} PASSED.\n`);
+  } catch (err) {
+    console.error(`\n✗ [${i + 1}/${steps.length}] ${step.name} FAILED.`);
+    process.exit(1);
+  }
+}
+
+console.log('====================================================');
+console.log('🎉 All repository gates passed successfully.');
+console.log('====================================================');

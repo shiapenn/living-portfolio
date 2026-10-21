@@ -6,6 +6,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { resolve, relative } from 'node:path';
+import { execSync } from 'node:child_process';
 import { parse as parseYaml } from '../packages/core/node_modules/yaml/browser/index.js';
 
 const ROOT = resolve(import.meta.dirname, '..');
@@ -37,11 +38,20 @@ const requiredPaths = [
   'docs/plans/osr-001-open-source-release.md',
   'docs/execution-reports/A001.md',
   'docs/execution-reports/A002.md',
+  'docs/execution-reports/A003.md',
+  'docs/execution-reports/A004.md',
+  'docs/execution-reports/A005.md',
+  'docs/execution-reports/A006.md',
   'docs/execution-reports/OSR-05-clean-tree-and-rotation.md',
   'docs/audits/README.md',
   'docs/audits/register.yml',
   'docs/audits/conformance.yml',
   'docs/audits/hardcode-inventory.md',
+  'docs/audits/sarif-baseline.json',
+  'scripts/historical-sha-map.json',
+  'scripts/sarif-gate',
+  'scripts/gitleaks-scan',
+  'scripts/verify-all',
   'docs/audits/2026-10-19-independent-technical-audit/report.md',
   'docs/audits/2026-10-19-independent-technical-audit/findings.snapshot.yml',
   'docs/audits/2026-10-19-independent-technical-audit/repro/p0-probes.ts',
@@ -99,7 +109,7 @@ if (!Array.isArray(register)) {
   const seenIds = new Set();
   const coveredFixIds = new Set();
   const validSeverities = new Set(['P0', 'P1', 'P2', 'P3']);
-  const validStatuses = new Set(['open', 'in-progress', 'fixed', 'accepted-risk', 'wont-fix']);
+  const validStatuses = new Set(['open', 'in-progress', 'partial', 'fixed', 'accepted-risk', 'wont-fix']);
   const findingMap = new Map();
 
   for (const item of register) {
@@ -145,7 +155,7 @@ if (!Array.isArray(register)) {
     }
 
     // AUD-16 & AUD-21: no P0 can be open on a tagged release
-    if (isReleaseTag && item.severity === 'P0' && (item.status === 'open' || item.status === 'in-progress')) {
+    if (isReleaseTag && item.severity === 'P0' && (item.status === 'open' || item.status === 'in-progress' || item.status === 'partial')) {
       fail(`[AUD-16/AUD-21] Release gate blocked: P0 finding ${item.id} is '${item.status}'.`);
     }
   }
@@ -290,6 +300,39 @@ for (const rel of ['README.md', 'apps/web/src/renderer.ts', '.github/release-tem
   }
 }
 pass('[OSR-11] Mandatory alpha warning verified in README.md, admin UI renderer, and release-notes template.');
+
+// 9. Historical SHA mapping and commit ancestor verification (DR-AUD-001 / Rewrite Errata)
+const shaMapFile = resolve(import.meta.dirname, 'historical-sha-map.json');
+const HISTORICAL_SHA_MAP = existsSync(shaMapFile)
+  ? JSON.parse(readFileSync(shaMapFile, 'utf8'))
+  : {};
+
+function resolveSha(sha) {
+  return HISTORICAL_SHA_MAP[sha] || sha;
+}
+
+function isAncestor(sha) {
+  const target = resolveSha(sha);
+  try {
+    execSync(`git merge-base --is-ancestor ${target} HEAD`, { stdio: 'pipe' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Verify that historical SHAs cited in older reports (A002, A003) resolve to valid ancestors of HEAD
+const citedHistoricalShas = ['196deb5', '76f2823', '6073d6c'];
+let ancestorsOk = true;
+for (const sha of citedHistoricalShas) {
+  if (!isAncestor(sha)) {
+    ancestorsOk = false;
+    fail(`[AUD-COMMIT] Commit SHA '${sha}' cited in reports does not resolve to an ancestor of HEAD via SHA mapping.`);
+  }
+}
+if (ancestorsOk) {
+  pass('[AUD-COMMIT] Historical commit SHAs cited in older reports (196deb5, 76f2823, 6073d6c) resolve to valid ancestors of HEAD via SHA mapping.');
+}
 
 if (errors.length > 0) {
   console.error(`\nAudit check FAILED with ${errors.length} error(s).`);
