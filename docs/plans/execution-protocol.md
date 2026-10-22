@@ -23,7 +23,7 @@ This protocol establishes the binding operational procedure for all implementati
 - **Local Verification:** Before submitting changes, run `pnpm verify` and `pnpm receipt:check` locally to confirm all static, security, secret, and conformance gates pass.
 - **Pull Request:** Open a pull request titled with the Task ID (e.g., `WP-1.2: Enforce apiClient across admin workspace and forbid raw fetch`).
 - **Merge Strategy:** Wait for all required CI status checks to complete green. Merge strictly via **Rebase and merge**. No merge commits or squash merges.
-- **Main Evidence & Receipts:** After merging to `main`, wait for the push workflow runs on `main` to complete green. Author the task receipt (`docs/execution-reports/A###.md`) citing the commit SHA on `main` (`Evidence SHA`) and the corresponding push CI runs. Submit and land the receipt via a docs-only PR before merging the subsequent task.
+- **Main Evidence & Receipts:** After merging to `main`, wait for the push workflow runs on `main` to complete green. Author the task receipt (`docs/execution-reports/A###-<slug>.md` allocated via `pnpm docs:new A "<Title>"`) citing the commit SHA on `main` (`Evidence SHA`) and the corresponding push CI runs. The receipt must contain all nine mandatory sections defined in [IAHP](P001-iterative-agent-handover-protocol.md), including §8 (`receipt:check` self-validation) and §9 (Handover Decision). Submit and land the receipt via a docs-only PR before merging the subsequent task.
 - **Pipelining:** You may start the next task's development branch immediately after pushing, but do not merge it into `main` until the prior task's receipt is fully merged.
 
 ### 1.3 Commit Hygiene & Traceability
@@ -53,4 +53,13 @@ This protocol establishes the binding operational procedure for all implementati
 ### 1.7 Gate Sign-Offs & Stop Points
 - **Work Package Gates:** Work proceeds autonomously between tasks within an active work package without awaiting review.
 - **Package Completion Stop Points:** At the conclusion of Work Package 1 (Gate 1b+ Closure) and Work Package 2 (Gate 2), the agent must halt and wait for L's formal review and sign-off before commencing work on the subsequent package.
-- **Closing Receipt:** The final receipt of a work package must include a comprehensive gate summary and the reproducible fresh-clone verification command for L.
+- **Closing Receipt & Handover:** The final receipt of a work package must include a comprehensive gate summary and the reproducible fresh-clone verification command for L. Handover evaluations are governed by [IAHP](P001-iterative-agent-handover-protocol.md) Section 4.
+
+---
+
+## Revision History
+
+| Date | Change |
+| --- | --- |
+| 2026-10-21 | Initial execution protocol |
+| 2026-10-22 | PROC-1: Adopt Document Identity and IAHP nine-section receipt structure |

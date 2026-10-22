@@ -1,0 +1,247 @@
+#!/usr/bin/env node
+/**
+ * Living Portfolio Document Allocator & Scaffolder (`scripts/docs-new`)
+ * Implements IAHP Section 3 and Section 5.
+ *
+ * Usage:
+ *   pnpm docs:new <class> "<Title>" [--slug <custom-slug>] [--supersedes <id>]
+ */
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { buildIndex } from './docs-index';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const REGISTRY_PATH = resolve(ROOT, 'docs/doc-registry.json');
+const HANDOVER_TEMPLATE_PATH = resolve(ROOT, 'docs/templates/G001-handover-template.md');
+
+const ALLOWED_CLASSES = ['A', 'H', 'P', 'G'];
+const FORBIDDEN_WORDS = [
+  'final',
+  'update',
+  'updated',
+  'v1',
+  'v2',
+  'v3',
+  'draft',
+  'wip',
+  'temp',
+  'temporary',
+  'revision',
+];
+
+export function slugify(text) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .slice(0, 60)
+    .replace(/-+$/, '');
+}
+
+export function allocateDoc(cls, title, options = {}) {
+  const root = options.root || ROOT;
+  const registryPath = options.registryPath || REGISTRY_PATH;
+
+  if (!ALLOWED_CLASSES.includes(cls)) {
+    throw new Error(`Invalid class '${cls}'. Allowed classes: ${ALLOWED_CLASSES.join(', ')}.`);
+  }
+
+  if (!title || typeof title !== 'string' || !title.trim()) {
+    throw new Error('Title must be a non-empty string.');
+  }
+  const cleanTitle = title.trim();
+  if (cleanTitle.length > 80) {
+    throw new Error(`Title exceeds 80 characters (${cleanTitle.length}): '${cleanTitle}'.`);
+  }
+
+  for (const word of FORBIDDEN_WORDS) {
+    const regex = new RegExp(`\\b${word}\\b`, 'i');
+    if (regex.test(cleanTitle)) {
+      throw new Error(`Title contains forbidden status word '${word}': '${cleanTitle}'.`);
+    }
+  }
+
+  const registry = JSON.parse(readFileSync(registryPath, 'utf8'));
+
+  // Calculate next sequential ID
+  const classDocs = registry.filter((d) => d.class === cls);
+  let maxNum = 0;
+  for (const d of classDocs) {
+    const num = parseInt(d.id.slice(1), 10);
+    if (!isNaN(num) && num > maxNum) {
+      maxNum = num;
+    }
+  }
+  const nextNum = maxNum + 1;
+  const newId = `${cls}${String(nextNum).padStart(3, '0')}`;
+
+  const slug = options.slug ? slugify(options.slug) : slugify(cleanTitle);
+  const words = slug.split('-');
+  if (words.length < 2 || words.length > 8) {
+    throw new Error(`Derived slug '${slug}' must have between 2 and 8 words (got ${words.length}).`);
+  }
+
+  // Determine file location
+  let relPath;
+  switch (cls) {
+    case 'A':
+      relPath = `docs/execution-reports/${newId}-${slug}.md`;
+      break;
+    case 'H':
+      relPath = `docs/handovers/${newId}-${slug}.md`;
+      break;
+    case 'P':
+      relPath = `docs/plans/${newId}-${slug}.md`;
+      break;
+    case 'G':
+      relPath = options.isTemplate
+        ? `docs/templates/${newId}-${slug}.md`
+        : `docs/${newId}-${slug}.md`;
+      break;
+  }
+
+  const absPath = resolve(root, relPath);
+  if (existsSync(absPath)) {
+    throw new Error(`File already exists at target path: ${relPath}`);
+  }
+
+  // Generate file content
+  let content = '';
+  if (cls === 'H') {
+    if (!existsSync(HANDOVER_TEMPLATE_PATH)) {
+      throw new Error(`Handover template not found at ${HANDOVER_TEMPLATE_PATH}`);
+    }
+    const rawTemplate = readFileSync(HANDOVER_TEMPLATE_PATH, 'utf8');
+    const templateBody = rawTemplate.split('---\n\n')[1] || rawTemplate;
+    content = templateBody
+      .replace(/\{\{H_ID\}\}/g, newId)
+      .replace(/\{\{Title:[^}]+\}\}/g, cleanTitle)
+      .replace(/\{\{Title\}\}/g, cleanTitle);
+  } else if (cls === 'A') {
+    const today = new Date().toISOString().split('T')[0];
+    content = `# ${newId} — ${cleanTitle}
+
+| Field | Value |
+| --- | --- |
+| Report ID | ${newId} |
+| Date | ${today} |
+| Author | A (Implementer) |
+| Task ID | \`...\` |
+| Evidence SHA | \`...\` |
+| CI run | ... |
+| Verified By | \`null\` |
+
+---
+
+## 1. Scope
+
+## 2. CI Evidence
+
+## 3. Tests Added and Count Change
+
+## 4. Files Touched
+
+## 5. Register and Backlog Changes
+
+## 6. Not Done (Tagged)
+
+## 7. Changes to Earlier Reports
+
+## 8. Receipt Gate Self-Validation
+\`\`\`
+pnpm receipt:check ${newId}
+\`\`\`
+
+## 9. Handover Decision
+- Decision: NOT REQUIRED
+- Rule(s): HO-R5
+- Receipts since last handover: 1 (${newId}); work packages since: 0
+- Clean-boundary preconditions: met
+- Next action: continue with task ...
+`;
+  } else {
+    content = `# ${newId} — ${cleanTitle}
+
+| Field | Value |
+| --- | --- |
+| Doc ID | \`${newId}\` |
+| Class | ${cls} |
+| Status | Active |
+| Supersedes | ${options.supersedes ? `\`${options.supersedes}\`` : 'none'} |
+
+---
+
+## 1. Overview
+`;
+  }
+
+  mkdirSync(dirname(absPath), { recursive: true });
+  writeFileSync(absPath, content, 'utf8');
+
+  // Register in docs/doc-registry.json
+  const newEntry = {
+    id: newId,
+    title: cleanTitle,
+    class: cls,
+    path: relPath,
+    status: 'active',
+    supersedes: options.supersedes || null,
+  };
+
+  registry.push(newEntry);
+  writeFileSync(registryPath, JSON.stringify(registry, null, 2) + '\n', 'utf8');
+
+  // Regenerate docs/INDEX.md
+  buildIndex(registryPath, resolve(root, 'docs/INDEX.md'));
+
+  return { id: newId, path: relPath, title: cleanTitle };
+}
+
+// CLI execution
+if (process.argv[1] && process.argv[1].endsWith('docs-new')) {
+  const args = process.argv.slice(2);
+  const cls = args[0]?.toUpperCase();
+  const title = args[1];
+
+  let slug;
+  const slugIdx = args.indexOf('--slug');
+  if (slugIdx !== -1 && args[slugIdx + 1]) {
+    slug = args[slugIdx + 1];
+  }
+
+  let supersedes;
+  const supIdx = args.indexOf('--supersedes');
+  if (supIdx !== -1 && args[supIdx + 1]) {
+    supersedes = args[supIdx + 1];
+  }
+
+  let root;
+  const rootIdx = args.indexOf('--root');
+  if (rootIdx !== -1 && args[rootIdx + 1]) {
+    root = resolve(process.cwd(), args[rootIdx + 1]);
+  }
+
+  let registryPath;
+  const regIdx = args.indexOf('--registry');
+  if (regIdx !== -1 && args[regIdx + 1]) {
+    registryPath = resolve(process.cwd(), args[regIdx + 1]);
+  }
+
+  if (!cls || !title) {
+    console.error('Usage: pnpm docs:new <class> "<Title>" [--slug <slug>] [--supersedes <id>]');
+    console.error('  Allowed classes: A, H, P, G');
+    process.exit(1);
+  }
+
+  try {
+    const res = allocateDoc(cls, title, { slug, supersedes, root, registryPath });
+    console.log(`✓ Allocated document ${res.id}: ${res.title}`);
+    console.log(`  File created: ${res.path}`);
+    console.log('✓ Registered in docs/doc-registry.json and updated docs/INDEX.md.');
+    process.exit(0);
+  } catch (err) {
+    console.error(`✗ ${err.message}`);
+    process.exit(1);
+  }
+}
