@@ -11,6 +11,8 @@
     "verify": "node scripts/verify-all",
     "audit:check": "node scripts/audit-check",
     "receipt:check": "node scripts/receipt-check",
+    "handover:check": "node scripts/handover-check",
+    "handover:verify": "node scripts/handover-verify",
     "docs:new": "node scripts/docs-new",
     "docs:check": "node scripts/docs-check",
     "docs:index": "node scripts/docs-index",

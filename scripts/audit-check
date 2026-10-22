@@ -65,6 +65,8 @@ const requiredPaths = [
   'scripts/docs-new',
   'scripts/docs-check',
   'scripts/docs-index',
+  'scripts/handover-check',
+  'scripts/handover-verify',
   'LICENSE',
   'THIRD_PARTY_NOTICES',
   'DCO',
