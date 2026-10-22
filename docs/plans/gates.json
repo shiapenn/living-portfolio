@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "gates": {
+    "WP-1": {
+      "name": "Work Package 1 (Gate 1b+ Core Controls)",
+      "description": "Owner authentication flow, admin apiClient CSRF protection, redaction scanner & publish gate, and config-driven provider registry with extractive degradation.",
+      "requiredTaskIds": [
+        "WP-1.1",
+        "WP-1.2",
+        "WP-1.3",
+        "WP-1.4",
+        "WP-1.5"
+      ],
+      "requiredPassingTests": [
+        "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 1. First-run setup wizard completes owner account creation",
+        "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 2. /admin/setup is locked down once configured",
+        "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 3. Open redirect prevention sanitizes `next` parameter upon login",
+        "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 4. Standard login flow authenticates with password + TOTP to /admin",
+        "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 5. CSRF token is stored in sessionStorage and validated on admin requests",
+        "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 6. Admin workspace apiClient error handling: forced 401, 403, 500 show recovery messages and suppress success banner",
+        "Ask Flow, Provider Disclosure & Extractive Degradation E2E (Spec §10.8, §13.5, 20261021-AI-01) › 1. Ask page displays query input and example question buttons",
+        "Ask Flow, Provider Disclosure & Extractive Degradation E2E (Spec §10.8, §13.5, 20261021-AI-01) › 2. Live unconfigured Ask degrades to extractive mode with disclosure and citations",
+        "Ask Flow, Provider Disclosure & Extractive Degradation E2E (Spec §10.8, §13.5, 20261021-AI-01) › 3. Synthesized answer displays provider disclosure line in the UI (Spec §13.5)",
+        "WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview Token E2E Suite › 1. Four-state redaction preview, exclusion matching, retry button, and NDA confirmation gate (UX-03, WP-1 Task 3)",
+        "WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview Token E2E Suite › 2. Signed preview token flows end to end, surfaces in UI, invalidates on body edit, and gates publication (UX-03, UX-04, WP-1 Task 4)"
+      ],
+      "closingReceipt": "A016",
+      "handover": "H001"
+    }
+  }
+}
