@@ -261,4 +261,81 @@ Fresh-clone procedure for gate sign-off: \`git clone ... && pnpm install && pnpm
     expect(res.stderr).toContain('Pending decision blocks Immediate Next Action 1');
     expect(res.stderr).toContain('HALT CONDITION TRIGGERED');
   });
+
+  describe('H002+ Strict Hygiene and Consistency Conformance (Task A017 / HO-1b)', () => {
+    function createValidH002(overrides: Record<string, string> = {}): string {
+      const base = createValidHandoverContent({
+        '# H001 — WP-1 Gate 1b Closure and WP-2 Kickoff': '# H002 — Autonomous Gate 1c Transition',
+        '| Handover ID | `H001` |': '| Handover ID | `H002` |',
+        'H001-wp1-gate-1b-closure-and-wp2-kickoff.md': 'H002-autonomous-gate-1c-transition.md',
+        'pnpm handover:verify H001': 'pnpm handover:verify H002',
+      });
+      let result = base;
+      for (const [k, v] of Object.entries(overrides)) {
+        result = result.replace(k, v);
+      }
+      return result;
+    }
+
+    it('fails validation for H002+ when Verified By header row is present', () => {
+      const file = join(tempHandoversDir, 'H002-with-verified-by.md');
+      const content = createValidH002({
+        '| Phase next | WP-2 (Gate 1c / G2) |': '| Phase next | WP-2 (Gate 1c / G2) |\n| Verified By | L |',
+      });
+      writeFileSync(file, content, 'utf8');
+
+      const res = runHandoverCheck([file]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toContain('"Verified By" is forbidden in handover headers from H002 onward');
+    });
+
+    it('fails validation for H002+ when human sign-off claim is present', () => {
+      const file = join(tempHandoversDir, 'H002-with-human-claim.md');
+      const content = createValidH002({
+        'WP-1 Gate Closure.': 'WP-1 Gate Closure (L sign-off: pending gate review).',
+      });
+      writeFileSync(file, content, 'utf8');
+
+      const res = runHandoverCheck([file]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toContain('must not contain claims of human verification or sign-off');
+    });
+
+    it('fails validation for H002+ when header Evidence SHA differs from Section 4 Git SHA', () => {
+      const file = join(tempHandoversDir, 'H002-sha-mismatch.md');
+      const content = createValidH002({
+        [`- **Git:** \`main\` at \`${headSha.slice(0, 7)}\``]: '- **Git:** `main` at `deadbeef1234`',
+      });
+      writeFileSync(file, content, 'utf8');
+
+      const res = runHandoverCheck([file]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toContain('differs from Section 4 Git SHA');
+    });
+
+    it('fails validation for H002+ when finding title differs from register.yml', () => {
+      const file = join(tempHandoversDir, 'H002-finding-mismatch.md');
+      const content = createValidH002({
+        '- **Open P0 findings:** None remaining in WP-1 scope.':
+          '- **Open P0 findings:**\n  - `20261020-UX-04`: Invented title not matching register.',
+      });
+      writeFileSync(file, content, 'utf8');
+
+      const res = runHandoverCheck([file]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toContain("differs from register title ('Truncated CMS lifecycle");
+    });
+
+    it('fails validation for H002+ when tool version does not match package.json', () => {
+      const file = join(tempHandoversDir, 'H002-tool-mismatch.md');
+      const content = createValidH002({
+        'Zero hardcoding': 'Zero hardcoding. Sourced toolchain: pnpm 9.9.9, Vitest 3.0.7.',
+      });
+      writeFileSync(file, content, 'utf8');
+
+      const res = runHandoverCheck([file]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toContain('cites pnpm 9.9.9, which does not match package.json');
+    });
+  });
 });
