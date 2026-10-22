@@ -23,6 +23,7 @@
 | `A015` | WP-1 Task 5: Config-Driven Provider Registry & Extractive Degradation | `active` | [A015-wp1-provider-registry-extractive-degradation.md](execution-reports/A015-wp1-provider-registry-extractive-degradation.md) | — |
 | `A016` | WP-1 Gate 1b+ Closure and Handover Tooling | `active` | [A016-wp1-gate-1b-closure-and-handover-tooling.md](execution-reports/A016-wp1-gate-1b-closure-and-handover-tooling.md) | — |
 | `A017` | WP-1 Gate Closure Triage and Handover Facts | `active` | [A017-wp-1-gate-closure-triage-and-handover-facts.md](execution-reports/A017-wp-1-gate-closure-triage-and-handover-facts.md) | — |
+| `A018` | WP-2.1: PostgreSQL 16 Scaffolding, Connection Pooling, and Migration Harness | `active` | [A018-wp2-1-postgres-scaffolding.md](execution-reports/A018-wp2-1-postgres-scaffolding.md) | — |
 
 ## Handover Snapshots (Class H)
 

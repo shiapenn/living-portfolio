@@ -290,6 +290,14 @@
     "supersedes": null
   },
   {
+    "id": "A018",
+    "title": "WP-2.1: PostgreSQL 16 Scaffolding, Connection Pooling, and Migration Harness",
+    "class": "A",
+    "path": "docs/execution-reports/A018-wp2-1-postgres-scaffolding.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
     "id": "H002",
     "title": "WP-1 Gate Closure and WP-2 Kickoff",
     "class": "H",
