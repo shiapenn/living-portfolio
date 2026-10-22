@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
+import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import { InMemoryPortfolioRepository, seedDemoPortfolio } from '@living-portfolio/db';
 import {
   MockModelProvider,
+  OpenAICompatibleProvider,
   type ModelProvider,
   type CompletionRequest,
   type CompletionResponse,
@@ -130,5 +133,76 @@ describe('AI Provider Registry & Extractive Degradation Ladder Conformance (Spec
     expect(body.aiDisclosure).toBe("Showing excerpts from the owner's records. Automated answers are paused for now.");
     expect(body.answer).toContain("Showing excerpts from the owner's records. Automated answers are paused for now.");
     expect(body.citations.length).toBeGreaterThan(0);
+  });
+
+  it('connects to real local HTTP stub provider via OpenAICompatibleProvider adapter (20261021-AI-01)', async () => {
+    const repo = new InMemoryPortfolioRepository();
+    await seedDemoPortfolio(repo);
+
+    let receivedAuth = '';
+
+    const server = createServer((req, res) => {
+      receivedAuth = req.headers['authorization'] || '';
+      if (req.url === '/v1/chat/completions') {
+        let body = '';
+        req.on('data', (chunk) => {
+          body += chunk;
+        });
+        req.on('end', () => {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(
+            JSON.stringify({
+              choices: [
+                {
+                  message: {
+                    content: 'Verified answer served by local HTTP stub provider endpoint.',
+                  },
+                },
+              ],
+              usage: { prompt_tokens: 12, completion_tokens: 24, total_tokens: 36 },
+            })
+          );
+        });
+      } else {
+        res.writeHead(404);
+        res.end();
+      }
+    });
+
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(null)));
+    const port = (server.address() as AddressInfo).port;
+    const baseURL = `http://127.0.0.1:${port}/v1`;
+
+    try {
+      const stubProvider = new OpenAICompatibleProvider({
+        id: 'local-stub-provider',
+        name: 'Local HTTP Stub Model',
+        apiKey: 'test-stub-api-key',
+        baseURL,
+      });
+
+      const testApp = createApp(repo, {
+        providers: [stubProvider],
+      });
+
+      const res = await testApp.app.request('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: 'What database did you migrate to?',
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.tier).toBe('tier1');
+      expect(body.degradationStep).toBe('normal');
+      expect(body.answer).toBe('Verified answer served by local HTTP stub provider endpoint.');
+      expect(body.provider_disclosure).toContain('Local HTTP Stub Model');
+      expect(body.aiDisclosure).toContain('Local HTTP Stub Model');
+      expect(receivedAuth).toBe('Bearer test-stub-api-key');
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
+    }
   });
 });
