@@ -24,6 +24,7 @@
 | `A016` | WP-1 Gate 1b+ Closure and Handover Tooling | `active` | [A016-wp1-gate-1b-closure-and-handover-tooling.md](execution-reports/A016-wp1-gate-1b-closure-and-handover-tooling.md) | — |
 | `A017` | WP-1 Gate Closure Triage and Handover Facts | `active` | [A017-wp-1-gate-closure-triage-and-handover-facts.md](execution-reports/A017-wp-1-gate-closure-triage-and-handover-facts.md) | — |
 | `A018` | WP-2.1: PostgreSQL 16 Scaffolding, Connection Pooling, and Migration Harness | `active` | [A018-wp2-1-postgres-scaffolding.md](execution-reports/A018-wp2-1-postgres-scaffolding.md) | — |
+| `A019` | WP-2.2: Postgres Repository & Dual-Engine Conformance Suite | `active` | [A019-wp2-2-postgres-repository.md](execution-reports/A019-wp2-2-postgres-repository.md) | — |
 
 ## Handover Snapshots (Class H)
 
