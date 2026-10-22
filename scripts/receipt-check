@@ -193,7 +193,7 @@ export function fetchLogs(jobOrRunId, options = {}) {
   // Fetch either job logs or run jobs
   try {
     const pythonCode = `
-import urllib.request, urllib.error, json, sys
+import urllib.request, urllib.error, json, sys, time
 
 token = """${token}"""
 job_or_run = "${jobOrRunId}"
@@ -205,18 +205,24 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 opener = urllib.request.build_opener(NoRedirect)
 
 def fetch_job_log(jid):
-    req = urllib.request.Request(
-        f"https://api.github.com/repos/shiapenn/living-portfolio/actions/jobs/{jid}/logs",
-        headers={"Authorization": f"Bearer {token}", "User-Agent": "Receipt-Check"}
-    )
-    try:
-        opener.open(req)
-    except urllib.error.HTTPError as e:
-        if e.code == 302:
-            s3_url = e.headers["Location"]
-            with urllib.request.urlopen(s3_url) as s3_resp:
-                return s3_resp.read().decode("utf-8", errors="replace")
-    return ""
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(
+                f"https://api.github.com/repos/shiapenn/living-portfolio/actions/jobs/{jid}/logs",
+                headers={"Authorization": f"Bearer {token}", "User-Agent": "Receipt-Check"}
+            )
+            try:
+                opener.open(req)
+            except urllib.error.HTTPError as e:
+                if e.code == 302:
+                    s3_url = e.headers["Location"]
+                    with urllib.request.urlopen(s3_url, timeout=30) as s3_resp:
+                        return s3_resp.read().decode("utf-8", errors="replace")
+            return ""
+        except Exception:
+            if attempt == 2:
+                raise
+            time.sleep(1)
 
 # Try direct job ID
 log = fetch_job_log(job_or_run)
