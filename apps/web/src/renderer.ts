@@ -700,7 +700,7 @@ export async function renderAskPage(
         function safePath(url) {
           const s = String(url == null ? '' : url).trim();
           if (s.startsWith('/') && !s.startsWith('//')) return esc(s);
-          if (/^https?:\/\//i.test(s)) return esc(s);
+          if (s.startsWith('http://') || s.startsWith('https://')) return esc(s);
           return '#';
         }
 
@@ -726,17 +726,22 @@ export async function renderAskPage(
             const data = await res.json();
 
             const tierLabels = {
-              tier1: 'Automated answer from the owner\\'s records',
-              tier2: 'Needs the owner\\'s review',
-              tier3: 'Better as a live conversation',
-              extractive: 'Reduced mode — Extractive excerpts only',
-              no_match: 'Not in records',
-              disabled: 'Automated answers paused'
+              tier1: "Automated answer from the owner's records",
+              tier2: "Needs the owner's review",
+              tier3: "Better as a live conversation",
+              extractive: "Showing excerpts from the owner's records. Automated answers are paused for now.",
+              no_match: "That isn't in these records. You can ask the owner or book a conversation.",
+              disabled: "Automated answers paused"
             };
 
             const citationsHtml = (data.citations || []).map(function(c) {
               return '<li style="margin-bottom:6px"><strong>[' + esc(c.citationId) + ']</strong> <a href="/work/' + encodeURIComponent(String(c.slug || '')) + '">' + esc(c.title) + '</a>: <em>"' + esc(c.text) + '"</em></li>';
             }).join('');
+
+            const disclosureText = data.provider_disclosure || data.aiDisclosure;
+            const disclosureHtml = disclosureText
+              ? '<p class="provider-disclosure" style="font-size:12px;color:var(--text-muted);margin:16px 0 0 0;border-top:1px solid var(--rule);padding-top:8px">AI Disclosure: ' + esc(disclosureText) + '</p>'
+              : '';
 
             region.innerHTML =
               '<div class="strata-section">' +
@@ -747,7 +752,7 @@ export async function renderAskPage(
                 '<div class="reading-column" style="white-space:pre-wrap;margin-bottom:16px">' + esc(data.answer) + '</div>' +
                 (citationsHtml ? '<div style="border-top:1px solid var(--rule);padding-top:12px"><strong style="font-size:14px">Cited passages:</strong><ul style="margin:8px 0 0;padding-left:20px;font-size:14px">' + citationsHtml + '</ul></div>' : '') +
                 (data.bookingUrl ? '<div style="margin-top:12px"><a href="' + safePath(data.bookingUrl) + '" class="btn" style="display:inline-block;text-decoration:none">Book live session with prefilled context →</a></div>' : '') +
-                (data.aiDisclosure ? '<p style="font-size:12px;color:var(--text-muted);margin:16px 0 0 0;border-top:1px solid var(--rule);padding-top:8px">AI Disclosure: ' + esc(data.aiDisclosure) + '</p>' : '') +
+                disclosureHtml +
               '</div>';
           } catch (err) {
             region.innerHTML = '<div class="strata-section"><p>Origin unreachable. <a href="/book">Book a session or leave a message</a>.</p></div>';
