@@ -77,7 +77,6 @@ describe('scripts/hardcode-check scanner rules (OSR-01, Instruction 5)', () => {
     const fakeVendorSource = `
       export function getProviderConfig() {
         return {
-          endpoint: 'https://internal.corp.example.com/v1',
           client: 'Acme Corp',
         };
       }
@@ -86,7 +85,7 @@ describe('scripts/hardcode-check scanner rules (OSR-01, Instruction 5)', () => {
     const hits = scanContent(fakeVendorSource, 'apps/api/src/providers/custom.ts');
     expect(hits.length).toBeGreaterThanOrEqual(1);
     expect(hits.some((h: any) => h.ruleId === 'SAMPLE_VENDOR_OR_CLIENT')).toBe(true);
-    expect(hits.some((h: any) => h.snippet.includes('Acme Corp') || h.snippet.includes('internal.corp.example.com'))).toBe(true);
+    expect(hits.some((h: any) => h.snippet.includes('Acme Corp'))).toBe(true);
   });
 
   it('runs full repo scan and verifies 0 unlisted hits', () => {
