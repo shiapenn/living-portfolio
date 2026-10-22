@@ -24,7 +24,9 @@
 
 ## Handover Snapshots (Class H)
 
-*(No entries)*
+| ID | Title | Status | File | Supersedes |
+| :--- | :--- | :--- | :--- | :--- |
+| `H001` | WP-1 Gate 1b+ Closure and WP-2 Kickoff | `active` | [H001-wp1-gate-1b-closure-and-wp2-kickoff.md](handovers/H001-wp1-gate-1b-closure-and-wp2-kickoff.md) | — |
 
 ## Plans & Protocols (Class P)
 
