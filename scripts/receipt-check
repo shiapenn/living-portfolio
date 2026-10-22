@@ -121,18 +121,41 @@ export function parseVerbatimSections(content) {
 }
 
 export function stripAnsiAndTimestamps(raw) {
-  return raw
-    .split('\n')
-    .map((line) => {
-      // Strip tab-prefixed job names if coming from `gh run view --log`
-      const withoutPrefix = line.includes('\t') ? line.split('\t').slice(1).join('\t') : line;
-      // Strip ISO 8601 timestamps
-      const withoutTimestamp = withoutPrefix.replace(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z\s*/, '');
-      // Strip ANSI color codes
-      const withoutAnsi = withoutTimestamp.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
-      return withoutAnsi.trimEnd();
-    })
-    .filter(Boolean);
+  const lines = raw.split('\n');
+  const results = [];
+  let currentGroup = null;
+
+  for (const line of lines) {
+    // Strip tab-prefixed job names if coming from `gh run view --log`
+    const withoutPrefix = line.includes('\t') ? line.split('\t').slice(1).join('\t') : line;
+    // Strip ISO 8601 timestamps
+    const withoutTimestamp = withoutPrefix.replace(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z\s*/, '');
+    // Strip ANSI color codes
+    const clean = withoutTimestamp.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '').trimEnd();
+    if (!clean.trim()) continue;
+
+    // Detect GitHub Actions group markers for vitest packages
+    const groupMatch = clean.match(/^##\[group\](@living-portfolio\/[a-z0-9_-]+:test)/);
+    if (groupMatch) {
+      currentGroup = groupMatch[1];
+      results.push(clean);
+      continue;
+    }
+    if (clean === '##[endgroup]') {
+      currentGroup = null;
+      results.push(clean);
+      continue;
+    }
+
+    // If inside a package test group, also emit package-prefixed test summaries
+    if (currentGroup && (clean.trim().startsWith('Test Files') || clean.trim().startsWith('Tests'))) {
+      results.push(`${currentGroup}:  ${clean.trim()}`);
+    }
+
+    results.push(clean);
+  }
+
+  return results;
 }
 
 export function isAncestor(sha, cwd = ROOT) {
@@ -416,8 +439,12 @@ export function validateReceipt(reportPath, options = {}) {
           const line = rawLine.trim();
           if (!line || line === '```' || line.startsWith('RUN  v')) continue;
 
-          // Check if line exists in cleaned logs
-          const found = cleanedLogLines.some((logLine) => logLine.includes(line) || line.includes(logLine));
+          // Check if line exists in cleaned logs (normalized whitespace, line-for-line per package)
+          const normExpected = line.replace(/\s+/g, ' ').trim();
+          const found = cleanedLogLines.some((logLine) => {
+            const normLog = logLine.replace(/\s+/g, ' ').trim();
+            return normLog === normExpected || normLog.includes(normExpected);
+          });
           if (!found) {
             throw new Error(
               `[VERBATIM-CHECK] Line in section "${section.title}" not found in CI logs:\n  Expected line: "${line}"\n  Cited ID: ${targetId}`

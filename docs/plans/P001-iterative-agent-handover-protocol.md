@@ -38,14 +38,14 @@ Every Markdown file under `docs/` has exactly one **ID** and one **title**.
 | `H` | Handover snapshots | `docs/handovers/` | `H###-<slug>.md` | No |
 | `P` | Plans, protocols, decision records | `docs/plans/` or `docs/governance/` | `P###-<slug>.md` | Yes, with a revision history section |
 | `G` | Guides, runbooks, references, templates | `docs/` or `docs/templates/` | `G###-<slug>.md` | Yes, with a revision history section |
-| `L` | Legacy documents that predate this scheme | unchanged | unchanged | Frozen |
+| `L` | Legacy documents that predate this scheme | unchanged | unchanged | Frozen (reports, decision records) or Active (living plans, specs, guides, checklists) |
 
 - **ID:** class letter plus three digits, allocated only by `pnpm docs:new <class> "<Title>"`. Never number by hand. Numbers are sequential per class with no gaps and no reuse.
 - **Slug:** lowercase kebab-case, 3 to 8 words, at most 60 characters, describing scope (for example `wp1-publish-flow-preview-token`).
 - **Title:** at most 80 characters, sentence case, states scope and purpose. No status words such as "final" or "update".
 - **H1:** every non-legacy file begins with `# <ID> — <Title>`, and the filename and registry entry must match it.
 - **Registry:** `docs/doc-registry.json` lists every document with `id`, `title`, `class`, `path`, `status` (`active`, `superseded`, `frozen`), `supersedes`, and for frozen documents `sha256`. `docs/INDEX.md` is generated from it and must not drift.
-- **Legacy rule:** documents that exist when `PROC-1` lands are grandfathered and not renamed or edited, because other documents link to them and closed audit folders are checksummed. Reports `A001` to `A012` keep their IDs as their legacy IDs. Every other legacy file gets an `L###` ID and a curated title **in the registry only**, plus a `sha256` that the check enforces.
+- **Legacy rule:** documents that exist when `PROC-1` lands are grandfathered and not renamed, because other documents link to them and closed audit folders are checksummed. Reports `A001` to `A012` keep their IDs as their legacy IDs and have status `frozen`. Every other legacy file gets an `L###` ID and a curated title **in the registry only**. Historical reports and decision records have status `frozen` (with an enforced `sha256`); living plans, protocols, specifications, guides, checklists, and changelogs have status `active` without a `sha256`.
 - **Immutability:** `A` and `H` files never change after merge. Corrections go in a later `A` section 7 or in a superseding `H`.
 
 ## 4. When a handover is required
@@ -151,3 +151,4 @@ Carry these into `H001` until pruned:
 | Date | Change |
 | --- | --- |
 | 2026-10-21 | Initial version |
+| 2026-10-22 | Task PROC-1: Clarify that Class L legacy documents can be frozen (reports and decision records) or active (living plans, protocols, guides, checklists, specs). |

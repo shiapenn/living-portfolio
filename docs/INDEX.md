@@ -41,17 +41,17 @@
 | ID | Title | Status | File | Supersedes |
 | :--- | :--- | :--- | :--- | :--- |
 | `L001` | Independent Technical Audit Report | `frozen` | [report.md](audits/2026-10-19-independent-technical-audit/report.md) | — |
-| `L002` | Design Specification Audit Report | `frozen` | [report.md](audits/2026-10-20-ux-specification-audit/report.md) | — |
+| `L002` | UX and Specification Audit Report | `frozen` | [report.md](audits/2026-10-20-ux-specification-audit/report.md) | — |
 | `L003` | Hard-Code Inventory and Remediation Report | `frozen` | [hardcode-inventory.md](audits/hardcode-inventory.md) | — |
-| `L004` | Design Audit Method | `frozen` | [design-audit-method.md](audits/methods/design-audit-method.md) | — |
-| `L005` | Audit Tracking and Conformance Register Overview | `frozen` | [README.md](audits/README.md) | — |
+| `L004` | Design Audit Method | `active` | [design-audit-method.md](audits/methods/design-audit-method.md) | — |
+| `L005` | Audit Tracking and Conformance Register Overview | `active` | [README.md](audits/README.md) | — |
 | `L006` | Clean Initial Commit and Credential Rotation Report | `frozen` | [OSR-05-clean-tree-and-rotation.md](execution-reports/OSR-05-clean-tree-and-rotation.md) | — |
-| `L007` | Governance and Release Gate Changelog | `frozen` | [CHANGELOG.md](governance/CHANGELOG.md) | — |
+| `L007` | Governance and Release Gate Changelog | `active` | [CHANGELOG.md](governance/CHANGELOG.md) | — |
 | `L008` | Audit Tracking Requirements Decision Record | `frozen` | [DR-AUD-001.md](governance/DR-AUD-001.md) | — |
-| `L009` | Public Flip-Day Checklist | `frozen` | [flip-day-checklist.md](governance/flip-day-checklist.md) | — |
-| `L010` | Engineering and Execution Protocol | `frozen` | [execution-protocol.md](plans/execution-protocol.md) | — |
-| `L011` | Open-Source Release and Cloud Readiness Plan | `frozen` | [osr-001-open-source-release.md](plans/osr-001-open-source-release.md) | — |
-| `L012` | Optimization and Remediation Plan | `frozen` | [remediation-plan-AUD-2026-10-19.md](plans/remediation-plan-AUD-2026-10-19.md) | — |
-| `L013` | Self-Hosting and Branding Configuration Guide | `frozen` | [self-hosting.md](self-hosting.md) | — |
-| `L014` | The Living Portfolio Open Source Specification | `frozen` | [The_Living_Portfolio_Open_Source_Spec.md](spec/The_Living_Portfolio_Open_Source_Spec.md) | — |
+| `L009` | Public Flip-Day Checklist | `active` | [flip-day-checklist.md](governance/flip-day-checklist.md) | — |
+| `L010` | Engineering and Execution Protocol | `active` | [execution-protocol.md](plans/execution-protocol.md) | — |
+| `L011` | Open-Source Release and Cloud Readiness Plan | `active` | [osr-001-open-source-release.md](plans/osr-001-open-source-release.md) | — |
+| `L012` | Optimization and Remediation Plan | `active` | [remediation-plan-AUD-2026-10-19.md](plans/remediation-plan-AUD-2026-10-19.md) | — |
+| `L013` | Self-Hosting and Branding Configuration Guide | `active` | [self-hosting.md](self-hosting.md) | — |
+| `L014` | The Living Portfolio Open Source Specification | `active` | [The_Living_Portfolio_Open_Source_Spec.md](spec/The_Living_Portfolio_Open_Source_Spec.md) | — |
 
