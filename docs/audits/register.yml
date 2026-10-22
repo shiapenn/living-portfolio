@@ -1566,6 +1566,9 @@
     - date: 2026-10-21
       status: partial
       note: "Set to partial per auditor review pending full criteria fulfillment (multi-pass entity extraction and UI redaction preview drawer)."
+    - date: 2026-10-22
+      status: partial
+      note: "WP-1 Task 3 delivered: owner exclusion list in settings and data file (no Acme literal), 4-state UI result (checking/clean/needs review/could not check), retry button, and mandatory NDA question publish gate."
   verified_by: null
 - id: 20261020-UX-04
   audit: AUD-2026-10-20
