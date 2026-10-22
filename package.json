@@ -21,6 +21,7 @@
     "dco:check": "node scripts/dco-check",
     "config:generate-env": "node scripts/generate-env-example",
     "seed:demo": "npx tsx examples/seed-demo.ts",
+    "db:migrate": "pnpm --filter @living-portfolio/db migrate",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean"
