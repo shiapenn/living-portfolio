@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { loadConfig } from '@living-portfolio/config';
-import { InMemoryPortfolioRepository, seedDemoPortfolio } from '@living-portfolio/db';
+import { InMemoryPortfolioRepository, PostgresPortfolioRepository, seedDemoPortfolio, type IPortfolioRepository } from '@living-portfolio/db';
 import { BudgetGovernor, MockModelProvider, OpenAICompatibleProvider, resolveConfiguredProviders, type ModelProvider } from '@living-portfolio/ai';
 import { DEFAULT_STRATA_THEME } from '@living-portfolio/core';
 import {
@@ -23,7 +23,7 @@ import { createImportRoutes } from './routes/import.js';
 import { createSettingsRoutes, type RuntimeSettingsState } from './routes/settings.js';
 
 export function createApp(
-  customRepo?: InMemoryPortfolioRepository,
+  customRepo?: IPortfolioRepository,
   options?: {
     signingKey?: string;
     bootstrapAdminToken?: string;
@@ -34,7 +34,11 @@ export function createApp(
 ) {
   const app = new Hono();
   const cfg = loadConfig();
-  const repo = customRepo ?? new InMemoryPortfolioRepository();
+  const repo =
+    customRepo ??
+    (options?.databaseKind === 'postgres'
+      ? new PostgresPortfolioRepository()
+      : new InMemoryPortfolioRepository());
   const governor = new BudgetGovernor();
   const mockProvider = new MockModelProvider();
 
