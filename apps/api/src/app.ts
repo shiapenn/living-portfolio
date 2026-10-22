@@ -3,7 +3,7 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { loadConfig } from '@living-portfolio/config';
 import { InMemoryPortfolioRepository, seedDemoPortfolio } from '@living-portfolio/db';
-import { BudgetGovernor, MockModelProvider, OpenAICompatibleProvider, type ModelProvider } from '@living-portfolio/ai';
+import { BudgetGovernor, MockModelProvider, OpenAICompatibleProvider, resolveConfiguredProviders, type ModelProvider } from '@living-portfolio/ai';
 import { DEFAULT_STRATA_THEME } from '@living-portfolio/core';
 import {
   renderAdminLoginPage,
@@ -43,8 +43,8 @@ export function createApp(
   let providers: ModelProvider[] = [];
   if (options?.providers) {
     providers = options.providers;
-  } else if (cfg.OPENAI_API_KEY) {
-    providers = [new OpenAICompatibleProvider({ apiKey: cfg.OPENAI_API_KEY })];
+  } else {
+    providers = resolveConfiguredProviders(cfg);
   }
   const adminToken = options?.bootstrapAdminToken || cfg.ADMIN_API_TOKEN || '';
   const auth = new AuthManager({
