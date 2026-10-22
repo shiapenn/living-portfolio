@@ -118,7 +118,7 @@
   },
   {
     "id": "L002",
-    "title": "Design Specification Audit Report",
+    "title": "UX and Specification Audit Report",
     "class": "L",
     "path": "docs/audits/2026-10-20-ux-specification-audit/report.md",
     "status": "frozen",
@@ -139,18 +139,16 @@
     "title": "Design Audit Method",
     "class": "L",
     "path": "docs/audits/methods/design-audit-method.md",
-    "status": "frozen",
-    "supersedes": null,
-    "sha256": "212614f9e663479ac2872b9d3a6f15d54e7e6ae7246f7f486321fa310f177cab"
+    "status": "active",
+    "supersedes": null
   },
   {
     "id": "L005",
     "title": "Audit Tracking and Conformance Register Overview",
     "class": "L",
     "path": "docs/audits/README.md",
-    "status": "frozen",
-    "supersedes": null,
-    "sha256": "81ebe2702fbf6e3437b2b0cb5e164015cbd0db81cbdb362af37c2f425f724c5b"
+    "status": "active",
+    "supersedes": null
   },
   {
     "id": "L006",
@@ -166,9 +164,8 @@
     "title": "Governance and Release Gate Changelog",
     "class": "L",
     "path": "docs/governance/CHANGELOG.md",
-    "status": "frozen",
-    "supersedes": null,
-    "sha256": "183c653ac96b1c72f5ddd7025b27298348b2ac6f14ee23cc6bbe94e5a8fb57d6"
+    "status": "active",
+    "supersedes": null
   },
   {
     "id": "L008",
@@ -184,54 +181,48 @@
     "title": "Public Flip-Day Checklist",
     "class": "L",
     "path": "docs/governance/flip-day-checklist.md",
-    "status": "frozen",
-    "supersedes": null,
-    "sha256": "833f7285423ab9e19e234cb154339043cd74129a569470cf4d26fdf932163c87"
+    "status": "active",
+    "supersedes": null
   },
   {
     "id": "L010",
     "title": "Engineering and Execution Protocol",
     "class": "L",
     "path": "docs/plans/execution-protocol.md",
-    "status": "frozen",
-    "supersedes": null,
-    "sha256": "01b3ce29a295f734e51ace5af9ea04505e2aba19355aa85013137562226aa732"
+    "status": "active",
+    "supersedes": null
   },
   {
     "id": "L011",
     "title": "Open-Source Release and Cloud Readiness Plan",
     "class": "L",
     "path": "docs/plans/osr-001-open-source-release.md",
-    "status": "frozen",
-    "supersedes": null,
-    "sha256": "af51c8e6f7ee901533d31c9bfe92436be69a2dbd31df0bfba8b1429e0a4f7300"
+    "status": "active",
+    "supersedes": null
   },
   {
     "id": "L012",
     "title": "Optimization and Remediation Plan",
     "class": "L",
     "path": "docs/plans/remediation-plan-AUD-2026-10-19.md",
-    "status": "frozen",
-    "supersedes": null,
-    "sha256": "99a57edb9c607379113794623a42341938befd8fb4bb286944a18123126513f7"
+    "status": "active",
+    "supersedes": null
   },
   {
     "id": "L013",
     "title": "Self-Hosting and Branding Configuration Guide",
     "class": "L",
     "path": "docs/self-hosting.md",
-    "status": "frozen",
-    "supersedes": null,
-    "sha256": "0d74791eff3aa2ef8223b22c38910563f1802a02c188af4f78b200adc5592d46"
+    "status": "active",
+    "supersedes": null
   },
   {
     "id": "L014",
     "title": "The Living Portfolio Open Source Specification",
     "class": "L",
     "path": "docs/spec/The_Living_Portfolio_Open_Source_Spec.md",
-    "status": "frozen",
-    "supersedes": null,
-    "sha256": "7e4517433f040b36c838137d1ae61edd7e6740c9a6e7ef2ae171fa6bc98da0f3"
+    "status": "active",
+    "supersedes": null
   },
   {
     "id": "P001",

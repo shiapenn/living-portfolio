@@ -37,7 +37,7 @@ describe('Receipt Check Conformance (Task WP-1.1b)', () => {
     }
   }
 
-  it('fails check (a) when "Files touched" does not match git diff between SHAs', () => {
+  it('fails check (a) when "Files touched" has extra entries not in git diff', () => {
     const mockReceipt = join(tempDir, 'A009.md');
     // Invent a file not in git diff
     writeFileSync(
@@ -65,7 +65,38 @@ describe('Receipt Check Conformance (Task WP-1.1b)', () => {
     const res = runReceiptCheck([mockReceipt, '--offline']);
     expect(res.status).toBe(1);
     expect(res.stderr).toContain('[FILES-TOUCHED]');
+    expect(res.stderr).toContain('Extra in receipt not in git diff');
     expect(res.stderr).toContain('invented/file/not-in-git.ts');
+  });
+
+  it('fails check (a) when "Files touched" is missing entries that exist in git diff', () => {
+    const mockReceipt = join(tempDir, 'A009.md');
+    // Omit files touched entirely (empty list)
+    writeFileSync(
+      mockReceipt,
+      `# Execution Report A009
+
+| Field | Value |
+| --- | --- |
+| Report ID | A009 |
+| Date | 21 October 2026 |
+| Author | Implementer |
+| Task ID | WP-1.1 |
+| Evidence SHA | 34f984b |
+| CI run | https://github.com/shiapenn/living-portfolio/actions/runs/1 |
+| Verified By | null |
+
+---
+
+## 4. Files Touched
+`,
+      'utf8'
+    );
+
+    const res = runReceiptCheck([mockReceipt, '--offline']);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain('[FILES-TOUCHED]');
+    expect(res.stderr).toContain('Missing from receipt');
   });
 
   it('fails check (b) when a line in verbatim block is absent from CI logs (no network fixture)', () => {
@@ -109,6 +140,55 @@ Test Files  99 passed (99)
     expect(res.status).toBe(1);
     expect(res.stderr).toContain('[VERBATIM-CHECK]');
     expect(res.stderr).toContain('Test Files  99 passed (99)');
+  });
+
+  it('fails check (b) when vitest package test counts are permuted between packages', () => {
+    const mockReceipt = join(tempDir, 'A010.md');
+    writeFileSync(
+      mockReceipt,
+      `# Execution Report A010
+
+| Field | Value |
+| --- | --- |
+| Report ID | A010 |
+| Date | 21 October 2026 |
+| Author | Implementer |
+| Task ID | WP-1.1b |
+| Evidence SHA | 34f984b |
+| CI run | https://github.com/shiapenn/living-portfolio/actions/runs/1 |
+| Verified By | null |
+
+---
+
+## 2. CI Evidence
+### 2.2 Verbatim Vitest Results per Package (Job 12345)
+\`\`\`
+@living-portfolio/ai:test:       Tests  4 passed (4)
+@living-portfolio/worker:test:       Tests  5 passed (5)
+\`\`\`
+
+## 4. Files Touched
+`,
+      'utf8'
+    );
+
+    const fixtureLog = join(tempDir, 'ci.log');
+    // Actual CI log: ai has 5 tests, worker has 4 tests (same numbers, but receipt has them swapped!)
+    writeFileSync(
+      fixtureLog,
+      `2026-10-22T03:47:42.000Z ##[group]@living-portfolio/ai:test\n` +
+      `2026-10-22T03:47:42.100Z Tests  5 passed (5)\n` +
+      `2026-10-22T03:47:42.200Z ##[endgroup]\n` +
+      `2026-10-22T03:47:43.000Z ##[group]@living-portfolio/worker:test\n` +
+      `2026-10-22T03:47:43.100Z Tests  4 passed (4)\n` +
+      `2026-10-22T03:47:43.200Z ##[endgroup]\n`,
+      'utf8'
+    );
+
+    const res = runReceiptCheck([mockReceipt, '--skip-git', '--fixture-log', fixtureLog]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain('[VERBATIM-CHECK]');
+    expect(res.stderr).toContain('@living-portfolio/ai:test:       Tests  4 passed (4)');
   });
 
   it('passes check (b) when all lines in verbatim block exist in fixture CI log (no network fixture)', () => {
