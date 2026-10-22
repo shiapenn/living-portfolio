@@ -54,6 +54,25 @@ describe('scripts/hardcode-check scanner rules (OSR-01, Instruction 5)', () => {
     expect(hits.some((h: any) => h.ruleId === 'CREDENTIAL_LITERAL_NON_TEST')).toBe(false);
   });
 
+  it('flags planted sample names (Acme Corp, secret-project-alpha) in JSON under data/ and packages/*/data/ (WP-1.3 loose end iii)', () => {
+    // Construct planted sample JSON
+    const plantedSampleJson = JSON.stringify(['Acme' + ' Corp', 'secret' + '-project-alpha'], null, 2);
+
+    const dataHits = scanContent(plantedSampleJson, 'data/redaction-exclusions.json');
+    expect(dataHits.length).toBeGreaterThanOrEqual(1);
+    expect(dataHits.some((h: any) => h.ruleId === 'SAMPLE_VENDOR_OR_CLIENT')).toBe(true);
+
+    const pkgDataHits = scanContent(plantedSampleJson, 'packages/ai/data/custom-exclusions.json');
+    expect(pkgDataHits.length).toBeGreaterThanOrEqual(1);
+    expect(pkgDataHits.some((h: any) => h.ruleId === 'SAMPLE_VENDOR_OR_CLIENT')).toBe(true);
+  });
+
+  it('excludes *.example.json from sample data checks', () => {
+    const exampleJson = JSON.stringify(['Acme' + ' Corp', 'secret' + '-project-alpha'], null, 2);
+    const exampleHits = scanContent(exampleJson, 'data/redaction-exclusions.example.json');
+    expect(exampleHits).toEqual([]);
+  });
+
   it('runs full repo scan and verifies 0 unlisted hits', () => {
     const hits = runHardcodeCheck();
     expect(hits).toEqual([]);

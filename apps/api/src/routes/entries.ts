@@ -219,8 +219,9 @@ export function createEntriesRoutes(
         );
       }
 
-      // Mandatory NDA question (§4.3, UX P0-3): if warnings or confidential terms are detected,
-      // nda_confirmed must be explicitly true.
+      // Mandatory NDA question (Spec §4.3, §15, UX P0-3):
+      // Definition: `nda_confirmed` asserts that the author has reviewed any flagged confidential items, client names, or secrets and confirms that publishing this content does not violate any non-disclosure agreement (NDA) or confidentiality obligation.
+      // Gate behavior: Citing Spec §4.3 (redaction preview asks whether any flagged item is under NDA) and Spec §15 (human preview & confirmation is the consent mechanism for potentially sensitive content), the publication gate requires `nda_confirmed === true` when warnings exist (`warnings.length > 0`). Clean content without flagged warnings does not require explicit confirmation.
       if (warnings.length > 0 && body.nda_confirmed !== true) {
         return c.json(
           {
@@ -310,8 +311,9 @@ export function createEntriesRoutes(
         );
       }
 
-      // Mandatory NDA question (§4.3, UX P0-3): if warnings or confidential terms are detected,
-      // nda_confirmed must be explicitly true.
+      // Mandatory NDA question (Spec §4.3, §15, UX P0-3):
+      // Definition: `nda_confirmed` asserts that the author has reviewed any flagged confidential items, client names, or secrets and confirms that publishing this content does not violate any non-disclosure agreement (NDA) or confidentiality obligation.
+      // Gate behavior: Citing Spec §4.3 (redaction preview asks whether any flagged item is under NDA) and Spec §15 (human preview & confirmation is the consent mechanism for potentially sensitive content), the publication gate requires `nda_confirmed === true` when warnings exist (`warnings.length > 0`). Clean content without flagged warnings does not require explicit confirmation.
       if (warnings.length > 0 && body.nda_confirmed !== true) {
         return c.json(
           {

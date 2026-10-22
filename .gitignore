@@ -13,4 +13,5 @@ test-results/
 playwright-report/
 data/*
 !data/redaction-exclusions.json
+!data/redaction-exclusions.example.json
 uploads/

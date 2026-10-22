@@ -1,9 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { createApp } from '../app.js';
 import { InMemoryPortfolioRepository } from '@living-portfolio/db';
+import { getDefaultExclusions } from '@living-portfolio/ai';
 
 describe('Redaction Scanner & Publish Gate Conformance (§4.3, §15, UX-03 / P0-3, WP-1 Task 3)', () => {
   const adminToken = 'redaction_scanner_conformance_test_token';
+
+  it('asserts that shipped default exclusion list is empty [] (WP-1.3 loose end ii)', () => {
+    const defaultList = getDefaultExclusions();
+    expect(defaultList).toEqual([]);
+  });
 
   it('returns four-state preview response schema with clean=true for unflagged text', async () => {
     const { app } = createApp(new InMemoryPortfolioRepository(), {
@@ -30,12 +36,23 @@ describe('Redaction Scanner & Publish Gate Conformance (§4.3, §15, UX-03 / P0-
     expect(typeof body.redactionPreviewToken).toBe('string');
   });
 
-  it('matches owner exclusion list loaded from data file and marks state as "needs review"', async () => {
+  it('matches owner exclusion list configured dynamically and marks state as "needs review"', async () => {
     const { app } = createApp(new InMemoryPortfolioRepository(), {
       bootstrapAdminToken: adminToken,
     });
 
-    // Uses exclusion terms defined in data/redaction-exclusions.json
+    // Configure exclusions via settings PATCH
+    await app.request('/api/settings/redaction', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify({
+        exclusions: ['internal.corp.example.com', 'secret-project-alpha'],
+      }),
+    });
+
     const res = await app.request('/api/entries/redaction-preview', {
       method: 'POST',
       headers: {
@@ -110,6 +127,18 @@ describe('Redaction Scanner & Publish Gate Conformance (§4.3, §15, UX-03 / P0-
   it('rejects public publish with warnings if NDA confirmation is absent or false (§4.3, UX-03)', async () => {
     const { app } = createApp(new InMemoryPortfolioRepository(), {
       bootstrapAdminToken: adminToken,
+    });
+
+    // Configure exclusion so the preview triggers warnings
+    await app.request('/api/settings/redaction', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify({
+        exclusions: ['internal.corp.example.com'],
+      }),
     });
 
     const bodyText = 'Client deployment notes citing internal.corp.example.com.';
