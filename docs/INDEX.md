@@ -22,6 +22,7 @@
 | `A014` | WP-1 Task 4: Redaction Preview Token Publish Flow & Loose Ends | `active` | [A014-wp1-publish-flow-preview-token.md](execution-reports/A014-wp1-publish-flow-preview-token.md) | — |
 | `A015` | WP-1 Task 5: Config-Driven Provider Registry & Extractive Degradation | `active` | [A015-wp1-provider-registry-extractive-degradation.md](execution-reports/A015-wp1-provider-registry-extractive-degradation.md) | — |
 | `A016` | WP-1 Gate 1b+ Closure and Handover Tooling | `active` | [A016-wp1-gate-1b-closure-and-handover-tooling.md](execution-reports/A016-wp1-gate-1b-closure-and-handover-tooling.md) | — |
+| `A017` | WP-1 Gate Closure Triage and Handover Facts | `active` | [A017-wp-1-gate-closure-triage-and-handover-facts.md](execution-reports/A017-wp-1-gate-closure-triage-and-handover-facts.md) | — |
 
 ## Handover Snapshots (Class H)
 

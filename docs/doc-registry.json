@@ -280,5 +280,13 @@
     "path": "docs/execution-reports/A016-wp1-gate-1b-closure-and-handover-tooling.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A017",
+    "title": "WP-1 Gate Closure Triage and Handover Facts",
+    "class": "A",
+    "path": "docs/execution-reports/A017-wp-1-gate-closure-triage-and-handover-facts.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
