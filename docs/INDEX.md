@@ -18,6 +18,7 @@
 | `A010` | WP-1.1b Errata, Hardening and Receipt-Check Gate | `frozen` | [A010.md](execution-reports/A010.md) | — |
 | `A011` | WP-1.2 Centralized Admin apiClient and Raw Fetch Prohibition | `frozen` | [A011.md](execution-reports/A011.md) | — |
 | `A012` | WP-1.3 Redaction Scanner, Exclusions, 4-State UI and NDA Question | `frozen` | [A012.md](execution-reports/A012.md) | — |
+| `A013` | Adopt IAHP Document Identity and Registry | `frozen` | [A013-adopt-iahp-document-identity-and-registry.md](execution-reports/A013-adopt-iahp-document-identity-and-registry.md) | — |
 
 ## Handover Snapshots (Class H)
 

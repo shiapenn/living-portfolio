@@ -248,5 +248,14 @@
     "path": "docs/templates/G001-handover-template.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A013",
+    "title": "Adopt IAHP Document Identity and Registry",
+    "class": "A",
+    "path": "docs/execution-reports/A013-adopt-iahp-document-identity-and-registry.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "defe1c2ea0001a3646c613c5c0b7ce58c9cc7136f4d6de07bbbdab4f8103d9ed"
   }
 ]
