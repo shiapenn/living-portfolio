@@ -40,14 +40,14 @@ export interface ScanOptions {
 
 export function findExclusionsFile(customPath?: string): string | null {
   if (customPath && existsSync(customPath)) return customPath;
-  if (process.env.REDACTION_EXCLUSIONS_PATH && existsSync(process.env.REDACTION_EXCLUSIONS_PATH)) {
-    return process.env.REDACTION_EXCLUSIONS_PATH;
+  const envPath = process.env.REDACTION_EXCLUSIONS_FILE || process.env.REDACTION_EXCLUSIONS_PATH;
+  if (envPath && existsSync(envPath)) {
+    return envPath;
   }
   const cwdCandidates = [
     resolve(process.cwd(), 'data/redaction-exclusions.json'),
     resolve(process.cwd(), '../data/redaction-exclusions.json'),
     resolve(process.cwd(), '../../data/redaction-exclusions.json'),
-    resolve(process.cwd(), 'packages/ai/data/redaction-exclusions.json'),
   ];
   for (const c of cwdCandidates) {
     if (existsSync(c)) return c;
@@ -59,7 +59,6 @@ export function findExclusionsFile(customPath?: string): string | null {
       resolve(dir, '../../../data/redaction-exclusions.json'),
       resolve(dir, '../../data/redaction-exclusions.json'),
       resolve(dir, '../data/redaction-exclusions.json'),
-      resolve(dir, './data/redaction-exclusions.json'),
     ];
     for (const c of moduleCandidates) {
       if (existsSync(c)) return c;

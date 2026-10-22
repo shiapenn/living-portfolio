@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { resolve } from 'node:path';
 import {
   BudgetGovernor,
   isPolicyAllowedForDataClass,
@@ -85,11 +86,14 @@ describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redact
   });
 
   it('matches owner exclusion list loaded from data file and dynamic options without hardcoded literals (UX-03, §4.3)', () => {
-    // 1. Loaded from data/redaction-exclusions.json
+    // 1. Loaded from fixture file (e.g. data/redaction-exclusions.example.json)
     const defaultExclusionText = 'Reviewing architecture for internal.corp.example.com and secret-project-alpha';
-    const defaultWarnings = scanForConfidentialData(defaultExclusionText);
-    expect(defaultWarnings.some((w) => w.type === 'exclusion' && w.match === 'internal.corp.example.com')).toBe(true);
-    expect(defaultWarnings.some((w) => w.type === 'exclusion' && w.match === 'secret-project-alpha')).toBe(true);
+    const examplePath = resolve(import.meta.dirname, '../../../data/redaction-exclusions.example.json');
+    const fixtureWarnings = scanForConfidentialData(defaultExclusionText, {
+      exclusionsFilePath: examplePath,
+    });
+    expect(fixtureWarnings.some((w) => w.type === 'exclusion' && w.match === 'internal.corp.example.com')).toBe(true);
+    expect(fixtureWarnings.some((w) => w.type === 'exclusion' && w.match === 'secret-project-alpha')).toBe(true);
 
     // 2. Custom exclusion list passed via options
     const customWarnings = scanForConfidentialData('Working on Project-Starlight for Client Omega', {

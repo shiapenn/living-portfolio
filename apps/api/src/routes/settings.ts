@@ -119,6 +119,8 @@ export function createSettingsRoutes(
   });
 
   // Update redaction exclusion list (§4.3, UX-03)
+  // [partial]: Persists in memory (RuntimeSettingsState) for current process lifetime.
+  // Full persistence across server restarts will be backed by Postgres in the database persistence task (Findings M1 / M8).
   router.patch('/redaction', async (c) => {
     const body = await c.req.json();
     if (Array.isArray(body.exclusions)) {

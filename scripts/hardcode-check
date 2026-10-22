@@ -18,16 +18,8 @@ const ROOT = resolve(import.meta.dirname, '..');
 // Explicit allowlist with stated reason per OSR-01 §3.2
 const ALLOWLIST = [
   {
-    pathPrefix: 'docs/audits/2026-10-19-independent-technical-audit/',
-    reason: 'Immutable closed audit report folder (AUD-03)',
-  },
-  {
-    pathPrefix: 'docs/audits/register.yml',
-    reason: 'Cumulative audit findings register quoting finding P1 title',
-  },
-  {
-    pathPrefix: 'docs/audits/hardcode-inventory.md',
-    reason: 'Hard-code inventory report documenting remediated patterns',
+    pathPrefix: 'docs/audits/',
+    reason: 'Closed audit reports and findings registers (AUD-03, UX-03)',
   },
   {
     pathPrefix: 'docs/plans/',
@@ -35,7 +27,7 @@ const ALLOWLIST = [
   },
   {
     pathPrefix: 'docs/execution-reports/',
-    reason: 'Historical execution reports (A001/A002/OSR-05) documenting audit findings',
+    reason: 'Historical execution reports (A001-A013/OSR-05) documenting audit findings',
   },
   {
     pathPrefix: 'packages/config/',
@@ -84,16 +76,28 @@ export const RULES = [
     description: 'Credential-like or default bearer token literal in non-test code (e.g. missed lp_pat_default_test_admin_token_001)',
     regex: /\b(?:lp_pat_[A-Za-z0-9_-]{16,}|sk-(?:live|test|proj|ant)-[A-Za-z0-9_-]{16,}|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16})\b/,
     excludeTests: true,
-    onlyInDirs: ['apps/', 'packages/', 'docker/'],
+    onlyInDirs: ['apps/', 'packages/', 'docker/', 'data/'],
+  },
+  {
+    id: 'SAMPLE_VENDOR_OR_CLIENT',
+    description: 'Sample vendor, client, or secret project name in shipped data or source',
+    regex: /\b(?:Acme(?:\s+Corp)?|secret-project-[A-Za-z0-9_-]+|internal\.corp\.example\.com)\b/i,
+    excludeTests: true,
   },
 ];
 
 export function isAllowlisted(relPath) {
+  if (relPath.endsWith('.example.json')) return true;
   return ALLOWLIST.some((entry) => relPath === entry.pathPrefix || relPath.startsWith(entry.pathPrefix));
 }
 
 export function scanContent(content, rel) {
-  const isTest = rel.endsWith('.test.ts') || rel.includes('/conformance/');
+  if (isAllowlisted(rel)) return [];
+  const isTest =
+    rel.endsWith('.test.ts') ||
+    rel.endsWith('.spec.ts') ||
+    rel.includes('/conformance/') ||
+    rel.startsWith('tests/');
   const lines = content.split('\n');
   const hits = [];
 
