@@ -213,7 +213,7 @@ CREATE TABLE IF NOT EXISTS topology_reports (
 -- 18. Scoped Constraints Table
 CREATE TABLE IF NOT EXISTS scoped_constraints (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  constraint JSONB NOT NULL,
+  "constraint" JSONB NOT NULL,
   scope JSONB NOT NULL,
   source_escalation UUID REFERENCES escalations(id),
   source_quote TEXT,
