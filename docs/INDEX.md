@@ -19,6 +19,7 @@
 | `A011` | WP-1.2 Centralized Admin apiClient and Raw Fetch Prohibition | `frozen` | [A011.md](execution-reports/A011.md) | — |
 | `A012` | WP-1.3 Redaction Scanner, Exclusions, 4-State UI and NDA Question | `frozen` | [A012.md](execution-reports/A012.md) | — |
 | `A013` | Adopt IAHP Document Identity and Registry | `frozen` | [A013-adopt-iahp-document-identity-and-registry.md](execution-reports/A013-adopt-iahp-document-identity-and-registry.md) | — |
+| `A014` | WP-1 Task 4: Redaction Preview Token Publish Flow & Loose Ends | `active` | [A014-wp1-publish-flow-preview-token.md](execution-reports/A014-wp1-publish-flow-preview-token.md) | — |
 
 ## Handover Snapshots (Class H)
 
