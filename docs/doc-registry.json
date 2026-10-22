@@ -270,7 +270,7 @@
     "title": "WP-1 Gate 1b+ Closure and WP-2 Kickoff",
     "class": "H",
     "path": "docs/handovers/H001-wp1-gate-1b-closure-and-wp2-kickoff.md",
-    "status": "active",
+    "status": "superseded",
     "supersedes": null
   },
   {
@@ -288,5 +288,13 @@
     "path": "docs/execution-reports/A017-wp-1-gate-closure-triage-and-handover-facts.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "H002",
+    "title": "WP-1 Gate Closure and WP-2 Kickoff",
+    "class": "H",
+    "path": "docs/handovers/H002-wp-1-gate-closure-and-wp-2-kickoff.md",
+    "status": "active",
+    "supersedes": "H001"
   }
 ]
