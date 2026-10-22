@@ -1005,6 +1005,7 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
               Body (Markdown + GFM — only a body and date are required; structure is optional)
             </label>
             <textarea id="entry-body" rows="8" class="ask-input" style="width:100%;font-family:var(--font-code);font-size:14px" placeholder="Paste any existing write-up or answer the profile prompts..."></textarea>
+            <input type="hidden" id="entry-preview-token" name="redactionPreviewToken" value="" />
           </div>
 
           <div id="redaction-preview-box" style="margin-bottom:12px"></div>
@@ -1077,6 +1078,8 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
         const killBtn = document.getElementById('btn-killswitch');
         const drillBtn = document.getElementById('btn-backup-drill');
         let answeringEnabled = true;
+        let currentPreviewToken = '';
+        let currentHasWarnings = false;
 
         ${ADMIN_API_CLIENT_SCRIPT}
 
@@ -1115,6 +1118,7 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
         async function runRedactionCheck() {
           const textEl = document.getElementById('entry-body');
           const text = textEl ? textEl.value : '';
+          const tokenInput = document.getElementById('entry-preview-token');
           // State 1: checking
           redactBox.innerHTML = '<div class="later-thinking-banner" data-state="checking" role="status">Checking for confidential data...</div>';
           try {
@@ -1124,6 +1128,14 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
             });
             if (res.ok) {
               const data = await res.json();
+              currentPreviewToken = data.redactionPreviewToken || '';
+              currentHasWarnings = Array.isArray(data.warnings) && data.warnings.length > 0;
+              if (tokenInput) tokenInput.value = currentPreviewToken;
+
+              const tokenBadgeHtml = currentPreviewToken
+                ? '<div class="preview-token-badge" id="preview-token-badge" data-token="' + escapeClientHtml(currentPreviewToken) + '" style="font-size:12px;color:var(--text-muted);margin-top:6px">Signed preview token: <code>' + escapeClientHtml(currentPreviewToken.slice(0, 16)) + '...</code></div>'
+                : '';
+
               if (Array.isArray(data.warnings) && data.warnings.length > 0) {
                 // State 3: needs review (amber banner, never green)
                 const warningList = data.warnings.map(function(w) {
@@ -1131,11 +1143,13 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
                 }).join(', ');
                 redactBox.innerHTML = '<div class="later-thinking-banner" data-state="needs-review" role="alert">' +
                   '<strong>Needs Review (' + data.warnings.length + ' findings):</strong> ' + warningList +
-                  ' — Confirm none of this is under NDA before publishing.</div>';
+                  ' — Confirm none of this is under NDA before publishing.</div>' + tokenBadgeHtml;
               } else if (Array.isArray(data.warnings) && data.warnings.length === 0) {
                 // State 2: clean (the ONLY state that can ever be green)
-                redactBox.innerHTML = '<div class="chip" data-state="clean" style="border-color:var(--role-outcome)">✓ No confidential secrets or NDA markers detected.</div>';
+                redactBox.innerHTML = '<div class="chip" data-state="clean" style="border-color:var(--role-outcome)">✓ No confidential secrets or NDA markers detected.</div>' + tokenBadgeHtml;
               } else {
+                currentPreviewToken = '';
+                if (tokenInput) tokenInput.value = '';
                 // State 4: could not check
                 redactBox.innerHTML = '<div class="later-thinking-banner" data-state="could-not-check" role="alert">' +
                   "Couldn't check for private details." +
@@ -1144,6 +1158,8 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
                 if (retryBtn) retryBtn.addEventListener('click', runRedactionCheck);
               }
             } else {
+              currentPreviewToken = '';
+              if (tokenInput) tokenInput.value = '';
               // State 4: could not check (HTTP error)
               let advice = 'request failed (HTTP ' + res.status + '). Please check inputs and retry.';
               if (res.status === 401) {
@@ -1160,6 +1176,8 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
               if (retryBtn) retryBtn.addEventListener('click', runRedactionCheck);
             }
           } catch (err) {
+            currentPreviewToken = '';
+            if (tokenInput) tokenInput.value = '';
             // State 4: could not check (network/fetch error)
             redactBox.innerHTML = '<div class="later-thinking-banner" role="alert" data-state="could-not-check">' +
               "Couldn't check for private details: network error connecting to server." +
@@ -1173,6 +1191,21 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
           redactBtn.addEventListener('click', runRedactionCheck);
         }
 
+        // Token invalidated after a body edit
+        const bodyInputEl = document.getElementById('entry-body');
+        if (bodyInputEl) {
+          bodyInputEl.addEventListener('input', function() {
+            if (currentPreviewToken) {
+              currentPreviewToken = '';
+              const tokenInput = document.getElementById('entry-preview-token');
+              if (tokenInput) tokenInput.value = '';
+              const badge = document.getElementById('preview-token-badge');
+              if (badge) badge.remove();
+              redactBox.innerHTML = '<div class="later-thinking-banner" data-state="invalidated" role="status">Body edited since last check — preview token invalidated. Re-run "Preview Redaction (§4.3)" before publishing.</div>';
+            }
+          });
+        }
+
         if (form) {
           form.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -1182,32 +1215,18 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
               return;
             }
 
-            const ndaCheckbox = document.getElementById('entry-nda-confirmed');
-            const ndaConfirmed = ndaCheckbox ? ndaCheckbox.checked : false;
-
-            // Preview redaction first to acquire preview token and verify scan
-            let previewToken = '';
-            let hasWarnings = false;
-            try {
-              const previewRes = await apiClient('/api/entries/redaction-preview', {
-                method: 'POST',
-                body: JSON.stringify({ text: text })
-              });
-              if (previewRes.ok) {
-                const prevData = await previewRes.json();
-                previewToken = prevData.redactionPreviewToken || '';
-                hasWarnings = Array.isArray(prevData.warnings) && prevData.warnings.length > 0;
-              } else {
-                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Could not complete required pre-publish redaction preview check.</div>';
-                return;
-              }
-            } catch (_) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error during pre-publish redaction preview check.</div>';
+            // Publish gate: signed preview token required
+            if (!currentPreviewToken) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert" data-gate="preview-token">Redaction preview check is required before publishing. Please click "Preview Redaction (§4.3)".</div>';
               return;
             }
 
-            if (hasWarnings && !ndaConfirmed) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Confidentiality &amp; NDA confirmation is required before publishing entries with potential secrets or exclusion warnings.</div>';
+            const ndaCheckbox = document.getElementById('entry-nda-confirmed');
+            const ndaConfirmed = ndaCheckbox ? ndaCheckbox.checked : false;
+
+            // Publish gate: NDA confirmation required when warnings exist
+            if (currentHasWarnings && !ndaConfirmed) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert" data-gate="nda-confirmed">Confidentiality &amp; NDA confirmation is required before publishing entries with potential secrets or exclusion warnings.</div>';
               return;
             }
 
@@ -1221,7 +1240,7 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
               temporal_level: 'exact',
               visibility: 'public',
               view: 'article',
-              redactionPreviewToken: previewToken,
+              redactionPreviewToken: currentPreviewToken,
               nda_confirmed: ndaConfirmed
             };
             try {
@@ -1230,6 +1249,9 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
                 body: JSON.stringify(payload)
               });
               if (res.ok) {
+                currentPreviewToken = '';
+                const tokenInput = document.getElementById('entry-preview-token');
+                if (tokenInput) tokenInput.value = '';
                 banner.innerHTML = '<div class="as-of-banner">Published "' + escapeClientHtml(payload.title) + '" at L0. <a href="/work/' + escapeClientHtml(payload.slug) + '">View entry →</a></div>';
               } else {
                 banner.innerHTML = renderAdminError(res);
