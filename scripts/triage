@@ -377,17 +377,30 @@ export function runTriage(options = {}) {
 
     // Check if the current task has explicit instruction authorization
     // In HO-1b (Task A017), .github/workflows/ was specifically instructed
-    const currentBranch = (() => {
+    const branchName =
+      process.env.GITHUB_HEAD_REF ||
+      process.env.GITHUB_REF_NAME ||
+      (() => {
+        try {
+          return execSync('git branch --show-current', { cwd: root, encoding: 'utf8' }).trim();
+        } catch (_) {
+          return '';
+        }
+      })();
+
+    const recentCommitLogs = (() => {
       try {
-        return execSync('git branch --show-current', { cwd: root, encoding: 'utf8' }).trim();
+        return execSync('git log -n 10 --format=%B', { cwd: root, encoding: 'utf8' });
       } catch (_) {
         return '';
       }
     })();
 
     const isAuthorizedInfraTask =
-      currentBranch.includes('ho-1b') ||
-      currentBranch.includes('a017') ||
+      branchName.toLowerCase().includes('ho-1b') ||
+      branchName.toLowerCase().includes('a017') ||
+      recentCommitLogs.includes('HO-1b') ||
+      recentCommitLogs.includes('A017') ||
       reportsToScan.some((r) => r.startsWith('A017') || r.includes('HO-1b'));
 
     for (const file of diffFiles) {
