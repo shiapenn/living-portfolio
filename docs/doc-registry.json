@@ -1,0 +1,252 @@
+[
+  {
+    "id": "A001",
+    "title": "Historical Baseline and Retroactive Tagging",
+    "class": "A",
+    "path": "docs/execution-reports/A001.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "c10baeb4bf239c0e803aa03cdc1ff36c5150cb9ed48cdee52f3aa2d90a9b0344"
+  },
+  {
+    "id": "A002",
+    "title": "Post-Audit Honest Baseline and Gate 1a Report",
+    "class": "A",
+    "path": "docs/execution-reports/A002.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "3c1a1f4465f9990d547257cc7bd49d451c18b1636667240708b2be3c3b948bb8"
+  },
+  {
+    "id": "A003",
+    "title": "Gate 1b+ Remediation and UX Audit Conformance Baseline",
+    "class": "A",
+    "path": "docs/execution-reports/A003.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "5da00525b835e6680ab5357798250a003b3a0c91e113c8c28c3a12f9f4ea61dc"
+  },
+  {
+    "id": "A004",
+    "title": "History Rewrite SHA Mapping and Gate 1b+ UX Baseline",
+    "class": "A",
+    "path": "docs/execution-reports/A004.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "b28c7c2ba603c2531a78599ff550cf7fcedeb1846856d4bc695a680bde5af8c5"
+  },
+  {
+    "id": "A005",
+    "title": "Tranche 0 Closure, Test Count Corrections and Honest Baseline",
+    "class": "A",
+    "path": "docs/execution-reports/A005.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "f2f9af5d5ad38875cfe6b57fb345644914c458304b82d5143cd3ef862421f9a3"
+  },
+  {
+    "id": "A006",
+    "title": "Tranche 0 Hardening, CI Disclosures and Head Baseline",
+    "class": "A",
+    "path": "docs/execution-reports/A006.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "178031d6d9de7d14829ee104fa96d17db5f09c45a0865704be41a469712140d4"
+  },
+  {
+    "id": "A007",
+    "title": "Tranche 0 Closure, SARIF Gate and Verbatim Register",
+    "class": "A",
+    "path": "docs/execution-reports/A007.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "29ff9e24544e0d2d7c98415c337e6f62ebc341c6b903ecbbfaec5ea22224bfd1"
+  },
+  {
+    "id": "A008",
+    "title": "WP-0 Housekeeping, Truthful Status and Staged Plan Backlog",
+    "class": "A",
+    "path": "docs/execution-reports/A008.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "89c5d9333db7689bed0b82ca366b17a33d3d731b188a3e6f2d73c39af0dae51d"
+  },
+  {
+    "id": "A009",
+    "title": "WP-1 Task 1 Playwright Test Harness and Authentication Flow",
+    "class": "A",
+    "path": "docs/execution-reports/A009.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "b35f897e02c2f256147df3e00652325e43acabe32e2e8e4f58041945438bf740"
+  },
+  {
+    "id": "A010",
+    "title": "WP-1.1b Errata, Hardening and Receipt-Check Gate",
+    "class": "A",
+    "path": "docs/execution-reports/A010.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "91838e95f5b7db5196d9c1aa9ac7751813f76f03bb5e0e2102ebdbe9fc6990db"
+  },
+  {
+    "id": "A011",
+    "title": "WP-1.2 Centralized Admin apiClient and Raw Fetch Prohibition",
+    "class": "A",
+    "path": "docs/execution-reports/A011.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "78dfe7a94c3cedb3a822fc16903b1734ade807347e9e3f93bb0f2a81d05a3ab5"
+  },
+  {
+    "id": "A012",
+    "title": "WP-1.3 Redaction Scanner, Exclusions, 4-State UI and NDA Question",
+    "class": "A",
+    "path": "docs/execution-reports/A012.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "36de3962004c1754acb9e90a73ef5a6f2cd3b5d31ba40c6bf987a48bdf4177c7"
+  },
+  {
+    "id": "L001",
+    "title": "Independent Technical Audit Report",
+    "class": "L",
+    "path": "docs/audits/2026-10-19-independent-technical-audit/report.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "65ebe5b57ccd25c836a80862c4ead510e9e2a00b0bbd947f6a4cc4d3d151ed49"
+  },
+  {
+    "id": "L002",
+    "title": "Design Specification Audit Report",
+    "class": "L",
+    "path": "docs/audits/2026-10-20-ux-specification-audit/report.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "3736833282e341f08e463ffe84b7b6901e197e6539b7961b05ab012907a6106f"
+  },
+  {
+    "id": "L003",
+    "title": "Hard-Code Inventory and Remediation Report",
+    "class": "L",
+    "path": "docs/audits/hardcode-inventory.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "755cd96bb52aee4cdbf7813e96681fcb19de666c0a2e81e8c19d71427001426a"
+  },
+  {
+    "id": "L004",
+    "title": "Design Audit Method",
+    "class": "L",
+    "path": "docs/audits/methods/design-audit-method.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "212614f9e663479ac2872b9d3a6f15d54e7e6ae7246f7f486321fa310f177cab"
+  },
+  {
+    "id": "L005",
+    "title": "Audit Tracking and Conformance Register Overview",
+    "class": "L",
+    "path": "docs/audits/README.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "81ebe2702fbf6e3437b2b0cb5e164015cbd0db81cbdb362af37c2f425f724c5b"
+  },
+  {
+    "id": "L006",
+    "title": "Clean Initial Commit and Credential Rotation Report",
+    "class": "L",
+    "path": "docs/execution-reports/OSR-05-clean-tree-and-rotation.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "0111fd0e5185c5f2770e1843850fa473c06826b34a0ff782d5cdb0477aa89546"
+  },
+  {
+    "id": "L007",
+    "title": "Governance and Release Gate Changelog",
+    "class": "L",
+    "path": "docs/governance/CHANGELOG.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "183c653ac96b1c72f5ddd7025b27298348b2ac6f14ee23cc6bbe94e5a8fb57d6"
+  },
+  {
+    "id": "L008",
+    "title": "Audit Tracking Requirements Decision Record",
+    "class": "L",
+    "path": "docs/governance/DR-AUD-001.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "c13ac566351071c4b4938fe12f1b35f1a1c97734d807ed48bf1ba6319384fba4"
+  },
+  {
+    "id": "L009",
+    "title": "Public Flip-Day Checklist",
+    "class": "L",
+    "path": "docs/governance/flip-day-checklist.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "833f7285423ab9e19e234cb154339043cd74129a569470cf4d26fdf932163c87"
+  },
+  {
+    "id": "L010",
+    "title": "Engineering and Execution Protocol",
+    "class": "L",
+    "path": "docs/plans/execution-protocol.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "01b3ce29a295f734e51ace5af9ea04505e2aba19355aa85013137562226aa732"
+  },
+  {
+    "id": "L011",
+    "title": "Open-Source Release and Cloud Readiness Plan",
+    "class": "L",
+    "path": "docs/plans/osr-001-open-source-release.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "af51c8e6f7ee901533d31c9bfe92436be69a2dbd31df0bfba8b1429e0a4f7300"
+  },
+  {
+    "id": "L012",
+    "title": "Optimization and Remediation Plan",
+    "class": "L",
+    "path": "docs/plans/remediation-plan-AUD-2026-10-19.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "99a57edb9c607379113794623a42341938befd8fb4bb286944a18123126513f7"
+  },
+  {
+    "id": "L013",
+    "title": "Self-Hosting and Branding Configuration Guide",
+    "class": "L",
+    "path": "docs/self-hosting.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "0d74791eff3aa2ef8223b22c38910563f1802a02c188af4f78b200adc5592d46"
+  },
+  {
+    "id": "L014",
+    "title": "The Living Portfolio Open Source Specification",
+    "class": "L",
+    "path": "docs/spec/The_Living_Portfolio_Open_Source_Spec.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "7e4517433f040b36c838137d1ae61edd7e6740c9a6e7ef2ae171fa6bc98da0f3"
+  },
+  {
+    "id": "P001",
+    "title": "Iterative Agent Handover Protocol (IAHP)",
+    "class": "P",
+    "path": "docs/plans/P001-iterative-agent-handover-protocol.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "G001",
+    "title": "Handover template",
+    "class": "G",
+    "path": "docs/templates/G001-handover-template.md",
+    "status": "active",
+    "supersedes": null
+  }
+]

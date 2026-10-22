@@ -285,14 +285,20 @@ export function validateReceipt(reportPath, options = {}) {
   }
 
   // (a) Files Touched vs Git Diff
-  const currentNumMatch = reportFileName.match(/A(\d{3})\.md$/);
+  const currentNumMatch = reportFileName.match(/A(\d{3})(?:-.*)?\.md$/);
   if (currentNumMatch) {
     const currentNum = parseInt(currentNumMatch[1], 10);
     const prevNumStr = String(currentNum - 1).padStart(3, '0');
-    const prevFileName = `A${prevNumStr}.md`;
-    const prevFilePath = resolve(REPORTS_DIR, prevFileName);
+    
+    // Find previous report file (A###.md or A###-<slug>.md)
+    let prevFilePath = null;
+    const allReports = existsSync(REPORTS_DIR) ? readdirSync(REPORTS_DIR) : [];
+    const prevMatch = allReports.find((f) => new RegExp(`^A${prevNumStr}(?:-.*)?\\.md$`).test(f));
+    if (prevMatch) {
+      prevFilePath = resolve(REPORTS_DIR, prevMatch);
+    }
 
-    if (existsSync(prevFilePath)) {
+    if (prevFilePath && existsSync(prevFilePath)) {
       const prevContent = readFileSync(prevFilePath, 'utf8');
       const prevHeader = parseHeader(prevContent);
       const prevSha = cleanSha(prevHeader['Evidence SHA']);
@@ -321,6 +327,51 @@ export function validateReceipt(reportPath, options = {}) {
 
         console.log(`✓ [FILES-TOUCHED] Matches git diff ${prevSha}..${currentSha} (${reportedFiles.length} files verified).`);
       }
+    }
+
+    // Section 8 and 9 enforcement from A013 onward (IAHP Section 10)
+    if (currentNum >= 13) {
+      const requiredSections = [
+        { num: 1, name: 'Scope', regex: /^##\s+1\.\s+Scope/m },
+        { num: 2, name: 'CI Evidence', regex: /^##\s+2\.\s+CI\s+Evidence/m },
+        { num: 3, name: 'Tests Added and Count Change', regex: /^##\s+3\.\s+Tests\s+Added/m },
+        { num: 4, name: 'Files Touched', regex: /^##\s+4\.\s+Files\s+Touched/m },
+        { num: 5, name: 'Register and Backlog Changes', regex: /^##\s+5\.\s+Register/m },
+        { num: 6, name: 'Not Done (Tagged)', regex: /^##\s+6\.\s+Not\s+Done/m },
+        { num: 7, name: 'Changes to Earlier Reports', regex: /^##\s+7\.\s+Changes\s+to\s+Earlier/m },
+        { num: 8, name: 'Receipt Gate Self-Validation', regex: /^##\s+8\.\s+Receipt\s+Gate\s+Self-Validation/m },
+        { num: 9, name: 'Handover Decision', regex: /^##\s+9\.\s+Handover\s+Decision/m },
+      ];
+
+      for (const sec of requiredSections) {
+        if (!sec.regex.test(content)) {
+          throw new Error(`[SECTIONS-CHECK] Section ${sec.num} (${sec.name}) is missing from ${reportFileName}.`);
+        }
+      }
+
+      // Validate Section 8 content
+      const sec8Match = content.match(/##\s+8\.\s+Receipt\s+Gate\s+Self-Validation([\s\S]*?)(?=##\s+9|$)/);
+      if (!sec8Match || !sec8Match[1].includes('All receipt checks PASSED')) {
+        throw new Error(
+          `[SECTION-8-CHECK] Section 8 in ${reportFileName} must contain the verbatim passing output of receipt:check ending in 'All receipt checks PASSED'.`
+        );
+      }
+
+      // Validate Section 9 content
+      const sec9Match = content.match(/##\s+9\.\s+Handover\s+Decision([\s\S]*?)$/);
+      const sec9Text = sec9Match ? sec9Match[1] : '';
+      const decisionMatch = sec9Text.match(/-\s+Decision:\s*(NOT REQUIRED|RECOMMENDED|REQUIRED)/i);
+      const ruleMatch = sec9Text.match(/-\s+Rule\(s\):\s*HO-R\d/i);
+      const receiptsMatch = sec9Text.match(/-\s+Receipts since last handover:/i);
+      const boundaryMatch = sec9Text.match(/-\s+Clean-boundary preconditions:/i);
+      const nextActionMatch = sec9Text.match(/-\s+Next action:/i);
+
+      if (!decisionMatch || !ruleMatch || !receiptsMatch || !boundaryMatch || !nextActionMatch) {
+        throw new Error(
+          `[SECTION-9-CHECK] Section 9 Handover Decision in ${reportFileName} is missing or malformed.\nMust include Decision (NOT REQUIRED|RECOMMENDED|REQUIRED), Rule(s), Receipts since last handover, Clean-boundary preconditions, and Next action.`
+        );
+      }
+      console.log(`✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for ${reportFileName}.`);
     }
   }
 
@@ -386,16 +437,25 @@ if (process.argv[1] && basename(process.argv[1]) === 'receipt-check') {
   let targetArg = args.find((a, i) => !a.startsWith('--') && (i === 0 || args[i - 1] !== '--fixture-log'));
 
   let targetPath;
+  const allReports = existsSync(REPORTS_DIR) ? readdirSync(REPORTS_DIR) : [];
   if (targetArg) {
-    if (targetArg.endsWith('.md')) {
+    if (targetArg.endsWith('.md') && existsSync(resolve(cwdPath(), targetArg))) {
       targetPath = resolve(cwdPath(), targetArg);
     } else {
-      targetPath = resolve(REPORTS_DIR, `${targetArg.toUpperCase().replace(/\.MD$/i, '')}.md`);
+      const cleanArg = targetArg.toUpperCase().replace(/\.MD$/i, '');
+      const match = allReports.find(
+        (f) => f.toUpperCase().startsWith(cleanArg) && f.endsWith('.md')
+      );
+      if (match) {
+        targetPath = resolve(REPORTS_DIR, match);
+      } else {
+        targetPath = resolve(REPORTS_DIR, `${cleanArg}.md`);
+      }
     }
   } else {
-    // Pick the highest A###.md report
-    const files = readdirSync(REPORTS_DIR)
-      .filter((f) => /^A\d{3}\.md$/.test(f))
+    // Pick the highest A###.md / A###-<slug>.md report
+    const files = allReports
+      .filter((f) => /^A\d{3}(?:-.*)?\.md$/.test(f))
       .sort();
     if (files.length === 0) {
       console.error('No execution reports found in docs/execution-reports/');

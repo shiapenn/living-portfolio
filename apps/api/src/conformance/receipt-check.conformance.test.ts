@@ -69,14 +69,14 @@ describe('Receipt Check Conformance (Task WP-1.1b)', () => {
   });
 
   it('fails check (b) when a line in verbatim block is absent from CI logs (no network fixture)', () => {
-    const mockReceipt = join(tempDir, 'A999.md');
+    const mockReceipt = join(tempDir, 'A010.md');
     writeFileSync(
       mockReceipt,
-      `# Execution Report A999
+      `# Execution Report A010
 
 | Field | Value |
 | --- | --- |
-| Report ID | A999 |
+| Report ID | A010 |
 | Date | 21 October 2026 |
 | Author | Implementer |
 | Task ID | WP-1.1b |
@@ -112,14 +112,14 @@ Test Files  99 passed (99)
   });
 
   it('passes check (b) when all lines in verbatim block exist in fixture CI log (no network fixture)', () => {
-    const mockReceipt = join(tempDir, 'A999.md');
+    const mockReceipt = join(tempDir, 'A010.md');
     writeFileSync(
       mockReceipt,
-      `# Execution Report A999
+      `# Execution Report A010
 
 | Field | Value |
 | --- | --- |
-| Report ID | A999 |
+| Report ID | A010 |
 | Date | 21 October 2026 |
 | Author | Implementer |
 | Task ID | WP-1.1b |
@@ -154,14 +154,14 @@ Test Files  1 passed (1)
   });
 
   it('passes and warns when --offline flag is set without network access', () => {
-    const mockReceipt = join(tempDir, 'A999.md');
+    const mockReceipt = join(tempDir, 'A010.md');
     writeFileSync(
       mockReceipt,
-      `# Execution Report A999
+      `# Execution Report A010
 
 | Field | Value |
 | --- | --- |
-| Report ID | A999 |
+| Report ID | A010 |
 | Date | 21 October 2026 |
 | Author | Implementer |
 | Task ID | WP-1.1b |
@@ -185,6 +185,167 @@ Any unverified text
     const res = runReceiptCheck([mockReceipt, '--skip-git', '--offline']);
     expect(res.status).toBe(0);
     expect(res.stdout + res.stderr).toContain('WARNING: --offline flag provided');
+    expect(res.stdout).toContain('All receipt checks PASSED');
+  });
+
+  it('fails when receipt >= A013 is missing Section 8 (receipt-gate self-validation)', () => {
+    const mockReceipt = join(tempDir, 'A013-test-receipt.md');
+    writeFileSync(
+      mockReceipt,
+      `# Execution Report A013
+
+| Field | Value |
+| --- | --- |
+| Report ID | A013 |
+| Date | 22 October 2026 |
+| Author | Implementer |
+| Task ID | PROC-1 |
+| Evidence SHA | 34f984b |
+| CI run | https://github.com/shiapenn/living-portfolio/actions/runs/1 |
+| Verified By | null |
+
+---
+
+## 1. Scope
+## 2. CI Evidence
+## 3. Tests Added and Count Change
+## 4. Files Touched
+## 5. Register and Backlog Changes
+## 6. Not Done (Tagged)
+## 7. Changes to Earlier Reports
+## 9. Handover Decision
+- Decision: NOT REQUIRED
+- Rule(s): HO-R5
+- Receipts since last handover: 1
+- Clean-boundary preconditions: met
+- Next action: continue
+`,
+      'utf8'
+    );
+
+    const res = runReceiptCheck([mockReceipt, '--skip-git', '--offline']);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain('[SECTIONS-CHECK] Section 8 (Receipt Gate Self-Validation) is missing');
+  });
+
+  it('fails when receipt >= A013 is missing Section 9 (handover decision)', () => {
+    const mockReceipt = join(tempDir, 'A013-test-receipt.md');
+    writeFileSync(
+      mockReceipt,
+      `# Execution Report A013
+
+| Field | Value |
+| --- | --- |
+| Report ID | A013 |
+| Date | 22 October 2026 |
+| Author | Implementer |
+| Task ID | PROC-1 |
+| Evidence SHA | 34f984b |
+| CI run | https://github.com/shiapenn/living-portfolio/actions/runs/1 |
+| Verified By | null |
+
+---
+
+## 1. Scope
+## 2. CI Evidence
+## 3. Tests Added and Count Change
+## 4. Files Touched
+## 5. Register and Backlog Changes
+## 6. Not Done (Tagged)
+## 7. Changes to Earlier Reports
+## 8. Receipt Gate Self-Validation
+\`\`\`
+All receipt checks PASSED for A013.
+\`\`\`
+`,
+      'utf8'
+    );
+
+    const res = runReceiptCheck([mockReceipt, '--skip-git', '--offline']);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain('[SECTIONS-CHECK] Section 9 (Handover Decision) is missing');
+  });
+
+  it('fails when receipt >= A013 has malformed Section 8 or 9', () => {
+    const mockReceipt = join(tempDir, 'A013-test-receipt.md');
+    writeFileSync(
+      mockReceipt,
+      `# Execution Report A013
+
+| Field | Value |
+| --- | --- |
+| Report ID | A013 |
+| Date | 22 October 2026 |
+| Author | Implementer |
+| Task ID | PROC-1 |
+| Evidence SHA | 34f984b |
+| CI run | https://github.com/shiapenn/living-portfolio/actions/runs/1 |
+| Verified By | null |
+
+---
+
+## 1. Scope
+## 2. CI Evidence
+## 3. Tests Added and Count Change
+## 4. Files Touched
+## 5. Register and Backlog Changes
+## 6. Not Done (Tagged)
+## 7. Changes to Earlier Reports
+## 8. Receipt Gate Self-Validation
+Incomplete output without passed line
+## 9. Handover Decision
+- Decision: INVALID_STATUS
+`,
+      'utf8'
+    );
+
+    const res = runReceiptCheck([mockReceipt, '--skip-git', '--offline']);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain('[SECTION-8-CHECK]');
+  });
+
+  it('passes when receipt >= A013 has all 9 sections properly formed', () => {
+    const mockReceipt = join(tempDir, 'A013-test-receipt.md');
+    writeFileSync(
+      mockReceipt,
+      `# Execution Report A013
+
+| Field | Value |
+| --- | --- |
+| Report ID | A013 |
+| Date | 22 October 2026 |
+| Author | Implementer |
+| Task ID | PROC-1 |
+| Evidence SHA | 34f984b |
+| CI run | https://github.com/shiapenn/living-portfolio/actions/runs/1 |
+| Verified By | null |
+
+---
+
+## 1. Scope
+## 2. CI Evidence
+## 3. Tests Added and Count Change
+## 4. Files Touched
+## 5. Register and Backlog Changes
+## 6. Not Done (Tagged)
+## 7. Changes to Earlier Reports
+## 8. Receipt Gate Self-Validation
+\`\`\`
+All receipt checks PASSED for A013.
+\`\`\`
+## 9. Handover Decision
+- Decision: NOT REQUIRED
+- Rule(s): HO-R5
+- Receipts since last handover: 1
+- Clean-boundary preconditions: met
+- Next action: continue
+`,
+      'utf8'
+    );
+
+    const res = runReceiptCheck([mockReceipt, '--skip-git', '--offline']);
+    expect(res.status).toBe(0);
+    expect(res.stdout).toContain('Mandatory sections 1 through 9 verified');
     expect(res.stdout).toContain('All receipt checks PASSED');
   });
 });

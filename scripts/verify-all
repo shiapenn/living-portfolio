@@ -13,6 +13,7 @@ const steps = [
   { name: 'Environment Sync & Drift Check (OSR-03)', command: 'node scripts/generate-env-example && git diff --exit-code .env.example' },
   { name: 'Hard-Code Inventory Scan (OSR-01)', command: 'node scripts/hardcode-check' },
   { name: 'Developer Certificate of Origin (OSR-07 dco)', command: 'node scripts/dco-check' },
+  { name: 'Documentation Identity & Registry Check (IAHP PROC-1)', command: 'node scripts/docs-check' },
   { name: 'Audit Governance & Conformance Check (DR-AUD-001 AUD-21)', command: 'node scripts/audit-check' },
   { name: 'SARIF Static Analysis Baseline Gate (baseline validated; no analysis run)', command: 'node scripts/sarif-gate' },
   { name: 'Gitleaks Secret Scan (Instruction 5)', command: 'node scripts/gitleaks-scan' },

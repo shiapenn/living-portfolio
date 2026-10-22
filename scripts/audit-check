@@ -58,6 +58,13 @@ const requiredPaths = [
   'docs/audits/2026-10-19-independent-technical-audit/report.md',
   'docs/audits/2026-10-19-independent-technical-audit/findings.snapshot.yml',
   'docs/audits/2026-10-19-independent-technical-audit/repro/p0-probes.ts',
+  'docs/doc-registry.json',
+  'docs/INDEX.md',
+  'docs/plans/P001-iterative-agent-handover-protocol.md',
+  'docs/templates/G001-handover-template.md',
+  'scripts/docs-new',
+  'scripts/docs-check',
+  'scripts/docs-index',
   'LICENSE',
   'THIRD_PARTY_NOTICES',
   'DCO',
@@ -296,7 +303,7 @@ function isAncestor(sha) {
 // 6. Multi-Report Governance Validation (A002..A###, AUD-20, B.1, A007-4, A007-5, A008)
 const reportsDir = resolve(ROOT, 'docs/execution-reports');
 const reportFiles = readdirSync(reportsDir)
-  .filter((f) => /^A\d{3}\.md$/.test(f) && f >= 'A002.md')
+  .filter((f) => /^A\d{3}(?:-.*)?\.md$/.test(f) && f >= 'A002')
   .sort();
 const statementTags = ['[implemented]', '[partial]', '[simulated]', '[not-started]'];
 let reportsValidated = 0;
@@ -379,6 +386,14 @@ for (const sha of citedHistoricalShas) {
 }
 if (ancestorsOk) {
   pass('[AUD-COMMIT] Historical commit SHAs cited in older reports (196deb5, 76f2823, 6073d6c) resolve to valid ancestors of HEAD via SHA mapping.');
+}
+
+// 10. Documentation Identity & Registry Gate (IAHP PROC-1)
+try {
+  execSync('node scripts/docs-check', { cwd: ROOT, stdio: 'inherit' });
+  pass('[IAHP-PROC-1] Documentation registry, class sequences, H1 matching, frozen checksums, and INDEX verified.');
+} catch (err) {
+  fail('[IAHP-PROC-1] Documentation identity check failed (scripts/docs-check).');
 }
 
 if (errors.length > 0) {

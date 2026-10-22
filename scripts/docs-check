@@ -1,0 +1,284 @@
+#!/usr/bin/env node
+/**
+ * Living Portfolio Documentation Identity & Registry Validator (`scripts/docs-check`)
+ * Implements IAHP Section 3 and Section 11 Step 1.
+ */
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { resolve, relative, basename } from 'node:path';
+import { generateIndexContent } from './docs-index';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const REGISTRY_PATH = resolve(ROOT, 'docs/doc-registry.json');
+const INDEX_PATH = resolve(ROOT, 'docs/INDEX.md');
+const DOCS_DIR = resolve(ROOT, 'docs');
+
+const FORBIDDEN_TITLE_WORDS = [
+  'final',
+  'update',
+  'updated',
+  'v1',
+  'v2',
+  'v3',
+  'draft',
+  'wip',
+  'temp',
+  'temporary',
+  'revision',
+];
+
+export function validateDocs(options = {}) {
+  const root = options.root || ROOT;
+  const registryPath = options.registryPath || resolve(root, 'docs/doc-registry.json');
+  const indexPath = options.indexPath || resolve(root, 'docs/INDEX.md');
+  const docsDir = options.docsDir || resolve(root, 'docs');
+
+  const errors = [];
+  function fail(msg) {
+    errors.push(msg);
+  }
+
+  if (!existsSync(registryPath)) {
+    fail(`Registry file missing: ${relative(root, registryPath)}`);
+    return { ok: false, errors };
+  }
+
+  let registry;
+  try {
+    registry = JSON.parse(readFileSync(registryPath, 'utf8'));
+  } catch (err) {
+    fail(`Registry JSON malformed: ${err.message}`);
+    return { ok: false, errors };
+  }
+
+  if (!Array.isArray(registry)) {
+    fail('Registry must be a JSON array of document objects.');
+    return { ok: false, errors };
+  }
+
+  const seenIds = new Set();
+  const seenPaths = new Set();
+  const classSequences = { A: [], H: [], P: [], G: [], L: [] };
+
+  for (let i = 0; i < registry.length; i++) {
+    const entry = registry[i];
+    const prefix = `[Entry ${i} (${entry.id || 'NO_ID'})]`;
+
+    // 1. Mandatory fields
+    for (const field of ['id', 'title', 'class', 'path', 'status', 'supersedes']) {
+      if (!(field in entry) || entry[field] === undefined) {
+        fail(`${prefix} Missing mandatory field '${field}'.`);
+      }
+    }
+
+    // 2. ID validation
+    const idMatch = entry.id ? entry.id.match(/^([A-Z])(\d{3})$/) : null;
+    if (!idMatch) {
+      fail(`${prefix} Invalid ID '${entry.id}'. Must match [A-Z]\\d{3}.`);
+    } else {
+      const cls = idMatch[1];
+      const num = parseInt(idMatch[2], 10);
+
+      if (entry.class !== cls) {
+        fail(`${prefix} Class '${entry.class}' does not match ID prefix '${cls}'.`);
+      }
+      if (seenIds.has(entry.id)) {
+        fail(`${prefix} Duplicate ID '${entry.id}'.`);
+      }
+      seenIds.add(entry.id);
+
+      if (classSequences[cls]) {
+        classSequences[cls].push(num);
+      } else {
+        fail(`${prefix} Unknown document class '${cls}'.`);
+      }
+    }
+
+    // 3. Title validation
+    if (!entry.title || typeof entry.title !== 'string') {
+      fail(`${prefix} Title must be a non-empty string.`);
+    } else {
+      if (entry.title.length > 80) {
+        fail(`${prefix} Title exceeds 80 characters (${entry.title.length}): '${entry.title}'.`);
+      }
+      const titleLower = entry.title.toLowerCase();
+      for (const word of FORBIDDEN_TITLE_WORDS) {
+        // match whole word
+        const regex = new RegExp(`\\b${word}\\b`, 'i');
+        if (regex.test(titleLower)) {
+          fail(`${prefix} Title contains forbidden status word '${word}': '${entry.title}'.`);
+        }
+      }
+    }
+
+    // 4. Status validation
+    const validStatuses = ['active', 'superseded', 'frozen'];
+    if (!validStatuses.includes(entry.status)) {
+      fail(`${prefix} Invalid status '${entry.status}'. Must be one of: ${validStatuses.join(', ')}.`);
+    }
+
+    // 5. Path & File on disk validation
+    if (!entry.path || typeof entry.path !== 'string') {
+      fail(`${prefix} Path must be a non-empty string.`);
+    } else {
+      const fullPath = resolve(root, entry.path);
+      if (seenPaths.has(entry.path)) {
+        fail(`${prefix} Duplicate path in registry: '${entry.path}'.`);
+      }
+      seenPaths.add(entry.path);
+
+      if (!existsSync(fullPath)) {
+        fail(`${prefix} Document file not found on disk: '${entry.path}'.`);
+      } else {
+        const fileContent = readFileSync(fullPath, 'utf8');
+
+        // Check frozen sha256
+        if (entry.status === 'frozen') {
+          if (!entry.sha256) {
+            fail(`${prefix} Frozen document '${entry.id}' is missing sha256 checksum.`);
+          } else {
+            const actualSha = createHash('sha256').update(fileContent).digest('hex');
+            if (actualSha !== entry.sha256) {
+              fail(
+                `${prefix} Frozen document '${entry.path}' modified! Expected ${entry.sha256}, got ${actualSha}.`
+              );
+            }
+          }
+        }
+
+        // Non-legacy filename and H1 format checks (Class H, P, G, and Class A >= A013)
+        const isLegacy = entry.class === 'L' || (entry.class === 'A' && parseInt(entry.id.slice(1), 10) <= 12);
+        if (!isLegacy) {
+          const fileBase = basename(entry.path);
+          const slugMatch = fileBase.match(/^([A-Z]\d{3})-([a-z0-9-]+)\.md$/);
+          if (!slugMatch) {
+            fail(
+              `${prefix} Filename '${fileBase}' must match '<ID>-<slug>.md' (lowercase kebab-case).`
+            );
+          } else {
+            if (slugMatch[1] !== entry.id) {
+              fail(`${prefix} Filename ID prefix '${slugMatch[1]}' does not match entry ID '${entry.id}'.`);
+            }
+            const slug = slugMatch[2];
+            const words = slug.split('-');
+            if (words.length < 2 || words.length > 8) {
+              fail(`${prefix} Slug '${slug}' must contain 2 to 8 words (got ${words.length}).`);
+            }
+            if (slug.length > 60) {
+              fail(`${prefix} Slug '${slug}' exceeds 60 characters (${slug.length}).`);
+            }
+          }
+
+          // H1 Check: First non-empty markdown heading
+          const lines = fileContent.split('\n');
+          const firstH1Line = lines.find((l) => l.trim().startsWith('# '));
+          if (!firstH1Line) {
+            fail(`${prefix} File '${entry.path}' is missing a level-1 heading (#).`);
+          } else {
+            const expectedH1 = `# ${entry.id} — ${entry.title}`;
+            if (firstH1Line.trim() !== expectedH1) {
+              fail(
+                `${prefix} Heading mismatch in '${entry.path}':\n  Expected: '${expectedH1}'\n  Found:    '${firstH1Line.trim()}'`
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 6. Sequence continuity check (no gaps in any class sequence)
+  for (const [cls, seq] of Object.entries(classSequences)) {
+    if (seq.length === 0) continue;
+    seq.sort((a, b) => a - b);
+    for (let i = 0; i < seq.length; i++) {
+      const expected = i + 1;
+      if (seq[i] !== expected) {
+        fail(
+          `Class ${cls} sequence has a gap or invalid starting number: expected ${String(expected).padStart(3, '0')}, found ${String(seq[i]).padStart(3, '0')}.`
+        );
+        break;
+      }
+    }
+  }
+
+  // 7. Completeness: Ensure all .md files under docs/ are registered
+  function collectMarkdownFiles(dir) {
+    const list = [];
+    for (const item of readdirSync(dir)) {
+      if (item === '.DS_Store' || item === 'node_modules') continue;
+      const full = resolve(dir, item);
+      if (statSync(full).isDirectory()) {
+        list.push(...collectMarkdownFiles(full));
+      } else if (item.endsWith('.md')) {
+        list.push(full);
+      }
+    }
+    return list;
+  }
+
+  if (existsSync(docsDir)) {
+    const allDocFiles = collectMarkdownFiles(docsDir);
+    for (const docFile of allDocFiles) {
+      const relDocPath = relative(root, docFile);
+      // Exclude generated docs/INDEX.md
+      if (relDocPath === 'docs/INDEX.md') continue;
+
+      if (!seenPaths.has(relDocPath)) {
+        fail(`Unindexed markdown document found under docs/: '${relDocPath}' is not in docs/doc-registry.json.`);
+      }
+    }
+  }
+
+  // 8. INDEX drift verification
+  if (!existsSync(indexPath)) {
+    fail(`Generated index missing: ${relative(root, indexPath)}. Run 'pnpm docs:index'.`);
+  } else {
+    const actualIndex = readFileSync(indexPath, 'utf8');
+    const expectedIndex = generateIndexContent(registry);
+    if (actualIndex !== expectedIndex) {
+      fail('docs/INDEX.md has drifted from docs/doc-registry.json! Run "pnpm docs:index" to synchronize.');
+    }
+  }
+
+  return { ok: errors.length === 0, errors, count: registry.length };
+}
+
+if (process.argv[1] && process.argv[1].endsWith('docs-check')) {
+  const args = process.argv.slice(2);
+  let root = ROOT;
+  const rootIdx = args.indexOf('--root');
+  if (rootIdx !== -1 && args[rootIdx + 1]) {
+    root = resolve(process.cwd(), args[rootIdx + 1]);
+  }
+  let registryPath;
+  const regIdx = args.indexOf('--registry');
+  if (regIdx !== -1 && args[regIdx + 1]) {
+    registryPath = resolve(process.cwd(), args[regIdx + 1]);
+  }
+  let indexPath;
+  const idxIdx = args.indexOf('--index');
+  if (idxIdx !== -1 && args[idxIdx + 1]) {
+    indexPath = resolve(process.cwd(), args[idxIdx + 1]);
+  }
+  let docsDir;
+  const docsIdx = args.indexOf('--docs-dir');
+  if (docsIdx !== -1 && args[docsIdx + 1]) {
+    docsDir = resolve(process.cwd(), args[docsIdx + 1]);
+  }
+
+  console.log('=== Living Portfolio Documentation Identity Check (IAHP PROC-1) ===\n');
+  const result = validateDocs({ root, registryPath, indexPath, docsDir });
+  if (result.ok) {
+    console.log(`✓ All ${result.count} registered documents validated.`);
+    console.log('✓ Class sequence continuity, H1 titles, frozen checksums, and INDEX drift verified.\n');
+    console.log('🎉 docs-check PASSED.');
+    process.exit(0);
+  } else {
+    console.error(`✗ docs-check FAILED with ${result.errors.length} error(s):\n`);
+    for (const err of result.errors) {
+      console.error(`  - ${err}`);
+    }
+    process.exit(1);
+  }
+}
