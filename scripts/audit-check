@@ -67,6 +67,10 @@ const requiredPaths = [
   'scripts/docs-index',
   'scripts/handover-check',
   'scripts/handover-verify',
+  'scripts/handover-facts',
+  'scripts/changed-scope',
+  'scripts/triage',
+  'docs/plans/gates.json',
   'LICENSE',
   'THIRD_PARTY_NOTICES',
   'DCO',
@@ -396,6 +400,14 @@ try {
   pass('[IAHP-PROC-1] Documentation registry, class sequences, H1 matching, frozen checksums, and INDEX verified.');
 } catch (err) {
   fail('[IAHP-PROC-1] Documentation identity check failed (scripts/docs-check).');
+}
+
+// 11. Autonomous Triage Gate (scripts/triage, HO-1b)
+try {
+  execSync('node scripts/triage', { cwd: ROOT, stdio: 'inherit' });
+  pass('[HO-1b] Autonomous triage gate passed.');
+} catch (err) {
+  fail('[HO-1b] Autonomous triage check failed (scripts/triage).');
 }
 
 if (errors.length > 0) {
