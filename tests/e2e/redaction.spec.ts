@@ -81,4 +81,73 @@ test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview
     await expect(banner.locator('.as-of-banner')).toBeVisible();
     await expect(banner).toContainText('Published "Excluded Project Notes" at L0');
   });
+
+  test('2. Signed preview token flows end to end, surfaces in UI, invalidates on body edit, and gates publication (UX-03, UX-04, WP-1 Task 4)', async ({ page }) => {
+    await ensureAdminLoggedIn(page);
+    await expect(page).toHaveURL(/\/admin$/);
+
+    const redactBtn = page.locator('#btn-redaction-check');
+    const redactBox = page.locator('#redaction-preview-box');
+    const bodyInput = page.locator('#entry-body');
+    const tokenInput = page.locator('#entry-preview-token');
+    const publishBtn = page.locator('#btn-publish-entry');
+    const banner = page.locator('#admin-status-banner');
+
+    // 1. Initial form fill without clicking "Preview Redaction"
+    await page.fill('#entry-title', 'Preview Token Lifecycle Entry');
+    await page.fill('#entry-slug', 'preview-token-lifecycle');
+    await page.fill('#entry-date', '2026-02-01');
+    await bodyInput.fill('Initial unverified technical draft discussing kernel scheduling.');
+
+    // Assert preview token hidden input is initially empty
+    await expect(tokenInput).toHaveValue('');
+
+    // 2. Publish Gate: publish is blocked without a token
+    await publishBtn.click();
+    await expect(banner.locator('[data-gate="preview-token"]')).toBeVisible();
+    await expect(banner).toContainText('Redaction preview check is required before publishing');
+    await expect(banner).not.toContainText('Published');
+
+    // 3. User clicks "Preview Redaction (§4.3)" -> signed preview token is acquired and surfaced in UI
+    await redactBtn.click();
+    await expect(redactBox.locator('[data-state="clean"]')).toBeVisible();
+    const tokenBadge = redactBox.locator('#preview-token-badge');
+    await expect(tokenBadge).toBeVisible();
+    await expect(tokenBadge).toContainText('Signed preview token:');
+
+    // Token value is populated in form hidden input
+    const issuedToken = await tokenInput.inputValue();
+    expect(issuedToken).toBeTruthy();
+    expect(issuedToken.length).toBeGreaterThan(20);
+
+    // 4. Token invalidated after a body edit
+    await bodyInput.type(' An additional paragraph was appended here.');
+    // Badge is removed, status announces invalidation, hidden token is cleared
+    await expect(tokenBadge).toHaveCount(0);
+    await expect(tokenInput).toHaveValue('');
+    await expect(redactBox.locator('[data-state="invalidated"]')).toBeVisible();
+    await expect(redactBox).toContainText('Body edited since last check — preview token invalidated');
+
+    // 5. Attempting to publish with invalidated token is blocked
+    await publishBtn.click();
+    await expect(banner.locator('[data-gate="preview-token"]')).toBeVisible();
+    await expect(banner).toContainText('Redaction preview check is required before publishing');
+
+    // 6. Re-run preview check -> acquires new signed preview token
+    await redactBtn.click();
+    await expect(redactBox.locator('[data-state="clean"]')).toBeVisible();
+    const newTokenBadge = redactBox.locator('#preview-token-badge');
+    await expect(newTokenBadge).toBeVisible();
+    const reissuedToken = await tokenInput.inputValue();
+    expect(reissuedToken).toBeTruthy();
+    expect(reissuedToken.length).toBeGreaterThan(20);
+
+    // 7. Publish succeeds with valid token
+    await publishBtn.click();
+    await expect(banner.locator('.as-of-banner')).toBeVisible();
+    await expect(banner).toContainText('Published "Preview Token Lifecycle Entry" at L0');
+
+    // Token is consumed/cleared after publication
+    await expect(tokenInput).toHaveValue('');
+  });
 });
