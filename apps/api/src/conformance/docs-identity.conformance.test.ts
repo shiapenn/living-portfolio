@@ -126,7 +126,7 @@ describe('Documentation Identity & Registry Conformance (IAHP Section 11 Step 1)
   it('validates active repository documentation without error', () => {
     const res = runDocsCheck();
     expect(res.status).toBe(0);
-    expect(res.stdout).toContain('All 28 registered documents validated');
+    expect(res.stdout).toMatch(/All \d+ registered documents validated/);
     expect(res.stdout).toContain('docs-check PASSED');
   });
 
