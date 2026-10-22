@@ -306,6 +306,14 @@
     "supersedes": null
   },
   {
+    "id": "A020",
+    "title": "WP-2.3: pg-boss Background Worker & Temporal Bisimulation Engine",
+    "class": "A",
+    "path": "docs/execution-reports/A020-wp2-3-worker-pgboss.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
     "id": "H002",
     "title": "WP-1 Gate Closure and WP-2 Kickoff",
     "class": "H",
