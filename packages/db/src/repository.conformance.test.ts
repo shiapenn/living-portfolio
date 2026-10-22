@@ -443,6 +443,135 @@ export function defineRepositoryConformanceTests(
       const facetsAfter = await repo.getFacetsForEntry(entry.id);
       expect(facetsAfter.length).toBe(0);
     });
+
+    // --- Vector Embeddings Storage (§8, Fix 8, P3) ---
+    it('saves, queries, and retrieves chunk vectors per revision and span (§8, Fix 8, P3)', async () => {
+      const slug = `vector-${name.toLowerCase()}-${Date.now()}`;
+      const { entry, revision } = await repo.createEntry(
+        { slug, title: 'Vector Test', visibility: 'public' },
+        { body_md: 'Vector embedding conformance testing.', body_hash: 'h-vec' }
+      );
+
+      const [span] = await repo.saveSpans([
+        { revision_id: revision.id, ordinal: 0, start_off: 0, end_off: 30, text_exact: 'Vector embedding conformance', token_count: 3 },
+      ]);
+
+      const testVector = new Array(384).fill(0).map((_, i) => Number((Math.sin(i) * 0.1).toFixed(4)));
+
+      const [savedVec] = await repo.saveChunkVectors([
+        {
+          chunk_id: span.id,
+          vector: testVector,
+          text_snippet: span.text_exact,
+          model_id: 'local-onnx/bge-small-en-v1.5',
+          model_version: '1.5.0',
+          dim: 384,
+        },
+      ]);
+
+      expect(savedVec.id).toBeDefined();
+      expect(savedVec.chunk_id).toBe(span.id);
+      expect(savedVec.vector.length).toBe(384);
+
+      // Query by chunk
+      const byChunk = await repo.getChunkVectors(span.id);
+      expect(byChunk.length).toBe(1);
+      expect(byChunk[0].id).toBe(savedVec.id);
+
+      // Query by revision
+      const byRev = await repo.getChunkVectorsForRevision(revision.id);
+      expect(byRev.length).toBe(1);
+      expect(byRev[0].id).toBe(savedVec.id);
+
+      // Cleanup
+      await repo.deleteEntry(entry.id);
+    });
+
+    // --- Temporal Bisimulation (§10.4, Fix 1, OSR-14) ---
+    it('preserves strict temporal bisimulation and hindsight exclusion across engines (§10.4, Fix 1, OSR-14)', async () => {
+      const slug = `temporal-${name.toLowerCase()}-${Date.now()}`;
+      const { entry, revision: rev1 } = await repo.createEntry(
+        { slug, title: 'Temporal Bisimulation Entry', visibility: 'public' },
+        {
+          body_md: 'Historical revision 1 content.',
+          body_hash: 'h-temp-1',
+          written_at: '2024-01-01T00:00:00.000Z',
+          valid_from: '2024-01-01T00:00:00.000Z',
+          valid_to: '2024-06-01T00:00:00.000Z',
+          temporal_level: 'exact',
+          is_hindsight: false,
+        }
+      );
+
+      await repo.saveSpans([
+        { revision_id: rev1.id, ordinal: 0, start_off: 0, end_off: 30, text_exact: 'Historical revision 1 content.', token_count: 4 },
+      ]);
+
+      const claimA = await repo.saveClaim({
+        revision_id: rev1.id,
+        text: 'Claim established in early 2024.',
+        kind: 'fact',
+        source: 'owner',
+        status: 'accepted',
+        valid_from: '2024-01-01T00:00:00.000Z',
+        is_hindsight: false,
+      });
+
+      // Create future hindsight revision
+      const rev2 = await repo.createRevision(entry.id, {
+        body_md: 'Hindsight revision 2 content looking back.',
+        body_hash: 'h-temp-2',
+        written_at: '2025-01-01T00:00:00.000Z',
+        valid_from: '2025-01-01T00:00:00.000Z',
+        valid_to: null,
+        temporal_level: 'exact',
+        is_hindsight: true,
+      });
+
+      await repo.saveSpans([
+        { revision_id: rev2.id, ordinal: 0, start_off: 0, end_off: 40, text_exact: 'Hindsight revision 2 content looking back.', token_count: 6 },
+      ]);
+
+      const claimB = await repo.saveClaim({
+        revision_id: rev2.id,
+        text: 'Hindsight realization recorded in 2025.',
+        kind: 'lesson',
+        source: 'owner',
+        status: 'accepted',
+        valid_from: '2025-01-01T00:00:00.000Z',
+        is_hindsight: true,
+      });
+
+      await repo.saveRelation({
+        src_claim: claimA.id,
+        dst_claim: claimB.id,
+        type: 'supersedes',
+        status: 'accepted',
+        valid_from: '2025-01-01T00:00:00.000Z',
+      });
+
+      // Query as of 2024-03-01 -> only historical Claim A is valid; future hindsight Claim B is excluded
+      const expanded2024 = await repo.temporalExpand({
+        seed_claim_ids: [claimA.id],
+        t_q: new Date('2024-03-01T00:00:00.000Z'),
+        max_hops: 2,
+      });
+
+      expect(expanded2024.map((c) => c.id)).toContain(claimA.id);
+      expect(expanded2024.map((c) => c.id)).not.toContain(claimB.id);
+
+      // Search as of 2024-03-01 -> matches Rev 1, excludes future Rev 2
+      const search2024 = await repo.hybridSearch('content', {
+        visibility: ['public'],
+        as_of_date: new Date('2024-03-01T00:00:00.000Z'),
+      });
+      const matching = search2024.filter((r) => r.entry.id === entry.id);
+      expect(matching.length).toBeGreaterThan(0);
+      expect(matching[0].revision.id).toBe(rev1.id);
+
+      // Cleanup
+      await repo.deleteEntry(entry.id);
+    });
   });
 }
 

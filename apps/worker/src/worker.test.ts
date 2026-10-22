@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
+import { InMemoryPortfolioRepository } from '@living-portfolio/db';
 import { PortfolioWorker } from './worker.js';
 
 describe('PortfolioWorker Pipeline (§8, §13.7, §13.9, §15)', () => {
-  it('ingests an entry at L0, embeds spans, and enriches with machine-suggested structure', async () => {
-    const worker = new PortfolioWorker();
+  it('ingests an entry at L0, embeds spans with vector persistence, and enriches with machine-suggested structure', async () => {
+    const repo = new InMemoryPortfolioRepository();
+    const worker = new PortfolioWorker({ repo });
 
     // 1. Ingest
     const ingestResult = await worker.runIngestJob({
@@ -19,10 +21,15 @@ describe('PortfolioWorker Pipeline (§8, §13.7, §13.9, §15)', () => {
     expect(ingestResult.structureLevel).toBe('L0');
     expect(ingestResult.spans.length).toBeGreaterThan(0);
 
-    // 2. Embed
+    // 2. Embed with persistence (Fix 8, P3)
     const embedResult = await worker.runEmbedJob(ingestResult.revision.id);
     expect(embedResult.embeddedCount).toBe(ingestResult.spans.length);
+    expect(embedResult.savedVectorsCount).toBe(ingestResult.spans.length);
     expect(embedResult.dim).toBe(384);
+
+    const savedChunkVectors = await repo.getChunkVectorsForRevision(ingestResult.revision.id);
+    expect(savedChunkVectors.length).toBe(ingestResult.spans.length);
+    expect(savedChunkVectors[0].vector.length).toBe(384);
 
     // 3. Enrich (all outputs must be machine suggestions)
     const enrichResult = await worker.runEnrichJob(ingestResult.entry.id, ingestResult.revision.id);

@@ -17,7 +17,7 @@ import type {
 } from '@living-portfolio/core';
 import { isTemporallyValid } from '@living-portfolio/core';
 import { eq, inArray, desc, and, or, sql } from 'drizzle-orm';
-import type { IPortfolioRepository, SearchResult, TemporalExpandOptions } from './repository.js';
+import type { IPortfolioRepository, SearchResult, TemporalExpandOptions, ChunkVectorRecord } from './repository.js';
 import { createDrizzleDb, getDefaultDb, type LivingPortfolioDb } from './connection.js';
 import * as schema from './schema/index.js';
 
@@ -1013,8 +1013,9 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
   }
 
   async temporalExpand(options: TemporalExpandOptions): Promise<Claim[]> {
-    const hops = options.hops ?? 2;
-    const visitedClaimIds = new Set<string>(options.seedClaimIds);
+    const hops = options.hops ?? options.max_hops ?? 2;
+    const seeds = options.seedClaimIds ?? options.seed_claim_ids ?? [];
+    const visitedClaimIds = new Set<string>(seeds);
     let frontier = Array.from(visitedClaimIds);
 
     for (let hop = 0; hop < hops; hop++) {
@@ -1069,5 +1070,115 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     }
 
     return validClaims;
+  }
+
+  // --- Vectors & Embeddings (§8, Fix 8, P3) ---
+  private defaultEmbeddingSetId: string | null = null;
+
+  private async getOrCreateDefaultEmbeddingSet(
+    modelId = 'local-onnx/bge-small-en-v1.5',
+    modelVersion = '1.5.0',
+    dim = 384
+  ): Promise<string> {
+    if (this.defaultEmbeddingSetId) return this.defaultEmbeddingSetId;
+
+    const existing = await this.db
+      .select()
+      .from(schema.embeddingSets)
+      .where(eq(schema.embeddingSets.model_id, modelId))
+      .limit(1);
+
+    if (existing.length > 0) {
+      this.defaultEmbeddingSetId = existing[0].id;
+      return existing[0].id;
+    }
+
+    const [created] = await this.db
+      .insert(schema.embeddingSets)
+      .values({
+        model_id: modelId,
+        model_version: modelVersion,
+        dim,
+        status: 'active',
+      })
+      .returning();
+
+    this.defaultEmbeddingSetId = created.id;
+    return created.id;
+  }
+
+  async saveChunkVectors(vectors: Array<{
+    chunk_id: string;
+    vector: number[];
+    text_snippet: string;
+    model_id?: string;
+    model_version?: string;
+    dim?: number;
+  }>): Promise<ChunkVectorRecord[]> {
+    if (vectors.length === 0) return [];
+
+    const embeddingSetId = await this.getOrCreateDefaultEmbeddingSet(
+      vectors[0].model_id,
+      vectors[0].model_version,
+      vectors[0].dim
+    );
+
+    const values = vectors.map((v) => ({
+      chunk_id: v.chunk_id,
+      embedding_set_id: embeddingSetId,
+      vector: v.vector,
+      text_snippet: v.text_snippet,
+    }));
+
+    const rows = await this.db
+      .insert(schema.chunkVectors)
+      .values(values)
+      .returning();
+
+    return rows.map((r) => ({
+      id: r.id,
+      chunk_id: r.chunk_id,
+      vector: r.vector,
+      text_snippet: r.text_snippet,
+      embedding_set_id: r.embedding_set_id,
+    }));
+  }
+
+  async getChunkVectors(chunk_id: string): Promise<ChunkVectorRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(schema.chunkVectors)
+      .where(eq(schema.chunkVectors.chunk_id, chunk_id));
+
+    return rows.map((r) => ({
+      id: r.id,
+      chunk_id: r.chunk_id,
+      vector: r.vector,
+      text_snippet: r.text_snippet,
+      embedding_set_id: r.embedding_set_id,
+    }));
+  }
+
+  async getChunkVectorsForRevision(revision_id: string): Promise<ChunkVectorRecord[]> {
+    const spanRows = await this.db
+      .select({ id: schema.spans.id })
+      .from(schema.spans)
+      .where(eq(schema.spans.revision_id, revision_id));
+
+    if (spanRows.length === 0) return [];
+    const spanIds = spanRows.map((s) => s.id);
+
+    const rows = await this.db
+      .select()
+      .from(schema.chunkVectors)
+      .where(inArray(schema.chunkVectors.chunk_id, spanIds));
+
+    return rows.map((r) => ({
+      id: r.id,
+      chunk_id: r.chunk_id,
+      vector: r.vector,
+      text_snippet: r.text_snippet,
+      embedding_set_id: r.embedding_set_id,
+    }));
   }
 }

@@ -28,9 +28,11 @@ export interface SearchResult {
 }
 
 export interface TemporalExpandOptions {
-  seedClaimIds: string[];
+  seedClaimIds?: string[];
+  seed_claim_ids?: string[];
   t_q: string | Date;
   hops?: number; // default 2
+  max_hops?: number;
 }
 
 export interface IPortfolioRepository {
@@ -99,6 +101,26 @@ export interface IPortfolioRepository {
   }): Promise<SearchResult[]>;
 
   temporalExpand(options: TemporalExpandOptions): Promise<Claim[]>;
+
+  // Vectors & Embeddings (§8, Fix 8, P3)
+  saveChunkVectors(vectors: Array<{
+    chunk_id: string;
+    vector: number[];
+    text_snippet: string;
+    model_id?: string;
+    model_version?: string;
+    dim?: number;
+  }>): Promise<ChunkVectorRecord[]>;
+  getChunkVectors(chunk_id: string): Promise<ChunkVectorRecord[]>;
+  getChunkVectorsForRevision(revision_id: string): Promise<ChunkVectorRecord[]>;
+}
+
+export interface ChunkVectorRecord {
+  id: string;
+  chunk_id: string;
+  vector: number[];
+  text_snippet: string;
+  embedding_set_id?: string;
 }
 
 /**
@@ -120,6 +142,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   private correctionLogs = new Map<string, CorrectionLog>();
   private calibrationChanges = new Map<string, CalibrationChange>();
   private scopedConstraints = new Map<string, ScopedConstraint>();
+  private chunkVectors = new Map<string, ChunkVectorRecord>();
 
   async createVenture(v: Omit<Venture, 'id'>): Promise<Venture> {
     const id = crypto.randomUUID();
@@ -582,9 +605,11 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
    * Expands seed claims across valid active relations up to N hops.
    */
   async temporalExpand(options: TemporalExpandOptions): Promise<Claim[]> {
-    const { seedClaimIds, t_q, hops = 2 } = options;
-    const visited = new Set<string>(seedClaimIds);
-    let frontier = new Set<string>(seedClaimIds);
+    const seeds = options.seedClaimIds ?? options.seed_claim_ids ?? [];
+    const hops = options.hops ?? options.max_hops ?? 2;
+    const { t_q } = options;
+    const visited = new Set<string>(seeds);
+    let frontier = new Set<string>(seeds);
 
     for (let hop = 0; hop < hops; hop++) {
       const nextFrontier = new Set<string>();
@@ -620,5 +645,40 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     return Array.from(visited)
       .map((id) => this.claims.get(id))
       .filter((c): c is Claim => c != null);
+  }
+
+  // --- Vectors & Embeddings (§8, Fix 8, P3) ---
+  async saveChunkVectors(vectors: Array<{
+    chunk_id: string;
+    vector: number[];
+    text_snippet: string;
+    model_id?: string;
+    model_version?: string;
+    dim?: number;
+  }>): Promise<ChunkVectorRecord[]> {
+    const results: ChunkVectorRecord[] = [];
+    for (const v of vectors) {
+      const id = crypto.randomUUID();
+      const rec: ChunkVectorRecord = {
+        id,
+        chunk_id: v.chunk_id,
+        vector: v.vector,
+        text_snippet: v.text_snippet,
+        embedding_set_id: 'in-memory-embedding-set',
+      };
+      this.chunkVectors.set(id, rec);
+      results.push(rec);
+    }
+    return results;
+  }
+
+  async getChunkVectors(chunk_id: string): Promise<ChunkVectorRecord[]> {
+    return Array.from(this.chunkVectors.values()).filter((v) => v.chunk_id === chunk_id);
+  }
+
+  async getChunkVectorsForRevision(revision_id: string): Promise<ChunkVectorRecord[]> {
+    const revisionSpans = await this.getSpans(revision_id);
+    const spanIds = new Set(revisionSpans.map((s) => s.id));
+    return Array.from(this.chunkVectors.values()).filter((v) => spanIds.has(v.chunk_id));
   }
 }
