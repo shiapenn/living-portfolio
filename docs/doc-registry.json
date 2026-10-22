@@ -256,5 +256,13 @@
     "path": "docs/execution-reports/A014-wp1-publish-flow-preview-token.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A015",
+    "title": "WP-1 Task 5: Config-Driven Provider Registry & Extractive Degradation",
+    "class": "A",
+    "path": "docs/execution-reports/A015-wp1-provider-registry-extractive-degradation.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
