@@ -14,8 +14,13 @@ import {
 } from '@living-portfolio/core';
 import { scanForConfidentialData } from '@living-portfolio/ai';
 import { AuthManager, sha256Hex } from '../auth/security.js';
+import type { RuntimeSettingsState } from './settings.js';
 
-export function createEntriesRoutes(repo: IPortfolioRepository, auth: AuthManager) {
+export function createEntriesRoutes(
+  repo: IPortfolioRepository,
+  auth: AuthManager,
+  settingsState?: RuntimeSettingsState
+) {
   const router = new Hono();
 
   // List entries with computed structure levels and facets
@@ -86,18 +91,25 @@ export function createEntriesRoutes(repo: IPortfolioRepository, auth: AuthManage
 
   // Redaction preview & signed confirmation token issuer (Protected admin route, C.4)
   router.post('/redaction-preview', auth.requireAdminMiddleware(), async (c) => {
-    const { entryId, text } = await c.req.json();
+    const { entryId, text, exclusions } = await c.req.json();
     if (typeof text !== 'string') {
       return c.json({ error: 'Text string required' }, 400);
     }
-    const warnings = scanForConfidentialData(text);
+    const effectiveExclusions = Array.isArray(exclusions)
+      ? exclusions
+      : (settingsState?.redactionExclusions ?? undefined);
+    const warnings = scanForConfidentialData(text, effectiveExclusions);
+    const state = warnings.length === 0 ? 'clean' : 'needs review';
     const { token, payload } = auth.issueRedactionPreviewToken({
       entryId: typeof entryId === 'string' && entryId ? entryId : 'draft',
       bodyMd: text,
       warnings,
     });
     return c.json({
+      state,
+      clean: warnings.length === 0,
       warnings,
+      exclusionsMatched: warnings.filter((w) => w.type === 'exclusion' || w.type === 'client'),
       redactionPreviewToken: token,
       tokenPayload: payload,
     });
@@ -190,7 +202,8 @@ export function createEntriesRoutes(repo: IPortfolioRepository, auth: AuthManage
 
     // Server-side publish gate (UX P0-3, Fix 2 / S2): public entries require a valid signed redactionPreviewToken
     if (data.visibility === 'public') {
-      const warnings = scanForConfidentialData(data.body_md);
+      const effectiveExclusions = settingsState?.redactionExclusions;
+      const warnings = scanForConfidentialData(data.body_md, effectiveExclusions);
       const tokenCheck = auth.verifyRedactionPreviewToken(body.redactionPreviewToken, {
         entryId: 'draft',
         bodyMd: data.body_md,
@@ -201,6 +214,18 @@ export function createEntriesRoutes(repo: IPortfolioRepository, auth: AuthManage
           {
             error: 'Redaction preview confirmation required before publishing as public',
             reason: tokenCheck.reason,
+          },
+          400
+        );
+      }
+
+      // Mandatory NDA question (§4.3, UX P0-3): if warnings or confidential terms are detected,
+      // nda_confirmed must be explicitly true.
+      if (warnings.length > 0 && body.nda_confirmed !== true) {
+        return c.json(
+          {
+            error: 'Confidentiality & NDA confirmation required when potential secrets or exclusions are flagged before publishing as public',
+            warningsCount: warnings.length,
           },
           400
         );
@@ -232,7 +257,7 @@ export function createEntriesRoutes(repo: IPortfolioRepository, auth: AuthManage
 
     const chunks = chunkMarkdown(revision.id, data.body_md);
     const savedSpans = await repo.saveSpans(chunks);
-    const redactionWarnings = scanForConfidentialData(data.body_md);
+    const redactionWarnings = scanForConfidentialData(data.body_md, settingsState?.redactionExclusions);
     const { token: redactionPreviewToken } = auth.issueRedactionPreviewToken({
       entryId: entry.id,
       bodyMd: data.body_md,
@@ -268,7 +293,8 @@ export function createEntriesRoutes(repo: IPortfolioRepository, auth: AuthManage
 
     if (parsed.data.visibility === 'public' && existing.entry.visibility !== 'public') {
       const currentBody = existing.currentRevision.body_md;
-      const warnings = scanForConfidentialData(currentBody);
+      const effectiveExclusions = settingsState?.redactionExclusions;
+      const warnings = scanForConfidentialData(currentBody, effectiveExclusions);
       const tokenCheck = auth.verifyRedactionPreviewToken(body.redactionPreviewToken, {
         entryId: id,
         bodyMd: currentBody,
@@ -279,6 +305,18 @@ export function createEntriesRoutes(repo: IPortfolioRepository, auth: AuthManage
           {
             error: 'Redaction preview confirmation required before changing visibility to public',
             reason: tokenCheck.reason,
+          },
+          400
+        );
+      }
+
+      // Mandatory NDA question (§4.3, UX P0-3): if warnings or confidential terms are detected,
+      // nda_confirmed must be explicitly true.
+      if (warnings.length > 0 && body.nda_confirmed !== true) {
+        return c.json(
+          {
+            error: 'Confidentiality & NDA confirmation required when potential secrets or exclusions are flagged before changing visibility to public',
+            warningsCount: warnings.length,
           },
           400
         );

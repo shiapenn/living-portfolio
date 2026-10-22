@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import type { IPortfolioRepository } from '@living-portfolio/db';
 import { DEFAULT_STRATA_THEME, verifyThemeConformance } from '@living-portfolio/core';
+import { getDefaultExclusions } from '@living-portfolio/ai';
 
 export interface RuntimeSettingsState {
   automatedAnsweringEnabled: boolean;
@@ -11,6 +12,7 @@ export interface RuntimeSettingsState {
   facet_known_threshold: number;
   setupWizardCompleted: boolean;
   theme: typeof DEFAULT_STRATA_THEME;
+  redactionExclusions?: string[];
 }
 
 export function createSettingsRoutes(
@@ -29,7 +31,12 @@ export function createSettingsRoutes(
     facet_known_threshold: 0.9,
     setupWizardCompleted: false,
     theme: structuredClone(DEFAULT_STRATA_THEME),
+    redactionExclusions: getDefaultExclusions(),
   };
+
+  if (!state.redactionExclusions) {
+    state.redactionExclusions = getDefaultExclusions();
+  }
 
   // Get current settings
   router.get('/', (c) => {
@@ -105,6 +112,25 @@ export function createSettingsRoutes(
       },
       theme: state.theme,
       themeConformance: verifyThemeConformance(state.theme),
+      redaction: {
+        exclusions: state.redactionExclusions ?? [],
+      },
+    });
+  });
+
+  // Update redaction exclusion list (§4.3, UX-03)
+  router.patch('/redaction', async (c) => {
+    const body = await c.req.json();
+    if (Array.isArray(body.exclusions)) {
+      state.redactionExclusions = body.exclusions
+        .map((s: unknown) => String(s).trim())
+        .filter(Boolean);
+    }
+    return c.json({
+      updated: true,
+      redaction: {
+        exclusions: state.redactionExclusions ?? [],
+      },
     });
   });
 

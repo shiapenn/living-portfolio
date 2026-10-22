@@ -117,6 +117,15 @@ export const CONFIG_SETTINGS_METADATA: readonly SettingMetadata[] = [
     public: false,
   },
   {
+    key: 'REDACTION_EXCLUSIONS_FILE',
+    category: 'deploy',
+    description: 'Path to confidential data exclusion list JSON file (§4.3, UX-03)',
+    defaultValue: 'data/redaction-exclusions.json',
+    exampleValue: 'data/redaction-exclusions.json',
+    secret: false,
+    public: false,
+  },
+  {
     key: 'S3_BACKUP_BUCKET',
     category: 'deploy',
     description: 'S3-compatible bucket name for encrypted backup archives (§13.9)',

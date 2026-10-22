@@ -83,4 +83,26 @@ describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redact
     expect(warnings.some((w) => w.type === 'email')).toBe(true);
     expect(warnings.some((w) => w.type === 'ip')).toBe(true);
   });
+
+  it('matches owner exclusion list loaded from data file and dynamic options without hardcoded literals (UX-03, §4.3)', () => {
+    // 1. Loaded from data/redaction-exclusions.json
+    const defaultExclusionText = 'Reviewing architecture for internal.corp.example.com and secret-project-alpha';
+    const defaultWarnings = scanForConfidentialData(defaultExclusionText);
+    expect(defaultWarnings.some((w) => w.type === 'exclusion' && w.match === 'internal.corp.example.com')).toBe(true);
+    expect(defaultWarnings.some((w) => w.type === 'exclusion' && w.match === 'secret-project-alpha')).toBe(true);
+
+    // 2. Custom exclusion list passed via options
+    const customWarnings = scanForConfidentialData('Working on Project-Starlight for Client Omega', {
+      exclusions: ['Project-Starlight', 'Client Omega'],
+    });
+    expect(customWarnings.some((w) => w.type === 'exclusion' && w.match === 'Project-Starlight')).toBe(true);
+    expect(customWarnings.some((w) => w.type === 'exclusion' && w.match === 'Client Omega')).toBe(true);
+
+    // 3. Word-boundary awareness (does not flag words that merely contain exclusion as substring)
+    const innocentText = 'The alpha project is unrelated to secrets';
+    const innocentWarnings = scanForConfidentialData(innocentText, {
+      exclusions: ['secret-project-alpha'],
+    });
+    expect(innocentWarnings.some((w) => w.match === 'secret-project-alpha')).toBe(false);
+  });
 });
