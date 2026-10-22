@@ -9,6 +9,7 @@
 import { readFileSync, statSync, existsSync, readdirSync } from 'node:fs';
 import { resolve, relative, basename } from 'node:path';
 import { execSync } from 'node:child_process';
+import { parse as parseYaml } from '../packages/core/node_modules/yaml/browser/index.js';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const MAX_LINES = 300;
@@ -137,6 +138,9 @@ export function validateHandover(filePathOrId, options = {}) {
   }
   const handoverId = h1Match ? h1Match[1] : null;
 
+  const hNumMatch = handoverId ? handoverId.match(/^H(\d{3})$/) : null;
+  const hNum = hNumMatch ? parseInt(hNumMatch[1], 10) : 0;
+
   // 4. Header table checks
   const headerFields = {
     'Handover ID': null,
@@ -158,6 +162,27 @@ export function validateHandover(filePathOrId, options = {}) {
       const val = parts[1];
       if (field in headerFields) {
         headerFields[field] = val;
+      }
+    }
+  }
+
+  // Reject Verified By and human verification claims from H002 onward
+  if (hNum >= 2) {
+    for (const line of headerTableLines) {
+      if (/\|\s*Verified By\s*\|/i.test(line)) {
+        fail('"Verified By" is forbidden in handover headers from H002 onward.');
+      }
+    }
+
+    const forbiddenHumanClaims = [
+      /\bverified\s+by\s+L\b/i,
+      /\bsign(?:ed)?[- ]off\s+by\s+L\b/i,
+      /\bL'?s?\s+sign[- ]off\b/i,
+      /\bhuman\s+(?:review\s+step|verification|sign-off|approval)\b/i,
+    ];
+    for (const pattern of forbiddenHumanClaims) {
+      if (pattern.test(content)) {
+        fail(`Handovers from H002 onward must not contain claims of human verification or sign-off (matched: ${pattern}).`);
       }
     }
   }
@@ -294,6 +319,88 @@ export function validateHandover(filePathOrId, options = {}) {
     const resolvedCandidate = resolve(root, candidate);
     if (!existsSync(resolvedCandidate)) {
       fail(`Referenced repository path does not exist on disk: '${candidate}'.`);
+    }
+  }
+
+  // 9. Additional verifications from H002 onward
+  if (hNum >= 2) {
+    // 9a. Header Evidence SHA must match Section 4 Git SHA
+    const sec4Match = content.match(/##\s+4\.\s+Active\s+workspace([\s\S]*?)(?=##\s+5|$)/i);
+    if (sec4Match) {
+      const sec4Text = sec4Match[1];
+      const shaMatch = sec4Text.match(/-\s+\*\*Git:\*\*\s*(?:`?main`?\s+at\s+)?`?([a-f0-9]{7,40})`?/i);
+      if (shaMatch) {
+        const sec4Sha = shaMatch[1].toLowerCase();
+        const cleanEvidenceSha = evidenceSha ? evidenceSha.toLowerCase() : '';
+        if (!cleanEvidenceSha.startsWith(sec4Sha) && !sec4Sha.startsWith(cleanEvidenceSha)) {
+          fail(`Header Evidence SHA ('${evidenceSha}') differs from Section 4 Git SHA ('${sec4Sha}').`);
+        }
+      } else {
+        fail('Section 4 Active workspace must declare Git main SHA matching Evidence SHA.');
+      }
+    }
+
+    // 9b. Tool versions from package.json
+    const packageJsonPath = resolve(root, 'package.json');
+    if (existsSync(packageJsonPath)) {
+      try {
+        const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
+        const expectedPnpm = pkg.packageManager ? pkg.packageManager.replace('pnpm@', '') : '12.14.0';
+        const expectedVitest = pkg.devDependencies?.vitest ? pkg.devDependencies.vitest.replace('^', '') : '3.0.7';
+        const expectedPlaywright = pkg.devDependencies?.['@playwright/test'] ? pkg.devDependencies['@playwright/test'].replace('^', '') : '1.64.1';
+        const expectedTurbo = pkg.devDependencies?.turbo ? pkg.devDependencies.turbo.replace('^', '') : '2.4.4';
+        const expectedTs = pkg.devDependencies?.typescript ? pkg.devDependencies.typescript.replace('^', '') : '5.7.3';
+
+        const pnpmMatch = content.match(/\bpnpm\s+([0-9]+\.[0-9]+\.[0-9]+)\b/i);
+        if (pnpmMatch && pnpmMatch[1] !== expectedPnpm) {
+          fail(`Handover cites pnpm ${pnpmMatch[1]}, which does not match package.json (${expectedPnpm}).`);
+        }
+        const vitestMatch = content.match(/\bvitest\s+([0-9]+\.[0-9]+\.[0-9]+)\b/i);
+        if (vitestMatch && vitestMatch[1] !== expectedVitest) {
+          fail(`Handover cites Vitest ${vitestMatch[1]}, which does not match package.json (${expectedVitest}).`);
+        }
+        const pwMatch = content.match(/\bplaywright\s+([0-9]+\.[0-9]+\.[0-9]+)\b/i);
+        if (pwMatch && pwMatch[1] !== expectedPlaywright) {
+          fail(`Handover cites Playwright ${pwMatch[1]}, which does not match package.json (${expectedPlaywright}).`);
+        }
+        const turboMatch = content.match(/\bturbo\s+([0-9]+\.[0-9]+\.[0-9]+)\b/i);
+        if (turboMatch && turboMatch[1] !== expectedTurbo) {
+          fail(`Handover cites Turbo ${turboMatch[1]}, which does not match package.json (${expectedTurbo}).`);
+        }
+        const tsMatch = content.match(/\btypescript\s+([0-9]+\.[0-9]+\.[0-9]+)\b/i);
+        if (tsMatch && tsMatch[1] !== expectedTs) {
+          fail(`Handover cites TypeScript ${tsMatch[1]}, which does not match package.json (${expectedTs}).`);
+        }
+      } catch (_) {}
+    }
+
+    // 9c. Register finding titles match docs/audits/register.yml
+    const registerPath = resolve(root, 'docs/audits/register.yml');
+    if (existsSync(registerPath)) {
+      try {
+        const rawYaml = readFileSync(registerPath, 'utf8');
+        const regData = parseYaml(rawYaml);
+        const regMap = new Map();
+        if (Array.isArray(regData)) {
+          for (const item of regData) {
+            if (item.id && item.title) {
+              regMap.set(item.id, item.title.trim());
+            }
+          }
+        }
+        const findingLineRegex = /-\s+`?([0-9]{8}-[A-Z0-9]+-[0-9]+|[SGBPFM]\d+|OSR-\d+)`?:\s*([^\n]+)/g;
+        let fMatch;
+        while ((fMatch = findingLineRegex.exec(content)) !== null) {
+          const fId = fMatch[1];
+          const citedTitle = fMatch[2].replace(/\s*\[(implemented|partial|not-started|simulated)\]\s*$/, '').trim();
+          if (regMap.has(fId)) {
+            const expectedTitle = regMap.get(fId);
+            if (citedTitle !== expectedTitle && !citedTitle.startsWith(expectedTitle)) {
+              fail(`Finding '${fId}' title in handover ('${citedTitle}') differs from register title ('${expectedTitle}').`);
+            }
+          }
+        }
+      } catch (_) {}
     }
   }
 

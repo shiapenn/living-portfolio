@@ -293,12 +293,43 @@ export function validateReceipt(reportPath, options = {}) {
 
   // (c) Header & Ancestor Checks
   const header = parseHeader(content);
-  const requiredHeaders = ['Report ID', 'Date', 'Author', 'Task ID', 'Evidence SHA', 'CI run', 'Verified By'];
+  const currentNumMatch = reportFileName.match(/A(\d{3})(?:-.*)?\.md$/);
+  const currentNum = currentNumMatch ? parseInt(currentNumMatch[1], 10) : 0;
+
+  const requiredHeaders = currentNum >= 17
+    ? ['Report ID', 'Date', 'Author', 'Task ID', 'Evidence SHA', 'CI run']
+    : ['Report ID', 'Date', 'Author', 'Task ID', 'Evidence SHA', 'CI run', 'Verified By'];
+
   for (const field of requiredHeaders) {
     if (!header[field]) {
       throw new Error(`[HEADER-CHECK] Mandatory header table field '${field}' is missing.`);
     }
   }
+
+  if (currentNum >= 17) {
+    if (header['Verified By']) {
+      throw new Error('[HEADER-CHECK] "Verified By" is forbidden in receipt headers from A017 onward.');
+    }
+    // Reject any claim of human verification or sign-off outside Section 7
+    const sec7Match = content.match(/##\s+7\.\s+Changes\s+to\s+Earlier\s+Reports([\s\S]*?)(?=##\s+8|$)/i);
+    const textWithoutSec7 = sec7Match ? content.replace(sec7Match[0], '') : content;
+
+    const forbiddenHumanClaims = [
+      /\bverified\s+by\s+L\b/i,
+      /\bsign(?:ed)?[- ]off\s+by\s+L\b/i,
+      /\bL'?s?\s+sign[- ]off\b/i,
+      /\bhuman\s+(?:review\s+step|verification|sign-off|approval)\b/i,
+    ];
+
+    for (const pattern of forbiddenHumanClaims) {
+      if (pattern.test(textWithoutSec7)) {
+        throw new Error(
+          `[HUMAN-VERIFICATION] Receipts from A017 onward must not contain claims of human verification or sign-off outside §7 errata (matched: ${pattern}).`
+        );
+      }
+    }
+  }
+
   console.log(`✓ [HEADER-CHECK] Mandatory headers verified (${requiredHeaders.length}/${requiredHeaders.length} present).`);
 
   const currentSha = cleanSha(header['Evidence SHA']);
@@ -314,7 +345,6 @@ export function validateReceipt(reportPath, options = {}) {
   }
 
   // (a) Files Touched vs Git Diff
-  const currentNumMatch = reportFileName.match(/A(\d{3})(?:-.*)?\.md$/);
   if (currentNumMatch) {
     const currentNum = parseInt(currentNumMatch[1], 10);
     const prevNumStr = String(currentNum - 1).padStart(3, '0');

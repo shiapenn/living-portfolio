@@ -130,7 +130,6 @@ export function allocateDoc(cls, title, options = {}) {
 | Task ID | \`...\` |
 | Evidence SHA | \`...\` |
 | CI run | ... |
-| Verified By | \`null\` |
 
 ---
 
