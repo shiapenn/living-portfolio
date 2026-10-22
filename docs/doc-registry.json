@@ -272,5 +272,13 @@
     "path": "docs/handovers/H001-wp1-gate-1b-closure-and-wp2-kickoff.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A016",
+    "title": "WP-1 Gate 1b+ Closure and Handover Tooling",
+    "class": "A",
+    "path": "docs/execution-reports/A016-wp1-gate-1b-closure-and-handover-tooling.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

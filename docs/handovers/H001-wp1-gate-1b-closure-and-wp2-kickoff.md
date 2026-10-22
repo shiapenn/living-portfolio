@@ -6,9 +6,9 @@
 | Date | 2026-10-22 |
 | Author | A (Implementer) |
 | Supersedes | none |
-| Evidence SHA (on `main`) | `35685db2cd9f2789c64da1171825c67123a6ebfd` |
-| CI runs for that SHA | 39736922928 / 39736922863 / 39736922866 / 119684677503 |
-| Receipts covered | A001 to A015 |
+| Evidence SHA (on `main`) | `162e0ea2dc49e7c775bbe5895d890f4084064660` |
+| CI runs for that SHA | 39740935577 / 39740935538 / 39740935579 / 119697703361 |
+| Receipts covered | A001 to A016 |
 | Phase closed | WP-1 Gate 1b+ Closure (L sign-off: pending gate review) |
 | Phase next | WP-2 (Gate 1c / G2 alpha) |
 
@@ -106,12 +106,12 @@
 
 | Check | Command | Expected baseline (source) |
 | --- | --- | --- |
-| Full gate suite | `pnpm verify` | all gates pass (CI 39736922928) |
-| Unit and conformance tests | `pnpm test` | 119 tests in 18 files (CI 39736922928) |
-| End-to-end tests | `pnpm test:e2e` | 11 tests (CI 39736922928 / job 119684677503) |
-| SARIF gate | `node scripts/sarif-gate` | 0 unbaselined alerts (CI 39736922863) |
-| Secret scan | `node scripts/gitleaks-scan` | 56 commits scanned, 0 leaks (CI 39736922866) |
-| Receipt check | `pnpm receipt:check A015` | passes |
+| Full gate suite | `pnpm verify` | all gates pass (CI 39740935577) |
+| Unit and conformance tests | `pnpm test` | 129 tests in 19 files (CI 39740935577) |
+| End-to-end tests | `pnpm test:e2e` | 11 tests (CI 39740935577 / job 119697703361) |
+| SARIF gate | `node scripts/sarif-gate` | 0 unbaselined alerts (CI 39740935538) |
+| Secret scan | `node scripts/gitleaks-scan` | 61 commits scanned, 0 leaks (CI 39740935579) |
+| Receipt check | `pnpm receipt:check A016` | passes |
 | Docs check | `pnpm docs:check` | passes |
 | Handover check | `pnpm handover:check H001` | passes |
 | Handover verify | `pnpm handover:verify H001` | passes |
