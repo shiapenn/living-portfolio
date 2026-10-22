@@ -9,6 +9,7 @@
     "test": "turbo run test",
     "test:e2e": "playwright test",
     "verify": "node scripts/verify-all",
+    "triage": "node scripts/triage",
     "audit:check": "node scripts/audit-check",
     "receipt:check": "node scripts/receipt-check",
     "handover:check": "node scripts/handover-check",
