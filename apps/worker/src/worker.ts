@@ -101,15 +101,28 @@ export class PortfolioWorker {
   async runEmbedJob(revisionId: string) {
     const spans = await this.repo.getSpans(revisionId);
     if (spans.length === 0) {
-      return { revisionId, embeddedCount: 0, modelId: 'local-onnx/bge-small-en-v1.5', dim: 384 };
+      return { revisionId, embeddedCount: 0, savedVectorsCount: 0, modelId: 'local-onnx/bge-small-en-v1.5', dim: 384 };
     }
 
     const texts = spans.map((s) => s.text_exact);
     const vectors = await this.provider.embed(texts);
 
+    // Persist embeddings into repository chunk_vectors (§8, Fix 8, P3)
+    const chunkVectorsToSave = spans.map((span, idx) => ({
+      chunk_id: span.id,
+      vector: vectors[idx] ?? new Array(384).fill(0),
+      text_snippet: span.text_exact,
+      model_id: 'local-onnx/bge-small-en-v1.5',
+      model_version: '1.5.0',
+      dim: vectors[idx]?.length ?? 384,
+    }));
+
+    const savedVectors = await this.repo.saveChunkVectors(chunkVectorsToSave);
+
     return {
       revisionId,
       embeddedCount: vectors.length,
+      savedVectorsCount: savedVectors.length,
       modelId: 'local-onnx/bge-small-en-v1.5',
       modelVersion: '1.5.0',
       dim: vectors[0]?.length ?? 384,
