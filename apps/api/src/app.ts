@@ -105,7 +105,7 @@ export function createApp(
     })
   );
   app.route('/api/auth', createAuthRoutes(auth));
-  app.route('/api/entries', createEntriesRoutes(repo, auth));
+  app.route('/api/entries', createEntriesRoutes(repo, auth, runtimeState));
   app.route(
     '/api/ask',
     createAskRoutes({

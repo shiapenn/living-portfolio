@@ -1009,9 +1009,16 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
 
           <div id="redaction-preview-box" style="margin-bottom:12px"></div>
 
+          <div style="margin-bottom:12px;padding:10px 12px;border:1px solid var(--rule);border-radius:4px;background:var(--bg-subtle)">
+            <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer">
+              <input type="checkbox" id="entry-nda-confirmed" name="nda_confirmed" value="true" style="margin-top:2px" />
+              <span><strong>Confidentiality &amp; NDA Confirmation (§4.3):</strong> I confirm this content is not subject to an active Non-Disclosure Agreement (NDA) or client confidentiality restrictions, or that all necessary client approvals and redactions have been completed.</span>
+            </label>
+          </div>
+
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
             <div style="display:flex;gap:8px">
-              <button type="submit" class="btn">Publish as is (L0)</button>
+              <button type="submit" class="btn" id="btn-publish-entry">Publish as is (L0)</button>
               <button type="button" class="btn btn-secondary" id="btn-redaction-check">Preview Redaction (§4.3)</button>
             </div>
             <span style="font-size:13px;color:var(--text-muted)">"Good enough" exit always active — structure never blocks publishing.</span>
@@ -1097,32 +1104,73 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
           }
         }).catch(function() {});
 
-        if (redactBtn) {
-          redactBtn.addEventListener('click', async function() {
-            const text = document.getElementById('entry-body').value;
-            try {
-              const res = await apiClient('/api/entries/redaction-preview', {
-                method: 'POST',
-                body: JSON.stringify({ text })
-              });
-              if (res.ok) {
-                const data = await res.json();
-                if (Array.isArray(data.warnings) && data.warnings.length > 0) {
-                  redactBox.innerHTML = '<div class="later-thinking-banner"><strong>Redaction Preview Warnings:</strong> ' +
-                    data.warnings.map(function(w) { return w.type + ' ("' + w.match + '")'; }).join(', ') +
-                    ' — Confirm none of this is under NDA before publishing.</div>';
-                } else if (Array.isArray(data.warnings)) {
-                  redactBox.innerHTML = '<div class="chip" style="border-color:var(--role-outcome)">✓ No confidential secrets or NDA markers detected.</div>';
-                } else {
-                  redactBox.innerHTML = "<div class='later-thinking-banner' role='alert'>Couldn't check for private details.</div>";
-                }
+        function escapeClientHtml(str) {
+          return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        }
+
+        async function runRedactionCheck() {
+          const textEl = document.getElementById('entry-body');
+          const text = textEl ? textEl.value : '';
+          // State 1: checking
+          redactBox.innerHTML = '<div class="later-thinking-banner" data-state="checking" role="status">Checking for confidential data...</div>';
+          try {
+            const res = await apiClient('/api/entries/redaction-preview', {
+              method: 'POST',
+              body: JSON.stringify({ text: text })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (Array.isArray(data.warnings) && data.warnings.length > 0) {
+                // State 3: needs review (amber banner, never green)
+                const warningList = data.warnings.map(function(w) {
+                  return escapeClientHtml(w.type) + ' ("' + escapeClientHtml(w.match) + '")';
+                }).join(', ');
+                redactBox.innerHTML = '<div class="later-thinking-banner" data-state="needs-review" role="alert">' +
+                  '<strong>Needs Review (' + data.warnings.length + ' findings):</strong> ' + warningList +
+                  ' — Confirm none of this is under NDA before publishing.</div>';
+              } else if (Array.isArray(data.warnings) && data.warnings.length === 0) {
+                // State 2: clean (the ONLY state that can ever be green)
+                redactBox.innerHTML = '<div class="chip" data-state="clean" style="border-color:var(--role-outcome)">✓ No confidential secrets or NDA markers detected.</div>';
               } else {
-                redactBox.innerHTML = renderAdminError(res);
+                // State 4: could not check
+                redactBox.innerHTML = '<div class="later-thinking-banner" data-state="could-not-check" role="alert">' +
+                  "Couldn't check for private details." +
+                  ' <button type="button" class="btn btn-secondary" id="btn-redaction-retry" style="margin-left:8px;padding:2px 8px;font-size:12px">Retry</button></div>';
+                const retryBtn = document.getElementById('btn-redaction-retry');
+                if (retryBtn) retryBtn.addEventListener('click', runRedactionCheck);
               }
-            } catch (err) {
-              redactBox.innerHTML = '<div class="later-thinking-banner" role="alert">Network error connecting to server. Please retry.</div>';
+            } else {
+              // State 4: could not check (HTTP error)
+              let advice = 'request failed (HTTP ' + res.status + '). Please check inputs and retry.';
+              if (res.status === 401) {
+                advice = 'Your session has expired. <a href="/admin/login" style="margin-left:8px;font-weight:600">Sign in again →</a>, then retry.';
+              } else if (res.status === 403) {
+                advice = 'Security check failed (CSRF token invalid or missing). Please refresh and retry.';
+              } else if (res.status >= 500) {
+                advice = 'Server error (HTTP ' + res.status + '). Please retry.';
+              }
+              redactBox.innerHTML = '<div class="later-thinking-banner" role="alert" data-error="' + res.status + '" data-state="could-not-check">' +
+                "Couldn't check for private details: " + advice +
+                ' <button type="button" class="btn btn-secondary" id="btn-redaction-retry" style="margin-left:8px;padding:2px 8px;font-size:12px">Retry</button></div>';
+              const retryBtn = document.getElementById('btn-redaction-retry');
+              if (retryBtn) retryBtn.addEventListener('click', runRedactionCheck);
             }
-          });
+          } catch (err) {
+            // State 4: could not check (network/fetch error)
+            redactBox.innerHTML = '<div class="later-thinking-banner" role="alert" data-state="could-not-check">' +
+              "Couldn't check for private details: network error connecting to server." +
+              ' <button type="button" class="btn btn-secondary" id="btn-redaction-retry" style="margin-left:8px;padding:2px 8px;font-size:12px">Retry</button></div>';
+            const retryBtn = document.getElementById('btn-redaction-retry');
+            if (retryBtn) retryBtn.addEventListener('click', runRedactionCheck);
+          }
+        }
+
+        if (redactBtn) {
+          redactBtn.addEventListener('click', runRedactionCheck);
         }
 
         if (form) {
@@ -1134,18 +1182,34 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
               return;
             }
 
-            // Preview redaction first to acquire preview token
+            const ndaCheckbox = document.getElementById('entry-nda-confirmed');
+            const ndaConfirmed = ndaCheckbox ? ndaCheckbox.checked : false;
+
+            // Preview redaction first to acquire preview token and verify scan
             let previewToken = '';
+            let hasWarnings = false;
             try {
               const previewRes = await apiClient('/api/entries/redaction-preview', {
                 method: 'POST',
-                body: JSON.stringify({ text })
+                body: JSON.stringify({ text: text })
               });
               if (previewRes.ok) {
                 const prevData = await previewRes.json();
                 previewToken = prevData.redactionPreviewToken || '';
+                hasWarnings = Array.isArray(prevData.warnings) && prevData.warnings.length > 0;
+              } else {
+                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Could not complete required pre-publish redaction preview check.</div>';
+                return;
               }
-            } catch (_) {}
+            } catch (_) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error during pre-publish redaction preview check.</div>';
+              return;
+            }
+
+            if (hasWarnings && !ndaConfirmed) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Confidentiality &amp; NDA confirmation is required before publishing entries with potential secrets or exclusion warnings.</div>';
+              return;
+            }
 
             const payload = {
               title: document.getElementById('entry-title').value,
@@ -1157,7 +1221,8 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
               temporal_level: 'exact',
               visibility: 'public',
               view: 'article',
-              redactionPreviewToken: previewToken
+              redactionPreviewToken: previewToken,
+              nda_confirmed: ndaConfirmed
             };
             try {
               const res = await apiClient('/api/entries', {
@@ -1165,7 +1230,7 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
                 body: JSON.stringify(payload)
               });
               if (res.ok) {
-                banner.innerHTML = '<div class="as-of-banner">Published "' + payload.title + '" at L0. <a href="/work/' + payload.slug + '">View entry →</a></div>';
+                banner.innerHTML = '<div class="as-of-banner">Published "' + escapeClientHtml(payload.title) + '" at L0. <a href="/work/' + escapeClientHtml(payload.slug) + '">View entry →</a></div>';
               } else {
                 banner.innerHTML = renderAdminError(res);
               }

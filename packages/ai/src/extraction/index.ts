@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { RoleProfile, Span } from '@living-portfolio/core';
 import type { ModelProvider } from '../providers/types.js';
 
@@ -22,18 +25,80 @@ export interface ExtractedClaim {
   confidence: number;
 }
 
+export type RedactionItemType = 'secret' | 'email' | 'phone' | 'ip' | 'name' | 'nda' | 'client' | 'exclusion';
+
 export interface RedactionPreviewItem {
-  type: 'secret' | 'email' | 'phone' | 'ip' | 'name' | 'nda' | 'client';
+  type: RedactionItemType;
   match: string;
   index: number;
+}
+
+export interface ScanOptions {
+  exclusions?: string[];
+  exclusionsFilePath?: string;
+}
+
+export function findExclusionsFile(customPath?: string): string | null {
+  if (customPath && existsSync(customPath)) return customPath;
+  if (process.env.REDACTION_EXCLUSIONS_PATH && existsSync(process.env.REDACTION_EXCLUSIONS_PATH)) {
+    return process.env.REDACTION_EXCLUSIONS_PATH;
+  }
+  const cwdCandidates = [
+    resolve(process.cwd(), 'data/redaction-exclusions.json'),
+    resolve(process.cwd(), '../data/redaction-exclusions.json'),
+    resolve(process.cwd(), '../../data/redaction-exclusions.json'),
+    resolve(process.cwd(), 'packages/ai/data/redaction-exclusions.json'),
+  ];
+  for (const c of cwdCandidates) {
+    if (existsSync(c)) return c;
+  }
+  try {
+    const dir = dirname(fileURLToPath(import.meta.url));
+    const moduleCandidates = [
+      resolve(dir, '../../../../data/redaction-exclusions.json'),
+      resolve(dir, '../../../data/redaction-exclusions.json'),
+      resolve(dir, '../../data/redaction-exclusions.json'),
+      resolve(dir, '../data/redaction-exclusions.json'),
+      resolve(dir, './data/redaction-exclusions.json'),
+    ];
+    for (const c of moduleCandidates) {
+      if (existsSync(c)) return c;
+    }
+  } catch {}
+  return null;
+}
+
+export function getDefaultExclusions(customPath?: string): string[] {
+  if (process.env.REDACTION_EXCLUSIONS) {
+    try {
+      const parsed = JSON.parse(process.env.REDACTION_EXCLUSIONS);
+      if (Array.isArray(parsed)) return parsed.map(String);
+    } catch {
+      return process.env.REDACTION_EXCLUSIONS.split(',').map((s: string) => s.trim()).filter(Boolean);
+    }
+  }
+  const filePath = findExclusionsFile(customPath);
+  if (filePath) {
+    try {
+      const content = readFileSync(filePath, 'utf8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed)) {
+        return parsed.map(String);
+      }
+    } catch {}
+  }
+  return [];
 }
 
 /**
  * Local Redaction Preview (§4.3, §15, UX P0-3 / V3)
  * Runs locally before sending content to third-party model providers.
- * Catches API keys (including sk- keys), NDA markers, client names, emails, IPs.
+ * Catches API keys (including sk- keys), NDA markers, client names, emails, IPs, and owner-configured exclusions.
  */
-export function scanForConfidentialData(text: string): RedactionPreviewItem[] {
+export function scanForConfidentialData(
+  text: string,
+  options?: ScanOptions | string[]
+): RedactionPreviewItem[] {
   const items: RedactionPreviewItem[] = [];
 
   // API keys / tokens (generic bearer, OpenAI sk- keys, AWS, JWT patterns)
@@ -49,8 +114,8 @@ export function scanForConfidentialData(text: string): RedactionPreviewItem[] {
     items.push({ type: 'nda', match: match[0], index: match.index });
   }
 
-  // Client names & client references
-  const clientRegex = /\b(?:Acme(?:\s+Corp)?|Client\s+[A-Z][a-zA-Z0-9_-]+|internal\s+client\s+[A-Z][a-zA-Z0-9_-]+)\b/gi;
+  // Client names & client references (generic patterns without hardcoded client names)
+  const clientRegex = /\b(?:Client\s+[A-Z][a-zA-Z0-9_-]+|internal\s+client\s+[A-Z][a-zA-Z0-9_-]+)\b/gi;
   while ((match = clientRegex.exec(text)) !== null) {
     items.push({ type: 'client', match: match[0], index: match.index });
   }
@@ -65,6 +130,27 @@ export function scanForConfidentialData(text: string): RedactionPreviewItem[] {
   const ipRegex = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g;
   while ((match = ipRegex.exec(text)) !== null) {
     items.push({ type: 'ip', match: match[0], index: match.index });
+  }
+
+  // Owner-configured exclusion list (from options, settings, or data file)
+  const activeExclusions = Array.isArray(options)
+    ? options
+    : options?.exclusions ?? getDefaultExclusions(options?.exclusionsFilePath);
+
+  for (const exclusion of activeExclusions) {
+    if (!exclusion || typeof exclusion !== 'string') continue;
+    const trimmed = exclusion.trim();
+    if (!trimmed) continue;
+
+    const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const prefix = /^\w/.test(trimmed) ? '\\b' : '(?:\\s|^)';
+    const suffix = /\w$/.test(trimmed) ? '\\b' : '(?:\\s|$)';
+    const regex = new RegExp(`${prefix}${escaped}${suffix}`, 'gi');
+
+    let m: RegExpExecArray | null;
+    while ((m = regex.exec(text)) !== null) {
+      items.push({ type: 'exclusion', match: m[0].trim(), index: m.index });
+    }
   }
 
   return items;

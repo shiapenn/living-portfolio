@@ -27,6 +27,7 @@ export const EntryCreateSchema = z.object({
   valid_from_range_end: z.string().datetime().nullable().optional(),
   is_hindsight: z.boolean().default(false),
   redactionPreviewToken: z.string().optional(),
+  nda_confirmed: z.boolean().optional(),
 });
 
 export const EntryUpdateSchema = z.object({
@@ -35,6 +36,7 @@ export const EntryUpdateSchema = z.object({
   visibility: VisibilitySchema.optional(),
   venture_id: z.string().uuid().nullable().optional(),
   redactionPreviewToken: z.string().optional(),
+  nda_confirmed: z.boolean().optional(),
 });
 
 export const RevisionCreateSchema = z.object({

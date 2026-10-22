@@ -11,5 +11,6 @@ build/
 coverage/
 test-results/
 playwright-report/
-data/
+data/*
+!data/redaction-exclusions.json
 uploads/
