@@ -164,25 +164,18 @@ describe.skipIf(!isDatabaseConfigured)(
       const boss = new PgBoss(process.env.DATABASE_URL!);
       await boss.start();
 
-      const testQueue = 'lp:test-live-queue';
-      let processedData: any = null;
-
-      await boss.work(testQueue, async (job) => {
-        processedData = job.data;
-      });
+      const testQueue = `lp:test-live-${Date.now()}`;
+      await boss.createQueue(testQueue);
 
       const jobId = await boss.send(testQueue, { test: 'live-pgboss', timestamp: Date.now() });
       expect(jobId).toBeDefined();
 
-      // Allow job to be polled and processed
-      for (let i = 0; i < 30; i++) {
-        if (processedData) break;
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      }
-
-      expect(processedData).toEqual(
+      const fetchedJobs = await boss.fetch<{ test: string; timestamp: number }>(testQueue);
+      expect(fetchedJobs.length).toBeGreaterThan(0);
+      expect(fetchedJobs[0].data).toEqual(
         expect.objectContaining({ test: 'live-pgboss' })
       );
+      await boss.complete(testQueue, fetchedJobs[0].id);
 
       await boss.stop({ graceful: true, timeout: 3000 });
     });
