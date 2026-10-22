@@ -248,5 +248,13 @@
     "status": "frozen",
     "supersedes": null,
     "sha256": "defe1c2ea0001a3646c613c5c0b7ce58c9cc7136f4d6de07bbbdab4f8103d9ed"
+  },
+  {
+    "id": "A014",
+    "title": "WP-1 Task 4: Redaction Preview Token Publish Flow & Loose Ends",
+    "class": "A",
+    "path": "docs/execution-reports/A014-wp1-publish-flow-preview-token.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
