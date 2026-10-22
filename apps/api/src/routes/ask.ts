@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { IPortfolioRepository } from '@living-portfolio/db';
 import type { BudgetGovernor, ModelProvider } from '@living-portfolio/ai';
-import { verifyAnswerBeforeDelivery } from '@living-portfolio/ai';
+import { verifyAnswerBeforeDelivery, formatProviderDisclosure } from '@living-portfolio/ai';
 import {
   AskQuerySchema,
   checkGate,
@@ -169,7 +169,7 @@ export function createAskRoutes(config: AskEngineConfig) {
     });
 
     // 6. Budget governor and degradation ladder (§10.8, §13.5)
-    const { provider, degradationStep } = governor.acquire(
+    let { provider, degradationStep } = governor.acquire(
       providers,
       250, // est tokens
       'visitor_interactive',
@@ -178,13 +178,15 @@ export function createAskRoutes(config: AskEngineConfig) {
 
     const forceExtractive = runtime?.simulatedDegradationMode === 'extractive';
 
-    // 7. Degradation Step: Extractive Mode
-    if (forceExtractive || degradationStep === 'extractive' || !provider || routeDecision.isExtractive) {
+    // Helper for extractive degradation response
+    const buildExtractiveResponse = (reasonNote?: string) => {
       const excerpts = candidateMatches.slice(0, 3).map((m, i) => `[${i + 1}] "${m.span.text_exact}" (from ${m.entry.title})`).join('\n\n');
+      const disclosure = formatProviderDisclosure(null);
+      const answer = reasonNote ? `${disclosure} (${reasonNote})\n\n${excerpts}` : `${disclosure}\n\n${excerpts}`;
       return c.json({
         tier: 'extractive',
         queryClass,
-        answer: `Showing excerpts from the owner's records. Automated answers are paused for now.\n\n${excerpts}`,
+        answer,
         citations: candidateMatches.slice(0, 3).map((m, i) => ({
           citationId: i + 1,
           slug: m.entry.slug,
@@ -193,39 +195,49 @@ export function createAskRoutes(config: AskEngineConfig) {
         })),
         contextChips: Object.entries(entryScope).map(([k, v]) => `${k}: ${v}`),
         degradationStep: 'extractive',
-        aiDisclosure: 'Showing excerpts from the owner\'s records. Automated answers are paused for now.',
+        provider_disclosure: disclosure,
+        aiDisclosure: disclosure,
       });
+    };
+
+    // 7. Degradation Step: Extractive Mode (Spec §10.8 Step 5)
+    if (forceExtractive || degradationStep === 'extractive' || !provider || routeDecision.isExtractive) {
+      return buildExtractiveResponse();
     }
 
     // 8. Tier 2: Needs owner review (G7: synthesize escalation draft via provider + verification)
     if (routeDecision.tier === 'tier2') {
       let escalationDraft = '';
       if (provider) {
-        const promptContext = candidateMatches
-          .map((m, idx) => `[cite:${idx + 1}] From "${m.entry.title}": ${m.span.text_exact}`)
-          .join('\n\n');
-        const draftCompletion = await provider.complete({
-          model: 'default',
-          messages: [
-            {
-              role: 'system',
-              content: "You synthesize an accurate preliminary response draft for the owner's review based on the provided records.",
-            },
-            {
-              role: 'user',
-              content: `Question: ${query}\n\nOwner records:\n${promptContext}`,
-            },
-          ],
-          temperature: 0.1,
-        });
-        const vDraft = verifyAnswerBeforeDelivery({
-          draftText: draftCompletion.text,
-          citedSpans: candidateMatches.map((m) => m.span),
-          visitorFacets,
-          citedScopes: [],
-          asOfDate: as_of_date,
-        });
-        escalationDraft = vDraft.verifiedText;
+        try {
+          const promptContext = candidateMatches
+            .map((m, idx) => `[cite:${idx + 1}] From "${m.entry.title}": ${m.span.text_exact}`)
+            .join('\n\n');
+          const draftCompletion = await provider.complete({
+            model: 'default',
+            messages: [
+              {
+                role: 'system',
+                content: "You synthesize an accurate preliminary response draft for the owner's review based on the provided records.",
+              },
+              {
+                role: 'user',
+                content: `Question: ${query}\n\nOwner records:\n${promptContext}`,
+              },
+            ],
+            temperature: 0.1,
+          });
+          const vDraft = verifyAnswerBeforeDelivery({
+            draftText: draftCompletion.text,
+            citedSpans: candidateMatches.map((m) => m.span),
+            visitorFacets,
+            citedScopes: [],
+            asOfDate: as_of_date,
+          });
+          escalationDraft = vDraft.verifiedText;
+        } catch {
+          escalationDraft = candidateMatches.slice(0, 2).map((m) => m.span.text_exact).join('\n\n');
+        }
       } else {
         escalationDraft = candidateMatches.slice(0, 2).map((m) => m.span.text_exact).join('\n\n');
       }
@@ -259,29 +271,77 @@ export function createAskRoutes(config: AskEngineConfig) {
       });
     }
 
-    // 10. Tier 1: Generate grounded answer with citations
+    // 10. Tier 1: Generate grounded answer with citations across degradation ladder (§10.8)
     const promptContext = candidateMatches
       .map((m, idx) => `[cite:${idx + 1}] From "${m.entry.title}": ${m.span.text_exact}`)
       .join('\n\n');
 
-    const completion = await provider.complete({
-      model: 'default',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an accurate, honest AI assistant representing the owner\'s work. Answer only from the provided citations. If the record does not answer, say so clearly. Reference citations using [cite:1], [cite:2]. State uncertainty in plain words, never fake certainty scores.',
-        },
-        {
-          role: 'user',
-          content: `Question: ${query}\n\nOwner's records:\n${promptContext}`,
-        },
-      ],
-      temperature: 0.1,
-    });
+    let activeProvider: ModelProvider | null = provider;
+    let completionText: string | null = null;
+
+    if (activeProvider) {
+      try {
+        const completion = await activeProvider.complete({
+          model: 'default',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an accurate, honest AI assistant representing the owner\'s work. Answer only from the provided citations. If the record does not answer, say so clearly. Reference citations using [cite:1], [cite:2]. State uncertainty in plain words, never fake certainty scores.',
+            },
+            {
+              role: 'user',
+              content: `Question: ${query}\n\nOwner's records:\n${promptContext}`,
+            },
+          ],
+          temperature: 0.1,
+        });
+        completionText = completion.text;
+      } catch (err: any) {
+        if (err?.message?.includes('429') || err?.status === 429) {
+          governor.recordRateLimitError(activeProvider.id);
+        }
+        // Fallback provider ladder (§10.8 Step 3)
+        const remainingProviders = providers.filter((p) => p.id !== activeProvider?.id);
+        for (const fallback of remainingProviders) {
+          try {
+            const fallbackLease = governor.acquire([fallback], 250, 'visitor_interactive', 'public');
+            if (fallbackLease.provider) {
+              const res = await fallbackLease.provider.complete({
+                model: 'default',
+                messages: [
+                  {
+                    role: 'system',
+                    content: 'You are an accurate, honest AI assistant representing the owner\'s work. Answer only from the provided citations. If the record does not answer, say so clearly. Reference citations using [cite:1], [cite:2]. State uncertainty in plain words, never fake certainty scores.',
+                  },
+                  {
+                    role: 'user',
+                    content: `Question: ${query}\n\nOwner's records:\n${promptContext}`,
+                  },
+                ],
+                temperature: 0.1,
+              });
+              completionText = res.text;
+              activeProvider = fallbackLease.provider;
+              degradationStep = fallbackLease.degradationStep;
+              break;
+            }
+          } catch (fbErr: any) {
+            if (fbErr?.message?.includes('429') || fbErr?.status === 429) {
+              governor.recordRateLimitError(fallback.id);
+            }
+          }
+        }
+      }
+    }
+
+    // If no provider succeeded or is available, degrade to extractive excerpts
+    if (!completionText || !activeProvider) {
+      return buildExtractiveResponse();
+    }
 
     // Verification check (§10.6, G5: downgrade to extractive on failed verification)
     const verification = verifyAnswerBeforeDelivery({
-      draftText: completion.text,
+      draftText: completionText,
       citedSpans: candidateMatches.map((m) => m.span),
       visitorFacets,
       citedScopes: [],
@@ -289,21 +349,8 @@ export function createAskRoutes(config: AskEngineConfig) {
     });
 
     if (!verification.passed) {
-      const excerpts = candidateMatches.slice(0, 3).map((m, i) => `[${i + 1}] "${m.span.text_exact}" (from ${m.entry.title})`).join('\n\n');
-      return c.json({
-        tier: 'extractive',
-        queryClass,
-        answer: `Showing extractive excerpts from the owner's records (synthesis verification downgraded: ${verification.anachronismDetails || 'faithfulness unverified'}).\n\n${excerpts}`,
-        citations: candidateMatches.slice(0, 3).map((m, i) => ({
-          citationId: i + 1,
-          slug: m.entry.slug,
-          title: m.entry.title,
-          text: m.span.text_exact,
-        })),
-        degradationStep: 'extractive',
-        verificationPassed: false,
-        aiDisclosure: 'Synthesis downgraded to extractive mode per verification gate.',
-      });
+      const reason = `synthesis verification downgraded: ${verification.anachronismDetails || 'faithfulness unverified'}`;
+      return buildExtractiveResponse(reason);
     }
 
     const finalAnswer = verification.verifiedText;
@@ -314,6 +361,8 @@ export function createAskRoutes(config: AskEngineConfig) {
       text: m.span.text_exact,
     }));
 
+    const disclosure = formatProviderDisclosure(activeProvider);
+
     return c.json({
       tier: 'tier1',
       queryClass,
@@ -322,7 +371,8 @@ export function createAskRoutes(config: AskEngineConfig) {
       verificationPassed: verification.passed,
       degradationStep,
       basis: `Based on ${citations.length} entries from the owner's records.`,
-      aiDisclosure: 'Automated answer generated from the owner\'s actual records with verification.',
+      provider_disclosure: disclosure,
+      aiDisclosure: disclosure,
     });
   });
 

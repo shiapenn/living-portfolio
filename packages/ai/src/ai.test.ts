@@ -6,6 +6,8 @@ import {
   MockModelProvider,
   scanForConfidentialData,
   verifyAnswerBeforeDelivery,
+  resolveConfiguredProviders,
+  formatProviderDisclosure,
 } from './index.js';
 
 describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redaction (§10.6, §13.5, §15)', () => {
@@ -108,5 +110,52 @@ describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redact
       exclusions: ['secret-project-alpha'],
     });
     expect(innocentWarnings.some((w) => w.match === 'secret-project-alpha')).toBe(false);
+  });
+
+  it('resolves configured model providers strictly from configuration schemas and presets (§10.8, §13.5)', () => {
+    // 1. With no keys configured, returns empty provider array (triggers extractive ladder)
+    const emptyProviders = resolveConfiguredProviders({ PRESET: 'free-cloud' });
+    expect(emptyProviders).toEqual([]);
+
+    // 2. In free-cloud preset, prioritizes Groq -> Gemini -> OpenAI
+    const freeCloudProviders = resolveConfiguredProviders({
+      PRESET: 'free-cloud',
+      GROQ_API_KEY: 'test-groq-key',
+      GEMINI_API_KEY: 'test-gemini-key',
+      OPENAI_API_KEY: 'test-openai-key',
+    });
+    expect(freeCloudProviders.map((p) => p.id)).toEqual(['groq', 'gemini', 'openai']);
+
+    // 3. In hobbyist-vps preset, prioritizes OpenAI -> Groq -> Gemini
+    const vpsProviders = resolveConfiguredProviders({
+      PRESET: 'hobbyist-vps',
+      GROQ_API_KEY: 'test-groq-key',
+      GEMINI_API_KEY: 'test-gemini-key',
+      OPENAI_API_KEY: 'test-openai-key',
+    });
+    expect(vpsProviders.map((p) => p.id)).toEqual(['openai', 'groq', 'gemini']);
+
+    // 4. In local-only preset, external cloud keys are omitted
+    const localProviders = resolveConfiguredProviders({
+      PRESET: 'local-only',
+      GROQ_API_KEY: 'test-groq-key',
+      OPENAI_API_KEY: 'test-openai-key',
+    });
+    expect(localProviders).toEqual([]);
+  });
+
+  it('formats standard provider disclosure lines in compliance with Spec §10.8 and §13.5', () => {
+    // Extractive fallback fixed sentence
+    const extractiveLine = formatProviderDisclosure(null);
+    expect(extractiveLine).toBe("Showing excerpts from the owner's records. Automated answers are paused for now.");
+
+    // Provider synthesis without specific model
+    const mock = new MockModelProvider();
+    const synthLine = formatProviderDisclosure(mock);
+    expect(synthLine).toBe(`Automated answer synthesized with ${mock.name} from owner records.`);
+
+    // Provider synthesis with specific model
+    const detailedLine = formatProviderDisclosure(mock, 'llama-3.3-70b');
+    expect(detailedLine).toBe(`Automated answer synthesized with ${mock.name} (llama-3.3-70b) from owner records.`);
   });
 });

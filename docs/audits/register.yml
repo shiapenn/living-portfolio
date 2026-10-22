@@ -2347,9 +2347,12 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: apps/api/src/api.test.ts
+  regression_test: apps/api/src/conformance/provider-degradation.conformance.test.ts
   history:
     - date: 2026-10-21
       status: fixed
       note: "Disclosed during A006 review. createApp() unconditionally instantiated MockModelProvider whose default completion text falsely asserted 'Based on the owner records...'. Fixed in A007: providers strictly resolved from configuration/options; with none configured, Ask degrades to extractive excerpts with disclosure (Spec §10.8); MockModelProvider text purged of owner record claims."
+    - date: 2026-10-22
+      status: fixed
+      note: "WP-1.5: Config-driven AI provider registry (Groq, Gemini, OpenAI) strictly sourced from @living-portfolio/config presets (free-cloud, hobbyist-vps, local-only). Extractive degradation ladder cascades across providers on failures and rate limits down to deterministic extractive excerpts with fixed sentence, surfacing provider disclosure lines in API responses and web UI (Spec §10.8, §13.5)."
   verified_by: null
