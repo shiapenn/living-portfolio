@@ -33,20 +33,7 @@ jobs:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
-          if [ -n "$BASE_SHA" ] && [ "$BASE_SHA" != "0000000000000000000000000000000000000000" ] && git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
-            CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
-          else
-            CHANGED=$(git diff-tree --no-commit-id --name-only -r "$HEAD_SHA")
-          fi
-          echo "Changed files:"
-          echo "$CHANGED"
-          NON_DOCS=$(echo "$CHANGED" | grep -vE '^(docs/|\.markdownlint|README\.md$|CHANGELOG\.md$|LICENSE)' || true)
-          if [ -n "$CHANGED" ] && [ -z "$NON_DOCS" ]; then
-            echo "docs_only=true" >> "$GITHUB_OUTPUT"
-            echo "Fast-pass enabled: docs-only changes detected."
-          else
-            echo "docs_only=false" >> "$GITHUB_OUTPUT"
-          fi
+          node scripts/changed-scope --base "$BASE_SHA" --head "$HEAD_SHA"
 
       - name: Fast-pass CodeQL on docs-only changes
         if: steps.changes.outputs.docs_only == 'true'

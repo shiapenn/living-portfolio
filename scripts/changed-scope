@@ -1,0 +1,176 @@
+#!/usr/bin/env node
+/**
+ * Hardened CI Scope & Docs-Only Detector (`scripts/changed-scope`)
+ *
+ * Rules:
+ * 1. Fail closed (docs_only=false) on unknown, invalid, or zero base SHA.
+ * 2. Uses git diff --no-renames so a code file renamed into docs/ is treated as code.
+ * 3. Never treats docs/audits/sarif-baseline.json as docs-only (security baseline config).
+ * 4. Outputs docs_only=true or docs_only=false to stdout and $GITHUB_OUTPUT if present.
+ */
+import { execSync } from 'node:child_process';
+import { appendFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const ZERO_SHA = '0000000000000000000000000000000000000000';
+
+const ALLOWED_DOCS_PREFIXES = ['docs/'];
+const ALLOWED_EXACT_FILES = new Set([
+  'README.md',
+  'CHANGELOG.md',
+  'LICENSE',
+  '.markdownlint.json',
+  '.markdownlint.yaml',
+  '.markdownlint.yml',
+  '.markdownlintrc',
+]);
+
+const FORBIDDEN_DOCS_FILES = new Set([
+  'docs/audits/sarif-baseline.json',
+]);
+
+export function detectChangedScope(options = {}) {
+  const root = options.root || ROOT;
+  const baseSha = options.baseSha || options.base;
+  const headSha = options.headSha || options.head || 'HEAD';
+
+  // 1. Fail closed on missing, zero, or unresolvable base SHA
+  if (!baseSha || typeof baseSha !== 'string' || baseSha.trim() === '' || baseSha.trim() === ZERO_SHA) {
+    return {
+      docsOnly: false,
+      reason: 'Base SHA is missing, empty, or zero SHA (failing closed).',
+      changedFiles: [],
+      nonDocsFiles: [],
+    };
+  }
+
+  const cleanBase = baseSha.trim();
+  const cleanHead = headSha.trim();
+
+  try {
+    execSync(`git cat-file -e ${cleanBase}^{commit}`, { cwd: root, stdio: 'pipe' });
+  } catch (_) {
+    return {
+      docsOnly: false,
+      reason: `Base SHA '${cleanBase}' does not resolve to a valid commit (failing closed).`,
+      changedFiles: [],
+      nonDocsFiles: [],
+    };
+  }
+
+  try {
+    execSync(`git cat-file -e ${cleanHead}^{commit}`, { cwd: root, stdio: 'pipe' });
+  } catch (_) {
+    return {
+      docsOnly: false,
+      reason: `Head SHA '${cleanHead}' does not resolve to a valid commit (failing closed).`,
+      changedFiles: [],
+      nonDocsFiles: [],
+    };
+  }
+
+  // 2. Diff with --no-renames
+  let diffOutput;
+  try {
+    diffOutput = execSync(`git diff --name-only --no-renames ${cleanBase} ${cleanHead}`, {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: 'pipe',
+    });
+  } catch (err) {
+    return {
+      docsOnly: false,
+      reason: `git diff failed: ${err.message}`,
+      changedFiles: [],
+      nonDocsFiles: [],
+    };
+  }
+
+  const changedFiles = diffOutput
+    .trim()
+    .split('\n')
+    .map((f) => f.trim())
+    .filter(Boolean);
+
+  if (changedFiles.length === 0) {
+    return {
+      docsOnly: false,
+      reason: 'No changed files detected between base and head.',
+      changedFiles: [],
+      nonDocsFiles: [],
+    };
+  }
+
+  // 3. Inspect each file against rules
+  const nonDocsFiles = [];
+
+  for (const file of changedFiles) {
+    if (FORBIDDEN_DOCS_FILES.has(file)) {
+      nonDocsFiles.push(file);
+      continue;
+    }
+
+    if (ALLOWED_EXACT_FILES.has(file)) {
+      continue;
+    }
+
+    const isDocs = ALLOWED_DOCS_PREFIXES.some((prefix) => file.startsWith(prefix));
+    if (!isDocs) {
+      nonDocsFiles.push(file);
+    }
+  }
+
+  const docsOnly = nonDocsFiles.length === 0;
+
+  return {
+    docsOnly,
+    reason: docsOnly
+      ? 'All changed files belong to docs/ or documentation assets.'
+      : `Non-docs changes detected in ${nonDocsFiles.length} file(s).`,
+    changedFiles,
+    nonDocsFiles,
+  };
+}
+
+// CLI entry point
+if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) {
+  let baseSha = process.env.BASE_SHA;
+  let headSha = process.env.HEAD_SHA || 'HEAD';
+
+  const args = process.argv.slice(2);
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--base' && args[i + 1]) {
+      baseSha = args[i + 1];
+      i++;
+    } else if (args[i] === '--head' && args[i + 1]) {
+      headSha = args[i + 1];
+      i++;
+    }
+  }
+
+  const result = detectChangedScope({ baseSha, headSha });
+
+  console.log(`=== Changed Scope Detection ===`);
+  console.log(`Base: ${baseSha || 'NOT_SET'}`);
+  console.log(`Head: ${headSha}`);
+  console.log(`Total changed files: ${result.changedFiles.length}`);
+  console.log(`Docs-only: ${result.docsOnly}`);
+  console.log(`Reason: ${result.reason}`);
+  if (result.nonDocsFiles.length > 0) {
+    console.log(`Non-docs files (${result.nonDocsFiles.length}):`);
+    result.nonDocsFiles.forEach((f) => console.log(`  - ${f}`));
+  }
+
+  // Print raw variable line
+  const outputLine = `docs_only=${result.docsOnly ? 'true' : 'false'}`;
+  console.log(`\n${outputLine}`);
+
+  if (process.env.GITHUB_OUTPUT) {
+    try {
+      appendFileSync(process.env.GITHUB_OUTPUT, `${outputLine}\n`);
+    } catch (_) {}
+  }
+
+  process.exit(0);
+}

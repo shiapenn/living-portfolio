@@ -31,20 +31,7 @@ jobs:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
-          if [ -n "$BASE_SHA" ] && [ "$BASE_SHA" != "0000000000000000000000000000000000000000" ] && git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
-            CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
-          else
-            CHANGED=$(git diff-tree --no-commit-id --name-only -r "$HEAD_SHA")
-          fi
-          echo "Changed files:"
-          echo "$CHANGED"
-          NON_DOCS=$(echo "$CHANGED" | grep -vE '^(docs/|\.markdownlint|README\.md$|CHANGELOG\.md$|LICENSE)' || true)
-          if [ -n "$CHANGED" ] && [ -z "$NON_DOCS" ]; then
-            echo "docs_only=true" >> "$GITHUB_OUTPUT"
-            echo "Fast-pass enabled: docs-only changes detected."
-          else
-            echo "docs_only=false" >> "$GITHUB_OUTPUT"
-          fi
+          node scripts/changed-scope --base "$BASE_SHA" --head "$HEAD_SHA"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
@@ -87,8 +74,8 @@ jobs:
       - name: Run Audit Governance & Conformance Check (DR-AUD-001 AUD-21)
         run: pnpm audit:check
 
-      - name: Run Receipt Offline Gate on Docs Changes
-        run: node scripts/receipt-check --offline
+      - name: Run Receipt Online Gate on Docs Changes
+        run: node scripts/receipt-check
 
       - name: Run Unit, Conformance & P0 Regression Suites (AUD-14, AUD-15, D.1, D.2)
         if: steps.changes.outputs.docs_only != 'true'
@@ -96,7 +83,7 @@ jobs:
 
       - name: Run Documentation Conformance Tests on Docs Changes
         if: steps.changes.outputs.docs_only == 'true'
-        run: pnpm --filter @living-portfolio/api test src/conformance/docs-identity.conformance.test.ts src/conformance/receipt-check.conformance.test.ts
+        run: pnpm --filter @living-portfolio/api test src/conformance/docs-identity.conformance.test.ts src/conformance/receipt-check.conformance.test.ts src/conformance/handover.conformance.test.ts src/conformance/changed-scope.conformance.test.ts
 
   playwright-e2e:
     name: Playwright End-to-End Suite
@@ -114,20 +101,7 @@ jobs:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
-          if [ -n "$BASE_SHA" ] && [ "$BASE_SHA" != "0000000000000000000000000000000000000000" ] && git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
-            CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")
-          else
-            CHANGED=$(git diff-tree --no-commit-id --name-only -r "$HEAD_SHA")
-          fi
-          echo "Changed files:"
-          echo "$CHANGED"
-          NON_DOCS=$(echo "$CHANGED" | grep -vE '^(docs/|\.markdownlint|README\.md$|CHANGELOG\.md$|LICENSE)' || true)
-          if [ -n "$CHANGED" ] && [ -z "$NON_DOCS" ]; then
-            echo "docs_only=true" >> "$GITHUB_OUTPUT"
-            echo "Fast-pass enabled: docs-only changes detected."
-          else
-            echo "docs_only=false" >> "$GITHUB_OUTPUT"
-          fi
+          node scripts/changed-scope --base "$BASE_SHA" --head "$HEAD_SHA"
 
       - name: Fast-pass Playwright on docs-only changes
         if: steps.changes.outputs.docs_only == 'true'
