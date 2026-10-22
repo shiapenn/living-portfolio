@@ -1,0 +1,164 @@
+#!/usr/bin/env node
+/**
+ * Living Portfolio Handover Verification Harness (`scripts/handover-verify`)
+ * Implements IAHP (P001) Section 6 (Entry routine) and Section 11 Step 2.
+ *
+ * Usage:
+ *   node scripts/handover-verify [H### | docs/handovers/H###-<slug>.md] [--skip-verify]
+ */
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve, relative } from 'node:path';
+import { execSync } from 'node:child_process';
+import { validateHandover, resolveHandoverPath } from './handover-check';
+
+const ROOT = resolve(import.meta.dirname, '..');
+
+export function verifyHandover(filePathOrId, options = {}) {
+  const root = options.root || ROOT;
+  const skipVerify = options.skipVerify || process.argv.includes('--skip-verify');
+  const skipGit = options.skipGit || false;
+  const errors = [];
+  function fail(msg) {
+    errors.push(msg);
+  }
+
+  // 1. Validate handover document structure & budget
+  const validation = validateHandover(filePathOrId, { root, skipGit });
+  if (!validation.ok) {
+    return {
+      ok: false,
+      halt: true,
+      reason: 'Handover document validation failed',
+      errors: validation.errors,
+    };
+  }
+
+  const absPath = resolveHandoverPath(filePathOrId, root);
+  const relPath = relative(root, absPath);
+  const content = readFileSync(absPath, 'utf8');
+  const evidenceSha = validation.evidenceSha;
+
+  console.log(`=== Living Portfolio Handover Verification (${validation.id || relPath}) ===\n`);
+
+  // 2. Halt Condition 1: Check Git commit genealogy and docs-only drift
+  if (!skipGit && evidenceSha) {
+    console.log(`[1/4] Checking Evidence SHA '${evidenceSha}' and git genealogy...`);
+    try {
+      execSync(`git cat-file -e ${evidenceSha}^{commit}`, { cwd: root, stdio: 'pipe' });
+    } catch (_) {
+      fail(`Halt Condition: Evidence SHA '${evidenceSha}' does not exist in git history.`);
+      return { ok: false, halt: true, errors };
+    }
+
+    // Check if evidenceSha is an ancestor of HEAD
+    try {
+      execSync(`git merge-base --is-ancestor ${evidenceSha} HEAD`, { cwd: root, stdio: 'pipe' });
+    } catch (_) {
+      fail(`Halt Condition: Evidence SHA '${evidenceSha}' is not an ancestor of current HEAD.`);
+      return { ok: false, halt: true, errors };
+    }
+
+    // Check that any commits between evidenceSha and HEAD are strictly docs-only
+    try {
+      const diffFiles = execSync(`git diff --name-only ${evidenceSha}..HEAD`, { cwd: root, encoding: 'utf8' })
+        .trim()
+        .split('\n')
+        .map((f) => f.trim())
+        .filter(Boolean);
+
+      const nonDocs = diffFiles.filter((f) => !f.startsWith('docs/'));
+      if (nonDocs.length > 0) {
+        fail(`Halt Condition: Non-docs commit changes detected between Evidence SHA '${evidenceSha}' and HEAD: ${nonDocs.join(', ')}`);
+        return { ok: false, halt: true, errors };
+      }
+      console.log(`✓ [GENEALOGY] HEAD descends cleanly from Evidence SHA '${evidenceSha}' (${diffFiles.length} docs-only diffs).`);
+    } catch (err) {
+      fail(`Halt Condition: Failed to compute diff between ${evidenceSha} and HEAD: ${err.message}`);
+      return { ok: false, halt: true, errors };
+    }
+  } else {
+    console.log('[1/4] Skipping Git genealogy check (skipGit flag set).');
+  }
+
+  // 3. Halt Condition 4: Pending decisions in Section 4 blocking action 1
+  console.log('[2/4] Checking pending decisions and blocking conditions...');
+  const pendingDecMatch = content.match(/-\s+\*\*Pending decisions:?\*\*:?\s*([^\n]+)/i);
+  if (pendingDecMatch) {
+    const decText = pendingDecMatch[1].trim();
+    if (decText && !decText.toLowerCase().includes('none')) {
+      if (decText.toLowerCase().includes('blocks: action 1') || decText.toLowerCase().includes('blocks action 1')) {
+        fail(`Halt Condition: Pending decision blocks Immediate Next Action 1: '${decText}'.`);
+        return { ok: false, halt: true, errors };
+      }
+    }
+  }
+  console.log('✓ [DECISIONS] No pending decision blocks Immediate Next Action 1.');
+
+  // 4. Verification Harness Execution
+  console.log('[3/4] Running repository verification harness...');
+  if (!skipVerify) {
+    try {
+      execSync('node scripts/verify-all', { cwd: root, stdio: 'inherit' });
+      console.log('✓ [VERIFY-ALL] All repository gates passed.');
+    } catch (err) {
+      fail('Halt Condition: Verification suite (scripts/verify-all) failed.');
+      return { ok: false, halt: true, errors };
+    }
+
+    // Verify last receipt check if cited in section 7
+    const receiptMatch = content.match(/`pnpm receipt:check\s+(A\d{3})`/);
+    if (receiptMatch) {
+      const receiptId = receiptMatch[1];
+      console.log(`Running receipt check for ${receiptId}...`);
+      try {
+        execSync(`node scripts/receipt-check ${receiptId}`, { cwd: root, stdio: 'inherit' });
+        console.log(`✓ [RECEIPT-CHECK] Receipt ${receiptId} verified.`);
+      } catch (_) {
+        fail(`Halt Condition: pnpm receipt:check ${receiptId} failed.`);
+        return { ok: false, halt: true, errors };
+      }
+    }
+  } else {
+    console.log('✓ [VERIFY-ALL] Skipped verify-all (--skip-verify flag set).');
+  }
+
+  // 5. Documentation check
+  console.log('[4/4] Verifying documentation identity and registry...');
+  try {
+    execSync('node scripts/docs-check', { cwd: root, stdio: 'inherit' });
+    console.log('✓ [DOCS-CHECK] Documentation identity verified.');
+  } catch (_) {
+    fail('Halt Condition: Documentation identity check (scripts/docs-check) failed.');
+    return { ok: false, halt: true, errors };
+  }
+
+  return {
+    ok: errors.length === 0,
+    halt: errors.length > 0,
+    errors,
+    id: validation.id,
+    path: relPath,
+    evidenceSha,
+  };
+}
+
+// CLI runner
+if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) {
+  const target = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : null;
+  const res = verifyHandover(target);
+
+  if (!res.ok) {
+    console.error('\n====================================================');
+    console.error('🛑 HALT CONDITION TRIGGERED (Change nothing; report to L):');
+    for (const err of res.errors) {
+      console.error(`  ✗ ${err}`);
+    }
+    console.error('====================================================\n');
+    process.exit(1);
+  } else {
+    console.log('\n====================================================');
+    console.log(`🎉 handover:verify PASSED for ${res.id || res.path}.`);
+    console.log('====================================================\n');
+    process.exit(0);
+  }
+}

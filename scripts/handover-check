@@ -1,0 +1,335 @@
+#!/usr/bin/env node
+/**
+ * Living Portfolio Handover Document Validator (`scripts/handover-check`)
+ * Implements IAHP (P001) Section 5, Section 7, and Section 11 Step 2.
+ *
+ * Usage:
+ *   node scripts/handover-check [H### | docs/handovers/H###-<slug>.md]
+ */
+import { readFileSync, statSync, existsSync, readdirSync } from 'node:fs';
+import { resolve, relative, basename } from 'node:path';
+import { execSync } from 'node:child_process';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const MAX_LINES = 300;
+const MAX_BYTES = 32 * 1024; // 32 KB = 32768 bytes
+const MAX_HOT_FILES = 7;
+const MAX_NEXT_ACTIONS = 7;
+const MAX_DECISIONS = 10;
+const MAX_PITFALLS = 10;
+
+const MANDATORY_SECTIONS = [
+  '1. Mission and constitution',
+  '2. Source-of-truth map',
+  '3. Phase ledger',
+  '4. Active workspace',
+  '5. Findings and backlog snapshot',
+  '6. Decisions and pitfalls',
+  '7. Verification harness',
+  '8. Entry halt conditions and exit checklist',
+];
+
+export function resolveHandoverPath(idOrPath, root = ROOT) {
+  if (idOrPath) {
+    if (existsSync(resolve(root, idOrPath))) {
+      return resolve(root, idOrPath);
+    }
+    const match = idOrPath.match(/^H\d{3}$/i);
+    if (match) {
+      const id = idOrPath.toUpperCase();
+      const handoversDir = resolve(root, 'docs/handovers');
+      if (existsSync(handoversDir)) {
+        const files = readdirSync(handoversDir);
+        const file = files.find((f) => f.startsWith(`${id}-`) && f.endsWith('.md'));
+        if (file) {
+          return resolve(handoversDir, file);
+        }
+      }
+      const regPath = resolve(root, 'docs/doc-registry.json');
+      if (existsSync(regPath)) {
+        try {
+          const reg = JSON.parse(readFileSync(regPath, 'utf8'));
+          const entry = reg.find((d) => d.id === id);
+          if (entry && entry.path && existsSync(resolve(root, entry.path))) {
+            return resolve(root, entry.path);
+          }
+        } catch (_) {}
+      }
+    }
+    throw new Error(`Handover document not found for identifier or path '${idOrPath}'.`);
+  }
+
+  // Look for latest H document in registry or handovers dir
+  const regPath = resolve(root, 'docs/doc-registry.json');
+  if (existsSync(regPath)) {
+    try {
+      const reg = JSON.parse(readFileSync(regPath, 'utf8'));
+      const hDocs = reg.filter((d) => d.class === 'H' && d.status === 'active');
+      if (hDocs.length > 0) {
+        // pick highest ID
+        hDocs.sort((a, b) => b.id.localeCompare(a.id));
+        const highest = hDocs[0];
+        if (existsSync(resolve(root, highest.path))) {
+          return resolve(root, highest.path);
+        }
+      }
+    } catch (_) {}
+  }
+
+  const handoversDir = resolve(root, 'docs/handovers');
+  if (existsSync(handoversDir)) {
+    const files = readdirSync(handoversDir).filter((f) => f.match(/^H\d{3}-.*\.md$/));
+    if (files.length > 0) {
+      files.sort().reverse();
+      return resolve(handoversDir, files[0]);
+    }
+  }
+
+  return null;
+}
+
+export function validateHandover(filePathOrId, options = {}) {
+  const root = options.root || ROOT;
+  const skipGit = options.skipGit || false;
+  const errors = [];
+  function fail(msg) {
+    errors.push(msg);
+  }
+
+  let absPath;
+  try {
+    absPath = resolveHandoverPath(filePathOrId, root);
+  } catch (err) {
+    fail(err.message);
+    return { ok: false, errors };
+  }
+
+  if (!absPath) {
+    return { ok: true, errors: [], note: 'No handover documents found to check.' };
+  }
+
+  const relPath = relative(root, absPath);
+  const content = readFileSync(absPath, 'utf8');
+  const stat = statSync(absPath);
+  const lines = content.split('\n');
+
+  // 1. Budget checks
+  if (lines.length > MAX_LINES) {
+    fail(`Line count exceeds budget: ${lines.length} lines (max ${MAX_LINES}).`);
+  }
+  if (stat.size > MAX_BYTES) {
+    fail(`File size exceeds budget: ${stat.size} bytes (max ${MAX_BYTES} bytes / 32 KB).`);
+  }
+
+  // 2. Unresolved templates or guidance comments
+  const placeholderMatches = content.match(/\{\{[^}]+\}\}/g);
+  if (placeholderMatches) {
+    fail(`Unresolved template placeholder(s) found: ${placeholderMatches.slice(0, 5).join(', ')}${placeholderMatches.length > 5 ? '...' : ''}.`);
+  }
+  if (content.includes('<!-- guidance')) {
+    fail('Found unresolved <!-- guidance --> comment(s). Remove all guidance comments before finalizing.');
+  }
+
+  // 3. Title & H1 Check
+  const h1Match = lines[0].match(/^#\s+(H\d{3})\s+—\s+(.+)$/);
+  if (!h1Match) {
+    fail(`First line must match H1 format '# H### — <Title>'. Got: '${lines[0]}'`);
+  }
+  const handoverId = h1Match ? h1Match[1] : null;
+
+  // 4. Header table checks
+  const headerFields = {
+    'Handover ID': null,
+    'Date': null,
+    'Author': null,
+    'Supersedes': null,
+    'Evidence SHA (on `main`)': null,
+    'CI runs for that SHA': null,
+    'Receipts covered': null,
+    'Phase closed': null,
+    'Phase next': null,
+  };
+
+  const headerTableLines = lines.slice(1, 40).filter((l) => l.trim().startsWith('|'));
+  for (const line of headerTableLines) {
+    const parts = line.split('|').map((p) => p.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      const field = parts[0];
+      const val = parts[1];
+      if (field in headerFields) {
+        headerFields[field] = val;
+      }
+    }
+  }
+
+  for (const [field, val] of Object.entries(headerFields)) {
+    if (!val || val === '...') {
+      fail(`Missing or empty header field '${field}'.`);
+    }
+  }
+
+  if (headerFields['Handover ID']) {
+    const rawId = headerFields['Handover ID'].replace(/[`]/g, '').trim();
+    if (handoverId && rawId !== handoverId) {
+      fail(`Handover ID in table ('${rawId}') does not match H1 ID ('${handoverId}').`);
+    }
+  }
+
+  if (headerFields['Date']) {
+    const dateVal = headerFields['Date'].trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) {
+      fail(`Invalid Date format '${dateVal}'. Expected YYYY-MM-DD.`);
+    }
+  }
+
+  let evidenceSha = null;
+  if (headerFields['Evidence SHA (on `main`)']) {
+    evidenceSha = headerFields['Evidence SHA (on `main`)'].replace(/[`]/g, '').trim();
+    if (!/^[a-f0-9]{7,40}$/i.test(evidenceSha)) {
+      fail(`Invalid Evidence SHA format '${evidenceSha}'. Expected 7-40 hex chars.`);
+    } else if (!skipGit) {
+      try {
+        execSync(`git cat-file -e ${evidenceSha}^{commit}`, { cwd: root, stdio: 'pipe' });
+      } catch (_) {
+        fail(`Evidence SHA '${evidenceSha}' is not a valid commit in git history.`);
+      }
+    }
+  }
+
+  // 5. Start Prompt check
+  if (!content.includes('**Start prompt (give this to the new session):**')) {
+    fail("Missing mandatory '**Start prompt (give this to the new session):**' header.");
+  }
+  if (!content.includes('> You are taking over the Living Portfolio implementation.')) {
+    fail("Start prompt block missing '> You are taking over the Living Portfolio implementation.'");
+  }
+  if (handoverId && !content.includes(`pnpm handover:verify ${handoverId}`)) {
+    fail(`Start prompt must instruct to run 'pnpm handover:verify ${handoverId}'.`);
+  }
+
+  // 6. Mandatory sections in exact order
+  const foundSections = [];
+  for (const line of lines) {
+    const match = line.match(/^##\s+(\d+\.\s+[^#\n]+)$/);
+    if (match) {
+      foundSections.push(match[1].trim());
+    }
+  }
+
+  for (let i = 0; i < MANDATORY_SECTIONS.length; i++) {
+    const expected = MANDATORY_SECTIONS[i];
+    if (foundSections[i] !== expected) {
+      fail(`Section ${i + 1} mismatch. Expected '## ${expected}', found '${foundSections[i] || 'MISSING'}'.`);
+    }
+  }
+
+  // 7. Section 4 & 6 sub-item budgets
+  // Count hot files in section 4
+  const hotFilesMatch = content.match(/-\s+\*\*Hot files[^\n]*\n([\s\S]*?)(?=\n-\s+\*\*|\n##|\n---|$)/i);
+  if (hotFilesMatch) {
+    const hotList = hotFilesMatch[1].trim();
+    const items = hotList.split('\n').filter((l) => l.trim().match(/^(\d+\.|\*|-)\s+/));
+    if (items.length > MAX_HOT_FILES) {
+      fail(`Section 4 Hot files count exceeds budget: ${items.length} items (max ${MAX_HOT_FILES}).`);
+    }
+  }
+
+  // Count next actions in section 4
+  const nextActionsMatch = content.match(/-\s+\*\*Immediate next actions[^\n]*\n([\s\S]*?)(?=\n-\s+\*\*|\n##|\n---|$)/i);
+  if (nextActionsMatch) {
+    const actionList = nextActionsMatch[1].trim();
+    const items = actionList.split('\n').filter((l) => l.trim().match(/^(\d+\.|\*|-)\s+/));
+    if (items.length < 1) {
+      fail('Section 4 Immediate next actions must contain at least 1 action.');
+    } else if (items.length > MAX_NEXT_ACTIONS) {
+      fail(`Section 4 Immediate next actions count exceeds budget: ${items.length} items (max ${MAX_NEXT_ACTIONS}).`);
+    }
+  }
+
+  // Count decisions in section 6
+  const decisionsMatch = content.match(/-\s+\*\*Decisions[^\n]*\n([\s\S]*?)(?=\n-\s+\*\*|\n##|\n---|$)/i);
+  if (decisionsMatch) {
+    const decList = decisionsMatch[1].trim();
+    const items = decList.split('\n').filter((l) => l.trim().match(/^(\d+\.|\*|-)\s+/));
+    if (items.length > MAX_DECISIONS) {
+      fail(`Section 6 Decisions count exceeds budget: ${items.length} items (max ${MAX_DECISIONS}).`);
+    }
+  }
+
+  // Count pitfalls in section 6
+  const pitfallsMatch = content.match(/-\s+\*\*Pitfalls[^\n]*\n([\s\S]*?)(?=\n-\s+\*\*|\n##|\n---|$)/i);
+  if (pitfallsMatch) {
+    const pitList = pitfallsMatch[1].trim();
+    const items = pitList.split('\n').filter((l) => l.trim().match(/^(\d+\.|\*|-)\s+/));
+    if (items.length > MAX_PITFALLS) {
+      fail(`Section 6 Pitfalls count exceeds budget: ${items.length} items (max ${MAX_PITFALLS}).`);
+    }
+  }
+
+  // 8. Path existence validation
+  // Scan content for repo-relative file paths enclosed in backticks
+  const pathRegex = /`((?:docs|apps|packages|scripts)\/[a-zA-Z0-9_\-./]+(?:\.[a-zA-Z0-9]+)?)`/g;
+  let match;
+  const pathsToCheck = new Set();
+  while ((match = pathRegex.exec(content)) !== null) {
+    const rawCandidate = match[1];
+    // Remove line number / anchor suffix if any (e.g. :10 or #L10)
+    const cleanPath = rawCandidate.replace(/[:#].*$/, '').trim();
+    // Exclude placeholders with braces or ellipsis
+    if (!cleanPath.includes('{') && !cleanPath.includes('...') && !cleanPath.endsWith('/')) {
+      pathsToCheck.add(cleanPath);
+    }
+  }
+
+  const selfRel = relPath ? relPath.replace(/\\/g, '/') : '';
+  const selfFile = absPath ? basename(absPath) : '';
+
+  for (const candidate of pathsToCheck) {
+    if (candidate === selfRel || basename(candidate) === selfFile) {
+      continue; // Self-reference to this handover file
+    }
+    if (handoverId && candidate.startsWith(`docs/handovers/${handoverId}`)) {
+      continue; // Self-reference to this handover ID
+    }
+    const resolvedCandidate = resolve(root, candidate);
+    if (!existsSync(resolvedCandidate)) {
+      fail(`Referenced repository path does not exist on disk: '${candidate}'.`);
+    }
+  }
+
+  return {
+    ok: errors.length === 0,
+    errors,
+    path: relPath,
+    id: handoverId,
+    evidenceSha,
+    lines: lines.length,
+    bytes: stat.size,
+  };
+}
+
+// CLI runner
+if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) {
+  const target = process.argv[2];
+  const res = validateHandover(target);
+  if (res.note) {
+    console.log(`ℹ️  ${res.note}`);
+    process.exit(0);
+  }
+
+  console.log(`=== Validating Handover ${res.path || target} ===\n`);
+  if (!res.ok) {
+    for (const err of res.errors) {
+      console.error(`✗ ${err}`);
+    }
+    console.error(`\n❌ handover:check FAILED with ${res.errors.length} error(s).`);
+    process.exit(1);
+  } else {
+    console.log(`✓ [BUDGET] Lines: ${res.lines}/${MAX_LINES}, Size: ${res.bytes}/${MAX_BYTES} bytes.`);
+    console.log(`✓ [HEADERS] Mandatory headers verified for ID '${res.id}'.`);
+    console.log(`✓ [SECTIONS] All 8 mandatory sections verified in order.`);
+    console.log(`✓ [PATHS & SHA] Evidence SHA '${res.evidenceSha}' and referenced paths exist.`);
+    console.log(`\n🎉 All handover checks PASSED for ${res.path}.`);
+    process.exit(0);
+  }
+}
