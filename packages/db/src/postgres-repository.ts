@@ -249,6 +249,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [row] = await this.db
       .insert(schema.ventures)
       .values({
+        id: (v as any).id ?? undefined,
         name: v.name,
         status: v.status,
         links: v.links ?? null,
@@ -282,19 +283,21 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [entryRow] = await this.db
       .insert(schema.entries)
       .values({
+        id: (e as any).id ?? undefined,
         slug: e.slug,
         title: e.title ?? 'Untitled',
         profile: e.profile ?? 'case-study',
         view: (e.view as any) ?? 'article',
         visibility: e.visibility ?? 'private',
         venture_id: e.venture_id ?? null,
-        created_at: writtenAt,
+        created_at: (e as any).created_at ? new Date((e as any).created_at) : writtenAt,
       })
       .returning();
 
     const [revRow] = await this.db
       .insert(schema.entryRevisions)
       .values({
+        id: (rev as any).id ?? undefined,
         entry_id: entryRow.id,
         body_md: rev.body_md,
         body_hash: rev.body_hash,
@@ -467,6 +470,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [row] = await this.db
       .insert(schema.entryRevisions)
       .values({
+        id: (rev as any).id ?? undefined,
         entry_id,
         body_md: rev.body_md,
         body_hash: rev.body_hash,
@@ -503,6 +507,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
       .insert(schema.spans)
       .values(
         spansList.map((s) => ({
+          id: (s as any).id ?? undefined,
           revision_id: s.revision_id,
           ordinal: s.ordinal,
           start_off: s.start_off,
@@ -530,12 +535,14 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [row] = await this.db
       .insert(schema.annotations)
       .values({
+        id: (a as any).id ?? undefined,
         span_id: a.span_id,
         role: a.role,
         profile: a.profile,
         source: a.source,
         status: a.status,
         confidence: a.confidence ?? null,
+        created_at: (a as any).created_at ? new Date((a as any).created_at) : undefined,
       })
       .returning();
     return mapAnnotation(row);
@@ -580,6 +587,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [row] = await this.db
       .insert(schema.facets)
       .values({
+        id: (f as any).id ?? undefined,
         entry_id: f.entry_id,
         revision_id: f.revision_id ?? null,
         key: f.key,
@@ -621,6 +629,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [row] = await this.db
       .insert(schema.claims)
       .values({
+        id: (c as any).id ?? undefined,
         revision_id: c.revision_id,
         text: c.text,
         kind: c.kind,
@@ -633,6 +642,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
         source_span_id: c.source_span_id ?? null,
         source: c.source,
         status: c.status,
+        recorded_at: (c as any).recorded_at ? new Date((c as any).recorded_at) : undefined,
       })
       .returning();
     return mapClaim(row);
@@ -682,12 +692,14 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [row] = await this.db
       .insert(schema.relations)
       .values({
+        id: (r as any).id ?? undefined,
         src_claim: r.src_claim,
         dst_claim: r.dst_claim,
         type: r.type,
         scope: r.scope ?? null,
         status: r.status,
         valid_from: toDate(r.valid_from),
+        recorded_at: (r as any).recorded_at ? new Date((r as any).recorded_at) : undefined,
       })
       .returning();
     return mapRelation(row);
@@ -747,6 +759,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [row] = await this.db
       .insert(schema.evidence)
       .values({
+        id: (ev as any).id ?? undefined,
         entry_id: ev.entry_id ?? null,
         span_id: ev.span_id ?? null,
         claim_id: ev.claim_id ?? null,
@@ -773,6 +786,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [row] = await this.db
       .insert(schema.mediaAssets)
       .values({
+        id: (m as any).id ?? undefined,
         entry_id: m.entry_id ?? null,
         mime_type: m.mime_type,
         uri: m.uri,
@@ -796,6 +810,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [row] = await this.db
       .insert(schema.escalations)
       .values({
+        id: (esc as any).id ?? undefined,
         question: esc.question,
         query_class: esc.query_class,
         facets: esc.facets ?? null,
@@ -806,6 +821,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
         booked: esc.booked ?? false,
         status: esc.status,
         due_at: toDate(esc.due_at),
+        at: (esc as any).at ? new Date((esc as any).at) : undefined,
       })
       .returning();
     return mapEscalation(row);
@@ -842,12 +858,14 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [row] = await this.db
       .insert(schema.correctionLog)
       .values({
+        id: (log as any).id ?? undefined,
         kind: log.kind ?? null,
         role: log.role ?? null,
         domain: log.domain ?? null,
         machine_confidence: log.machine_confidence ?? null,
         owner_action: log.owner_action,
         edit_distance: log.edit_distance ?? null,
+        at: (log as any).at ? new Date((log as any).at) : undefined,
       })
       .returning();
     return mapCorrection(row);
@@ -865,12 +883,14 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [row] = await this.db
       .insert(schema.calibrationChanges)
       .values({
+        id: (c as any).id ?? undefined,
         parameter: c.parameter,
         old_value: c.old_value,
         new_value: c.new_value,
         evidence_count: c.evidence_count,
         applied_by: c.applied_by,
         reversible: c.reversible,
+        at: (c as any).at ? new Date((c as any).at) : undefined,
       })
       .returning();
     return mapCalibration(row);
@@ -888,11 +908,13 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     const [row] = await this.db
       .insert(schema.scopedConstraints)
       .values({
+        id: (sc as any).id ?? undefined,
         constraint: sc.constraint,
         scope: sc.scope,
         source_escalation: sc.source_escalation ?? null,
         source_quote: sc.source_quote ?? null,
         status: sc.status,
+        at: (sc as any).at ? new Date((sc as any).at) : undefined,
       })
       .returning();
     return mapScopedConstraint(row);
@@ -1124,6 +1146,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     );
 
     const values = vectors.map((v) => ({
+      id: (v as any).id ?? undefined,
       chunk_id: v.chunk_id,
       embedding_set_id: embeddingSetId,
       vector: v.vector,

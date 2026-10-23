@@ -145,7 +145,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   private chunkVectors = new Map<string, ChunkVectorRecord>();
 
   async createVenture(v: Omit<Venture, 'id'>): Promise<Venture> {
-    const id = crypto.randomUUID();
+    const id = (v as any).id ?? crypto.randomUUID();
     const venture: Venture = { ...v, id };
     this.ventures.set(id, venture);
     return venture;
@@ -163,8 +163,8 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     e: Omit<Entry, 'id' | 'created_at'>,
     rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'> & { written_at?: string }
   ): Promise<{ entry: Entry; revision: EntryRevision }> {
-    const entryId = crypto.randomUUID();
-    const revId = crypto.randomUUID();
+    const entryId = (e as any).id ?? crypto.randomUUID();
+    const revId = (rev as any).id ?? crypto.randomUUID();
     const now = new Date().toISOString();
     const writtenAt = rev.written_at ?? (!rev.is_hindsight && rev.valid_from ? rev.valid_from : now);
 
@@ -180,7 +180,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
       ...e,
       id: entryId,
       current_revision_id: revId,
-      created_at: writtenAt,
+      created_at: (e as any).created_at ?? writtenAt,
     };
     this.entries.set(entryId, entry);
 
@@ -303,7 +303,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     entry_id: string,
     rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'> & { written_at?: string }
   ): Promise<EntryRevision> {
-    const revId = crypto.randomUUID();
+    const revId = (rev as any).id ?? crypto.randomUUID();
     const revision: EntryRevision = {
       ...rev,
       id: revId,
@@ -326,7 +326,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   async saveSpans(spansToSave: Omit<Span, 'id'>[]): Promise<Span[]> {
     const saved: Span[] = [];
     for (const s of spansToSave) {
-      const id = crypto.randomUUID();
+      const id = (s as any).id ?? crypto.randomUUID();
       const span: Span = { ...s, id };
       this.spans.set(id, span);
       saved.push(span);
@@ -341,8 +341,12 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   }
 
   async saveAnnotation(a: Omit<Annotation, 'id' | 'created_at'>): Promise<Annotation> {
-    const id = crypto.randomUUID();
-    const annotation: Annotation = { ...a, id, created_at: new Date().toISOString() };
+    const id = (a as any).id ?? crypto.randomUUID();
+    const annotation: Annotation = {
+      ...a,
+      id,
+      created_at: (a as any).created_at ?? new Date().toISOString(),
+    };
     this.annotations.set(id, annotation);
     return annotation;
   }
@@ -369,7 +373,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   }
 
   async saveFacet(f: Omit<Facet, 'id'>): Promise<Facet> {
-    const id = crypto.randomUUID();
+    const id = (f as any).id ?? crypto.randomUUID();
     const facet: Facet = { ...f, id };
     this.facets.set(id, facet);
     return facet;
@@ -388,8 +392,12 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   }
 
   async saveClaim(c: Omit<Claim, 'id' | 'recorded_at'>): Promise<Claim> {
-    const id = crypto.randomUUID();
-    const claim: Claim = { ...c, id, recorded_at: new Date().toISOString() };
+    const id = (c as any).id ?? crypto.randomUUID();
+    const claim: Claim = {
+      ...c,
+      id,
+      recorded_at: (c as any).recorded_at ?? new Date().toISOString(),
+    };
     this.claims.set(id, claim);
     return claim;
   }
@@ -416,8 +424,12 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   }
 
   async saveRelation(r: Omit<Relation, 'id' | 'recorded_at'>): Promise<Relation> {
-    const id = crypto.randomUUID();
-    const relation: Relation = { ...r, id, recorded_at: new Date().toISOString() };
+    const id = (r as any).id ?? crypto.randomUUID();
+    const relation: Relation = {
+      ...r,
+      id,
+      recorded_at: (r as any).recorded_at ?? new Date().toISOString(),
+    };
     this.relations.set(id, relation);
     return relation;
   }
@@ -445,7 +457,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   }
 
   async saveEvidence(ev: Omit<Evidence, 'id'>): Promise<Evidence> {
-    const id = crypto.randomUUID();
+    const id = (ev as any).id ?? crypto.randomUUID();
     const item: Evidence = { ...ev, id };
     this.evidence.set(id, item);
     return item;
@@ -456,7 +468,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   }
 
   async saveMedia(m: Omit<MediaAsset, 'id'>): Promise<MediaAsset> {
-    const id = crypto.randomUUID();
+    const id = (m as any).id ?? crypto.randomUUID();
     const asset: MediaAsset = { ...m, id };
     this.media.set(id, asset);
     return asset;
@@ -467,8 +479,12 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   }
 
   async saveEscalation(esc: Omit<Escalation, 'id' | 'at'>): Promise<Escalation> {
-    const id = crypto.randomUUID();
-    const item: Escalation = { ...esc, id, at: new Date().toISOString() };
+    const id = (esc as any).id ?? crypto.randomUUID();
+    const item: Escalation = {
+      ...esc,
+      id,
+      at: (esc as any).at ?? new Date().toISOString(),
+    };
     this.escalations.set(id, item);
     return item;
   }
@@ -490,8 +506,12 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   }
 
   async saveCorrection(log: Omit<CorrectionLog, 'id' | 'at'>): Promise<CorrectionLog> {
-    const id = crypto.randomUUID();
-    const item: CorrectionLog = { ...log, id, at: new Date().toISOString() };
+    const id = (log as any).id ?? crypto.randomUUID();
+    const item: CorrectionLog = {
+      ...log,
+      id,
+      at: (log as any).at ?? new Date().toISOString(),
+    };
     this.correctionLogs.set(id, item);
     return item;
   }
@@ -505,8 +525,12 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   }
 
   async saveCalibrationChange(c: Omit<CalibrationChange, 'id' | 'at'>): Promise<CalibrationChange> {
-    const id = crypto.randomUUID();
-    const item: CalibrationChange = { ...c, id, at: new Date().toISOString() };
+    const id = (c as any).id ?? crypto.randomUUID();
+    const item: CalibrationChange = {
+      ...c,
+      id,
+      at: (c as any).at ?? new Date().toISOString(),
+    };
     this.calibrationChanges.set(id, item);
     return item;
   }
@@ -518,8 +542,12 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   }
 
   async saveScopedConstraint(sc: Omit<ScopedConstraint, 'id' | 'at'>): Promise<ScopedConstraint> {
-    const id = crypto.randomUUID();
-    const item: ScopedConstraint = { ...sc, id, at: new Date().toISOString() };
+    const id = (sc as any).id ?? crypto.randomUUID();
+    const item: ScopedConstraint = {
+      ...sc,
+      id,
+      at: (sc as any).at ?? new Date().toISOString(),
+    };
     this.scopedConstraints.set(id, item);
     return item;
   }
@@ -658,13 +686,13 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   }>): Promise<ChunkVectorRecord[]> {
     const results: ChunkVectorRecord[] = [];
     for (const v of vectors) {
-      const id = crypto.randomUUID();
+      const id = (v as any).id ?? crypto.randomUUID();
       const rec: ChunkVectorRecord = {
         id,
         chunk_id: v.chunk_id,
         vector: v.vector,
         text_snippet: v.text_snippet,
-        embedding_set_id: 'in-memory-embedding-set',
+        embedding_set_id: (v as any).embedding_set_id ?? 'in-memory-embedding-set',
       };
       this.chunkVectors.set(id, rec);
       results.push(rec);

@@ -2,7 +2,13 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { loadConfig } from '@living-portfolio/config';
-import { InMemoryPortfolioRepository, PostgresPortfolioRepository, seedDemoPortfolio, type IPortfolioRepository } from '@living-portfolio/db';
+import {
+  InMemoryPortfolioRepository,
+  PostgresPortfolioRepository,
+  DualWritePortfolioRepository,
+  seedDemoPortfolio,
+  type IPortfolioRepository,
+} from '@living-portfolio/db';
 import { BudgetGovernor, MockModelProvider, OpenAICompatibleProvider, resolveConfiguredProviders, type ModelProvider } from '@living-portfolio/ai';
 import { DEFAULT_STRATA_THEME } from '@living-portfolio/core';
 import {
@@ -29,14 +35,24 @@ export function createApp(
     bootstrapAdminToken?: string;
     allowedOrigins?: string[];
     providers?: ModelProvider[];
-    databaseKind?: 'in-memory' | 'postgres';
+    databaseKind?: 'in-memory' | 'postgres' | 'dual-write';
   }
 ) {
   const app = new Hono();
   const cfg = loadConfig();
+  const dbKind =
+    options?.databaseKind ??
+    (process.env.PORTFOLIO_DB_MODE as any) ??
+    (options?.databaseKind === undefined && process.env.DATABASE_URL ? 'postgres' : 'in-memory');
+
   const repo =
     customRepo ??
-    (options?.databaseKind === 'postgres'
+    (dbKind === 'dual-write'
+      ? new DualWritePortfolioRepository({
+          primary: new InMemoryPortfolioRepository(),
+          shadow: new PostgresPortfolioRepository(),
+        })
+      : dbKind === 'postgres'
       ? new PostgresPortfolioRepository()
       : new InMemoryPortfolioRepository());
   const governor = new BudgetGovernor();
@@ -140,6 +156,39 @@ export function createApp(
   app.route('/api/audit', createAuditRoutes(repo));
   app.route('/api/import', createImportRoutes(repo, auth));
   app.route('/api/settings', createSettingsRoutes(repo, runtimeState, auth));
+
+  // Shadow verification & metrics endpoints (WP-2.4, Fix 8, Fix 10, OSR-15)
+  app.get('/api/admin/metrics/shadow', auth.requireAdminMiddleware(), (c) => {
+    if (repo instanceof DualWritePortfolioRepository) {
+      return c.json({
+        ok: true,
+        mode: 'dual-write',
+        metrics: repo.getShadowMetrics(),
+      });
+    }
+    return c.json({
+      ok: true,
+      mode: dbKind,
+      metrics: null,
+      message: 'Dual-write verification harness is not active in this runtime mode.',
+    });
+  });
+
+  app.post('/api/admin/metrics/shadow/reset', auth.requireAdminMiddleware(), (c) => {
+    if (repo instanceof DualWritePortfolioRepository) {
+      repo.resetShadowMetrics();
+      return c.json({ ok: true, reset: true });
+    }
+    return c.json({ ok: false, message: 'Dual-write repository is not active.' }, 400);
+  });
+
+  app.get('/api/admin/metrics/shadow/parity', auth.requireAdminMiddleware(), async (c) => {
+    if (repo instanceof DualWritePortfolioRepository) {
+      const parity = await repo.verifyParity();
+      return c.json({ ok: true, parity });
+    }
+    return c.json({ ok: false, message: 'Dual-write repository is not active.' }, 400);
+  });
 
   // Seed demo portfolio on demand (Admin-only, S1; disabled in production per OSR-04)
   app.post('/api/seed', auth.requireAdminMiddleware(), async (c) => {
