@@ -93,6 +93,30 @@ export function compareResults(
     return { isMatch: true };
   }
 
+  // Treat undefined and boolean false as equivalent for default boolean schema flags (e.g. is_hindsight, booked)
+  if (
+    (primary === undefined && shadow === false) ||
+    (primary === false && shadow === undefined)
+  ) {
+    return { isMatch: true };
+  }
+
+  // Treat undefined and 'estimated' as equivalent for temporal_level schema default
+  if (
+    (primary === undefined && shadow === 'estimated') ||
+    (primary === 'estimated' && shadow === undefined)
+  ) {
+    return { isMatch: true };
+  }
+
+  // Treat undefined and 0 as equivalent for numeric counter defaults (e.g. token_count, citation_clicks)
+  if (
+    (primary === undefined && shadow === 0) ||
+    (primary === 0 && shadow === undefined)
+  ) {
+    return { isMatch: true };
+  }
+
   if (primary == null || shadow == null) {
     return {
       isMatch: false,

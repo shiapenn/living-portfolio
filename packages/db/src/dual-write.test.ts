@@ -375,7 +375,10 @@ describe.skipIf(!isDatabaseConfigured)(
       expect(readClaims[0].id).toBe(claim.id);
 
       // Verify parity check
-      const parity = await dualRepo.verifyParity();
+      const parity = await dualRepo.verifyParity({ venture_id: venture.id });
+      if (!parity.isParityClean) {
+        console.error('Dual-write parity mismatches:', JSON.stringify(parity.mismatches, null, 2));
+      }
       expect(parity.isParityClean).toBe(true);
       expect(parity.mismatches.length).toBe(0);
 

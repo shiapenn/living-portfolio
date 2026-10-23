@@ -173,12 +173,18 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
       id: revId,
       entry_id: entryId,
       written_at: writtenAt,
+      temporal_level: rev.temporal_level ?? 'estimated',
+      is_hindsight: rev.is_hindsight ?? false,
     };
     this.revisions.set(revId, revision);
 
     const entry: Entry = {
       ...e,
       id: entryId,
+      title: e.title ?? 'Untitled',
+      profile: e.profile ?? 'case-study',
+      view: (e.view as any) ?? 'article',
+      visibility: e.visibility ?? 'private',
       current_revision_id: revId,
       created_at: (e as any).created_at ?? writtenAt,
     };
@@ -309,6 +315,8 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
       id: revId,
       entry_id,
       written_at: rev.written_at ?? new Date().toISOString(),
+      temporal_level: rev.temporal_level ?? 'estimated',
+      is_hindsight: rev.is_hindsight ?? false,
     };
     this.revisions.set(revId, revision);
 
