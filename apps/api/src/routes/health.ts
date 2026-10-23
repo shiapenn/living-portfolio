@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 
 export interface HealthRouteOptions {
-  databaseKind?: 'in-memory' | 'postgres';
+  databaseKind?: 'in-memory' | 'postgres' | 'dual-write';
   configuredProviders?: string[];
 }
 
