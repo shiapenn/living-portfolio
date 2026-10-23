@@ -375,14 +375,14 @@ export class DualWritePortfolioRepository implements IPortfolioRepository {
     return primaryResult;
   }
 
-  async verifyParity(): Promise<{
+  async verifyParity(filter?: { venture_id?: string }): Promise<{
     isParityClean: boolean;
     mismatches: ShadowMismatchEvent[];
     metrics: ShadowMetrics;
   }> {
     // Read entity lists across both engines and verify complete alignment
     await this.listVentures();
-    await this.listEntries();
+    await this.listEntries(filter);
     await this.listAcceptedRelations();
 
     const metrics = this.getShadowMetrics();

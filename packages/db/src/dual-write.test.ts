@@ -278,6 +278,10 @@ describe.skipIf(!isDatabaseConfigured)(
     beforeAll(async () => {
       pool = createDbPool();
       await runMigrations(pool);
+      // Clean previous test data to ensure clean slate for live dual-write verification
+      await pool.query(
+        'TRUNCATE ventures, entries, entry_revisions, spans, annotations, facets, claims, relations, evidence, media_assets, escalations, correction_log, calibration_changes, scoped_constraints, chunk_vectors CASCADE;'
+      );
       primary = new InMemoryPortfolioRepository();
       postgresRepo = new PostgresPortfolioRepository();
       dualRepo = new DualWritePortfolioRepository({
