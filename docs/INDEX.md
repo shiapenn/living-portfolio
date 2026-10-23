@@ -26,6 +26,7 @@
 | `A018` | WP-2.1: PostgreSQL 16 Scaffolding, Connection Pooling, and Migration Harness | `active` | [A018-wp2-1-postgres-scaffolding.md](execution-reports/A018-wp2-1-postgres-scaffolding.md) | — |
 | `A019` | WP-2.2: Postgres Repository & Dual-Engine Conformance Suite | `active` | [A019-wp2-2-postgres-repository.md](execution-reports/A019-wp2-2-postgres-repository.md) | — |
 | `A020` | WP-2.3: pg-boss Background Worker & Temporal Bisimulation Engine | `active` | [A020-wp2-3-worker-pgboss.md](execution-reports/A020-wp2-3-worker-pgboss.md) | — |
+| `A021` | WP-2.4: Dual-Write Verification Harness & Shadow Metrics Suite | `active` | [A021-wp2-4-dual-write-verification.md](execution-reports/A021-wp2-4-dual-write-verification.md) | — |
 
 ## Handover Snapshots (Class H)
 
