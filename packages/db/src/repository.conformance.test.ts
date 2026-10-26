@@ -572,6 +572,52 @@ export function defineRepositoryConformanceTests(
       // Cleanup
       await repo.deleteEntry(entry.id);
     });
+
+    // --- BudgetGovernor Ledger (§13.5, B1-B4, Fix 11) ---
+    it('persists and retrieves governor ledger entries across days (§13.5, B1-B4, Fix 11)', async () => {
+      const providerId = `provider-${Date.now()}`;
+      const dayUtc = '2026-10-26';
+
+      const initial = await repo.getGovernorLedger(providerId, dayUtc);
+      expect(initial).toBeNull();
+
+      const saved = await repo.saveGovernorLedger({
+        provider_id: providerId,
+        day_utc: dayUtc,
+        visitor_tokens: 3500,
+        owner_tokens: 1200,
+        background_tokens: 800,
+        requests_count: 15,
+        last_reset: new Date().toISOString(),
+        effective_tpm_discount: 0.7,
+      });
+
+      expect(saved.provider_id).toBe(providerId);
+      expect(saved.visitor_tokens).toBe(3500);
+      expect(saved.owner_tokens).toBe(1200);
+      expect(saved.background_tokens).toBe(800);
+
+      const retrieved = await repo.getGovernorLedger(providerId, dayUtc);
+      expect(retrieved).not.toBeNull();
+      expect(retrieved?.visitor_tokens).toBe(3500);
+      expect(retrieved?.owner_tokens).toBe(1200);
+      expect(retrieved?.background_tokens).toBe(800);
+      expect(retrieved?.requests_count).toBe(15);
+      expect(retrieved?.effective_tpm_discount).toBeCloseTo(0.7);
+
+      // Update existing record
+      const updated = await repo.saveGovernorLedger({
+        ...saved,
+        visitor_tokens: 4200,
+        requests_count: 18,
+      });
+      expect(updated.visitor_tokens).toBe(4200);
+      expect(updated.requests_count).toBe(18);
+
+      const retrievedAgain = await repo.getGovernorLedger(providerId, dayUtc);
+      expect(retrievedAgain?.visitor_tokens).toBe(4200);
+      expect(retrievedAgain?.requests_count).toBe(18);
+    });
   });
 }
 

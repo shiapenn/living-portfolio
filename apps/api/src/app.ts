@@ -67,7 +67,7 @@ export function createApp(
       : dbKind === 'postgres'
       ? new PostgresPortfolioRepository()
       : new InMemoryPortfolioRepository());
-  const governor = new BudgetGovernor();
+  const governor = new BudgetGovernor({}, repo);
   const mockProvider = new MockModelProvider();
 
   // Resolve model providers strictly from configuration or explicit options (Spec §10.8, §13.5)

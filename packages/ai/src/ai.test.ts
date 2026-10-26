@@ -38,6 +38,7 @@ describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redact
     const governor = new BudgetGovernor({
       visitorShare: 0.6,
       backgroundReserve: 0.3,
+      ownerReserve: 0.2,
       softThreshold: 0.8,
       hardThreshold: 1.0,
       perVisitorHourlyCap: 2,
@@ -52,6 +53,129 @@ describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redact
     expect(governor.checkVisitorRateLimit('v1').allowed).toBe(true);
     expect(governor.checkVisitorRateLimit('v1').allowed).toBe(true);
     expect(governor.checkVisitorRateLimit('v1').allowed).toBe(false);
+  });
+
+  it('[B1] reserves >=20% capacity for owner-interactive calls and enforces priority access (§13.5)', () => {
+    const governor = new BudgetGovernor({
+      ownerReserve: 0.2, // 20% reserved for owner
+      visitorShare: 0.8,
+      backgroundReserve: 0.3,
+    });
+    // Create a mock provider with dailyTokens: 10,000
+    const provider = new MockModelProvider();
+    provider.limits = () => ({ rpm: 1000, tpm: 100000, dailyTokens: 10000 });
+
+    // Fill up to 8,000 tokens (80% of daily quota, reaching 1.0 - ownerReserve)
+    const initLease = governor.acquire([provider], 8000, 'visitor_interactive', 'public');
+    expect(initLease.provider).not.toBeNull();
+
+    // Non-owner requests (visitor and background) should now be rejected to protect owner reserve
+    const visitorLease = governor.acquire([provider], 100, 'visitor_interactive', 'public');
+    expect(visitorLease.provider).toBeNull();
+    expect(visitorLease.degradationStep).toBe('extractive');
+
+    const backgroundLease = governor.acquire([provider], 100, 'background', 'public');
+    expect(backgroundLease.provider).toBeNull();
+    expect(backgroundLease.degradationStep).toBe('extractive');
+
+    // Owner interactive calls can still use the reserved 20% capacity
+    const ownerLease = governor.acquire([provider], 1000, 'owner_interactive', 'public');
+    expect(ownerLease.provider).not.toBeNull();
+  });
+
+  it('[B2, B3] computes visitor thresholds against visitor allocation and enables smaller_model step (§10.8, §13.5)', () => {
+    const governor = new BudgetGovernor({
+      visitorShare: 0.6, // 60% visitor allocation = 6,000 tokens of 10,000
+      softThreshold: 0.8, // 80% of visitor budget = 4,800 tokens
+      hardThreshold: 1.0,
+      ownerReserve: 0.2,
+    });
+    const provider = new MockModelProvider();
+    provider.limits = () => ({ rpm: 1000, tpm: 100000, dailyTokens: 10000 });
+
+    // Visitor spends 4,000 tokens (< 80% of 6,000 visitor allocation): normal mode
+    const lease1 = governor.acquire([provider], 4000, 'visitor_interactive', 'public');
+    expect(lease1.provider).not.toBeNull();
+    expect(lease1.degradationStep).toBe('normal');
+
+    // Visitor spends another 1,000 tokens (total 5,000 >= 80% of 6,000): smaller_model reachable
+    const lease2 = governor.acquire([provider], 1000, 'visitor_interactive', 'public');
+    expect(lease2.provider).not.toBeNull();
+    expect(lease2.degradationStep).toBe('smaller_model');
+
+    // Visitor exceeds 6,000 tokens: blocked and downgraded to extractive
+    const lease3 = governor.acquire([provider], 2000, 'visitor_interactive', 'public');
+    expect(lease3.provider).toBeNull();
+    expect(lease3.degradationStep).toBe('extractive');
+  });
+
+  it('[B4] enforces per-minute limits, 429 penalty, header learning, and token reconciliation (§13.5)', () => {
+    const governor = new BudgetGovernor();
+    const provider = new MockModelProvider();
+    provider.limits = () => ({ rpm: 2, tpm: 1000, dailyTokens: 50000 });
+
+    // RPM limit check: 2 requests allowed per minute
+    const l1 = governor.acquire([provider], 100, 'visitor_interactive', 'public');
+    expect(l1.provider).not.toBeNull();
+    const l2 = governor.acquire([provider], 100, 'visitor_interactive', 'public');
+    expect(l2.provider).not.toBeNull();
+    const l3 = governor.acquire([provider], 100, 'visitor_interactive', 'public');
+    expect(l3.provider).toBeNull(); // RPM exceeded
+
+    // Token reconciliation: estimated 100 tokens, actual was 30 tokens
+    governor.reconcileUsage(provider.id, 'visitor_interactive', 100, 30);
+    const ledger = governor.getLedger(provider.id);
+    expect(ledger.visitorTokensToday).toBe(130); // 200 - 70 = 130
+
+    // Header learning
+    governor.recordResponseHeaders(provider.id, {
+      'x-ratelimit-limit-tokens': '5000',
+      'x-ratelimit-limit-requests': '10',
+      'x-ratelimit-limit-tokens-daily': '20000',
+    });
+    expect(ledger.learnedTpm).toBe(5000);
+    expect(ledger.learnedRpm).toBe(10);
+    expect(ledger.learnedDailyTokens).toBe(20000);
+
+    // 429 Rate limit error discount
+    governor.recordRateLimitError(provider.id, 60);
+    expect(ledger.effectiveTpmDiscount).toBeLessThan(1.0);
+    expect(ledger.isRateLimitedUntil).toBeDefined();
+
+    // While rate-limited, provider is skipped
+    const l4 = governor.acquire([provider], 10, 'owner_interactive', 'public');
+    expect(l4.provider).toBeNull();
+  });
+
+  it('[B1-B4] persists governor ledger with UTC midnight resets', async () => {
+    const memoryStore: Record<string, any> = {};
+    const mockStorage = {
+      async getGovernorLedger(provider_id: string, day_utc: string) {
+        return memoryStore[`${provider_id}:${day_utc}`] || null;
+      },
+      async saveGovernorLedger(entry: any) {
+        memoryStore[`${entry.provider_id}:${entry.day_utc}`] = { ...entry };
+        return entry;
+      },
+    };
+
+    const governor = new BudgetGovernor({}, mockStorage);
+    const provider = new MockModelProvider();
+    provider.limits = () => ({ rpm: 1000, tpm: 100000, dailyTokens: 10000 });
+
+    governor.acquire([provider], 1200, 'visitor_interactive', 'public');
+    await governor.persist(provider.id);
+
+    const todayStr = new Date().toISOString().slice(0, 10);
+    expect(memoryStore[`${provider.id}:${todayStr}`]).toBeDefined();
+    expect(memoryStore[`${provider.id}:${todayStr}`].visitor_tokens).toBe(1200);
+
+    // Create a new governor instance representing process reboot and load persisted state
+    const restoredGovernor = new BudgetGovernor({}, mockStorage);
+    await restoredGovernor.loadFromStorage(provider.id, todayStr);
+    const restoredLedger = restoredGovernor.getLedger(provider.id);
+    expect(restoredLedger.visitorTokensToday).toBe(1200);
+    expect(restoredLedger.tokensToday).toBe(1200);
   });
 
   it('detects anachronisms during time-travel verification (§10.6)', () => {

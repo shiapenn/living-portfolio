@@ -20,6 +20,7 @@ import type {
   SearchResult,
   TemporalExpandOptions,
   ChunkVectorRecord,
+  GovernorLedgerEntry,
 } from './repository.js';
 
 export interface ShadowOperationMetric {
@@ -849,6 +850,23 @@ export class DualWritePortfolioRepository implements IPortfolioRepository {
       'getChunkVectorsForRevision',
       () => this.primary.getChunkVectorsForRevision(revision_id),
       () => this.shadow.getChunkVectorsForRevision(revision_id)
+    );
+  }
+
+  // --- BudgetGovernor Ledger (§13.5, B1-B4, Fix 11) ---
+  async getGovernorLedger(provider_id: string, day_utc: string): Promise<GovernorLedgerEntry | null> {
+    return this.executeRead(
+      'getGovernorLedger',
+      () => this.primary.getGovernorLedger(provider_id, day_utc),
+      () => this.shadow.getGovernorLedger(provider_id, day_utc)
+    );
+  }
+
+  async saveGovernorLedger(ledger: GovernorLedgerEntry): Promise<GovernorLedgerEntry> {
+    return this.executeWrite(
+      'saveGovernorLedger',
+      () => this.primary.saveGovernorLedger(ledger),
+      (saved) => this.shadow.saveGovernorLedger({ ...ledger, ...(saved.id ? { id: saved.id } : {}) })
     );
   }
 

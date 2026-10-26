@@ -168,14 +168,7 @@ export function createAskRoutes(config: AskEngineConfig) {
       tier2Floor: activeTier2Floor,
     });
 
-    // 6. Budget governor and degradation ladder (§10.8, §13.5)
-    let { provider, degradationStep } = governor.acquire(
-      providers,
-      250, // est tokens
-      'visitor_interactive',
-      'public' // public records only
-    );
-
+    // 6. Extractive mode or Tier 3 check before spending quota (Spec §10.8, §13.5, G8, Fix 11)
     const forceExtractive = runtime?.simulatedDegradationMode === 'extractive';
 
     // Helper for extractive degradation response
@@ -200,8 +193,29 @@ export function createAskRoutes(config: AskEngineConfig) {
       });
     };
 
-    // 7. Degradation Step: Extractive Mode (Spec §10.8 Step 5)
-    if (forceExtractive || degradationStep === 'extractive' || !provider || routeDecision.isExtractive) {
+    if (forceExtractive || routeDecision.isExtractive) {
+      return buildExtractiveResponse();
+    }
+
+    if (routeDecision.tier === 'tier3') {
+      return c.json({
+        tier: 'tier3',
+        queryClass,
+        answer: 'This topic involves specific constraints that are better addressed in a live conversation.',
+        bookingUrl: `/book?q=${encodeURIComponent(query)}`,
+        degradationStep: 'normal',
+      });
+    }
+
+    // 7. Acquire lease for generative paths (Tier 1 synthesis or Tier 2 draft)
+    let { provider, degradationStep } = governor.acquire(
+      providers,
+      250, // est tokens
+      'visitor_interactive',
+      'public' // public records only
+    );
+
+    if (degradationStep === 'extractive' || !provider) {
       return buildExtractiveResponse();
     }
 
@@ -227,6 +241,7 @@ export function createAskRoutes(config: AskEngineConfig) {
             ],
             temperature: 0.1,
           });
+          governor.reconcileUsage(provider.id, 'visitor_interactive', 250, draftCompletion.usage?.totalTokens ?? 250);
           const vDraft = verifyAnswerBeforeDelivery({
             draftText: draftCompletion.text,
             citedSpans: candidateMatches.map((m) => m.span),
@@ -236,6 +251,7 @@ export function createAskRoutes(config: AskEngineConfig) {
           });
           escalationDraft = vDraft.verifiedText;
         } catch {
+          governor.reconcileUsage(provider.id, 'visitor_interactive', 250, 0);
           escalationDraft = candidateMatches.slice(0, 2).map((m) => m.span.text_exact).join('\n\n');
         }
       } else {
@@ -256,17 +272,6 @@ export function createAskRoutes(config: AskEngineConfig) {
         queryClass,
         answer: 'This needs the owner\'s review. Typical reply within 24 hours.',
         status: 'pending_review',
-        degradationStep,
-      });
-    }
-
-    // 9. Tier 3: Conversation / booking
-    if (routeDecision.tier === 'tier3') {
-      return c.json({
-        tier: 'tier3',
-        queryClass,
-        answer: 'This topic involves specific constraints that are better addressed in a live conversation.',
-        bookingUrl: `/book?q=${encodeURIComponent(query)}`,
         degradationStep,
       });
     }
@@ -295,8 +300,10 @@ export function createAskRoutes(config: AskEngineConfig) {
           ],
           temperature: 0.1,
         });
+        governor.reconcileUsage(activeProvider.id, 'visitor_interactive', 250, completion.usage?.totalTokens ?? 250);
         completionText = completion.text;
       } catch (err: any) {
+        governor.reconcileUsage(activeProvider.id, 'visitor_interactive', 250, 0);
         if (err?.message?.includes('429') || err?.status === 429) {
           governor.recordRateLimitError(activeProvider.id);
         }
@@ -320,12 +327,14 @@ export function createAskRoutes(config: AskEngineConfig) {
                 ],
                 temperature: 0.1,
               });
+              governor.reconcileUsage(fallbackLease.provider.id, 'visitor_interactive', 250, res.usage?.totalTokens ?? 250);
               completionText = res.text;
               activeProvider = fallbackLease.provider;
               degradationStep = fallbackLease.degradationStep;
               break;
             }
           } catch (fbErr: any) {
+            governor.reconcileUsage(fallback.id, 'visitor_interactive', 250, 0);
             if (fbErr?.message?.includes('429') || fbErr?.status === 429) {
               governor.recordRateLimitError(fallback.id);
             }

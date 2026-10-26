@@ -17,7 +17,7 @@ import type {
 } from '@living-portfolio/core';
 import { isTemporallyValid } from '@living-portfolio/core';
 import { eq, inArray, desc, and, or, sql } from 'drizzle-orm';
-import type { IPortfolioRepository, SearchResult, TemporalExpandOptions, ChunkVectorRecord } from './repository.js';
+import type { IPortfolioRepository, SearchResult, TemporalExpandOptions, ChunkVectorRecord, GovernorLedgerEntry } from './repository.js';
 import { createDrizzleDb, getDefaultDb, type LivingPortfolioDb } from './connection.js';
 import * as schema from './schema/index.js';
 
@@ -231,6 +231,22 @@ function mapScopedConstraint(row: typeof schema.scopedConstraints.$inferSelect):
     source_quote: row.source_quote ?? undefined,
     status: row.status as any,
     at: toIsoRequired(row.at),
+  };
+}
+
+function mapGovernorLedger(row: typeof schema.governorLedger.$inferSelect): GovernorLedgerEntry {
+  return {
+    id: row.id,
+    provider_id: row.provider_id,
+    day_utc: row.day_utc,
+    visitor_tokens: row.visitor_tokens,
+    owner_tokens: row.owner_tokens,
+    background_tokens: row.background_tokens,
+    requests_count: row.requests_count,
+    last_reset: toIsoRequired(row.last_reset),
+    is_rate_limited_until: toIso(row.is_rate_limited_until),
+    effective_tpm_discount: row.effective_tpm_discount,
+    updated_at: toIsoRequired(row.updated_at),
   };
 }
 
@@ -1204,6 +1220,65 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
       text_snippet: r.text_snippet,
       embedding_set_id: r.embedding_set_id,
     }));
+  }
+
+  // --- BudgetGovernor Ledger (§13.5, B1-B4, Fix 11) ---
+  async getGovernorLedger(provider_id: string, day_utc: string): Promise<GovernorLedgerEntry | null> {
+    const [row] = await this.db
+      .select()
+      .from(schema.governorLedger)
+      .where(
+        and(
+          eq(schema.governorLedger.provider_id, provider_id),
+          eq(schema.governorLedger.day_utc, day_utc)
+        )
+      )
+      .limit(1);
+    return row ? mapGovernorLedger(row) : null;
+  }
+
+  async saveGovernorLedger(ledger: GovernorLedgerEntry): Promise<GovernorLedgerEntry> {
+    const existing = await this.getGovernorLedger(ledger.provider_id, ledger.day_utc);
+    if (existing) {
+      const [updated] = await this.db
+        .update(schema.governorLedger)
+        .set({
+          visitor_tokens: ledger.visitor_tokens,
+          owner_tokens: ledger.owner_tokens,
+          background_tokens: ledger.background_tokens,
+          requests_count: ledger.requests_count,
+          last_reset: ledger.last_reset ? new Date(ledger.last_reset) : new Date(),
+          is_rate_limited_until: ledger.is_rate_limited_until ? new Date(ledger.is_rate_limited_until) : null,
+          effective_tpm_discount: ledger.effective_tpm_discount,
+          updated_at: new Date(),
+        })
+        .where(
+          and(
+            eq(schema.governorLedger.provider_id, ledger.provider_id),
+            eq(schema.governorLedger.day_utc, ledger.day_utc)
+          )
+        )
+        .returning();
+      return mapGovernorLedger(updated);
+    } else {
+      const [inserted] = await this.db
+        .insert(schema.governorLedger)
+        .values({
+          id: ledger.id || undefined,
+          provider_id: ledger.provider_id,
+          day_utc: ledger.day_utc,
+          visitor_tokens: ledger.visitor_tokens,
+          owner_tokens: ledger.owner_tokens,
+          background_tokens: ledger.background_tokens,
+          requests_count: ledger.requests_count,
+          last_reset: ledger.last_reset ? new Date(ledger.last_reset) : new Date(),
+          is_rate_limited_until: ledger.is_rate_limited_until ? new Date(ledger.is_rate_limited_until) : null,
+          effective_tpm_discount: ledger.effective_tpm_discount,
+          updated_at: new Date(),
+        })
+        .returning();
+      return mapGovernorLedger(inserted);
+    }
   }
 
   // --- Subsystem Health & Readiness (WP-2.5, Fix 8, F3) ---
