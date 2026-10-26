@@ -51,6 +51,31 @@
       ],
       "closingReceipt": "A022",
       "handover": "H003"
+    },
+    "WP-3": {
+      "name": "Work Package 3 (Gate Closure & Phase 2 Conformance)",
+      "description": "CMS lifecycle extension & bitemporal revision immutability, BudgetGovernor ledger & reserve controls, degradation ladder answer cache & DB-down handoff, data-class policy router & enrichment redaction scanner, and full Phase 2 conformance.",
+      "requiredTaskIds": [
+        "WP-3.1",
+        "WP-3.2",
+        "WP-3.3",
+        "WP-3.4",
+        "WP-3.5"
+      ],
+      "requiredPassingTests": [
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [P4] (status=fixed) createEntry enforces written_at = now() on API path and computes SHA-256 body_hash; seed fixture uses internal provenance override",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [P6] (status=fixed) updateEntry returns immutable revision error when body changes, and createEntry rejects duplicate slugs",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [G8] (status=fixed) ask.ts avoids spending budget quota on extractive or non-generating routes, and reconciles provisional spend",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [B1] (status=fixed) BudgetGovernor enforces >=20% owner-interactive reserve and priority access",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [B2] (status=fixed) BudgetGovernor enables smaller_model step at visitor soft threshold rather than blocking at visitorShare",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [B3] (status=fixed) visitor share and thresholds are computed against visitor token allocation",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [B4] (status=fixed) BudgetGovernor wires per-minute limits, learned response headers, 429 discount, token reconciliation, and UTC midnight reset",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [M2] (status=fixed) Degradation ladder implements Step 2 answer cache, Step 3 distinct fallback provider, and Step 6 offline handoff (§10.8, Fix 12)",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [S7] (status=fixed) enrichment job routes via data-class privacy router and BudgetGovernor, prevents external provider transmission for sensitive content and exclusion matches, and replaces keyword claim extraction",
+        "AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/audits/register.yml) › [20261020-UX-04] (status=fixed) [P0-4 / Fix 9] admin workspace provides save draft, unpublish, delete, revision history, and undo banner; private entries do not link to /work/:slug; duplicate slugs return 409 Conflict"
+      ],
+      "closingReceipt": "A027",
+      "handover": "H004"
     }
   }
 }
