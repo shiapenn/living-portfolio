@@ -870,36 +870,71 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
   const escalations = await repo.getEscalations();
   const scopedConstraints = await repo.getScopedConstraints();
 
-  const firstEntry = entries[0];
-  const fullFirst = firstEntry ? await repo.getEntry(firstEntry.id) : null;
-  const firstRev = fullFirst?.currentRevision ?? null;
-  const firstFacets = firstEntry ? await repo.getFacetsForEntry(firstEntry.id) : [];
-  const firstAnnotations = firstRev ? await repo.listAnnotationsForRevision(firstRev.id) : [];
-  const firstClaims = firstRev ? await repo.getClaimsForRevision(firstRev.id) : [];
+  const entriesWithData = await Promise.all(
+    entries.map(async (e) => {
+      const full = await repo.getEntry(e.id, ['public', 'unlisted', 'private']);
+      const revs = await repo.getRevisions(e.id);
+      const facets = await repo.getFacetsForEntry(e.id);
+      const currentRev = full?.currentRevision || null;
+      const claims = currentRev ? await repo.getClaimsForRevision(currentRev.id) : [];
+      const annotations = currentRev ? await repo.listAnnotationsForRevision(currentRev.id) : [];
+      const level = currentRev
+        ? computeStructureLevel({
+            revision: currentRev,
+            profile: getProfile(e.profile),
+            facets,
+            annotations,
+            claims,
+          })
+        : 'L0';
+      const gaps = currentRev
+        ? generateGapQuestions({ revision: currentRev, facets, claims })
+        : [];
+      return {
+        ...e,
+        currentRevision: currentRev,
+        revisions: revs,
+        facets,
+        claims,
+        structureLevel: level,
+        gapQuestions: gaps,
+      };
+    })
+  );
 
-  const firstLevel =
-    firstEntry && firstRev
-      ? computeStructureLevel({
-          revision: firstRev,
-          profile: getProfile(firstEntry.profile),
-          facets: firstFacets,
-          annotations: firstAnnotations,
-          claims: firstClaims,
-        })
-      : 'L0';
+  const firstEntry = entriesWithData[0];
+  const firstRev = firstEntry?.currentRevision ?? null;
+  const firstFacets = firstEntry?.facets ?? [];
+  const firstLevel = firstEntry?.structureLevel ?? 'L0';
   const levelDetails = getStructureLevelDetails(firstLevel);
-  const gapQuestions = firstRev
-    ? generateGapQuestions({ revision: firstRev, facets: firstFacets, claims: firstClaims })
-    : [];
+  const gapQuestions = firstEntry?.gapQuestions ?? [];
 
-  const entriesListHtml = entries
+  const entriesListHtml = entriesWithData
     .map(
-      (e) => `<li style="padding:8px 0;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;gap:8px">
-        <a href="/work/${e.slug}" style="font-weight:600;text-decoration:none;color:var(--text)">${escapeHtml(e.title)}</a>
-        <span class="chip">${escapeHtml(e.visibility)}</span>
+      (e) => `<li class="admin-entry-item" data-entry-id="${e.id}" style="padding:8px 0;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <button type="button" class="admin-entry-select-btn" data-entry-id="${e.id}" style="background:none;border:none;padding:0;font-weight:600;text-align:left;cursor:pointer;color:var(--text);flex:1">
+          ${escapeHtml(e.title)}
+        </button>
+        <span class="chip" data-status="${escapeHtml(e.visibility)}">${escapeHtml(e.visibility)}</span>
+        ${e.visibility !== 'private' ? `<a href="/work/${escapeHtml(e.slug)}" target="_blank" style="font-size:12px;color:var(--text-muted);text-decoration:none" title="View live page">↗</a>` : ''}
       </li>`
     )
     .join('\n');
+
+  const firstEntryRevisionsHtml = (firstEntry?.revisions || [])
+    .map(
+      (r, idx) => `<div style="padding:6px 0;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <strong>Revision ${idx + 1}</strong>
+          <span style="color:var(--text-muted);font-size:12px">(${new Date(r.written_at).toLocaleDateString()})</span>
+        </div>
+        <div>
+          <code style="font-size:11px">${escapeHtml((r.body_hash || '').slice(0, 10))}...</code>
+          ${r.id === firstRev?.id ? '<span class="chip" style="margin-left:4px;font-size:11px">current</span>' : ''}
+        </div>
+      </div>`
+    )
+    .join('\n') || '<p style="color:var(--text-muted);margin:0">No revisions found.</p>';
 
   const facetsInspectorHtml = firstFacets
     .map(
@@ -950,14 +985,18 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
       </div>
     </div>
 
+    <div id="admin-undo-banner" role="region" aria-label="Undo action" style="display:none;margin-bottom:16px"></div>
     <div id="admin-status-banner" role="status" aria-live="polite" style="margin-bottom:16px"></div>
 
     <!-- §12.6 Three-Pane Entry Workspace -->
     <div class="admin-shell">
       <!-- Pane 1: Entries & Filters -->
       <aside class="admin-pane" aria-label="Entries list and filters">
-        <h2 style="font-size:16px;margin:0 0 12px 0">Entries (${entries.length})</h2>
-        <ul style="list-style:none;padding:0;margin:0;font-size:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h2 style="font-size:16px;margin:0">Entries (${entries.length})</h2>
+          <button type="button" class="btn btn-secondary" id="btn-new-entry" style="padding:2px 8px;font-size:12px">+ New Entry</button>
+        </div>
+        <ul id="admin-entries-list" style="list-style:none;padding:0;margin:0;font-size:14px">
           ${entriesListHtml}
         </ul>
       </aside>
@@ -965,11 +1004,12 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
       <!-- Pane 2: Editor (Rich Text / Markdown, Hindsight Question, Redaction Preview, Publish as is) -->
       <section class="admin-pane" aria-label="Entry editor">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-          <h2 style="font-size:18px;margin:0">Author / Paste Entry (L0 Immediate Publish)</h2>
-          <span class="chip">Mode: Paste / Guided / Freeform</span>
+          <h2 id="editor-mode-heading" style="font-size:18px;margin:0">Author / Paste Entry (L0 Immediate Publish)</h2>
+          <span class="chip" id="chip-current-state">Mode: Paste / Guided / Freeform</span>
         </div>
 
         <form id="admin-entry-form">
+          <input type="hidden" id="entry-id" value="" />
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
             <div>
               <label for="entry-title" style="font-size:13px;font-weight:600;display:block">Title</label>
@@ -981,7 +1021,7 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
             </div>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
             <div>
               <label for="entry-profile" style="font-size:13px;font-weight:600;display:block">Role profile (§3.4)</label>
               <select id="entry-profile" class="ask-input" style="width:100%;padding:6px">
@@ -991,6 +1031,14 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
                 <option value="research-note">Research note</option>
                 <option value="how-to">How-to</option>
                 <option value="freeform">Freeform (L0/L1 only)</option>
+              </select>
+            </div>
+            <div>
+              <label for="entry-visibility" style="font-size:13px;font-weight:600;display:block">Visibility (§3.11)</label>
+              <select id="entry-visibility" class="ask-input" style="width:100%;padding:6px">
+                <option value="private">Private (Draft)</option>
+                <option value="unlisted">Unlisted</option>
+                <option value="public">Public</option>
               </select>
             </div>
             <div>
@@ -1023,34 +1071,44 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
           </div>
 
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-            <div style="display:flex;gap:8px">
+            <div style="display:flex;gap:8px;flex-wrap:wrap" id="editor-action-buttons">
+              <button type="button" class="btn btn-secondary" id="btn-save-draft">Save draft</button>
               <button type="submit" class="btn" id="btn-publish-entry">Publish as is (L0)</button>
               <button type="button" class="btn btn-secondary" id="btn-redaction-check">Preview Redaction (§4.3)</button>
+              <button type="button" class="btn btn-secondary" id="btn-unpublish" style="display:none">Unpublish</button>
+              <button type="button" class="btn btn-secondary" id="btn-delete-entry" style="display:none;color:var(--red-700,#b42318)">Delete</button>
             </div>
             <span style="font-size:13px;color:var(--text-muted)">"Good enough" exit always active — structure never blocks publishing.</span>
           </div>
         </form>
       </section>
 
-      <!-- Pane 3: Structure Inspector & Answerability Preview (§12.6) -->
+      <!-- Pane 3: Structure Inspector & Answerability Preview (§12.6, §15) -->
       <aside class="admin-pane" aria-label="Structure inspector and answerability preview">
-        <h2 style="font-size:16px;margin:0 0 8px 0">Inspector: ${escapeHtml(firstEntry?.title || 'Sample')}</h2>
+        <h2 id="inspector-heading" style="font-size:16px;margin:0 0 8px 0">Inspector: ${escapeHtml(firstEntry?.title || 'Sample')}</h2>
         <div style="font-size:13px;color:var(--text-muted)">Four-step structure map (never a percentage score):</div>
-        <div class="level-steps" role="list" aria-label="Structure level indicator">
-          <div class="level-step" role="listitem" data-active="${firstLevel === 'L0' || firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">L0 Text</div>
-          <div class="level-step" role="listitem" data-active="${firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">L1 Context</div>
-          <div class="level-step" role="listitem" data-active="${firstLevel === 'L2' || firstLevel === 'L3'}">L2 Roles</div>
-          <div class="level-step" role="listitem" data-active="${firstLevel === 'L3'}">L3 Claims</div>
+        <div class="level-steps" id="inspector-level-steps" role="list" aria-label="Structure level indicator">
+          <div class="level-step" role="listitem" data-level="L0" data-active="${firstLevel === 'L0' || firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">L0 Text</div>
+          <div class="level-step" role="listitem" data-level="L1" data-active="${firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">L1 Context</div>
+          <div class="level-step" role="listitem" data-level="L2" data-active="${firstLevel === 'L2' || firstLevel === 'L3'}">L2 Roles</div>
+          <div class="level-step" role="listitem" data-level="L3" data-active="${firstLevel === 'L3'}">L3 Claims</div>
         </div>
-        <p style="font-size:13px;margin:4px 0 12px 0"><strong>Unlocks:</strong> ${escapeHtml(levelDetails.unlocked.join(', '))}</p>
+        <p style="font-size:13px;margin:4px 0 12px 0" id="inspector-unlocks"><strong>Unlocks:</strong> ${escapeHtml(levelDetails.unlocked.join(', '))}</p>
 
         <h3 style="font-size:14px;margin:12px 0 6px 0">Context facets (dashed = machine suggested)</h3>
-        ${facetsInspectorHtml}
+        <div id="inspector-facets">
+          ${facetsInspectorHtml}
+        </div>
 
         <h3 style="font-size:14px;margin:16px 0 6px 0">Answerability &amp; Gap Questions (§10.2)</h3>
-        <ul style="font-size:13px;padding-left:18px;margin:0">
+        <ul id="inspector-gap-questions" style="font-size:13px;padding-left:18px;margin:0">
           ${gapHtml}
         </ul>
+
+        <h3 style="font-size:14px;margin:16px 0 6px 0">Revision History (§3.11, §15)</h3>
+        <div id="inspector-revisions-list" style="font-size:13px">
+          ${firstEntryRevisionsHtml}
+        </div>
       </aside>
     </div>
 
@@ -1077,14 +1135,318 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
     <script>
       (function() {
         const banner = document.getElementById('admin-status-banner');
+        const undoBanner = document.getElementById('admin-undo-banner');
         const form = document.getElementById('admin-entry-form');
         const redactBtn = document.getElementById('btn-redaction-check');
         const redactBox = document.getElementById('redaction-preview-box');
         const killBtn = document.getElementById('btn-killswitch');
         const drillBtn = document.getElementById('btn-backup-drill');
+        const saveDraftBtn = document.getElementById('btn-save-draft');
+        const unpublishBtn = document.getElementById('btn-unpublish');
+        const deleteBtn = document.getElementById('btn-delete-entry');
+        const newEntryBtn = document.getElementById('btn-new-entry');
+        const entryIdInput = document.getElementById('entry-id');
+        const titleInput = document.getElementById('entry-title');
+        const slugInput = document.getElementById('entry-slug');
+        const modeHeading = document.getElementById('editor-mode-heading');
+        const stateBadge = document.getElementById('chip-current-state');
         let answeringEnabled = true;
         let currentPreviewToken = '';
         let currentHasWarnings = false;
+        let slugIsManual = false;
+        let undoTimeout = null;
+
+        ${ADMIN_API_CLIENT_SCRIPT}
+
+        function renderAdminError(res) {
+          if (res.status === 401) {
+            return '<div class="later-thinking-banner" role="alert" data-error="401">Your session has expired. <a href="/admin/login" style="margin-left:8px;font-weight:600">Sign in again →</a></div>';
+          }
+          if (res.status === 403) {
+            return '<div class="later-thinking-banner" role="alert" data-error="403">Security check failed (CSRF token invalid or missing). Please refresh and retry.</div>';
+          }
+          if (res.status >= 500) {
+            return '<div class="later-thinking-banner" role="alert" data-error="500">Server error (HTTP ' + res.status + '). Please retry your request.</div>';
+          }
+          return '<div class="later-thinking-banner" role="alert" data-error="' + res.status + '">Request failed (HTTP ' + res.status + '). Please check inputs and retry.</div>';
+        }
+
+        function showUndoBanner(message, onUndo) {
+          if (undoTimeout) clearTimeout(undoTimeout);
+          if (!undoBanner) return;
+          undoBanner.style.display = 'block';
+          undoBanner.innerHTML = '<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center">' +
+            '<span>' + message + '</span>' +
+            '<button type="button" class="btn btn-secondary" id="btn-undo-action" style="padding:2px 8px;font-size:12px;margin-left:8px">Undo (30s)</button>' +
+            '</div>';
+          const undoBtn = document.getElementById('btn-undo-action');
+          if (undoBtn) {
+            undoBtn.addEventListener('click', async function() {
+              if (undoTimeout) clearTimeout(undoTimeout);
+              undoBanner.style.display = 'none';
+              await onUndo();
+            });
+          }
+          undoTimeout = setTimeout(function() {
+            undoBanner.style.display = 'none';
+          }, 30000);
+        }
+
+        function slugify(text) {
+          return (text || '')
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        }
+
+        if (titleInput) {
+          titleInput.addEventListener('input', function(e) {
+            if ((!entryIdInput || !entryIdInput.value) && !slugIsManual && slugInput) {
+              slugInput.value = slugify(e.target.value);
+            }
+          });
+        }
+
+        if (slugInput) {
+          slugInput.addEventListener('input', function() {
+            slugIsManual = true;
+          });
+        }
+
+        async function selectEntry(id) {
+          try {
+            const res = await apiClient('/api/entries/' + id);
+            if (!res.ok) return;
+            const data = await res.json();
+            const entry = data.entry;
+            const currentRev = data.currentRevision;
+
+            if (entryIdInput) entryIdInput.value = entry.id;
+            if (titleInput) titleInput.value = entry.title || '';
+            if (slugInput) slugInput.value = entry.slug || '';
+            const profileSelect = document.getElementById('entry-profile');
+            if (profileSelect) profileSelect.value = entry.profile || 'case-study';
+            const visibilityInput = document.getElementById('entry-visibility');
+            if (visibilityInput && entry.visibility) {
+              visibilityInput.value = entry.visibility;
+            }
+            const dateInput = document.getElementById('entry-date');
+            if (dateInput && currentRev?.valid_from) {
+              dateInput.value = currentRev.valid_from.slice(0, 10);
+            }
+            const hindsightCheck = document.getElementById('entry-hindsight');
+            if (hindsightCheck) hindsightCheck.checked = !!currentRev?.is_hindsight;
+            const bodyEl = document.getElementById('entry-body');
+            if (bodyEl) bodyEl.value = currentRev?.body_md || '';
+
+            if (modeHeading) modeHeading.textContent = 'Edit Entry: ' + entry.title;
+            if (stateBadge) stateBadge.textContent = 'State: ' + entry.visibility.toUpperCase();
+
+            if (unpublishBtn) {
+              unpublishBtn.style.display = entry.visibility === 'public' || entry.visibility === 'unlisted' ? 'inline-block' : 'none';
+            }
+            if (deleteBtn) {
+              deleteBtn.style.display = 'inline-block';
+            }
+
+            // Update Inspector Revisions
+            const revRes = await apiClient('/api/entries/' + entry.id + '/revisions');
+            if (revRes.ok) {
+              const revData = await revRes.json();
+              const revListEl = document.getElementById('inspector-revisions-list');
+              if (revListEl && Array.isArray(revData.revisions)) {
+                revListEl.innerHTML = revData.revisions.map(function(r, idx) {
+                  const dateStr = r.written_at ? new Date(r.written_at).toLocaleDateString() : 'N/A';
+                  const hashSnippet = (r.body_hash || '').slice(0, 10);
+                  const isCur = r.id === entry.current_revision_id;
+                  return '<div style="padding:6px 0;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center">' +
+                    '<div><strong>Revision ' + (idx + 1) + '</strong> <span style="color:var(--text-muted);font-size:12px">(' + escapeClientHtml(dateStr) + ')</span></div>' +
+                    '<div><code style="font-size:11px">' + escapeClientHtml(hashSnippet) + '...</code>' +
+                    (isCur ? '<span class="chip" style="margin-left:4px;font-size:11px">current</span>' : '') +
+                    '</div></div>';
+                }).join('');
+              }
+            }
+
+            // Update Inspector Title
+            const inspHeading = document.getElementById('inspector-heading');
+            if (inspHeading) inspHeading.textContent = 'Inspector: ' + entry.title;
+          } catch (err) {}
+        }
+
+        // Bind clicks on entry list buttons
+        document.querySelectorAll('.admin-entry-select-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            const id = btn.getAttribute('data-entry-id');
+            if (id) selectEntry(id);
+          });
+        });
+
+        if (newEntryBtn) {
+          newEntryBtn.addEventListener('click', function() {
+            if (entryIdInput) entryIdInput.value = '';
+            if (form) form.reset();
+            const visibilityInput = document.getElementById('entry-visibility');
+            if (visibilityInput) visibilityInput.value = 'private';
+            slugIsManual = false;
+            currentPreviewToken = '';
+            currentHasWarnings = false;
+            if (unpublishBtn) unpublishBtn.style.display = 'none';
+            if (deleteBtn) deleteBtn.style.display = 'none';
+            if (modeHeading) modeHeading.textContent = 'Author / Paste Entry (L0 Immediate Publish)';
+            if (stateBadge) stateBadge.textContent = 'Mode: Paste / Guided / Freeform';
+            const redactBoxEl = document.getElementById('redaction-preview-box');
+            if (redactBoxEl) redactBoxEl.innerHTML = '';
+            const inspHeading = document.getElementById('inspector-heading');
+            if (inspHeading) inspHeading.textContent = 'Inspector: New Draft';
+            const revListEl = document.getElementById('inspector-revisions-list');
+            if (revListEl) revListEl.innerHTML = '<p style="color:var(--text-muted);margin:0">No revisions yet (new draft).</p>';
+          });
+        }
+
+        if (saveDraftBtn) {
+          saveDraftBtn.addEventListener('click', async function() {
+            const text = document.getElementById('entry-body')?.value || '';
+            const title = document.getElementById('entry-title')?.value || '';
+            let slug = document.getElementById('entry-slug')?.value || '';
+            if (!slug && title) slug = slugify(title);
+
+            if (!text || !text.trim()) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Body content is required before saving.</div>';
+              return;
+            }
+            if (!title.trim()) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Title is required before saving.</div>';
+              return;
+            }
+
+            const isEdit = entryIdInput && entryIdInput.value;
+            if (isEdit) {
+              const entryId = entryIdInput.value;
+              try {
+                const res = await apiClient('/api/entries/' + entryId, {
+                  method: 'PUT',
+                  body: JSON.stringify({
+                    title: title,
+                    profile: document.getElementById('entry-profile')?.value || 'case-study',
+                    visibility: 'private'
+                  })
+                });
+                if (res.ok) {
+                  // Add new revision
+                  await apiClient('/api/entries/' + entryId + '/revisions', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                      body_md: text,
+                      temporal_level: 'exact',
+                      valid_from: new Date(document.getElementById('entry-date')?.value || Date.now()).toISOString(),
+                      is_hindsight: document.getElementById('entry-hindsight')?.checked || false
+                    })
+                  });
+                  banner.innerHTML = '<div class="as-of-banner">Saved draft "' + escapeClientHtml(title) + '" (private).</div>';
+                  showUndoBanner('Saved draft "' + escapeClientHtml(title) + '".', async function() {
+                    banner.innerHTML = '<div class="later-thinking-banner">Undo: Draft save acknowledged.</div>';
+                  });
+                } else {
+                  banner.innerHTML = renderAdminError(res);
+                }
+              } catch (err) {
+                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error saving draft.</div>';
+              }
+            } else {
+              try {
+                const payload = {
+                  title: title,
+                  slug: slug,
+                  profile: document.getElementById('entry-profile')?.value || 'case-study',
+                  body_md: text,
+                  valid_from: new Date(document.getElementById('entry-date')?.value || Date.now()).toISOString(),
+                  is_hindsight: document.getElementById('entry-hindsight')?.checked || false,
+                  temporal_level: 'exact',
+                  visibility: 'private',
+                  view: 'article'
+                };
+                const res = await apiClient('/api/entries', {
+                  method: 'POST',
+                  body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                  const data = await res.json();
+                  if (entryIdInput) entryIdInput.value = data.entry.id;
+                  if (modeHeading) modeHeading.textContent = 'Edit Entry: ' + data.entry.title;
+                  if (stateBadge) stateBadge.textContent = 'State: PRIVATE (Draft)';
+                  banner.innerHTML = '<div class="as-of-banner">Created draft "' + escapeClientHtml(payload.title) + '".</div>';
+                  showUndoBanner('Created draft "' + escapeClientHtml(payload.title) + '".', async function() {
+                    await apiClient('/api/entries/' + data.entry.id, { method: 'DELETE' });
+                    banner.innerHTML = '<div class="later-thinking-banner">Undone: Draft deleted.</div>';
+                  });
+                } else {
+                  banner.innerHTML = renderAdminError(res);
+                }
+              } catch (err) {
+                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error creating draft.</div>';
+              }
+            }
+          });
+        }
+
+        if (unpublishBtn) {
+          unpublishBtn.addEventListener('click', async function() {
+            const entryId = entryIdInput?.value;
+            if (!entryId) return;
+            const title = document.getElementById('entry-title')?.value || '';
+            try {
+              const res = await apiClient('/api/entries/' + entryId, {
+                method: 'PUT',
+                body: JSON.stringify({ visibility: 'private' })
+              });
+              if (res.ok) {
+                unpublishBtn.style.display = 'none';
+                if (stateBadge) stateBadge.textContent = 'State: PRIVATE (Unpublished)';
+                banner.innerHTML = '<div class="as-of-banner">Unpublished "' + escapeClientHtml(title) + '". Returned to private draft state.</div>';
+                showUndoBanner('Unpublished "' + escapeClientHtml(title) + '".', async function() {
+                  await apiClient('/api/entries/' + entryId, {
+                    method: 'PUT',
+                    body: JSON.stringify({ visibility: 'public' })
+                  });
+                  unpublishBtn.style.display = 'inline-block';
+                  if (stateBadge) stateBadge.textContent = 'State: PUBLIC';
+                  banner.innerHTML = '<div class="as-of-banner">Undone: Republished "' + escapeClientHtml(title) + '".</div>';
+                });
+              } else {
+                banner.innerHTML = renderAdminError(res);
+              }
+            } catch (err) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error unpublishing entry.</div>';
+            }
+          });
+        }
+
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', async function() {
+            const entryId = entryIdInput?.value;
+            if (!entryId) return;
+            const title = document.getElementById('entry-title')?.value || '';
+            if (!window.confirm('Delete entry "' + title + '" and all its revisions, spans, and claims? (§15)')) {
+              return;
+            }
+            try {
+              const res = await apiClient('/api/entries/' + entryId, { method: 'DELETE' });
+              if (res.ok) {
+                const data = await res.json();
+                banner.innerHTML = '<div class="as-of-banner">Deleted "' + escapeClientHtml(title) + '" (' + (data.report?.deletedRevisions || 1) + ' revisions purged).</div>';
+                if (newEntryBtn) newEntryBtn.click();
+                const itemEl = document.querySelector('.admin-entry-item[data-entry-id="' + entryId + '"]');
+                if (itemEl) itemEl.remove();
+              } else {
+                banner.innerHTML = renderAdminError(res);
+              }
+            } catch (err) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error deleting entry.</div>';
+            }
+          });
+        }
 
         ${ADMIN_API_CLIENT_SCRIPT}
 

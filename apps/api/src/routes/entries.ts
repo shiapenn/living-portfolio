@@ -115,13 +115,17 @@ export function createEntriesRoutes(
     });
   });
 
-  // Get entry by slug (Structural visibility enforcement: S1, S2)
+  // Get entry by slug or ID (Structural visibility enforcement: S1, S2, UX-04)
   router.get('/:slug', async (c) => {
-    const slug = c.req.param('slug');
+    const slugOrId = c.req.param('slug');
     const isAdmin = auth.isAdminAuthenticated(c).authenticated;
 
+    let unguarded = await repo.getEntryBySlug(slugOrId);
+    if (!unguarded) {
+      unguarded = await repo.getEntry(slugOrId);
+    }
+
     if (!isAdmin) {
-      const unguarded = await repo.getEntryBySlug(slug);
       if (!unguarded || !unguarded.currentRevision) {
         return c.json({ error: 'Entry not found' }, 404);
       }
@@ -133,7 +137,10 @@ export function createEntriesRoutes(
     const allowedVisibilities: ('private' | 'unlisted' | 'public')[] = isAdmin
       ? ['private', 'unlisted', 'public']
       : ['public', 'unlisted'];
-    const result = await repo.getEntryBySlug(slug, allowedVisibilities);
+    let result = await repo.getEntryBySlug(slugOrId, allowedVisibilities);
+    if (!result) {
+      result = await repo.getEntry(slugOrId, allowedVisibilities);
+    }
 
     if (!result || !result.currentRevision) {
       return c.json({ error: 'Entry not found' }, 404);
@@ -199,6 +206,12 @@ export function createEntriesRoutes(
     }
 
     const data = parsed.data;
+
+    // Reject duplicate slugs (Spec §3.11, §9, P6)
+    const existingSlug = await repo.getEntryBySlug(data.slug);
+    if (existingSlug) {
+      return c.json({ error: `Entry with slug '${data.slug}' already exists` }, 409);
+    }
 
     // Server-side publish gate (UX P0-3, Fix 2 / S2): public entries require a valid signed redactionPreviewToken
     if (data.visibility === 'public') {
@@ -418,6 +431,16 @@ export function createEntriesRoutes(
       },
       201
     );
+  });
+
+  // Get all revisions for entry (Admin-only, Spec §3.11, UX-04)
+  router.get('/:id/revisions', auth.requireAdminMiddleware(), async (c) => {
+    const entryId = c.req.param('id') || '';
+    const existing = await repo.getEntry(entryId, ['private', 'unlisted', 'public']);
+    if (!existing) return c.json({ error: 'Entry not found' }, 404);
+
+    const revisions = await repo.getRevisions(entryId);
+    return c.json({ revisions });
   });
 
   return router;

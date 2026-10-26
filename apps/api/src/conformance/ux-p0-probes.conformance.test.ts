@@ -190,4 +190,92 @@ describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/a
       expect(settingsValues).not.toContain('"verified"');
     }
   );
+
+  registerBoundProbe(
+    '20261020-UX-04',
+    '[P0-4 / Fix 9] admin workspace provides save draft, unpublish, delete, revision history, and undo banner; private entries do not link to /work/:slug; duplicate slugs return 409 Conflict',
+    async () => {
+      const repo = new InMemoryPortfolioRepository();
+      const adminToken = 'admin_token_for_ux04_test';
+      const { app } = createApp(repo, { bootstrapAdminToken: adminToken });
+
+      // Create a private draft entry
+      const { entry: draftEntry } = await repo.createEntry(
+        {
+          slug: 'draft-feature-entry',
+          title: 'Draft Feature',
+          profile: 'case-study',
+          view: 'article',
+          visibility: 'private',
+          current_revision_id: null,
+        },
+        {
+          body_md: 'Draft content in progress',
+          body_hash: 'hash-draft-1',
+          temporal_level: 'exact',
+        }
+      );
+
+      const html = await renderAdminWorkspacePage(repo);
+
+      // Verify CMS actions and elements are present in markup
+      expect(html).toContain('id="btn-save-draft"');
+      expect(html).toContain('id="btn-unpublish"');
+      expect(html).toContain('id="btn-delete-entry"');
+      expect(html).toContain('id="btn-new-entry"');
+      expect(html).toContain('id="admin-undo-banner"');
+      expect(html).toContain('id="inspector-revisions-list"');
+      expect(html).toContain('id="entry-visibility"');
+
+      // Private entry must NOT link to /work/draft-feature-entry (V16)
+      expect(html).not.toContain(`href="/work/${draftEntry.slug}"`);
+
+      // Duplicate slug rejection (P6)
+      const dupRes = await app.request('/api/entries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify({
+          slug: 'draft-feature-entry',
+          title: 'Another Draft with Same Slug',
+          profile: 'case-study',
+          view: 'article',
+          visibility: 'private',
+          body_md: 'Another body',
+        }),
+      });
+      expect(dupRes.status).toBe(409);
+
+      // Revision creation and history listing
+      const revRes = await app.request(`/api/entries/${draftEntry.id}/revisions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify({
+          body_md: 'Updated draft content revision 2',
+        }),
+      });
+      expect(revRes.status).toBe(201);
+      const revData = await revRes.json();
+      expect(revData.revision.id).toBeDefined();
+
+      const listRevsRes = await app.request(`/api/entries/${draftEntry.id}/revisions`, {
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      expect(listRevsRes.status).toBe(200);
+      const listRevsData = await listRevsRes.json();
+      expect(listRevsData.revisions.length).toBe(2);
+
+      // Non-hindsight written_at is now() rather than valid_from (P4)
+      const revs = await repo.getRevisions(draftEntry.id);
+      const afterRev = revs.find((r) => r.id === revData.revision.id);
+      expect(afterRev).toBeDefined();
+      const writtenTime = new Date(afterRev!.written_at).getTime();
+      expect(Math.abs(Date.now() - writtenTime)).toBeLessThan(5000);
+    }
+  );
 });

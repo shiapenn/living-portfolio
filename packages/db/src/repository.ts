@@ -169,10 +169,16 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     e: Omit<Entry, 'id' | 'created_at'>,
     rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'> & { written_at?: string }
   ): Promise<{ entry: Entry; revision: EntryRevision }> {
+    for (const entry of this.entries.values()) {
+      if (entry.slug === e.slug) {
+        throw new Error(`Duplicate entry slug: '${e.slug}' already exists`);
+      }
+    }
+
     const entryId = (e as any).id ?? crypto.randomUUID();
     const revId = (rev as any).id ?? crypto.randomUUID();
     const now = new Date().toISOString();
-    const writtenAt = rev.written_at ?? (!rev.is_hindsight && rev.valid_from ? rev.valid_from : now);
+    const writtenAt = rev.written_at ?? now;
 
     const revision: EntryRevision = {
       ...rev,

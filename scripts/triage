@@ -152,23 +152,26 @@ export function runTriage(options = {}) {
         }
       }
 
-      // 3.4 Status counts in §5 equal register.yml
-      const sec5Match = content.match(/##\s+5\.\s+Register\s+and\s+Backlog\s+Changes([\s\S]*?)(?=##\s+6|$)/i);
-      if (sec5Match) {
-        const countsMatch = sec5Match[1].match(/(\d+)\s+fixed[,\s]+(\d+)\s+partial[,\s]+(\d+)\s+open/i);
-        if (countsMatch) {
-          const fixed = parseInt(countsMatch[1], 10);
-          const partial = parseInt(countsMatch[2], 10);
-          const open = parseInt(countsMatch[3], 10);
-          if (
-            fixed !== registerCounts.fixed ||
-            partial !== registerCounts.partial ||
-            open !== registerCounts.open
-          ) {
-            recordFailure(
-              'REGISTER_COUNT_MISMATCH',
-              `${reportFile} §5 records counts ${fixed} fixed, ${partial} partial, ${open} open; register.yml has ${registerCounts.fixed} fixed, ${registerCounts.partial} partial, ${registerCounts.open} open.`
-            );
+      // 3.4 Status counts in §5 equal register.yml (only checked on latest receipt representing current HEAD)
+      const isLatestReceipt = reportFile === allReportFiles[allReportFiles.length - 1];
+      if (isLatestReceipt) {
+        const sec5Match = content.match(/##\s+5\.\s+Register\s+and\s+Backlog\s+Changes([\s\S]*?)(?=##\s+6|$)/i);
+        if (sec5Match) {
+          const countsMatch = sec5Match[1].match(/(\d+)\s+fixed[,\s]+(\d+)\s+partial[,\s]+(\d+)\s+open/i);
+          if (countsMatch) {
+            const fixed = parseInt(countsMatch[1], 10);
+            const partial = parseInt(countsMatch[2], 10);
+            const open = parseInt(countsMatch[3], 10);
+            if (
+              fixed !== registerCounts.fixed ||
+              partial !== registerCounts.partial ||
+              open !== registerCounts.open
+            ) {
+              recordFailure(
+                'REGISTER_COUNT_MISMATCH',
+                `${reportFile} §5 records counts ${fixed} fixed, ${partial} partial, ${open} open; register.yml has ${registerCounts.fixed} fixed, ${registerCounts.partial} partial, ${registerCounts.open} open.`
+              );
+            }
           }
         }
       }
