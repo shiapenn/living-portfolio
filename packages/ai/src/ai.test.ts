@@ -3,7 +3,11 @@ import { resolve } from 'node:path';
 import {
   BudgetGovernor,
   isPolicyAllowedForDataClass,
+  selectProviderForDataClass,
+  determineDataClass,
+  extractClaimsFromSpans,
   MockModelProvider,
+  OpenAICompatibleProvider,
   scanForConfidentialData,
   verifyAnswerBeforeDelivery,
   resolveConfiguredProviders,
@@ -374,5 +378,77 @@ describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redact
     const lease = gov.acquire([primary, fallback], 100, 'visitor_interactive', 'public');
     expect(lease.provider?.id).toBe('fallback-provider');
     expect(lease.degradationStep).toBe('fallback_provider');
+  });
+
+  it('[S7, Fix 13] selectProviderForDataClass routes across providers strictly adhering to data policies (§13.5, §15)', () => {
+    const cloudTraining = new OpenAICompatibleProvider({
+      id: 'cloud-free-training',
+      apiKey: 'k1',
+      dataPolicy: { trainsOnInputs: true, retentionDays: 90, humanReview: true, zeroRetentionOption: false },
+    });
+    const cloudZeroRetention = new OpenAICompatibleProvider({
+      id: 'cloud-enterprise-zero',
+      apiKey: 'k2',
+      dataPolicy: { trainsOnInputs: false, retentionDays: 0, humanReview: false, zeroRetentionOption: true },
+    });
+    const local = new MockModelProvider('local-onnx', 'Local');
+
+    const chain = [cloudTraining, cloudZeroRetention, local];
+
+    // Public content -> can use any provider, selects cloudTraining (first)
+    const pub = selectProviderForDataClass(chain, 'public');
+    expect(pub.provider?.id).toBe('cloud-free-training');
+
+    // Unpublished / Private -> cannot use training provider, selects cloudZeroRetention
+    const unpub = selectProviderForDataClass(chain, 'unpublished');
+    expect(unpub.provider?.id).toBe('cloud-enterprise-zero');
+
+    const priv = selectProviderForDataClass(chain, 'private');
+    expect(priv.provider?.id).toBe('cloud-enterprise-zero');
+
+    // Sensitive -> local only, selects local
+    const sens = selectProviderForDataClass(chain, 'sensitive');
+    expect(sens.provider?.id).toBe('local-onnx');
+
+    // If local provider not present, sensitive returns null
+    const noLocalChain = [cloudTraining, cloudZeroRetention];
+    const sensFail = selectProviderForDataClass(noLocalChain, 'sensitive');
+    expect(sensFail.provider).toBeNull();
+  });
+
+  it('[S7, Fix 13] determineDataClass classifies entries by visibility and redaction findings (§13.5, §15)', () => {
+    // Clean entries
+    expect(determineDataClass({ visibility: 'public' }, 'Clean public body')).toBe('public');
+    expect(determineDataClass({ visibility: 'unlisted' }, 'Clean unlisted draft')).toBe('unpublished');
+    expect(determineDataClass({ visibility: 'private' }, 'Clean private notes')).toBe('private');
+
+    // Entries with secrets/NDA/exclusions override to sensitive regardless of visibility
+    const testSecretKey = ['sk', 'dummytesttoken123456789'].join('-');
+    expect(determineDataClass({ visibility: 'public' }, `Key: ${testSecretKey}`)).toBe('sensitive');
+    expect(determineDataClass({ visibility: 'public' }, 'Under strict NDA')).toBe('sensitive');
+    expect(
+      determineDataClass({ visibility: 'public' }, 'Building InternalProject', { exclusions: ['InternalProject'] })
+    ).toBe('sensitive');
+  });
+
+  it('[S7, Fix 13] extractClaimsFromSpans extracts structural claims with outcome status and scope', async () => {
+    const provider = new MockModelProvider();
+    const spans = [
+      {
+        id: 's1',
+        revision_id: 'r1',
+        ordinal: 0,
+        start_char: 0,
+        end_char: 50,
+        text_exact: 'We migrated 100k daily active users with Postgres.',
+      },
+    ];
+
+    const claims = await extractClaimsFromSpans(spans, provider);
+    expect(claims.length).toBeGreaterThan(0);
+    expect(claims[0].kind).toBe('outcome');
+    expect(claims[0].outcome_status).toBe('worked');
+    expect(claims[0].scope).toEqual({ database: 'PostgreSQL', stack: 'Node.js' });
+    expect(claims[0].source_span_id).toBe('s1');
   });
 });

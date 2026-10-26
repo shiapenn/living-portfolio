@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { InMemoryPortfolioRepository } from '@living-portfolio/db';
+import { BudgetGovernor, MockModelProvider, OpenAICompatibleProvider } from '@living-portfolio/ai';
 import { PortfolioWorker } from './worker.js';
 
 describe('PortfolioWorker Pipeline (§8, §13.7, §13.9, §15)', () => {
@@ -87,5 +88,127 @@ describe('PortfolioWorker Pipeline (§8, §13.7, §13.9, §15)', () => {
     const deletionReport = await worker.runDeleteEntryJob(entry.id);
     expect(deletionReport.deletedRevisions).toBe(1);
     expect(deletionReport.deletedSpans).toBeGreaterThan(0);
+  });
+
+  describe('WP-3.4 / S7 Privacy Router and Enrichment Scanner (§4.3, §8, §13.5, §15, Fix 13)', () => {
+    it('determines data-class strictly and skips external cloud transmission for sensitive secrets/NDA/exclusions', async () => {
+      const repo = new InMemoryPortfolioRepository();
+      const cloudProvider = new OpenAICompatibleProvider({
+        apiKey: 'test-cloud-key-99',
+        baseURL: 'https://api.openai.com/v1',
+        dataPolicy: {
+          trainsOnInputs: false,
+          retentionDays: 30, // Cloud retention > 0 -> forbidden for sensitive
+          humanReview: false,
+          zeroRetentionOption: true,
+        },
+      });
+
+      const worker = new PortfolioWorker({
+        repo,
+        providers: [cloudProvider],
+        redactionExclusions: ['ProjectSecretAurora'],
+      });
+
+      // 1. Entry with secret token
+      const testSecretKey = ['sk', 'proj', 'dummytesttoken123456789'].join('-');
+      const { entry: secretEntry, revision: secretRev } = await worker.runIngestJob({
+        slug: 'internal-secret-token',
+        title: 'Internal Secret Token Entry',
+        body_md: `Found credentials: ${testSecretKey} in configuration file.`,
+        visibility: 'public',
+      });
+
+      const secretEnrich = await worker.runEnrichJob(secretEntry.id, secretRev.id);
+      expect(secretEnrich.dataClass).toBe('sensitive');
+      expect(secretEnrich.providerUsed).toBeNull();
+      expect(secretEnrich.skippedReason).toBe('sensitive_content_no_local_provider');
+      expect(secretEnrich.claimsSuggested).toBe(0);
+      expect(secretEnrich.facetsSuggested).toBe(0);
+
+      // 2. Entry with owner exclusion rule match
+      const { entry: exclEntry, revision: exclRev } = await worker.runIngestJob({
+        slug: 'aurora-notes',
+        title: 'Aurora Architecture Notes',
+        body_md: 'We designed the architecture for ProjectSecretAurora over three quarters.',
+        visibility: 'public',
+      });
+
+      const exclEnrich = await worker.runEnrichJob(exclEntry.id, exclRev.id);
+      expect(exclEnrich.dataClass).toBe('sensitive');
+      expect(exclEnrich.providerUsed).toBeNull();
+      expect(exclEnrich.skippedReason).toBe('sensitive_content_no_local_provider');
+    });
+
+    it('routes sensitive content to local provider and extracts structured claims with outcome and scope', async () => {
+      const repo = new InMemoryPortfolioRepository();
+      const cloudProvider = new OpenAICompatibleProvider({
+        apiKey: 'test-cloud-key-100',
+        baseURL: 'https://api.openai.com/v1',
+        dataPolicy: {
+          trainsOnInputs: false,
+          retentionDays: 30,
+          humanReview: false,
+          zeroRetentionOption: true,
+        },
+      });
+      const localProvider = new MockModelProvider('local-onnx-mock', 'Local In-Process Mock');
+
+      const worker = new PortfolioWorker({
+        repo,
+        providers: [cloudProvider, localProvider],
+        redactionExclusions: ['TopSecretProject'],
+      });
+
+      const { entry, revision } = await worker.runIngestJob({
+        slug: 'sensitive-with-local-provider',
+        title: 'Sensitive with Local Provider',
+        body_md: 'Worked on TopSecretProject under strictly confidential terms. We migrated 100k DAU with Postgres.',
+        visibility: 'public',
+      });
+
+      const enrich = await worker.runEnrichJob(entry.id, revision.id);
+      expect(enrich.dataClass).toBe('sensitive');
+      expect(enrich.providerUsed).toBe('local-onnx-mock');
+      expect(enrich.facetsSuggested).toBeGreaterThan(0);
+      expect(enrich.claimsSuggested).toBeGreaterThan(0);
+
+      // Verify extracted claim structure (Fix 13: replacing keyword matching)
+      const claims = await repo.getClaimsForRevision(revision.id);
+      expect(claims.length).toBeGreaterThan(0);
+      expect(claims[0].kind).toBe('outcome');
+      expect(claims[0].outcome_status).toBe('worked');
+      expect(claims[0].scope).toEqual({ database: 'PostgreSQL', stack: 'Node.js' });
+      expect(claims[0].status).toBe('suggested');
+    });
+
+    it('enforces budget governor background limits and reserves during enrichment', async () => {
+      const repo = new InMemoryPortfolioRepository();
+      const governor = new BudgetGovernor({ backgroundReserve: 0.3 });
+      const mockProvider = new MockModelProvider('test-provider', 'Test Provider');
+
+      // Consume the non-background reserve so background work is capped
+      const ledger = governor.getLedger(mockProvider.id);
+      ledger.tokensToday = 8000000; // limits dailyTokens is 10000000, 80% > (1 - backgroundReserve 0.3 = 70%)
+
+      const worker = new PortfolioWorker({
+        repo,
+        providers: [mockProvider],
+        governor,
+      });
+
+      const { entry, revision } = await worker.runIngestJob({
+        slug: 'budget-constrained-enrichment',
+        title: 'Budget Constrained',
+        body_md: 'Normal public post without any secrets or exclusions.',
+        visibility: 'public',
+      });
+
+      const res = await worker.runEnrichJob(entry.id, revision.id);
+      expect(res.dataClass).toBe('public');
+      expect(res.providerUsed).toBeNull();
+      expect(res.skippedReason).toBe('budget_exhausted_or_policy_forbidden');
+      expect(res.claimsSuggested).toBe(0);
+    });
   });
 });

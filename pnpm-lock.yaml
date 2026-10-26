@@ -206,6 +206,9 @@ importers:
         specifier: ^3.24.2
         version: 3.25.76
     devDependencies:
+      '@living-portfolio/worker':
+        specifier: workspace:*
+        version: link:../worker
       '@types/node':
         specifier: ^22.13.4
         version: 22.20.5

@@ -3,6 +3,7 @@ import type { CompletionRequest, CompletionResponse, ModelProvider, ProviderLimi
 export interface OpenAICompatibleConfig {
   id?: string;
   name?: string;
+  isLocal?: boolean;
   apiKey: string;
   baseURL?: string; // e.g. https://api.groq.com/openai/v1 or https://api.openai.com/v1 or local Ollama /v1 endpoint
   dataPolicy?: Partial<DataPolicy>;
@@ -12,6 +13,7 @@ export interface OpenAICompatibleConfig {
 export class OpenAICompatibleProvider implements ModelProvider {
   id: string;
   name: string;
+  isLocal: boolean;
   private apiKey: string;
   private baseURL: string;
   dataPolicy: DataPolicy;
@@ -20,6 +22,7 @@ export class OpenAICompatibleProvider implements ModelProvider {
   constructor(config: OpenAICompatibleConfig) {
     this.id = config.id ?? 'openai-compatible';
     this.name = config.name ?? 'OpenAI-Compatible Provider';
+    this.isLocal = config.isLocal ?? false;
     this.apiKey = config.apiKey;
     let rawBaseURL = config.baseURL ?? 'https://api.openai.com/v1';
     while (rawBaseURL.endsWith('/')) {
