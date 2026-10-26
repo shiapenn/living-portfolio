@@ -6,9 +6,9 @@
 | Date | 2026-10-26 |
 | Author | A (Implementer) |
 | Supersedes | H003 |
-| Evidence SHA (on `main`) | `78f8cf6b0e4ef25c5a9d45e2684b57fd6806accc` |
-| CI runs for that SHA | 40304080615 / 40304080874 / 40304080819 |
-| Receipts covered | A001 to A026 |
+| Evidence SHA (on `main`) | `0025a59b0de69f5e412955787018fbc723f9c2b4` |
+| CI runs for that SHA | 40308273398 / 40308273458 / 40308273356 |
+| Receipts covered | A001 to A027 |
 | Phase closed | WP-3 Gate Closure (certified in docs/plans/gates.json) |
 | Phase next | WP-4 (Phase 3 / v0.2: Structural & IA Refactoring, Visitor Ask States, Accessibility) |
 
@@ -56,6 +56,7 @@
     * WP-3.2 (`A024`): BudgetGovernor Postgres ledger, >=20% owner-interactive reserve, visitor soft/hard thresholds, per-minute limits, token reconciliation (`Fix 11`, `G8`, `B1`–`B4`).
     * WP-3.3 (`A025`): Degradation ladder answer cache (Step 2), fallback provider (Step 3), and offline DB-down handoff (Step 6) (`Fix 12`, `M2`).
     * WP-3.4 (`A026`): Data-class privacy router, local confidential scan redaction, background reserve gating, and structured LLM claim extraction (`Fix 13`, `S7`).
+    * WP-3.5 (`A027`): Work Package 3 gate closure certification, gates manifest verification, and Handover Snapshot H004.
 - **Current phase:** Handover Snapshot H004 (`HO-4`). **Definition of done:** `docs/handovers/H004-wp-3-gate-closure-and-wp-4-kickoff.md` supersedes H003, passes `handover-check`, and verifies on `main`.
 - **Next phases:**
   - WP-4 (Phase 3 / v0.2): Structural & IA refactoring, import triage, visitor ask states, axe accessibility.
@@ -63,7 +64,7 @@
 
 ## 4. Active workspace
 
-- **Git:** `main` at `78f8cf6` (Evidence SHA `78f8cf6b0e4ef25c5a9d45e2684b57fd6806accc`); open PRs: none; working tree: clean; branches holding unmerged work: none.
+- **Git:** `main` at `0025a59` (Evidence SHA `0025a59b0de69f5e412955787018fbc723f9c2b4`); open PRs: none; working tree: clean; branches holding unmerged work: none.
 - **Next task:** `WP-4.1`: Implement structural & information-architecture refactoring: import triage, visitor ask states, and accessibility (`20261020-UX-06`, `20261020-UX-07`). Receipt number to use: `A028`.
 - **Hot files (at most 7):**
   1. `docs/plans/execution-protocol.md`: Binding engineering protocol for tasks, PRs, and receipts.
@@ -134,9 +135,9 @@
 | Full gate suite | `pnpm verify` | all gates pass (CI 40304080615) |
 | Unit and conformance tests | `pnpm test` | 223 tests in 26 files (CI 40304080615 / job 121513333936) |
 | End-to-end tests | `pnpm test:e2e` | 11 tests (CI 40304080615 / job 121513330788) |
-| SARIF gate | `node scripts/sarif-gate` | 0 unbaselined alerts (CI 40304080874 / job 121508750480) |
-| Secret scan | `node scripts/gitleaks-scan` | 123 commits scanned, 0 leaks (CI 40304080819 / job 121508750603) |
-| Receipt check | `pnpm receipt:check A026` | passes |
+| SARIF gate | `node scripts/sarif-gate` | 0 unbaselined alerts (CI 40308273458 / job 121522728467) |
+| Secret scan | `node scripts/gitleaks-scan` | 126 commits scanned, 0 leaks (CI 40308273356 / job 121522728227) |
+| Receipt check | `pnpm receipt:check A027` | passes |
 | Docs check | `pnpm docs:check` | passes |
 | Handover check | `pnpm handover:check H004` | passes |
 | Handover verify | `pnpm handover:verify H004` | passes |
