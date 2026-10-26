@@ -502,7 +502,7 @@
     - "13"
     - "20"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 7
@@ -515,6 +515,9 @@
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): default database engine cut over to PostgreSQL in production and server.ts guards seedDemoPortfolio behind config.SEED_DEMO'
   verified_by: null
 - id: P2
   audit: AUD-2026-10-19
@@ -525,7 +528,7 @@
     - "10.4"
     - "19"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 7
@@ -539,6 +542,9 @@
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): Drizzle schema connected to PostgreSQL with connection pooling, migrations, schema_info verification, and complete PostgresPortfolioRepository implementation'
   verified_by: null
 - id: P3
   audit: AUD-2026-10-19
@@ -549,7 +555,7 @@
     - "8"
     - "10.4"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 8
@@ -563,6 +569,9 @@
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): Worker process daemon entrypoint created, pg-boss 5-queue manager wired with autoChain, and ONNX embeddings persisted via repo.saveChunkVectors'
   verified_by: null
 - id: P4
   audit: AUD-2026-10-19
@@ -663,7 +672,7 @@
     - "13.13"
     - "20"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 8
@@ -676,6 +685,9 @@
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): Multi-stage, non-root Dockerfile.api and Dockerfile.worker created in docker/ for docker-compose'
   verified_by: null
 - id: F3
   audit: AUD-2026-10-19
@@ -684,7 +696,7 @@
   spec_sections:
     - "13.9"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 8
@@ -697,6 +709,9 @@
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): /healthz wired to measured repo.checkHealth() check returning 200 (healthy) or 503 (degraded) based on live DB connectivity'
   verified_by: null
 - id: F4
   audit: AUD-2026-10-19
@@ -1280,18 +1295,21 @@
     - "9"
     - "18.1"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   verified_by: null
   links:
     issue: null
     pr: null
     plan: docs/plans/osr-001-open-source-release.md
-  regression_test: null
+  regression_test: packages/db/src/repository.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Added from OSR-001 §7 task register
+    - date: 2026-10-26
+      status: fixed
+      note: 'Fixed in WP-2.2 and WP-2.3: Repository conformance suite executed over in-memory and Postgres with temporal bisimulation checks'
 - id: OSR-15
   audit: OSR-001
   title: Integration and E2E lanes with Postgres service container and local
@@ -1299,18 +1317,21 @@
   spec_sections:
     - "18.1"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   verified_by: null
   links:
     issue: null
     pr: null
     plan: docs/plans/osr-001-open-source-release.md
-  regression_test: null
+  regression_test: packages/db/src/dual-write.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Added from OSR-001 §7 task register
+    - date: 2026-10-26
+      status: fixed
+      note: 'Fixed in WP-2.1 to WP-2.4: Real postgres service container wired in CI and dual-write bit-for-bit parity test suite verified'
 - id: OSR-16
   audit: OSR-001
   title: Dockerfiles, compose stack, quickstart test in CI; release workflow with

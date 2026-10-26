@@ -40,10 +40,20 @@ export function createApp(
 ) {
   const app = new Hono();
   const cfg = loadConfig();
+  const defaultDbKind =
+    process.env.NODE_ENV === 'production' || process.env.DATABASE_URL
+      ? 'postgres'
+      : 'in-memory';
   const dbKind =
     options?.databaseKind ??
     (process.env.PORTFOLIO_DB_MODE as any) ??
-    (options?.databaseKind === undefined && process.env.DATABASE_URL ? 'postgres' : 'in-memory');
+    defaultDbKind;
+
+  if (dbKind === 'in-memory' && process.env.NODE_ENV !== 'test') {
+    console.warn(
+      '[DEPRECATION] InMemoryPortfolioRepository is deprecated for production deployments (§13.10, Fix 7, P1). Configure DATABASE_URL to use PostgresPortfolioRepository or DualWritePortfolioRepository.'
+    );
+  }
 
   const repo =
     customRepo ??
@@ -117,13 +127,20 @@ export function createApp(
 
   // Public & Auth routes
   const providerNames = providers.map((p) => p.name);
-  app.route(
-    '/healthz',
-    createHealthRoutes(async () => true, {
-      databaseKind: options?.databaseKind ?? 'in-memory',
+  const healthRouter = createHealthRoutes(
+    async () => {
+      if (typeof (repo as any).checkHealth === 'function') {
+        return await (repo as any).checkHealth();
+      }
+      return true;
+    },
+    {
+      databaseKind: dbKind,
       configuredProviders: providerNames,
-    })
+    }
   );
+  app.route('/healthz', healthRouter);
+  app.route('/api/health', healthRouter);
   app.route('/api/auth', createAuthRoutes(auth));
   app.route('/api/entries', createEntriesRoutes(repo, auth, runtimeState));
   app.route(
