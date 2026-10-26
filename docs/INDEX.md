@@ -29,6 +29,7 @@
 | `A021` | WP-2.4: Dual-Write Verification Harness & Shadow Metrics Suite | `active` | [A021-wp2-4-dual-write-verification.md](execution-reports/A021-wp2-4-dual-write-verification.md) | — |
 | `A022` | WP-2.5: Production Cutover, In-Memory Deprecation & Work Package 2 Closure | `active` | [A022-wp2-5-production-cutover.md](execution-reports/A022-wp2-5-production-cutover.md) | — |
 | `A023` | WP-3.1: CMS Lifecycle Extension, Immutable History & Bitemporal Time | `active` | [A023-wp3-1-cms-lifecycle.md](execution-reports/A023-wp3-1-cms-lifecycle.md) | — |
+| `A024` | WP-3.2: BudgetGovernor Postgres Ledger, Priority Limits & Owner Reserve | `active` | [A024-wp3-2-governor-ledger.md](execution-reports/A024-wp3-2-governor-ledger.md) | — |
 
 ## Handover Snapshots (Class H)
 
