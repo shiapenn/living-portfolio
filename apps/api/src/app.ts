@@ -41,9 +41,11 @@ export function createApp(
   const app = new Hono();
   const cfg = loadConfig();
   const defaultDbKind =
-    process.env.NODE_ENV === 'production' || process.env.DATABASE_URL
-      ? 'postgres'
-      : 'in-memory';
+    process.env.NODE_ENV === 'test'
+      ? 'in-memory'
+      : process.env.NODE_ENV === 'production' || process.env.DATABASE_URL
+        ? 'postgres'
+        : 'in-memory';
   const dbKind =
     options?.databaseKind ??
     (process.env.PORTFOLIO_DB_MODE as any) ??
