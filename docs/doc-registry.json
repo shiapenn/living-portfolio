@@ -374,7 +374,15 @@
     "title": "WP-2 Gate Closure and WP-3 Kickoff",
     "class": "H",
     "path": "docs/handovers/H003-wp-2-gate-closure-and-wp-3-kickoff.md",
-    "status": "active",
+    "status": "superseded",
     "supersedes": "H002"
+  },
+  {
+    "id": "H004",
+    "title": "WP-3 Gate Closure and WP-4 Kickoff",
+    "class": "H",
+    "path": "docs/handovers/H004-wp-3-gate-closure-and-wp-4-kickoff.md",
+    "status": "active",
+    "supersedes": "H003"
   }
 ]
