@@ -346,6 +346,14 @@
     "supersedes": null
   },
   {
+    "id": "A025",
+    "title": "WP-3.3: Degradation Ladder Answer Cache, Fallback Provider & Offline Handoff",
+    "class": "A",
+    "path": "docs/execution-reports/A025-wp3-3-degradation-ladder.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
     "id": "H002",
     "title": "WP-1 Gate Closure and WP-2 Kickoff",
     "class": "H",
