@@ -31,6 +31,7 @@
 | `A023` | WP-3.1: CMS Lifecycle Extension, Immutable History & Bitemporal Time | `active` | [A023-wp3-1-cms-lifecycle.md](execution-reports/A023-wp3-1-cms-lifecycle.md) | — |
 | `A024` | WP-3.2: BudgetGovernor Postgres Ledger, Priority Limits & Owner Reserve | `active` | [A024-wp3-2-governor-ledger.md](execution-reports/A024-wp3-2-governor-ledger.md) | — |
 | `A025` | WP-3.3: Degradation Ladder Answer Cache, Fallback Provider & Offline Handoff | `active` | [A025-wp3-3-degradation-ladder.md](execution-reports/A025-wp3-3-degradation-ladder.md) | — |
+| `A026` | WP-3.4: Data-Class Privacy Router, Enrichment Scanner & Model Claim Extraction | `active` | [A026-wp3-4-data-class-router.md](execution-reports/A026-wp3-4-data-class-router.md) | — |
 
 ## Handover Snapshots (Class H)
 
