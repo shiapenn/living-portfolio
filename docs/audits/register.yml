@@ -395,7 +395,7 @@
     - "10.5"
     - "13.5"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 11
@@ -403,11 +403,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: packages/ai/src/ai.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: "Fixed in WP-3.2 (Fix 11): ask.ts avoids spending budget quota on extractive or non-generating routes, and reconciles provisional spend"
   verified_by: null
 - id: B1
   audit: AUD-2026-10-19
@@ -415,7 +418,7 @@
   spec_sections:
     - "13.5"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 11
@@ -423,11 +426,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: packages/ai/src/ai.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: "Fixed in WP-3.2 (Fix 11): BudgetGovernor enforces >=20% owner-interactive reserve and priority access (owner_interactive > visitor_interactive > background)"
   verified_by: null
 - id: B2
   audit: AUD-2026-10-19
@@ -437,7 +443,7 @@
     - "10.8"
     - "13.5"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 11
@@ -445,11 +451,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: packages/ai/src/ai.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: "Fixed in WP-3.2 (Fix 11): BudgetGovernor enables smaller_model step at visitor soft threshold (80% of visitor allocation) rather than blocking visitors prematurely"
   verified_by: null
 - id: B3
   audit: AUD-2026-10-19
@@ -458,7 +467,7 @@
   spec_sections:
     - "13.5"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 11
@@ -466,11 +475,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: packages/ai/src/ai.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: "Fixed in WP-3.2 (Fix 11): Visitor share and soft/hard thresholds are computed against visitor token allocation (visitorTokensToday / visitorAllocation)"
   verified_by: null
 - id: B4
   audit: AUD-2026-10-19
@@ -479,7 +491,7 @@
   spec_sections:
     - "13.5"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 11
@@ -487,11 +499,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: packages/ai/src/ai.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: "Fixed in WP-3.2 (Fix 11): Wired per-minute limits (TPM/RPM), response header learning, 429 backoff discount with jitter, token reconciliation, and UTC midnight resets persisted in PostgreSQL governor_ledger"
   verified_by: null
 - id: P1
   audit: AUD-2026-10-19

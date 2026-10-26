@@ -223,3 +223,17 @@ export const scopedConstraints = pgTable('scoped_constraints', {
   status: text('status').notNull(), // proposed | confirmed | revoked
   at: timestamp('at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const governorLedger = pgTable('governor_ledger', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  provider_id: text('provider_id').notNull(),
+  day_utc: text('day_utc').notNull(),
+  visitor_tokens: integer('visitor_tokens').notNull().default(0),
+  owner_tokens: integer('owner_tokens').notNull().default(0),
+  background_tokens: integer('background_tokens').notNull().default(0),
+  requests_count: integer('requests_count').notNull().default(0),
+  last_reset: timestamp('last_reset', { withTimezone: true }).defaultNow().notNull(),
+  is_rate_limited_until: timestamp('is_rate_limited_until', { withTimezone: true }),
+  effective_tpm_discount: real('effective_tpm_discount').notNull().default(1.0),
+  updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});

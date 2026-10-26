@@ -114,8 +114,26 @@ export interface IPortfolioRepository {
   getChunkVectors(chunk_id: string): Promise<ChunkVectorRecord[]>;
   getChunkVectorsForRevision(revision_id: string): Promise<ChunkVectorRecord[]>;
 
+  // BudgetGovernor Ledger (§13.5, B1-B4, Fix 11)
+  getGovernorLedger(provider_id: string, day_utc: string): Promise<GovernorLedgerEntry | null>;
+  saveGovernorLedger(ledger: GovernorLedgerEntry): Promise<GovernorLedgerEntry>;
+
   // Subsystem Health & Readiness (WP-2.5, Fix 8, F3)
   checkHealth?(): Promise<boolean>;
+}
+
+export interface GovernorLedgerEntry {
+  id?: string;
+  provider_id: string;
+  day_utc: string;
+  visitor_tokens: number;
+  owner_tokens: number;
+  background_tokens: number;
+  requests_count: number;
+  last_reset: string;
+  is_rate_limited_until?: string | null;
+  effective_tpm_discount: number;
+  updated_at?: string;
 }
 
 export interface ChunkVectorRecord {
@@ -149,6 +167,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   private calibrationChanges = new Map<string, CalibrationChange>();
   private scopedConstraints = new Map<string, ScopedConstraint>();
   private chunkVectors = new Map<string, ChunkVectorRecord>();
+  private governorLedgers = new Map<string, GovernorLedgerEntry>();
 
   async createVenture(v: Omit<Venture, 'id'>): Promise<Venture> {
     const id = (v as any).id ?? crypto.randomUUID();
@@ -728,6 +747,32 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     const revisionSpans = await this.getSpans(revision_id);
     const spanIds = new Set(revisionSpans.map((s) => s.id));
     return Array.from(this.chunkVectors.values()).filter((v) => spanIds.has(v.chunk_id));
+  }
+
+  // --- BudgetGovernor Ledger (§13.5, B1-B4, Fix 11) ---
+  async getGovernorLedger(provider_id: string, day_utc: string): Promise<GovernorLedgerEntry | null> {
+    const key = `${provider_id}:${day_utc}`;
+    const found = this.governorLedgers.get(key);
+    return found ? { ...found } : null;
+  }
+
+  async saveGovernorLedger(ledger: GovernorLedgerEntry): Promise<GovernorLedgerEntry> {
+    const key = `${ledger.provider_id}:${ledger.day_utc}`;
+    const entry: GovernorLedgerEntry = {
+      id: ledger.id || crypto.randomUUID(),
+      provider_id: ledger.provider_id,
+      day_utc: ledger.day_utc,
+      visitor_tokens: ledger.visitor_tokens,
+      owner_tokens: ledger.owner_tokens,
+      background_tokens: ledger.background_tokens,
+      requests_count: ledger.requests_count,
+      last_reset: ledger.last_reset,
+      is_rate_limited_until: ledger.is_rate_limited_until,
+      effective_tpm_discount: ledger.effective_tpm_discount,
+      updated_at: new Date().toISOString(),
+    };
+    this.governorLedgers.set(key, entry);
+    return { ...entry };
   }
 
   // --- Subsystem Health & Readiness (WP-2.5, Fix 8, F3) ---

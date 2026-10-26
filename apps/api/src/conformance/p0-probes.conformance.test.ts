@@ -388,4 +388,57 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
       expect(degradedBody.database).toBe('error');
     }
   );
+
+  registerBoundProbe(
+    'G8',
+    'ask.ts avoids spending budget quota on extractive or non-generating routes, and reconciles provisional spend',
+    async () => {
+      const askSource = readFileSync(resolve(rootDir, 'apps/api/src/routes/ask.ts'), 'utf8');
+      expect(askSource).toContain('reconcileUsage');
+      const extIdx = askSource.indexOf('if (forceExtractive || routeDecision.isExtractive)');
+      const acqIdx = askSource.indexOf('let { provider, degradationStep } = governor.acquire(');
+      expect(extIdx).toBeGreaterThan(0);
+      expect(acqIdx).toBeGreaterThan(extIdx);
+    }
+  );
+
+  registerBoundProbe(
+    'B1',
+    'BudgetGovernor enforces >=20% owner-interactive reserve and priority access',
+    () => {
+      const govSource = readFileSync(resolve(rootDir, 'packages/ai/src/governor/index.ts'), 'utf8');
+      expect(govSource).toContain('ownerReserve');
+      expect(govSource).toContain('nonOwnerCeiling');
+    }
+  );
+
+  registerBoundProbe(
+    'B2',
+    'BudgetGovernor enables smaller_model step at visitor soft threshold rather than blocking at visitorShare',
+    () => {
+      const govSource = readFileSync(resolve(rootDir, 'packages/ai/src/governor/index.ts'), 'utf8');
+      expect(govSource).toContain('visitorRatio >= this.config.softThreshold');
+    }
+  );
+
+  registerBoundProbe(
+    'B3',
+    'visitor share and thresholds are computed against visitor token allocation',
+    () => {
+      const govSource = readFileSync(resolve(rootDir, 'packages/ai/src/governor/index.ts'), 'utf8');
+      expect(govSource).toContain('visitorAllocation = dailyTokensMax * this.config.visitorShare');
+    }
+  );
+
+  registerBoundProbe(
+    'B4',
+    'BudgetGovernor wires per-minute limits, learned response headers, 429 discount, token reconciliation, and UTC midnight reset',
+    () => {
+      const govSource = readFileSync(resolve(rootDir, 'packages/ai/src/governor/index.ts'), 'utf8');
+      expect(govSource).toContain('minuteWindowStart');
+      expect(govSource).toContain('recordResponseHeaders');
+      expect(govSource).toContain('reconcileUsage');
+      expect(govSource).toContain('recordRateLimitError');
+    }
+  );
 });
