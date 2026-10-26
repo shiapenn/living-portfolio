@@ -3,5 +3,6 @@ export * from './providers/adapters/mock.js';
 export * from './providers/adapters/openai.js';
 export * from './providers/registry.js';
 export * from './governor/index.js';
+export * from './cache/answer-cache.js';
 export * from './verification/index.js';
 export * from './extraction/index.js';

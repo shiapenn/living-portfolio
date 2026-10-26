@@ -75,7 +75,7 @@ describe('AI Provider Registry & Extractive Degradation Ladder Conformance (Spec
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.tier).toBe('tier1');
-    expect(body.degradationStep).toBe('normal');
+    expect(body.degradationStep).toBe('fallback_provider');
     expect(body.provider_disclosure).toContain('Secondary Fallback Provider');
     expect(body.aiDisclosure).toContain('Secondary Fallback Provider');
   });

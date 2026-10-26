@@ -8,6 +8,7 @@ import {
   verifyAnswerBeforeDelivery,
   resolveConfiguredProviders,
   formatProviderDisclosure,
+  AnswerCache,
 } from './index.js';
 
 describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redaction (§10.6, §13.5, §15)', () => {
@@ -281,5 +282,97 @@ describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redact
     // Provider synthesis with specific model
     const detailedLine = formatProviderDisclosure(mock, 'llama-3.3-70b');
     expect(detailedLine).toBe(`Automated answer synthesized with ${mock.name} (llama-3.3-70b) from owner records.`);
+  });
+
+  it('[M2] AnswerCache provides Step 2 degradation caching, time-travel isolation, and revision/claim invalidation (§10.8 Step 2)', () => {
+    const cache = new AnswerCache();
+    const payload = {
+      tier: 'tier1',
+      queryClass: 'factual',
+      answer: 'Synthesized answer for testing cache',
+      citations: [{ citationId: 1, title: 'Test Entry', slug: 'test' }],
+      degradationStep: 'normal' as const,
+    };
+
+    // 1. Caching fails when entries are not exclusively public
+    const notCached = cache.set(
+      'How does cache work?',
+      ['rev-1', 'rev-2'],
+      ['claim-1'],
+      payload,
+      { stack: 'node' },
+      null,
+      false // non-public
+    );
+    expect(notCached).toBe(false);
+    expect(cache.get('How does cache work?', ['rev-1', 'rev-2'], { stack: 'node' })).toBeNull();
+
+    // 2. Caching succeeds for public entries with normalized question matching
+    const cached = cache.set(
+      'How does cache work???',
+      ['rev-1', 'rev-2'],
+      ['claim-1', 'claim-2'],
+      payload,
+      { stack: 'node' },
+      null,
+      true
+    );
+    expect(cached).toBe(true);
+    expect(cache.size()).toBe(1);
+
+    // Hit with differently capitalized or punctuated question and unordered revisions
+    const hit = cache.get('how DOES cache WORK?', ['rev-2', 'rev-1'], { stack: 'node' });
+    expect(hit).not.toBeNull();
+    expect(hit?.degradationStep).toBe('cached');
+    expect(hit?.answer).toBe('Synthesized answer for testing cache');
+
+    // Miss on different visitor facets
+    expect(cache.get('how does cache work', ['rev-1', 'rev-2'], { stack: 'python' })).toBeNull();
+
+    // Miss on different cited revisions
+    expect(cache.get('how does cache work', ['rev-1', 'rev-3'], { stack: 'node' })).toBeNull();
+
+    // 3. Time-travel isolation: as_of_date queries are cached only under their specific date
+    cache.set(
+      'What was the architecture?',
+      ['rev-past'],
+      ['claim-past'],
+      { ...payload, answer: 'Historical architecture in 2024' },
+      undefined,
+      '2024-06-01',
+      true
+    );
+    // Hit with matching as_of_date
+    const timeHit = cache.get('what was the architecture', ['rev-past'], undefined, '2024-06-01');
+    expect(timeHit?.answer).toBe('Historical architecture in 2024');
+    expect(timeHit?.degradationStep).toBe('cached');
+    // Miss without as_of_date (live) or with different date
+    expect(cache.get('what was the architecture', ['rev-past'], undefined, null)).toBeNull();
+    expect(cache.get('what was the architecture', ['rev-past'], undefined, '2025-01-01')).toBeNull();
+
+    // 4. Invalidation when cited revision changes (§10.8 Step 2)
+    const revInvalidated = cache.invalidateRevision('rev-1');
+    expect(revInvalidated).toBe(1);
+    expect(cache.get('how does cache work', ['rev-1', 'rev-2'], { stack: 'node' })).toBeNull();
+
+    // 5. Invalidation when relation accepted on cited claim (§10.8 Step 2)
+    expect(cache.size()).toBe(1); // time-travel entry remains
+    const claimInvalidated = cache.invalidateClaim('claim-past');
+    expect(claimInvalidated).toBe(1);
+    expect(cache.size()).toBe(0);
+  });
+
+  it('[M2] Governor returns degradationStep: fallback_provider when falling back to secondary provider (§10.8 Step 3)', () => {
+    const gov = new BudgetGovernor();
+    const primary = new MockModelProvider('primary-provider', 'Primary');
+    const fallback = new MockModelProvider('fallback-provider', 'Fallback');
+
+    // Trip 429 on primary to trigger backoff
+    gov.recordRateLimitError('primary-provider');
+
+    // Acquire should bypass primary due to backoff and return fallback with degradationStep: fallback_provider
+    const lease = gov.acquire([primary, fallback], 100, 'visitor_interactive', 'public');
+    expect(lease.provider?.id).toBe('fallback-provider');
+    expect(lease.degradationStep).toBe('fallback_provider');
   });
 });

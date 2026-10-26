@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { MockModelProvider } from '@living-portfolio/ai';
+import { seedDemoPortfolio } from '@living-portfolio/db';
 import { createApp } from './app.js';
 import { computeTotpCode } from './auth/security.js';
 
@@ -408,5 +409,119 @@ describe('Living Portfolio API Integration Tests', () => {
     expect(askRes.status).toBe(200);
     const askData = await askRes.json();
     expect(askData.tier).toBe('disabled');
+  });
+
+  it('[M2] Degradation Step 2: Caches verified answer on repeat query and invalidates on revision modification (§10.8 Step 2)', async () => {
+    const entryRes = await createPublicEntry({
+      slug: 'distributed-lock-cache',
+      title: 'Distributed Locking Architecture',
+      profile: 'case-study',
+      view: 'article',
+      visibility: 'public',
+      body_md: '# The Goal\n\nWe needed to synchronize distributed workers.\n\n# The Decision\n\nWe selected advisory locks in Postgres for synchronization.',
+      temporal_level: 'exact',
+      valid_from: '2025-01-01T00:00:00Z',
+    });
+    expect(entryRes.status).toBe(201);
+    const { entry } = await entryRes.json();
+
+    const query = 'How do we synchronize distributed workers?';
+
+    // 1. First Ask query: synthesized from provider (Step 1 normal)
+    const ask1 = await app.request('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+    });
+    expect(ask1.status).toBe(200);
+    const data1 = await ask1.json();
+    expect(data1.tier).toBe('tier1');
+    expect(data1.degradationStep).toBe('normal');
+
+    // 2. Repeat Ask query: hits AnswerCache (Step 2 cached)
+    const ask2 = await app.request('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: 'how do we SYNCHRONIZE distributed workers??' }),
+    });
+    expect(ask2.status).toBe(200);
+    const data2 = await ask2.json();
+    expect(data2.tier).toBe('tier1');
+    expect(data2.degradationStep).toBe('cached');
+    expect(data2.answer).toBe(data1.answer);
+
+    // 3. Post new revision for cited entry (§10.8 Step 2 invalidation)
+    const revRes = await app.request(`/api/entries/${entry.id}/revisions`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        body_md: '# The Goal\n\nWe updated worker coordination.\n\n# The Decision\n\nWe migrated to Redis redlock.',
+        valid_from: '2025-03-01T00:00:00Z',
+      }),
+    });
+    expect(revRes.status).toBe(201);
+
+    // 4. Ask query after invalidation: cache miss, freshly synthesized (Step 1 normal)
+    const ask3 = await app.request('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query }),
+    });
+    expect(ask3.status).toBe(200);
+    const data3 = await ask3.json();
+    expect(data3.degradationStep).toBe('normal');
+  });
+
+  it('[M2] Degradation Step 3: Falls back to secondary provider and returns degradationStep: fallback_provider (§10.8 Step 3)', async () => {
+    const failingPrimary = new MockModelProvider('primary-fail', 'Primary Failing Provider');
+    failingPrimary.complete = async () => {
+      const err: any = new Error('429 Rate Limit Exceeded');
+      err.status = 429;
+      throw err;
+    };
+    const secondary = new MockModelProvider('secondary-ok', 'Secondary Working Provider');
+
+    const fallbackApp = createApp(undefined, {
+      bootstrapAdminToken: 'test-admin-token-fallback-001',
+      providers: [failingPrimary, secondary],
+    });
+
+    await seedDemoPortfolio(fallbackApp.repo);
+
+    const askRes = await fallbackApp.app.request('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: 'What database did you migrate to?' }),
+    });
+    expect(askRes.status).toBe(200);
+    const askData = await askRes.json();
+    expect(askData.tier).toBe('tier1');
+    expect(askData.degradationStep).toBe('fallback_provider');
+  });
+
+  it('[M2] Degradation Step 6: Offline/unreachable database returns degradationStep: handoff and booking options (§10.8 Step 6)', async () => {
+    const brokenRepo = {
+      checkHealth: async () => false,
+      hybridSearch: async () => {
+        throw new Error('Database unreachable');
+      },
+    };
+
+    const offlineApp = createApp(brokenRepo as any, {
+      bootstrapAdminToken: 'test-admin-token-offline-001',
+      providers: [new MockModelProvider()],
+    });
+
+    const res = await offlineApp.app.request('/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: 'How does the architecture work?' }),
+    });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.tier).toBe('disabled');
+    expect(data.degradationStep).toBe('handoff');
+    expect(data.bookingUrl).toContain('/book?q=');
+    expect(data.answer).toContain('offline');
   });
 });

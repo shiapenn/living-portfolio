@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { IPortfolioRepository } from '@living-portfolio/db';
+import type { AnswerCache } from '@living-portfolio/ai';
 import {
   AnnotationUpdateSchema,
   BUILTIN_PROFILES,
@@ -9,7 +10,7 @@ import {
   RelationUpsertSchema,
 } from '@living-portfolio/core';
 
-export function createStructureRoutes(repo: IPortfolioRepository) {
+export function createStructureRoutes(repo: IPortfolioRepository, answerCache?: AnswerCache) {
   const router = new Hono();
 
   // Profiles (§3.4)
@@ -105,6 +106,9 @@ export function createStructureRoutes(repo: IPortfolioRepository) {
     const body = await c.req.json();
     const updated = await repo.updateClaim(id, body);
     if (!updated) return c.json({ error: 'Claim not found' }, 404);
+    if (answerCache) {
+      answerCache.invalidateClaim(id);
+    }
     return c.json({ claim: updated });
   });
 
@@ -114,6 +118,10 @@ export function createStructureRoutes(repo: IPortfolioRepository) {
     if (!parsed.success) return c.json({ error: 'Invalid relation data', details: parsed.error.issues }, 400);
 
     const relation = await repo.saveRelation(parsed.data);
+    if (answerCache) {
+      if (parsed.data.src_claim) answerCache.invalidateClaim(parsed.data.src_claim);
+      if (parsed.data.dst_claim) answerCache.invalidateClaim(parsed.data.dst_claim);
+    }
     return c.json({ relation }, 201);
   });
 

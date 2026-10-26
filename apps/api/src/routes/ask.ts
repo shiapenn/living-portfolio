@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
-import type { IPortfolioRepository } from '@living-portfolio/db';
+import type { IPortfolioRepository, SearchResult } from '@living-portfolio/db';
 import type { BudgetGovernor, ModelProvider } from '@living-portfolio/ai';
-import { verifyAnswerBeforeDelivery, formatProviderDisclosure } from '@living-portfolio/ai';
+import { verifyAnswerBeforeDelivery, formatProviderDisclosure, AnswerCache } from '@living-portfolio/ai';
 import {
   AskQuerySchema,
   checkGate,
@@ -15,6 +15,7 @@ export interface AskEngineConfig {
   repo: IPortfolioRepository;
   governor: BudgetGovernor;
   providers: ModelProvider[];
+  answerCache?: AnswerCache;
   auth?: AuthManager;
   tier1Floor?: number;
   tier2Floor?: number;
@@ -22,7 +23,16 @@ export interface AskEngineConfig {
 }
 
 export function createAskRoutes(config: AskEngineConfig) {
-  const { repo, governor, providers, auth, tier1Floor = 0.82, tier2Floor = 0.55, getRuntimeSettings } = config;
+  const {
+    repo,
+    governor,
+    providers,
+    answerCache = new AnswerCache(),
+    auth,
+    tier1Floor = 0.82,
+    tier2Floor = 0.55,
+    getRuntimeSettings,
+  } = config;
   const router = new Hono();
 
   router.post('/', async (c) => {
@@ -47,6 +57,30 @@ export function createAskRoutes(config: AskEngineConfig) {
       });
     }
 
+    // Step 6: Database or subsystem down handoff (Spec §10.8 Step 6, M2, Fix 12)
+    if (typeof (repo as any).checkHealth === 'function') {
+      try {
+        const isHealthy = await (repo as any).checkHealth();
+        if (!isHealthy) {
+          return c.json({
+            tier: 'disabled',
+            answer: 'Automated answers are temporarily unavailable while systems are offline. You can book a live conversation or send a message directly.',
+            bookingUrl: `/book?q=${encodeURIComponent(query)}`,
+            degradationStep: 'handoff',
+            citations: [],
+          });
+        }
+      } catch {
+        return c.json({
+          tier: 'disabled',
+          answer: 'Automated answers are temporarily unavailable while systems are offline. You can book a live conversation or send a message directly.',
+          bookingUrl: `/book?q=${encodeURIComponent(query)}`,
+          degradationStep: 'handoff',
+          citations: [],
+        });
+      }
+    }
+
     // 1. Abuse & rate limiting by daily-salted SHA-256 hash of client address (S4; never trust client session_id)
     const visitorId = auth ? auth.getHashedClientIp(c) : 'default-hashed-ip';
     const rateCheck = governor.checkVisitorRateLimit(visitorId);
@@ -68,11 +102,23 @@ export function createAskRoutes(config: AskEngineConfig) {
     }
 
     // 3. Retrieval with temporal & visibility filtering (§10.4)
-    const searchResults = await repo.hybridSearch(query, {
-      visibility: ['public'],
-      as_of_date: as_of_date ?? undefined,
-      limit: 5,
-    });
+    let searchResults: SearchResult[] = [];
+    try {
+      searchResults = await repo.hybridSearch(query, {
+        visibility: ['public'],
+        as_of_date: as_of_date ?? undefined,
+        limit: 5,
+      });
+    } catch {
+      // Step 6: Degradation Ladder Handoff on Database/Embedding Failure (§10.8 Step 6)
+      return c.json({
+        tier: 'disabled',
+        answer: 'Automated answers are temporarily unavailable while systems are offline. You can book a live conversation or send a message directly.',
+        bookingUrl: `/book?q=${encodeURIComponent(query)}`,
+        degradationStep: 'handoff',
+        citations: [],
+      });
+    }
 
     if (searchResults.length === 0) {
       return c.json({
@@ -89,6 +135,16 @@ export function createAskRoutes(config: AskEngineConfig) {
     if (scope_entry_slug) {
       candidateMatches = searchResults.filter((r) => r.entry.slug === scope_entry_slug);
       if (candidateMatches.length === 0) candidateMatches = searchResults.slice(0, 2);
+    }
+
+    // Step 2: Answer Cache lookup (Spec §10.8 Step 2, M2, Fix 12)
+    const candidateRevisionIds = candidateMatches.map((m) => m.revision.id);
+    const cachedAnswer = answerCache.get(query, candidateRevisionIds, visitorFacets, as_of_date);
+    if (cachedAnswer) {
+      return c.json({
+        ...cachedAnswer,
+        degradationStep: 'cached',
+      });
     }
 
     // 4. Gate checking for advisory queries (§10.5, G1, G3, G4)
@@ -330,7 +386,7 @@ export function createAskRoutes(config: AskEngineConfig) {
               governor.reconcileUsage(fallbackLease.provider.id, 'visitor_interactive', 250, res.usage?.totalTokens ?? 250);
               completionText = res.text;
               activeProvider = fallbackLease.provider;
-              degradationStep = fallbackLease.degradationStep;
+              degradationStep = 'fallback_provider';
               break;
             }
           } catch (fbErr: any) {
@@ -372,7 +428,7 @@ export function createAskRoutes(config: AskEngineConfig) {
 
     const disclosure = formatProviderDisclosure(activeProvider);
 
-    return c.json({
+    const responsePayload = {
       tier: 'tier1',
       queryClass,
       answer: finalAnswer,
@@ -382,7 +438,34 @@ export function createAskRoutes(config: AskEngineConfig) {
       basis: `Based on ${citations.length} entries from the owner's records.`,
       provider_disclosure: disclosure,
       aiDisclosure: disclosure,
-    });
+    };
+
+    // Cache the verified response for Step 2 degradation (§10.8 Step 2)
+    const allCitedClaimIds: string[] = [];
+    for (const m of candidateMatches) {
+      try {
+        const claims = await repo.getClaimsForRevision(m.span.revision_id);
+        for (const cl of claims) {
+          if (cl.id && !allCitedClaimIds.includes(cl.id)) {
+            allCitedClaimIds.push(cl.id);
+          }
+        }
+      } catch {
+        // Continue if repo lookup fails
+      }
+    }
+    const isAllPublic = candidateMatches.every((m) => m.entry.visibility === 'public');
+    answerCache.set(
+      query,
+      candidateRevisionIds,
+      allCitedClaimIds,
+      responsePayload,
+      visitorFacets,
+      as_of_date,
+      isAllPublic
+    );
+
+    return c.json(responsePayload);
   });
 
   return router;

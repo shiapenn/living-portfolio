@@ -792,7 +792,7 @@
   spec_sections:
     - "10.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 12
@@ -800,12 +800,15 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit (Section 4 §10.8, Section 7 Fix 12)
-  verified_by: null
+    - date: 2026-10-26
+      status: fixed
+      note: "Fixed in WP-3.3 (Fix 12): AnswerCache Step 2 degradation caching with revision/claim invalidation, fallback_provider Step 3 step down, and database/subsystem offline Step 6 handoff."
+  verified_by: p0-probes.conformance.test.ts
 - id: M3
   audit: AUD-2026-10-19
   title: Pre-delivery verification lacks entailment check, assertion stripping,

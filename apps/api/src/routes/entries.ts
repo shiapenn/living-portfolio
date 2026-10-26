@@ -12,14 +12,15 @@ import {
   EntryUpdateSchema,
   RevisionCreateSchema,
 } from '@living-portfolio/core';
-import { scanForConfidentialData } from '@living-portfolio/ai';
+import { scanForConfidentialData, type AnswerCache } from '@living-portfolio/ai';
 import { AuthManager, sha256Hex } from '../auth/security.js';
 import type { RuntimeSettingsState } from './settings.js';
 
 export function createEntriesRoutes(
   repo: IPortfolioRepository,
   auth: AuthManager,
-  settingsState?: RuntimeSettingsState
+  settingsState?: RuntimeSettingsState,
+  answerCache?: AnswerCache
 ) {
   const router = new Hono();
 
@@ -344,6 +345,10 @@ export function createEntriesRoutes(
     });
     if (!updatedEntry) return c.json({ error: 'Entry not found' }, 404);
 
+    if (existing.currentRevision && answerCache) {
+      answerCache.invalidateRevision(existing.currentRevision.id);
+    }
+
     return c.json({ entry: updatedEntry });
   });
 
@@ -352,6 +357,10 @@ export function createEntriesRoutes(
     const id = c.req.param('id') || '';
     const existing = await repo.getEntry(id, ['private', 'unlisted', 'public']);
     if (!existing) return c.json({ error: 'Entry not found' }, 404);
+
+    if (existing.currentRevision && answerCache) {
+      answerCache.invalidateRevision(existing.currentRevision.id);
+    }
 
     const report = await repo.deleteEntry(id);
     return c.json({
@@ -421,6 +430,10 @@ export function createEntriesRoutes(
           }
         }
       }
+    }
+
+    if (oldRev && answerCache) {
+      answerCache.invalidateRevision(oldRev.id);
     }
 
     return c.json(
