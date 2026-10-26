@@ -28,6 +28,7 @@
 | `A020` | WP-2.3: pg-boss Background Worker & Temporal Bisimulation Engine | `active` | [A020-wp2-3-worker-pgboss.md](execution-reports/A020-wp2-3-worker-pgboss.md) | — |
 | `A021` | WP-2.4: Dual-Write Verification Harness & Shadow Metrics Suite | `active` | [A021-wp2-4-dual-write-verification.md](execution-reports/A021-wp2-4-dual-write-verification.md) | — |
 | `A022` | WP-2.5: Production Cutover, In-Memory Deprecation & Work Package 2 Closure | `active` | [A022-wp2-5-production-cutover.md](execution-reports/A022-wp2-5-production-cutover.md) | — |
+| `A023` | WP-3.1: CMS Lifecycle Extension, Immutable History & Bitemporal Time | `active` | [A023-wp3-1-cms-lifecycle.md](execution-reports/A023-wp3-1-cms-lifecycle.md) | — |
 
 ## Handover Snapshots (Class H)
 
