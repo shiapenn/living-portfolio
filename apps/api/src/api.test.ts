@@ -175,27 +175,41 @@ describe('Living Portfolio API Integration Tests', () => {
   });
 
   it('GET /api/timeline returns Strata Timeline layers and as_of filtering', async () => {
-    await createPublicEntry({
-      slug: 'early-days-2020',
-      title: 'Early Days Architecture',
-      profile: 'case-study',
-      view: 'article',
-      visibility: 'public',
-      body_md: `Architecture decisions in 2020.`,
-      temporal_level: 'exact',
-      valid_from: '2020-04-15T00:00:00Z',
-    });
+    await repo.createEntry(
+      {
+        slug: 'early-days-2020',
+        title: 'Early Days Architecture',
+        profile: 'case-study',
+        view: 'article',
+        visibility: 'public',
+        current_revision_id: null,
+      },
+      {
+        body_md: `Architecture decisions in 2020.`,
+        body_hash: 'sha256-early-2020',
+        temporal_level: 'exact',
+        written_at: '2020-04-15T00:00:00Z',
+        valid_from: '2020-04-15T00:00:00Z',
+      }
+    );
 
-    await createPublicEntry({
-      slug: 'modern-era-2025',
-      title: 'Modern Architecture',
-      profile: 'case-study',
-      view: 'article',
-      visibility: 'public',
-      body_md: `Architecture decisions in 2025.`,
-      temporal_level: 'exact',
-      valid_from: '2025-08-01T00:00:00Z',
-    });
+    await repo.createEntry(
+      {
+        slug: 'modern-era-2025',
+        title: 'Modern Architecture',
+        profile: 'case-study',
+        view: 'article',
+        visibility: 'public',
+        current_revision_id: null,
+      },
+      {
+        body_md: `Architecture decisions in 2025.`,
+        body_hash: 'sha256-modern-2025',
+        temporal_level: 'exact',
+        written_at: '2025-08-01T00:00:00Z',
+        valid_from: '2025-08-01T00:00:00Z',
+      }
+    );
 
     const res = await app.request('/api/timeline?as_of=2021-01-01T00:00:00Z');
     expect(res.status).toBe(200);

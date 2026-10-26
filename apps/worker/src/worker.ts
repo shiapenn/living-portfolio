@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { chunkMarkdown, generateGapQuestions, getProfile } from '@living-portfolio/core';
 import {
   extractFacetsFromMarkdown,
@@ -75,7 +76,7 @@ export class PortfolioWorker {
       },
       {
         body_md: input.body_md,
-        body_hash: `sha256-${input.slug}-${Date.now()}`,
+        body_hash: createHash('sha256').update(input.body_md).digest('hex'),
         temporal_level: input.temporal_level ?? 'estimated',
         valid_from: input.valid_from ?? null,
         valid_to: null,

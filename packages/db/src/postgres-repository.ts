@@ -275,10 +275,13 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     e: Omit<Entry, 'id' | 'created_at'>,
     rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'> & { written_at?: string }
   ): Promise<{ entry: Entry; revision: EntryRevision }> {
+    const existing = await this.getEntryBySlug(e.slug);
+    if (existing) {
+      throw new Error(`Duplicate entry slug: '${e.slug}' already exists`);
+    }
+
     const now = new Date();
-    const writtenAt = rev.written_at
-      ? new Date(rev.written_at)
-      : (!rev.is_hindsight && rev.valid_from ? new Date(rev.valid_from) : now);
+    const writtenAt = rev.written_at ? new Date(rev.written_at) : now;
 
     const [entryRow] = await this.db
       .insert(schema.entries)
@@ -463,9 +466,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     rev: Omit<EntryRevision, 'id' | 'entry_id' | 'written_at'> & { written_at?: string }
   ): Promise<EntryRevision> {
     const now = new Date();
-    const writtenAt = rev.written_at
-      ? new Date(rev.written_at)
-      : (!rev.is_hindsight && rev.valid_from ? new Date(rev.valid_from) : now);
+    const writtenAt = rev.written_at ? new Date(rev.written_at) : now;
 
     const [row] = await this.db
       .insert(schema.entryRevisions)

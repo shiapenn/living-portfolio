@@ -583,7 +583,7 @@
     - "9"
     - "10.4"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 9
@@ -591,11 +591,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/ux-p0-probes.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: "Fixed in WP-3.1 (Fix 9 / P4): Stopped overwriting written_at with valid_from for non-hindsight entries in repository; worker uses real SHA-256 for body_hash."
   verified_by: null
 - id: P5
   audit: AUD-2026-10-19
@@ -626,7 +629,7 @@
     - "3.11"
     - "9"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 9
@@ -634,11 +637,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/ux-p0-probes.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: "Fixed in WP-3.1 (Fix 9 / P6): Enforced revision immutability and duplicate slug rejection across API and repositories (409 Conflict)."
   verified_by: null
 - id: F1
   audit: AUD-2026-10-19
@@ -1604,7 +1610,7 @@
     - "13.6"
     - "13.9"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P0-4
   related_to:
@@ -1615,11 +1621,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/ux-p0-probes.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-04; staged in G2 alpha inside OSR-13)
+    - date: 2026-10-26
+      status: fixed
+      note: "Fixed in WP-3.1 (UX-04, P0-4): Implemented CMS lifecycle extension with draft save, revision history inspector, visibility selection, unpublish, delete, undo confirmation banner, auto-slug generator, and private entry 404 link prevention."
   verified_by: null
 - id: 20261020-UX-05
   audit: AUD-2026-10-20
