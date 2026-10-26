@@ -79,6 +79,34 @@ export function runTriage(options = {}) {
   const facts = getHandoverFacts({ root });
   const registerCounts = facts.registerCounts;
 
+  let diffFiles = [];
+  try {
+    const rawDiff = execSync('git diff --name-only origin/main...HEAD', {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore'],
+    });
+    diffFiles = rawDiff.split('\n').map((f) => f.trim()).filter(Boolean);
+  } catch (_) {
+    try {
+      const rawDiff = execSync('git diff --name-only HEAD~1..HEAD', {
+        cwd: root,
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'ignore'],
+      });
+      diffFiles = rawDiff.split('\n').map((f) => f.trim()).filter(Boolean);
+    } catch (_) {}
+  }
+  try {
+    const statusOut = execSync('git status --porcelain', { cwd: root, encoding: 'utf8' });
+    for (const line of statusOut.split('\n')) {
+      const candidate = line.slice(3).trim();
+      if (candidate && !diffFiles.includes(candidate)) {
+        diffFiles.push(candidate);
+      }
+    }
+  } catch (_) {}
+
   // 3. Scan Receipts
   for (const reportFile of reportsToScan) {
     const reportPath = resolve(REPORTS_DIR, reportFile);
@@ -152,9 +180,9 @@ export function runTriage(options = {}) {
         }
       }
 
-      // 3.4 Status counts in §5 equal register.yml (only checked on latest receipt representing current HEAD)
-      const isLatestReceipt = reportFile === allReportFiles[allReportFiles.length - 1];
-      if (isLatestReceipt) {
+      // 3.4 Status counts in §5 equal register.yml (enforced for receipts introduced or modified in current diff)
+      const isReceiptTouched = diffFiles.some((f) => f.includes(reportFile));
+      if (isReceiptTouched) {
         const sec5Match = content.match(/##\s+5\.\s+Register\s+and\s+Backlog\s+Changes([\s\S]*?)(?=##\s+6|$)/i);
         if (sec5Match) {
           const countsMatch = sec5Match[1].match(/(\d+)\s+fixed[,\s]+(\d+)\s+partial[,\s]+(\d+)\s+open/i);
@@ -254,8 +282,9 @@ export function runTriage(options = {}) {
       }
     }
 
-    // Status counts for H002+
-    if (hNum >= 2) {
+    // Status counts for H002+ (enforced if handover is modified/added in current diff)
+    const isHandoverTouched = diffFiles.some((f) => f.includes(handoverFile));
+    if (hNum >= 2 && isHandoverTouched) {
       const countsMatch = content.match(/(\d+)\s+fixed[,\s]+(\d+)\s+partial[,\s]+(\d+)\s+open/i);
       if (countsMatch) {
         const fixed = parseInt(countsMatch[1], 10);
@@ -337,37 +366,6 @@ export function runTriage(options = {}) {
 
   // 7. Human Condition (c): Protected diff files
   try {
-    let diffFiles = [];
-    try {
-      // Check diff against origin/main or merge-base
-      const rawDiff = execSync('git diff --name-only origin/main...HEAD', {
-        cwd: root,
-        encoding: 'utf8',
-        stdio: ['pipe', 'pipe', 'ignore'],
-      });
-      diffFiles = rawDiff.split('\n').map((f) => f.trim()).filter(Boolean);
-    } catch (_) {
-      try {
-        const rawDiff = execSync('git diff --name-only HEAD~1..HEAD', {
-          cwd: root,
-          encoding: 'utf8',
-          stdio: ['pipe', 'pipe', 'ignore'],
-        });
-        diffFiles = rawDiff.split('\n').map((f) => f.trim()).filter(Boolean);
-      } catch (_) {}
-    }
-
-    // Also include unstaged/staged modified files
-    try {
-      const statusOut = execSync('git status --porcelain', { cwd: root, encoding: 'utf8' });
-      for (const line of statusOut.split('\n')) {
-        const candidate = line.slice(3).trim();
-        if (candidate && !diffFiles.includes(candidate)) {
-          diffFiles.push(candidate);
-        }
-      }
-    } catch (_) {}
-
     const protectedPatterns = [
       /^LICENSE$/,
       /^SECURITY\.md$/,
