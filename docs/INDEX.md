@@ -30,6 +30,7 @@
 | `A022` | WP-2.5: Production Cutover, In-Memory Deprecation & Work Package 2 Closure | `active` | [A022-wp2-5-production-cutover.md](execution-reports/A022-wp2-5-production-cutover.md) | — |
 | `A023` | WP-3.1: CMS Lifecycle Extension, Immutable History & Bitemporal Time | `active` | [A023-wp3-1-cms-lifecycle.md](execution-reports/A023-wp3-1-cms-lifecycle.md) | — |
 | `A024` | WP-3.2: BudgetGovernor Postgres Ledger, Priority Limits & Owner Reserve | `active` | [A024-wp3-2-governor-ledger.md](execution-reports/A024-wp3-2-governor-ledger.md) | — |
+| `A025` | WP-3.3: Degradation Ladder Answer Cache, Fallback Provider & Offline Handoff | `active` | [A025-wp3-3-degradation-ladder.md](execution-reports/A025-wp3-3-degradation-ladder.md) | — |
 
 ## Handover Snapshots (Class H)
 
