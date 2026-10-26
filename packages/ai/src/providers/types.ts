@@ -31,6 +31,7 @@ export interface CompletionResponse {
 export interface ModelProvider {
   id: string;
   name: string;
+  isLocal?: boolean;
   dataPolicy: DataPolicy;
   limits(): ProviderLimits;
   listModels(): Promise<string[]>;
@@ -40,7 +41,11 @@ export interface ModelProvider {
   vision?(imageBuffer: Uint8Array, prompt: string): Promise<string>;
 }
 
-export function isPolicyAllowedForDataClass(policy: DataPolicy, dataClass: DataClass): boolean {
+export function isPolicyAllowedForDataClass(
+  policy: DataPolicy,
+  dataClass: DataClass,
+  isLocal?: boolean
+): boolean {
   switch (dataClass) {
     case 'public':
       return true; // Any provider allowed for public content
@@ -49,7 +54,11 @@ export function isPolicyAllowedForDataClass(policy: DataPolicy, dataClass: DataC
       // Do not allow providers that train on inputs or allow human review without zero-retention
       return !policy.trainsOnInputs && (!policy.humanReview || policy.zeroRetentionOption);
     case 'sensitive':
-      // Local only
-      return !policy.trainsOnInputs && policy.retentionDays === 0 && !policy.humanReview;
+      // Local only (§13.5, §15: "Local only, or skip enrichment")
+      return (
+        (isLocal === true || (isLocal !== false && policy.retentionDays === 0)) &&
+        !policy.trainsOnInputs &&
+        !policy.humanReview
+      );
   }
 }

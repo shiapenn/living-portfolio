@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { RoleProfile, Span } from '@living-portfolio/core';
+import type { DataClass, RoleProfile, Span } from '@living-portfolio/core';
 import type { ModelProvider } from '../providers/types.js';
 
 export interface ExtractedFacet {
@@ -36,6 +36,7 @@ export interface RedactionPreviewItem {
 export interface ScanOptions {
   exclusions?: string[];
   exclusionsFilePath?: string;
+  patterns?: RegExp[];
 }
 
 export function findExclusionsFile(customPath?: string): string | null {
@@ -152,7 +153,45 @@ export function scanForConfidentialData(
     }
   }
 
+  // Custom regex patterns from options
+  if (options && !Array.isArray(options) && options.patterns) {
+    for (const pat of options.patterns) {
+      const flags = pat.flags.includes('g') ? pat.flags : pat.flags + 'g';
+      const regex = new RegExp(pat.source, flags);
+      let m: RegExpExecArray | null;
+      while ((m = regex.exec(text)) !== null) {
+        items.push({ type: 'exclusion', match: m[0].trim(), index: m.index });
+      }
+    }
+  }
+
   return items;
+}
+
+/**
+ * Determines the DataClass (§13.5, §15) for an entry or text content.
+ * If text contains confidential data or matches exclusions, class is 'sensitive'.
+ * Otherwise routed by entry visibility / publication state.
+ */
+export function determineDataClass(
+  entry: { visibility?: string },
+  bodyMd: string,
+  options?: ScanOptions | string[]
+): DataClass {
+  const findings = scanForConfidentialData(bodyMd, options);
+  if (findings.length > 0) {
+    return 'sensitive';
+  }
+  if (entry.visibility === 'private') {
+    return 'private';
+  }
+  if (entry.visibility === 'unlisted') {
+    return 'unpublished';
+  }
+  if (entry.visibility === 'public') {
+    return 'public';
+  }
+  return 'unpublished';
 }
 
 /**
@@ -217,3 +256,76 @@ export async function suggestRolesForSpans(
     return [];
   }
 }
+
+/**
+ * Async claim extraction pipeline (§8, §13.5, S7, Fix 13)
+ * Extracts structural claims with kinds, outcome statuses, and scopes via model provider,
+ * replacing naive keyword matching.
+ */
+export async function extractClaimsFromSpans(
+  spans: Span[],
+  provider: ModelProvider,
+  modelName: string = 'mock-llama-3.3-70b'
+): Promise<Array<ExtractedClaim & { source_span_id?: string; spanOrdinal?: number }>> {
+  if (spans.length === 0) return [];
+
+  const spanSummaries = spans
+    .map((s) => `[Span ${s.ordinal} id=${s.id}]: ${s.text_exact.slice(0, 300)}`)
+    .join('\n');
+
+  const prompt = `Given these text spans from a technical portfolio entry, extract structural claims (lessons, decisions, outcomes, findings, facts) with their outcome status and scope.
+Return strict JSON with format:
+{
+  "claims": [
+    {
+      "text": "Specific claim or result",
+      "kind": "lesson" | "decision" | "outcome" | "finding" | "fact",
+      "outcome_status": "worked" | "partly" | "failed" | "unresolved" | "unknown",
+      "scope": { "facet_name": "value" },
+      "spanOrdinal": 0,
+      "confidence": 0.9
+    }
+  ]
+}
+
+Spans:
+${spanSummaries}`;
+
+  try {
+    const res = await provider.complete({
+      model: modelName,
+      messages: [
+        {
+          role: 'system',
+          content: 'You extract verified technical claims, decisions, and outcomes with precise scopes and statuses. Respond in strict JSON only.',
+        },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0.1,
+    });
+
+    const parsed = JSON.parse(res.text.match(/\{[\s\S]*\}/)?.[0] || '{"claims": []}');
+    const rawClaims = Array.isArray(parsed.claims) ? parsed.claims : [];
+
+    return rawClaims.map((c: any) => {
+      const matchedSpan = typeof c.spanOrdinal === 'number'
+        ? spans.find((s) => s.ordinal === c.spanOrdinal)
+        : spans.find((s) => s.id === c.source_span_id) || spans[0];
+
+      return {
+        text: String(c.text || '').slice(0, 500),
+        kind: ['lesson', 'decision', 'outcome', 'finding', 'fact'].includes(c.kind) ? c.kind : 'fact',
+        outcome_status: ['worked', 'partly', 'failed', 'unresolved', 'unknown'].includes(c.outcome_status)
+          ? c.outcome_status
+          : 'unknown',
+        scope: typeof c.scope === 'object' && c.scope !== null ? c.scope : {},
+        confidence: typeof c.confidence === 'number' ? c.confidence : 0.8,
+        source_span_id: matchedSpan?.id ?? spans[0]?.id,
+        spanOrdinal: matchedSpan?.ordinal ?? 0,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+

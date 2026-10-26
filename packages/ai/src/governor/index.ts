@@ -178,7 +178,7 @@ export class BudgetGovernor {
     for (let i = 0; i < chain.length; i++) {
       const provider = chain[i];
       // 1. Data policy check
-      if (!isPolicyAllowedForDataClass(provider.dataPolicy, dataClass)) {
+      if (!isPolicyAllowedForDataClass(provider.dataPolicy, dataClass, provider.isLocal)) {
         continue;
       }
 
@@ -362,4 +362,37 @@ export class BudgetGovernor {
     ledger.effectiveTpmDiscount = Math.max(0.2, ledger.effectiveTpmDiscount * 0.7);
     this.syncToStorage(providerId);
   }
+}
+
+/**
+ * Data-class policy router (§13.5, §15, S7, Fix 13)
+ * Walks a provider chain and selects the first provider allowed for content's data class
+ * and within budget limits if a governor is supplied.
+ */
+export function selectProviderForDataClass(
+  chain: ModelProvider[],
+  dataClass: DataClass,
+  governor?: BudgetGovernor,
+  estTokens: number = 500,
+  priority: RequestPriority = 'background'
+): { provider: ModelProvider | null; degradationStep?: DegradationStep; reason?: string } {
+  if (governor) {
+    const res = governor.acquire(chain, estTokens, priority, dataClass);
+    return {
+      provider: res.provider,
+      degradationStep: res.degradationStep,
+      reason: res.provider ? undefined : `No eligible provider in chain for data class '${dataClass}' or budget exhausted`,
+    };
+  }
+
+  for (const provider of chain) {
+    if (isPolicyAllowedForDataClass(provider.dataPolicy, dataClass, provider.isLocal)) {
+      return { provider, degradationStep: 'normal' };
+    }
+  }
+
+  return {
+    provider: null,
+    reason: `No provider in chain permits data class '${dataClass}'`,
+  };
 }

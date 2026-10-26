@@ -39,9 +39,4 @@ The following P0 security findings have been remediated in code and covered by p
 
 | ID | Plain-Language Defect Description | Target Fix |
 | --- | --- | --- |
-| `S7` | Worker `runEnrichJob` bypasses `selectProviderForDataClass`, `BudgetGovernor`, and custom owner exclusion rules. | Phase 2 (Fix 13) |
-| `G8` | `BudgetGovernor.acquire()` is called prior to tier routing, consuming visitor quota on Tier 2/3 or extractive paths. | Phase 2 (Fix 11) |
-| `B1`–`B4` | `BudgetGovernor` lacks owner-interactive reserve, proper `visitorShare` vs `softThreshold` ordering, visitor-allocation denominator, and persistent Postgres ledger. | Phase 2 (Fix 11) |
-| `P4` | `createEntry` overwrites `written_at` with `valid_from` for non-hindsight entries, and temporal hindsight check ordering in `temporal.ts` needs correction. | Phase 2 (Fix 9) |
-| `P6` | Revisions can be mutated via `updateEntry` and duplicate entry slugs are not rejected in `InMemoryPortfolioRepository`. | Phase 2 (Fix 9) |
-| `M2`–`M4` | Degradation ladder missing answer cache/fallback provider, verifier missing entailment judge, and query classifier defaulting to `lookup` instead of `advisory`. | Phase 2 (Fixes 12, 14, 15) |
+| `M3`–`M4` | Verifier missing entailment judge and query classifier defaulting to `lookup` instead of `advisory`. | Phase 2 (Fixes 14, 15) |

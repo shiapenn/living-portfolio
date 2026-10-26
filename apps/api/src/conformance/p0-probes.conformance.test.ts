@@ -19,7 +19,8 @@ import {
   verifySchemaVersion,
 } from '@living-portfolio/db';
 import { checkGate } from '@living-portfolio/core';
-import { verifyAnswerBeforeDelivery } from '@living-portfolio/ai';
+import { MockModelProvider, OpenAICompatibleProvider, verifyAnswerBeforeDelivery } from '@living-portfolio/ai';
+import { PortfolioWorker } from '@living-portfolio/worker';
 import { renderAskPage, renderEntryDetailPage } from '@living-portfolio/web';
 
 const rootDir = resolve(import.meta.dirname, '../../../..');
@@ -193,6 +194,61 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
     const rendered = await renderEntryDetailPage(repo, 'xss-ev');
     expect(rendered.html).not.toContain('href="javascript:alert(1)"');
   });
+
+  registerBoundProbe(
+    'S7',
+    'enrichment job routes via data-class privacy router and BudgetGovernor, prevents external provider transmission for sensitive content and exclusion matches, and replaces keyword claim extraction',
+    async () => {
+      // 1. Worker privacy router: cloud provider cannot be used for sensitive or excluded data
+      const cloudProvider = new OpenAICompatibleProvider({
+        apiKey: 'test-openai-key-s7',
+        baseURL: 'https://api.openai.com/v1',
+        dataPolicy: {
+          trainsOnInputs: false,
+          retentionDays: 30,
+          humanReview: false,
+          zeroRetentionOption: true,
+        },
+      });
+      const workerWithCloudOnly = new PortfolioWorker({
+        repo,
+        providers: [cloudProvider],
+        redactionExclusions: ['TopSecretProject'],
+      });
+
+      const testSecretKey = ['sk', 'testtoken1234567890abcdef'].join('-');
+      const { entry: sensitiveEntry, revision: sensitiveRev } = await workerWithCloudOnly.runIngestJob({
+        slug: 'confidential-ai-pipeline',
+        title: 'Confidential AI Pipeline',
+        body_md: `Worked on TopSecretProject with key ${testSecretKey} under strict NDA.`,
+        visibility: 'public', // even if visibility is public, sensitive content overrides to sensitive
+      });
+
+      const enrichCloudRes = await workerWithCloudOnly.runEnrichJob(sensitiveEntry.id, sensitiveRev.id);
+      expect(enrichCloudRes.dataClass).toBe('sensitive');
+      expect(enrichCloudRes.providerUsed).toBeNull();
+      expect(enrichCloudRes.skippedReason).toBe('sensitive_content_no_local_provider');
+      expect(enrichCloudRes.claimsSuggested).toBe(0);
+
+      // 2. Local provider is allowed for sensitive data
+      const localProvider = new MockModelProvider('local-mock', 'Local Mock Provider');
+      const workerWithLocal = new PortfolioWorker({
+        repo,
+        providers: [cloudProvider, localProvider],
+        redactionExclusions: ['TopSecretProject'],
+      });
+      const enrichLocalRes = await workerWithLocal.runEnrichJob(sensitiveEntry.id, sensitiveRev.id);
+      expect(enrichLocalRes.dataClass).toBe('sensitive');
+      expect(enrichLocalRes.providerUsed).toBe('local-mock');
+      expect(enrichLocalRes.claimsSuggested).toBeGreaterThan(0);
+
+      // 3. Claims have structured scope and outcome_status instead of keyword-fallback
+      const savedClaims = await repo.getClaimsForRevision(sensitiveRev.id);
+      expect(savedClaims.length).toBeGreaterThan(0);
+      expect(savedClaims[0].outcome_status).toBe('worked');
+      expect(savedClaims[0].scope).toBeDefined();
+    }
+  );
 
   registerBoundProbe('G1', 'checkGate returns INDETERMINATE when entry-side hard facet is unknown', () => {
     const res = checkGate({

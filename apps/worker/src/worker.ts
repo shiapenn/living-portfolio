@@ -1,17 +1,33 @@
 import { createHash } from 'node:crypto';
-import { chunkMarkdown, generateGapQuestions, getProfile } from '@living-portfolio/core';
+import { chunkMarkdown, generateGapQuestions, getProfile, type DataClass } from '@living-portfolio/core';
 import {
   extractFacetsFromMarkdown,
-  MockModelProvider,
-  scanForConfidentialData,
+  extractClaimsFromSpans,
   suggestRolesForSpans,
+  scanForConfidentialData,
+  determineDataClass,
+  selectProviderForDataClass,
+  BudgetGovernor,
+  MockModelProvider,
   type ModelProvider,
+  type ScanOptions,
 } from '@living-portfolio/ai';
 import { InMemoryPortfolioRepository, type IPortfolioRepository } from '@living-portfolio/db';
 
 export interface PublishBuildConfig {
   debounceMinutes: number; // default 10
   maxBuildsPerDay: number; // default 12
+}
+
+export interface PortfolioWorkerOptions {
+  repo?: IPortfolioRepository;
+  provider?: ModelProvider;
+  providers?: ModelProvider[];
+  governor?: BudgetGovernor;
+  publishConfig?: Partial<PublishBuildConfig>;
+  redactionExclusions?: string[];
+  redactionExclusionsFilePath?: string;
+  scanOptions?: ScanOptions;
 }
 
 export interface PublishJobResult {
@@ -30,22 +46,30 @@ export interface PublishJobResult {
  */
 export class PortfolioWorker {
   private repo: IPortfolioRepository;
-  private provider: ModelProvider;
+  private providers: ModelProvider[];
+  private governor: BudgetGovernor;
   private publishConfig: PublishBuildConfig;
+  private redactionExclusions: string[];
+  private redactionExclusionsFilePath?: string;
+  private customScanOptions?: ScanOptions;
   private lastBuildTimeMs: number | null = null;
   private buildsToday = 0;
 
-  constructor(options?: {
-    repo?: IPortfolioRepository;
-    provider?: ModelProvider;
-    publishConfig?: Partial<PublishBuildConfig>;
-  }) {
+  constructor(options?: PortfolioWorkerOptions) {
     this.repo = options?.repo ?? new InMemoryPortfolioRepository();
-    this.provider = options?.provider ?? new MockModelProvider();
+    this.providers = options?.providers ?? (options?.provider ? [options.provider] : [new MockModelProvider()]);
+    this.governor = options?.governor ?? new BudgetGovernor();
     this.publishConfig = {
       debounceMinutes: options?.publishConfig?.debounceMinutes ?? 10,
       maxBuildsPerDay: options?.publishConfig?.maxBuildsPerDay ?? 12,
     };
+    this.redactionExclusions = options?.redactionExclusions ?? [];
+    this.redactionExclusionsFilePath = options?.redactionExclusionsFilePath;
+    this.customScanOptions = options?.scanOptions;
+  }
+
+  get provider(): ModelProvider {
+    return this.providers[0];
   }
 
   /**
@@ -62,7 +86,13 @@ export class PortfolioWorker {
     temporal_level?: 'exact' | 'range' | 'estimated';
     is_hindsight?: boolean;
   }) {
-    const redactionWarnings = scanForConfidentialData(input.body_md);
+    const effectiveScanOptions: ScanOptions = {
+      exclusions: this.redactionExclusions,
+      exclusionsFilePath: this.redactionExclusionsFilePath,
+      patterns: this.customScanOptions?.patterns,
+      ...this.customScanOptions,
+    };
+    const redactionWarnings = scanForConfidentialData(input.body_md, effectiveScanOptions);
 
     const { entry, revision } = await this.repo.createEntry(
       {
@@ -131,8 +161,10 @@ export class PortfolioWorker {
   }
 
   /**
-   * 3. ENRICH (§8): Async extraction where ALL outputs are machine suggestions (`status: 'suggested'`).
+   * 3. ENRICH (§8, §13.5, §15, S7, Fix 13):
+   * Async extraction where ALL outputs are machine suggestions (`status: 'suggested'`).
    * Never overwrites owner-confirmed data.
+   * Routes model calls strictly by data class through BudgetGovernor and local redaction scan.
    */
   async runEnrichJob(entryId: string, revisionId: string) {
     const full = await this.repo.getEntry(entryId);
@@ -143,62 +175,106 @@ export class PortfolioWorker {
     const spans = await this.repo.getSpans(revisionId);
     const profile = getProfile(full.entry.profile);
 
-    // 3a. Facet extraction with quoted source span + confidence
-    const extractedFacets = await extractFacetsFromMarkdown(full.currentRevision.body_md, this.provider);
+    // 1. Redaction & exclusion scan
+    const effectiveScanOptions: ScanOptions = {
+      exclusions: this.redactionExclusions,
+      exclusionsFilePath: this.redactionExclusionsFilePath,
+      patterns: this.customScanOptions?.patterns,
+      ...this.customScanOptions,
+    };
+    const redactionFindings = scanForConfidentialData(
+      full.currentRevision.body_md,
+      effectiveScanOptions
+    );
+
+    // 2. Determine DataClass (§13.5, §15)
+    const dataClass: DataClass = determineDataClass(
+      full.entry,
+      full.currentRevision.body_md,
+      effectiveScanOptions
+    );
+
+    // 3. Acquire lease from BudgetGovernor with priority: 'background'
+    const estTokens = Math.max(100, Math.ceil(full.currentRevision.body_md.length / 4) + 600);
+    const routing = selectProviderForDataClass(
+      this.providers,
+      dataClass,
+      this.governor,
+      estTokens,
+      'background'
+    );
+    const selectedProvider = routing.provider;
+
     const savedFacets = [];
-    for (const f of extractedFacets) {
-      const saved = await this.repo.saveFacet({
-        entry_id: entryId,
-        revision_id: revisionId,
-        key: f.key,
-        value: f.value,
-        source: 'machine',
-        status: 'suggested',
-        confidence: f.confidence,
-        source_span_id: spans[0]?.id ?? null,
-      });
-      savedFacets.push(saved);
-    }
-
-    // 3b. Role suggestion per span
-    const suggestedRoles = await suggestRolesForSpans(spans, profile, this.provider);
     const savedAnnotations = [];
-    for (const r of suggestedRoles) {
-      const targetSpan = spans.find((s) => s.ordinal === r.spanOrdinal) || spans[0];
-      if (!targetSpan) continue;
-      const ann = await this.repo.saveAnnotation({
-        span_id: targetSpan.id,
-        role: r.role,
-        profile: full.entry.profile,
-        source: 'machine',
-        status: 'suggested',
-        confidence: r.confidence,
-      });
-      savedAnnotations.push(ann);
-    }
-
-    // 3c. Claim extraction + outcome status
     const savedClaims = [];
-    for (const span of spans) {
-      const lower = span.text_exact.toLowerCase();
-      if (lower.includes('worked') || lower.includes('decided') || lower.includes('lesson') || lower.includes('migrated')) {
-        const outcomeStatus = lower.includes('failed') ? 'failed' : lower.includes('partly') ? 'partly' : 'worked';
+    let skippedReason: string | undefined;
+
+    if (!selectedProvider) {
+      if (dataClass === 'sensitive') {
+        skippedReason = 'sensitive_content_no_local_provider';
+      } else {
+        skippedReason = 'budget_exhausted_or_policy_forbidden';
+      }
+    } else {
+      // 3a. Facet extraction with quoted source span + confidence
+      const extractedFacets = await extractFacetsFromMarkdown(full.currentRevision.body_md, selectedProvider);
+      for (const f of extractedFacets) {
+        const saved = await this.repo.saveFacet({
+          entry_id: entryId,
+          revision_id: revisionId,
+          key: f.key,
+          value: f.value,
+          source: 'machine',
+          status: 'suggested',
+          confidence: f.confidence,
+          source_span_id: spans[0]?.id ?? null,
+        });
+        savedFacets.push(saved);
+      }
+
+      // 3b. Role suggestion per span
+      const suggestedRoles = await suggestRolesForSpans(spans, profile, selectedProvider);
+      for (const r of suggestedRoles) {
+        const targetSpan = spans.find((s) => s.ordinal === r.spanOrdinal) || spans[0];
+        if (!targetSpan) continue;
+        const ann = await this.repo.saveAnnotation({
+          span_id: targetSpan.id,
+          role: r.role,
+          profile: full.entry.profile,
+          source: 'machine',
+          status: 'suggested',
+          confidence: r.confidence,
+        });
+        savedAnnotations.push(ann);
+      }
+
+      // 3c. Claim extraction + outcome status + scope (Fix 13, replacing keyword extraction)
+      const extractedClaims = await extractClaimsFromSpans(spans, selectedProvider);
+      for (const c of extractedClaims) {
+        const matchedSpan = c.source_span_id
+          ? spans.find((s) => s.id === c.source_span_id)
+          : spans[0];
+
         const claim = await this.repo.saveClaim({
           revision_id: revisionId,
-          text: span.text_exact.slice(0, 240),
-          kind: lower.includes('decided') ? 'decision' : 'outcome',
-          outcome_status: outcomeStatus,
-          scope: {},
+          text: c.text.slice(0, 500),
+          kind: c.kind,
+          outcome_status: c.outcome_status ?? 'unknown',
+          scope: c.scope ?? {},
           valid_from: full.currentRevision.valid_from,
           valid_to: full.currentRevision.valid_to,
           temporal_level: full.currentRevision.temporal_level,
           is_hindsight: full.currentRevision.is_hindsight,
-          source_span_id: span.id,
+          source_span_id: matchedSpan?.id ?? spans[0]?.id ?? null,
           source: 'machine',
           status: 'suggested',
         });
         savedClaims.push(claim);
       }
+
+      // Reconcile spend with governor
+      this.governor.reconcileUsage(selectedProvider.id, 'background', estTokens, estTokens);
     }
 
     // 3d. Evidence discovery (links/commits in markdown)
@@ -232,6 +308,12 @@ export class PortfolioWorker {
     });
 
     return {
+      entryId,
+      revisionId,
+      dataClass,
+      providerUsed: selectedProvider?.id ?? null,
+      skippedReason,
+      redactionFindingsCount: redactionFindings.length,
       facetsSuggested: savedFacets.length,
       annotationsSuggested: savedAnnotations.length,
       claimsSuggested: savedClaims.length,

@@ -197,7 +197,7 @@
     - "13.5"
     - "15"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 13
@@ -205,11 +205,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/p0-probes.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-10-26
+      status: fixed
+      note: "Fixed in WP-3.4 (Fix 13): routed enrichment through selectProviderForDataClass and BudgetGovernor, skipped external cloud calls on sensitive/excluded data, and replaced keyword claim extraction with structured model extraction"
   verified_by: null
 - id: G1
   audit: AUD-2026-10-19

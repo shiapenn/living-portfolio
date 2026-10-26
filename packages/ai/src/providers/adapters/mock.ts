@@ -3,6 +3,7 @@ import type { CompletionRequest, CompletionResponse, ModelProvider, ProviderLimi
 export class MockModelProvider implements ModelProvider {
   id: string;
   name: string;
+  isLocal: boolean = true;
 
   constructor(id: string = 'mock', name: string = 'Mock Provider (Local/Test)') {
     this.id = id;
@@ -52,6 +53,24 @@ export class MockModelProvider implements ModelProvider {
         roles: [
           { spanOrdinal: 0, role: 'goal', confidence: 0.94 },
           { spanOrdinal: 0, role: 'decision', confidence: 0.88 },
+        ],
+      });
+    } else if (
+      lastMessage.includes('extract claims') ||
+      lastMessage.includes('Extract claims') ||
+      lastMessage.includes('extract structural claims') ||
+      lastMessage.includes('claims')
+    ) {
+      responseText = JSON.stringify({
+        claims: [
+          {
+            text: 'Migrated 100k daily active users with zero downtime',
+            kind: 'outcome',
+            outcome_status: 'worked',
+            scope: { database: 'PostgreSQL', stack: 'Node.js' },
+            spanOrdinal: 0,
+            confidence: 0.95,
+          },
         ],
       });
     } else {
