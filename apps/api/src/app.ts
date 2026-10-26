@@ -9,7 +9,7 @@ import {
   seedDemoPortfolio,
   type IPortfolioRepository,
 } from '@living-portfolio/db';
-import { BudgetGovernor, MockModelProvider, OpenAICompatibleProvider, resolveConfiguredProviders, type ModelProvider } from '@living-portfolio/ai';
+import { BudgetGovernor, MockModelProvider, OpenAICompatibleProvider, resolveConfiguredProviders, AnswerCache, type ModelProvider } from '@living-portfolio/ai';
 import { DEFAULT_STRATA_THEME } from '@living-portfolio/core';
 import {
   renderAdminLoginPage,
@@ -141,16 +141,19 @@ export function createApp(
       configuredProviders: providerNames,
     }
   );
+  const answerCache = new AnswerCache();
+
   app.route('/healthz', healthRouter);
   app.route('/api/health', healthRouter);
   app.route('/api/auth', createAuthRoutes(auth));
-  app.route('/api/entries', createEntriesRoutes(repo, auth, runtimeState));
+  app.route('/api/entries', createEntriesRoutes(repo, auth, runtimeState, answerCache));
   app.route(
     '/api/ask',
     createAskRoutes({
       repo,
       governor,
       providers,
+      answerCache,
       auth,
       tier1Floor: 0.82,
       tier2Floor: 0.55,
@@ -169,7 +172,7 @@ export function createApp(
   app.use('/api/settings', auth.requireAdminMiddleware());
   app.use('/api/settings/*', auth.requireAdminMiddleware());
 
-  app.route('/api/structure', createStructureRoutes(repo));
+  app.route('/api/structure', createStructureRoutes(repo, answerCache));
   app.route('/api/inbox', createInboxRoutes(repo));
   app.route('/api/calibration', createCalibrationRoutes(repo));
   app.route('/api/audit', createAuditRoutes(repo));
@@ -277,5 +280,5 @@ export function createApp(
     });
   });
 
-  return { app, repo, governor, mockProvider, providers, runtimeState, auth, adminToken };
+  return { app, repo, governor, mockProvider, providers, runtimeState, auth, adminToken, answerCache };
 }

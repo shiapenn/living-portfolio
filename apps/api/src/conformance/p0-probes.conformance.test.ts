@@ -441,4 +441,16 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
       expect(govSource).toContain('recordRateLimitError');
     }
   );
+
+  registerBoundProbe(
+    'M2',
+    'Degradation ladder implements Step 2 answer cache, Step 3 distinct fallback provider, and Step 6 offline handoff (§10.8, Fix 12)',
+    () => {
+      const askSource = readFileSync(resolve(rootDir, 'apps/api/src/routes/ask.ts'), 'utf8');
+      expect(askSource).toContain('answerCache.get');
+      expect(askSource).toContain('answerCache.set');
+      expect(askSource).toContain("degradationStep = 'fallback_provider'");
+      expect(askSource).toContain("degradationStep: 'handoff'");
+    }
+  );
 });

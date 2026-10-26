@@ -1,8 +1,13 @@
 import type { CompletionRequest, CompletionResponse, ModelProvider, ProviderLimits, DataPolicy } from '../types.js';
 
 export class MockModelProvider implements ModelProvider {
-  id = 'mock';
-  name = 'Mock Provider (Local/Test)';
+  id: string;
+  name: string;
+
+  constructor(id: string = 'mock', name: string = 'Mock Provider (Local/Test)') {
+    this.id = id;
+    this.name = name;
+  }
   dataPolicy: DataPolicy = {
     trainsOnInputs: false,
     retentionDays: 0,

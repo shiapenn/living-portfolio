@@ -175,7 +175,8 @@ export class BudgetGovernor {
     const now = new Date();
     const nowMs = now.getTime();
 
-    for (const provider of chain) {
+    for (let i = 0; i < chain.length; i++) {
+      const provider = chain[i];
       // 1. Data policy check
       if (!isPolicyAllowedForDataClass(provider.dataPolicy, dataClass)) {
         continue;
@@ -214,9 +215,10 @@ export class BudgetGovernor {
         continue;
       }
 
-      let step: DegradationStep = 'normal';
+      // Step 3 (Fallback provider) vs Step 1 (Normal)
+      let step: DegradationStep = i > 0 ? 'fallback_provider' : 'normal';
 
-      // Global soft threshold triggers smaller_model step
+      // Step 4: Global soft threshold triggers smaller_model step
       if (projectedTokens / dailyTokensMax >= this.config.softThreshold) {
         step = 'smaller_model';
       }
