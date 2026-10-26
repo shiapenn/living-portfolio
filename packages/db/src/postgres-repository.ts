@@ -1204,4 +1204,14 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
       embedding_set_id: r.embedding_set_id,
     }));
   }
+
+  // --- Subsystem Health & Readiness (WP-2.5, Fix 8, F3) ---
+  async checkHealth(): Promise<boolean> {
+    try {
+      await this.db.execute(sql`SELECT 1`);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }

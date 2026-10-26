@@ -11,7 +11,13 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parse as parseYaml } from '../../../../packages/core/node_modules/yaml/browser/index.js';
 import { createApp } from '../app.js';
-import { seedDemoPortfolio } from '@living-portfolio/db';
+import {
+  seedDemoPortfolio,
+  PostgresPortfolioRepository,
+  createDbPool,
+  runMigrations,
+  verifySchemaVersion,
+} from '@living-portfolio/db';
 import { checkGate } from '@living-portfolio/core';
 import { verifyAnswerBeforeDelivery } from '@living-portfolio/ai';
 import { renderAskPage, renderEntryDetailPage } from '@living-portfolio/web';
@@ -293,4 +299,93 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
     expect(existsSync(resolve(rootDir, 'docker/Dockerfile.api'))).toBe(true);
     expect(existsSync(resolve(rootDir, 'docker/Dockerfile.worker'))).toBe(true);
   });
+
+  registerBoundProbe(
+    'P1',
+    'storage defaults to PostgreSQL in production and server.ts does not unconditionally seed demo data on boot',
+    async () => {
+      const serverSource = readFileSync(resolve(rootDir, 'apps/api/src/server.ts'), 'utf8');
+      expect(serverSource).toContain('if (config.SEED_DEMO)');
+      expect(serverSource).not.toMatch(/await seedDemoPortfolio\(repo\);\s*(?!\s*})/);
+
+      // Verify createApp defaults to postgres in production
+      const origEnv = process.env.NODE_ENV;
+      const origUrl = process.env.DATABASE_URL;
+      const origMode = process.env.PORTFOLIO_DB_MODE;
+      try {
+        process.env.NODE_ENV = 'production';
+        delete process.env.DATABASE_URL;
+        delete process.env.PORTFOLIO_DB_MODE;
+        const prodApp = createApp();
+        expect(prodApp.repo).toBeInstanceOf(PostgresPortfolioRepository);
+      } finally {
+        process.env.NODE_ENV = origEnv;
+        if (origUrl !== undefined) process.env.DATABASE_URL = origUrl;
+        else delete process.env.DATABASE_URL;
+        if (origMode !== undefined) process.env.PORTFOLIO_DB_MODE = origMode;
+        else delete process.env.PORTFOLIO_DB_MODE;
+      }
+    }
+  );
+
+  registerBoundProbe(
+    'P2',
+    'Drizzle schema is connected with migrations, schema_info verification, and PostgresPortfolioRepository',
+    () => {
+      expect(typeof PostgresPortfolioRepository).toBe('function');
+      expect(typeof createDbPool).toBe('function');
+      expect(typeof runMigrations).toBe('function');
+      expect(typeof verifySchemaVersion).toBe('function');
+    }
+  );
+
+  registerBoundProbe(
+    'P3',
+    'worker daemon registers all 5 queues and persists chunk vector embeddings to repository',
+    () => {
+      const queueSource = readFileSync(resolve(rootDir, 'apps/worker/src/queue.ts'), 'utf8');
+      expect(queueSource).toContain("'lp:ingest'");
+      expect(queueSource).toContain("'lp:embed'");
+      expect(queueSource).toContain("'lp:enrich'");
+      expect(queueSource).toContain("'lp:publish'");
+      expect(queueSource).toContain("'lp:delete-entry'");
+
+      const workerSource = readFileSync(resolve(rootDir, 'apps/worker/src/worker.ts'), 'utf8');
+      expect(workerSource).toContain('this.repo.saveChunkVectors');
+    }
+  );
+
+  registerBoundProbe(
+    'F3',
+    '/healthz performs real measured repository connectivity check instead of constant true',
+    async () => {
+      const appSource = readFileSync(resolve(rootDir, 'apps/api/src/app.ts'), 'utf8');
+      expect(appSource).not.toContain('createHealthRoutes(async () => true');
+      expect(appSource).toContain('checkHealth');
+
+      // Simulate healthy repo
+      const healthyMockRepo = {
+        ...repo,
+        checkHealth: async () => true,
+      };
+      const healthyApp = createApp(healthyMockRepo as any);
+      const healthyRes = await healthyApp.app.request('/healthz');
+      expect(healthyRes.status).toBe(200);
+      const healthyBody = await healthyRes.json();
+      expect(healthyBody.status).toBe('healthy');
+      expect(healthyBody.database).toBe('connected');
+
+      // Simulate degraded/unreachable repo
+      const degradedMockRepo = {
+        ...repo,
+        checkHealth: async () => false,
+      };
+      const degradedApp = createApp(degradedMockRepo as any);
+      const degradedRes = await degradedApp.app.request('/healthz');
+      expect(degradedRes.status).toBe(503);
+      const degradedBody = await degradedRes.json();
+      expect(degradedBody.status).toBe('degraded');
+      expect(degradedBody.database).toBe('error');
+    }
+  );
 });

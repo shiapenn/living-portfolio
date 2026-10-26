@@ -113,6 +113,9 @@ export interface IPortfolioRepository {
   }>): Promise<ChunkVectorRecord[]>;
   getChunkVectors(chunk_id: string): Promise<ChunkVectorRecord[]>;
   getChunkVectorsForRevision(revision_id: string): Promise<ChunkVectorRecord[]>;
+
+  // Subsystem Health & Readiness (WP-2.5, Fix 8, F3)
+  checkHealth?(): Promise<boolean>;
 }
 
 export interface ChunkVectorRecord {
@@ -125,7 +128,10 @@ export interface ChunkVectorRecord {
 
 /**
  * In-memory repository implementing IPortfolioRepository.
- * Fully functional for development, fast tests, and deployments without external Postgres.
+ *
+ * @deprecated In-memory storage is deprecated for production deployments (§13.10, Fix 7, P1).
+ * Use `PostgresPortfolioRepository` for persistent production environments,
+ * or `DualWritePortfolioRepository` for verification and migration harnesses.
  */
 export class InMemoryPortfolioRepository implements IPortfolioRepository {
   private ventures = new Map<string, Venture>();
@@ -716,5 +722,10 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     const revisionSpans = await this.getSpans(revision_id);
     const spanIds = new Set(revisionSpans.map((s) => s.id));
     return Array.from(this.chunkVectors.values()).filter((v) => spanIds.has(v.chunk_id));
+  }
+
+  // --- Subsystem Health & Readiness (WP-2.5, Fix 8, F3) ---
+  async checkHealth(): Promise<boolean> {
+    return true;
   }
 }

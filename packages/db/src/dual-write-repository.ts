@@ -851,6 +851,21 @@ export class DualWritePortfolioRepository implements IPortfolioRepository {
       () => this.shadow.getChunkVectorsForRevision(revision_id)
     );
   }
+
+  // --- Subsystem Health & Readiness (WP-2.5, Fix 8, F3) ---
+  async checkHealth(): Promise<boolean> {
+    try {
+      const primaryOk = typeof (this.primary as any).checkHealth === 'function'
+        ? await (this.primary as any).checkHealth()
+        : true;
+      const shadowOk = typeof (this.shadow as any).checkHealth === 'function'
+        ? await (this.shadow as any).checkHealth()
+        : true;
+      return primaryOk && shadowOk;
+    } catch {
+      return false;
+    }
+  }
 }
 
 function summarizeEntity(val: any): any {

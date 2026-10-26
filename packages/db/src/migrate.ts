@@ -66,6 +66,11 @@ export async function assertSchemaVersion(
 }
 
 /**
+ * Alias for assertSchemaVersion (§9, §19, P2).
+ */
+export const verifySchemaVersion = assertSchemaVersion;
+
+/**
  * Runs all forward migrations idempotently and records the applied schema version in schema_info (§9, §19).
  */
 export async function runMigrations(

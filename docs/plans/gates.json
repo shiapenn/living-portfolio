@@ -26,6 +26,31 @@
       ],
       "closingReceipt": "A016",
       "handover": "H001"
+    },
+    "WP-2": {
+      "name": "Work Package 2 (Gate 1c / G2 Alpha Persistence & Dual-Write)",
+      "description": "PostgreSQL 16 + pgvector container, connection pooling, Drizzle migrations, pg-boss background worker daemon, chunk embedding persistence, dual-write verification harness, shadow parity metrics, and production cutover.",
+      "requiredTaskIds": [
+        "WP-2.1",
+        "WP-2.2",
+        "WP-2.3",
+        "WP-2.4",
+        "WP-2.5"
+      ],
+      "requiredPassingTests": [
+        "Postgres + pgvector Live Integration Suite › runs drizzle migrations cleanly and verifies schema_info",
+        "Dual-Engine Repository Conformance Suite › saves, queries, and retrieves chunk vectors per revision and span (§8, Fix 8, P3)",
+        "Dual-Engine Repository Conformance Suite › preserves strict temporal bisimulation and hindsight exclusion across engines (§10.4, Fix 1, OSR-14)",
+        "DualWritePortfolioRepository Unit & Parity Verification (Fix 8, Fix 10) › dual-writes from InMemory to live PostgreSQL and verifies bit-for-bit parity across engines",
+        "Dual-Write Verification & Parity Conformance API › records matches and tracks latency when performing API write and read operations",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [P1] (status=fixed) storage defaults to PostgreSQL in production and server.ts does not unconditionally seed demo data on boot",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [P2] (status=fixed) Drizzle schema is connected with migrations, schema_info verification, and PostgresPortfolioRepository",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [P3] (status=fixed) worker daemon registers all 5 queues and persists chunk vector embeddings to repository",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [F2] (status=fixed) docker/Dockerfile.api and docker/Dockerfile.worker exist on disk for docker compose",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [F3] (status=fixed) /healthz performs real measured repository connectivity check instead of constant true"
+      ],
+      "closingReceipt": "A022",
+      "handover": "H003"
     }
   }
 }
