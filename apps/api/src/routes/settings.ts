@@ -179,6 +179,34 @@ export function createSettingsRoutes(
     });
   });
 
+  // Scoped Constraints List & Confirm/Discard (§11, 20261020-UX-09)
+  router.get('/constraints', async (c) => {
+    if (!repo) return c.json({ constraints: [] });
+    const status = c.req.query('status');
+    const constraints = await repo.getScopedConstraints(status || undefined);
+    return c.json({ constraints });
+  });
+
+  router.patch('/constraints/:id/confirm', async (c) => {
+    if (!repo) return c.json({ error: 'Repository unavailable' }, 503);
+    const id = c.req.param('id');
+    const updated = await repo.updateScopedConstraint(id, { status: 'confirmed' });
+    if (!updated) {
+      return c.json({ error: 'Constraint not found', id }, 404);
+    }
+    return c.json({ updated: true, constraint: updated });
+  });
+
+  router.patch('/constraints/:id/discard', async (c) => {
+    if (!repo) return c.json({ error: 'Repository unavailable' }, 503);
+    const id = c.req.param('id');
+    const updated = await repo.updateScopedConstraint(id, { status: 'discarded' });
+    if (!updated) {
+      return c.json({ error: 'Constraint not found', id }, 404);
+    }
+    return c.json({ updated: true, constraint: updated });
+  });
+
   // Update theme tokens (§12.3, §12.10)
   router.patch('/theme', async (c) => {
     const body = await c.req.json();

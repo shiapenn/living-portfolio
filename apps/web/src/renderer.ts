@@ -1,11 +1,13 @@
 import { loadConfig } from '@living-portfolio/config';
 import {
+  DEFAULT_STRATA_THEME,
   computeStructureLevel,
   detectLaterThinking,
   generateGapQuestions,
   getProfile,
   getStructureLevelDetails,
   isTemporallyValid,
+  verifyThemeConformance,
 } from '@living-portfolio/core';
 import type { IPortfolioRepository } from '@living-portfolio/db';
 import { STRATA_DESIGN_SYSTEM_CSS } from './styles.js';
@@ -1397,7 +1399,21 @@ export const ADMIN_API_CLIENT_SCRIPT = `
         window.apiClient = apiClient;
 `;
 
-export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Promise<string> {
+export interface AdminSettingsState {
+  automatedAnsweringEnabled?: boolean;
+  calibrationFrozen?: boolean;
+  simulatedDegradationMode?: 'normal' | 'extractive' | 'disabled';
+  tier1_floor?: number;
+  tier2_floor?: number;
+  facet_known_threshold?: number;
+  theme?: typeof DEFAULT_STRATA_THEME;
+}
+
+export async function renderAdminWorkspacePage(
+  repo: IPortfolioRepository,
+  settingsState?: AdminSettingsState
+): Promise<string> {
+  const answeringEnabledInitial = settingsState?.automatedAnsweringEnabled ?? true;
   const entries = await repo.listEntries({ visibility: ['public', 'unlisted', 'private'] });
   const escalations = await repo.getEscalations();
   const scopedConstraints = await repo.getScopedConstraints();
@@ -1533,6 +1549,31 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
           .join('\n')
       : '<p style="color:var(--text-muted)">No pending escalations.</p>';
 
+  const scopedConstraintsHtml =
+    scopedConstraints.length > 0
+      ? scopedConstraints
+          .map((sc) => {
+            const isConfirmed = sc.status === 'confirmed';
+            const isDiscarded = sc.status === 'discarded';
+            return `
+            <div class="scoped-constraint-card" id="constraint-card-${sc.id}" style="font-size:13px;padding:10px 12px;border:1px solid var(--rule);border-radius:var(--radius-control);margin-bottom:8px;background:var(--surface-page)">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px">
+                <div>
+                  <strong>Scope:</strong> <code style="font-size:11px">${escapeHtml(JSON.stringify(sc.scope || {}))}</code>
+                </div>
+                <span class="chip chip-constraint-status" id="chip-status-${sc.id}">${escapeHtml(sc.status)}</span>
+              </div>
+              <p style="margin:0 0 8px 0;font-size:13px">Quote: <em>"${escapeHtml(sc.source_quote || '')}"</em></p>
+              <div style="display:flex;gap:6px;align-items:center">
+                ${!isConfirmed ? `<button type="button" class="btn btn-secondary btn-confirm-constraint" data-id="${sc.id}" style="padding:2px 8px;font-size:12px">Confirm</button>` : ''}
+                ${!isDiscarded ? `<button type="button" class="btn btn-secondary btn-discard-constraint" data-id="${sc.id}" style="padding:2px 8px;font-size:12px">Discard</button>` : ''}
+                <span id="constraint-msg-${sc.id}" style="font-size:11px;color:var(--text-muted)"></span>
+              </div>
+            </div>`;
+          })
+          .join('\n')
+      : '<p style="color:var(--text-muted);font-size:13px">No active scoped constraints recorded.</p>';
+
   const content = `
     <div class="later-thinking-banner" data-banner="alpha-warning" role="alert" style="margin-bottom:16px">
       <strong>${escapeHtml(ALPHA_WARNING_TEXT)}</strong>
@@ -1546,7 +1587,8 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <a href="/admin/import" class="btn btn-secondary" id="btn-import-triage" style="text-decoration:none;display:inline-flex;align-items:center">Import &amp; Triage</a>
-        <button type="button" class="btn btn-secondary" id="btn-killswitch" aria-pressed="true">Pause Automated Answering</button>
+        <a href="/admin/settings" class="btn btn-secondary" id="btn-admin-settings" style="text-decoration:none;display:inline-flex;align-items:center">Settings &amp; Calibration</a>
+        <button type="button" class="btn btn-secondary" id="btn-killswitch" aria-pressed="${answeringEnabledInitial ? 'true' : 'false'}">${answeringEnabledInitial ? 'Pause Automated Answering' : 'Resume Automated Answering'}</button>
         <button type="button" class="btn btn-secondary" id="btn-backup-drill">Run Backup &amp; Restore Drill</button>
         <a href="/api/settings/export" target="_blank" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center">Export Markdown + Sidecar</a>
       </div>
@@ -1795,14 +1837,20 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
 
       <section class="admin-pane" aria-labelledby="audit-heading">
         <h2 id="audit-heading" style="font-size:18px;margin:0 0 12px 0">Topology Audit &amp; Scoped Constraints (§11)</h2>
+
+        <!-- Honest Topology Conflicts Card (20261020-UX-09) -->
+        <div class="topology-conflicts-card" id="topology-conflicts-card" style="margin-bottom:16px;padding:12px;border:1px solid var(--rule);border-radius:var(--radius-control);background:var(--surface-page)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <h3 style="font-size:13px;margin:0">Topology Conflict Detection (§11)</h3>
+            <span class="chip" style="font-size:11px" id="chip-topology-status">501 Not Implemented</span>
+          </div>
+          <p id="topology-status-msg" style="font-size:12px;color:var(--text-muted);margin:0">
+            Automated claim topology conflict detector is not yet implemented (SIMULATED finding M6). No active conflicts detected.
+          </p>
+        </div>
+
         <h3 style="font-size:14px;margin:12px 0 6px 0">Mined Scoped Constraints (${scopedConstraints.length})</h3>
-        ${scopedConstraints.length > 0 ? scopedConstraints
-          .map(
-            (sc) => `<div style="font-size:13px;padding:8px;border:1px dashed var(--rule)">
-              Quote: "${escapeHtml(sc.source_quote || '')}" · Status: <strong>${escapeHtml(sc.status)}</strong>
-            </div>`
-          )
-          .join('\n') : '<p style="color:var(--text-muted);font-size:13px">No active scoped constraints recorded.</p>'}
+        ${scopedConstraintsHtml}
       </section>
     </div>
 
@@ -1824,7 +1872,7 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
         const slugInput = document.getElementById('entry-slug');
         const modeHeading = document.getElementById('editor-mode-heading');
         const stateBadge = document.getElementById('chip-current-state');
-        let answeringEnabled = true;
+        let answeringEnabled = ${answeringEnabledInitial ? 'true' : 'false'};
         let currentPreviewToken = '';
         let currentHasWarnings = false;
         let slugIsManual = false;
@@ -2732,11 +2780,422 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
             }
           });
         });
+        // Scoped constraints confirm & discard actions (§11, UX-09)
+        document.querySelectorAll('.btn-confirm-constraint').forEach(function(btn) {
+          btn.addEventListener('click', async function() {
+            var id = btn.getAttribute('data-id');
+            var msgEl = document.getElementById('constraint-msg-' + id);
+            var statusEl = document.getElementById('chip-status-' + id);
+            btn.setAttribute('disabled', 'true');
+            if (msgEl) msgEl.textContent = 'Confirming...';
+            try {
+              var res = await apiClient('/api/settings/constraints/' + id + '/confirm', { method: 'PATCH' });
+              if (res.ok) {
+                if (statusEl) {
+                  statusEl.textContent = 'confirmed';
+                  statusEl.style.background = '#d1fae5';
+                  statusEl.style.color = '#065f46';
+                }
+                btn.style.display = 'none';
+                if (msgEl) msgEl.textContent = '✓ Confirmed';
+              } else {
+                if (msgEl) msgEl.textContent = 'Error confirming constraint.';
+                btn.removeAttribute('disabled');
+              }
+            } catch (err) {
+              if (msgEl) msgEl.textContent = 'Network error.';
+              btn.removeAttribute('disabled');
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-discard-constraint').forEach(function(btn) {
+          btn.addEventListener('click', async function() {
+            var id = btn.getAttribute('data-id');
+            var msgEl = document.getElementById('constraint-msg-' + id);
+            var statusEl = document.getElementById('chip-status-' + id);
+            btn.setAttribute('disabled', 'true');
+            if (msgEl) msgEl.textContent = 'Discarding...';
+            try {
+              var res = await apiClient('/api/settings/constraints/' + id + '/discard', { method: 'PATCH' });
+              if (res.ok) {
+                if (statusEl) {
+                  statusEl.textContent = 'discarded';
+                  statusEl.style.background = '#fee2e2';
+                  statusEl.style.color = '#991b1b';
+                }
+                btn.style.display = 'none';
+                if (msgEl) msgEl.textContent = '✕ Discarded';
+              } else {
+                if (msgEl) msgEl.textContent = 'Error discarding constraint.';
+                btn.removeAttribute('disabled');
+              }
+            } catch (err) {
+              if (msgEl) msgEl.textContent = 'Network error.';
+              btn.removeAttribute('disabled');
+            }
+          });
+        });
       })();
     </script>
   `;
 
   return renderLayout('Admin Workspace', '/admin', content);
+}
+
+export async function renderAdminSettingsPage(
+  repo: IPortfolioRepository,
+  settingsState?: AdminSettingsState
+): Promise<string> {
+  const tier1Floor = settingsState?.tier1_floor ?? 0.82;
+  const tier2Floor = settingsState?.tier2_floor ?? 0.55;
+  const facetThreshold = settingsState?.facet_known_threshold ?? 0.90;
+  const calibrationFrozen = settingsState?.calibrationFrozen ?? false;
+  const answeringEnabled = settingsState?.automatedAnsweringEnabled ?? true;
+  const degradationMode = settingsState?.simulatedDegradationMode ?? 'normal';
+  const theme = settingsState?.theme ?? structuredClone(DEFAULT_STRATA_THEME);
+  const themeConformance = verifyThemeConformance(theme);
+
+  const content = `
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+      <div>
+        <h1 style="font-family:var(--font-reading);font-size:28px;margin:0">Admin Operations &amp; System Calibration</h1>
+        <p style="color:var(--text-muted);margin:4px 0 0;font-size:14px">
+          Configure routing floors, provider registry, degradation ladders, theme tokens, notification channels, and backup restore drills (§6.4, §11, §12.3, §13.8, §13.9).
+        </p>
+      </div>
+      <div>
+        <a href="/admin" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center">← Back to Workspace</a>
+      </div>
+    </div>
+
+    <div id="settings-status-banner" role="status" aria-live="polite" style="margin-bottom:16px"></div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px">
+      <!-- Section 1: Routing Floors & Calibration -->
+      <section class="admin-pane" aria-labelledby="routing-heading">
+        <h2 id="routing-heading" style="font-size:18px;margin:0 0 12px 0">Routing Floors &amp; Calibration (§6.4, §11)</h2>
+        <div style="margin-bottom:12px">
+          <label for="setting-tier1-floor" style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">
+            Tier 1 Advisory Floor (shipped default: 0.82):
+          </label>
+          <input type="number" id="setting-tier1-floor" class="ask-input" style="width:100%" step="0.01" min="0.1" max="1.0" value="${tier1Floor}" />
+          <div id="tier1-warning" class="later-thinking-banner" role="alert" style="display:${tier1Floor < 0.82 ? 'block' : 'none'};margin-top:8px;font-size:12px">
+            ⚠️ <strong>Warning:</strong> Tier 1 floor is set below the shipped default (0.82). Unverified advisory answers may be served without owner review.
+          </div>
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label for="setting-tier2-floor" style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">
+            Tier 2 Escalation Floor (shipped default: 0.55):
+          </label>
+          <input type="number" id="setting-tier2-floor" class="ask-input" style="width:100%" step="0.01" min="0.1" max="1.0" value="${tier2Floor}" />
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label for="setting-facet-threshold" style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">
+            Facet Known Threshold (shipped default: 0.90):
+          </label>
+          <input type="number" id="setting-facet-threshold" class="ask-input" style="width:100%" step="0.01" min="0.5" max="1.0" value="${facetThreshold}" />
+        </div>
+
+        <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px">
+          <input type="checkbox" id="setting-calibration-frozen" ${calibrationFrozen ? 'checked' : ''} />
+          <label for="setting-calibration-frozen" style="font-size:13px">Freeze Calibration (§6.4)</label>
+        </div>
+
+        <div style="margin-bottom:16px;display:flex;align-items:center;gap:8px">
+          <input type="checkbox" id="setting-answering-enabled" ${answeringEnabled ? 'checked' : ''} />
+          <label for="setting-answering-enabled" style="font-size:13px">Automated Answering Enabled (Kill-switch)</label>
+        </div>
+
+        <button type="button" class="btn" id="btn-save-routing">Save Calibration &amp; Routing</button>
+      </section>
+
+      <!-- Section 2: Provider Registry & Degradation Ladder -->
+      <section class="admin-pane" aria-labelledby="providers-heading">
+        <h2 id="providers-heading" style="font-size:18px;margin:0 0 12px 0">Provider Registry &amp; Degradation Ladder (§10.8, §13.5)</h2>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
+          Active Provider Chain &amp; Zero-Retention Disclosures:
+        </div>
+        <table style="width:100%;font-size:12px;border-collapse:collapse;margin-bottom:16px">
+          <thead>
+            <tr style="border-bottom:1px solid var(--rule);text-align:left">
+              <th style="padding:4px 0">Provider</th>
+              <th style="padding:4px 0">Model</th>
+              <th style="padding:4px 0">Data Classes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--rule)">
+              <td style="padding:6px 0"><code>local-onnx</code></td>
+              <td>bge-small-en-v1.5 (dim 384)</td>
+              <td>public, unpublished, private, sensitive</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--rule)">
+              <td style="padding:6px 0"><code>groq</code></td>
+              <td>llama-3.3-70b-versatile</td>
+              <td>public, unpublished, private (zero-retention)</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--rule)">
+              <td style="padding:6px 0"><code>gemini</code></td>
+              <td>gemini-2.5-flash</td>
+              <td>public (trains on free tier)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="margin-bottom:16px">
+          <label for="setting-degradation-mode" style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">
+            Simulated Degradation Mode (§10.8):
+          </label>
+          <select id="setting-degradation-mode" class="ask-input" style="width:100%">
+            <option value="normal" ${degradationMode === 'normal' ? 'selected' : ''}>Normal (Extractive + Generative)</option>
+            <option value="extractive" ${degradationMode === 'extractive' ? 'selected' : ''}>Extractive Only (Zero LLM synthesis)</option>
+            <option value="disabled" ${degradationMode === 'disabled' ? 'selected' : ''}>Disabled (Offline handoff only)</option>
+          </select>
+        </div>
+
+        <button type="button" class="btn btn-secondary" id="btn-save-degradation">Update Degradation Mode</button>
+      </section>
+
+      <!-- Section 3: Theme Customization & WCAG Conformance -->
+      <section class="admin-pane" aria-labelledby="theme-heading">
+        <h2 id="theme-heading" style="font-size:18px;margin:0 0 12px 0">Theme Customization &amp; Conformance (§12.3, §12.10)</h2>
+        <div style="margin-bottom:12px">
+          <label for="setting-theme-light-accent" style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">
+            Light Theme Primary Accent:
+          </label>
+          <input type="text" id="setting-theme-light-accent" class="ask-input" style="width:100%" value="${escapeHtml(theme.lightTokens?.['--accent'] || '#3A4FD0')}" />
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label for="setting-theme-dark-accent" style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">
+            Dark Theme Primary Accent:
+          </label>
+          <input type="text" id="setting-theme-dark-accent" class="ask-input" style="width:100%" value="${escapeHtml(theme.darkTokens?.['--accent'] || '#9AA8FF')}" />
+        </div>
+
+        <div id="theme-conformance-box" style="padding:10px;border:1px solid var(--rule);border-radius:var(--radius-control);background:var(--surface-page);margin-bottom:16px;font-size:12px">
+          <div style="font-weight:600;margin-bottom:4px">Theme Conformance Status:</div>
+          <div>Valid Token Keys: <strong>${themeConformance.valid ? 'Passed' : 'Failed'}</strong></div>
+          <div>Missing Tokens: <strong>${themeConformance.missingTokens.length === 0 ? 'None' : escapeHtml(themeConformance.missingTokens.join(', '))}</strong></div>
+        </div>
+
+        <button type="button" class="btn btn-secondary" id="btn-save-theme">Apply Theme Tokens</button>
+      </section>
+
+      <!-- Section 4: Notification Channel Delivery -->
+      <section class="admin-pane" aria-labelledby="notifications-heading">
+        <h2 id="notifications-heading" style="font-size:18px;margin:0 0 12px 0">Notification Delivery (§13.8)</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span style="font-size:13px">Channel Status:</span>
+          <span class="chip" id="chip-notify-status">not_configured</span>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);margin:0 0 12px 0">
+          Delivery adapter for ntfy, webhook, or email is not yet configured. The system will report honest not_configured status per honesty invariant.
+        </p>
+        <div style="margin-bottom:12px">
+          <label for="setting-notify-topic" style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">
+            Notification Topic / Webhook URL:
+          </label>
+          <input type="text" id="setting-notify-topic" class="ask-input" style="width:100%" placeholder="https://ntfy.sh/owner-alerts" />
+        </div>
+        <button type="button" class="btn btn-secondary" id="btn-test-notification">Test Notification Delivery</button>
+        <div id="notify-test-result" style="margin-top:8px;font-size:12px"></div>
+      </section>
+
+      <!-- Section 5: Encrypted Backups & Restore Verification Drill -->
+      <section class="admin-pane" aria-labelledby="backups-heading">
+        <h2 id="backups-heading" style="font-size:18px;margin:0 0 12px 0">Encrypted Backups &amp; Restore Drill (§13.9, §18.1)</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <span style="font-size:13px">Backup Subsystem:</span>
+          <span class="chip" id="chip-backup-status">not_configured</span>
+        </div>
+        <table style="width:100%;font-size:12px;border-collapse:collapse;margin-bottom:16px">
+          <tbody>
+            <tr style="border-bottom:1px solid var(--rule)">
+              <td style="padding:4px 0"><strong>Encryption:</strong></td>
+              <td style="text-align:right"><code>age (X25519)</code></td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--rule)">
+              <td style="padding:4px 0"><strong>Retention:</strong></td>
+              <td style="text-align:right">7 daily / 4 weekly / 6 monthly</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--rule)">
+              <td style="padding:4px 0"><strong>Last Restore Drill:</strong></td>
+              <td style="text-align:right"><code>not_configured</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <button type="button" class="btn btn-secondary" id="btn-run-backup-drill">Run Encrypted Backup Drill</button>
+        <div id="backup-drill-result" style="margin-top:8px;font-size:12px"></div>
+      </section>
+    </div>
+
+    <script>
+      (function() {
+        const banner = document.getElementById('settings-status-banner');
+        const tier1Input = document.getElementById('setting-tier1-floor');
+        const tier1Warning = document.getElementById('tier1-warning');
+        const tier2Input = document.getElementById('setting-tier2-floor');
+        const facetInput = document.getElementById('setting-facet-threshold');
+        const frozenCheck = document.getElementById('setting-calibration-frozen');
+        const answeringCheck = document.getElementById('setting-answering-enabled');
+        const degradationSelect = document.getElementById('setting-degradation-mode');
+
+        ${ADMIN_API_CLIENT_SCRIPT}
+
+        // Live validation of Tier 1 floor warning (< 0.82)
+        if (tier1Input && tier1Warning) {
+          tier1Input.addEventListener('input', function() {
+            var val = parseFloat(tier1Input.value);
+            if (!isNaN(val) && val < 0.82) {
+              tier1Warning.style.display = 'block';
+            } else {
+              tier1Warning.style.display = 'none';
+            }
+          });
+        }
+
+        // Save Routing & Calibration
+        var btnSaveRouting = document.getElementById('btn-save-routing');
+        if (btnSaveRouting) {
+          btnSaveRouting.addEventListener('click', async function() {
+            btnSaveRouting.setAttribute('disabled', 'true');
+            try {
+              var payload = {
+                tier1_floor: parseFloat(tier1Input.value),
+                tier2_floor: parseFloat(tier2Input.value),
+                facet_known_threshold: parseFloat(facetInput.value),
+                calibrationFrozen: frozenCheck.checked,
+                automatedAnsweringEnabled: answeringCheck.checked
+              };
+              var res = await apiClient('/api/settings/routing', {
+                method: 'PATCH',
+                body: JSON.stringify(payload)
+              });
+              if (res.ok) {
+                var data = await res.json();
+                var warnMsg = data.routing && data.routing.warning ? ' ' + data.routing.warning : '';
+                banner.innerHTML = '<div class="as-of-banner">✓ Routing &amp; Calibration saved successfully.' + warnMsg + '</div>';
+              } else {
+                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Error saving calibration settings (HTTP ' + res.status + ').</div>';
+              }
+            } catch (err) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error saving calibration settings.</div>';
+            } finally {
+              btnSaveRouting.removeAttribute('disabled');
+            }
+          });
+        }
+
+        // Update Degradation Mode
+        var btnSaveDegradation = document.getElementById('btn-save-degradation');
+        if (btnSaveDegradation) {
+          btnSaveDegradation.addEventListener('click', async function() {
+            btnSaveDegradation.setAttribute('disabled', 'true');
+            try {
+              var res = await apiClient('/api/settings/routing', {
+                method: 'PATCH',
+                body: JSON.stringify({ simulatedDegradationMode: degradationSelect.value })
+              });
+              if (res.ok) {
+                banner.innerHTML = '<div class="as-of-banner">✓ Degradation mode updated to <strong>' + degradationSelect.value + '</strong>.</div>';
+              } else {
+                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Error updating degradation mode.</div>';
+              }
+            } catch (err) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error updating degradation mode.</div>';
+            } finally {
+              btnSaveDegradation.removeAttribute('disabled');
+            }
+          });
+        }
+
+        // Save Theme Tokens
+        var btnSaveTheme = document.getElementById('btn-save-theme');
+        if (btnSaveTheme) {
+          btnSaveTheme.addEventListener('click', async function() {
+            btnSaveTheme.setAttribute('disabled', 'true');
+            try {
+              var lightAccent = document.getElementById('setting-theme-light-accent').value;
+              var darkAccent = document.getElementById('setting-theme-dark-accent').value;
+              var res = await apiClient('/api/settings/theme', {
+                method: 'PATCH',
+                body: JSON.stringify({
+                  lightTokens: { '--accent': lightAccent },
+                  darkTokens: { '--accent': darkAccent }
+                })
+              });
+              if (res.ok) {
+                var data = await res.json();
+                banner.innerHTML = '<div class="as-of-banner">✓ Theme updated. Conformance check: <strong>' + (data.conformance && data.conformance.valid ? 'PASSED' : 'FAILED') + '</strong>.</div>';
+              } else {
+                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Error updating theme tokens.</div>';
+              }
+            } catch (err) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error updating theme.</div>';
+            } finally {
+              btnSaveTheme.removeAttribute('disabled');
+            }
+          });
+        }
+
+        // Test Notification
+        var btnTestNotification = document.getElementById('btn-test-notification');
+        if (btnTestNotification) {
+          btnTestNotification.addEventListener('click', async function() {
+            var resultEl = document.getElementById('notify-test-result');
+            btnTestNotification.setAttribute('disabled', 'true');
+            if (resultEl) resultEl.innerHTML = '<span style="color:var(--text-muted)">Testing delivery...</span>';
+            try {
+              var res = await apiClient('/api/settings/notifications/test', { method: 'POST' });
+              if (res.status === 501) {
+                var errData = await res.json();
+                if (resultEl) resultEl.innerHTML = '<div class="later-thinking-banner" role="note" style="margin:4px 0;font-size:11px"><strong>501 Not Implemented:</strong> ' + (errData.message || 'Notification adapter is not yet implemented.') + '</div>';
+              } else if (res.ok) {
+                if (resultEl) resultEl.innerHTML = '<span style="color:green">✓ Delivery test completed.</span>';
+              } else {
+                if (resultEl) resultEl.innerHTML = '<span style="color:red">Delivery test failed (HTTP ' + res.status + ').</span>';
+              }
+            } catch (err) {
+              if (resultEl) resultEl.innerHTML = '<span style="color:red">Network error testing notification.</span>';
+            } finally {
+              btnTestNotification.removeAttribute('disabled');
+            }
+          });
+        }
+
+        // Run Backup Drill
+        var btnRunBackupDrill = document.getElementById('btn-run-backup-drill');
+        if (btnRunBackupDrill) {
+          btnRunBackupDrill.addEventListener('click', async function() {
+            var resultEl = document.getElementById('backup-drill-result');
+            btnRunBackupDrill.setAttribute('disabled', 'true');
+            if (resultEl) resultEl.innerHTML = '<span style="color:var(--text-muted)">Executing backup drill...</span>';
+            try {
+              var res = await apiClient('/api/settings/backups/run-drill', { method: 'POST' });
+              if (res.status === 501) {
+                var errData = await res.json();
+                if (resultEl) resultEl.innerHTML = '<div class="later-thinking-banner" role="note" style="margin:4px 0;font-size:11px"><strong>501 Not Implemented:</strong> ' + (errData.message || 'Backup restore verification drill is not yet implemented.') + '</div>';
+              } else if (res.ok) {
+                if (resultEl) resultEl.innerHTML = '<span style="color:green">✓ Backup restore drill passed.</span>';
+              } else {
+                if (resultEl) resultEl.innerHTML = '<span style="color:red">Backup drill failed (HTTP ' + res.status + ').</span>';
+              }
+            } catch (err) {
+              if (resultEl) resultEl.innerHTML = '<span style="color:red">Network error executing backup drill.</span>';
+            } finally {
+              btnRunBackupDrill.removeAttribute('disabled');
+            }
+          });
+        }
+      })();
+    </script>
+  `;
+
+  return renderLayout('Settings & Calibration', '/admin/settings', content);
 }
 
 export function renderAdminLoginPage(): string {

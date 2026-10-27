@@ -4,6 +4,7 @@ import {
   renderAdminWorkspacePage,
   renderAdminLoginPage,
   renderAdminSetupPage,
+  renderAdminSettingsPage,
   ADMIN_API_CLIENT_SCRIPT,
 } from '@living-portfolio/web';
 
@@ -57,13 +58,14 @@ export function assertNoRawFetchInAdminScript(scriptContent: string, contextName
 }
 
 describe('Admin apiClient Conformance & Raw Fetch Prohibition (WP-1 Task 2, finding 20261020-UX-02 / P0-2)', () => {
-  it('forbids raw fetch calls across all admin HTML views (/admin, /admin/login, /admin/setup)', async () => {
+  it('forbids raw fetch calls across all admin HTML views (/admin, /admin/login, /admin/setup, /admin/settings)', async () => {
     const repo = new InMemoryPortfolioRepository();
 
     const pages = [
       { name: '/admin (workspace)', html: await renderAdminWorkspacePage(repo) },
       { name: '/admin/login', html: renderAdminLoginPage() },
       { name: '/admin/setup', html: renderAdminSetupPage() },
+      { name: '/admin/settings', html: await renderAdminSettingsPage(repo) },
     ];
 
     for (const page of pages) {
