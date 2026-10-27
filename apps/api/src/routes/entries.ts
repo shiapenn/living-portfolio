@@ -116,6 +116,47 @@ export function createEntriesRoutes(
     });
   });
 
+  // Quick log capture route (§4.4, §10.3, 20261020-UX-07)
+  router.post('/quick-log', auth.requireAdminMiddleware(), async (c) => {
+    const body = await c.req.json();
+    const text = typeof body.text === 'string' ? body.text.trim() : '';
+    if (!text) {
+      return c.json({ error: 'Text content is required for quick log' }, 400);
+    }
+    const firstLine = text.split('\n')[0].replace(/^#+\s*/, '').slice(0, 60).trim();
+    const title = typeof body.title === 'string' && body.title.trim()
+      ? body.title.trim()
+      : firstLine || `Quick Log: ${new Date().toISOString().slice(0, 10)}`;
+    const slug = typeof body.slug === 'string' && body.slug.trim()
+      ? body.slug.trim()
+      : `quick-log-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    const { entry, revision } = await repo.createEntry(
+      {
+        slug,
+        title,
+        profile: body.profile || 'case-study',
+        view: 'article',
+        visibility: 'private',
+        venture_id: null,
+        current_revision_id: null,
+      },
+      {
+        body_md: text,
+        body_hash: sha256Hex(text),
+        temporal_level: 'exact',
+        valid_from: new Date().toISOString(),
+        valid_to: null,
+        is_hindsight: false,
+      }
+    );
+
+    const chunks = chunkMarkdown(revision.id, text);
+    await repo.saveSpans(chunks);
+
+    return c.json({ entry, revision, chunksCount: chunks.length }, 201);
+  });
+
   // Get entry by slug or ID (Structural visibility enforcement: S1, S2, UX-04)
   router.get('/:slug', async (c) => {
     const slugOrId = c.req.param('slug');

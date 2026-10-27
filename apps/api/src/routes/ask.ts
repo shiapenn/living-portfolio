@@ -86,8 +86,10 @@ export function createAskRoutes(config: AskEngineConfig) {
     const rateCheck = governor.checkVisitorRateLimit(visitorId);
     if (!rateCheck.allowed) {
       return c.json({
-        tier: 'no_match',
+        tier: 'rate_limited',
+        error: 'Hourly question limit reached',
         answer: 'Hourly question limit reached. Please wait before asking another question, or book a live session.',
+        retryAfter: 3600,
         handoffBooking: true,
       }, 429);
     }

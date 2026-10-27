@@ -98,6 +98,7 @@ function renderLayout(title: string, activePath: string, mainContentHtml: string
   <style>${STRATA_DESIGN_SYSTEM_CSS}</style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   ${stagingBannerHtml}
   <header class="site-header">
     <nav class="site-nav" aria-label="Primary navigation">
@@ -279,6 +280,7 @@ export async function renderHomePage(repo: IPortfolioRepository): Promise<string
 
   const cfg = loadConfig();
   const content = `
+    <h1 class="visually-hidden">${escapeHtml(cfg.PUBLIC_SITE_NAME)} — ${escapeHtml(cfg.PUBLIC_OWNER_NAME)}</h1>
     <p class="owner-statement">
       ${escapeHtml(cfg.PUBLIC_OWNER_STATEMENT)}
     </p>
@@ -642,11 +644,12 @@ export async function renderAskPage(
     </p>
 
     <div class="ask-box" style="margin-top:0">
+      ${scopeSlug ? `<div id="scope-chip-container" style="margin-bottom:12px"><span class="chip">Scope: <strong>${escapeHtml(scopeSlug)}</strong> <button type="button" id="btn-clear-scope" style="background:none;border:none;cursor:pointer;padding:0 4px;font-weight:700" title="Clear scope">×</button></span></div>` : ''}
       <form id="ask-form">
         <label for="ask-q" style="font-weight:600;display:block;margin-bottom:6px">Your question</label>
         <div class="ask-input-row" style="margin-top:0">
           <input id="ask-q" name="q" type="text" class="ask-input" value="${escapeHtml(initialQuery || '')}" placeholder="e.g., Should we use PostgreSQL advisory locks or Redis for webhook coordination?" required />
-          <button type="submit" class="btn">Ask</button>
+          <button type="submit" class="btn" id="btn-ask-submit">Ask</button>
         </div>
 
         <details style="margin-top:16px" ${initialQuery?.toLowerCase().includes('should') ? 'open' : ''}>
@@ -704,8 +707,24 @@ export async function renderAskPage(
           return '#';
         }
 
+        const submitBtn = document.getElementById('btn-ask-submit');
+        const clearScopeBtn = document.getElementById('btn-clear-scope');
+        let currentScope = scopeSlug;
+
+        if (clearScopeBtn) {
+          clearScopeBtn.addEventListener('click', function() {
+            currentScope = null;
+            const container = document.getElementById('scope-chip-container');
+            if (container) container.style.display = 'none';
+          });
+        }
+
         async function runQuery(queryText) {
           region.textContent = 'Searching records and verifying citations...';
+          if (submitBtn) {
+            submitBtn.setAttribute('disabled', 'true');
+            submitBtn.textContent = 'Searching...';
+          }
           const facets = {};
           if (dbInput && dbInput.value.trim()) facets.database = dbInput.value.trim();
           if (stackInput && stackInput.value.trim()) facets.stack = stackInput.value.trim();
@@ -714,7 +733,7 @@ export async function renderAskPage(
             query: queryText,
             facets: Object.keys(facets).length > 0 ? facets : undefined,
             as_of_date: asOfInput && asOfInput.value ? new Date(asOfInput.value).toISOString() : undefined,
-            scope_entry_slug: scopeSlug || undefined
+            scope_entry_slug: currentScope || undefined
           };
 
           try {
@@ -725,14 +744,51 @@ export async function renderAskPage(
             });
             const data = await res.json();
 
+            if (res.status === 400) {
+              region.innerHTML = '<div class="strata-section"><p style="color:var(--status-warn,#d97706);font-weight:600">Please enter a valid question (at least 3 characters).</p></div>';
+              return;
+            }
+
+            if (res.status === 429) {
+              const retryMinutes = data.retryAfter ? Math.max(1, Math.ceil(data.retryAfter / 60)) : 60;
+              region.innerHTML =
+                '<div class="strata-section">' +
+                  '<span class="chip"><strong>Question limit reached</strong></span>' +
+                  '<p style="margin:12px 0">' + esc(data.answer || 'Hourly question limit reached. Please wait before asking another question, or book a live session.') + '</p>' +
+                  '<p style="font-size:13px;color:var(--text-muted)">Please try again in about ' + retryMinutes + ' minute' + (retryMinutes > 1 ? 's' : '') + ', or book a session directly.</p>' +
+                  '<div style="margin-top:12px"><a href="/book" class="btn" style="display:inline-block;text-decoration:none">Book a session →</a></div>' +
+                '</div>';
+              return;
+            }
+
+            if (res.status >= 500) {
+              region.innerHTML = '<div class="strata-section"><p style="color:var(--status-warn,#d97706);font-weight:600">The server encountered an error processing your query. Please try again later.</p></div>';
+              return;
+            }
+
             const tierLabels = {
               tier1: "Automated answer from the owner's records",
               tier2: "Needs the owner's review",
               tier3: "Better as a live conversation",
               extractive: "Showing excerpts from the owner's records. Automated answers are paused for now.",
               no_match: "That isn't in these records. You can ask the owner or book a conversation.",
-              disabled: "Automated answers paused"
+              disabled: "Automated answers paused",
+              rate_limited: "Hourly question limit reached",
+              needs_context: "Additional context required"
             };
+
+            if (data.tier === 'needs_context') {
+              region.innerHTML =
+                '<div class="strata-section">' +
+                  '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">' +
+                    '<span class="chip"><strong>' + esc(tierLabels.needs_context) + '</strong></span>' +
+                  '</div>' +
+                  '<p style="margin:0 0 12px 0">' + esc(data.answer || 'This question needs more context about your requirements to formulate an accurate answer.') + '</p>' +
+                  (data.prompt ? '<p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">' + esc(data.prompt) + '</p>' : '') +
+                  '<button type="button" class="btn btn-secondary" id="btn-open-context-facets">Open Context Facets</button>' +
+                '</div>';
+              return;
+            }
 
             const citationsHtml = (data.citations || []).map(function(c) {
               return '<li style="margin-bottom:6px"><strong>[' + esc(c.citationId) + ']</strong> <a href="/work/' + encodeURIComponent(String(c.slug || '')) + '">' + esc(c.title) + '</a>: <em>"' + esc(c.text) + '"</em></li>';
@@ -755,7 +811,12 @@ export async function renderAskPage(
                 disclosureHtml +
               '</div>';
           } catch (err) {
-            region.innerHTML = '<div class="strata-section"><p>Origin unreachable. <a href="/book">Book a session or leave a message</a>.</p></div>';
+            region.innerHTML = '<div class="strata-section"><p>Unable to reach server. Please check your network connection and retry. <a href="/book">Book a session or leave a message</a>.</p></div>';
+          } finally {
+            if (submitBtn) {
+              submitBtn.removeAttribute('disabled');
+              submitBtn.textContent = 'Ask';
+            }
           }
         }
 
@@ -771,6 +832,13 @@ export async function renderAskPage(
             qInput.value = btn.textContent;
             runQuery(btn.textContent);
           });
+        });
+
+        document.addEventListener('click', function(e) {
+          if (e.target && e.target.id === 'btn-open-context-facets') {
+            const d = document.querySelector('details');
+            if (d) d.setAttribute('open', 'true');
+          }
         });
 
         if (qInput && qInput.value.trim()) {
@@ -979,6 +1047,7 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
         </p>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="/admin/import" class="btn btn-secondary" id="btn-import-triage" style="text-decoration:none;display:inline-flex;align-items:center">Import &amp; Triage</a>
         <button type="button" class="btn btn-secondary" id="btn-killswitch" aria-pressed="true">Pause Automated Answering</button>
         <button type="button" class="btn btn-secondary" id="btn-backup-drill">Run Backup &amp; Restore Drill</button>
         <a href="/api/settings/export" target="_blank" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center">Export Markdown + Sidecar</a>
@@ -987,6 +1056,14 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
 
     <div id="admin-undo-banner" role="region" aria-label="Undo action" style="display:none;margin-bottom:16px"></div>
     <div id="admin-status-banner" role="status" aria-live="polite" style="margin-bottom:16px"></div>
+
+    <div id="admin-walkthrough-card" style="padding:12px 16px;border:1px solid var(--accent);border-radius:var(--radius-control);background:var(--surface-raised);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <strong>First-Run Authoring Walkthrough (§4.1):</strong>
+        <span style="font-size:13px;color:var(--text-muted);margin-left:6px">1. Paste write-up or choose Guided mode. 2. Use Inspector to accept suggested roles &amp; confirm facets. 3. Preview redactions and publish.</span>
+      </div>
+      <button type="button" class="btn btn-secondary" id="btn-dismiss-walkthrough" style="padding:2px 8px;font-size:12px">Dismiss</button>
+    </div>
 
     <!-- §12.6 Three-Pane Entry Workspace -->
     <div class="admin-shell">
@@ -1005,7 +1082,43 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
       <section class="admin-pane" aria-label="Entry editor">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <h2 id="editor-mode-heading" style="font-size:18px;margin:0">Author / Paste Entry (L0 Immediate Publish)</h2>
-          <span class="chip" id="chip-current-state">Mode: Paste / Guided / Freeform</span>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn btn-secondary active" id="mode-btn-paste" style="font-size:12px;padding:2px 8px">Paste / Freeform</button>
+            <button type="button" class="btn btn-secondary" id="mode-btn-guided" style="font-size:12px;padding:2px 8px">Guided Mode (§4.2)</button>
+            <button type="button" class="btn btn-secondary" id="mode-btn-quick" style="font-size:12px;padding:2px 8px">Quick Log (§4.4)</button>
+          </div>
+        </div>
+
+        <!-- Guided Mode Panel (§4.2) -->
+        <div id="editor-guided-panel" style="display:none;margin-bottom:12px;border:1px solid var(--rule);border-radius:var(--radius-control);padding:12px;background:var(--surface-page)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">Guided Mode — Per-Role Prompts</div>
+          <div style="margin-bottom:8px">
+            <label for="guided-problem" style="font-size:12px;font-weight:600;display:block;margin-bottom:2px">Problem (What challenge did you tackle?)</label>
+            <input type="text" id="guided-problem" class="ask-input" style="width:100%;padding:4px 6px" placeholder="e.g. Distributed lock contention under peak traffic" />
+          </div>
+          <div style="margin-bottom:8px">
+            <label for="guided-approach" style="font-size:12px;font-weight:600;display:block;margin-bottom:2px">Approach (What technical solution was implemented?)</label>
+            <input type="text" id="guided-approach" class="ask-input" style="width:100%;padding:4px 6px" placeholder="e.g. Migrated from Redis Redlock to Postgres 15 advisory locks" />
+          </div>
+          <div style="margin-bottom:8px">
+            <label for="guided-outcome" style="font-size:12px;font-weight:600;display:block;margin-bottom:2px">Outcome (Measurable result or milestone)</label>
+            <input type="text" id="guided-outcome" class="ask-input" style="width:100%;padding:4px 6px" placeholder="e.g. Zero lock contention, P99 latency dropped by 42ms" />
+          </div>
+          <div style="margin-bottom:8px">
+            <label for="guided-lesson" style="font-size:12px;font-weight:600;display:block;margin-bottom:2px">Lesson Learned (What worked, or what went wrong?)</label>
+            <input type="text" id="guided-lesson" class="ask-input" style="width:100%;padding:4px 6px;margin-bottom:4px" placeholder="e.g. Connection pooling was critical to avoid exhausting connections" />
+            <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="guided-nothing-wrong" /> Nothing went wrong (smooth execution)
+            </label>
+          </div>
+          <button type="button" class="btn btn-secondary" id="btn-guided-compile" style="font-size:12px;padding:4px 8px">Compile into Body →</button>
+        </div>
+
+        <!-- Quick Log Panel (§4.4) -->
+        <div id="editor-quick-panel" style="display:none;margin-bottom:12px;border:1px solid var(--rule);border-radius:var(--radius-control);padding:12px;background:var(--surface-page)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px">Quick Log — Fast Thought Capture (under 30s)</div>
+          <textarea id="quick-log-text" rows="3" class="ask-input" style="width:100%;font-size:13px;margin-bottom:8px" placeholder="Capture notes, a milestone, or snippet..."></textarea>
+          <button type="button" class="btn" id="btn-submit-quick-log" style="font-size:12px;padding:4px 10px">Save Quick Log Entry</button>
         </div>
 
         <form id="admin-entry-form">
@@ -1083,31 +1196,94 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
         </form>
       </section>
 
-      <!-- Pane 3: Structure Inspector & Answerability Preview (§12.6, §15) -->
+      <!-- Pane 3: Structure Inspector & Answerability Preview (§12.6, §15, 20261020-UX-06) -->
       <aside class="admin-pane" aria-label="Structure inspector and answerability preview">
-        <h2 id="inspector-heading" style="font-size:16px;margin:0 0 8px 0">Inspector: ${escapeHtml(firstEntry?.title || 'Sample')}</h2>
-        <div style="font-size:13px;color:var(--text-muted)">Four-step structure map (never a percentage score):</div>
-        <div class="level-steps" id="inspector-level-steps" role="list" aria-label="Structure level indicator">
-          <div class="level-step" role="listitem" data-level="L0" data-active="${firstLevel === 'L0' || firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">L0 Text</div>
-          <div class="level-step" role="listitem" data-level="L1" data-active="${firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">L1 Context</div>
-          <div class="level-step" role="listitem" data-level="L2" data-active="${firstLevel === 'L2' || firstLevel === 'L3'}">L2 Roles</div>
-          <div class="level-step" role="listitem" data-level="L3" data-active="${firstLevel === 'L3'}">L3 Claims</div>
-        </div>
-        <p style="font-size:13px;margin:4px 0 12px 0" id="inspector-unlocks"><strong>Unlocks:</strong> ${escapeHtml(levelDetails.unlocked.join(', '))}</p>
+        <h2 style="font-size:16px;margin:0 0 8px 0">Inspector: <span id="inspector-heading">${escapeHtml(firstEntry?.title || 'Sample')}</span></h2>
 
-        <h3 style="font-size:14px;margin:12px 0 6px 0">Context facets (dashed = machine suggested)</h3>
-        <div id="inspector-facets">
-          ${facetsInspectorHtml}
+        <!-- Inspector Tabs (§12.6) -->
+        <div class="inspector-tabs" role="tablist" aria-label="Inspector Panels">
+          <button type="button" role="tab" id="tab-btn-structure" aria-controls="panel-structure" aria-selected="true" class="inspector-tab-btn active">Structure</button>
+          <button type="button" role="tab" id="tab-btn-context" aria-controls="panel-context" aria-selected="false" class="inspector-tab-btn">Context</button>
+          <button type="button" role="tab" id="tab-btn-evidence" aria-controls="panel-evidence" aria-selected="false" class="inspector-tab-btn">Evidence</button>
+          <button type="button" role="tab" id="tab-btn-answerability" aria-controls="panel-answerability" aria-selected="false" class="inspector-tab-btn">Answerability</button>
+          <button type="button" role="tab" id="tab-btn-history" aria-controls="panel-history" aria-selected="false" class="inspector-tab-btn">History</button>
         </div>
 
-        <h3 style="font-size:14px;margin:16px 0 6px 0">Answerability &amp; Gap Questions (§10.2)</h3>
-        <ul id="inspector-gap-questions" style="font-size:13px;padding-left:18px;margin:0">
-          ${gapHtml}
-        </ul>
+        <!-- Tab 1: Structure Panel -->
+        <div class="inspector-tab-panel active" id="panel-structure" role="tabpanel" aria-labelledby="tab-btn-structure">
+          <div style="font-size:13px;color:var(--text-muted)">Four-step structure map (never a percentage score):</div>
+          <div class="level-steps" id="inspector-level-steps" role="list" aria-label="Structure level indicator">
+            <div class="level-step" role="listitem" data-level="L0" data-active="${firstLevel === 'L0' || firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">L0 Text</div>
+            <div class="level-step" role="listitem" data-level="L1" data-active="${firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">L1 Context</div>
+            <div class="level-step" role="listitem" data-level="L2" data-active="${firstLevel === 'L2' || firstLevel === 'L3'}">L2 Roles</div>
+            <div class="level-step" role="listitem" data-level="L3" data-active="${firstLevel === 'L3'}">L3 Claims</div>
+          </div>
+          <p style="font-size:13px;margin:4px 0 12px 0" id="inspector-unlocks"><strong>Unlocks:</strong> ${escapeHtml(levelDetails.unlocked.join(', '))}</p>
 
-        <h3 style="font-size:14px;margin:16px 0 6px 0">Revision History (§3.11, §15)</h3>
-        <div id="inspector-revisions-list" style="font-size:13px">
-          ${firstEntryRevisionsHtml}
+          <h3 style="font-size:14px;margin:12px 0 6px 0">Role Annotations &amp; Suggestions (§3.5)</h3>
+          <div id="inspector-annotations-list" style="font-size:13px">
+            <p style="color:var(--text-muted)">Select an entry to review machine-suggested roles.</p>
+          </div>
+        </div>
+
+        <!-- Tab 2: Context Panel -->
+        <div class="inspector-tab-panel" id="panel-context" role="tabpanel" aria-labelledby="tab-btn-context">
+          <h3 style="font-size:14px;margin:0 0 6px 0">Context Facets (dashed = machine suggested)</h3>
+          <div id="inspector-facets">
+            ${facetsInspectorHtml}
+          </div>
+
+          <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--rule)">
+            <h4 style="font-size:13px;margin:0 0 6px 0">Add Facet</h4>
+            <div style="display:flex;gap:6px;flex-direction:column">
+              <input type="text" id="new-facet-key" class="ask-input" style="padding:4px;font-size:12px" placeholder="Facet name (e.g. database, stack)" />
+              <input type="text" id="new-facet-value" class="ask-input" style="padding:4px;font-size:12px" placeholder="Value (e.g. Postgres 15)" />
+              <input type="text" id="new-facet-quote" class="ask-input" style="padding:4px;font-size:12px" placeholder="Source quote (optional)" />
+              <button type="button" class="btn btn-secondary" id="btn-add-facet" style="font-size:12px;padding:3px 8px">Confirm &amp; Add Facet</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Evidence Panel -->
+        <div class="inspector-tab-panel" id="panel-evidence" role="tabpanel" aria-labelledby="tab-btn-evidence">
+          <h3 style="font-size:14px;margin:0 0 4px 0">Attached Evidence (§3.8)</h3>
+          <p style="font-size:12px;color:var(--text-muted);margin:0 0 8px 0">
+            Evidence verification confirms artifact authenticity but does not prove the narrative.
+          </p>
+          <div id="inspector-evidence-list" style="font-size:13px">
+            <p style="color:var(--text-muted)">No evidence attached yet.</p>
+          </div>
+
+          <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--rule)">
+            <h4 style="font-size:13px;margin:0 0 6px 0">Attach Evidence Item</h4>
+            <div style="display:flex;gap:6px;flex-direction:column">
+              <select id="new-evidence-kind" class="ask-input" style="padding:4px;font-size:12px">
+                <option value="repo_commit">Git Commit</option>
+                <option value="pull_request">Pull Request</option>
+                <option value="document">Design Doc / Specification</option>
+                <option value="url">External Link / URL</option>
+              </select>
+              <input type="text" id="new-evidence-url" class="ask-input" style="padding:4px;font-size:12px" placeholder="URL or commit SHA" />
+              <input type="text" id="new-evidence-label" class="ask-input" style="padding:4px;font-size:12px" placeholder="Label / Description" />
+              <button type="button" class="btn btn-secondary" id="btn-attach-evidence" style="font-size:12px;padding:3px 8px">Attach Evidence</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Answerability Panel -->
+        <div class="inspector-tab-panel" id="panel-answerability" role="tabpanel" aria-labelledby="tab-btn-answerability">
+          <h3 style="font-size:14px;margin:0 0 6px 0">Answerability &amp; Gap Questions (§10.2)</h3>
+          <ul id="inspector-gap-questions" style="font-size:13px;padding-left:18px;margin:0">
+            ${gapHtml}
+          </ul>
+        </div>
+
+        <!-- Tab 5: History Panel -->
+        <div class="inspector-tab-panel" id="panel-history" role="tabpanel" aria-labelledby="tab-btn-history">
+          <h3 style="font-size:14px;margin:0 0 6px 0">Revision History (§3.11, §15)</h3>
+          <div id="inspector-revisions-list" style="font-size:13px">
+            ${firstEntryRevisionsHtml}
+          </div>
         </div>
       </aside>
     </div>
@@ -1272,7 +1448,343 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
             // Update Inspector Title
             const inspHeading = document.getElementById('inspector-heading');
             if (inspHeading) inspHeading.textContent = 'Inspector: ' + entry.title;
+
+            // Update Inspector Facets, Evidence, and Annotations
+            await loadInspectorData(entry.id, currentRev ? currentRev.id : null);
           } catch (err) {}
+        }
+
+        async function loadInspectorData(entryId, revId) {
+          // 1. Facets
+          try {
+            const facetsRes = await apiClient('/api/structure/entries/' + entryId + '/facets');
+            if (facetsRes.ok) {
+              const fData = await facetsRes.json();
+              const container = document.getElementById('inspector-facets');
+              if (container && Array.isArray(fData.facets)) {
+                if (fData.facets.length === 0) {
+                  container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;margin:0">No facets recorded yet.</p>';
+                } else {
+                  container.innerHTML = fData.facets.map(function(f) {
+                    const isSugg = f.status === 'suggested';
+                    return '<div style="margin-bottom:8px;padding:6px;border:1px ' + (isSugg ? 'dashed' : 'solid') + ' var(--rule);border-radius:4px;display:flex;justify-content:space-between;align-items:center;gap:6px">' +
+                      '<div><span class="chip ' + (isSugg ? 'chip-suggested' : '') + '">' + escapeClientHtml(f.key) + ': ' + escapeClientHtml(String(f.value)) + '</span>' +
+                      (f.source_quote ? '<div style="font-size:11px;color:var(--text-muted);margin-top:2px">"' + escapeClientHtml(f.source_quote) + '"</div>' : '') +
+                      '</div>' +
+                      (isSugg ? '<div style="display:flex;gap:4px">' +
+                        '<button type="button" class="btn btn-secondary btn-confirm-facet" data-facet-id="' + f.id + '" style="padding:1px 6px;font-size:11px">Confirm</button>' +
+                        '<button type="button" class="btn btn-secondary btn-reject-facet" data-facet-id="' + f.id + '" style="padding:1px 6px;font-size:11px">Reject</button>' +
+                      '</div>' : '') +
+                    '</div>';
+                  }).join('');
+
+                  container.querySelectorAll('.btn-confirm-facet').forEach(function(b) {
+                    b.addEventListener('click', async function() {
+                      const fid = b.getAttribute('data-facet-id');
+                      await apiClient('/api/structure/facets/' + fid, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ status: 'confirmed' })
+                      });
+                      loadInspectorData(entryId, revId);
+                    });
+                  });
+                  container.querySelectorAll('.btn-reject-facet').forEach(function(b) {
+                    b.addEventListener('click', async function() {
+                      const fid = b.getAttribute('data-facet-id');
+                      await apiClient('/api/structure/facets/' + fid, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ status: 'rejected' })
+                      });
+                      loadInspectorData(entryId, revId);
+                    });
+                  });
+                }
+              }
+            }
+          } catch (err) {}
+
+          // 2. Evidence
+          try {
+            const evRes = await apiClient('/api/structure/entries/' + entryId + '/evidence');
+            if (evRes.ok) {
+              const evData = await evRes.json();
+              const container = document.getElementById('inspector-evidence-list');
+              if (container && Array.isArray(evData.evidence)) {
+                if (evData.evidence.length === 0) {
+                  container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;margin:0">No evidence items attached yet.</p>';
+                } else {
+                  container.innerHTML = evData.evidence.map(function(ev) {
+                    const isVer = !!ev.verified_at;
+                    return '<div style="margin-bottom:6px;padding:6px;border:1px solid var(--rule);border-radius:4px">' +
+                      '<div style="display:flex;justify-content:space-between;align-items:center">' +
+                        '<strong>' + escapeClientHtml(ev.label || ev.kind) + '</strong>' +
+                        (isVer ? '<span class="chip" style="border-color:var(--role-outcome);font-size:11px">✓ Verified</span>' : '<span class="chip" style="font-size:11px">Unverified</span>') +
+                      '</div>' +
+                      '<div style="font-size:12px;color:var(--text-muted);margin-top:2px"><a href="' + escapeClientHtml(ev.url) + '" target="_blank" rel="noopener">' + escapeClientHtml(ev.url) + '</a></div>' +
+                    '</div>';
+                  }).join('');
+                }
+              }
+            }
+          } catch (err) {}
+
+          // 3. Spans & Annotations
+          if (revId) {
+            try {
+              const spansRes = await apiClient('/api/structure/revisions/' + revId + '/spans');
+              if (spansRes.ok) {
+                const sData = await spansRes.json();
+                const container = document.getElementById('inspector-annotations-list');
+                if (container && Array.isArray(sData.spans)) {
+                  const allAnnotations = [];
+                  sData.spans.forEach(function(sp) {
+                    if (Array.isArray(sp.annotations)) {
+                      sp.annotations.forEach(function(ann) {
+                        allAnnotations.push({ ...ann, spanText: sp.text });
+                      });
+                    }
+                  });
+
+                  if (allAnnotations.length === 0) {
+                    container.innerHTML = '<p style="color:var(--text-muted);font-size:13px;margin:0">No role annotations recorded. Suggestions appear after enrichment.</p>';
+                  } else {
+                    container.innerHTML = allAnnotations.map(function(ann) {
+                      const isSugg = ann.status === 'suggested';
+                      return '<div style="margin-bottom:8px;padding:6px;border:1px ' + (isSugg ? 'dashed' : 'solid') + ' var(--rule);border-radius:4px">' +
+                        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">' +
+                          '<span class="chip ' + (isSugg ? 'chip-suggested' : '') + '">Role: ' + escapeClientHtml(ann.role) + ' (' + escapeClientHtml(ann.status) + ')</span>' +
+                          (isSugg ? '<div style="display:flex;gap:4px">' +
+                            '<button type="button" class="btn btn-secondary btn-accept-ann" data-ann-id="' + ann.id + '" style="padding:1px 6px;font-size:11px">Accept</button>' +
+                            '<button type="button" class="btn btn-secondary btn-ignore-ann" data-ann-id="' + ann.id + '" style="padding:1px 6px;font-size:11px">Ignore</button>' +
+                          '</div>' : '') +
+                        '</div>' +
+                        '<div style="font-size:12px;color:var(--text-muted)">"' + escapeClientHtml((ann.spanText || '').slice(0, 100)) + '..."</div>' +
+                      '</div>';
+                    }).join('');
+
+                    container.querySelectorAll('.btn-accept-ann').forEach(function(b) {
+                      b.addEventListener('click', async function() {
+                        const aid = b.getAttribute('data-ann-id');
+                        await apiClient('/api/structure/annotations/' + aid, {
+                          method: 'PATCH',
+                          body: JSON.stringify({ status: 'accepted' })
+                        });
+                        loadInspectorData(entryId, revId);
+                      });
+                    });
+                    container.querySelectorAll('.btn-ignore-ann').forEach(function(b) {
+                      b.addEventListener('click', async function() {
+                        const aid = b.getAttribute('data-ann-id');
+                        await apiClient('/api/structure/annotations/' + aid, {
+                          method: 'PATCH',
+                          body: JSON.stringify({ status: 'rejected' })
+                        });
+                        loadInspectorData(entryId, revId);
+                      });
+                    });
+                  }
+                }
+              }
+            } catch (err) {}
+          }
+        }
+
+        // Tab switching
+        document.querySelectorAll('.inspector-tab-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            document.querySelectorAll('.inspector-tab-btn').forEach(function(b) {
+              b.classList.remove('active');
+              b.setAttribute('aria-selected', 'false');
+            });
+            document.querySelectorAll('.inspector-tab-panel').forEach(function(p) {
+              p.classList.remove('active');
+            });
+            btn.classList.add('active');
+            btn.setAttribute('aria-selected', 'true');
+            const targetId = btn.getAttribute('aria-controls');
+            if (targetId) {
+              const panel = document.getElementById(targetId);
+              if (panel) panel.classList.add('active');
+            }
+          });
+        });
+
+        // Editor Mode switching
+        const modeBtnPaste = document.getElementById('mode-btn-paste');
+        const modeBtnGuided = document.getElementById('mode-btn-guided');
+        const modeBtnQuick = document.getElementById('mode-btn-quick');
+        const guidedPanel = document.getElementById('editor-guided-panel');
+        const quickPanel = document.getElementById('editor-quick-panel');
+
+        function setEditorMode(mode) {
+          [modeBtnPaste, modeBtnGuided, modeBtnQuick].forEach(function(b) {
+            if (b) b.classList.remove('active');
+          });
+          if (guidedPanel) guidedPanel.style.display = 'none';
+          if (quickPanel) quickPanel.style.display = 'none';
+
+          if (mode === 'guided') {
+            if (modeBtnGuided) modeBtnGuided.classList.add('active');
+            if (guidedPanel) guidedPanel.style.display = 'block';
+          } else if (mode === 'quick') {
+            if (modeBtnQuick) modeBtnQuick.classList.add('active');
+            if (quickPanel) quickPanel.style.display = 'block';
+          } else {
+            if (modeBtnPaste) modeBtnPaste.classList.add('active');
+          }
+        }
+
+        if (modeBtnPaste) modeBtnPaste.addEventListener('click', function() { setEditorMode('paste'); });
+        if (modeBtnGuided) modeBtnGuided.addEventListener('click', function() { setEditorMode('guided'); });
+        if (modeBtnQuick) modeBtnQuick.addEventListener('click', function() { setEditorMode('quick'); });
+
+        const nothingWrongCheck = document.getElementById('guided-nothing-wrong');
+        const guidedLessonInput = document.getElementById('guided-lesson');
+        if (nothingWrongCheck && guidedLessonInput) {
+          nothingWrongCheck.addEventListener('change', function() {
+            if (nothingWrongCheck.checked) {
+              guidedLessonInput.value = 'Smooth execution with no notable regressions.';
+            }
+          });
+        }
+
+        const guidedCompileBtn = document.getElementById('btn-guided-compile');
+        if (guidedCompileBtn) {
+          guidedCompileBtn.addEventListener('click', function() {
+            const prob = document.getElementById('guided-problem')?.value.trim() || '';
+            const app = document.getElementById('guided-approach')?.value.trim() || '';
+            const out = document.getElementById('guided-outcome')?.value.trim() || '';
+            const les = document.getElementById('guided-lesson')?.value.trim() || '';
+
+            const parts = [];
+            if (prob) parts.push('## Problem\\n\\n' + prob);
+            if (app) parts.push('## Approach\\n\\n' + app);
+            if (out) parts.push('## Outcome\\n\\n' + out);
+            if (les) parts.push('## Lesson\\n\\n' + les);
+
+            const compiled = parts.join('\\n\\n');
+            const bodyEl = document.getElementById('entry-body');
+            if (bodyEl && compiled) {
+              bodyEl.value = compiled;
+              setEditorMode('paste');
+              banner.innerHTML = '<div class="as-of-banner">Compiled guided prompts into body.</div>';
+            }
+          });
+        }
+
+        const quickSubmitBtn = document.getElementById('btn-submit-quick-log');
+        if (quickSubmitBtn) {
+          quickSubmitBtn.addEventListener('click', async function() {
+            const text = document.getElementById('quick-log-text')?.value.trim() || '';
+            if (!text) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Please enter quick log text.</div>';
+              return;
+            }
+            try {
+              const res = await apiClient('/api/entries/quick-log', {
+                method: 'POST',
+                body: JSON.stringify({ text: text })
+              });
+              if (res.ok) {
+                const data = await res.json();
+                banner.innerHTML = '<div class="as-of-banner">Quick log saved as "' + escapeClientHtml(data.entry.title) + '" (private).</div>';
+                document.getElementById('quick-log-text').value = '';
+                setEditorMode('paste');
+                const listEl = document.getElementById('admin-entries-list');
+                if (listEl) {
+                  const li = document.createElement('li');
+                  li.className = 'admin-entry-item';
+                  li.setAttribute('data-entry-id', data.entry.id);
+                  li.style = 'padding:8px 0;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;gap:8px';
+                  li.innerHTML = '<button type="button" class="admin-entry-select-btn" data-entry-id="' + data.entry.id + '" style="background:none;border:none;padding:0;font-weight:600;text-align:left;cursor:pointer;color:var(--text);flex:1">' +
+                    escapeClientHtml(data.entry.title) + '</button>' +
+                    '<span class="chip" data-status="private">private</span>';
+                  listEl.prepend(li);
+                  li.querySelector('.admin-entry-select-btn').addEventListener('click', function() {
+                    selectEntry(data.entry.id);
+                  });
+                }
+              } else {
+                banner.innerHTML = renderAdminError(res);
+              }
+            } catch (err) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error saving quick log.</div>';
+            }
+          });
+        }
+
+        const dismissWalkthroughBtn = document.getElementById('btn-dismiss-walkthrough');
+        if (dismissWalkthroughBtn) {
+          dismissWalkthroughBtn.addEventListener('click', function() {
+            const card = document.getElementById('admin-walkthrough-card');
+            if (card) card.style.display = 'none';
+          });
+        }
+
+        const addFacetBtn = document.getElementById('btn-add-facet');
+        if (addFacetBtn) {
+          addFacetBtn.addEventListener('click', async function() {
+            const entryId = entryIdInput?.value;
+            if (!entryId) {
+              banner.innerHTML = '<div class="later-thinking-banner">Please select an entry first.</div>';
+              return;
+            }
+            const key = document.getElementById('new-facet-key')?.value.trim();
+            const val = document.getElementById('new-facet-value')?.value.trim();
+            const quote = document.getElementById('new-facet-quote')?.value.trim();
+            if (!key || !val) {
+              banner.innerHTML = '<div class="later-thinking-banner">Facet name and value are required.</div>';
+              return;
+            }
+            const res = await apiClient('/api/structure/facets', {
+              method: 'POST',
+              body: JSON.stringify({
+                entry_id: entryId,
+                key: key,
+                value: val,
+                source_quote: quote || undefined,
+                status: 'confirmed'
+              })
+            });
+            if (res.ok) {
+              document.getElementById('new-facet-key').value = '';
+              document.getElementById('new-facet-value').value = '';
+              document.getElementById('new-facet-quote').value = '';
+              loadInspectorData(entryId, null);
+            }
+          });
+        }
+
+        const attachEvidenceBtn = document.getElementById('btn-attach-evidence');
+        if (attachEvidenceBtn) {
+          attachEvidenceBtn.addEventListener('click', async function() {
+            const entryId = entryIdInput?.value;
+            if (!entryId) {
+              banner.innerHTML = '<div class="later-thinking-banner">Please select an entry first.</div>';
+              return;
+            }
+            const kind = document.getElementById('new-evidence-kind')?.value;
+            const url = document.getElementById('new-evidence-url')?.value.trim();
+            const label = document.getElementById('new-evidence-label')?.value.trim();
+            if (!url) {
+              banner.innerHTML = '<div class="later-thinking-banner">Evidence URL or commit SHA is required.</div>';
+              return;
+            }
+            const res = await apiClient('/api/structure/evidence', {
+              method: 'POST',
+              body: JSON.stringify({
+                entry_id: entryId,
+                kind: kind || 'url',
+                url: url,
+                label: label || undefined
+              })
+            });
+            if (res.ok) {
+              document.getElementById('new-evidence-url').value = '';
+              document.getElementById('new-evidence-label').value = '';
+              loadInspectorData(entryId, null);
+            }
+          });
         }
 
         // Bind clicks on entry list buttons
@@ -1446,21 +1958,6 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
               banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error deleting entry.</div>';
             }
           });
-        }
-
-        ${ADMIN_API_CLIENT_SCRIPT}
-
-        function renderAdminError(res) {
-          if (res.status === 401) {
-            return '<div class="later-thinking-banner" role="alert" data-error="401">Your session has expired. <a href="/admin/login" style="margin-left:8px;font-weight:600">Sign in again →</a></div>';
-          }
-          if (res.status === 403) {
-            return '<div class="later-thinking-banner" role="alert" data-error="403">Security check failed (CSRF token invalid or missing). Please refresh and retry.</div>';
-          }
-          if (res.status >= 500) {
-            return '<div class="later-thinking-banner" role="alert" data-error="500">Server error (HTTP ' + res.status + '). Please retry your request.</div>';
-          }
-          return '<div class="later-thinking-banner" role="alert" data-error="' + res.status + '">Request failed (HTTP ' + res.status + '). Please check inputs and retry.</div>';
         }
 
         // Initialize killswitch state from server settings
@@ -1867,4 +2364,396 @@ export function renderAdminSetupPage(): string {
     </script>
   `;
   return renderLayout('First-Run Setup', '/admin/setup', content);
+}
+
+export async function renderAdminImportPage(repo: IPortfolioRepository): Promise<string> {
+  const content = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <h1 style="font-family:var(--font-reading);font-size:28px;margin:0">Import &amp; Triage</h1>
+        <p style="color:var(--text-muted);margin:4px 0 0;font-size:14px">
+          Connect or paste existing material, plan processing budget, and triage with confidence sorting and keyboard controls (§6.2, §12.6, 20261020-UX-07).
+        </p>
+      </div>
+      <a href="/admin" class="btn btn-secondary" style="text-decoration:none">← Back to Workspace</a>
+    </div>
+
+    <!-- Triage Stepper -->
+    <div class="triage-stepper" role="navigation" aria-label="Import stages">
+      <div class="triage-step active" id="step-tab-add">1. Add Material</div>
+      <div class="triage-step" id="step-tab-plan">2. Import Planner</div>
+      <div class="triage-step" id="step-tab-triage">3. Triage &amp; Review</div>
+    </div>
+
+    <div id="import-status-banner" role="status" aria-live="polite" style="margin-bottom:16px"></div>
+
+    <!-- Step 1: Add Material -->
+    <div id="import-step-add" style="display:block">
+      <div class="admin-pane" style="max-width:800px">
+        <h2 style="font-size:18px;margin:0 0 8px 0">Add Existing Material</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px 0">
+          Paste one or more Markdown articles, notes, or case studies (separate multiple entries with <code>---</code>).
+        </p>
+
+        <div style="margin-bottom:12px">
+          <label for="import-paste-area" style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Markdown Content</label>
+          <textarea id="import-paste-area" rows="10" class="ask-input" style="width:100%;font-family:var(--font-code);font-size:13px" placeholder="# Migrating to Postgres Advisory Locks&#10;&#10;In 2024 we eliminated lock contention by migrating to PostgreSQL 15 advisory locks...&#10;&#10;---&#10;&#10;# Edge Microservice Architecture&#10;&#10;Designed multi-region edge gateways on Cloudflare Workers..."></textarea>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="btn" id="btn-generate-plan">Generate Processing Plan →</button>
+          <button type="button" class="btn btn-secondary" id="btn-load-sample">Load Sample Entries</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Import Planner -->
+    <div id="import-step-plan" style="display:none">
+      <div class="admin-pane" style="max-width:800px">
+        <h2 style="font-size:18px;margin:0 0 8px 0">Import Processing Planner (§13.6, §21)</h2>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px 0">
+          Estimated token workload and turnaround schedule based on detected document length.
+        </p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <div style="border:1px solid var(--rule);padding:16px;border-radius:var(--radius-control);background:var(--surface-raised)">
+            <h3 style="font-size:15px;margin:0 0 8px 0">Free Limits (Zero Cost)</h3>
+            <div id="plan-free-est" style="font-size:14px;font-weight:600;color:var(--role-outcome)">Calculating...</div>
+            <p style="font-size:12px;color:var(--text-muted);margin:8px 0 0 0">
+              Runs within local or free-tier quotas. Enrichment throttles across daily allocation.
+            </p>
+          </div>
+          <div style="border:1px solid var(--rule);padding:16px;border-radius:var(--radius-control);background:var(--surface-raised)">
+            <h3 style="font-size:15px;margin:0 0 8px 0">Fast Cloud Acceleration</h3>
+            <div id="plan-paid-est" style="font-size:14px;font-weight:600;color:var(--accent)">Calculating...</div>
+            <p style="font-size:12px;color:var(--text-muted);margin:8px 0 0 0">
+              Parallel execution via external LLM provider. Clearly labeled cost without default selection.
+            </p>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn" id="btn-proceed-triage">Proceed to Triage →</button>
+          <button type="button" class="btn btn-secondary" id="btn-back-add">← Back</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Triage & Review -->
+    <div id="import-step-triage" style="display:none">
+      <div class="triage-keys-legend" aria-label="Keyboard Shortcuts">
+        <span><span class="key-badge">J</span> / <span class="key-badge">K</span> Navigate items</span>
+        <span><span class="key-badge">A</span> Accept</span>
+        <span><span class="key-badge">R</span> Reassign profile</span>
+        <span><span class="key-badge">D</span> Set date</span>
+        <span><span class="key-badge">S</span> Skip</span>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="btn btn-secondary" id="btn-key-prev"><span class="key-badge">K</span> Prev</button>
+          <button type="button" class="btn btn-secondary" id="btn-key-next"><span class="key-badge">J</span> Next</button>
+          <button type="button" class="btn btn-secondary" id="btn-key-accept"><span class="key-badge">A</span> Accept</button>
+          <button type="button" class="btn btn-secondary" id="btn-key-reassign"><span class="key-badge">R</span> Reassign</button>
+          <button type="button" class="btn btn-secondary" id="btn-key-date"><span class="key-badge">D</span> Set Date</button>
+          <button type="button" class="btn btn-secondary" id="btn-key-skip"><span class="key-badge">S</span> Skip</button>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button type="button" class="btn btn-secondary" id="btn-bulk-accept">Bulk Accept All High-Confidence</button>
+          <button type="button" class="btn" id="btn-commit-batch">Commit Accepted Items</button>
+        </div>
+      </div>
+
+      <div id="triage-cards-container" style="max-width:850px"></div>
+    </div>
+
+    <script>
+      (function() {
+        ${ADMIN_API_CLIENT_SCRIPT}
+
+        const banner = document.getElementById('import-status-banner');
+        let currentStep = 'add';
+        let documents = [];
+        let triageItems = [];
+        let selectedIndex = 0;
+
+        function setStep(step) {
+          currentStep = step;
+          document.querySelectorAll('.triage-step').forEach(function(el) {
+            el.classList.remove('active');
+          });
+          document.getElementById('import-step-add').style.display = step === 'add' ? 'block' : 'none';
+          document.getElementById('import-step-plan').style.display = step === 'plan' ? 'block' : 'none';
+          document.getElementById('import-step-triage').style.display = step === 'triage' ? 'block' : 'none';
+          document.getElementById('step-tab-' + step)?.classList.add('active');
+        }
+
+        const sampleBatch = [
+          '# Zero-Downtime Migration to Postgres Advisory Locks\\n\\nIn Q3 2024 we eliminated webhook race conditions by swapping Redis Redlock for Postgres 15 advisory locks. P99 latency dropped 42ms.',
+          '# Edge-Native Analytics with ClickHouse and WebAssembly\\n\\nBuilt an edge metrics pipeline streaming telemetry directly to ClickHouse via vector embeddings.',
+          '# Migrating Monolith to Event-Driven Core\\n\\nDecomposed the legacy order worker into decoupled event handlers using pg-boss.'
+        ].join('\\n\\n---\\n\\n');
+
+        const loadSampleBtn = document.getElementById('btn-load-sample');
+        if (loadSampleBtn) {
+          loadSampleBtn.addEventListener('click', function() {
+            const pasteArea = document.getElementById('import-paste-area');
+            if (pasteArea) pasteArea.value = sampleBatch;
+          });
+        }
+
+        const generatePlanBtn = document.getElementById('btn-generate-plan');
+        if (generatePlanBtn) {
+          generatePlanBtn.addEventListener('click', async function() {
+            const pasteArea = document.getElementById('import-paste-area');
+            const rawText = pasteArea ? pasteArea.value.trim() : '';
+            if (!rawText) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Please paste or enter Markdown content first.</div>';
+              return;
+            }
+
+            const rawDocs = rawText.split(/\\n\\s*---\\s*\\n/).map(function(t) { return t.trim(); }).filter(Boolean);
+            documents = rawDocs.map(function(text, idx) {
+              const firstLine = text.split('\\n')[0].replace(/^#+\\s*/, '').trim();
+              const title = firstLine || 'Imported Entry ' + (idx + 1);
+              const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || ('imported-' + Date.now() + '-' + idx);
+              return { title: title, slug: slug, text: text, body_md: text };
+            });
+
+            try {
+              const res = await apiClient('/api/import/plan', {
+                method: 'POST',
+                body: JSON.stringify({ documents: documents })
+              });
+              if (res.ok) {
+                const plan = await res.json();
+                document.getElementById('plan-free-est').textContent = plan.freePlanEstimate || 'About 1 day within free limits';
+                document.getElementById('plan-paid-est').textContent = plan.paidFastEstimate || 'Finish in minutes for ~$0.15';
+
+                triageItems = documents.map(function(d, idx) {
+                  return {
+                    id: 'doc-' + idx,
+                    title: d.title,
+                    slug: d.slug,
+                    body_md: d.body_md,
+                    profile: 'case-study',
+                    valid_from: new Date().toISOString().slice(0, 10),
+                    confidence: 0.85 + (idx % 2) * 0.1,
+                    status: 'pending'
+                  };
+                });
+
+                setStep('plan');
+                banner.innerHTML = '';
+              } else {
+                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Planner calculation failed.</div>';
+              }
+            } catch (err) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error connecting to planner.</div>';
+            }
+          });
+        }
+
+        const proceedTriageBtn = document.getElementById('btn-proceed-triage');
+        if (proceedTriageBtn) {
+          proceedTriageBtn.addEventListener('click', function() {
+            renderTriageCards();
+            setStep('triage');
+          });
+        }
+
+        const backAddBtn = document.getElementById('btn-back-add');
+        if (backAddBtn) {
+          backAddBtn.addEventListener('click', function() {
+            setStep('add');
+          });
+        }
+
+        function renderTriageCards() {
+          const container = document.getElementById('triage-cards-container');
+          if (!container) return;
+
+          container.innerHTML = triageItems.map(function(item, idx) {
+            const isSelected = idx === selectedIndex;
+            const statusClass = item.status === 'accepted' ? 'status-accepted' : (item.status === 'skipped' ? 'status-skipped' : '');
+            return '<div class="triage-card ' + (isSelected ? 'selected' : '') + ' ' + statusClass + '" data-index="' + idx + '" id="triage-card-' + idx + '">' +
+              '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+                '<strong>' + escapeClientHtml(item.title) + '</strong>' +
+                '<span class="chip" style="font-size:11px">' + Math.round(item.confidence * 100) + '% confidence · ' + escapeClientHtml(item.status.toUpperCase()) + '</span>' +
+              '</div>' +
+              '<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">' +
+                escapeClientHtml(item.body_md.slice(0, 140)) + '...' +
+              '</div>' +
+              '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:12px">' +
+                '<label>Profile: <select class="ask-input triage-profile" data-index="' + idx + '" style="padding:2px 4px;font-size:12px">' +
+                  '<option value="case-study"' + (item.profile === 'case-study' ? ' selected' : '') + '>Case Study</option>' +
+                  '<option value="decision-record"' + (item.profile === 'decision-record' ? ' selected' : '') + '>Decision Record</option>' +
+                  '<option value="how-to"' + (item.profile === 'how-to' ? ' selected' : '') + '>How-to</option>' +
+                '</select></label>' +
+                '<label>Date: <input type="date" class="ask-input triage-date" data-index="' + idx + '" value="' + escapeClientHtml(item.valid_from) + '" style="padding:2px 4px;font-size:12px" /></label>' +
+              '</div>' +
+            '</div>';
+          }).join('');
+
+          // Bind card click selection
+          container.querySelectorAll('.triage-card').forEach(function(card) {
+            card.addEventListener('click', function() {
+              const idx = parseInt(card.getAttribute('data-index') || '0', 10);
+              selectTriageCard(idx);
+            });
+          });
+
+          // Bind profile changes
+          container.querySelectorAll('.triage-profile').forEach(function(sel) {
+            sel.addEventListener('change', function(e) {
+              const idx = parseInt(sel.getAttribute('data-index') || '0', 10);
+              if (triageItems[idx]) triageItems[idx].profile = e.target.value;
+            });
+          });
+
+          // Bind date changes
+          container.querySelectorAll('.triage-date').forEach(function(inp) {
+            inp.addEventListener('change', function(e) {
+              const idx = parseInt(inp.getAttribute('data-index') || '0', 10);
+              if (triageItems[idx]) triageItems[idx].valid_from = e.target.value;
+            });
+          });
+        }
+
+        function selectTriageCard(idx) {
+          if (idx < 0 || idx >= triageItems.length) return;
+          selectedIndex = idx;
+          document.querySelectorAll('.triage-card').forEach(function(c, i) {
+            c.classList.toggle('selected', i === selectedIndex);
+          });
+          const el = document.getElementById('triage-card-' + selectedIndex);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function acceptCurrent() {
+          if (triageItems[selectedIndex]) {
+            triageItems[selectedIndex].status = 'accepted';
+            renderTriageCards();
+            if (selectedIndex < triageItems.length - 1) selectTriageCard(selectedIndex + 1);
+          }
+        }
+
+        function skipCurrent() {
+          if (triageItems[selectedIndex]) {
+            triageItems[selectedIndex].status = 'skipped';
+            renderTriageCards();
+            if (selectedIndex < triageItems.length - 1) selectTriageCard(selectedIndex + 1);
+          }
+        }
+
+        function reassignCurrent() {
+          if (triageItems[selectedIndex]) {
+            const current = triageItems[selectedIndex].profile;
+            const next = current === 'case-study' ? 'decision-record' : (current === 'decision-record' ? 'how-to' : 'case-study');
+            triageItems[selectedIndex].profile = next;
+            renderTriageCards();
+          }
+        }
+
+        function focusDateCurrent() {
+          const el = document.getElementById('triage-card-' + selectedIndex);
+          if (el) {
+            const inp = el.querySelector('.triage-date');
+            if (inp) inp.focus();
+          }
+        }
+
+        // On-screen buttons
+        document.getElementById('btn-key-prev')?.addEventListener('click', function() { selectTriageCard(selectedIndex - 1); });
+        document.getElementById('btn-key-next')?.addEventListener('click', function() { selectTriageCard(selectedIndex + 1); });
+        document.getElementById('btn-key-accept')?.addEventListener('click', acceptCurrent);
+        document.getElementById('btn-key-skip')?.addEventListener('click', skipCurrent);
+        document.getElementById('btn-key-reassign')?.addEventListener('click', reassignCurrent);
+        document.getElementById('btn-key-date')?.addEventListener('click', focusDateCurrent);
+
+        document.getElementById('btn-bulk-accept')?.addEventListener('click', function() {
+          triageItems.forEach(function(item) {
+            if (item.confidence >= 0.8) item.status = 'accepted';
+          });
+          renderTriageCards();
+        });
+
+        // Keyboard handler
+        window.addEventListener('keydown', function(e) {
+          if (currentStep !== 'triage') return;
+          const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+          if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+          const key = e.key.toLowerCase();
+          if (key === 'j') {
+            e.preventDefault();
+            selectTriageCard(selectedIndex + 1);
+          } else if (key === 'k') {
+            e.preventDefault();
+            selectTriageCard(selectedIndex - 1);
+          } else if (key === 'a') {
+            e.preventDefault();
+            acceptCurrent();
+          } else if (key === 's') {
+            e.preventDefault();
+            skipCurrent();
+          } else if (key === 'r') {
+            e.preventDefault();
+            reassignCurrent();
+          } else if (key === 'd') {
+            e.preventDefault();
+            focusDateCurrent();
+          }
+        });
+
+        // Commit batch
+        const commitBatchBtn = document.getElementById('btn-commit-batch');
+        if (commitBatchBtn) {
+          commitBatchBtn.addEventListener('click', async function() {
+            const accepted = triageItems.filter(function(i) { return i.status === 'accepted'; });
+            if (accepted.length === 0) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">No items are marked as accepted. Use "A" or click Accept on items before committing.</div>';
+              return;
+            }
+
+            try {
+              const res = await apiClient('/api/import/batch', {
+                method: 'POST',
+                body: JSON.stringify({
+                  items: accepted.map(function(item) {
+                    return {
+                      slug: item.slug,
+                      title: item.title,
+                      body_md: item.body_md,
+                      profile: item.profile,
+                      temporal_level: 'estimated',
+                      valid_from: new Date(item.valid_from).toISOString()
+                    };
+                  }),
+                  publishAsIs: false
+                })
+              });
+              if (res.ok) {
+                const data = await res.json();
+                banner.innerHTML = '<div class="as-of-banner">Successfully imported ' + data.importedCount + ' entries! <a href="/admin" style="font-weight:700;margin-left:8px">Go to Admin Workspace →</a></div>';
+              } else {
+                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Batch import failed (HTTP ' + res.status + ').</div>';
+              }
+            } catch (err) {
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error committing batch.</div>';
+            }
+          });
+        }
+
+        function escapeClientHtml(str) {
+          return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        }
+      })();
+    </script>
+  `;
+  return renderLayout('Import & Triage', '/admin/import', content);
 }

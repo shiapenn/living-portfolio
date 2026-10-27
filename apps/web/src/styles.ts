@@ -467,6 +467,134 @@ a {
   background: var(--surface-page);
 }
 
+/* §12.6 Inspector Tabs & Panels */
+.inspector-tabs {
+  display: flex;
+  gap: var(--space-1);
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: var(--space-3);
+  overflow-x: auto;
+}
+
+.inspector-tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--space-2) var(--space-3);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.inspector-tab-btn[aria-selected="true"],
+.inspector-tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.inspector-tab-panel {
+  display: none;
+}
+
+.inspector-tab-panel.active {
+  display: block;
+}
+
+/* §12.6 Import Triage Stepper & Keys */
+.triage-stepper {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: var(--space-2);
+}
+
+.triage-step {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-chip);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-page);
+}
+
+.triage-step.active {
+  background: var(--accent);
+  color: var(--surface-raised);
+}
+
+.triage-keys-legend {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-page);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  font-size: 13px;
+  margin-bottom: var(--space-3);
+}
+
+.key-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-family: var(--font-code);
+  font-weight: 700;
+  background: var(--surface-raised);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-chip);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.1);
+  color: var(--text);
+}
+
+.triage-card {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control);
+  padding: var(--space-3);
+  margin-bottom: var(--space-2);
+  background: var(--surface-raised);
+  transition: border-color 0.15s ease;
+}
+
+.triage-card.selected {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+.triage-card.status-accepted {
+  border-left: 4px solid var(--role-outcome);
+}
+
+.triage-card.status-skipped {
+  opacity: 0.5;
+  border-left: 4px solid var(--text-muted);
+}
+
+/* Accessibility Skip Link (UX-15) */
+.skip-link {
+  position: absolute;
+  top: -60px;
+  left: var(--space-2);
+  background: var(--surface-raised);
+  color: var(--accent);
+  padding: var(--space-2) var(--space-4);
+  z-index: 1000;
+  text-decoration: none;
+  font-weight: 700;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-control);
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: var(--space-2);
+  outline: 2px solid var(--focus-ring);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
