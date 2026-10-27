@@ -1,4 +1,6 @@
 import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { Hono, type Context, type Next } from 'hono';
 
 export interface AdminAccount {
@@ -79,20 +81,62 @@ export function verifyTotpCode(secretHex: string, code: string, timestampMs = Da
   return false;
 }
 
+export interface AuthManagerOptions {
+  signingKey?: string;
+  bootstrapAdminToken?: string;
+  storagePath?: string;
+}
+
 export class AuthManager {
   private signingKey: string;
   private dailyIpSalt: string;
+  private storagePath?: string;
   private account: AdminAccount | null = null;
   private sessions = new Map<string, AdminSession>();
   private bearerTokens = new Map<string, ApiBearerTokenRecord>();
   private loginFailures = new Map<string, { count: number; windowStartMs: number }>();
 
-  constructor(options?: { signingKey?: string; bootstrapAdminToken?: string }) {
+  constructor(options?: AuthManagerOptions) {
     this.signingKey = options?.signingKey || process.env.SESSION_SECRET || randomBytes(32).toString('hex');
     this.dailyIpSalt = `${new Date().toISOString().slice(0, 10)}:${this.signingKey}`;
+    this.storagePath = options?.storagePath || process.env.AUTH_STATE_FILE;
 
-    if (options?.bootstrapAdminToken) {
+    if (this.storagePath && existsSync(this.storagePath)) {
+      try {
+        const raw = readFileSync(this.storagePath, 'utf8');
+        const data = JSON.parse(raw);
+        if (data.account) {
+          this.account = data.account;
+        }
+        if (Array.isArray(data.bearerTokens)) {
+          for (const token of data.bearerTokens) {
+            this.bearerTokens.set(token.id, token);
+          }
+        }
+      } catch {
+        // Fall back gracefully
+      }
+    }
+
+    if (options?.bootstrapAdminToken && !this.account) {
       this.registerRawBearerToken('bootstrap-token', options.bootstrapAdminToken);
+    }
+  }
+
+  private persistState(): void {
+    if (!this.storagePath) return;
+    try {
+      const dir = dirname(this.storagePath);
+      if (dir && !existsSync(dir)) {
+        mkdirSync(dir, { recursive: true });
+      }
+      const data = {
+        account: this.account,
+        bearerTokens: Array.from(this.bearerTokens.values()),
+      };
+      writeFileSync(this.storagePath, JSON.stringify(data, null, 2), 'utf8');
+    } catch {
+      // Best-effort persistence
     }
   }
 
@@ -122,6 +166,7 @@ export class AuthManager {
       totpSecret,
       createdAt: new Date().toISOString(),
     };
+    this.persistState();
     const { rawToken, record } = this.issueBearerToken('initial-owner-token');
     return {
       username,
@@ -141,6 +186,7 @@ export class AuthManager {
       revokedAt: null,
     };
     this.bearerTokens.set(id, record);
+    this.persistState();
     return record;
   }
 
@@ -154,6 +200,7 @@ export class AuthManager {
     const rec = this.bearerTokens.get(id);
     if (!rec) return false;
     rec.revokedAt = new Date().toISOString();
+    this.persistState();
     return true;
   }
 
