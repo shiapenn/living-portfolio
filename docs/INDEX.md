@@ -34,6 +34,7 @@
 | `A026` | WP-3.4: Data-Class Privacy Router, Enrichment Scanner & Model Claim Extraction | `active` | [A026-wp3-4-data-class-router.md](execution-reports/A026-wp3-4-data-class-router.md) | — |
 | `A027` | WP-3.5: Work Package 3 Gate Closure and Verification | `active` | [A027-wp3-5-gate-closure.md](execution-reports/A027-wp3-5-gate-closure.md) | — |
 | `A028` | WP-4.1 Structure Review Loop and Import Planner | `active` | [A028-wp-41-structure-review-loop-and-import-planner.md](execution-reports/A028-wp-41-structure-review-loop-and-import-planner.md) | — |
+| `A029` | WP-4.2 Visitor Escalation Loop and Booking System | `active` | [A029-wp-42-visitor-escalation-loop-and-booking-system.md](execution-reports/A029-wp-42-visitor-escalation-loop-and-booking-system.md) | — |
 
 ## Handover Snapshots (Class H)
 
