@@ -106,6 +106,16 @@ export const AskQuerySchema = z.object({
   facets: z.record(z.any()).optional().default({}),
   session_id: z.string().optional(),
   scope_entry_slug: z.string().optional(), // for scoped "Ask about this"
+  visitor_contact: z.string().optional(),
+});
+
+export const BookingCreateSchema = z.object({
+  topic: z.string().min(1),
+  visitor_name: z.string().optional(),
+  visitor_contact: z.string().min(1),
+  facets: z.record(z.any()).optional().default({}),
+  preferred_time: z.string().optional(),
+  notes: z.string().optional(),
 });
 
 export const RoutingConfigSchema = z.object({
@@ -122,4 +132,5 @@ export type EntryCreateInput = z.infer<typeof EntryCreateSchema>;
 export type EntryUpdateInput = z.infer<typeof EntryUpdateSchema>;
 export type RevisionCreateInput = z.infer<typeof RevisionCreateSchema>;
 export type AskQueryInput = z.infer<typeof AskQuerySchema>;
+export type BookingCreateInput = z.infer<typeof BookingCreateSchema>;
 export type RoutingConfigInput = z.infer<typeof RoutingConfigSchema>;

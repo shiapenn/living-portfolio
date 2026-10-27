@@ -1,5 +1,6 @@
 import type {
   Annotation,
+  BookingRequest,
   CalibrationChange,
   Claim,
   CorrectionLog,
@@ -81,10 +82,15 @@ export interface IPortfolioRepository {
   saveMedia(m: Omit<MediaAsset, 'id'>): Promise<MediaAsset>;
   getMedia(id: string): Promise<MediaAsset | null>;
 
-  // Operational: Escalations, Calibration, Logs
+  // Operational: Escalations, Calibration, Logs, Bookings
   saveEscalation(esc: Omit<Escalation, 'id' | 'at'>): Promise<Escalation>;
   getEscalations(status?: string): Promise<Escalation[]>;
+  getEscalation(id: string): Promise<Escalation | null>;
+  getEscalationByStatusToken(token: string): Promise<Escalation | null>;
   updateEscalation(id: string, updates: Partial<Escalation>): Promise<Escalation>;
+  saveBooking(booking: Omit<BookingRequest, 'id' | 'at'>): Promise<BookingRequest>;
+  getBookings(status?: string): Promise<BookingRequest[]>;
+  getBooking(id: string): Promise<BookingRequest | null>;
   saveCorrection(log: Omit<CorrectionLog, 'id' | 'at'>): Promise<CorrectionLog>;
   getCorrectionLogs(kind?: string): Promise<CorrectionLog[]>;
   saveCalibrationChange(c: Omit<CalibrationChange, 'id' | 'at'>): Promise<CalibrationChange>;
@@ -163,6 +169,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   private evidence = new Map<string, Evidence>();
   private media = new Map<string, MediaAsset>();
   private escalations = new Map<string, Escalation>();
+  private bookings = new Map<string, BookingRequest>();
   private correctionLogs = new Map<string, CorrectionLog>();
   private calibrationChanges = new Map<string, CalibrationChange>();
   private scopedConstraints = new Map<string, ScopedConstraint>();
@@ -536,12 +543,46 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     return list.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
   }
 
+  async getEscalation(id: string): Promise<Escalation | null> {
+    return this.escalations.get(id) || null;
+  }
+
+  async getEscalationByStatusToken(token: string): Promise<Escalation | null> {
+    for (const esc of this.escalations.values()) {
+      if (esc.status_token === token) return esc;
+    }
+    return null;
+  }
+
   async updateEscalation(id: string, updates: Partial<Escalation>): Promise<Escalation> {
     const existing = this.escalations.get(id);
     if (!existing) throw new Error(`Escalation ${id} not found`);
     const updated = { ...existing, ...updates };
     this.escalations.set(id, updated);
     return updated;
+  }
+
+  async saveBooking(booking: Omit<BookingRequest, 'id' | 'at'>): Promise<BookingRequest> {
+    const id = (booking as any).id ?? crypto.randomUUID();
+    const item: BookingRequest = {
+      ...booking,
+      id,
+      at: (booking as any).at ?? new Date().toISOString(),
+    };
+    this.bookings.set(id, item);
+    return item;
+  }
+
+  async getBookings(status?: string): Promise<BookingRequest[]> {
+    let list = Array.from(this.bookings.values());
+    if (status) {
+      list = list.filter((b) => b.status === status);
+    }
+    return list.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
+  }
+
+  async getBooking(id: string): Promise<BookingRequest | null> {
+    return this.bookings.get(id) || null;
   }
 
   async saveCorrection(log: Omit<CorrectionLog, 'id' | 'at'>): Promise<CorrectionLog> {

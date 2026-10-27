@@ -414,6 +414,7 @@ Visualizing knowledge over time works best when spatial position strictly means 
     facets: { database: 'PostgreSQL 15', stack: 'Node.js, PgBouncer', latency_budget: '2000ms external HTTP' },
     draft: 'In "Advisory Locks, Revisited", transaction-scoped advisory locks worked well for short transactions under 50ms, but holding transaction locks across 2-second external HTTP calls risks exhausting the PgBouncer connection pool.',
     status: 'pending',
+    status_token: 'seed-esc-status-token',
     due_at: new Date(Date.now() + 20 * 3600 * 1000).toISOString(),
   });
 

@@ -184,6 +184,21 @@ export interface Escalation {
   booked?: boolean;
   status: 'pending' | 'approved' | 'rejected' | 'auto_refunded';
   due_at?: string | null;
+  status_token?: string | null;
+  visitor_contact?: string | null;
+  rejection_reason?: string | null;
+  at: string;
+}
+
+export interface BookingRequest {
+  id: string;
+  topic: string;
+  visitor_name?: string | null;
+  visitor_contact: string;
+  facets?: Record<string, any> | null;
+  preferred_time?: string | null;
+  notes?: string | null;
+  status: 'pending' | 'confirmed' | 'cancelled';
   at: string;
 }
 

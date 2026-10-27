@@ -1,5 +1,6 @@
 import type {
   Annotation,
+  BookingRequest,
   CalibrationChange,
   Claim,
   CorrectionLog,
@@ -732,11 +733,51 @@ export class DualWritePortfolioRepository implements IPortfolioRepository {
     );
   }
 
+  async getEscalation(id: string): Promise<Escalation | null> {
+    return this.executeRead(
+      'getEscalation',
+      () => this.primary.getEscalation(id),
+      () => this.shadow.getEscalation(id)
+    );
+  }
+
+  async getEscalationByStatusToken(token: string): Promise<Escalation | null> {
+    return this.executeRead(
+      'getEscalationByStatusToken',
+      () => this.primary.getEscalationByStatusToken(token),
+      () => this.shadow.getEscalationByStatusToken(token)
+    );
+  }
+
   async updateEscalation(id: string, updates: Partial<Escalation>): Promise<Escalation> {
     return this.executeWrite(
       'updateEscalation',
       () => this.primary.updateEscalation(id, updates),
       () => this.shadow.updateEscalation(id, updates)
+    );
+  }
+
+  async saveBooking(booking: Omit<BookingRequest, 'id' | 'at'>): Promise<BookingRequest> {
+    return this.executeWrite(
+      'saveBooking',
+      () => this.primary.saveBooking(booking),
+      (res) => this.shadow.saveBooking({ ...booking, id: res.id, at: res.at } as any)
+    );
+  }
+
+  async getBookings(status?: string): Promise<BookingRequest[]> {
+    return this.executeRead(
+      'getBookings',
+      () => this.primary.getBookings(status),
+      () => this.shadow.getBookings(status)
+    );
+  }
+
+  async getBooking(id: string): Promise<BookingRequest | null> {
+    return this.executeRead(
+      'getBooking',
+      () => this.primary.getBooking(id),
+      () => this.shadow.getBooking(id)
     );
   }
 

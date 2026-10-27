@@ -799,6 +799,17 @@ export async function renderAskPage(
               ? '<p class="provider-disclosure" style="font-size:12px;color:var(--text-muted);margin:16px 0 0 0;border-top:1px solid var(--rule);padding-top:8px">AI Disclosure: ' + esc(disclosureText) + '</p>'
               : '';
 
+            let receiptHtml = '';
+            if (data.tier === 'tier2' && (data.receiptUrl || data.statusToken)) {
+              const rUrl = safePath(data.receiptUrl || ('/ask/status/' + (data.statusToken || '')));
+              receiptHtml =
+                '<div style="margin:16px 0;padding:12px;border:1px solid var(--accent);border-radius:var(--radius-control);background:var(--surface-raised)">' +
+                  '<strong style="font-size:14px;display:block;margin-bottom:4px">Escalation Receipt Created (§6.1, UX-08)</strong>' +
+                  '<p style="margin:0 0 8px 0;font-size:13px">You can track the owner&#39;s review and view the delivered reply at your personal receipt URL:</p>' +
+                  '<a href="' + rUrl + '" class="btn" id="btn-view-receipt" style="display:inline-block;text-decoration:none">View Status Receipt →</a>' +
+                '</div>';
+            }
+
             region.innerHTML =
               '<div class="strata-section">' +
                 '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">' +
@@ -806,6 +817,7 @@ export async function renderAskPage(
                 '</div>' +
                 (data.basis ? '<p style="font-size:13px;color:var(--text-muted);margin:0 0 8px 0">' + esc(data.basis) + '</p>' : '') +
                 '<div class="reading-column" style="white-space:pre-wrap;margin-bottom:16px">' + esc(data.answer) + '</div>' +
+                receiptHtml +
                 (citationsHtml ? '<div style="border-top:1px solid var(--rule);padding-top:12px"><strong style="font-size:14px">Cited passages:</strong><ul style="margin:8px 0 0;padding-left:20px;font-size:14px">' + citationsHtml + '</ul></div>' : '') +
                 (data.bookingUrl ? '<div style="margin-top:12px"><a href="' + safePath(data.bookingUrl) + '" class="btn" style="display:inline-block;text-decoration:none">Book live session with prefilled context →</a></div>' : '') +
                 disclosureHtml +
@@ -903,19 +915,287 @@ export function renderStaticPage(page: 'now' | 'about' | 'uses' | 'book', queryP
       </div>`
     );
   }
+  return renderBookPage(queryParam);
+}
+
+export function renderBookPage(queryParam?: string, facetsParam?: string): string {
+  const defaultTopic = queryParam || '';
+  const defaultFacets = facetsParam || '';
+
   return renderLayout(
     'Book a Live Session',
     '/book',
     `<div class="reading-column">
       <h1>Book a Live Conversation (Tier 3)</h1>
-      <p>When your architectural constraints differ from my documented records, a direct conversation avoids bad extrapolation.</p>
-      <form class="strata-section" onsubmit="event.preventDefault(); alert('Session request submitted with your context facets.');">
+      <p>When your architectural constraints differ from documented records, a direct conversation avoids bad extrapolation.</p>
+
+      ${(defaultTopic || defaultFacets) ? `
+      <div style="padding:10px 14px;background:var(--surface-raised);border:1px solid var(--rule);border-radius:var(--radius-control);margin-bottom:16px;font-size:13px">
+        <strong>Carried Context from Ask:</strong>
+        ${defaultTopic ? `<div style="margin-top:4px"><em>Topic:</em> "${escapeHtml(defaultTopic)}"</div>` : ''}
+        ${defaultFacets ? `<div style="margin-top:2px;color:var(--text-muted)"><em>Facets:</em> ${escapeHtml(defaultFacets)}</div>` : ''}
+      </div>` : ''}
+
+      <div id="booking-confirmation" style="display:none;padding:16px;border:1px solid var(--accent);background:var(--surface-raised);border-radius:var(--radius-control);margin-bottom:16px" role="region" aria-label="Booking Confirmation">
+        <span class="chip" style="background:#d1fae5;color:#065f46;font-weight:600;margin-bottom:8px;display:inline-block">✓ Request Confirmed</span>
+        <h2 style="font-size:18px;margin:8px 0 4px 0">Consultation Request Received</h2>
+        <p style="margin:0 0 10px 0;font-size:14px">
+          We've received your request for: <strong id="conf-topic"></strong>
+        </p>
+        <p style="margin:0 0 12px 0;font-size:13px;color:var(--text-muted)">
+          The owner will review your architectural context and reach out at <strong id="conf-contact"></strong> within 24 hours to coordinate scheduling.
+        </p>
+        <a href="/work" class="btn btn-secondary" style="text-decoration:none;display:inline-block">Explore Portfolio Records →</a>
+      </div>
+
+      <form id="booking-form" class="strata-section" style="border:1px solid var(--rule);padding:16px;border-radius:var(--radius-control)">
+        <div id="booking-error" style="display:none;color:var(--status-warn,#d97706);font-size:13px;margin-bottom:12px" role="alert"></div>
+
         <div style="margin-bottom:12px">
-          <label for="book-q" style="display:block;font-weight:600;margin-bottom:4px">Topic / Question (pre-filled from Ask)</label>
-          <input id="book-q" type="text" class="ask-input" style="width:100%" value="${escapeHtml(queryParam || '')}" placeholder="Describe your architecture constraint..." />
+          <label for="book-topic" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Topic / Architecture Question <span style="color:var(--status-warn,#d97706)">*</span></label>
+          <input id="book-topic" name="topic" type="text" class="ask-input" style="width:100%" value="${escapeHtml(defaultTopic)}" placeholder="Describe your architecture constraint or review topic..." required />
         </div>
-        <button type="submit" class="btn">Request 30-minute architecture review</button>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:12px">
+          <div>
+            <label for="book-name" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Your Name / Organization</label>
+            <input id="book-name" name="visitor_name" type="text" class="ask-input" style="width:100%" placeholder="e.g. Jane Doe or Engineering Lead" />
+          </div>
+          <div>
+            <label for="book-contact" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Contact Email or Handle <span style="color:var(--status-warn,#d97706)">*</span></label>
+            <input id="book-contact" name="visitor_contact" type="text" class="ask-input" style="width:100%" placeholder="e.g. alex@example.com or @handle" required />
+          </div>
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label for="book-facets" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Context Facets / Production Constraints</label>
+          <input id="book-facets" name="facets" type="text" class="ask-input" style="width:100%" value="${escapeHtml(defaultFacets)}" placeholder="e.g. scale: high_volume, stack: postgres, cloud: aws" />
+        </div>
+
+        <div style="margin-bottom:12px">
+          <label for="book-time" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Preferred Times / Format</label>
+          <input id="book-time" name="preferred_time" type="text" class="ask-input" style="width:100%" placeholder="e.g. Weekday mornings (UTC+8), 30 min video call" />
+        </div>
+
+        <div style="margin-bottom:16px">
+          <label for="book-notes" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Additional Background Notes</label>
+          <textarea id="book-notes" name="notes" class="ask-input" style="width:100%;min-height:70px;line-height:1.4" placeholder="Optional notes or links to relevant repos..."></textarea>
+        </div>
+
+        <button type="submit" id="btn-submit-booking" class="btn">Request 30-Minute Architecture Review</button>
       </form>
+
+      <script>
+        (function() {
+          var form = document.getElementById('booking-form');
+          var confirmation = document.getElementById('booking-confirmation');
+          var errorDiv = document.getElementById('booking-error');
+          var submitBtn = document.getElementById('btn-submit-booking');
+
+          if (form) {
+            form.addEventListener('submit', async function(e) {
+              e.preventDefault();
+              errorDiv.style.display = 'none';
+              submitBtn.setAttribute('disabled', 'true');
+              submitBtn.textContent = 'Submitting Request...';
+
+              var topic = (document.getElementById('book-topic').value || '').trim();
+              var visitor_name = (document.getElementById('book-name').value || '').trim();
+              var visitor_contact = (document.getElementById('book-contact').value || '').trim();
+              var facetsRaw = (document.getElementById('book-facets').value || '').trim();
+              var preferred_time = (document.getElementById('book-time').value || '').trim();
+              var notes = (document.getElementById('book-notes').value || '').trim();
+
+              var facets = {};
+              if (facetsRaw) {
+                try {
+                  if (facetsRaw.startsWith('{')) {
+                    facets = JSON.parse(facetsRaw);
+                  } else {
+                    facetsRaw.split(',').forEach(function(pair) {
+                      var parts = pair.split(':');
+                      if (parts.length >= 2) {
+                        facets[parts[0].trim()] = parts.slice(1).join(':').trim();
+                      } else {
+                        facets[pair.trim()] = true;
+                      }
+                    });
+                  }
+                } catch (err) {
+                  facets = { raw: facetsRaw };
+                }
+              }
+
+              try {
+                var res = await fetch('/api/book', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    topic: topic,
+                    visitor_name: visitor_name || undefined,
+                    visitor_contact: visitor_contact,
+                    facets: facets,
+                    preferred_time: preferred_time || undefined,
+                    notes: notes || undefined
+                  })
+                });
+
+                var data = await res.json();
+                if (res.ok && data.success) {
+                  form.style.display = 'none';
+                  document.getElementById('conf-topic').textContent = topic;
+                  document.getElementById('conf-contact').textContent = visitor_contact;
+                  confirmation.style.display = 'block';
+                } else {
+                  errorDiv.textContent = data.error || 'Failed to submit request. Please try again.';
+                  errorDiv.style.display = 'block';
+                  submitBtn.removeAttribute('disabled');
+                  submitBtn.textContent = 'Request 30-Minute Architecture Review';
+                }
+              } catch (err) {
+                errorDiv.textContent = 'Network error submitting booking request. Please check connection and try again.';
+                errorDiv.style.display = 'block';
+                submitBtn.removeAttribute('disabled');
+                submitBtn.textContent = 'Request 30-Minute Architecture Review';
+              }
+            });
+          }
+        })();
+      </script>
+    </div>`
+  );
+}
+
+export async function renderAskStatusPage(repo: IPortfolioRepository, statusToken: string): Promise<string> {
+  const escalation = await repo.getEscalationByStatusToken(statusToken);
+
+  if (!escalation) {
+    return renderLayout(
+      'Receipt Not Found',
+      '/ask',
+      `<div class="reading-column">
+        <h1>Receipt Status Not Found</h1>
+        <p style="color:var(--text-muted)">The token provided does not match any active escalation receipt in these records.</p>
+        <p><a href="/ask" class="btn">Return to Ask</a></p>
+      </div>`
+    );
+  }
+
+  const isPending = escalation.status === 'pending';
+  const isApproved = escalation.status === 'approved';
+  const isRejected = escalation.status === 'rejected';
+
+  let statusBadge = '<span class="chip" style="background:#fef3c7;color:#92400e;font-weight:600">Pending Review</span>';
+  if (isApproved) {
+    statusBadge = '<span class="chip" style="background:#d1fae5;color:#065f46;font-weight:600">Approved by Owner</span>';
+  } else if (isRejected) {
+    statusBadge = '<span class="chip" style="background:#fee2e2;color:#991b1b;font-weight:600">Declined</span>';
+  }
+
+  const dueLabel = escalation.due_at
+    ? new Date(escalation.due_at).toLocaleString()
+    : 'within 24 hours of submission';
+
+  const facetsHtml = escalation.facets && Object.keys(escalation.facets).length > 0
+    ? Object.entries(escalation.facets).map(([k, v]) => `<span class="chip" style="font-size:12px">${escapeHtml(k)}: ${escapeHtml(String(v))}</span>`).join(' ')
+    : '';
+
+  return renderLayout(
+    'Question Status & Receipt',
+    '/ask',
+    `<div class="reading-column">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <h1 style="margin:0">Escalation Receipt</h1>
+        ${statusBadge}
+      </div>
+
+      <div class="strata-section" style="border:1px solid var(--rule);padding:16px;border-radius:var(--radius-control);margin-bottom:16px">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">
+          Submitted: ${new Date(escalation.at).toLocaleString()} · Class: ${escapeHtml(escalation.query_class)}
+        </div>
+        <p style="font-size:16px;font-weight:600;margin:0 0 8px 0">${escapeHtml(escalation.question)}</p>
+        ${facetsHtml ? `<div style="margin-bottom:8px">${facetsHtml}</div>` : ''}
+      </div>
+
+      ${isPending ? `
+      <div class="strata-section" style="border:1px solid #fef3c7;background:var(--surface-raised);padding:16px;border-radius:var(--radius-control);margin-bottom:16px">
+        <h2 style="font-size:16px;margin:0 0 6px 0">Pending Owner Review</h2>
+        <p style="margin:0 0 8px 0;font-size:14px">
+          The owner typically reviews and answers pending queries within 24 hours (due by <strong>${escapeHtml(dueLabel)}</strong>).
+        </p>
+        <p style="margin:0 0 12px 0;font-size:13px;color:var(--text-muted)">
+          Bookmark this link or refresh to see the reply. You can also provide an email or handle below to be notified directly.
+        </p>
+
+        ${escalation.draft ? `
+        <div style="margin:12px 0;padding:10px 12px;background:var(--surface-page);border:1px solid var(--rule);border-radius:var(--radius-control);font-size:13px">
+          <strong>Draft Under Review (Private to Visitor):</strong>
+          <p style="margin:4px 0 0 0;font-style:italic;color:var(--text-muted)">${escapeHtml(escalation.draft)}</p>
+        </div>` : ''}
+
+        <div id="contact-feedback" style="display:none;margin-bottom:8px;font-size:13px;color:var(--accent)"></div>
+
+        <form id="contact-form" style="display:flex;gap:8px;flex-wrap:wrap">
+          <label for="contact-input" class="visually-hidden">Notification Email</label>
+          <input id="contact-input" type="text" class="ask-input" style="flex:1;min-width:200px" value="${escapeHtml(escalation.visitor_contact || '')}" placeholder="you@example.com (optional notification)" />
+          <button type="submit" id="btn-save-contact" class="btn btn-secondary">Save Notification Contact</button>
+        </form>
+
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--rule);font-size:13px">
+          Need an immediate live discussion instead? <a href="/book?q=${encodeURIComponent(escalation.question)}">Book a 30-minute consultation →</a>
+        </div>
+      </div>
+      <script>
+        (function() {
+          var form = document.getElementById('contact-form');
+          var input = document.getElementById('contact-input');
+          var fb = document.getElementById('contact-feedback');
+          if (form) {
+            form.addEventListener('submit', async function(e) {
+              e.preventDefault();
+              var contact = (input.value || '').trim();
+              if (!contact) return;
+              try {
+                var res = await fetch('/api/ask/status/${statusToken}/contact', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ contact: contact })
+                });
+                var data = await res.json();
+                if (res.ok && data.success) {
+                  fb.textContent = '✓ ' + data.message;
+                  fb.style.display = 'block';
+                }
+              } catch (err) {
+                fb.textContent = 'Network error saving contact.';
+                fb.style.display = 'block';
+              }
+            });
+          }
+        })();
+      </script>` : ''}
+
+      ${isApproved ? `
+      <div class="strata-section" style="border:1px solid #d1fae5;background:var(--surface-raised);padding:16px;border-radius:var(--radius-control);margin-bottom:16px">
+        <h2 style="font-size:16px;margin:0 0 8px 0;color:#065f46">Owner's Verified Reply</h2>
+        <div style="font-size:15px;line-height:1.6;white-space:pre-wrap;margin-bottom:12px">${escapeHtml(escalation.final || escalation.draft || '')}</div>
+        <div style="font-size:12px;color:var(--text-muted);border-top:1px solid var(--rule);padding-top:8px">
+          Verified and approved by the owner directly from personal records.
+        </div>
+      </div>
+      <p><a href="/ask" class="btn">Ask Another Question</a></p>` : ''}
+
+      ${isRejected ? `
+      <div class="strata-section" style="border:1px solid #fee2e2;background:var(--surface-raised);padding:16px;border-radius:var(--radius-control);margin-bottom:16px">
+        <h2 style="font-size:16px;margin:0 0 8px 0;color:#991b1b">Question Declined</h2>
+        <p style="margin:0 0 10px 0;font-size:14px">
+          ${escapeHtml(escalation.rejection_reason || 'The owner reviewed this question and indicated it cannot be answered reliably from currently published records.')}
+        </p>
+        <p style="margin:0;font-size:13px;color:var(--text-muted)">
+          If this involves specific non-public architectural constraints, consider <a href="/book?q=${encodeURIComponent(escalation.question)}">booking a live architecture conversation</a>.
+        </p>
+      </div>
+      <p><a href="/ask" class="btn">Return to Ask</a></p>` : ''}
     </div>`
   );
 }
@@ -1022,16 +1302,50 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
   const escalationsHtml =
     escalations.length > 0
       ? escalations
-          .map(
-            (esc) => `<div style="border:1px solid var(--rule);padding:12px;margin-bottom:12px;background:var(--surface-page)">
-              <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-                <strong>Visitor Question (${escapeHtml(esc.query_class)}):</strong>
-                <span class="chip">${escapeHtml(esc.status)}</span>
+          .map((esc) => {
+            const isPending = esc.status === 'pending';
+            const dueLabel = esc.due_at ? `Due by ${new Date(esc.due_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '';
+            const contactLabel = esc.visitor_contact ? `Notify: ${escapeHtml(esc.visitor_contact)}` : 'Receipt link delivery';
+            return `
+            <div class="escalation-card" id="esc-card-${esc.id}" style="border:1px solid var(--rule);padding:16px;margin-bottom:16px;background:var(--surface-page);border-radius:var(--radius-control)">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+                <div>
+                  <strong style="font-size:15px">Visitor Question (${escapeHtml(esc.query_class)}):</strong>
+                  <span class="chip" style="margin-left:6px">${escapeHtml(esc.status)}</span>
+                  ${dueLabel ? `<span class="chip" style="margin-left:4px;font-size:11px;background:var(--surface-raised)">${escapeHtml(dueLabel)}</span>` : ''}
+                </div>
+                <div style="font-size:12px;color:var(--text-muted)">
+                  ${escapeHtml(contactLabel)}
+                </div>
               </div>
-              <p style="margin:0 0 8px 0">${escapeHtml(esc.question)}</p>
-              <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px">Draft: ${escapeHtml(esc.draft || '')}</div>
-            </div>`
-          )
+              <p style="margin:0 0 12px 0;font-size:14px;font-weight:500">${escapeHtml(esc.question)}</p>
+
+              ${esc.facets && Object.keys(esc.facets).length > 0 ? `
+              <div style="margin-bottom:10px;font-size:12px">
+                <strong>Visitor Context Facets:</strong>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+                  ${Object.entries(esc.facets).map(([k, v]) => `<span class="chip" style="font-size:11px">${escapeHtml(k)}: ${escapeHtml(String(v))}</span>`).join('')}
+                </div>
+              </div>` : ''}
+
+              <div style="margin-bottom:12px">
+                <label for="draft-${esc.id}" style="display:block;font-size:12px;font-weight:600;margin-bottom:4px">
+                  ${isPending ? 'Review / Edit Proposed Draft Reply (§6.2, §11):' : 'Final Reply / Decision:'}
+                </label>
+                <textarea id="draft-${esc.id}" class="ask-input escalation-draft-textarea" style="width:100%;min-height:90px;font-size:13px;line-height:1.4" ${!isPending ? 'readonly' : ''}>${escapeHtml(esc.final || esc.draft || '')}</textarea>
+              </div>
+
+              ${isPending ? `
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                <button type="button" class="btn btn-approve-escalation" data-id="${esc.id}">Approve &amp; Deliver</button>
+                <button type="button" class="btn btn-secondary btn-reject-escalation" data-id="${esc.id}">Reject</button>
+                <span id="esc-status-${esc.id}" style="font-size:12px;color:var(--text-muted)"></span>
+              </div>` : `
+              <div style="font-size:12px;color:var(--text-muted)">
+                ${esc.status === 'approved' ? `✓ Approved and delivered to receipt.` : `✕ Rejected: ${escapeHtml(esc.rejection_reason || 'Declined')}`}
+              </div>`}
+            </div>`;
+          })
           .join('\n')
       : '<p style="color:var(--text-muted)">No pending escalations.</p>';
 
@@ -2163,6 +2477,77 @@ export async function renderAdminWorkspacePage(repo: IPortfolioRepository): Prom
             }
           });
         }
+
+        // Escalation inbox interactive review & approval (§6.2, UX-08)
+        document.querySelectorAll('.btn-approve-escalation').forEach(function(btn) {
+          btn.addEventListener('click', async function() {
+            var id = btn.getAttribute('data-id');
+            var textarea = document.getElementById('draft-' + id);
+            var finalReply = textarea ? textarea.value : '';
+            var statusEl = document.getElementById('esc-status-' + id);
+            btn.setAttribute('disabled', 'true');
+            if (statusEl) statusEl.textContent = 'Approving...';
+            try {
+              var res = await apiClient('/api/inbox/' + id + '/approve', {
+                method: 'PATCH',
+                body: JSON.stringify({ finalReply: finalReply })
+              });
+              if (res.ok) {
+                if (statusEl) statusEl.textContent = '✓ Approved and delivered';
+                btn.style.display = 'none';
+                var rejectBtn = document.querySelector('.btn-reject-escalation[data-id="' + id + '"]');
+                if (rejectBtn) rejectBtn.style.display = 'none';
+                var badge = document.querySelector('#esc-card-' + id + ' .chip');
+                if (badge) {
+                  badge.textContent = 'approved';
+                  badge.style.background = '#d1fae5';
+                  badge.style.color = '#065f46';
+                }
+              } else {
+                if (statusEl) statusEl.textContent = 'Error approving escalation.';
+                btn.removeAttribute('disabled');
+              }
+            } catch (err) {
+              if (statusEl) statusEl.textContent = 'Network error approving escalation.';
+              btn.removeAttribute('disabled');
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-reject-escalation').forEach(function(btn) {
+          btn.addEventListener('click', async function() {
+            var id = btn.getAttribute('data-id');
+            var reason = prompt('Optional reason for rejection (proposes technical constraint if constraint detected):', 'Out of current scope or technical constraint');
+            if (reason === null) return;
+            var statusEl = document.getElementById('esc-status-' + id);
+            btn.setAttribute('disabled', 'true');
+            if (statusEl) statusEl.textContent = 'Rejecting...';
+            try {
+              var res = await apiClient('/api/inbox/' + id + '/reject', {
+                method: 'PATCH',
+                body: JSON.stringify({ reason: reason })
+              });
+              if (res.ok) {
+                if (statusEl) statusEl.textContent = '✕ Rejected';
+                btn.style.display = 'none';
+                var approveBtn = document.querySelector('.btn-approve-escalation[data-id="' + id + '"]');
+                if (approveBtn) approveBtn.style.display = 'none';
+                var badge = document.querySelector('#esc-card-' + id + ' .chip');
+                if (badge) {
+                  badge.textContent = 'rejected';
+                  badge.style.background = '#fee2e2';
+                  badge.style.color = '#991b1b';
+                }
+              } else {
+                if (statusEl) statusEl.textContent = 'Error rejecting escalation.';
+                btn.removeAttribute('disabled');
+              }
+            } catch (err) {
+              if (statusEl) statusEl.textContent = 'Network error rejecting escalation.';
+              btn.removeAttribute('disabled');
+            }
+          });
+        });
       })();
     </script>
   `;

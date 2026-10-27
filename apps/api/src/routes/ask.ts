@@ -43,7 +43,7 @@ export function createAskRoutes(config: AskEngineConfig) {
       return c.json({ error: 'Invalid query', details: parsed.error.issues }, 400);
     }
 
-    const { query, as_of_date, facets: visitorFacets, scope_entry_slug } = parsed.data;
+    const { query, as_of_date, facets: visitorFacets, scope_entry_slug, visitor_contact } = parsed.data;
     const runtime = getRuntimeSettings?.();
 
     // Check owner kill-switch (§1 Product Principles: "One setting disables automated answering instantly")
@@ -316,20 +316,28 @@ export function createAskRoutes(config: AskEngineConfig) {
         escalationDraft = candidateMatches.slice(0, 2).map((m) => m.span.text_exact).join('\n\n');
       }
 
+      const statusToken = crypto.randomUUID().replace(/-/g, '');
+      const dueAt = new Date(Date.now() + 24 * 3600 * 1000).toISOString();
+
       await repo.saveEscalation({
         question: query,
         query_class: queryClass,
         facets: visitorFacets,
         draft: escalationDraft,
         status: 'pending',
-        due_at: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
+        due_at: dueAt,
+        status_token: statusToken,
+        visitor_contact: visitor_contact || null,
       });
 
       return c.json({
         tier: 'tier2',
         queryClass,
-        answer: 'This needs the owner\'s review. Typical reply within 24 hours.',
+        answer: "This needs the owner's review. Typical reply within 24 hours.",
         status: 'pending_review',
+        statusToken,
+        receiptUrl: `/ask/status/${statusToken}`,
+        dueAt,
         degradationStep,
       });
     }
@@ -468,6 +476,56 @@ export function createAskRoutes(config: AskEngineConfig) {
     );
 
     return c.json(responsePayload);
+  });
+
+  // Query escalation receipt status (§6.1, §10.5, UX-08)
+  router.get('/status/:token', async (c) => {
+    const token = c.req.param('token');
+    const escalation = await repo.getEscalationByStatusToken(token);
+    if (!escalation) {
+      return c.json({ error: 'Receipt status token not found' }, 404);
+    }
+    return c.json({
+      found: true,
+      escalation: {
+        id: escalation.id,
+        question: escalation.question,
+        query_class: escalation.query_class,
+        status: escalation.status,
+        draft: escalation.draft,
+        final: escalation.final,
+        rejection_reason: escalation.rejection_reason,
+        visitor_contact: escalation.visitor_contact,
+        due_at: escalation.due_at,
+        at: escalation.at,
+      },
+    });
+  });
+
+  // Attach/update contact information on escalation receipt (§6.1, UX-08)
+  router.post('/status/:token/contact', async (c) => {
+    const token = c.req.param('token');
+    const body = await c.req.json().catch(() => ({}));
+    const contact = body?.contact;
+    if (!contact || typeof contact !== 'string' || !contact.trim()) {
+      return c.json({ error: 'Valid contact is required' }, 400);
+    }
+    const escalation = await repo.getEscalationByStatusToken(token);
+    if (!escalation) {
+      return c.json({ error: 'Receipt status token not found' }, 404);
+    }
+    const updated = await repo.updateEscalation(escalation.id, {
+      visitor_contact: contact.trim(),
+    });
+    return c.json({
+      success: true,
+      message: 'Contact details saved. You will receive notification when the owner replies.',
+      escalation: {
+        id: updated.id,
+        status: updated.status,
+        visitor_contact: updated.visitor_contact,
+      },
+    });
   });
 
   return router;

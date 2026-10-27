@@ -5,6 +5,8 @@ import {
   renderAdminImportPage,
   renderAdminWorkspacePage,
   renderAskPage,
+  renderAskStatusPage,
+  renderBookPage,
   renderBuildPage,
   renderEntryDetailPage,
   renderHomePage,
@@ -40,7 +42,8 @@ app.get('/ask', async (c) => c.html(await renderAskPage(c.req.query('q'), c.req.
 app.get('/now', (c) => c.html(renderStaticPage('now')));
 app.get('/about', (c) => c.html(renderStaticPage('about')));
 app.get('/uses', (c) => c.html(renderStaticPage('uses')));
-app.get('/book', (c) => c.html(renderStaticPage('book', c.req.query('q'))));
+app.get('/book', (c) => c.html(renderBookPage(c.req.query('q'), c.req.query('facets'))));
+app.get('/ask/status/:token', async (c) => c.html(await renderAskStatusPage(repo, c.req.param('token'))));
 app.get('/admin', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminWorkspacePage(repo)));
 app.get('/admin/import', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminImportPage(repo)));
 

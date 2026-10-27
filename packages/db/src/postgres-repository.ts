@@ -1,5 +1,6 @@
 import type {
   Annotation,
+  BookingRequest,
   CalibrationChange,
   Claim,
   CorrectionLog,
@@ -192,6 +193,23 @@ function mapEscalation(row: typeof schema.escalations.$inferSelect): Escalation 
     booked: row.booked ?? false,
     status: row.status as any,
     due_at: toIso(row.due_at),
+    status_token: row.status_token ?? undefined,
+    visitor_contact: row.visitor_contact ?? undefined,
+    rejection_reason: row.rejection_reason ?? undefined,
+    at: toIsoRequired(row.at),
+  };
+}
+
+function mapBooking(row: typeof schema.bookings.$inferSelect): BookingRequest {
+  return {
+    id: row.id,
+    topic: row.topic,
+    visitor_name: row.visitor_name ?? undefined,
+    visitor_contact: row.visitor_contact,
+    facets: (row.facets as any) ?? undefined,
+    preferred_time: row.preferred_time ?? undefined,
+    notes: row.notes ?? undefined,
+    status: row.status as any,
     at: toIsoRequired(row.at),
   };
 }
@@ -838,6 +856,9 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
         booked: esc.booked ?? false,
         status: esc.status,
         due_at: toDate(esc.due_at),
+        status_token: esc.status_token ?? null,
+        visitor_contact: esc.visitor_contact ?? null,
+        rejection_reason: esc.rejection_reason ?? null,
         at: (esc as any).at ? new Date((esc as any).at) : undefined,
       })
       .returning();
@@ -852,6 +873,16 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     return rows.map(mapEscalation);
   }
 
+  async getEscalation(id: string): Promise<Escalation | null> {
+    const rows = await this.db.select().from(schema.escalations).where(eq(schema.escalations.id, id));
+    return rows.length > 0 ? mapEscalation(rows[0]) : null;
+  }
+
+  async getEscalationByStatusToken(token: string): Promise<Escalation | null> {
+    const rows = await this.db.select().from(schema.escalations).where(eq(schema.escalations.status_token, token));
+    return rows.length > 0 ? mapEscalation(rows[0]) : null;
+  }
+
   async updateEscalation(id: string, updates: Partial<Escalation>): Promise<Escalation> {
     const updatesObj: any = {};
     if (updates.status !== undefined) updatesObj.status = updates.status;
@@ -861,6 +892,9 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     if (updates.citation_clicks !== undefined) updatesObj.citation_clicks = updates.citation_clicks;
     if (updates.booked !== undefined) updatesObj.booked = updates.booked;
     if (updates.due_at !== undefined) updatesObj.due_at = toDate(updates.due_at);
+    if (updates.status_token !== undefined) updatesObj.status_token = updates.status_token;
+    if (updates.visitor_contact !== undefined) updatesObj.visitor_contact = updates.visitor_contact;
+    if (updates.rejection_reason !== undefined) updatesObj.rejection_reason = updates.rejection_reason;
 
     const [updated] = await this.db
       .update(schema.escalations)
@@ -869,6 +903,37 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
       .returning();
     if (!updated) throw new Error(`Escalation ${id} not found`);
     return mapEscalation(updated);
+  }
+
+  async saveBooking(booking: Omit<BookingRequest, 'id' | 'at'>): Promise<BookingRequest> {
+    const [row] = await this.db
+      .insert(schema.bookings)
+      .values({
+        id: (booking as any).id ?? undefined,
+        topic: booking.topic,
+        visitor_name: booking.visitor_name ?? null,
+        visitor_contact: booking.visitor_contact,
+        facets: booking.facets ?? null,
+        preferred_time: booking.preferred_time ?? null,
+        notes: booking.notes ?? null,
+        status: booking.status ?? 'pending',
+        at: (booking as any).at ? new Date((booking as any).at) : undefined,
+      })
+      .returning();
+    return mapBooking(row);
+  }
+
+  async getBookings(status?: string): Promise<BookingRequest[]> {
+    let query = this.db.select().from(schema.bookings);
+    const rows = status
+      ? await query.where(eq(schema.bookings.status, status)).orderBy(desc(schema.bookings.at))
+      : await query.orderBy(desc(schema.bookings.at));
+    return rows.map(mapBooking);
+  }
+
+  async getBooking(id: string): Promise<BookingRequest | null> {
+    const rows = await this.db.select().from(schema.bookings).where(eq(schema.bookings.id, id));
+    return rows.length > 0 ? mapBooking(rows[0]) : null;
   }
 
   async saveCorrection(log: Omit<CorrectionLog, 'id' | 'at'>): Promise<CorrectionLog> {

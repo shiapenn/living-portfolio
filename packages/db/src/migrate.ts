@@ -1,6 +1,7 @@
 import type pg from 'pg';
 import { MIGRATION_0001_INIT_NAME, MIGRATION_0001_INIT_SQL } from './migrations/0001_init.js';
 import { MIGRATION_0002_GOVERNOR_LEDGER_NAME, MIGRATION_0002_GOVERNOR_LEDGER_SQL } from './migrations/0002_governor_ledger.js';
+import { MIGRATION_0003_BOOKINGS_NAME, MIGRATION_0003_BOOKINGS_SQL } from './migrations/0003_bookings_and_receipts.js';
 
 /**
  * Authoritative QRXP schema version tracked in schema_info table (§9, §19).
@@ -23,6 +24,11 @@ export const MIGRATIONS: MigrationStep[] = [
     name: MIGRATION_0002_GOVERNOR_LEDGER_NAME,
     version: QRXP_SCHEMA_VERSION,
     sql: MIGRATION_0002_GOVERNOR_LEDGER_SQL,
+  },
+  {
+    name: MIGRATION_0003_BOOKINGS_NAME,
+    version: QRXP_SCHEMA_VERSION,
+    sql: MIGRATION_0003_BOOKINGS_SQL,
   },
 ];
 

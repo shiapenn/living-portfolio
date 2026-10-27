@@ -16,6 +16,8 @@ import {
   renderAdminLoginPage,
   renderAdminSetupPage,
   renderAdminWorkspacePage,
+  renderAskStatusPage,
+  renderBookPage,
 } from '@living-portfolio/web';
 import { AuthManager, createAuthRoutes } from './auth/security.js';
 import { createHealthRoutes } from './routes/health.js';
@@ -27,6 +29,7 @@ import { createInboxRoutes } from './routes/inbox.js';
 import { createCalibrationRoutes } from './routes/calibration.js';
 import { createAuditRoutes } from './routes/audit.js';
 import { createImportRoutes } from './routes/import.js';
+import { createBookRoutes } from './routes/book.js';
 import { createSettingsRoutes, type RuntimeSettingsState } from './routes/settings.js';
 
 export function createApp(
@@ -180,6 +183,10 @@ export function createApp(
   app.route('/api/import', createImportRoutes(repo, auth));
   app.route('/api/settings', createSettingsRoutes(repo, runtimeState, auth));
 
+  // Consultation booking routes (§6.1, UX-11) - public POST, admin GET
+  app.use('/api/book', (c, next) => c.req.method === 'GET' ? auth.requireAdminMiddleware()(c, next) : next());
+  app.route('/api/book', createBookRoutes(repo));
+
   // Shadow verification & metrics endpoints (WP-2.4, Fix 8, Fix 10, OSR-15)
   app.get('/api/admin/metrics/shadow', auth.requireAdminMiddleware(), (c) => {
     if (repo instanceof DualWritePortfolioRepository) {
@@ -233,6 +240,10 @@ export function createApp(
   app.get('/admin/login', (c) => c.html(renderAdminLoginPage()));
   app.get('/admin', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminWorkspacePage(repo)));
   app.get('/admin/import', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminImportPage(repo)));
+
+  // Public visitor booking & escalation status routes (UX-08, UX-11)
+  app.get('/book', (c) => c.html(renderBookPage(c.req.query('q'), c.req.query('facets'))));
+  app.get('/ask/status/:token', async (c) => c.html(await renderAskStatusPage(repo, c.req.param('token'))));
 
   // Federation manifest (§17)
   app.get('/.well-known/living-portfolio.json', async (c) => {

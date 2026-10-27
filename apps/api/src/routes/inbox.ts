@@ -53,6 +53,7 @@ export function createInboxRoutes(repo: IPortfolioRepository) {
 
     const updated = await repo.updateEscalation(id, {
       status: 'rejected',
+      rejection_reason: reason || 'Declined without specific constraint',
     });
 
     // If rejection included a technical constraint, mine it as a proposed scoped constraint (§11)
