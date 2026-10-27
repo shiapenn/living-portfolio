@@ -390,7 +390,7 @@
     "title": "WP-3 Gate Closure and WP-4 Kickoff",
     "class": "H",
     "path": "docs/handovers/H004-wp-3-gate-closure-and-wp-4-kickoff.md",
-    "status": "active",
+    "status": "superseded",
     "supersedes": "H003"
   },
   {
@@ -416,5 +416,13 @@
     "path": "docs/execution-reports/A030-wp4-3-time-travel-correctness.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "H005",
+    "title": "WP-4 Gate Closure and WP-5 Kickoff",
+    "class": "H",
+    "path": "docs/handovers/H005-wp-4-gate-closure-and-wp-5-kickoff.md",
+    "status": "active",
+    "supersedes": "H004"
   }
 ]

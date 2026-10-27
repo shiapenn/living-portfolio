@@ -76,6 +76,28 @@
       ],
       "closingReceipt": "A027",
       "handover": "H004"
+    },
+    "WP-4": {
+      "name": "Work Package 4 (Phase 3 / v0.2 Gate Closure)",
+      "description": "Structure review loop & import planner, visitor escalation loop & booking system, and time-travel correctness with keyboard navigation.",
+      "requiredTaskIds": [
+        "WP-4.1",
+        "WP-4.2",
+        "WP-4.3"
+      ],
+      "requiredPassingTests": [
+        "WP-4.1: Structure Inspector, Guided Mode, Import Triage & Visitor Ask States › 1. 5-tab Structure Inspector displays interactive controls and updates structure score",
+        "WP-4.1: Structure Inspector, Guided Mode, Import Triage & Visitor Ask States › 2. Guided and quick authoring modes create entries with role prompts",
+        "WP-4.1: Structure Inspector, Guided Mode, Import Triage & Visitor Ask States › 3. Import planner stages batch and J K A R D S keyboard triage operates correctly",
+        "WP-4.2: Visitor Escalation Loop and Booking System (20261020-UX-08, UX-11) › 1. Tier 3 Booking form carries context, accepts submission without alert(), and displays confirmation (20261020-UX-11)",
+        "WP-4.2: Visitor Escalation Loop and Booking System (20261020-UX-08, UX-11) › 2. Visitor Escalation Receipt allows contact capture, owner review & approve, and status delivery (20261020-UX-08)",
+        "WP-4.3: Time-Travel Correctness and Navigation Links (20261020-UX-12 / P0-11) › 1. Timeline defaults to today, excludes nothing on direct apply, and handles invalid dates gracefully",
+        "WP-4.3: Time-Travel Correctness and Navigation Links (20261020-UX-12 / P0-11) › 2. Strata bands compute dynamic month-end dates and support keyboard navigation (Arrow keys, Enter)",
+        "WP-4.3: Time-Travel Correctness and Navigation Links (20261020-UX-12 / P0-11) › 3. Timeline shows informative empty state with reset link when all entries are filtered out",
+        "WP-4.3: Time-Travel Correctness and Navigation Links (20261020-UX-12 / P0-11) › 4. as_of context is carried across Timeline, Work, Entry detail, and Ask routes"
+      ],
+      "closingReceipt": "A030",
+      "handover": "H005"
     }
   }
 }
