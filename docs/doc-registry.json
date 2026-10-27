@@ -432,5 +432,13 @@
     "path": "docs/execution-reports/A031-wp5-1-admin-operations-and-killswitch.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A032",
+    "title": "WP-5.2 Setup Wizard and Credential Lockdown",
+    "class": "A",
+    "path": "docs/execution-reports/A032-wp5-2-setup-wizard-and-credential-lockdown.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
