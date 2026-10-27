@@ -39,6 +39,7 @@
 | `A031` | WP-5.1 Admin Operations and Kill-Switch Synchronization | `active` | [A031-wp5-1-admin-operations-and-killswitch.md](execution-reports/A031-wp5-1-admin-operations-and-killswitch.md) | — |
 | `A032` | WP-5.2 Setup Wizard and Credential Lockdown | `active` | [A032-wp5-2-setup-wizard-and-credential-lockdown.md](execution-reports/A032-wp5-2-setup-wizard-and-credential-lockdown.md) | — |
 | `A033` | WP-5.3 Web Mounting and Redaction Drawer | `active` | [A033-wp5-3-web-mounting-and-redaction-drawer.md](execution-reports/A033-wp5-3-web-mounting-and-redaction-drawer.md) | — |
+| `A034` | WP-6.1 Release Packaging, Container Workflow, and SBOM Generation | `active` | [A034-wp6-1-release-packaging-and-container-workflow.md](execution-reports/A034-wp6-1-release-packaging-and-container-workflow.md) | — |
 
 ## Handover Snapshots (Class H)
 
