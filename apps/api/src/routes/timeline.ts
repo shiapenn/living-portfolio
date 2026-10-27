@@ -58,6 +58,9 @@ export function createTimelineRoutes(repo: IPortfolioRepository) {
     let timeTravelView = null;
     if (asOfParam) {
       const asOfDate = new Date(asOfParam);
+      if (isNaN(asOfDate.getTime())) {
+        return c.json({ error: `Invalid as_of date: ${asOfParam}` }, 400);
+      }
       const visibleEntries: any[] = [];
       let futureExcludedCount = 0;
 

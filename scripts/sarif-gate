@@ -14,7 +14,9 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 
 const ROOT = resolve(import.meta.dirname, '..');
-const BASELINE_PATH = resolve(ROOT, 'docs/audits/sarif-baseline.json');
+const BASELINE_PATH = process.env.SARIF_BASELINE_PATH
+  ? resolve(process.env.SARIF_BASELINE_PATH)
+  : resolve(ROOT, 'docs/audits/sarif-baseline.json');
 const REGISTER_PATH = resolve(ROOT, 'docs/audits/register.yml');
 
 // 1. Verify and parse register.yml without external dependencies

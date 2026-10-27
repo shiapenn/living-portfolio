@@ -95,54 +95,49 @@ describe('CodeQL SARIF Gate Conformance (Instructions 1 & 2)', () => {
 
   it('passes when a SARIF alert matches a valid baselined rule citing an approved register finding', () => {
     // S1 is a valid register finding in docs/audits/register.yml
-    const customBaselinePath = resolve(ROOT, 'docs/audits/sarif-baseline.json');
-    const originalBaseline = JSON.parse(readFileSyncCustom(customBaselinePath));
+    const customBaselinePath = join(tempDir, 'test-sarif-baseline.json');
 
-    try {
-      // Temporarily add a baselined rule mapping to S1
-      const testBaseline = {
-        baselined_alerts: [
-          {
-            rule_id: 'js/tested-baselined-rule',
-            register_finding: 'S1',
-            file: 'apps/api/src/app.ts',
-            justification: 'Approved baseline finding S1 mapping',
-          },
-        ],
-      };
-      writeFileSync(customBaselinePath, JSON.stringify(testBaseline, null, 2), 'utf8');
+    // Add a baselined rule mapping to S1 in isolated temp file
+    const testBaseline = {
+      baselined_alerts: [
+        {
+          rule_id: 'js/tested-baselined-rule',
+          register_finding: 'S1',
+          file: 'apps/api/src/app.ts',
+          justification: 'Approved baseline finding S1 mapping',
+        },
+      ],
+    };
+    writeFileSync(customBaselinePath, JSON.stringify(testBaseline, null, 2), 'utf8');
 
-      const baselinedSarif = {
-        version: '2.1.0',
-        runs: [
-          {
-            tool: { driver: { name: 'CodeQL' } },
-            results: [
-              {
-                ruleId: 'js/tested-baselined-rule',
-                message: { text: 'Expected baselined alert' },
-                locations: [
-                  {
-                    physicalLocation: {
-                      artifactLocation: { uri: 'apps/api/src/app.ts' },
-                    },
+    const baselinedSarif = {
+      version: '2.1.0',
+      runs: [
+        {
+          tool: { driver: { name: 'CodeQL' } },
+          results: [
+            {
+              ruleId: 'js/tested-baselined-rule',
+              message: { text: 'Expected baselined alert' },
+              locations: [
+                {
+                  physicalLocation: {
+                    artifactLocation: { uri: 'apps/api/src/app.ts' },
                   },
-                ],
-              },
-            ],
-          },
-        ],
-      };
-      const sarifPath = join(tempDir, 'clean.sarif');
-      writeFileSync(sarifPath, JSON.stringify(baselinedSarif, null, 2), 'utf8');
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const sarifPath = join(tempDir, 'clean.sarif');
+    writeFileSync(sarifPath, JSON.stringify(baselinedSarif, null, 2), 'utf8');
 
-      const result = runSarifGate([sarifPath]);
-      expect(result.status).toBe(0);
-      expect(result.stdout).toContain('Alerts parsed from SARIF: total = 1, baselined = 1, unbaselined = 0');
-      expect(result.stdout).toContain('Gate PASSED');
-    } finally {
-      writeFileSync(customBaselinePath, JSON.stringify(originalBaseline, null, 2), 'utf8');
-    }
+    const result = runSarifGate([sarifPath], { SARIF_BASELINE_PATH: customBaselinePath });
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('Alerts parsed from SARIF: total = 1, baselined = 1, unbaselined = 0');
+    expect(result.stdout).toContain('Gate PASSED');
   });
 });
 

@@ -26,19 +26,19 @@ if (config.SEED_DEMO) {
 
 // Mount Strata Public Site & 3-Pane Admin Workspace UI routes
 app.get('/home', async (c) => c.html(await renderHomePage(repo)));
-app.get('/work', async (c) => c.html(await renderWorkOrWritingPage(repo, 'work', c.req.query('outcome'))));
+app.get('/work', async (c) => c.html(await renderWorkOrWritingPage(repo, 'work', c.req.query('outcome'), c.req.query('as_of'))));
 app.get('/work/:slug', async (c) => {
-  const res = await renderEntryDetailPage(repo, c.req.param('slug'), c.req.query('view'));
+  const res = await renderEntryDetailPage(repo, c.req.param('slug'), c.req.query('view'), c.req.query('as_of'));
   return c.html(res.html, res.status as any);
 });
-app.get('/writing', async (c) => c.html(await renderWorkOrWritingPage(repo, 'writing')));
+app.get('/writing', async (c) => c.html(await renderWorkOrWritingPage(repo, 'writing', undefined, c.req.query('as_of'))));
 app.get('/writing/:slug', async (c) => {
-  const res = await renderEntryDetailPage(repo, c.req.param('slug'), 'article');
+  const res = await renderEntryDetailPage(repo, c.req.param('slug'), 'article', c.req.query('as_of'));
   return c.html(res.html, res.status as any);
 });
 app.get('/build', async (c) => c.html(await renderBuildPage(repo)));
 app.get('/timeline', async (c) => c.html(await renderTimelinePage(repo, c.req.query('as_of'))));
-app.get('/ask', async (c) => c.html(await renderAskPage(c.req.query('q'), c.req.query('scope'))));
+app.get('/ask', async (c) => c.html(await renderAskPage(c.req.query('q'), c.req.query('scope'), c.req.query('as_of'))));
 app.get('/now', (c) => c.html(renderStaticPage('now')));
 app.get('/about', (c) => c.html(renderStaticPage('about')));
 app.get('/uses', (c) => c.html(renderStaticPage('uses')));

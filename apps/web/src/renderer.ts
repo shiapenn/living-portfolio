@@ -135,15 +135,35 @@ function renderLayout(title: string, activePath: string, mainContentHtml: string
 </html>`;
 }
 
+export interface AsOfDateInfo {
+  date: Date;
+  valid: boolean;
+  raw: string;
+}
+
+export function parseAsOfDate(asOfParam?: string | null): AsOfDateInfo | null {
+  if (!asOfParam || typeof asOfParam !== 'string') return null;
+  const trimmed = asOfParam.trim();
+  if (!trimmed) return null;
+  const isDateOnly = /^\d{4}-\d{2}-\d{2}$/.test(trimmed);
+  const dateStr = isDateOnly ? `${trimmed}T23:59:59.999Z` : trimmed;
+  const parsed = new Date(dateStr);
+  if (isNaN(parsed.getTime())) {
+    return { date: new Date(), valid: false, raw: trimmed };
+  }
+  return { date: parsed, valid: true, raw: trimmed };
+}
+
 export async function renderStrataTimelineSection(
   repo: IPortfolioRepository,
   asOfParam?: string | null
 ): Promise<{ html: string; visibleSlugs: Set<string> | null }> {
   const entries = await repo.listEntries({ visibility: ['public'] });
   const buckets: Record<string, { yearMonth: string; count: number; titles: string[]; slugs: string[]; profiles: string[] }> = {};
+  const asOfInfo = parseAsOfDate(asOfParam);
   let visibleSlugs: Set<string> | null = null;
 
-  if (asOfParam) {
+  if (asOfInfo && asOfInfo.valid) {
     visibleSlugs = new Set<string>();
   }
 
@@ -162,32 +182,48 @@ export async function renderStrataTimelineSection(
     buckets[ym].slugs.push(entry.slug);
     buckets[ym].profiles.push(entry.profile);
 
-    if (asOfParam && visibleSlugs) {
-      const check = isTemporallyValid(rev, new Date(asOfParam));
+    if (asOfInfo && asOfInfo.valid && visibleSlugs) {
+      const check = isTemporallyValid(rev, asOfInfo.date);
       if (check.valid) visibleSlugs.add(entry.slug);
     }
   }
 
   const sorted = Object.values(buckets).sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
 
-  const asOfBanner = asOfParam
-    ? `<div class="as-of-banner" role="status">
-         <span><strong>Viewing as of ${escapeHtml(asOfParam.slice(0, 7))}</strong> — Later entries and hindsight retrospectives written after this date are excluded.</span>
+  let asOfBanner = '';
+  if (asOfInfo) {
+    if (asOfInfo.valid) {
+      asOfBanner = `<div class="as-of-banner" role="status">
+         <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 7))}</strong> — Later entries and hindsight retrospectives written after this date are excluded.</span>
          <a href="/timeline">Reset to present</a>
-       </div>`
-    : '';
+       </div>`;
+    } else {
+      asOfBanner = `<div class="as-of-banner" role="alert" style="border-left-color:var(--role-challenge,#f59e0b);background:var(--surface-raised)">
+         <span><strong>Invalid as-of date ("${escapeHtml(asOfInfo.raw)}")</strong> — Showing records as of present.</span>
+         <a href="/timeline">Reset to present</a>
+       </div>`;
+    }
+  }
 
   const bandsHtml = sorted
     .map((b) => {
       const heightPx = Math.min(110, 44 + b.count * 24);
-      const dimmed = asOfParam ? b.yearMonth > asOfParam.slice(0, 7) : false;
-      return `<button type="button" class="strata-band" style="height:${heightPx}px" data-ym="${b.yearMonth}" data-slug="${b.slugs[0]}" data-dimmed="${dimmed}" onclick="window.location.href='/timeline?as_of=${b.yearMonth}-28T23:59:59Z'" aria-label="${b.yearMonth}: ${b.count} entries (${b.profiles.join(', ')})">
+      const dimmed = asOfInfo && asOfInfo.valid ? b.yearMonth > asOfInfo.raw.slice(0, 7) : false;
+      const [yearStr, monthStr] = b.yearMonth.split('-');
+      const year = parseInt(yearStr, 10);
+      const month = parseInt(monthStr, 10);
+      const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+      const padDay = String(lastDay).padStart(2, '0');
+      const bandAsOf = `${b.yearMonth}-${padDay}T23:59:59Z`;
+
+      return `<button type="button" class="strata-band" style="height:${heightPx}px" data-ym="${b.yearMonth}" data-slug="${b.slugs[0]}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" onclick="window.location.href='/timeline?as_of=${bandAsOf}'" aria-label="${b.yearMonth}: ${b.count} entries (${b.profiles.join(', ')})">
         <div style="font-weight:700;font-size:13px">${b.yearMonth}</div>
         <div style="font-size:12px;color:var(--text-muted)">${b.count} layer${b.count > 1 ? 's' : ''}</div>
       </button>`;
     })
     .join('\n      ');
 
+  const asOfQuery = asOfInfo && asOfInfo.valid ? `?as_of=${encodeURIComponent(asOfInfo.raw)}` : '';
   const textListHtml = sorted
     .map((b) => {
       const visibleIndices = b.slugs
@@ -195,11 +231,14 @@ export async function renderStrataTimelineSection(
         .filter((idx) => idx !== -1);
       if (visibleIndices.length === 0) return '';
       return `<li><strong>${b.yearMonth}</strong> (${visibleIndices.length}): ${visibleIndices
-        .map((i) => `<a href="/work/${b.slugs[i]}">${escapeHtml(b.titles[i])}</a>`)
+        .map((i) => `<a href="/work/${b.slugs[i]}${asOfQuery}">${escapeHtml(b.titles[i])}</a>`)
         .join(', ')}</li>`;
     })
     .filter(Boolean)
     .join('\n        ');
+
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const defaultInputValue = asOfInfo && asOfInfo.valid ? asOfInfo.raw.slice(0, 10) : todayIso;
 
   const html = `<section class="strata-section" aria-labelledby="strata-heading">
     <div class="strata-header">
@@ -209,7 +248,7 @@ export async function renderStrataTimelineSection(
       </div>
       <form method="GET" action="/timeline" style="display:flex;gap:8px;align-items:center">
         <label for="as-of-input" style="font-size:14px">Time-travel as of:</label>
-        <input id="as-of-input" name="as_of" type="date" value="${asOfParam ? escapeHtml(asOfParam.slice(0, 10)) : '2026-10-19'}" class="ask-input" style="padding:4px 8px;width:auto" />
+        <input id="as-of-input" name="as_of" type="date" value="${escapeHtml(defaultInputValue)}" class="ask-input" style="padding:4px 8px;width:auto" />
         <button type="submit" class="btn btn-secondary" style="min-height:34px;padding:4px 12px">Apply</button>
       </form>
     </div>
@@ -229,6 +268,38 @@ export async function renderStrataTimelineSection(
         ${textListHtml}
       </ul>
     </details>
+    <script>
+      (function() {
+        const bands = Array.from(document.querySelectorAll('.strata-band'));
+        if (bands.length === 0) return;
+        bands.forEach(function(band, idx) {
+          band.addEventListener('keydown', function(e) {
+            let targetIdx = -1;
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+              targetIdx = Math.min(bands.length - 1, idx + 1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+              targetIdx = Math.max(0, idx - 1);
+            } else if (e.key === 'Home') {
+              targetIdx = 0;
+            } else if (e.key === 'End') {
+              targetIdx = bands.length - 1;
+            } else if (e.key === 'PageUp') {
+              targetIdx = Math.max(0, idx - 3);
+            } else if (e.key === 'PageDown') {
+              targetIdx = Math.min(bands.length - 1, idx + 3);
+            } else if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              band.click();
+              return;
+            }
+            if (targetIdx !== -1 && targetIdx !== idx) {
+              e.preventDefault();
+              bands[targetIdx].focus();
+            }
+          });
+        });
+      })();
+    </script>
   </section>`;
 
   return { html, visibleSlugs };
@@ -312,7 +383,8 @@ export async function renderHomePage(repo: IPortfolioRepository): Promise<string
 export async function renderEntryDetailPage(
   repo: IPortfolioRepository,
   slug: string,
-  requestedView?: string
+  requestedView?: string,
+  asOfParam?: string | null
 ): Promise<{ status: number; html: string }> {
   const result = await repo.getEntryBySlug(slug);
   if (!result || !result.currentRevision || result.entry.visibility === 'private') {
@@ -322,7 +394,32 @@ export async function renderEntryDetailPage(
     };
   }
 
-  const { entry, currentRevision: rev } = result;
+  const { entry } = result;
+  const asOfInfo = parseAsOfDate(asOfParam);
+  let rev = result.currentRevision;
+  let isHistoricalRevision = false;
+  let notYetWritten = false;
+
+  if (asOfInfo && asOfInfo.valid) {
+    const allRevs = await repo.getRevisions(entry.id);
+    const validRevs = allRevs
+      .filter((r) => isTemporallyValid(r, asOfInfo.date).valid)
+      .sort((a, b) => {
+        const da = new Date(a.valid_from || a.written_at).getTime();
+        const db = new Date(b.valid_from || b.written_at).getTime();
+        return db - da;
+      });
+
+    if (validRevs.length > 0) {
+      rev = validRevs[0];
+      if (rev.id !== result.currentRevision.id) {
+        isHistoricalRevision = true;
+      }
+    } else {
+      notYetWritten = true;
+    }
+  }
+
   const profile = getProfile(entry.profile);
   const [spans, facets, claims, evidence, annotations, acceptedRelations] = await Promise.all([
     repo.getSpans(rev.id),
@@ -350,6 +447,9 @@ export async function renderEntryDetailPage(
          </div>`
       : '';
 
+  const asOfQueryPart = asOfInfo && asOfInfo.valid ? `?as_of=${encodeURIComponent(asOfInfo.raw)}` : '';
+  const asOfAndPart = asOfInfo && asOfInfo.valid ? `&as_of=${encodeURIComponent(asOfInfo.raw)}` : '';
+
   // §5.3 Later-thinking banner when an accepted relation supersedes or contradicts a claim here
   const laterAlerts = detectLaterThinking(
     claims.map((c) => ({ ...c, entry_id: entry.id, entry_slug: entry.slug })),
@@ -359,7 +459,7 @@ export async function renderEntryDetailPage(
     .map(
       (a) => `<div class="later-thinking-banner" role="note">
         <strong>${escapeHtml(a.message)}</strong>
-        <a href="/work/${a.newer_entry_slug}" style="margin-left:8px">Read "${escapeHtml(a.newer_entry_title)}" →</a>
+        <a href="/work/${a.newer_entry_slug}${asOfQueryPart}" style="margin-left:8px">Read "${escapeHtml(a.newer_entry_title)}" →</a>
       </div>`
     )
     .join('\n');
@@ -434,8 +534,35 @@ export async function renderEntryDetailPage(
           .join('\n')
       : '';
 
+  let asOfBannerHtml = '';
+  if (asOfInfo) {
+    if (!asOfInfo.valid) {
+      asOfBannerHtml = `<div class="as-of-banner" role="alert" style="position:sticky;top:0;z-index:10;margin-bottom:16px;border-left-color:var(--role-challenge,#f59e0b);background:var(--surface-raised)">
+        <span><strong>Invalid as-of date ("${escapeHtml(asOfInfo.raw)}")</strong> — Showing present revision.</span>
+        <a href="/work/${entry.slug}">Reset to present</a>
+      </div>`;
+    } else if (notYetWritten) {
+      asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index:10;margin-bottom:16px;background:var(--surface-raised);border-left:4px solid var(--accent)">
+        <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}</strong> — This entry had not yet been recorded as of this date. Showing original revision from ${escapeHtml(result.currentRevision.written_at.slice(0, 10))}.</span>
+        <div style="display:flex;gap:12px;margin-top:4px">
+          <a href="/work/${entry.slug}">View present revision</a>
+          <a href="/timeline?as_of=${encodeURIComponent(asOfInfo.raw)}">Back to timeline</a>
+        </div>
+      </div>`;
+    } else {
+      asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index:10;margin-bottom:16px;background:var(--surface-raised);border-left:4px solid var(--accent)">
+        <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}</strong> — Showing the revision active as of this date${isHistoricalRevision ? ' (historical revision)' : ' (latest revision)'}.</span>
+        <div style="display:flex;gap:12px;margin-top:4px">
+          <a href="/work/${entry.slug}">View present revision</a>
+          <a href="/timeline?as_of=${encodeURIComponent(asOfInfo.raw)}">Back to timeline</a>
+        </div>
+      </div>`;
+    }
+  }
+
   const content = `
     <article>
+      ${asOfBannerHtml}
       <header style="margin-bottom:24px;border-bottom:1px solid var(--rule);padding-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px">
           <h1 style="font-family:var(--font-reading);font-size:30px;margin:0">${escapeHtml(entry.title)}</h1>
@@ -443,7 +570,7 @@ export async function renderEntryDetailPage(
             <span class="chip">Structure: ${structureLevel}</span>
             ${
               qualifiesForStructured
-                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}" class="btn btn-secondary" style="padding:4px 10px;min-height:30px;font-size:13px;text-decoration:none">Switch to ${activeView === 'structured' ? 'Article' : 'Structured'} view</a>`
+                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}${asOfAndPart}" class="btn btn-secondary" style="padding:4px 10px;min-height:30px;font-size:13px;text-decoration:none">Switch to ${activeView === 'structured' ? 'Article' : 'Structured'} view</a>`
                 : ''
             }
           </div>
@@ -468,6 +595,7 @@ export async function renderEntryDetailPage(
             <h3 style="margin:0 0 8px;font-size:15px">Ask about this entry</h3>
             <form action="/ask" method="GET">
               <input type="hidden" name="scope" value="${escapeHtml(entry.slug)}" />
+              ${asOfInfo && asOfInfo.valid ? `<input type="hidden" name="as_of" value="${escapeHtml(asOfInfo.raw)}" />` : ''}
               <input type="text" name="q" class="ask-input" style="width:100%;margin-bottom:8px" placeholder="Question about this entry..." aria-label="Ask about this entry" required />
               <button type="submit" class="btn" style="width:100%">Ask scoped record</button>
             </form>
@@ -483,8 +611,10 @@ export async function renderEntryDetailPage(
 export async function renderWorkOrWritingPage(
   repo: IPortfolioRepository,
   mode: 'work' | 'writing',
-  filterOutcome?: string
+  filterOutcome?: string,
+  asOfParam?: string | null
 ): Promise<string> {
+  const asOfInfo = parseAsOfDate(asOfParam);
   const entries = await repo.listEntries({ visibility: ['public'] });
   const rows: string[] = [];
 
@@ -492,7 +622,21 @@ export async function renderWorkOrWritingPage(
     if (mode === 'work' && entry.profile === 'freeform') continue;
     const full = await repo.getEntry(entry.id);
     if (!full || !full.currentRevision) continue;
-    const rev = full.currentRevision;
+    let rev = full.currentRevision;
+
+    if (asOfInfo && asOfInfo.valid) {
+      const allRevs = await repo.getRevisions(entry.id);
+      const validRevs = allRevs
+        .filter((r) => isTemporallyValid(r, asOfInfo.date).valid)
+        .sort((a, b) => {
+          const da = new Date(a.valid_from || a.written_at).getTime();
+          const db = new Date(b.valid_from || b.written_at).getTime();
+          return db - da;
+        });
+      if (validRevs.length === 0) continue;
+      rev = validRevs[0];
+    }
+
     const [facets, annotations, claims] = await Promise.all([
       repo.getFacetsForEntry(entry.id),
       repo.listAnnotationsForRevision(rev.id),
@@ -516,9 +660,11 @@ export async function renderWorkOrWritingPage(
       .map((f) => `<span class="chip">${escapeHtml(f.key)}: ${escapeHtml(String(f.value))}</span>`)
       .join(' ');
 
+    const asOfQuery = asOfInfo && asOfInfo.valid ? `?as_of=${encodeURIComponent(asOfInfo.raw)}` : '';
+
     rows.push(`<li class="entry-row">
       <div class="entry-row-top">
-        <a href="/work/${entry.slug}" class="entry-title-link">${escapeHtml(entry.title)}</a>
+        <a href="/work/${entry.slug}${asOfQuery}" class="entry-title-link">${escapeHtml(entry.title)}</a>
         <div class="entry-meta">
           <time datetime="${dateLabel}">${dateLabel}</time>
           <span class="chip">${level} · ${escapeHtml(entry.profile)}</span>
@@ -529,16 +675,26 @@ export async function renderWorkOrWritingPage(
   }
 
   const title = mode === 'work' ? 'Work & Case Studies' : 'Writing & Chronological Log';
+  const asOfParamQuery = asOfInfo && asOfInfo.valid ? `&as_of=${encodeURIComponent(asOfInfo.raw)}` : '';
+  const asOfPrefixQuery = asOfInfo && asOfInfo.valid ? `?as_of=${encodeURIComponent(asOfInfo.raw)}` : '';
+
   const filterBar =
     mode === 'work'
       ? `<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
           <span style="font-size:14px;color:var(--text-muted)">Filter by outcome:</span>
-          <a href="/work" class="chip">All</a>
-          <a href="/work?outcome=worked" class="chip">Worked</a>
-          <a href="/work?outcome=partly" class="chip">Worked partly</a>
-          <a href="/work?outcome=failed" class="chip">What didn't work (Failed)</a>
+          <a href="/work${asOfPrefixQuery}" class="chip">All</a>
+          <a href="/work?outcome=worked${asOfParamQuery}" class="chip">Worked</a>
+          <a href="/work?outcome=partly${asOfParamQuery}" class="chip">Worked partly</a>
+          <a href="/work?outcome=failed${asOfParamQuery}" class="chip">What didn't work (Failed)</a>
         </div>`
       : '';
+
+  const asOfBanner = asOfInfo && asOfInfo.valid
+    ? `<div class="as-of-banner" role="status" style="margin-bottom:16px">
+         <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}</strong> — Entries written after this date are excluded.</span>
+         <a href="${mode === 'work' ? '/work' : '/writing'}">Reset to present</a>
+       </div>`
+    : '';
 
   const content = `
     <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">${title}</h1>
@@ -546,6 +702,7 @@ export async function renderWorkOrWritingPage(
       ${mode === 'work' ? 'Structured case studies, architecture decisions, and design projects with verified evidence.' : 'All public entries ordered chronologically.'}
     </p>
     ${filterBar}
+    ${asOfBanner}
     <ul class="entry-list">
       ${rows.length > 0 ? rows.join('\n') : '<li class="entry-row">No matching entries found.</li>'}
     </ul>
@@ -597,22 +754,38 @@ export async function renderTimelinePage(
   repo: IPortfolioRepository,
   asOfParam?: string | null
 ): Promise<string> {
+  const asOfInfo = parseAsOfDate(asOfParam);
   const { html: strataHtml, visibleSlugs } = await renderStrataTimelineSection(repo, asOfParam);
   const allPublic = await repo.listEntries({ visibility: ['public'] });
 
   const filtered = visibleSlugs ? allPublic.filter((e) => visibleSlugs.has(e.slug)) : allPublic;
   const excludedCount = allPublic.length - filtered.length;
+  const asOfQuery = asOfInfo && asOfInfo.valid ? `?as_of=${encodeURIComponent(asOfInfo.raw)}` : '';
 
-  const listHtml = filtered
-    .map(
-      (e) => `<li class="entry-row">
-        <div class="entry-row-top">
-          <a href="/work/${e.slug}" class="entry-title-link">${escapeHtml(e.title)}</a>
-          <span class="chip">${escapeHtml(e.profile)}</span>
-        </div>
-      </li>`
-    )
-    .join('\n');
+  let listContentHtml = '';
+  if (filtered.length === 0) {
+    listContentHtml = `
+      <div class="empty-state" style="padding:32px;text-align:center;border:1px dashed var(--rule);border-radius:var(--radius-card);margin-top:16px">
+        <p style="font-size:16px;font-weight:600;margin:0 0 8px 0">No records active as of this date</p>
+        <p style="color:var(--text-muted);margin:0 0 16px 0">All published entries were recorded after this point in time, or retrospective hindsight has been filtered out.</p>
+        <a href="/timeline" class="btn btn-secondary">Reset to present</a>
+      </div>
+    `;
+  } else {
+    const listHtml = filtered
+      .map(
+        (e) => `<li class="entry-row">
+          <div class="entry-row-top">
+            <a href="/work/${e.slug}${asOfQuery}" class="entry-title-link">${escapeHtml(e.title)}</a>
+            <span class="chip">${escapeHtml(e.profile)}</span>
+          </div>
+        </li>`
+      )
+      .join('\n');
+    listContentHtml = `<ul class="entry-list">${listHtml}</ul>`;
+  }
+
+  const activeDateLabel = asOfInfo && asOfInfo.valid ? `as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}` : 'at present';
 
   const content = `
     <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Time-Travel Knowledge Graph</h1>
@@ -622,11 +795,9 @@ export async function renderTimelinePage(
     ${strataHtml}
     <section>
       <h2 style="font-family:var(--font-reading);font-size:21px;margin:0 0 12px 0">
-        Records active ${asOfParam ? `as of ${escapeHtml(asOfParam.slice(0, 10))}` : 'at present'} (${filtered.length} visible${excludedCount > 0 ? `, ${excludedCount} future/hindsight excluded` : ''})
+        Records active ${activeDateLabel} (${filtered.length} visible${excludedCount > 0 ? `, ${excludedCount} future/hindsight excluded` : ''})
       </h2>
-      <ul class="entry-list">
-        ${listHtml}
-      </ul>
+      ${listContentHtml}
     </section>
   `;
 
@@ -635,8 +806,20 @@ export async function renderTimelinePage(
 
 export async function renderAskPage(
   initialQuery?: string,
-  scopeSlug?: string
+  scopeSlug?: string,
+  asOfParam?: string | null
 ): Promise<string> {
+  const asOfInfo = parseAsOfDate(asOfParam);
+  const hasValidAsOf = asOfInfo && asOfInfo.valid;
+  const initialAsOfDate = hasValidAsOf ? asOfInfo.raw.slice(0, 10) : '';
+
+  const asOfNoticeHtml = hasValidAsOf
+    ? `<div class="as-of-banner" role="status" style="margin-bottom:12px;font-size:13px">
+        <span><strong>Time-travel query active:</strong> Synthesizing answer strictly from records known as of <strong>${escapeHtml(initialAsOfDate)}</strong>.</span>
+        <a href="/ask${scopeSlug ? `?scope=${encodeURIComponent(scopeSlug)}` : ''}">Reset to present</a>
+      </div>`
+    : '';
+
   const content = `
     <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Ask the Portfolio</h1>
     <p style="color:var(--text-muted);margin:0 0 24px 0;max-width:65ch">
@@ -645,6 +828,7 @@ export async function renderAskPage(
 
     <div class="ask-box" style="margin-top:0">
       ${scopeSlug ? `<div id="scope-chip-container" style="margin-bottom:12px"><span class="chip">Scope: <strong>${escapeHtml(scopeSlug)}</strong> <button type="button" id="btn-clear-scope" style="background:none;border:none;cursor:pointer;padding:0 4px;font-weight:700" title="Clear scope">×</button></span></div>` : ''}
+      ${asOfNoticeHtml}
       <form id="ask-form">
         <label for="ask-q" style="font-weight:600;display:block;margin-bottom:6px">Your question</label>
         <div class="ask-input-row" style="margin-top:0">
@@ -652,7 +836,7 @@ export async function renderAskPage(
           <button type="submit" class="btn" id="btn-ask-submit">Ask</button>
         </div>
 
-        <details style="margin-top:16px" ${initialQuery?.toLowerCase().includes('should') ? 'open' : ''}>
+        <details style="margin-top:16px" ${initialQuery?.toLowerCase().includes('should') || hasValidAsOf ? 'open' : ''}>
           <summary style="cursor:pointer;font-size:14px;color:var(--text-muted)">Optional context facets (for advisory questions — skippable)</summary>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px">
             <div>
@@ -665,7 +849,7 @@ export async function renderAskPage(
             </div>
             <div>
               <label for="facet-asof" style="font-size:13px;display:block">Time-travel as of date</label>
-              <input id="facet-asof" type="date" class="ask-input" style="width:100%;padding:6px" />
+              <input id="facet-asof" type="date" class="ask-input" style="width:100%;padding:6px" value="${escapeHtml(initialAsOfDate)}" />
             </div>
           </div>
         </details>
