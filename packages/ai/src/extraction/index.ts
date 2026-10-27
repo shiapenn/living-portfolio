@@ -116,7 +116,7 @@ export function extractEntitiesMultiPass(
   const pass3Entities: RedactionPreviewItem[] = [];
 
   // Mask already-redacted tokens so they are not re-flagged (preserving exact character indices)
-  const scannableText = text.replace(/\[REDACTED(?::[^\]]*)?\]/gi, (m) => ' '.repeat(m.length));
+  const scannableText = text.replace(/\[REDACTED[^[\]]*\]/gi, (m) => ' '.repeat(m.length));
 
   // -------------------------------------------------------------
   // Pass 1: Credentials, Tokens & Secret Keys
