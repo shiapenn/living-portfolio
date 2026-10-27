@@ -392,5 +392,13 @@
     "path": "docs/handovers/H004-wp-3-gate-closure-and-wp-4-kickoff.md",
     "status": "active",
     "supersedes": "H003"
+  },
+  {
+    "id": "A028",
+    "title": "WP-4.1 Structure Review Loop and Import Planner",
+    "class": "A",
+    "path": "docs/execution-reports/A028-wp-41-structure-review-loop-and-import-planner.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
