@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server';
 import { loadConfig } from '@living-portfolio/config';
 import { seedDemoPortfolio } from '@living-portfolio/db';
 import {
+  renderAdminImportPage,
   renderAdminWorkspacePage,
   renderAskPage,
   renderBuildPage,
@@ -41,6 +42,7 @@ app.get('/about', (c) => c.html(renderStaticPage('about')));
 app.get('/uses', (c) => c.html(renderStaticPage('uses')));
 app.get('/book', (c) => c.html(renderStaticPage('book', c.req.query('q'))));
 app.get('/admin', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminWorkspacePage(repo)));
+app.get('/admin/import', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminImportPage(repo)));
 
 console.log(`Starting The Living Portfolio Server (Web + Admin + API) on port ${port}...`);
 

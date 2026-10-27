@@ -12,6 +12,7 @@ import {
 import { BudgetGovernor, MockModelProvider, OpenAICompatibleProvider, resolveConfiguredProviders, AnswerCache, type ModelProvider } from '@living-portfolio/ai';
 import { DEFAULT_STRATA_THEME } from '@living-portfolio/core';
 import {
+  renderAdminImportPage,
   renderAdminLoginPage,
   renderAdminSetupPage,
   renderAdminWorkspacePage,
@@ -231,6 +232,7 @@ export function createApp(
   });
   app.get('/admin/login', (c) => c.html(renderAdminLoginPage()));
   app.get('/admin', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminWorkspacePage(repo)));
+  app.get('/admin/import', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminImportPage(repo)));
 
   // Federation manifest (§17)
   app.get('/.well-known/living-portfolio.json', async (c) => {

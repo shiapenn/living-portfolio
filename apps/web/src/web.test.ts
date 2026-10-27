@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { InMemoryPortfolioRepository, seedDemoPortfolio } from '@living-portfolio/db';
 import {
+  renderAdminImportPage,
   renderAdminWorkspacePage,
   renderAskPage,
   renderBuildPage,
@@ -73,5 +74,106 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     expect(adminHtml).toContain('L0 Text');
     expect(adminHtml).toContain('L3 Claims');
     expect(adminHtml).toContain('chip-suggested');
+  });
+
+  it('renders Structure Inspector with 5 tabs, ARIA attributes, and interactive controls (20261020-UX-06)', async () => {
+    const adminHtml = await renderAdminWorkspacePage(repo);
+    // Tablist & tabs
+    expect(adminHtml).toContain('role="tablist"');
+    expect(adminHtml).toContain('id="tab-btn-structure"');
+    expect(adminHtml).toContain('id="tab-btn-context"');
+    expect(adminHtml).toContain('id="tab-btn-evidence"');
+    expect(adminHtml).toContain('id="tab-btn-answerability"');
+    expect(adminHtml).toContain('id="tab-btn-history"');
+
+    // Panels
+    expect(adminHtml).toContain('id="panel-structure"');
+    expect(adminHtml).toContain('id="panel-context"');
+    expect(adminHtml).toContain('id="panel-evidence"');
+    expect(adminHtml).toContain('id="panel-answerability"');
+    expect(adminHtml).toContain('id="panel-history"');
+
+    // Context & Evidence interactive forms
+    expect(adminHtml).toContain('id="btn-add-facet"');
+    expect(adminHtml).toContain('id="btn-attach-evidence"');
+    expect(adminHtml).toContain('Evidence verification confirms artifact authenticity but does not prove the narrative.');
+  });
+
+  it('renders Editor Modes with Guided Mode prompts and Quick Log capture (20261020-UX-07)', async () => {
+    const adminHtml = await renderAdminWorkspacePage(repo);
+    // Mode switcher buttons
+    expect(adminHtml).toContain('id="mode-btn-paste"');
+    expect(adminHtml).toContain('id="mode-btn-guided"');
+    expect(adminHtml).toContain('id="mode-btn-quick"');
+
+    // Guided mode panel
+    expect(adminHtml).toContain('id="editor-guided-panel"');
+    expect(adminHtml).toContain('id="guided-problem"');
+    expect(adminHtml).toContain('id="guided-approach"');
+    expect(adminHtml).toContain('id="guided-outcome"');
+    expect(adminHtml).toContain('id="guided-lesson"');
+    expect(adminHtml).toContain('id="guided-nothing-wrong"');
+    expect(adminHtml).toContain('id="btn-guided-compile"');
+
+    // Quick log panel
+    expect(adminHtml).toContain('id="editor-quick-panel"');
+    expect(adminHtml).toContain('id="quick-log-text"');
+    expect(adminHtml).toContain('id="btn-submit-quick-log"');
+
+    // First-run walkthrough card
+    expect(adminHtml).toContain('id="admin-walkthrough-card"');
+    expect(adminHtml).toContain('First-Run Authoring Walkthrough');
+  });
+
+  it('renders Import & Triage page with 3-step planner and J K A R D S keyboard controls (20261020-UX-07)', async () => {
+    const importHtml = await renderAdminImportPage(repo);
+    expect(importHtml).toContain('Import &amp; Triage');
+    expect(importHtml).toContain('class="triage-stepper"');
+    expect(importHtml).toContain('id="step-tab-add"');
+    expect(importHtml).toContain('id="step-tab-plan"');
+    expect(importHtml).toContain('id="step-tab-triage"');
+
+    // Add & Plan controls
+    expect(importHtml).toContain('id="import-paste-area"');
+    expect(importHtml).toContain('id="btn-generate-plan"');
+    expect(importHtml).toContain('id="plan-free-est"');
+    expect(importHtml).toContain('id="plan-paid-est"');
+
+    // Triage controls and keyboard legend
+    expect(importHtml).toContain('class="triage-keys-legend"');
+    expect(importHtml).toContain('>J<');
+    expect(importHtml).toContain('>K<');
+    expect(importHtml).toContain('>A<');
+    expect(importHtml).toContain('>R<');
+    expect(importHtml).toContain('>D<');
+    expect(importHtml).toContain('>S<');
+
+    expect(importHtml).toContain('id="btn-key-prev"');
+    expect(importHtml).toContain('id="btn-key-next"');
+    expect(importHtml).toContain('id="btn-key-accept"');
+    expect(importHtml).toContain('id="btn-key-reassign"');
+    expect(importHtml).toContain('id="btn-key-date"');
+    expect(importHtml).toContain('id="btn-key-skip"');
+    expect(importHtml).toContain('id="btn-commit-batch"');
+  });
+
+  it('renders Visitor Ask states with scope chip and robust error handling (20261020-CP-04, UX-10)', async () => {
+    const askHtml = await renderAskPage('What did you use?', 'advisory-locks-revisited');
+    expect(askHtml).toContain('id="btn-ask-submit"');
+    expect(askHtml).toContain('id="scope-chip-container"');
+    expect(askHtml).toContain('Scope: <strong>advisory-locks-revisited</strong>');
+    expect(askHtml).toContain('id="btn-clear-scope"');
+
+    // Script includes handling for needs_context and rate_limited
+    expect(askHtml).toContain('needs_context');
+    expect(askHtml).toContain('rate_limited');
+    expect(askHtml).toContain('Unable to reach server');
+    expect(askHtml).not.toContain('Origin unreachable');
+  });
+
+  it('renders skip link and home h1 heading for accessibility (20261020-UX-15)', async () => {
+    const homeHtml = await renderHomePage(repo);
+    expect(homeHtml).toContain('<a href="#main-content" class="skip-link">Skip to main content</a>');
+    expect(homeHtml).toContain('<h1 class="visually-hidden">');
   });
 });

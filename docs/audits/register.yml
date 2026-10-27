@@ -1696,7 +1696,7 @@
     - "12.5"
     - "12.8"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P0-6
   related_to:
@@ -1705,11 +1705,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/web/src/web.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-06 / P0-6; staged before G4)
+    - date: 2026-10-27
+      status: fixed
+      note: Implemented 5-tab structure review loop with interactive role annotations, context facet confirmation, and evidence attachment (WP-4.1). Backed by web.test.ts and Playwright E2E harness.
   verified_by: null
 - id: 20261020-UX-07
   audit: AUD-2026-10-20
@@ -1722,7 +1725,7 @@
     - "12.5"
     - "12.6"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P0-8
   related_to:
@@ -1736,11 +1739,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/web/src/web.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-07 / P0-8; staged before G4)
+    - date: 2026-10-27
+      status: fixed
+      note: Implemented first-run walkthrough, import planner and triage with J K A R D S keyboard UX, guided per-role authoring mode, and quick log endpoint (WP-4.1). Backed by web.test.ts and Playwright E2E harness.
   verified_by: null
 - id: 20261020-UX-08
   audit: AUD-2026-10-20
