@@ -1870,7 +1870,7 @@
     - "12.3"
     - "20"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P0-11
   related_to:
@@ -1883,11 +1883,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: tests/e2e/visitor-time-travel.spec.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-12 / P0-5; staged in G2 alpha inside OSR-13)
+    - date: 2026-10-27
+      status: fixed
+      note: "Remediated in WP-4.3: defaulted strata timeline date to today, dynamic month-end band calculations, keyboard navigation (Arrow keys, Enter), friendly invalid date alert banner, empty state on all-filtered timeline, and carried as_of context across timeline, work, entry detail (sticky as-of bar & historical revision lookup), and ask routes. Backed by web.test.ts and visitor-time-travel.spec.ts."
   verified_by: null
 - id: 20261020-UX-13
   audit: AUD-2026-10-20

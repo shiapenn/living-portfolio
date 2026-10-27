@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { InMemoryPortfolioRepository, seedDemoPortfolio } from '@living-portfolio/db';
 import {
+  parseAsOfDate,
   renderAdminImportPage,
   renderAdminWorkspacePage,
   renderAskPage,
@@ -275,5 +276,138 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     expect(adminHtml).toContain('btn-approve-escalation');
     expect(adminHtml).toContain('btn-reject-escalation');
     expect(adminHtml).toContain('client@startup.example');
+  });
+
+  describe('Time-Travel Correctness & Navigation Links (20261020-UX-12 / WP-4.3)', () => {
+    it('parseAsOfDate handles valid dates, invalid strings, and empty input', () => {
+      expect(parseAsOfDate(undefined)).toBeNull();
+      expect(parseAsOfDate('')).toBeNull();
+      expect(parseAsOfDate('   ')).toBeNull();
+
+      const valid = parseAsOfDate('2024-03-15');
+      expect(valid).not.toBeNull();
+      expect(valid!.valid).toBe(true);
+      expect(valid!.raw).toBe('2024-03-15');
+      expect(valid!.date.toISOString().slice(0, 10)).toBe('2024-03-15');
+
+      const invalid = parseAsOfDate('garbage-date');
+      expect(invalid).not.toBeNull();
+      expect(invalid!.valid).toBe(false);
+      expect(invalid!.raw).toBe('garbage-date');
+    });
+
+    it('defaults strata timeline date input to today and includes recent entries up to today', async () => {
+      const todayIso = new Date().toISOString().slice(0, 10);
+      const htmlDefault = await renderTimelinePage(repo);
+      expect(htmlDefault).toContain(`value="${todayIso}"`);
+
+      // Applying today's date should include recent entries up to today
+      const htmlToday = await renderTimelinePage(repo, todayIso);
+      expect(htmlToday).toContain('Records active as of');
+      expect(htmlToday).toContain('Advisory Locks, Revisited: Dropping Redis for Postgres 15');
+      expect(htmlToday).toContain('Local CPU Embeddings with ONNX Runtime on Arm64');
+    });
+
+    it('dynamically computes month-end dates and renders keyboard navigation listener', async () => {
+      const html = await renderTimelinePage(repo);
+      // Keyboard script present
+      expect(html).toContain("addEventListener('keydown'");
+      expect(html).toContain('ArrowRight');
+      expect(html).toContain('ArrowLeft');
+      expect(html).toContain('PageUp');
+      expect(html).toContain('PageDown');
+
+      // Month end dynamic check: 2024-03 has 31 days, not hardcoded 28
+      expect(html).toContain('2024-03-31T23:59:59Z');
+      expect(html).not.toContain('2024-03-28T23:59:59Z');
+    });
+
+    it('gracefully handles invalid as_of parameter with alert banner instead of crashing', async () => {
+      const html = await renderTimelinePage(repo, 'invalid-date-string');
+      expect(html).toContain('Invalid as-of date ("invalid-date-string")');
+      expect(html).toContain('Showing records as of present');
+      // Public entries are still shown as of present
+      expect(html).toContain('Advisory Locks, Revisited: Dropping Redis for Postgres 15');
+    });
+
+    it('renders informative empty state when all entries are filtered out', async () => {
+      // 2019 date is before any entries existed
+      const html = await renderTimelinePage(repo, '2019-01-01');
+      expect(html).toContain('No records active as of this date');
+      expect(html).toContain('All published entries were recorded after this point in time');
+      expect(html).toContain('Reset to present');
+      expect(html).not.toContain('class="entry-list"');
+    });
+
+    it('carries as_of parameter across timeline, work, entry detail, and ask links', async () => {
+      const asOf = '2022-06-01T00:00:00Z';
+      const encodedAsOf = encodeURIComponent(asOf);
+
+      // 1. Timeline list and text list links carry ?as_of=
+      const timelineHtml = await renderTimelinePage(repo, asOf);
+      expect(timelineHtml).toContain(`/work/redis-distributed-locks-2021?as_of=${encodedAsOf}`);
+
+      // 2. Work page carries as_of in entry links and outcome filters
+      const workHtml = await renderWorkOrWritingPage(repo, 'work', undefined, asOf);
+      expect(workHtml).toContain(`Viewing as of 2022-06-01`);
+      expect(workHtml).toContain(`/work/redis-distributed-locks-2021?as_of=${encodedAsOf}`);
+      expect(workHtml).toContain(`/work?as_of=${encodedAsOf}`);
+      expect(workHtml).toContain(`/work?outcome=worked&as_of=${encodedAsOf}`);
+
+      // 3. Entry detail carries as_of in sticky banner, switch view, and scoped ask form
+      const entryRes = await renderEntryDetailPage(repo, 'redis-distributed-locks-2021', undefined, asOf);
+      expect(entryRes.status).toBe(200);
+      expect(entryRes.html).toContain('Viewing as of 2022-06-01');
+      expect(entryRes.html).toContain(`<input type="hidden" name="as_of" value="${asOf}"`);
+      expect(entryRes.html).toContain(`/timeline?as_of=${encodedAsOf}`);
+
+      // 4. Ask page prefills facet-asof, opens details, and renders time-travel banner
+      const askHtml = await renderAskPage('How do locks work?', 'redis-distributed-locks-2021', asOf);
+      expect(askHtml).toContain('Time-travel query active:');
+      expect(askHtml).toContain('2022-06-01');
+      expect(askHtml).toContain('id="facet-asof" type="date" class="ask-input" style="width:100%;padding:6px" value="2022-06-01"');
+      expect(askHtml).toContain('<details style="margin-top:16px" open>');
+    });
+
+    it('serves historical revision active as of query date on entry detail page', async () => {
+      // Create an entry with two revisions: v1 in 2022, v2 in 2024
+      const created = await repo.createEntry(
+        {
+          slug: 'multi-rev-entry',
+          title: 'Multi Revision Entry',
+          profile: 'case_study',
+          view: 'article',
+          visibility: 'public',
+        },
+        {
+          body_md: 'Initial version 1 from 2022.',
+          body_hash: 'hash-v1',
+          written_at: '2022-01-10T10:00:00Z',
+          valid_from: '2022-01-10T10:00:00Z',
+          temporal_level: 'exact',
+          is_hindsight: false,
+        }
+      );
+
+      await repo.createRevision(created.entry.id, {
+        body_md: 'Updated version 2 from 2024 with later hindsight.',
+        body_hash: 'hash-v2',
+        written_at: '2024-05-20T10:00:00Z',
+        valid_from: '2024-05-20T10:00:00Z',
+        temporal_level: 'exact',
+        is_hindsight: false,
+      });
+
+      // Query present day
+      const resPresent = await renderEntryDetailPage(repo, 'multi-rev-entry');
+      expect(resPresent.html).toContain('Updated version 2 from 2024 with later hindsight.');
+      expect(resPresent.html).not.toContain('Initial version 1 from 2022.');
+
+      // Query as of 2023 (should see v1)
+      const res2023 = await renderEntryDetailPage(repo, 'multi-rev-entry', undefined, '2023-01-01');
+      expect(res2023.html).toContain('Initial version 1 from 2022.');
+      expect(res2023.html).not.toContain('Updated version 2 from 2024 with later hindsight.');
+      expect(res2023.html).toContain('(historical revision)');
+    });
   });
 });
