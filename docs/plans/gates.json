@@ -98,6 +98,27 @@
       ],
       "closingReceipt": "A030",
       "handover": "H005"
+    },
+    "WP-5": {
+      "name": "Work Package 5 (Phase 4 / v0.3 Admin Operations, Setup Wizard, Sub-route Mounting & Redaction)",
+      "description": "Admin operational controls & kill-switch synchronization, 6-step setup wizard & token revocation persistence, sub-route mounting in createApp(), and multi-pass redaction review drawer.",
+      "requiredTaskIds": [
+        "WP-5.1",
+        "WP-5.2",
+        "WP-5.3"
+      ],
+      "requiredPassingTests": [
+        "WP-5.1: Admin Settings, Kill-Switch Synchronization & Operational Controls (20261020-UX-09) › 1. Admin Settings page renders all setting cards, status indicators, and operation controls",
+        "WP-5.1: Admin Settings, Kill-Switch Synchronization & Operational Controls (20261020-UX-09) › 2. Kill-switch toggle updates server state and reflects dynamically in UI",
+        "WP-5.1: Admin Settings, Kill-Switch Synchronization & Operational Controls (20261020-UX-09) › 3. Honesty invariants: topology-conflict returns 501 card and scoped constraints can be confirmed/discarded",
+        "WP-5.2: First-Run 6-Step Setup Wizard, Login Throttling & Lockdown (20261020-UX-01) › 1. renderAdminSetupPage renders all 6 wizard steps, progress indicator, and walkthrough card",
+        "WP-5.2: First-Run 6-Step Setup Wizard, Login Throttling & Lockdown (20261020-UX-01) › 2. renderAdminLoginPage renders credentials form and handles 429 throttling message",
+        "Fix F1: subroutes mounted on createApp() and root content negotiation › public sub-routes and root content negotiation respond with 200 HTML",
+        "Multi-Pass Redaction Review Drawer (20261020-UX-03) › renderAdminWorkspacePage includes redaction review drawer markup and action controls",
+        "WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview Token E2E Suite › 3. UI redaction preview drawer displays multi-pass entities and applies interactive redactions (20261020-UX-03)"
+      ],
+      "closingReceipt": "A033",
+      "handover": "H006"
     }
   }
 }
