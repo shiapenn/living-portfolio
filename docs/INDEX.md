@@ -36,6 +36,7 @@
 | `A028` | WP-4.1 Structure Review Loop and Import Planner | `active` | [A028-wp-41-structure-review-loop-and-import-planner.md](execution-reports/A028-wp-41-structure-review-loop-and-import-planner.md) | — |
 | `A029` | WP-4.2 Visitor Escalation Loop and Booking System | `active` | [A029-wp-42-visitor-escalation-loop-and-booking-system.md](execution-reports/A029-wp-42-visitor-escalation-loop-and-booking-system.md) | — |
 | `A030` | WP-4.3 Time-Travel Correctness and Navigation Links | `active` | [A030-wp4-3-time-travel-correctness.md](execution-reports/A030-wp4-3-time-travel-correctness.md) | — |
+| `A031` | WP-5.1 Admin Operations and Kill-Switch Synchronization | `active` | [A031-wp5-1-admin-operations-and-killswitch.md](execution-reports/A031-wp5-1-admin-operations-and-killswitch.md) | — |
 
 ## Handover Snapshots (Class H)
 
