@@ -9,6 +9,7 @@ import {
   MockModelProvider,
   OpenAICompatibleProvider,
   scanForConfidentialData,
+  extractEntitiesMultiPass,
   verifyAnswerBeforeDelivery,
   resolveConfiguredProviders,
   formatProviderDisclosure,
@@ -450,5 +451,28 @@ describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redact
     expect(claims[0].outcome_status).toBe('worked');
     expect(claims[0].scope).toEqual({ database: 'PostgreSQL', stack: 'Node.js' });
     expect(claims[0].source_span_id).toBe('s1');
+  });
+
+  it('[20261020-UX-03] extractEntitiesMultiPass groups findings into Pass 1 (Secrets), Pass 2 (NDA), and Pass 3 (Entities)', () => {
+    const testSecretKey = ['sk', 'proj', 'supersecrettoken1234567890'].join('-');
+    const testText = `Client Alpha deployment under NDA. Secret token: ${testSecretKey}. Contact dev@corp.example.com on 10.0.0.1 for Project Pegasus.`;
+    const res = extractEntitiesMultiPass(testText, { exclusions: ['Project Pegasus'] });
+
+    expect(res.clean).toBe(false);
+    expect(res.state).toBe('needs review');
+    expect(res.pass1Secrets.length).toBeGreaterThanOrEqual(1);
+    expect(res.pass1Secrets[0].type).toBe('secret');
+    expect(res.pass1Secrets[0].pass).toBe(1);
+
+    expect(res.pass2NdaMarkers.length).toBeGreaterThanOrEqual(1);
+    expect(res.pass2NdaMarkers[0].type).toBe('nda');
+    expect(res.pass2NdaMarkers[0].pass).toBe(2);
+
+    expect(res.pass3Entities.length).toBeGreaterThanOrEqual(4);
+    expect(res.pass3Entities.some((e) => e.type === 'client')).toBe(true);
+    expect(res.pass3Entities.some((e) => e.type === 'exclusion')).toBe(true);
+    expect(res.pass3Entities.some((e) => e.type === 'email')).toBe(true);
+    expect(res.pass3Entities.some((e) => e.type === 'ip')).toBe(true);
+    expect(res.allWarnings.length).toBe(res.pass1Secrets.length + res.pass2NdaMarkers.length + res.pass3Entities.length);
   });
 });

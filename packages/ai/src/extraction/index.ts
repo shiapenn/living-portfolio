@@ -25,12 +25,22 @@ export interface ExtractedClaim {
   confidence: number;
 }
 
-export type RedactionItemType = 'secret' | 'email' | 'phone' | 'ip' | 'name' | 'nda' | 'client' | 'exclusion';
+export type RedactionItemType = 'secret' | 'email' | 'phone' | 'ip' | 'name' | 'nda' | 'client' | 'exclusion' | 'project';
 
 export interface RedactionPreviewItem {
   type: RedactionItemType;
   match: string;
   index: number;
+  pass?: 1 | 2 | 3;
+}
+
+export interface MultiPassScanResult {
+  pass1Secrets: RedactionPreviewItem[];
+  pass2NdaMarkers: RedactionPreviewItem[];
+  pass3Entities: RedactionPreviewItem[];
+  allWarnings: RedactionPreviewItem[];
+  clean: boolean;
+  state: 'clean' | 'needs review';
 }
 
 export interface ScanOptions {
@@ -91,48 +101,62 @@ export function getDefaultExclusions(customPath?: string): string[] {
 }
 
 /**
- * Local Redaction Preview (§4.3, §15, UX P0-3 / V3)
- * Runs locally before sending content to third-party model providers.
- * Catches API keys (including sk- keys), NDA markers, client names, emails, IPs, and owner-configured exclusions.
+ * Multi-Pass Entity Extraction Pipeline (§4.3, §15, 20261020-UX-03)
+ * Deconstructs redaction scanning into distinct passes:
+ * - Pass 1: Credentials, Tokens & Secrets (API keys, sk- keys, AWS tokens, JWTs, private keys)
+ * - Pass 2: NDA, Confidentiality & Restriction Markers
+ * - Pass 3: Named Entities, Project Codenames, Internal Hosts, IPs, Emails & Configured Exclusions
  */
-export function scanForConfidentialData(
+export function extractEntitiesMultiPass(
   text: string,
   options?: ScanOptions | string[]
-): RedactionPreviewItem[] {
-  const items: RedactionPreviewItem[] = [];
+): MultiPassScanResult {
+  const pass1Secrets: RedactionPreviewItem[] = [];
+  const pass2NdaMarkers: RedactionPreviewItem[] = [];
+  const pass3Entities: RedactionPreviewItem[] = [];
 
-  // API keys / tokens (generic bearer, OpenAI sk- keys, AWS, JWT patterns)
-  const tokenRegex = /(?:bearer\s+[a-zA-Z0-9_\-\.]{15,}|sk-[a-zA-Z0-9_\-]{10,}|AKIA[0-9A-Z]{16}|ey[a-zA-Z0-9_\-]{15,}\.[a-zA-Z0-9_\-]{15,})/gi;
+  // Mask already-redacted tokens so they are not re-flagged (preserving exact character indices)
+  const scannableText = text.replace(/\[REDACTED(?::\s*[^\]]*)?\]/gi, (m) => ' '.repeat(m.length));
+
+  // -------------------------------------------------------------
+  // Pass 1: Credentials, Tokens & Secret Keys
+  // -------------------------------------------------------------
+  const tokenRegex = /(?:bearer\s+[a-zA-Z0-9_\-\.]{15,}|sk-[a-zA-Z0-9_\-]{10,}|AKIA[0-9A-Z]{16}|ey[a-zA-Z0-9_\-]{15,}\.[a-zA-Z0-9_\-]{15,}|-----BEGIN[ A-Z0-9_-]*PRIVATE KEY-----)/gi;
   let match: RegExpExecArray | null;
-  while ((match = tokenRegex.exec(text)) !== null) {
-    items.push({ type: 'secret', match: match[0], index: match.index });
+  while ((match = tokenRegex.exec(scannableText)) !== null) {
+    pass1Secrets.push({ type: 'secret', match: text.slice(match.index, match.index + match[0].length), index: match.index, pass: 1 });
   }
 
-  // NDA / confidentiality markers
-  const ndaRegex = /\b(?:nda|non-disclosure|strictly\s+confidential|confidential(?:\s+under\s+nda)?)\b/gi;
-  while ((match = ndaRegex.exec(text)) !== null) {
-    items.push({ type: 'nda', match: match[0], index: match.index });
+  // -------------------------------------------------------------
+  // Pass 2: NDA & Confidentiality Markers
+  // -------------------------------------------------------------
+  const ndaRegex = /\b(?:nda|non-disclosure|strictly\s+confidential|confidential(?:\s+under\s+nda)?|proprietary|internal\s+only|not\s+for\s+distribution)\b/gi;
+  while ((match = ndaRegex.exec(scannableText)) !== null) {
+    pass2NdaMarkers.push({ type: 'nda', match: text.slice(match.index, match.index + match[0].length), index: match.index, pass: 2 });
   }
 
-  // Client names & client references (generic patterns without hardcoded client names)
-  const clientRegex = /\b(?:Client\s+[A-Z][a-zA-Z0-9_-]+|internal\s+client\s+[A-Z][a-zA-Z0-9_-]+)\b/gi;
-  while ((match = clientRegex.exec(text)) !== null) {
-    items.push({ type: 'client', match: match[0], index: match.index });
+  // -------------------------------------------------------------
+  // Pass 3: Entities, Project Names, Internal Hosts, IPs & Exclusions
+  // -------------------------------------------------------------
+  // Client references
+  const clientRegex = /\b(?:Client\s+[A-Z][a-zA-Z0-9_-]+|internal\s+client\s+[A-Z][a-zA-Z0-9_-]+|Customer\s+[A-Z][a-zA-Z0-9_-]+)\b/gi;
+  while ((match = clientRegex.exec(scannableText)) !== null) {
+    pass3Entities.push({ type: 'client', match: text.slice(match.index, match.index + match[0].length), index: match.index, pass: 3 });
   }
 
   // Emails
   const emailRegex = /\b[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9]{2,}\b/g;
-  while ((match = emailRegex.exec(text)) !== null) {
-    items.push({ type: 'email', match: match[0], index: match.index });
+  while ((match = emailRegex.exec(scannableText)) !== null) {
+    pass3Entities.push({ type: 'email', match: text.slice(match.index, match.index + match[0].length), index: match.index, pass: 3 });
   }
 
-  // IPv4 addresses
-  const ipRegex = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g;
-  while ((match = ipRegex.exec(text)) !== null) {
-    items.push({ type: 'ip', match: match[0], index: match.index });
+  // IPv4 addresses & internal domains
+  const ipRegex = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b|\b[a-zA-Z0-9_-]+\.(?:corp|internal|lan|local)\b/g;
+  while ((match = ipRegex.exec(scannableText)) !== null) {
+    pass3Entities.push({ type: 'ip', match: text.slice(match.index, match.index + match[0].length), index: match.index, pass: 3 });
   }
 
-  // Owner-configured exclusion list (from options, settings, or data file)
+  // Configured owner exclusion list
   const activeExclusions = Array.isArray(options)
     ? options
     : options?.exclusions ?? getDefaultExclusions(options?.exclusionsFilePath);
@@ -148,8 +172,8 @@ export function scanForConfidentialData(
     const regex = new RegExp(`${prefix}${escaped}${suffix}`, 'gi');
 
     let m: RegExpExecArray | null;
-    while ((m = regex.exec(text)) !== null) {
-      items.push({ type: 'exclusion', match: m[0].trim(), index: m.index });
+    while ((m = regex.exec(scannableText)) !== null) {
+      pass3Entities.push({ type: 'exclusion', match: text.slice(m.index, m.index + m[0].trim().length), index: m.index, pass: 3 });
     }
   }
 
@@ -159,13 +183,38 @@ export function scanForConfidentialData(
       const flags = pat.flags.includes('g') ? pat.flags : pat.flags + 'g';
       const regex = new RegExp(pat.source, flags);
       let m: RegExpExecArray | null;
-      while ((m = regex.exec(text)) !== null) {
-        items.push({ type: 'exclusion', match: m[0].trim(), index: m.index });
+      while ((m = regex.exec(scannableText)) !== null) {
+        pass3Entities.push({ type: 'exclusion', match: text.slice(m.index, m.index + m[0].trim().length), index: m.index, pass: 3 });
       }
     }
   }
 
-  return items;
+  // Consolidate and sort all warnings by position in text
+  const allWarnings = [...pass1Secrets, ...pass2NdaMarkers, ...pass3Entities].sort(
+    (a, b) => a.index - b.index
+  );
+
+  const clean = allWarnings.length === 0;
+  return {
+    pass1Secrets,
+    pass2NdaMarkers,
+    pass3Entities,
+    allWarnings,
+    clean,
+    state: clean ? 'clean' : 'needs review',
+  };
+}
+
+/**
+ * Local Redaction Preview (§4.3, §15, UX P0-3 / V3)
+ * Runs locally before sending content to third-party model providers.
+ * Catches API keys (including sk- keys), NDA markers, client names, emails, IPs, and owner-configured exclusions.
+ */
+export function scanForConfidentialData(
+  text: string,
+  options?: ScanOptions | string[]
+): RedactionPreviewItem[] {
+  return extractEntitiesMultiPass(text, options).allWarnings;
 }
 
 /**

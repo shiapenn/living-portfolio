@@ -150,4 +150,54 @@ test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview
     // Token is consumed/cleared after publication
     await expect(tokenInput).toHaveValue('');
   });
+
+  test('3. UI redaction preview drawer displays multi-pass entities and applies interactive redactions (20261020-UX-03)', async ({ page }) => {
+    await ensureAdminLoggedIn(page);
+    await expect(page).toHaveURL(/\/admin$/);
+
+    const redactBtn = page.locator('#btn-redaction-check');
+    const redactBox = page.locator('#redaction-preview-box');
+    const bodyInput = page.locator('#entry-body');
+    const drawer = page.locator('#redaction-preview-drawer');
+
+    // Fill body with credentials, NDA note, and client entity
+    const testSecretKey = ['sk', 'test', 'reviewdrawertoken12345'].join('-');
+    await bodyInput.fill(`Reviewing Client Phoenix contract under strict NDA with token ${testSecretKey}.`);
+
+    // Run preview check -> enters needs-review state
+    await redactBtn.click();
+    await expect(redactBox.locator('[data-state="needs-review"]')).toBeVisible();
+
+    // Review drawer button appears in banner
+    const openDrawerBtn = redactBox.locator('#btn-open-redaction-drawer');
+    await expect(openDrawerBtn).toBeVisible();
+
+    // Open review drawer
+    await openDrawerBtn.click();
+    await expect(drawer).toBeVisible();
+    await expect(drawer.locator('#redaction-drawer-title')).toContainText('Redaction Review Drawer');
+
+    // Check pass cards
+    await expect(drawer.locator('#drawer-count-pass1')).not.toContainText('0 found');
+    await expect(drawer.locator('#drawer-count-pass2')).not.toContainText('0 found');
+    await expect(drawer.locator('#drawer-count-pass3')).not.toContainText('0 found');
+
+    // Matched entity highlight preview is visible
+    await expect(drawer.locator('#drawer-highlight-preview mark')).toHaveCount(3);
+
+    // Click "Redact All Findings"
+    const redactAllBtn = drawer.locator('#btn-drawer-redact-all');
+    await redactAllBtn.click();
+
+    // Drawer closes and re-runs check
+    await expect(drawer).toBeHidden();
+    // Body is masked
+    const maskedBody = await bodyInput.inputValue();
+    expect(maskedBody).toContain('[REDACTED:');
+    expect(maskedBody).not.toContain(testSecretKey);
+
+    // Clean state reached
+    await expect(redactBox.locator('[data-state="clean"]')).toBeVisible();
+    await expect(redactBox).toContainText('No confidential secrets or NDA markers detected');
+  });
 });

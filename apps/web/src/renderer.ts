@@ -1734,6 +1734,54 @@ export async function renderAdminWorkspacePage(
             <span style="font-size:13px;color:var(--text-muted)">"Good enough" exit always active — structure never blocks publishing.</span>
           </div>
         </form>
+
+        <!-- UI Redaction Preview Drawer (§4.3, §15, 20261020-UX-03) -->
+        <aside id="redaction-preview-drawer" class="redaction-drawer" style="display:none;position:fixed;top:0;right:0;width:460px;max-width:92vw;height:100vh;background:var(--bg-base);box-shadow:-4px 0 24px rgba(0,0,0,0.18);border-left:1px solid var(--rule);z-index:9999;padding:24px;overflow-y:auto;box-sizing:border-box" role="dialog" aria-labelledby="redaction-drawer-title" aria-modal="true">
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:16px">
+            <h2 id="redaction-drawer-title" style="margin:0;font-size:18px">Redaction Review Drawer (§4.3)</h2>
+            <button type="button" class="btn btn-secondary" id="btn-close-redaction-drawer" style="padding:4px 8px">✕ Close</button>
+          </div>
+          <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px 0">
+            Multi-pass entity scanner detected sensitive patterns. Review matches by pass or mask them automatically before public publishing.
+          </p>
+
+          <div style="margin-bottom:16px">
+            <button type="button" class="btn btn-primary" id="btn-drawer-redact-all" style="width:100%;padding:10px">Redact All Findings</button>
+          </div>
+
+          <!-- Pass 1: Credentials & Secret Keys -->
+          <div style="margin-bottom:16px;border:1px solid var(--rule);border-radius:6px;padding:12px;background:var(--bg-subtle)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <strong style="font-size:13px">Pass 1: Credentials &amp; Secrets</strong>
+              <span id="drawer-count-pass1" class="chip" style="font-size:11px">0 found</span>
+            </div>
+            <div id="drawer-items-pass1" style="font-size:13px;color:var(--text-muted)">None detected.</div>
+          </div>
+
+          <!-- Pass 2: NDA & Confidentiality Markers -->
+          <div style="margin-bottom:16px;border:1px solid var(--rule);border-radius:6px;padding:12px;background:var(--bg-subtle)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <strong style="font-size:13px">Pass 2: NDA &amp; Restrictions</strong>
+              <span id="drawer-count-pass2" class="chip" style="font-size:11px">0 found</span>
+            </div>
+            <div id="drawer-items-pass2" style="font-size:13px;color:var(--text-muted)">None detected.</div>
+          </div>
+
+          <!-- Pass 3: Entities & Exclusions -->
+          <div style="margin-bottom:16px;border:1px solid var(--rule);border-radius:6px;padding:12px;background:var(--bg-subtle)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <strong style="font-size:13px">Pass 3: Entities, Project Names &amp; Exclusions</strong>
+              <span id="drawer-count-pass3" class="chip" style="font-size:11px">0 found</span>
+            </div>
+            <div id="drawer-items-pass3" style="font-size:13px;color:var(--text-muted)">None detected.</div>
+          </div>
+
+          <!-- Highlight Preview Pane -->
+          <div style="margin-top:16px">
+            <strong style="font-size:13px;display:block;margin-bottom:6px">Matched Entity Highlighting:</strong>
+            <div id="drawer-highlight-preview" style="font-family:var(--font-code);font-size:12px;padding:12px;background:var(--bg-subtle);border:1px solid var(--rule);border-radius:4px;white-space:pre-wrap;max-height:220px;overflow-y:auto"></div>
+          </div>
+        </aside>
       </section>
 
       <!-- Pane 3: Structure Inspector & Answerability Preview (§12.6, §15, 20261020-UX-06) -->
@@ -2525,6 +2573,100 @@ export async function renderAdminWorkspacePage(
             .replace(/"/g, '&quot;');
         }
 
+        function setupRedactionDrawer(warnings, fullText, multiPass) {
+          const drawerEl = document.getElementById('redaction-preview-drawer');
+          const openBtn = document.getElementById('btn-open-redaction-drawer');
+          const closeBtn = document.getElementById('btn-close-redaction-drawer');
+          const redactAllBtn = document.getElementById('btn-drawer-redact-all');
+          const countP1 = document.getElementById('drawer-count-pass1');
+          const countP2 = document.getElementById('drawer-count-pass2');
+          const countP3 = document.getElementById('drawer-count-pass3');
+          const itemsP1 = document.getElementById('drawer-items-pass1');
+          const itemsP2 = document.getElementById('drawer-items-pass2');
+          const itemsP3 = document.getElementById('drawer-items-pass3');
+          const highlightEl = document.getElementById('drawer-highlight-preview');
+
+          if (openBtn && drawerEl) {
+            openBtn.onclick = function() {
+              drawerEl.style.display = 'block';
+            };
+          }
+          if (closeBtn && drawerEl) {
+            closeBtn.onclick = function() {
+              drawerEl.style.display = 'none';
+            };
+          }
+
+          const pass1 = (multiPass && multiPass.pass1Secrets) || warnings.filter(function(w) { return w.type === 'secret'; });
+          const pass2 = (multiPass && multiPass.pass2NdaMarkers) || warnings.filter(function(w) { return w.type === 'nda'; });
+          const pass3 = (multiPass && multiPass.pass3Entities) || warnings.filter(function(w) { return w.type !== 'secret' && w.type !== 'nda'; });
+
+          if (countP1) countP1.textContent = pass1.length + ' found';
+          if (countP2) countP2.textContent = pass2.length + ' found';
+          if (countP3) countP3.textContent = pass3.length + ' found';
+
+          function renderGroupItems(group) {
+            if (group.length === 0) return '<div style="color:var(--text-muted)">None detected.</div>';
+            return group.map(function(item) {
+              return '<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid var(--rule)">' +
+                '<span><code>' + escapeClientHtml(item.match) + '</code> <small style="color:var(--text-muted)">(' + escapeClientHtml(item.type) + ')</small></span>' +
+                '<button type="button" class="btn btn-secondary btn-redact-item" data-match="' + escapeClientHtml(item.match) + '" data-type="' + escapeClientHtml(item.type) + '" style="padding:1px 6px;font-size:11px">Redact</button>' +
+                '</div>';
+            }).join('');
+          }
+
+          if (itemsP1) itemsP1.innerHTML = renderGroupItems(pass1);
+          if (itemsP2) itemsP2.innerHTML = renderGroupItems(pass2);
+          if (itemsP3) itemsP3.innerHTML = renderGroupItems(pass3);
+
+          // Highlight matches in preview pane
+          if (highlightEl) {
+            let highlighted = escapeClientHtml(fullText);
+            warnings.forEach(function(w) {
+              const escMatch = escapeClientHtml(w.match);
+              if (escMatch) {
+                highlighted = highlighted.split(escMatch).join('<mark style="background:#fedf89;padding:1px 4px;border-radius:2px">' + escMatch + '</mark>');
+              }
+            });
+            highlightEl.innerHTML = highlighted;
+          }
+
+          // Individual item redact buttons
+          const itemBtns = drawerEl ? drawerEl.querySelectorAll('.btn-redact-item') : [];
+          itemBtns.forEach(function(btn) {
+            btn.onclick = function() {
+              const targetMatch = btn.getAttribute('data-match');
+              const targetType = btn.getAttribute('data-type') || 'REDACTED';
+              const bodyInput = document.getElementById('entry-body');
+              if (bodyInput && targetMatch) {
+                bodyInput.value = bodyInput.value.split(targetMatch).join('[REDACTED: ' + targetType.toUpperCase() + ']');
+                runRedactionCheck();
+              }
+            };
+          });
+
+          // Redact All button
+          if (redactAllBtn) {
+            redactAllBtn.onclick = function() {
+              const bodyInput = document.getElementById('entry-body');
+              if (bodyInput) {
+                let updated = bodyInput.value;
+                const sorted = warnings.slice().sort(function(a, b) {
+                  return (b.match || '').length - (a.match || '').length;
+                });
+                sorted.forEach(function(w) {
+                  if (w.match) {
+                    updated = updated.split(w.match).join('[REDACTED: ' + String(w.type).toUpperCase() + ']');
+                  }
+                });
+                bodyInput.value = updated;
+                if (drawerEl) drawerEl.style.display = 'none';
+                runRedactionCheck();
+              }
+            };
+          }
+        }
+
         async function runRedactionCheck() {
           const textEl = document.getElementById('entry-body');
           const text = textEl ? textEl.value : '';
@@ -2553,10 +2695,14 @@ export async function renderAdminWorkspacePage(
                 }).join(', ');
                 redactBox.innerHTML = '<div class="later-thinking-banner" data-state="needs-review" role="alert">' +
                   '<strong>Needs Review (' + data.warnings.length + ' findings):</strong> ' + warningList +
-                  ' — Confirm none of this is under NDA before publishing.</div>' + tokenBadgeHtml;
+                  ' — Confirm none of this is under NDA before publishing.' +
+                  ' <button type="button" class="btn btn-secondary" id="btn-open-redaction-drawer" style="margin-left:8px;padding:2px 8px;font-size:12px">Open Review Drawer →</button></div>' + tokenBadgeHtml;
+                setupRedactionDrawer(data.warnings, text, data.multiPass);
               } else if (Array.isArray(data.warnings) && data.warnings.length === 0) {
                 // State 2: clean (the ONLY state that can ever be green)
                 redactBox.innerHTML = '<div class="chip" data-state="clean" style="border-color:var(--role-outcome)">✓ No confidential secrets or NDA markers detected.</div>' + tokenBadgeHtml;
+                const drawerEl = document.getElementById('redaction-preview-drawer');
+                if (drawerEl) drawerEl.style.display = 'none';
               } else {
                 currentPreviewToken = '';
                 if (tokenInput) tokenInput.value = '';
