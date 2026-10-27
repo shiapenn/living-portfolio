@@ -714,4 +714,125 @@ describe('Living Portfolio API Integration Tests', () => {
       expect(text).toContain('id="btn-save-routing"');
     });
   });
+
+  describe('WP-5.2: Setup Wizard, Credential Lockdown & Token Revocation Persistence (20261020-UX-01)', () => {
+    it('persists admin account and token revocation across reboots via storagePath', async () => {
+      const { mkdtempSync, rmSync, existsSync } = await import('node:fs');
+      const { tmpdir } = await import('node:os');
+      const { join } = await import('node:path');
+      const tempDir = mkdtempSync(join(tmpdir(), 'auth-persistence-test-'));
+      const tempStoragePath = join(tempDir, 'auth-persistence.json');
+
+      try {
+        // 1. Initialize AuthManager with storagePath
+        const { AuthManager } = await import('./auth/security.js');
+        const authInstance1 = new AuthManager({ storagePath: tempStoragePath });
+        expect(authInstance1.isSetupCompleted()).toBe(false);
+
+        // 2. Setup account and issue tokens
+        authInstance1.setupAdminAccount('master_owner', 'AStrongPassword2026!');
+        expect(authInstance1.isSetupCompleted()).toBe(true);
+
+        const token1 = authInstance1.issueBearerToken('runner-1');
+        const token2 = authInstance1.issueBearerToken('runner-2');
+
+        expect(authInstance1.verifyBearerToken(token1.rawToken)).toBe(true);
+        expect(authInstance1.verifyBearerToken(token2.rawToken)).toBe(true);
+
+        // 3. Revoke token1
+        const revoked = authInstance1.revokeBearerToken(token1.record.id);
+        expect(revoked).toBe(true);
+        expect(authInstance1.verifyBearerToken(token1.rawToken)).toBe(false);
+
+        // 4. Create new AuthManager instance reading from the same storagePath (simulating reboot)
+        const authInstance2 = new AuthManager({ storagePath: tempStoragePath });
+        expect(authInstance2.isSetupCompleted()).toBe(true);
+        expect(authInstance2.verifyBearerToken(token1.rawToken)).toBe(false);
+        expect(authInstance2.verifyBearerToken(token2.rawToken)).toBe(true);
+
+        const tokens = authInstance2.listBearerTokens();
+        const persistedToken1 = tokens.find((t) => t.id === token1.record.id);
+        expect(persistedToken1?.revokedAt).toBeTruthy();
+        const persistedToken2 = tokens.find((t) => t.id === token2.record.id);
+        expect(persistedToken2?.revokedAt).toBeNull();
+      } finally {
+        if (existsSync(tempDir)) {
+          rmSync(tempDir, { recursive: true, force: true });
+        }
+      }
+    });
+
+    it('enforces setup lockdown and 409 Conflict once admin account is configured', async () => {
+      const { app: freshApp, auth: freshAuth } = createApp();
+      expect(freshAuth.isSetupCompleted()).toBe(false);
+
+      // Initial setup succeeds
+      const setupRes = await freshApp.request('/api/auth/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: 'first_owner',
+          password: 'ValidSuperPassword2026!',
+        }),
+      });
+      expect(setupRes.status).toBe(201);
+      const setupData = await setupRes.json();
+      expect(setupData.configured).toBe(true);
+      expect(setupData.totpSecret).toBeTruthy();
+
+      // Subsequent setup attempts are locked down with 409 Conflict
+      const duplicateRes = await freshApp.request('/api/auth/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: 'intruder',
+          password: 'AnotherPassword123!',
+        }),
+      });
+      expect(duplicateRes.status).toBe(409);
+      const dupData = await duplicateRes.json();
+      expect(dupData.error).toContain('already configured');
+    });
+
+    it('returns human-readable 429 throttling message upon 5 failed attempts', async () => {
+      const { app: freshApp } = createApp();
+      // Setup account first so login can be attempted
+      await freshApp.request('/api/auth/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: 'throttle_target',
+          password: 'TargetPassword2026!',
+        }),
+      });
+
+      // 5 failed login attempts
+      for (let i = 0; i < 5; i++) {
+        const res = await freshApp.request('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: 'throttle_target',
+            password: 'incorrect-password',
+            totpCode: '111111',
+          }),
+        });
+        expect(res.status).toBe(401);
+      }
+
+      // 6th attempt is throttled
+      const throttledRes = await freshApp.request('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: 'throttle_target',
+          password: 'TargetPassword2026!',
+          totpCode: '111111',
+        }),
+      });
+      expect(throttledRes.status).toBe(429);
+      const body = await throttledRes.json();
+      expect(body.error).toContain('Too many failed login attempts');
+    });
+  });
 });

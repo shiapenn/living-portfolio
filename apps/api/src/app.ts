@@ -38,6 +38,7 @@ export function createApp(
   options?: {
     signingKey?: string;
     bootstrapAdminToken?: string;
+    authStoragePath?: string;
     allowedOrigins?: string[];
     providers?: ModelProvider[];
     databaseKind?: 'in-memory' | 'postgres' | 'dual-write';
@@ -87,6 +88,7 @@ export function createApp(
   const auth = new AuthManager({
     signingKey: options?.signingKey || (cfg.SESSION_SECRET ? cfg.SESSION_SECRET : undefined),
     bootstrapAdminToken: adminToken || undefined,
+    storagePath: options?.authStoragePath,
   });
 
   const configuredOrigins = [

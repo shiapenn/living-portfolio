@@ -3,7 +3,9 @@ import { InMemoryPortfolioRepository, seedDemoPortfolio } from '@living-portfoli
 import {
   parseAsOfDate,
   renderAdminImportPage,
+  renderAdminLoginPage,
   renderAdminSettingsPage,
+  renderAdminSetupPage,
   renderAdminWorkspacePage,
   renderAskPage,
   renderAskStatusPage,
@@ -490,6 +492,75 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
       expect(html).toContain('id="chip-backup-status">not_configured</span>');
       expect(html).toContain('id="btn-test-notification"');
       expect(html).toContain('id="btn-run-backup-drill"');
+    });
+  });
+
+  describe('WP-5.2: First-Run 6-Step Setup Wizard, Login Throttling & Lockdown (20261020-UX-01)', () => {
+    it('1. renderAdminSetupPage renders all 6 wizard steps, progress indicator, and walkthrough card', () => {
+      const html = renderAdminSetupPage();
+
+      // Stepper header and progress bar
+      expect(html).toContain('Step 1 of 6 · First-Run Wizard (§13.13)');
+      expect(html).toContain('id="wizard-progress-fill"');
+      expect(html).toContain('id="step-lbl-1"');
+      expect(html).toContain('id="step-lbl-6"');
+
+      // Step 1: Owner Account Setup
+      expect(html).toContain('id="wizard-step-1"');
+      expect(html).toContain('id="setup-username"');
+      expect(html).toContain('id="setup-password"');
+      expect(html).toContain('id="setup-totp-secret"');
+      expect(html).toContain('id="btn-continue-step2"');
+
+      // Step 2: Hosting Option & Preset
+      expect(html).toContain('id="wizard-step-2"');
+      expect(html).toContain('value="hobbyist-docker"');
+      expect(html).toContain('value="private-local"');
+      expect(html).toContain('value="reliable-low-cost"');
+      expect(html).toContain('id="setup-origin-url"');
+
+      // Step 3: Model Providers & Privacy Router
+      expect(html).toContain('id="wizard-step-3"');
+      expect(html).toContain('Local ONNX');
+      expect(html).toContain('OpenAI Compatible');
+      expect(html).toContain('Anthropic');
+      expect(html).toContain('Ollama');
+      expect(html).toContain('Zero-Trust Boundary:');
+
+      // Step 4: Notifications & Alerts
+      expect(html).toContain('id="wizard-step-4"');
+      expect(html).toContain('id="setup-notification-channel"');
+      expect(html).toContain('id="setup-notification-target"');
+      expect(html).toContain('id="btn-setup-test-alert"');
+      expect(html).toContain('id="setup-alert-result"');
+
+      // Step 5: Encrypted Backup Destination
+      expect(html).toContain('id="wizard-step-5"');
+      expect(html).toContain('id="setup-backup-dest"');
+      expect(html).toContain('id="setup-age-key"');
+      expect(html).toContain('id="btn-setup-test-drill"');
+      expect(html).toContain('id="setup-drill-result"');
+
+      // Step 6: Theme Selection & First-Run Walkthrough
+      expect(html).toContain('id="wizard-step-6"');
+      expect(html).toContain('Editorial Classic');
+      expect(html).toContain('Modern Monospace');
+      expect(html).toContain('Minimalist Sans');
+      expect(html).toContain('Worked Example: Case Study Profile');
+      expect(html).toContain('Now try one of yours — create your first case study or launch the Import Planner');
+      expect(html).toContain('id="btn-setup-finish-login"');
+      expect(html).toContain('id="btn-setup-launch-import"');
+    });
+
+    it('2. renderAdminLoginPage renders credentials form and handles 429 throttling message', () => {
+      const html = renderAdminLoginPage();
+      expect(html).toContain('id="login-username"');
+      expect(html).toContain('id="login-password"');
+      expect(html).toContain('id="login-totp"');
+      expect(html).toContain('id="login-error"');
+      expect(html).toContain('res.status === 429');
+      expect(html).toContain('Too many failed login attempts');
+      expect(html).toContain('sanitizeNext');
     });
   });
 });

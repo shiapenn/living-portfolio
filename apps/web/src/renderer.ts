@@ -3296,6 +3296,10 @@ export function renderAdminLoginPage(): string {
               errBox.className = 'later-thinking-banner';
               errBox.textContent = data.error || 'Access forbidden (security check failed).';
               errBox.style.display = 'block';
+            } else if (res.status === 429) {
+              errBox.className = 'later-thinking-banner';
+              errBox.textContent = data.error || 'Too many failed login attempts. Try again in 15 minutes.';
+              errBox.style.display = 'block';
             } else if (res.status >= 500) {
               errBox.className = 'later-thinking-banner';
               errBox.textContent = 'Server error during sign-in. Please retry.';
@@ -3319,37 +3323,319 @@ export function renderAdminLoginPage(): string {
 
 export function renderAdminSetupPage(): string {
   const content = `
-    <div style="max-width:560px;margin:40px auto;padding:24px;border:1px solid var(--rule);background:var(--surface-page)">
-      <span class="chip" style="margin-bottom:8px">Step 1 of 6 · First-Run Wizard (§13.13)</span>
-      <h1 style="font-size:26px;margin:4px 0 12px 0">Owner Account Setup</h1>
-      <p style="font-size:14px;color:var(--text-muted);margin:0 0 20px 0">
-        Initialize your private administrative account. Subsequent steps configure hosting preset, provider keys, notification adapter, backup destination, and theme.
-      </p>
+    <div class="admin-setup-container" style="max-width:680px;margin:32px auto;padding:24px;border:1px solid var(--rule);background:var(--surface-page)">
+      <div class="wizard-header" style="margin-bottom:20px;border-bottom:1px solid var(--rule);padding-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span class="chip" id="wizard-step-chip">Step 1 of 6 · First-Run Wizard (§13.13)</span>
+          <span style="font-size:12px;color:var(--text-muted)">The Living Portfolio</span>
+        </div>
+        <div class="wizard-progress-bar" style="height:4px;background:var(--surface-panel);border-radius:2px;overflow:hidden">
+          <div id="wizard-progress-fill" style="height:100%;width:16.6%;background:var(--accent);transition:width 0.3s ease"></div>
+        </div>
+        <div class="wizard-step-labels" style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text-muted)">
+          <span id="step-lbl-1" style="font-weight:700;color:var(--text)">1. Account</span>
+          <span id="step-lbl-2">2. Hosting</span>
+          <span id="step-lbl-3">3. Providers</span>
+          <span id="step-lbl-4">4. Alerts</span>
+          <span id="step-lbl-5">5. Backups</span>
+          <span id="step-lbl-6">6. Walkthrough</span>
+        </div>
+      </div>
 
       <div id="setup-status" role="alert" style="margin-bottom:16px;display:none"></div>
 
-      <form id="admin-setup-form">
-        <div style="margin-bottom:12px">
-          <label for="setup-username" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Owner Username</label>
-          <input id="setup-username" type="text" class="ask-input" style="width:100%;padding:8px" required />
+      <!-- Step 1: Owner Account Setup -->
+      <div id="wizard-step-1" class="wizard-step">
+        <h1 style="font-size:24px;margin:4px 0 8px 0">Owner Account Setup</h1>
+        <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px 0">
+          Initialize your private administrative account. The first-run wizard walks you through account creation, hosting presets, model providers, alerts, backups, and initial profile authoring.
+        </p>
+
+        <form id="admin-setup-form">
+          <div style="margin-bottom:12px">
+            <label for="setup-username" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Owner Username</label>
+            <input id="setup-username" type="text" class="ask-input" style="width:100%;padding:8px" required />
+          </div>
+          <div style="margin-bottom:12px">
+            <label for="setup-password" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Master Password (min 12 chars)</label>
+            <input id="setup-password" type="password" minlength="12" class="ask-input" style="width:100%;padding:8px" required />
+          </div>
+          <div style="margin-bottom:16px">
+            <label for="setup-totp-secret" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">TOTP Secret Hex (optional, generated if blank)</label>
+            <input id="setup-totp-secret" type="text" class="ask-input" style="width:100%;padding:8px;font-family:var(--font-code)" placeholder="Leave blank to generate 20-byte random secret" />
+          </div>
+          <button type="submit" class="btn" style="width:100%;padding:10px">Complete Account Setup &amp; View TOTP</button>
+        </form>
+
+        <div id="account-completed-actions" style="display:none;margin-top:16px">
+          <button type="button" class="btn btn-primary" id="btn-continue-step2" style="width:100%;padding:10px;margin-bottom:8px">Continue to Step 2: Hosting Option &amp; Preset →</button>
         </div>
-        <div style="margin-bottom:12px">
-          <label for="setup-password" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Master Password (min 12 chars)</label>
-          <input id="setup-password" type="password" minlength="12" class="ask-input" style="width:100%;padding:8px" required />
+      </div>
+
+      <!-- Step 2: Hosting Option & Preset (§13.13) -->
+      <div id="wizard-step-2" class="wizard-step" style="display:none">
+        <h2 style="font-size:22px;margin:4px 0 8px 0">Step 2: Hosting Option &amp; Presets</h2>
+        <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px 0">
+          Choose a deployment profile matching your server infrastructure.
+        </p>
+
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid var(--rule);background:var(--surface-subtle);cursor:pointer">
+            <input type="radio" name="hosting-preset" value="hobbyist-docker" checked style="margin-top:3px" />
+            <div>
+              <strong>hobbyist-docker (Recommended)</strong>
+              <div style="font-size:13px;color:var(--text-muted)">Single Docker Compose stack with PostgreSQL 16 + pgvector. Best for home servers or single VPS instances.</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid var(--rule);cursor:pointer">
+            <input type="radio" name="hosting-preset" value="private-local" style="margin-top:3px" />
+            <div>
+              <strong>private-local</strong>
+              <div style="font-size:13px;color:var(--text-muted)">Air-gapped operation with local ONNX embeddings &amp; Ollama models. Zero external API calls.</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid var(--rule);cursor:pointer">
+            <input type="radio" name="hosting-preset" value="reliable-low-cost" style="margin-top:3px" />
+            <div>
+              <strong>reliable-low-cost</strong>
+              <div style="font-size:13px;color:var(--text-muted)">Small VPS with paid zero-retention external model providers (OpenAI / Anthropic / Groq).</div>
+            </div>
+          </label>
         </div>
+
+        <div style="margin-bottom:16px;border-top:1px solid var(--rule);padding-top:16px">
+          <label for="setup-origin-url" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Public Domain / Tunnel Origin</label>
+          <input type="text" id="setup-origin-url" class="ask-input" style="width:100%;padding:8px" placeholder="https://portfolio.example.org" />
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Configure your reverse proxy or Cloudflare tunnel domain for external visitor access.</div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <button type="button" class="btn btn-secondary btn-nav-step" data-target="1">← Back</button>
+          <button type="button" class="btn btn-primary btn-nav-step" data-target="3">Next: Model Providers →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Model Providers & Privacy Router (§10.8, §13.5) -->
+      <div id="wizard-step-3" class="wizard-step" style="display:none">
+        <h2 style="font-size:22px;margin:4px 0 8px 0">Step 3: Model Providers &amp; Privacy Router</h2>
+        <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px 0">
+          Configure model providers. The built-in privacy router ensures confidential data never reaches commercial LLMs.
+        </p>
+
+        <div class="table-wrap" style="margin-bottom:16px">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="border-bottom:1px solid var(--rule);text-align:left">
+                <th style="padding:6px">Provider</th>
+                <th style="padding:6px">Data Classes Allowed</th>
+                <th style="padding:6px">Default Model</th>
+                <th style="padding:6px">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid var(--rule)">
+                <td style="padding:8px"><strong>Local ONNX</strong></td>
+                <td style="padding:8px"><span class="chip">public</span> <span class="chip">confidential</span></td>
+                <td style="padding:8px"><code>bge-small-en-v1.5</code></td>
+                <td style="padding:8px;color:var(--green)">✓ Active (Local)</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--rule)">
+                <td style="padding:8px"><strong>OpenAI Compatible</strong></td>
+                <td style="padding:8px"><span class="chip">public only</span></td>
+                <td style="padding:8px"><code>gpt-4o-mini</code></td>
+                <td style="padding:8px;color:var(--text-muted)" id="status-openai">Optional</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--rule)">
+                <td style="padding:8px"><strong>Anthropic</strong></td>
+                <td style="padding:8px"><span class="chip">public only</span></td>
+                <td style="padding:8px"><code>claude-3-5-sonnet</code></td>
+                <td style="padding:8px;color:var(--text-muted)" id="status-anthropic">Optional</td>
+              </tr>
+              <tr>
+                <td style="padding:8px"><strong>Ollama</strong></td>
+                <td style="padding:8px"><span class="chip">public</span> <span class="chip">internal</span></td>
+                <td style="padding:8px"><code>llama3.3</code></td>
+                <td style="padding:8px;color:var(--text-muted)" id="status-ollama">Optional</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="as-of-banner" style="margin-bottom:16px">
+          <strong>Zero-Trust Boundary:</strong> When no external provider is configured, Ask gracefully degrades to honest extractive quotes (§10.8).
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <button type="button" class="btn btn-secondary btn-nav-step" data-target="2">← Back</button>
+          <button type="button" class="btn btn-primary btn-nav-step" data-target="4">Next: Alerts &amp; Notifications →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Notifications (§13.9) -->
+      <div id="wizard-step-4" class="wizard-step" style="display:none">
+        <h2 style="font-size:22px;margin:4px 0 8px 0">Step 4: Notifications &amp; Alerts</h2>
+        <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px 0">
+          Configure alert delivery for Tier 2 visitor escalations and daily budget updates.
+        </p>
+
+        <div style="margin-bottom:12px">
+          <label for="setup-notification-channel" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Notification Channel</label>
+          <select id="setup-notification-channel" class="ask-input" style="width:100%;padding:8px">
+            <option value="ntfy">ntfy (Push notifications)</option>
+            <option value="email">Email (SMTP relay)</option>
+            <option value="webhook">Webhook (HTTPS endpoint)</option>
+            <option value="telegram">Telegram Bot</option>
+          </select>
+        </div>
+
         <div style="margin-bottom:16px">
-          <label for="setup-totp-secret" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">TOTP Secret Hex (optional, generated if blank)</label>
-          <input id="setup-totp-secret" type="text" class="ask-input" style="width:100%;padding:8px;font-family:var(--font-code)" placeholder="Leave blank to generate 20-byte random secret" />
+          <label for="setup-notification-target" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Topic / Target URL</label>
+          <input type="text" id="setup-notification-target" class="ask-input" style="width:100%;padding:8px" placeholder="living-portfolio-alerts" />
         </div>
-        <button type="submit" class="btn" style="width:100%;padding:10px">Complete Account Setup &amp; View TOTP</button>
-      </form>
+
+        <div style="margin-bottom:16px">
+          <button type="button" class="btn btn-secondary" id="btn-setup-test-alert">Test Delivery Notification</button>
+          <div id="setup-alert-result" style="margin-top:8px;display:none" role="alert"></div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <button type="button" class="btn btn-secondary btn-nav-step" data-target="3">← Back</button>
+          <button type="button" class="btn btn-primary btn-nav-step" data-target="5">Next: Encrypted Backups →</button>
+        </div>
+      </div>
+
+      <!-- Step 5: Backups (§13.9) -->
+      <div id="wizard-step-5" class="wizard-step" style="display:none">
+        <h2 style="font-size:22px;margin:4px 0 8px 0">Step 5: Encrypted Backup Destination</h2>
+        <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px 0">
+          Set up automated PostgreSQL dumps with age asymmetric encryption.
+        </p>
+
+        <div style="margin-bottom:12px">
+          <label for="setup-backup-dest" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Backup Destination</label>
+          <select id="setup-backup-dest" class="ask-input" style="width:100%;padding:8px">
+            <option value="local">Local Scratch Storage (/var/backups)</option>
+            <option value="s3">S3 / MinIO Compatible Bucket</option>
+            <option value="git">Private Git Repository Archive</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <label for="setup-age-key" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">age Recipient Public Key (optional)</label>
+          <input type="text" id="setup-age-key" class="ask-input" style="width:100%;padding:8px;font-family:var(--font-code)" placeholder="age1..." />
+        </div>
+
+        <div style="margin-bottom:16px">
+          <button type="button" class="btn btn-secondary" id="btn-setup-test-drill">Run Restore Verification Drill</button>
+          <div id="setup-drill-result" style="margin-top:8px;display:none" role="alert"></div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between">
+          <button type="button" class="btn btn-secondary btn-nav-step" data-target="4">← Back</button>
+          <button type="button" class="btn btn-primary btn-nav-step" data-target="6">Next: Theme &amp; Walkthrough →</button>
+        </div>
+      </div>
+
+      <!-- Step 6: Theme Selection & First-Run Walkthrough (§13.6, §13.13) -->
+      <div id="wizard-step-6" class="wizard-step" style="display:none">
+        <h2 style="font-size:22px;margin:4px 0 8px 0">Step 6: Theme &amp; First-Run Walkthrough</h2>
+        <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px 0">
+          Select your typographic theme and review the profile structure model.
+        </p>
+
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;margin-bottom:20px">
+          <div class="theme-card" style="padding:12px;border:2px solid var(--accent);background:var(--surface-subtle);cursor:pointer">
+            <strong>Editorial Classic</strong>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Warm serif, high contrast, literary reading cadence.</div>
+          </div>
+          <div class="theme-card" style="padding:12px;border:1px solid var(--rule);cursor:pointer">
+            <strong>Modern Monospace</strong>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Technical grid, tabular numbers, precise terminal rhythm.</div>
+          </div>
+          <div class="theme-card" style="padding:12px;border:1px solid var(--rule);cursor:pointer">
+            <strong>Minimalist Sans</strong>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Clean grotesque, monochrome balance, high density.</div>
+          </div>
+        </div>
+
+        <!-- First-Run Walkthrough Worked Example Card (§13.13) -->
+        <div class="as-of-banner" style="margin-bottom:20px">
+          <h3 style="font-size:16px;margin:0 0 6px 0">Worked Example: Case Study Profile</h3>
+          <p style="font-size:13px;line-height:1.5;margin:0 0 10px 0">
+            In The Living Portfolio, writing is structured into actionable claims:
+          </p>
+          <ul style="font-size:13px;margin:0 0 12px 18px;line-height:1.5">
+            <li><strong>Problem / Context:</strong> Scaling payment reconciliation under traffic spikes.</li>
+            <li><strong>Intervention:</strong> Implemented idempotent bisimulation engine.</li>
+            <li><strong>Outcome (Worked):</strong> Reduced data inconsistencies by 99.4%.</li>
+            <li><strong>Lesson:</strong> Never decouple transaction time from event time.</li>
+          </ul>
+          <p style="font-size:13px;font-style:italic;margin:0">
+            "Now try one of yours — create your first case study or launch the Import Planner to stage twenty existing documents."
+          </p>
+        </div>
+
+        <div style="display:flex;gap:12px">
+          <a href="/admin" class="btn btn-primary" id="btn-setup-finish-login" style="flex:1;text-align:center;padding:12px">Launch Portfolio &amp; Sign in →</a>
+          <a href="/admin/import" class="btn btn-secondary" id="btn-setup-launch-import" style="flex:1;text-align:center;padding:12px">Launch Import Planner (§13.6) →</a>
+        </div>
+
+        <div style="margin-top:16px;text-align:left">
+          <button type="button" class="btn btn-secondary btn-nav-step" data-target="5">← Back to Backups</button>
+        </div>
+      </div>
     </div>
     <script>
       (function() {
         const form = document.getElementById('admin-setup-form');
         const statusBox = document.getElementById('setup-status');
+        const chip = document.getElementById('wizard-step-chip');
+        const progressFill = document.getElementById('wizard-progress-fill');
+        const completedActions = document.getElementById('account-completed-actions');
 
         ${ADMIN_API_CLIENT_SCRIPT}
+
+        function goToStep(stepNum) {
+          for (let i = 1; i <= 6; i++) {
+            const stepEl = document.getElementById('wizard-step-' + i);
+            const lblEl = document.getElementById('step-lbl-' + i);
+            if (stepEl) {
+              stepEl.style.display = i === stepNum ? 'block' : 'none';
+            }
+            if (lblEl) {
+              if (i === stepNum) {
+                lblEl.style.fontWeight = '700';
+                lblEl.style.color = 'var(--text)';
+              } else if (i < stepNum) {
+                lblEl.style.fontWeight = '500';
+                lblEl.style.color = 'var(--accent)';
+              } else {
+                lblEl.style.fontWeight = 'normal';
+                lblEl.style.color = 'var(--text-muted)';
+              }
+            }
+          }
+          if (progressFill) {
+            progressFill.style.width = Math.round((stepNum / 6) * 100) + '%';
+          }
+          if (chip) {
+            chip.textContent = 'Step ' + stepNum + ' of 6 · First-Run Wizard (§13.13)';
+          }
+        }
+
+        document.querySelectorAll('.btn-nav-step').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            const target = parseInt(btn.getAttribute('data-target') || '1', 10);
+            goToStep(target);
+          });
+        });
+
+        const continueBtn = document.getElementById('btn-continue-step2');
+        if (continueBtn) {
+          continueBtn.addEventListener('click', function() {
+            goToStep(2);
+          });
+        }
 
         form.addEventListener('submit', async function(e) {
           e.preventDefault();
@@ -3369,6 +3655,7 @@ export function renderAdminSetupPage(): string {
               statusBox.innerHTML = '<strong>Setup Completed!</strong> Save your TOTP secret hex: <code>' + data.totpSecret + '</code>. Your initial API bearer token is: <code>' + data.bearerToken + '</code>. <br/><a href="/admin/login" class="btn" style="display:inline-block;margin-top:8px">Proceed to Sign in →</a>';
               statusBox.style.display = 'block';
               form.style.display = 'none';
+              if (completedActions) completedActions.style.display = 'block';
             } else if (res.status === 409) {
               statusBox.className = 'later-thinking-banner';
               statusBox.textContent = data.error || 'Account setup already completed.';
@@ -3388,6 +3675,46 @@ export function renderAdminSetupPage(): string {
             statusBox.style.display = 'block';
           }
         });
+
+        // Step 4: Test Alert button
+        const testAlertBtn = document.getElementById('btn-setup-test-alert');
+        const alertResult = document.getElementById('setup-alert-result');
+        if (testAlertBtn && alertResult) {
+          testAlertBtn.addEventListener('click', async function() {
+            alertResult.style.display = 'none';
+            try {
+              const res = await apiClient('/api/settings/notifications/test', { method: 'POST' });
+              const data = await res.json();
+              alertResult.className = 'later-thinking-banner';
+              alertResult.textContent = (data.error || 'Notice') + ': ' + (data.message || 'Notification test result.');
+              alertResult.style.display = 'block';
+            } catch (err) {
+              alertResult.className = 'later-thinking-banner';
+              alertResult.textContent = 'Error testing notification delivery.';
+              alertResult.style.display = 'block';
+            }
+          });
+        }
+
+        // Step 5: Test Drill button
+        const testDrillBtn = document.getElementById('btn-setup-test-drill');
+        const drillResult = document.getElementById('setup-drill-result');
+        if (testDrillBtn && drillResult) {
+          testDrillBtn.addEventListener('click', async function() {
+            drillResult.style.display = 'none';
+            try {
+              const res = await apiClient('/api/settings/backups/run-drill', { method: 'POST' });
+              const data = await res.json();
+              drillResult.className = 'later-thinking-banner';
+              drillResult.textContent = (data.error || 'Notice') + ': ' + (data.message || 'Backup drill result.');
+              drillResult.style.display = 'block';
+            } catch (err) {
+              drillResult.className = 'later-thinking-banner';
+              drillResult.textContent = 'Error running backup restore drill.';
+              drillResult.style.display = 'block';
+            }
+          });
+        }
       })();
     </script>
   `;
