@@ -190,6 +190,21 @@ export const escalations = pgTable('escalations', {
   booked: boolean('booked').default(false),
   status: text('status').notNull(), // pending | approved | rejected | auto_refunded
   due_at: timestamp('due_at', { withTimezone: true }),
+  status_token: text('status_token'),
+  visitor_contact: text('visitor_contact'),
+  rejection_reason: text('rejection_reason'),
+  at: timestamp('at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const bookings = pgTable('bookings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  topic: text('topic').notNull(),
+  visitor_name: text('visitor_name'),
+  visitor_contact: text('visitor_contact').notNull(),
+  facets: jsonb('facets'),
+  preferred_time: text('preferred_time'),
+  notes: text('notes'),
+  status: text('status').notNull().default('pending'),
   at: timestamp('at', { withTimezone: true }).defaultNow().notNull(),
 });
 

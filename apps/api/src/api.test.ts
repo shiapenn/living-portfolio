@@ -524,4 +524,98 @@ describe('Living Portfolio API Integration Tests', () => {
     expect(data.bookingUrl).toContain('/book?q=');
     expect(data.answer).toContain('offline');
   });
+
+  it('[20261020-UX-11] POST /api/book accepts booking request with carried facets, persists to repository, and GET /api/book requires admin auth', async () => {
+    // 1. Invalid payload returns 400
+    const badRes = await app.request('/api/book', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: '' }),
+    });
+    expect(badRes.status).toBe(400);
+
+    // 2. Valid booking persists
+    const bookRes = await app.request('/api/book', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        topic: 'Architecture Review for Multi-tenant Cluster',
+        visitor_name: 'Visitor Alex',
+        visitor_contact: 'visitor@example.com',
+        facets: { scale: 'high_volume', stack: 'postgres' },
+        preferred_time: 'Weekday mornings',
+        notes: 'Exploring sharding options',
+      }),
+    });
+    expect(bookRes.status).toBe(201);
+    const bookData = await bookRes.json();
+    expect(bookData.success).toBe(true);
+    expect(bookData.booking.id).toBeDefined();
+    expect(bookData.booking.topic).toBe('Architecture Review for Multi-tenant Cluster');
+
+    // 3. GET /api/book requires admin token
+    const unauthGet = await app.request('/api/book');
+    expect(unauthGet.status).toBe(401);
+
+    const authGet = await app.request('/api/book', {
+      headers: authHeaders,
+    });
+    expect(authGet.status).toBe(200);
+    const listData = await authGet.json();
+    expect(listData.bookings.length).toBeGreaterThan(0);
+    expect(listData.bookings.some((b: any) => b.visitor_contact === 'visitor@example.com')).toBe(true);
+  });
+
+  it('[20261020-UX-08] Tier 2 escalation status token and contact attachment flow end to end', async () => {
+    // 1. Save escalation with status token
+    const saved = await repo.saveEscalation({
+      question: 'Can you advise on migrating from DynamoDB to Postgres under strict zero-downtime SLA?',
+      query_class: 'advisory',
+      facets: { cloud: 'aws', scale: 'tier1' },
+      draft: 'We completed zero-downtime cutover using dual-write and shadow validation.',
+      status: 'pending',
+      status_token: 'test-token-receipt-12345',
+      due_at: new Date(Date.now() + 24 * 3600 * 1000).toISOString(),
+    });
+    expect(saved.status_token).toBe('test-token-receipt-12345');
+
+    // 2. Query status receipt as visitor
+    const statusRes = await app.request('/api/ask/status/test-token-receipt-12345');
+    expect(statusRes.status).toBe(200);
+    const statusData = await statusRes.json();
+    expect(statusData.found).toBe(true);
+    expect(statusData.escalation.status).toBe('pending');
+    expect(statusData.escalation.question).toContain('DynamoDB to Postgres');
+
+    // 3. Attach visitor contact to receipt
+    const contactRes = await app.request('/api/ask/status/test-token-receipt-12345/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contact: 'lead-architect@client.org' }),
+    });
+    expect(contactRes.status).toBe(200);
+    const contactData = await contactRes.json();
+    expect(contactData.success).toBe(true);
+    expect(contactData.escalation.visitor_contact).toBe('lead-architect@client.org');
+
+    // 4. Owner approves escalation with edits via /api/inbox
+    const approveRes = await app.request(`/api/inbox/${saved.id}/approve`, {
+      method: 'PATCH',
+      headers: { ...authHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        finalReply: 'Yes, we recommend dual-write repository pattern with shadow metrics as detailed in ADR-02.',
+      }),
+    });
+    expect(approveRes.status).toBe(200);
+    const approveData = await approveRes.json();
+    expect(approveData.escalation.status).toBe('approved');
+    expect(approveData.escalation.final).toContain('ADR-02');
+
+    // 5. Visitor checks receipt URL again and sees approved reply
+    const updatedStatusRes = await app.request('/api/ask/status/test-token-receipt-12345');
+    expect(updatedStatusRes.status).toBe(200);
+    const updatedStatusData = await updatedStatusRes.json();
+    expect(updatedStatusData.escalation.status).toBe('approved');
+    expect(updatedStatusData.escalation.final).toContain('ADR-02');
+  });
 });

@@ -4,6 +4,8 @@ import {
   renderAdminImportPage,
   renderAdminWorkspacePage,
   renderAskPage,
+  renderAskStatusPage,
+  renderBookPage,
   renderBuildPage,
   renderEntryDetailPage,
   renderHomePage,
@@ -175,5 +177,103 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     const homeHtml = await renderHomePage(repo);
     expect(homeHtml).toContain('<a href="#main-content" class="skip-link">Skip to main content</a>');
     expect(homeHtml).toContain('<h1 class="visually-hidden">');
+  });
+
+  it('renders Booking page with prefilled topic and facets without alert() (20261020-UX-11)', () => {
+    const html = renderBookPage('How did you scale postgres?', 'architecture, databases');
+    expect(html).toContain('Book a Live Conversation (Tier 3)');
+    expect(html).toContain('id="booking-form"');
+    expect(html).toContain('id="book-topic"');
+    expect(html).toContain('value="How did you scale postgres?"');
+    expect(html).toContain('id="book-facets"');
+    expect(html).toContain('value="architecture, databases"');
+    expect(html).toContain('id="book-name"');
+    expect(html).toContain('id="book-contact"');
+    expect(html).toContain('id="book-time"');
+    expect(html).toContain('id="book-notes"');
+    expect(html).toContain('id="btn-submit-booking"');
+    expect(html).toContain('id="booking-confirmation"');
+    // Ensure alert() dead end is completely eliminated (§12.6, 20261020-UX-11)
+    expect(html).not.toContain("alert('Booking requested");
+    expect(html).not.toContain('alert(');
+  });
+
+  it('renders Ask Status page for pending, approved, and rejected states (20261020-UX-08)', async () => {
+    // 1. Invalid / unknown token
+    const invalidHtml = await renderAskStatusPage(repo, 'non-existent-token');
+    expect(invalidHtml).toContain('Receipt Status Not Found');
+
+    // 2. Pending state
+    const pendingEscalation = {
+      question: 'Can you consult on advisory locks?',
+      draft: 'Draft reply pending review.',
+      query_class: 'advisory' as const,
+      status: 'pending' as const,
+      status_token: 'valid-test-token-1',
+      visitor_contact: 'visitor@example.com',
+      due_at: new Date(Date.now() + 86400000).toISOString(),
+    };
+    await repo.saveEscalation(pendingEscalation);
+
+    const pendingHtml = await renderAskStatusPage(repo, 'valid-test-token-1');
+    expect(pendingHtml).toContain('Escalation Receipt');
+    expect(pendingHtml).toContain('Pending Review');
+    expect(pendingHtml).toContain('Can you consult on advisory locks?');
+    expect(pendingHtml).toContain('Pending Owner Review');
+    expect(pendingHtml).toContain('Draft Under Review (Private to Visitor)');
+    expect(pendingHtml).toContain('Draft reply pending review.');
+    expect(pendingHtml).toContain('visitor@example.com');
+    expect(pendingHtml).toContain('id="contact-form"');
+
+    // 3. Approved state
+    const approvedEscalation = {
+      question: 'What is your advisory lock strategy?',
+      draft: 'Initial draft',
+      final: 'Here is the verified production architecture for advisory locks.',
+      query_class: 'lookup' as const,
+      status: 'approved' as const,
+      status_token: 'valid-test-token-2',
+    };
+    await repo.saveEscalation(approvedEscalation);
+
+    const approvedHtml = await renderAskStatusPage(repo, 'valid-test-token-2');
+    expect(approvedHtml).toContain('Approved by Owner');
+    expect(approvedHtml).toContain("Owner's Verified Reply");
+    expect(approvedHtml).toContain('Here is the verified production architecture for advisory locks.');
+
+    // 4. Rejected state
+    const rejectedEscalation = {
+      question: 'What is your internal salary?',
+      draft: 'No draft.',
+      query_class: 'advisory' as const,
+      status: 'rejected' as const,
+      status_token: 'valid-test-token-3',
+      rejection_reason: 'Outside portfolio scope and confidentiality guidelines.',
+    };
+    await repo.saveEscalation(rejectedEscalation);
+
+    const rejectedHtml = await renderAskStatusPage(repo, 'valid-test-token-3');
+    expect(rejectedHtml).toContain('Declined');
+    expect(rejectedHtml).toContain('Outside portfolio scope and confidentiality guidelines.');
+  });
+
+  it('renders interactive escalation review card in admin workspace (20261020-UX-08)', async () => {
+    const saved = await repo.saveEscalation({
+      question: 'Do you offer fractional CTO services?',
+      draft: 'Yes, on select infrastructure projects.',
+      query_class: 'advisory',
+      status: 'pending',
+      visitor_contact: 'client@startup.example',
+      due_at: new Date(Date.now() + 86400000).toISOString(),
+    });
+
+    const adminHtml = await renderAdminWorkspacePage(repo);
+    expect(adminHtml).toContain('Escalation Inbox — Tier 2 Review');
+    expect(adminHtml).toContain(saved.id);
+    expect(adminHtml).toContain('Do you offer fractional CTO services?');
+    expect(adminHtml).toContain('escalation-draft-textarea');
+    expect(adminHtml).toContain('btn-approve-escalation');
+    expect(adminHtml).toContain('btn-reject-escalation');
+    expect(adminHtml).toContain('client@startup.example');
   });
 });
