@@ -1,0 +1,185 @@
+#!/usr/bin/env node
+/**
+ * Software Bill of Materials (SBOM) Generator for Living Portfolio (OSR-16, §13.10, §20)
+ * Generates an SPDX 2.3 compliant JSON document representing the monorepo packages,
+ * workspace dependencies, and locked third-party dependencies.
+ */
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { resolve, basename } from 'node:path';
+import { execSync } from 'node:child_process';
+import { parseAllDocuments } from '../packages/core/node_modules/yaml/browser/index.js';
+
+const ROOT = resolve(import.meta.dirname, '..');
+
+export function generateSbom(outputFile = 'sbom.spdx.json') {
+  let commitSha = 'unknown';
+  try {
+    commitSha = execSync('git rev-parse HEAD', { cwd: ROOT, encoding: 'utf8' }).trim();
+  } catch {}
+
+  const rootPkg = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8'));
+  const lockYamlPath = resolve(ROOT, 'pnpm-lock.yaml');
+  let lockPackages = {};
+  if (existsSync(lockYamlPath)) {
+    try {
+      const docs = parseAllDocuments(readFileSync(lockYamlPath, 'utf8'));
+      for (const doc of docs) {
+        const json = doc?.toJSON() || {};
+        if (json.packages && typeof json.packages === 'object') {
+          Object.assign(lockPackages, json.packages);
+        }
+      }
+    } catch (err) {
+      console.warn('Warning: Failed to parse pnpm-lock.yaml:', err);
+    }
+  }
+
+  const creationDate = new Date().toISOString();
+  const documentNamespace = `https://spdx.org/spdxdocs/living-portfolio-${commitSha.substring(0, 12)}`;
+
+  const packages = [];
+  const relationships = [];
+  const seenPackages = new Set();
+
+  function sanitizeSpdxId(name, version = '') {
+    const raw = `${name}${version ? '-' + version : ''}`;
+    return 'SPDXRef-Package-' + raw.replace(/[^a-zA-Z0-9.-]/g, '-');
+  }
+
+  // 1. Root Monorepo Package
+  const rootSpdxId = sanitizeSpdxId(rootPkg.name || 'living-portfolio-monorepo', rootPkg.version);
+  packages.push({
+    SPDXID: rootSpdxId,
+    name: rootPkg.name || 'living-portfolio-monorepo',
+    versionInfo: rootPkg.version || '0.1.0',
+    downloadLocation: 'NOASSERTION',
+    filesAnalyzed: false,
+    licenseConcluded: 'Apache-2.0',
+    licenseDeclared: 'Apache-2.0',
+    copyrightText: 'NOASSERTION',
+    supplier: 'Organization: Living Portfolio Maintainers',
+    description: 'Living Portfolio root monorepo application and core engine',
+  });
+  seenPackages.add(rootSpdxId);
+
+  relationships.push({
+    spdxElementId: 'SPDXRef-DOCUMENT',
+    relationshipType: 'DESCRIBES',
+    relatedSpdxElement: rootSpdxId,
+  });
+
+  // 2. Workspace Monorepo Importers
+  const workspaceDirs = [
+    'packages/core',
+    'packages/config',
+    'packages/db',
+    'packages/ai',
+    'apps/api',
+    'apps/web',
+    'apps/worker',
+  ];
+
+  for (const relDir of workspaceDirs) {
+    const pkgJsonPath = resolve(ROOT, relDir, 'package.json');
+    if (!existsSync(pkgJsonPath)) continue;
+    const pkg = JSON.parse(readFileSync(pkgJsonPath, 'utf8'));
+    const spdxId = sanitizeSpdxId(pkg.name, pkg.version);
+
+    if (!seenPackages.has(spdxId)) {
+      packages.push({
+        SPDXID: spdxId,
+        name: pkg.name,
+        versionInfo: pkg.version || rootPkg.version || '0.1.0',
+        downloadLocation: 'NOASSERTION',
+        filesAnalyzed: false,
+        licenseConcluded: 'Apache-2.0',
+        licenseDeclared: 'Apache-2.0',
+        copyrightText: 'NOASSERTION',
+        supplier: 'Organization: Living Portfolio Maintainers',
+        homepage: 'https://github.com/shiapenn/living-portfolio',
+      });
+      seenPackages.add(spdxId);
+    }
+
+    relationships.push({
+      spdxElementId: rootSpdxId,
+      relationshipType: 'CONTAINS',
+      relatedSpdxElement: spdxId,
+    });
+  }
+
+  // 3. Locked third-party packages from lockPackages
+  if (lockPackages && typeof lockPackages === 'object') {
+    for (const [pkgKey, pkgMeta] of Object.entries(lockPackages)) {
+      if (!pkgKey || typeof pkgKey !== 'string') continue;
+      // Format is name@version or @scope/name@version
+      const lastAt = pkgKey.lastIndexOf('@');
+      if (lastAt <= 0) continue;
+      const rawName = pkgKey.substring(0, lastAt);
+      const rawVersionWithPeer = pkgKey.substring(lastAt + 1);
+      const rawVersion = rawVersionWithPeer.split('(')[0];
+
+      const spdxId = sanitizeSpdxId(rawName, rawVersion);
+      if (seenPackages.has(spdxId)) continue;
+      seenPackages.add(spdxId);
+
+      const pkgObj = {
+        SPDXID: spdxId,
+        name: rawName,
+        versionInfo: rawVersion,
+        downloadLocation: 'NOASSERTION',
+        filesAnalyzed: false,
+        licenseConcluded: 'NOASSERTION',
+        licenseDeclared: 'NOASSERTION',
+        copyrightText: 'NOASSERTION',
+      };
+
+      if (pkgMeta?.resolution?.integrity) {
+        const integrity = pkgMeta.resolution.integrity;
+        const [algo, hash] = integrity.split('-');
+        if (algo && hash) {
+          pkgObj.checksums = [
+            {
+              algorithm: algo.toUpperCase(),
+              checksumValue: hash,
+            },
+          ];
+        }
+      }
+
+      packages.push(pkgObj);
+      relationships.push({
+        spdxElementId: rootSpdxId,
+        relationshipType: 'DEPENDS_ON',
+        relatedSpdxElement: spdxId,
+      });
+    }
+  }
+
+  const spdxDocument = {
+    spdxVersion: 'SPDX-2.3',
+    dataLicense: 'CC0-1.0',
+    SPDXID: 'SPDXRef-DOCUMENT',
+    name: rootPkg.name || 'living-portfolio',
+    documentNamespace,
+    creationInfo: {
+      creators: [
+        'Tool: living-portfolio-sbom-generator-1.0',
+        'Organization: Living Portfolio Maintainers',
+      ],
+      created: creationDate,
+    },
+    packages,
+    relationships,
+  };
+
+  const targetPath = resolve(ROOT, outputFile);
+  writeFileSync(targetPath, JSON.stringify(spdxDocument, null, 2) + '\n', 'utf8');
+  console.log(`✓ Generated SPDX 2.3 SBOM with ${packages.length} packages and ${relationships.length} relationships at ${outputFile}.`);
+  return spdxDocument;
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename || '')) {
+  const outArg = process.argv.slice(2).find((arg) => !arg.startsWith('-')) || 'sbom.spdx.json';
+  generateSbom(outArg);
+}

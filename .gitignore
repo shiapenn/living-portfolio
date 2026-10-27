@@ -16,3 +16,4 @@ data/*
 !data/redaction-exclusions.example.json
 uploads/
 _tem/
+*.spdx.json

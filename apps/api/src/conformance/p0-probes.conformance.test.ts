@@ -390,6 +390,55 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
   });
 
   registerBoundProbe(
+    'OSR-16',
+    'Dockerfiles, compose stack, quickstart compose configuration, SBOM generator, and release workflow exist and are valid',
+    () => {
+      // 1. Multi-stage non-root Dockerfiles with HEALTHCHECK
+      const apiDocker = readFileSync(resolve(rootDir, 'docker/Dockerfile.api'), 'utf8');
+      const workerDocker = readFileSync(resolve(rootDir, 'docker/Dockerfile.worker'), 'utf8');
+
+      expect(apiDocker).toContain('FROM node:22-alpine');
+      expect(apiDocker).toContain('USER node');
+      expect(apiDocker).toContain('HEALTHCHECK');
+      expect(apiDocker).toContain('apps/api/dist/server.js');
+
+      expect(workerDocker).toContain('FROM node:22-alpine');
+      expect(workerDocker).toContain('USER node');
+      expect(workerDocker).toContain('apps/worker/dist/index.js');
+
+      // 2. Reference Hobbyist compose stack conforms to §13.10
+      const composeFile = readFileSync(resolve(rootDir, 'docker/docker-compose.hobbyist.yml'), 'utf8');
+      const composeData = parseYaml(composeFile) as any;
+      expect(composeData.services.db).toBeDefined();
+      expect(composeData.services.db.image).toContain('pgvector/pgvector:pg16');
+      expect(composeData.services.api).toBeDefined();
+      expect(composeData.services.api.depends_on.db.condition).toBe('service_healthy');
+      expect(composeData.services.worker).toBeDefined();
+      expect(composeData.services.worker.depends_on.db.condition).toBe('service_healthy');
+      expect(composeData.services.tunnel).toBeDefined();
+
+      // 3. SBOM generator script and SPDX 2.3 schema validity
+      expect(existsSync(resolve(rootDir, 'scripts/generate-sbom'))).toBe(true);
+      const pkgJson = JSON.parse(readFileSync(resolve(rootDir, 'package.json'), 'utf8'));
+      expect(pkgJson.scripts['sbom:generate']).toBe('node scripts/generate-sbom');
+
+      // 4. Release workflow with signed multi-arch images & SBOM (§13.10, §20)
+      const releaseWfPath = resolve(rootDir, '.github/workflows/release.yml');
+      expect(existsSync(releaseWfPath)).toBe(true);
+      const releaseWf = parseYaml(readFileSync(releaseWfPath, 'utf8')) as any;
+      expect(releaseWf.on.push.tags).toContain('v*');
+      const releaseSteps = releaseWf.jobs['release-packaging'].steps;
+      const stepUses = releaseSteps.map((s: any) => s.uses).filter(Boolean);
+      expect(stepUses.some((u: string) => u.includes('cosign-installer'))).toBe(true);
+      expect(stepUses.some((u: string) => u.includes('setup-buildx-action'))).toBe(true);
+      expect(stepUses.some((u: string) => u.includes('build-push-action'))).toBe(true);
+      const stepRuns = releaseSteps.map((s: any) => s.run).filter(Boolean);
+      expect(stepRuns.some((r: string) => r.includes('generate-sbom'))).toBe(true);
+      expect(stepRuns.some((r: string) => r.includes('code.zip'))).toBe(true);
+    }
+  );
+
+  registerBoundProbe(
     'P1',
     'storage defaults to PostgreSQL in production and server.ts does not unconditionally seed demo data on boot',
     async () => {

@@ -1371,9 +1371,9 @@
     - "13.10"
     - "20"
   severity: P0
-  status: open
+  status: fixed
   owner: A
-  verified_by: null
+  verified_by: A034
   links:
     issue: null
     pr: null
@@ -1383,6 +1383,9 @@
     - date: 2026-10-19
       status: open
       note: Added from OSR-001 §7 task register
+    - date: 2026-10-27
+      status: fixed
+      note: "Fixed in WP-6.1 (OSR-16): Multi-stage Dockerfiles, reference compose stack, quickstart container workflow, SPDX 2.3 SBOM generator, and signed multi-arch release workflow."
 - id: OSR-17
   audit: OSR-001
   title: Hosting provider spike and ADR (image by digest, credential model,

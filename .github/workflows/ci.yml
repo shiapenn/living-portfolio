@@ -99,6 +99,17 @@ jobs:
         if: steps.changes.outputs.docs_only != 'true'
         run: pnpm test
 
+      - name: Verify Software Bill of Materials (SBOM) Generation (OSR-16)
+        if: steps.changes.outputs.docs_only != 'true'
+        run: |
+          node scripts/generate-sbom sbom.spdx.json
+          test -s sbom.spdx.json
+          rm -f sbom.spdx.json
+
+      - name: Validate Docker Compose Configuration Syntax (OSR-16)
+        if: steps.changes.outputs.docs_only != 'true'
+        run: docker compose -f docker/docker-compose.hobbyist.yml config
+
       - name: Run Documentation Conformance Tests on Docs Changes
         if: steps.changes.outputs.docs_only == 'true'
         run: pnpm --filter @living-portfolio/api test src/conformance/docs-identity.conformance.test.ts src/conformance/receipt-check.conformance.test.ts src/conformance/handover.conformance.test.ts src/conformance/changed-scope.conformance.test.ts
