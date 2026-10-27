@@ -119,6 +119,22 @@
       ],
       "closingReceipt": "A033",
       "handover": "H006"
+    },
+    "WP-6": {
+      "name": "Work Package 6 (Gate G2 Alpha Core Closure & Release Packaging)",
+      "description": "Final P0 finding OSR-16 remediation, multi-architecture release workflow, SPDX 2.3 SBOM generation, Docker Compose reference configuration validation, and full zero-P0 repository debt closure.",
+      "requiredTaskIds": [
+        "WP-6.1"
+      ],
+      "requiredPassingTests": [
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [OSR-16] (status=fixed) Dockerfiles, compose stack, quickstart compose configuration, SBOM generator, and release workflow exist and are valid",
+        "AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml per D.1 & D.2) › [F2] (status=fixed) docker/Dockerfile.api and docker/Dockerfile.worker exist on disk for docker compose",
+        "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 1. First-run setup wizard completes owner account creation",
+        "Fix F1: subroutes mounted on createApp() and root content negotiation › public sub-routes and root content negotiation respond with 200 HTML",
+        "Ask Flow, Provider Disclosure & Extractive Degradation E2E (Spec §10.8, §13.5, 20261021-AI-01) › 1. Ask page displays query input and example question buttons"
+      ],
+      "closingReceipt": "A034",
+      "handover": "H007"
     }
   }
 }

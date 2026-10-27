@@ -454,7 +454,7 @@
     "title": "WP-5 Gate Closure and WP-6 Kickoff",
     "class": "H",
     "path": "docs/handovers/H006-wp-5-gate-closure-and-wp-6-kickoff.md",
-    "status": "active",
+    "status": "superseded",
     "supersedes": "H005"
   },
   {
@@ -464,5 +464,13 @@
     "path": "docs/execution-reports/A034-wp6-1-release-packaging-and-container-workflow.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "H007",
+    "title": "WP-6 Gate Closure and WP-7 Kickoff",
+    "class": "H",
+    "path": "docs/handovers/H007-wp-6-gate-closure-and-wp-7-kickoff.md",
+    "status": "active",
+    "supersedes": "H006"
   }
 ]
