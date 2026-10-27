@@ -155,8 +155,8 @@ Found 5 section(s) marked verbatim.
 
 ## 9. Handover Decision
 
-- Decision: NOT REQUIRED
-- Rule(s): HO-R5
-- Receipts since last handover: 3 (A031, A032, A033); work packages since: 0
+- Decision: REQUIRED
+- Rule(s): HO-R1
+- Receipts since last handover: 3 (A031, A032, A033); work packages since: 1 (WP-5)
 - Clean-boundary preconditions: all tests pass cleanly, 0 static analysis alerts, 0 credential leaks, linear git history with DCO sign-offs.
-- Next action: continue with task WP-5.4 under Work Package 5 upon authorization.
+- Next action: produce and publish Handover H006 (WP-5 Gate Closure and WP-6 Kickoff) per HO-R1
