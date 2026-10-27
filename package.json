@@ -19,6 +19,7 @@
     "docs:index": "node scripts/docs-index",
     "hardcode:check": "node scripts/hardcode-check",
     "dco:check": "node scripts/dco-check",
+    "sbom:generate": "node scripts/generate-sbom",
     "config:generate-env": "node scripts/generate-env-example",
     "seed:demo": "npx tsx examples/seed-demo.ts",
     "db:migrate": "pnpm --filter @living-portfolio/db migrate",

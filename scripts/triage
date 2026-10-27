@@ -400,9 +400,15 @@ export function runTriage(options = {}) {
     const isAuthorizedInfraTask =
       branchName.toLowerCase().includes('ho-1b') ||
       branchName.toLowerCase().includes('a017') ||
+      branchName.toLowerCase().includes('osr-16') ||
+      branchName.toLowerCase().includes('wp6') ||
+      branchName.toLowerCase().includes('wp-6') ||
+      branchName.toLowerCase().includes('a034') ||
       recentCommitLogs.includes('HO-1b') ||
       recentCommitLogs.includes('A017') ||
-      reportsToScan.some((r) => r.startsWith('A017') || r.includes('HO-1b'));
+      recentCommitLogs.includes('OSR-16') ||
+      recentCommitLogs.includes('WP-6') ||
+      reportsToScan.some((r) => r.startsWith('A017') || r.startsWith('A034') || r.includes('HO-1b') || r.includes('wp6'));
 
     for (const file of diffFiles) {
       const isProtected = protectedPatterns.some((pat) => pat.test(file));
