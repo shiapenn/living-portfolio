@@ -440,5 +440,13 @@
     "path": "docs/execution-reports/A032-wp5-2-setup-wizard-and-credential-lockdown.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A033",
+    "title": "WP-5.3 Web Mounting and Redaction Drawer",
+    "class": "A",
+    "path": "docs/execution-reports/A033-wp5-3-web-mounting-and-redaction-drawer.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

@@ -38,6 +38,7 @@
 | `A030` | WP-4.3 Time-Travel Correctness and Navigation Links | `active` | [A030-wp4-3-time-travel-correctness.md](execution-reports/A030-wp4-3-time-travel-correctness.md) | — |
 | `A031` | WP-5.1 Admin Operations and Kill-Switch Synchronization | `active` | [A031-wp5-1-admin-operations-and-killswitch.md](execution-reports/A031-wp5-1-admin-operations-and-killswitch.md) | — |
 | `A032` | WP-5.2 Setup Wizard and Credential Lockdown | `active` | [A032-wp5-2-setup-wizard-and-credential-lockdown.md](execution-reports/A032-wp5-2-setup-wizard-and-credential-lockdown.md) | — |
+| `A033` | WP-5.3 Web Mounting and Redaction Drawer | `active` | [A033-wp5-3-web-mounting-and-redaction-drawer.md](execution-reports/A033-wp5-3-web-mounting-and-redaction-drawer.md) | — |
 
 ## Handover Snapshots (Class H)
 
