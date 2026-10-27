@@ -456,5 +456,13 @@
     "path": "docs/handovers/H006-wp-5-gate-closure-and-wp-6-kickoff.md",
     "status": "active",
     "supersedes": "H005"
+  },
+  {
+    "id": "A034",
+    "title": "WP-6.1 Release Packaging, Container Workflow, and SBOM Generation",
+    "class": "A",
+    "path": "docs/execution-reports/A034-wp6-1-release-packaging-and-container-workflow.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
