@@ -97,6 +97,7 @@ export interface IPortfolioRepository {
   getCalibrationChanges(): Promise<CalibrationChange[]>;
   saveScopedConstraint(sc: Omit<ScopedConstraint, 'id' | 'at'>): Promise<ScopedConstraint>;
   getScopedConstraints(status?: string): Promise<ScopedConstraint[]>;
+  updateScopedConstraint(id: string, updates: Partial<Pick<ScopedConstraint, 'status'>>): Promise<ScopedConstraint | null>;
 
   // Search & Graph Traversal
   hybridSearch(query: string, options: {
@@ -638,6 +639,17 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
       list = list.filter((s) => s.status === status);
     }
     return list;
+  }
+
+  async updateScopedConstraint(id: string, updates: Partial<Pick<ScopedConstraint, 'status'>>): Promise<ScopedConstraint | null> {
+    const existing = this.scopedConstraints.get(id);
+    if (!existing) return null;
+    const updated: ScopedConstraint = {
+      ...existing,
+      ...updates,
+    };
+    this.scopedConstraints.set(id, updated);
+    return updated;
   }
 
   /**

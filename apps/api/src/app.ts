@@ -14,6 +14,7 @@ import { DEFAULT_STRATA_THEME } from '@living-portfolio/core';
 import {
   renderAdminImportPage,
   renderAdminLoginPage,
+  renderAdminSettingsPage,
   renderAdminSetupPage,
   renderAdminWorkspacePage,
   renderAskStatusPage,
@@ -238,8 +239,9 @@ export function createApp(
     return c.html(renderAdminSetupPage());
   });
   app.get('/admin/login', (c) => c.html(renderAdminLoginPage()));
-  app.get('/admin', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminWorkspacePage(repo)));
+  app.get('/admin', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminWorkspacePage(repo, runtimeState)));
   app.get('/admin/import', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminImportPage(repo)));
+  app.get('/admin/settings', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminSettingsPage(repo, runtimeState)));
 
   // Public visitor booking & escalation status routes (UX-08, UX-11)
   app.get('/book', (c) => c.html(renderBookPage(c.req.query('q'), c.req.query('facets'))));

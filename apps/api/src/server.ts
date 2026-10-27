@@ -3,6 +3,7 @@ import { loadConfig } from '@living-portfolio/config';
 import { seedDemoPortfolio } from '@living-portfolio/db';
 import {
   renderAdminImportPage,
+  renderAdminSettingsPage,
   renderAdminWorkspacePage,
   renderAskPage,
   renderAskStatusPage,
@@ -46,6 +47,7 @@ app.get('/book', (c) => c.html(renderBookPage(c.req.query('q'), c.req.query('fac
 app.get('/ask/status/:token', async (c) => c.html(await renderAskStatusPage(repo, c.req.param('token'))));
 app.get('/admin', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminWorkspacePage(repo)));
 app.get('/admin/import', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminImportPage(repo)));
+app.get('/admin/settings', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminSettingsPage(repo)));
 
 console.log(`Starting The Living Portfolio Server (Web + Admin + API) on port ${port}...`);
 

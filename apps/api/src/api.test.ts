@@ -618,4 +618,100 @@ describe('Living Portfolio API Integration Tests', () => {
     expect(updatedStatusData.escalation.status).toBe('approved');
     expect(updatedStatusData.escalation.final).toContain('ADR-02');
   });
+
+  describe('WP-5.1: Admin Operations, Calibration, Scoped Constraints & Settings Routes (20261020-UX-09)', () => {
+    it('confirms and discards scoped constraints via /api/settings/constraints', async () => {
+      const sc = await repo.saveScopedConstraint({
+        constraint: { max_concurrency: 50 },
+        scope: { domain: 'worker' },
+        source_quote: 'Limit worker concurrency to 50 jobs per minute',
+        status: 'proposed',
+      });
+
+      // 1. List constraints
+      const listRes = await app.request('/api/settings/constraints', { headers: authHeaders });
+      expect(listRes.status).toBe(200);
+      const listData = await listRes.json();
+      expect(listData.constraints.length).toBeGreaterThan(0);
+      const found = listData.constraints.find((c: any) => c.id === sc.id);
+      expect(found).toBeDefined();
+      expect(found.status).toBe('proposed');
+
+      // 2. Confirm constraint
+      const confirmRes = await app.request(`/api/settings/constraints/${sc.id}/confirm`, {
+        method: 'PATCH',
+        headers: authHeaders,
+      });
+      expect(confirmRes.status).toBe(200);
+      const confirmData = await confirmRes.json();
+      expect(confirmData.updated).toBe(true);
+      expect(confirmData.constraint.status).toBe('confirmed');
+
+      // 3. Discard constraint
+      const discardRes = await app.request(`/api/settings/constraints/${sc.id}/discard`, {
+        method: 'PATCH',
+        headers: authHeaders,
+      });
+      expect(discardRes.status).toBe(200);
+      const discardData = await discardRes.json();
+      expect(discardData.updated).toBe(true);
+      expect(discardData.constraint.status).toBe('discarded');
+
+      // 4. Returns 404 for nonexistent constraint
+      const notFoundRes = await app.request('/api/settings/constraints/non-existent-id/confirm', {
+        method: 'PATCH',
+        headers: authHeaders,
+      });
+      expect(notFoundRes.status).toBe(404);
+    });
+
+    it('updates routing floors and triggers warning when tier 1 floor is below default 0.82', async () => {
+      const updateRes = await app.request('/api/settings/routing', {
+        method: 'PATCH',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tier1_floor: 0.75,
+          tier2_floor: 0.50,
+          automatedAnsweringEnabled: false,
+          calibrationFrozen: true,
+        }),
+      });
+
+      expect(updateRes.status).toBe(200);
+      const data = await updateRes.json();
+      expect(data.updated).toBe(true);
+      expect(data.runtime.automatedAnsweringEnabled).toBe(false);
+      expect(data.runtime.calibrationFrozen).toBe(true);
+      expect(data.routing.tier1_floor).toBe(0.75);
+      expect(data.routing.warning).toContain('Warning: Tier 1 floor (0.75) is set below the shipped default (0.82)');
+    });
+
+    it('returns honest 501 Not Implemented for unconfigured notifications and backup drills', async () => {
+      const notifyRes = await app.request('/api/settings/notifications/test', {
+        method: 'POST',
+        headers: authHeaders,
+      });
+      expect(notifyRes.status).toBe(501);
+      const notifyData = await notifyRes.json();
+      expect(notifyData.finding).toBe('M1');
+      expect(notifyData.message).toContain('Notification channel delivery adapter is not yet implemented');
+
+      const drillRes = await app.request('/api/settings/backups/run-drill', {
+        method: 'POST',
+        headers: authHeaders,
+      });
+      expect(drillRes.status).toBe(501);
+      const drillData = await drillRes.json();
+      expect(drillData.finding).toBe('M1');
+      expect(drillData.message).toContain('backup and scratch-container restore verification are not yet implemented');
+    });
+
+    it('serves /admin/settings page with 200 HTML under admin authentication', async () => {
+      const res = await app.request('/admin/settings', { headers: authHeaders });
+      expect(res.status).toBe(200);
+      const text = await res.text();
+      expect(text).toContain('Admin Operations &amp; System Calibration');
+      expect(text).toContain('id="btn-save-routing"');
+    });
+  });
 });

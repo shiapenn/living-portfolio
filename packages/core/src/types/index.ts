@@ -229,7 +229,7 @@ export interface ScopedConstraint {
   scope: Record<string, any>;
   source_escalation?: string | null;
   source_quote?: string | null;
-  status: 'proposed' | 'confirmed' | 'revoked';
+  status: 'proposed' | 'confirmed' | 'revoked' | 'discarded';
   at: string;
 }
 

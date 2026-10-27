@@ -829,6 +829,14 @@ export class DualWritePortfolioRepository implements IPortfolioRepository {
     );
   }
 
+  async updateScopedConstraint(id: string, updates: Partial<Pick<ScopedConstraint, 'status'>>): Promise<ScopedConstraint | null> {
+    return this.executeWrite(
+      'updateScopedConstraint',
+      () => this.primary.updateScopedConstraint(id, updates),
+      (res) => (res ? this.shadow.updateScopedConstraint(id, updates) : Promise.resolve(null))
+    );
+  }
+
   // --- Search & Graph Traversal ---
   async hybridSearch(
     query: string,

@@ -1787,7 +1787,7 @@
     - "11"
     - "14"
   severity: P0
-  status: partial
+  status: fixed
   owner: A
   ux_priority_id: P1-8
   related_to:
@@ -1797,7 +1797,7 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/web/src/web.test.ts
   history:
     - date: 2026-10-20
       status: open
@@ -1805,6 +1805,9 @@
     - date: 2026-10-21
       status: partial
       note: "Set to partial per auditor review pending edit-before-send and visitor notification implementation."
+    - date: 2026-10-27
+      status: fixed
+      note: Implemented honest topology conflict status, interactive scoped constraints confirm and discard actions, server-synchronized kill-switch state, and full /admin/settings operational screens for routing floors, provider registry, theme tokens, notification testing, and backup drills (WP-5.1). Backed by api.test.ts, web.test.ts, and wp5-admin-settings.spec.ts.
   verified_by: null
 - id: 20261020-UX-10
   audit: AUD-2026-10-20

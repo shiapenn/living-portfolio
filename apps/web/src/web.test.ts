@@ -3,6 +3,7 @@ import { InMemoryPortfolioRepository, seedDemoPortfolio } from '@living-portfoli
 import {
   parseAsOfDate,
   renderAdminImportPage,
+  renderAdminSettingsPage,
   renderAdminWorkspacePage,
   renderAskPage,
   renderAskStatusPage,
@@ -408,6 +409,87 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
       expect(res2023.html).toContain('Initial version 1 from 2022.');
       expect(res2023.html).not.toContain('Updated version 2 from 2024 with later hindsight.');
       expect(res2023.html).toContain('(historical revision)');
+    });
+  });
+
+  describe('WP-5.1: Admin Operations, Calibration, Scoped Constraints & Settings Screen (20261020-UX-09)', () => {
+    it('1. Admin workspace renders honest topology conflict status instead of fabricated text', async () => {
+      const html = await renderAdminWorkspacePage(repo);
+
+      // Must display honest 501 / SIMULATED M6 status
+      expect(html).toContain('id="topology-conflicts-card"');
+      expect(html).toContain('501 Not Implemented');
+      expect(html).toContain('Automated claim topology conflict detector is not yet implemented (SIMULATED finding M6)');
+
+      // Must NOT render fabricated fake conflicts
+      expect(html).not.toContain('Detected Claim Conflict:');
+      expect(html).not.toContain('Use Redis Redlock leases for distributed job coordination.');
+    });
+
+    it('2. Kill-switch initializes server-side and client-side reflecting real server state', async () => {
+      // With answering enabled (default)
+      const htmlEnabled = await renderAdminWorkspacePage(repo, { automatedAnsweringEnabled: true });
+      expect(htmlEnabled).toContain('id="btn-killswitch" aria-pressed="true">Pause Automated Answering</button>');
+      expect(htmlEnabled).toContain('let answeringEnabled = true;');
+
+      // With answering paused/disabled
+      const htmlDisabled = await renderAdminWorkspacePage(repo, { automatedAnsweringEnabled: false });
+      expect(htmlDisabled).toContain('id="btn-killswitch" aria-pressed="false">Resume Automated Answering</button>');
+      expect(htmlDisabled).toContain('let answeringEnabled = false;');
+    });
+
+    it('3. Scoped constraints list provides interactive confirm and discard controls', async () => {
+      await repo.saveScopedConstraint({
+        constraint: { max_qps: 100 },
+        scope: { domain: 'database' },
+        source_quote: 'Postgres connection pool max 100 under peak load',
+        status: 'proposed',
+      });
+
+      const html = await renderAdminWorkspacePage(repo);
+      expect(html).toContain('class="scoped-constraint-card"');
+      expect(html).toContain('Postgres connection pool max 100 under peak load');
+      expect(html).toContain('class="btn btn-secondary btn-confirm-constraint"');
+      expect(html).toContain('class="btn btn-secondary btn-discard-constraint"');
+    });
+
+    it('4. Admin settings screen renders all operational sections with honest unconfigured statuses', async () => {
+      const html = await renderAdminSettingsPage(repo, {
+        tier1_floor: 0.82,
+        tier2_floor: 0.55,
+        facet_known_threshold: 0.90,
+        automatedAnsweringEnabled: true,
+        calibrationFrozen: false,
+        simulatedDegradationMode: 'normal',
+      });
+
+      // Navigation back to workspace
+      expect(html).toContain('Admin Operations &amp; System Calibration');
+      expect(html).toContain('href="/admin"');
+      expect(html).toContain('← Back to Workspace');
+
+      // Routing & calibration inputs
+      expect(html).toContain('id="setting-tier1-floor"');
+      expect(html).toContain('id="tier1-warning"');
+      expect(html).toContain('id="setting-tier2-floor"');
+      expect(html).toContain('id="setting-facet-threshold"');
+      expect(html).toContain('id="btn-save-routing"');
+
+      // Provider registry & degradation mode
+      expect(html).toContain('local-onnx');
+      expect(html).toContain('bge-small-en-v1.5');
+      expect(html).toContain('id="setting-degradation-mode"');
+
+      // Theme customization & conformance
+      expect(html).toContain('id="setting-theme-light-accent"');
+      expect(html).toContain('id="setting-theme-dark-accent"');
+      expect(html).toContain('id="btn-save-theme"');
+
+      // Honest not_configured statuses (no invented passed/verified)
+      expect(html).toContain('id="chip-notify-status">not_configured</span>');
+      expect(html).toContain('id="chip-backup-status">not_configured</span>');
+      expect(html).toContain('id="btn-test-notification"');
+      expect(html).toContain('id="btn-run-backup-drill"');
     });
   });
 });

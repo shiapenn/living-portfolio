@@ -1010,6 +1010,15 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     return rows.map(mapScopedConstraint);
   }
 
+  async updateScopedConstraint(id: string, updates: Partial<Pick<ScopedConstraint, 'status'>>): Promise<ScopedConstraint | null> {
+    const [row] = await this.db
+      .update(schema.scopedConstraints)
+      .set(updates)
+      .where(eq(schema.scopedConstraints.id, id))
+      .returning();
+    return row ? mapScopedConstraint(row) : null;
+  }
+
   // --- Hybrid Search & Graph Traversal (§10.4) ---
   async hybridSearch(
     query: string,
