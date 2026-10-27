@@ -563,4 +563,36 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
       expect(html).toContain('sanitizeNext');
     });
   });
+
+  describe('WP-5.3: Sub-Route Mounting in createApp & Multi-Pass Redaction Drawer (Fix F1, 20261020-UX-03)', () => {
+    it('1. renderAdminWorkspacePage renders multi-pass redaction review drawer and action controls (§4.3, 20261020-UX-03)', async () => {
+      const repo = new InMemoryPortfolioRepository();
+      const html = await renderAdminWorkspacePage(repo);
+
+      // Redaction review drawer container and aria attributes
+      expect(html).toContain('id="redaction-preview-drawer"');
+      expect(html).toContain('role="dialog"');
+      expect(html).toContain('id="redaction-drawer-title"');
+      expect(html).toContain('Redaction Review Drawer (§4.3)');
+      expect(html).toContain('id="btn-close-redaction-drawer"');
+
+      // Drawer actions and pass sections
+      expect(html).toContain('id="btn-drawer-redact-all"');
+      expect(html).toContain('Redact All Findings');
+      expect(html).toContain('id="drawer-count-pass1"');
+      expect(html).toContain('id="drawer-items-pass1"');
+      expect(html).toContain('Pass 1: Credentials &amp; Secrets');
+
+      expect(html).toContain('id="drawer-count-pass2"');
+      expect(html).toContain('id="drawer-items-pass2"');
+      expect(html).toContain('Pass 2: NDA &amp; Restrictions');
+
+      expect(html).toContain('id="drawer-count-pass3"');
+      expect(html).toContain('id="drawer-items-pass3"');
+      expect(html).toContain('Pass 3: Entities, Project Names &amp; Exclusions');
+
+      expect(html).toContain('id="drawer-highlight-preview"');
+      expect(html).toContain('setupRedactionDrawer');
+    });
+  });
 });

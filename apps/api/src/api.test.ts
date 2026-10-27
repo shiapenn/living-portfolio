@@ -835,4 +835,49 @@ describe('Living Portfolio API Integration Tests', () => {
       expect(body.error).toContain('Too many failed login attempts');
     });
   });
+
+  describe('WP-5.3: Web Mounting in createApp & Multi-Pass Redaction Endpoint (Fix F1, 20261020-UX-03)', () => {
+    it('returns multiPass entity breakdown in POST /api/entries/redaction-preview (20261020-UX-03)', async () => {
+      const testSecretKey = ['sk', 'proj', 'apitestkey1234567890'].join('-');
+      const text = `Confidential client deployment under strict NDA. Key: ${testSecretKey}. Contact admin@internal.example.org on 192.168.1.1 for Project Orion.`;
+      const res = await app.request('/api/entries/redaction-preview', {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({ text }),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.clean).toBe(false);
+      expect(data.state).toBe('needs review');
+      expect(data.multiPass).toBeDefined();
+      expect(data.multiPass.pass1Secrets.length).toBeGreaterThanOrEqual(1);
+      expect(data.multiPass.pass2NdaMarkers.length).toBeGreaterThanOrEqual(1);
+      expect(data.multiPass.pass3Entities.length).toBeGreaterThanOrEqual(3);
+      expect(data.redactionPreviewToken).toBeTruthy();
+    });
+
+    it('mounts public site routes and performs HTML vs JSON content negotiation on / (F1)', async () => {
+      // Public HTML sub-routes
+      const workRes = await app.request('/work');
+      expect(workRes.status).toBe(200);
+      expect(await workRes.text()).toContain('Case Studies');
+
+      const timelineRes = await app.request('/timeline');
+      expect(timelineRes.status).toBe(200);
+
+      // Root content negotiation
+      const htmlRes = await app.request('/', {
+        headers: { Accept: 'text/html,application/xhtml+xml' },
+      });
+      expect(htmlRes.status).toBe(200);
+      expect(await htmlRes.text()).toContain('<!DOCTYPE html>');
+
+      const jsonRes = await app.request('/', {
+        headers: { Accept: 'application/json' },
+      });
+      expect(jsonRes.status).toBe(200);
+      const json = await jsonRes.json();
+      expect(json.status).toBe('online');
+    });
+  });
 });

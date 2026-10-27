@@ -17,8 +17,15 @@ import {
   renderAdminSettingsPage,
   renderAdminSetupPage,
   renderAdminWorkspacePage,
+  renderAskPage,
   renderAskStatusPage,
   renderBookPage,
+  renderBuildPage,
+  renderEntryDetailPage,
+  renderHomePage,
+  renderStaticPage,
+  renderTimelinePage,
+  renderWorkOrWritingPage,
 } from '@living-portfolio/web';
 import { AuthManager, createAuthRoutes } from './auth/security.js';
 import { createHealthRoutes } from './routes/health.js';
@@ -249,6 +256,25 @@ export function createApp(
   app.get('/book', (c) => c.html(renderBookPage(c.req.query('q'), c.req.query('facets'))));
   app.get('/ask/status/:token', async (c) => c.html(await renderAskStatusPage(repo, c.req.param('token'))));
 
+  // Strata Public Site & Content Routes (F1, §5, §7)
+  app.get('/home', async (c) => c.html(await renderHomePage(repo)));
+  app.get('/work', async (c) => c.html(await renderWorkOrWritingPage(repo, 'work', c.req.query('outcome'), c.req.query('as_of'))));
+  app.get('/work/:slug', async (c) => {
+    const res = await renderEntryDetailPage(repo, c.req.param('slug'), c.req.query('view'), c.req.query('as_of'));
+    return c.html(res.html, res.status as any);
+  });
+  app.get('/writing', async (c) => c.html(await renderWorkOrWritingPage(repo, 'writing', undefined, c.req.query('as_of'))));
+  app.get('/writing/:slug', async (c) => {
+    const res = await renderEntryDetailPage(repo, c.req.param('slug'), 'article', c.req.query('as_of'));
+    return c.html(res.html, res.status as any);
+  });
+  app.get('/build', async (c) => c.html(await renderBuildPage(repo)));
+  app.get('/timeline', async (c) => c.html(await renderTimelinePage(repo, c.req.query('as_of'))));
+  app.get('/ask', async (c) => c.html(await renderAskPage(c.req.query('q'), c.req.query('scope'), c.req.query('as_of'))));
+  app.get('/now', (c) => c.html(renderStaticPage('now')));
+  app.get('/about', (c) => c.html(renderStaticPage('about')));
+  app.get('/uses', (c) => c.html(renderStaticPage('uses')));
+
   // Federation manifest (§17)
   app.get('/.well-known/living-portfolio.json', async (c) => {
     // SIMULATED(M1): Cryptographic credential verification for federation manifest (§17) is not yet implemented.
@@ -286,8 +312,12 @@ export function createApp(
     return c.text(xml, 200, { 'Content-Type': 'application/xml; charset=utf-8' });
   });
 
-  // Root welcome
-  app.get('/', (c) => {
+  // Root welcome & content negotiation (F1)
+  app.get('/', async (c) => {
+    const accept = c.req.header('accept') || '';
+    if (accept.includes('text/html')) {
+      return c.html(await renderHomePage(repo));
+    }
     return c.json({
       name: cfg.PUBLIC_SITE_NAME,
       version: '0.1.0-alpha.0',

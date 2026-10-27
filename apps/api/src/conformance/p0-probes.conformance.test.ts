@@ -351,6 +351,39 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
     }
   );
 
+  registerBoundProbe(
+    'F1',
+    'apps/web renderer is mounted by createApp() in apps/api across public sub-routes and root HTML content negotiation',
+    async () => {
+      const homeRes = await app.request('/home');
+      expect(homeRes.status).toBe(200);
+      expect(await homeRes.text()).toContain('<!DOCTYPE html>');
+
+      const workRes = await app.request('/work');
+      expect(workRes.status).toBe(200);
+      expect(await workRes.text()).toContain('Case Studies');
+
+      const timelineRes = await app.request('/timeline');
+      expect(timelineRes.status).toBe(200);
+
+      const askRes = await app.request('/ask');
+      expect(askRes.status).toBe(200);
+
+      const rootHtmlRes = await app.request('/', {
+        headers: { Accept: 'text/html' },
+      });
+      expect(rootHtmlRes.status).toBe(200);
+      expect(await rootHtmlRes.text()).toContain('<!DOCTYPE html>');
+
+      const rootJsonRes = await app.request('/', {
+        headers: { Accept: 'application/json' },
+      });
+      expect(rootJsonRes.status).toBe(200);
+      const json = await rootJsonRes.json();
+      expect(json.status).toBe('online');
+    }
+  );
+
   registerBoundProbe('F2', 'docker/Dockerfile.api and docker/Dockerfile.worker exist on disk for docker compose', () => {
     expect(existsSync(resolve(rootDir, 'docker/Dockerfile.api'))).toBe(true);
     expect(existsSync(resolve(rootDir, 'docker/Dockerfile.worker'))).toBe(true);

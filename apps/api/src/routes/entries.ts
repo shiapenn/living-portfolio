@@ -12,7 +12,7 @@ import {
   EntryUpdateSchema,
   RevisionCreateSchema,
 } from '@living-portfolio/core';
-import { scanForConfidentialData, type AnswerCache } from '@living-portfolio/ai';
+import { scanForConfidentialData, extractEntitiesMultiPass, type AnswerCache } from '@living-portfolio/ai';
 import { AuthManager, sha256Hex } from '../auth/security.js';
 import type { RuntimeSettingsState } from './settings.js';
 
@@ -99,7 +99,8 @@ export function createEntriesRoutes(
     const effectiveExclusions = Array.isArray(exclusions)
       ? exclusions
       : (settingsState?.redactionExclusions ?? undefined);
-    const warnings = scanForConfidentialData(text, effectiveExclusions);
+    const multiPass = extractEntitiesMultiPass(text, effectiveExclusions);
+    const warnings = multiPass.allWarnings;
     const state = warnings.length === 0 ? 'clean' : 'needs review';
     const { token, payload } = auth.issueRedactionPreviewToken({
       entryId: typeof entryId === 'string' && entryId ? entryId : 'draft',
@@ -110,6 +111,7 @@ export function createEntriesRoutes(
       state,
       clean: warnings.length === 0,
       warnings,
+      multiPass,
       exclusionsMatched: warnings.filter((w) => w.type === 'exclusion' || w.type === 'client'),
       redactionPreviewToken: token,
       tokenPayload: payload,
