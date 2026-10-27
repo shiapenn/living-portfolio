@@ -400,5 +400,13 @@
     "path": "docs/execution-reports/A028-wp-41-structure-review-loop-and-import-planner.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A029",
+    "title": "WP-4.2 Visitor Escalation Loop and Booking System",
+    "class": "A",
+    "path": "docs/execution-reports/A029-wp-42-visitor-escalation-loop-and-booking-system.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
