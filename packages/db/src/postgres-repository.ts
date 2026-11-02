@@ -274,8 +274,12 @@ function mapGovernorLedger(row: typeof schema.governorLedger.$inferSelect): Gove
 export class PostgresPortfolioRepository implements IPortfolioRepository {
   private db: LivingPortfolioDb;
 
-  constructor(customDb?: LivingPortfolioDb) {
-    this.db = customDb ?? (process.env.DATABASE_URL ? createDrizzleDb() : getDefaultDb());
+  constructor(customDbOrUrl?: LivingPortfolioDb | string) {
+    if (typeof customDbOrUrl === 'string') {
+      this.db = createDrizzleDb(customDbOrUrl);
+    } else {
+      this.db = customDbOrUrl ?? (process.env.DATABASE_URL ? createDrizzleDb() : getDefaultDb());
+    }
   }
 
   // --- Ventures ---
