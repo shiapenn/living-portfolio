@@ -32,7 +32,10 @@ export class LivingPortfolioClient {
   private defaultHeaders: Record<string, string>;
 
   constructor(options: ClientOptions) {
-    const rawUrl = (options.baseUrl || '').trim().replace(/\/+$/, '');
+    let rawUrl = (options.baseUrl || '').trim();
+    while (rawUrl.endsWith('/')) {
+      rawUrl = rawUrl.slice(0, -1);
+    }
     if (!rawUrl) {
       this.baseApiUrl = '/api/v1';
     } else if (rawUrl.endsWith('/api/v1')) {
