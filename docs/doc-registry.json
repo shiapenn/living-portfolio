@@ -560,5 +560,13 @@
     "path": "docs/handovers/H009-wp-8-gate-closure-and-wp-9-kickoff.md",
     "status": "active",
     "supersedes": "H008"
+  },
+  {
+    "id": "A041",
+    "title": "WP-9.1 Real Backups and Restore Drill",
+    "class": "A",
+    "path": "docs/execution-reports/A041-wp-91-real-backups-and-restore-drill.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
