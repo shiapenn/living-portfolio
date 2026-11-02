@@ -48,6 +48,9 @@ export function createWebApp(options?: WebAppOptions) {
     })
   );
 
+  // Liveness / health endpoint for load balancers & container health checks
+  app.get('/healthz', (c) => c.json({ status: 'ok', service: 'web' }));
+
   // Admin UI routes
   app.get('/admin/setup', (c) => c.html(renderAdminSetupPage()));
   app.get('/admin/login', (c) => c.html(renderAdminLoginPage()));

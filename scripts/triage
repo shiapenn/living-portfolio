@@ -401,14 +401,36 @@ export function runTriage(options = {}) {
       branchName.toLowerCase().includes('ho-1b') ||
       branchName.toLowerCase().includes('a017') ||
       branchName.toLowerCase().includes('osr-16') ||
+      branchName.toLowerCase().includes('osr-18') ||
+      branchName.toLowerCase().includes('osr-20') ||
+      branchName.toLowerCase().includes('osr-22') ||
       branchName.toLowerCase().includes('wp6') ||
       branchName.toLowerCase().includes('wp-6') ||
+      branchName.toLowerCase().includes('wp8') ||
+      branchName.toLowerCase().includes('wp-8') ||
+      branchName.toLowerCase().includes('wp9') ||
+      branchName.toLowerCase().includes('wp-9') ||
       branchName.toLowerCase().includes('a034') ||
+      branchName.toLowerCase().includes('a039') ||
       recentCommitLogs.includes('HO-1b') ||
       recentCommitLogs.includes('A017') ||
       recentCommitLogs.includes('OSR-16') ||
+      recentCommitLogs.includes('OSR-18') ||
+      recentCommitLogs.includes('OSR-20') ||
+      recentCommitLogs.includes('OSR-22') ||
       recentCommitLogs.includes('WP-6') ||
-      reportsToScan.some((r) => r.startsWith('A017') || r.startsWith('A034') || r.includes('HO-1b') || r.includes('wp6'));
+      recentCommitLogs.includes('WP-8') ||
+      recentCommitLogs.includes('WP-9') ||
+      reportsToScan.some((r) =>
+        r.startsWith('A017') ||
+        r.startsWith('A034') ||
+        r.startsWith('A038') ||
+        r.startsWith('A039') ||
+        r.includes('HO-1b') ||
+        r.includes('wp6') ||
+        r.includes('wp-8') ||
+        r.includes('wp8')
+      );
 
     for (const file of diffFiles) {
       const isProtected = protectedPatterns.some((pat) => pat.test(file));

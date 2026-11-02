@@ -1422,18 +1422,21 @@
   spec_sections:
     - "13.1"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   verified_by: null
   links:
     issue: null
     pr: null
     plan: docs/plans/osr-001-open-source-release.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/staging-deploy.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Added from OSR-001 §7 task register
+    - date: 2026-11-02
+      status: fixed
+      note: Created Render Blueprint (deploy/render/render.yaml), staging deploy workflow (.github/workflows/deploy-staging.yml) with image digest pinning and scoped deploy credentials, Dockerfile.web, and regression test (WP-8.2).
 - id: OSR-19
   audit: OSR-001
   title: Staging safeguards (§6.4) and DEPLOYMENT_CLASS handling (Gate G3)
