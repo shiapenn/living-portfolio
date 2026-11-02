@@ -504,5 +504,13 @@
     "path": "docs/G002-configuration-reference-and-environment-contract.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A037",
+    "title": "WP-7.3 API boundary ADR and configuration contract",
+    "class": "A",
+    "path": "docs/execution-reports/A037-wp-73-api-boundary-adr-and-configuration-contract.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
