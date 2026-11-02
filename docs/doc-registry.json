@@ -576,5 +576,13 @@
     "path": "docs/execution-reports/A042-wp-92-observability-budget-caps-and-spend-alerts.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A043",
+    "title": "WP-9.3 Production Deploy Workflow, Health Gate and Auto-Rollback",
+    "class": "A",
+    "path": "docs/execution-reports/A043-wp-93-production-deploy-and-auto-rollback.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
