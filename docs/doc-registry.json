@@ -536,5 +536,13 @@
     "path": "docs/execution-reports/A038-wp-81-hosting-provider-spike-and-staging-adr.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A039",
+    "title": "WP-8.2 Staging provider config and deploy workflow",
+    "class": "A",
+    "path": "docs/execution-reports/A039-wp-82-staging-provider-config-and-deploy-workflow.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

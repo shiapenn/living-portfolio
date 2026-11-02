@@ -44,6 +44,7 @@
 | `A036` | WP-7.2 Web Decoupling and HTTP Client Enforcement | `active` | [A036-wp-72-web-decoupling-and-http-client-enforcement.md](execution-reports/A036-wp-72-web-decoupling-and-http-client-enforcement.md) | — |
 | `A037` | WP-7.3 API boundary ADR and configuration contract | `active` | [A037-wp-73-api-boundary-adr-and-configuration-contract.md](execution-reports/A037-wp-73-api-boundary-adr-and-configuration-contract.md) | — |
 | `A038` | WP-8.1 Hosting provider spike and staging ADR | `active` | [A038-wp-81-hosting-provider-spike-and-staging-adr.md](execution-reports/A038-wp-81-hosting-provider-spike-and-staging-adr.md) | — |
+| `A039` | WP-8.2 Staging provider config and deploy workflow | `active` | [A039-wp-82-staging-provider-config-and-deploy-workflow.md](execution-reports/A039-wp-82-staging-provider-config-and-deploy-workflow.md) | — |
 
 ## Handover Snapshots (Class H)
 
