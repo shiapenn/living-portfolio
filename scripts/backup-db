@@ -1,0 +1,53 @@
+#!/usr/bin/env node
+/**
+ * Living Portfolio - Automated Database Backup CLI (§13.9, OSR-20, M8)
+ * Performs pg_dump / repository export encrypted with age, outputs metadata sidecar,
+ * and enforces retention policy.
+ */
+import { resolve } from 'node:path';
+import { existsSync, mkdirSync } from 'node:fs';
+import { createDatabaseBackup, PostgresPortfolioRepository, InMemoryPortfolioRepository } from '../packages/db/dist/index.js';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const destDir = process.env.BACKUP_DIR || resolve(ROOT, 'backups');
+
+if (!existsSync(destDir)) {
+  mkdirSync(destDir, { recursive: true });
+}
+
+async function main() {
+  console.log('=== Living Portfolio Database Backup ===');
+  console.log(`Destination: ${destDir}`);
+
+  const databaseUrl = process.env.DATABASE_URL;
+  let repo = undefined;
+  if (databaseUrl && !databaseUrl.includes('test')) {
+    try {
+      repo = new PostgresPortfolioRepository(databaseUrl);
+    } catch (e) {
+      console.warn('Postgres connection failed, falling back to repository dump:', e);
+    }
+  }
+
+  const agePublicKey = process.env.AGE_PUBLIC_KEY;
+  const result = await createDatabaseBackup({
+    repo,
+    databaseUrl,
+    destinationDir: destDir,
+    agePublicKey,
+  });
+
+  console.log('✓ Backup completed successfully:');
+  console.log(`  Archive:   ${result.backupFile}`);
+  console.log(`  Metadata:  ${result.metadataFile}`);
+  console.log(`  Timestamp: ${result.metadata.timestamp}`);
+  console.log(`  Checksum:  ${result.metadata.payloadChecksumSha256}`);
+  console.log(`  Method:    ${result.metadata.encryptionMethod}`);
+  console.log(`  Size:      ${result.metadata.backupSizeBytes} bytes`);
+  console.log(`  Counts:    ${result.metadata.entryCount} entries, ${result.metadata.revisionCount} revisions, ${result.metadata.chunkCount} chunks`);
+}
+
+main().catch((err) => {
+  console.error('✗ Backup failed:', err);
+  process.exit(1);
+});

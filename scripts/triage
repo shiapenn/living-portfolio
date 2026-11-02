@@ -426,10 +426,15 @@ export function runTriage(options = {}) {
         r.startsWith('A034') ||
         r.startsWith('A038') ||
         r.startsWith('A039') ||
+        r.startsWith('A040') ||
+        r.startsWith('A041') ||
         r.includes('HO-1b') ||
         r.includes('wp6') ||
         r.includes('wp-8') ||
-        r.includes('wp8')
+        r.includes('wp8') ||
+        r.includes('wp-9') ||
+        r.includes('wp9') ||
+        r.includes('osr-20')
       );
 
     for (const file of diffFiles) {

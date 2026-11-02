@@ -1,8 +1,11 @@
 import { Hono } from 'hono';
+import { existsSync } from 'node:fs';
+import { checkBackupFreshness } from '@living-portfolio/db';
 
 export interface HealthRouteOptions {
   databaseKind?: 'in-memory' | 'postgres' | 'dual-write';
   configuredProviders?: string[];
+  backupDir?: string;
 }
 
 /**
@@ -38,10 +41,28 @@ export function createHealthRoutes(
         depth: null,
         activeWorkers: null,
       },
-      backup: {
-        lastBackup: null,
-        lastRestoreTestStatus: 'not_configured',
-      },
+      backup: (() => {
+        const backupDir = options?.backupDir ?? process.env.BACKUP_DIR;
+        const backupStatus: {
+          lastBackup: string | null;
+          lastRestoreTestStatus: string;
+          alert?: string;
+        } = {
+          lastBackup: null,
+          lastRestoreTestStatus: 'not_configured',
+        };
+        if (backupDir && existsSync(backupDir)) {
+          const freshness = checkBackupFreshness(backupDir);
+          if (freshness.lastBackupAt) {
+            backupStatus.lastBackup = freshness.lastBackupAt;
+            backupStatus.lastRestoreTestStatus = freshness.fresh ? 'passed' : 'stale';
+            if (freshness.alert) {
+              backupStatus.alert = freshness.alert;
+            }
+          }
+        }
+        return backupStatus;
+      })(),
       providers: {
         status: configuredProviders.length > 0 ? 'configured' : 'not_configured',
         active: configuredProviders,

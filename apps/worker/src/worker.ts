@@ -12,11 +12,35 @@ import {
   type ModelProvider,
   type ScanOptions,
 } from '@living-portfolio/ai';
-import { InMemoryPortfolioRepository, type IPortfolioRepository } from '@living-portfolio/db';
+import {
+  InMemoryPortfolioRepository,
+  type IPortfolioRepository,
+  createDatabaseBackup,
+  runRestoreDrill,
+  type BackupRetentionPolicy,
+  type BackupMetadata,
+  type RestoreDrillResult,
+} from '@living-portfolio/db';
 
 export interface PublishBuildConfig {
   debounceMinutes: number; // default 10
   maxBuildsPerDay: number; // default 12
+}
+
+export interface BackupJobOptions {
+  destinationDir?: string;
+  agePublicKey?: string;
+  identityKey?: string;
+  retentionPolicy?: Partial<BackupRetentionPolicy>;
+  runRestoreDrill?: boolean;
+  scratchRepo?: IPortfolioRepository;
+}
+
+export interface BackupJobResult {
+  backupFile: string;
+  metadataFile: string;
+  metadata: BackupMetadata;
+  drillResult?: RestoreDrillResult;
 }
 
 export interface PortfolioWorkerOptions {
@@ -367,11 +391,36 @@ export class PortfolioWorker {
    * 5. BACKUP & RESTORE DRILL (§13.9, §18.1):
    * Nightly pg_dump + media sync encrypted with `age`, plus monthly automated restore test.
    */
-  async runBackupAndRestoreDrillJob(): Promise<never> {
-    // SIMULATED(M1): Real pg_dump + age encryption and scratch-container restore verification are not yet implemented.
-    throw new Error(
-      '501 Not Implemented [SIMULATED(M1)]: Encrypted pg_dump + age backup and scratch-container restore verification are not yet implemented.'
-    );
+  async runBackupAndRestoreDrillJob(options?: BackupJobOptions): Promise<BackupJobResult> {
+    if (!options || (!options.destinationDir && !options.agePublicKey)) {
+      // SIMULATED(M1): Encrypted pg_dump + age backup and scratch-container restore verification are not yet implemented.
+      throw new Error(
+        '501 Not Implemented [SIMULATED(M1)]: Encrypted pg_dump + age backup and scratch-container restore verification are not yet implemented.'
+      );
+    }
+
+    const backupResult = await createDatabaseBackup({
+      repo: this.repo,
+      destinationDir: options.destinationDir,
+      agePublicKey: options.agePublicKey,
+      retentionPolicy: options.retentionPolicy,
+    });
+
+    let drillResult: RestoreDrillResult | undefined = undefined;
+    if (options.runRestoreDrill !== false) {
+      drillResult = await runRestoreDrill({
+        backupFile: backupResult.backupFile,
+        identityKey: options.identityKey || options.agePublicKey,
+        scratchRepo: options.scratchRepo ?? new InMemoryPortfolioRepository(),
+      });
+    }
+
+    return {
+      backupFile: backupResult.backupFile,
+      metadataFile: backupResult.metadataFile,
+      metadata: backupResult.metadata,
+      drillResult,
+    };
   }
 
   /**

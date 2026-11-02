@@ -76,6 +76,26 @@ describe('PortfolioWorker Pipeline (§8, §13.7, §13.9, §15)', () => {
     await expect(worker.runBackupAndRestoreDrillJob()).rejects.toThrow(/501 Not Implemented \[SIMULATED\(M1\)\]/);
   });
 
+  it('runs real age-encrypted backup and restore drill when options are configured (§13.9, OSR-20, M8)', async () => {
+    const tmpDir = `/tmp/lp-worker-backup-test-${Date.now()}`;
+    const worker = new PortfolioWorker();
+    await worker.runIngestJob({
+      slug: 'backup-entry',
+      title: 'Backup Entry',
+      body_md: 'This is real backup test content.',
+    });
+
+    const result = await worker.runBackupAndRestoreDrillJob({
+      destinationDir: tmpDir,
+      agePublicKey: 'lp_worker_test_recipient_key_2026',
+    });
+
+    expect(result.backupFile).toBeDefined();
+    expect(result.metadata.entryCount).toBeGreaterThanOrEqual(1);
+    expect(result.drillResult?.ok).toBe(true);
+    expect(result.drillResult?.checksumVerified).toBe(true);
+  });
+
   it('deletes entry and all derived records in a single cascading job (§15)', async () => {
     const worker = new PortfolioWorker();
     const { entry, revision } = await worker.runIngestJob({

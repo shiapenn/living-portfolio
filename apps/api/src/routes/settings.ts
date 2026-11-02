@@ -1,5 +1,12 @@
 import { Hono } from 'hono';
-import type { IPortfolioRepository } from '@living-portfolio/db';
+import { existsSync } from 'node:fs';
+import {
+  type IPortfolioRepository,
+  createDatabaseBackup,
+  runRestoreDrill,
+  checkBackupFreshness,
+  InMemoryPortfolioRepository,
+} from '@living-portfolio/db';
 import { DEFAULT_STRATA_THEME, verifyThemeConformance } from '@living-portfolio/core';
 import { getDefaultExclusions } from '@living-portfolio/ai';
 
@@ -102,14 +109,25 @@ export function createSettingsRoutes(
         topic: null,
         testStatus: 'not_configured',
       },
-      backups: {
-        schedule: null,
-        destinations: [],
-        encrypt: 'age',
-        retention: { daily: 7, weekly: 4, monthly: 6 },
-        lastRestoreTest: 'not_configured',
-        lastBackupAt: null,
-      },
+      backups: (() => {
+        const backupDir = process.env.BACKUP_DIR;
+        const status = {
+          schedule: backupDir ? '0 2 * * *' : null,
+          destinations: backupDir ? [backupDir] : [],
+          encrypt: 'age',
+          retention: { daily: 7, weekly: 4, monthly: 6 },
+          lastRestoreTest: 'not_configured',
+          lastBackupAt: null as string | null,
+        };
+        if (backupDir && existsSync(backupDir)) {
+          const freshness = checkBackupFreshness(backupDir);
+          if (freshness.lastBackupAt) {
+            status.lastBackupAt = freshness.lastBackupAt;
+            status.lastRestoreTest = freshness.fresh ? 'passed' : 'stale';
+          }
+        }
+        return status;
+      })(),
       theme: state.theme,
       themeConformance: verifyThemeConformance(state.theme),
       redaction: {
@@ -236,16 +254,52 @@ export function createSettingsRoutes(
 
   // Run Encrypted Backup & Automated Restore Test Drill (§13.9, §18.1)
   router.post('/backups/run-drill', async (c) => {
-    // SIMULATED(M1): Encrypted pg_dump + age backup and scratch-container restore drill are not yet implemented.
-    return c.json(
-      {
-        error: 'Not Implemented',
-        code: 'SIMULATED',
-        finding: 'M1',
-        message: 'Encrypted pg_dump + age backup and scratch-container restore verification are not yet implemented.',
-      },
-      501
-    );
+    let body: any = {};
+    try {
+      body = await c.req.json();
+    } catch {
+      // Empty or non-JSON body
+    }
+
+    const backupDir = body.destinationDir || process.env.BACKUP_DIR;
+    const recipientKey = body.agePublicKey || process.env.AGE_PUBLIC_KEY;
+
+    if (!backupDir && !recipientKey) {
+      // SIMULATED(M1): Encrypted pg_dump + age backup and scratch-container restore drill are not yet implemented.
+      return c.json(
+        {
+          error: 'Not Implemented',
+          code: 'SIMULATED',
+          finding: 'M1',
+          message: 'Encrypted pg_dump + age backup and scratch-container restore verification are not yet implemented.',
+        },
+        501
+      );
+    }
+
+    try {
+      const backupResult = await createDatabaseBackup({
+        repo,
+        destinationDir: backupDir,
+        agePublicKey: recipientKey,
+      });
+
+      const drillResult = await runRestoreDrill({
+        backupFile: backupResult.backupFile,
+        identityKey: body.identityKey || recipientKey,
+        scratchRepo: new InMemoryPortfolioRepository(),
+      });
+
+      return c.json({
+        ok: drillResult.ok,
+        drilledAt: drillResult.drilledAt,
+        backupFile: backupResult.backupFile,
+        metadata: backupResult.metadata,
+        drillResult,
+      });
+    } catch (err: any) {
+      return c.json({ ok: false, error: err.message }, 500);
+    }
   });
 
   // Portable Export (§9: Markdown with front matter + JSON sidecar)

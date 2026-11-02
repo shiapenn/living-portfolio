@@ -1,0 +1,92 @@
+#!/usr/bin/env node
+/**
+ * Living Portfolio - Automated Scratch Restore Drill CLI (§13.9, §18.1, OSR-20, M8)
+ * Decrypts age archive, verifies payload SHA-256 against metadata sidecar,
+ * restores into scratch database/repository, and checks backup freshness.
+ */
+import { resolve, join } from 'node:path';
+import { existsSync, readdirSync } from 'node:fs';
+import {
+  runRestoreDrill,
+  checkBackupFreshness,
+  PostgresPortfolioRepository,
+  InMemoryPortfolioRepository,
+} from '../packages/db/dist/index.js';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const backupDir = process.env.BACKUP_DIR || resolve(ROOT, 'backups');
+
+async function main() {
+  console.log('=== Living Portfolio Automated Restore Drill ===');
+  console.log(`Backup Directory: ${backupDir}`);
+
+  // Freshness check
+  const freshness = checkBackupFreshness(backupDir);
+  console.log(`Backup Freshness: ${freshness.status}`);
+  if (freshness.ageHours !== null) {
+    console.log(`Backup Age:       ${freshness.ageHours.toFixed(1)} hours`);
+  }
+  if (freshness.alert) {
+    console.warn(`⚠️  ALERT: ${freshness.alert}`);
+  }
+
+  let targetBackupFile = process.env.BACKUP_FILE || process.argv[2];
+  if (!targetBackupFile) {
+    if (!existsSync(backupDir)) {
+      throw new Error(`Backup directory does not exist: ${backupDir}`);
+    }
+    const archives = readdirSync(backupDir)
+      .filter((f) => f.endsWith('.dump.age'))
+      .sort()
+      .reverse();
+    if (archives.length === 0) {
+      throw new Error(`No backup archives (*.dump.age) found in: ${backupDir}`);
+    }
+    targetBackupFile = join(backupDir, archives[0]);
+  }
+
+  console.log(`Drilling Archive: ${targetBackupFile}`);
+
+  const targetDbUrl = process.env.SCRATCH_DATABASE_URL || process.env.DATABASE_URL;
+  let scratchRepo = undefined;
+  if (targetDbUrl && !targetDbUrl.includes('test')) {
+    try {
+      scratchRepo = new PostgresPortfolioRepository(targetDbUrl);
+    } catch (e) {
+      console.warn('Scratch Postgres connection unavailable, using in-memory scratch repo:', e);
+      scratchRepo = new InMemoryPortfolioRepository();
+    }
+  } else {
+    scratchRepo = new InMemoryPortfolioRepository();
+  }
+
+  const identityKey = process.env.AGE_IDENTITY_KEY || process.env.AGE_PUBLIC_KEY;
+  const result = await runRestoreDrill({
+    backupFile: targetBackupFile,
+    identityKey,
+    scratchRepo,
+  });
+
+  if (!result.ok) {
+    console.error('✗ Restore drill FAILED:');
+    console.error(`  Drilled At:        ${result.drilledAt}`);
+    console.error(`  Checksum Verified: ${result.checksumVerified}`);
+    console.error(`  Restored Entries:  ${result.restoredCounts.entries}`);
+    if (result.details) console.error(`  Details:           ${result.details}`);
+    process.exit(1);
+  }
+
+  console.log('✓ Restore drill PASSED:');
+  console.log(`  Drilled At:        ${result.drilledAt}`);
+  console.log(`  Duration:          ${result.durationMs}ms`);
+  console.log(`  Checksum Verified: ${result.checksumVerified}`);
+  console.log(`  Embeddings/Data:   ${result.embeddingVerified}`);
+  console.log(`  Restored Entries:  ${result.restoredCounts.entries}`);
+  console.log(`  Restored Revisions:${result.restoredCounts.revisions}`);
+  console.log(`  Restored Chunks:   ${result.restoredCounts.chunks}`);
+}
+
+main().catch((err) => {
+  console.error('✗ Drill execution error:', err);
+  process.exit(1);
+});

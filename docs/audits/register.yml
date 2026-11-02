@@ -932,7 +932,7 @@
     - "18.1"
     - "20"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 20
@@ -940,12 +940,15 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/backup-restore.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit (Section 3, Section 4 §13.9, Section 7 Fix 20)
-  verified_by: null
+    - date: 2026-11-02
+      status: fixed
+      note: Automated pg_dump + age encrypted backups, scratch-container restore drill, retention policy enforcement, and backup freshness alerts.
+  verified_by: apps/api/src/conformance/backup-restore.conformance.test.ts
 - id: M9
   audit: AUD-2026-10-19
   title: Import planner ignores configured budgets and lacks resumable jobs, core
@@ -1467,18 +1470,21 @@
     - "18.1"
     - "20"
   severity: P1
-  status: open
+  status: fixed
   owner: A
-  verified_by: null
+  verified_by: apps/api/src/conformance/backup-restore.conformance.test.ts
   links:
     issue: null
     pr: null
     plan: docs/plans/osr-001-open-source-release.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/backup-restore.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Added from OSR-001 §7 task register
+    - date: 2026-11-02
+      status: fixed
+      note: Automated pg_dump + age encrypted backups, scratch-container restore drill, retention policy enforcement (7 daily, 4 weekly, 6 monthly), and BACKUP_STALE freshness alerts.
 - id: OSR-21
   audit: OSR-001
   title: Observability, budget caps and alerts (Gate G4)

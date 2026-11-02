@@ -26,6 +26,8 @@
     "dependency:rules": "node scripts/verify-dependency-rules",
     "seed:demo": "npx tsx examples/seed-demo.ts",
     "db:migrate": "pnpm --filter @living-portfolio/db migrate",
+    "db:backup": "node scripts/backup-db",
+    "db:restore-drill": "node scripts/restore-drill",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean"

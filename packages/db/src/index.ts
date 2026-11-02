@@ -5,3 +5,4 @@ export * from './seed.js';
 export * from './connection.js';
 export * from './migrate.js';
 export * from './dual-write-repository.js';
+export * from './backup/index.js';
