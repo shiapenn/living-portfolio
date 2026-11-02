@@ -307,18 +307,18 @@ describe('Production Deploy Workflow, Health Gate & Auto-Rollback Conformance (O
       it('happy path: deploys target digests, passes health gate, and returns success exit code 0', async () => {
         const deployedImages: string[] = [];
         const mockFetch = vi.fn().mockImplementation(async (url: string) => {
-          if (url.includes('api.render.com')) {
-            const parsed = new URL(url);
+          const parsed = new URL(url);
+          if (parsed.origin === 'https://api.render.com') {
             deployedImages.push(parsed.searchParams.get('imgURL') || '');
             return { ok: true, status: 200, text: async () => 'Deploy queued' };
           }
-          if (url.includes(':3000/healthz')) {
+          if (parsed.port === '3000' && parsed.pathname === '/healthz') {
             return { status: 200, json: async () => ({ status: 'healthy' }) };
           }
-          if (url.includes(':3000/api/v1/health')) {
+          if (parsed.port === '3000' && parsed.pathname === '/api/v1/health') {
             return { status: 200, json: async () => ({ status: 'healthy' }) };
           }
-          if (url.includes(':3001/healthz')) {
+          if (parsed.port === '3001' && parsed.pathname === '/healthz') {
             return { status: 200, json: async () => ({ status: 'ok' }) };
           }
           return { status: 200, json: async () => ({}) };
@@ -344,20 +344,20 @@ describe('Production Deploy Workflow, Health Gate & Auto-Rollback Conformance (O
         const deployedImages: string[] = [];
 
         const mockFetch = vi.fn().mockImplementation(async (url: string) => {
-          if (url.includes('api.render.com')) {
-            const parsed = new URL(url);
+          const parsed = new URL(url);
+          if (parsed.origin === 'https://api.render.com') {
             deployedImages.push(parsed.searchParams.get('imgURL') || '');
             return { ok: true, status: 200, text: async () => 'Deploy queued' };
           }
           const isRollbackActive = deployedImages.includes(prevDigest1);
           // Health check behavior: fail on target deploy, succeed once rollback images are deployed
-          if (url.includes(':3000/healthz') || url.includes(':3000/api/v1/health')) {
+          if (parsed.port === '3000' && (parsed.pathname === '/healthz' || parsed.pathname === '/api/v1/health')) {
             if (!isRollbackActive) {
               return { status: 500, json: async () => ({ status: 'down', error: 'Broken image' }) };
             }
             return { status: 200, json: async () => ({ status: 'healthy' }) };
           }
-          if (url.includes(':3001/healthz')) {
+          if (parsed.port === '3001' && parsed.pathname === '/healthz') {
             return { status: 200, json: async () => ({ status: 'ok', service: 'web' }) };
           }
           return { status: 200, json: async () => ({}) };
@@ -393,12 +393,12 @@ describe('Production Deploy Workflow, Health Gate & Auto-Rollback Conformance (O
         const deployedRollbacks: string[] = [];
 
         const mockFetch = vi.fn().mockImplementation(async (url: string) => {
-          if (url.includes('api.render.com')) {
-            const parsed = new URL(url);
+          const parsed = new URL(url);
+          if (parsed.origin === 'https://api.render.com') {
             deployedRollbacks.push(parsed.searchParams.get('imgURL') || '');
             return { ok: true, status: 200, text: async () => 'Deploy queued' };
           }
-          if (url.includes(':3001/healthz')) {
+          if (parsed.port === '3001' && parsed.pathname === '/healthz') {
             return { status: 200, json: async () => ({ status: 'ok', service: 'web' }) };
           }
           return { status: 200, json: async () => ({ status: 'healthy', service: 'api' }) };
