@@ -12,6 +12,7 @@ const steps = [
   { name: 'Build & Typecheck', command: 'pnpm build' },
   { name: 'Environment Sync & Drift Check (OSR-03)', command: 'node scripts/generate-env-example && git diff --exit-code .env.example' },
   { name: 'OpenAPI Specification & Contract Drift Check (OSR-12)', command: 'node scripts/verify-openapi-drift' },
+  { name: 'Frontend & Backend Decoupling Dependency Rules (OSR-13)', command: 'node scripts/verify-dependency-rules' },
   { name: 'Hard-Code Inventory Scan (OSR-01)', command: 'node scripts/hardcode-check' },
   { name: 'Developer Certificate of Origin (OSR-07 dco)', command: 'node scripts/dco-check' },
   { name: 'Documentation Identity & Registry Check (IAHP PROC-1)', command: 'node scripts/docs-check' },

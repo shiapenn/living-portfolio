@@ -22,6 +22,7 @@ import { checkGate } from '@living-portfolio/core';
 import { MockModelProvider, OpenAICompatibleProvider, verifyAnswerBeforeDelivery } from '@living-portfolio/ai';
 import { PortfolioWorker } from '@living-portfolio/worker';
 import { renderAskPage, renderEntryDetailPage } from '@living-portfolio/web';
+import { mountBundledWeb } from '../adapter/bundled-web.js';
 
 const rootDir = resolve(import.meta.dirname, '../../../..');
 const registerEntries = parseYaml(readFileSync(resolve(rootDir, 'docs/audits/register.yml'), 'utf8')) as Array<{
@@ -355,27 +356,31 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
     'F1',
     'apps/web renderer is mounted by createApp() in apps/api across public sub-routes and root HTML content negotiation',
     async () => {
-      const homeRes = await app.request('/home');
+      const { app: bundledApp } = createApp(repo, {
+        bundledWeb: true,
+        bundledWebAdapter: mountBundledWeb,
+      });
+      const homeRes = await bundledApp.request('/home');
       expect(homeRes.status).toBe(200);
       expect(await homeRes.text()).toContain('<!DOCTYPE html>');
 
-      const workRes = await app.request('/work');
+      const workRes = await bundledApp.request('/work');
       expect(workRes.status).toBe(200);
       expect(await workRes.text()).toContain('Case Studies');
 
-      const timelineRes = await app.request('/timeline');
+      const timelineRes = await bundledApp.request('/timeline');
       expect(timelineRes.status).toBe(200);
 
-      const askRes = await app.request('/ask');
+      const askRes = await bundledApp.request('/ask');
       expect(askRes.status).toBe(200);
 
-      const rootHtmlRes = await app.request('/', {
+      const rootHtmlRes = await bundledApp.request('/', {
         headers: { Accept: 'text/html' },
       });
       expect(rootHtmlRes.status).toBe(200);
       expect(await rootHtmlRes.text()).toContain('<!DOCTYPE html>');
 
-      const rootJsonRes = await app.request('/', {
+      const rootJsonRes = await bundledApp.request('/', {
         headers: { Accept: 'application/json' },
       });
       expect(rootJsonRes.status).toBe(200);

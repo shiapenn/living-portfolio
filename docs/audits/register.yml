@@ -1309,18 +1309,21 @@
     - "5"
     - "7"
   severity: P1
-  status: open
+  status: fixed
   owner: A
-  verified_by: null
+  verified_by: apps/api/src/conformance/web-decoupling.conformance.test.ts
   links:
     issue: null
     pr: null
     plan: docs/plans/osr-001-open-source-release.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/web-decoupling.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Added from OSR-001 §7 task register
+    - date: 2026-11-02
+      status: fixed
+      note: Decoupled apps/web from apps/api and database imports; createApp() is pure API by default; optional bundled web adapter behind ENABLE_BUNDLED_WEB=true; added verify-dependency-rules script.
 - id: OSR-14
   audit: OSR-001
   title: Repository conformance suite over in-memory and Postgres (Gate G2)

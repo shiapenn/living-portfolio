@@ -86,10 +86,22 @@ export class LivingPortfolioClient {
       headers['X-CSRF-Token'] = this.csrfToken;
     }
 
-    const response = await this.customFetch(url, {
+    const reqInit: RequestInit = {
       ...init,
       headers,
-    });
+    };
+
+    let response: Response;
+    try {
+      response = await this.customFetch(url, reqInit);
+    } catch (err: any) {
+      if (typeof Request !== 'undefined') {
+        const req = new Request(url, reqInit);
+        response = await this.customFetch(req as any);
+      } else {
+        throw err;
+      }
+    }
 
     const contentType = response.headers.get('content-type') || '';
     const isJson = contentType.includes('application/json');
@@ -191,6 +203,10 @@ export class LivingPortfolioClient {
       if (options?.as_of) q.set('as_of', options.as_of);
       const qs = q.toString();
       return this.request<EntryDetailResponse>(`/entries/${encodeURIComponent(id)}${qs ? `?${qs}` : ''}`);
+    },
+
+    getBySlug: (slug: string, options?: { view?: string; as_of?: string }): Promise<EntryDetailResponse> => {
+      return this.entries.get(slug, options);
     },
 
     create: (body: EntryCreateInput): Promise<{ entry: any; revision: any; structureLevel: number }> =>

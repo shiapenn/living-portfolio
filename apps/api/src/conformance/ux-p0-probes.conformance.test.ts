@@ -13,6 +13,7 @@ import { parse as parseYaml } from '../../../../packages/core/node_modules/yaml/
 import { createApp } from '../app.js';
 import { scanForConfidentialData } from '@living-portfolio/ai';
 import { renderAdminWorkspacePage } from '@living-portfolio/web';
+import { mountBundledWeb } from '../adapter/bundled-web.js';
 import { InMemoryPortfolioRepository } from '@living-portfolio/db';
 
 const rootDir = resolve(import.meta.dirname, '../../../..');
@@ -35,7 +36,10 @@ describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/a
     '20261020-UX-01',
     '[V1 & V5] unauthenticated browser navigation to /admin redirects (302) to /admin/setup or /admin/login, /admin/login and /admin/setup return 200 HTML, and default token lp_pat_default_test_admin_token_001 is rejected',
     async () => {
-      const { app } = createApp();
+      const { app } = createApp(undefined, {
+        bundledWeb: true,
+        bundledWebAdapter: mountBundledWeb,
+      });
 
       // V1: Browser navigation with Accept: text/html must redirect (302), not return raw 401 JSON
       const v1 = await app.request('/admin', { headers: { Accept: 'text/html' } });
@@ -150,7 +154,10 @@ describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/a
       expect(html).toContain('aria-pressed=');
 
       // 1. Verify unconfigured /healthz endpoint contains no invented statuses
-      const { app } = createApp();
+      const { app } = createApp(undefined, {
+        bundledWeb: true,
+        bundledWebAdapter: mountBundledWeb,
+      });
       const healthRes = await app.request('/healthz');
       const healthBody = await healthRes.json();
       expect(healthBody.backup.lastRestoreTestStatus).toBe('not_configured');

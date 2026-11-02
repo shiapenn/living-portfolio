@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { InMemoryPortfolioRepository, seedDemoPortfolio } from '@living-portfolio/db';
+import { createTestClient } from './test-client.js';
 import {
+  createWebApp,
   parseAsOfDate,
   renderAdminImportPage,
   renderAdminLoginPage,
@@ -18,11 +19,10 @@ import {
 } from './index.js';
 
 describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', () => {
-  let repo: InMemoryPortfolioRepository;
+  let repo: any;
 
-  beforeEach(async () => {
-    repo = new InMemoryPortfolioRepository();
-    await seedDemoPortfolio(repo);
+  beforeEach(() => {
+    repo = createTestClient();
   });
 
   it('renders Home page with Strata Timeline, owner statement, and entries readable without JS (§1, §12.6)', async () => {
@@ -566,7 +566,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
 
   describe('WP-5.3: Sub-Route Mounting in createApp & Multi-Pass Redaction Drawer (Fix F1, 20261020-UX-03)', () => {
     it('1. renderAdminWorkspacePage renders multi-pass redaction review drawer and action controls (§4.3, 20261020-UX-03)', async () => {
-      const repo = new InMemoryPortfolioRepository();
+      const repo = createTestClient();
       const html = await renderAdminWorkspacePage(repo);
 
       // Redaction review drawer container and aria attributes
@@ -593,6 +593,37 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
 
       expect(html).toContain('id="drawer-highlight-preview"');
       expect(html).toContain('setupRedactionDrawer');
+    });
+  });
+
+  describe('createWebApp HTTP Route Decoupling (OSR-13, §4.2)', () => {
+    it('serves public routes, admin pages, RSS feed, and sitemap over HTTP fetch without DB imports', async () => {
+      const { app } = createWebApp({ client: repo as any });
+
+      const homeRes = await app.fetch(new Request('http://localhost/'));
+      expect(homeRes.status).toBe(200);
+      const homeHtml = await homeRes.text();
+      expect(homeHtml).toContain('Strata timeline');
+
+      const workRes = await app.fetch(new Request('http://localhost/work'));
+      expect(workRes.status).toBe(200);
+
+      const entryRes = await app.fetch(new Request('http://localhost/work/advisory-locks-revisited'));
+      expect(entryRes.status).toBe(200);
+
+      const timelineRes = await app.fetch(new Request('http://localhost/timeline'));
+      expect(timelineRes.status).toBe(200);
+
+      const rssRes = await app.fetch(new Request('http://localhost/rss.xml'));
+      expect(rssRes.status).toBe(200);
+      expect(rssRes.headers.get('content-type')).toContain('application/rss+xml');
+
+      const sitemapRes = await app.fetch(new Request('http://localhost/sitemap.xml'));
+      expect(sitemapRes.status).toBe(200);
+      expect(sitemapRes.headers.get('content-type')).toContain('application/xml');
+
+      const adminRes = await app.fetch(new Request('http://localhost/admin/login'));
+      expect(adminRes.status).toBe(200);
     });
   });
 });

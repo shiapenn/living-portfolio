@@ -25,12 +25,13 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'PORT=3100 SITE_ORIGIN=http://127.0.0.1:3100 ADMIN_ORIGIN=http://127.0.0.1:3100 pnpm --filter @living-portfolio/api exec tsx src/server.ts',
+    command: 'PORT=3100 ENABLE_BUNDLED_WEB=true SITE_ORIGIN=http://127.0.0.1:3100 ADMIN_ORIGIN=http://127.0.0.1:3100 pnpm --filter @living-portfolio/api exec tsx src/server.ts',
     url: 'http://127.0.0.1:3100/healthz',
     reuseExistingServer: !process.env.CI,
     timeout: 30000,
     env: {
       PORT: '3100',
+      ENABLE_BUNDLED_WEB: 'true',
       SITE_ORIGIN: 'http://127.0.0.1:3100',
       ADMIN_ORIGIN: 'http://127.0.0.1:3100',
       NO_PROXY: '127.0.0.1,localhost',

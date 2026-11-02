@@ -1,0 +1,118 @@
+#!/usr/bin/env node
+/**
+ * Frontend & Backend Decoupling Dependency-Rule Checker (`scripts/verify-dependency-rules`, OSR-13, Spec §4.2, §4.3)
+ *
+ * Enforces:
+ * 1. apps/web MUST NOT import repository or database code (@living-portfolio/db).
+ * 2. apps/web/package.json MUST NOT list @living-portfolio/db in dependencies or devDependencies.
+ * 3. apps/web must use @living-portfolio/client for data access over HTTP.
+ * 4. apps/api/src/app.ts MUST NOT statically import @living-portfolio/web (no web coupling inside the core API).
+ * 5. Single-process convenience mode exists only as an optional adapter behind an explicit flag.
+ */
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { resolve, join, relative } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+
+console.log('=== Verifying Frontend & Backend Decoupling Rules (OSR-13 / Spec §4.2, §4.3) ===\n');
+
+let failed = false;
+function fail(msg) {
+  console.error(`  ✗ ${msg}`);
+  failed = true;
+}
+function pass(msg) {
+  console.log(`  ✓ ${msg}`);
+}
+
+// 1. Verify apps/web/package.json has NO database dependencies
+const webPkgPath = resolve(ROOT, 'apps/web/package.json');
+const webPkg = JSON.parse(readFileSync(webPkgPath, 'utf8'));
+
+const allWebDeps = {
+  ...(webPkg.dependencies || {}),
+  ...(webPkg.devDependencies || {}),
+};
+
+if (allWebDeps['@living-portfolio/db'] || allWebDeps['pg'] || allWebDeps['pgvector'] || allWebDeps['pg-boss']) {
+  fail('apps/web/package.json must not depend on database packages (@living-portfolio/db, pg, pgvector, pg-boss).');
+} else {
+  pass('apps/web/package.json has zero database dependencies.');
+}
+
+if (!allWebDeps['@living-portfolio/client']) {
+  fail('apps/web/package.json must depend on @living-portfolio/client for typed HTTP communication.');
+} else {
+  pass('apps/web/package.json depends on @living-portfolio/client.');
+}
+
+// 2. Scan all TypeScript files in apps/web/src for forbidden database imports
+function getTsFiles(dir) {
+  const files = [];
+  for (const name of readdirSync(dir)) {
+    const full = join(dir, name);
+    const stat = statSync(full);
+    if (stat.isDirectory()) {
+      files.push(...getTsFiles(full));
+    } else if (name.endsWith('.ts') && !name.endsWith('.d.ts')) {
+      files.push(full);
+    }
+  }
+  return files;
+}
+
+const webSrcFiles = getTsFiles(resolve(ROOT, 'apps/web/src'));
+let forbiddenImportsCount = 0;
+
+for (const file of webSrcFiles) {
+  const content = readFileSync(file, 'utf8');
+  const lines = content.split('\n');
+  lines.forEach((line, idx) => {
+    // Check for actual import statements from @living-portfolio/db
+    if (/^\s*import\b.*from\s*['"]@living-portfolio\/db['"]/.test(line)) {
+      fail(`${relative(ROOT, file)}:${idx + 1} imports from @living-portfolio/db: ${line.trim()}`);
+      forbiddenImportsCount++;
+    }
+  });
+}
+
+if (forbiddenImportsCount === 0) {
+  pass(`Scanned ${webSrcFiles.length} files in apps/web/src: 0 database imports found.`);
+}
+
+// 3. Verify apps/api/src/app.ts does NOT import @living-portfolio/web
+const apiAppFile = resolve(ROOT, 'apps/api/src/app.ts');
+const apiAppContent = readFileSync(apiAppFile, 'utf8');
+const apiAppLines = apiAppContent.split('\n');
+let apiWebImports = 0;
+
+apiAppLines.forEach((line, idx) => {
+  if (/^\s*import\b.*from\s*['"]@living-portfolio\/web['"]/.test(line)) {
+    fail(`apps/api/src/app.ts:${idx + 1} statically imports from @living-portfolio/web: ${line.trim()}`);
+    apiWebImports++;
+  }
+});
+
+if (apiWebImports === 0) {
+  pass('apps/api/src/app.ts has 0 static imports of @living-portfolio/web (no web coupling in API).');
+}
+
+// 4. Verify optional bundled adapter exists
+const adapterFile = resolve(ROOT, 'apps/api/src/adapter/bundled-web.ts');
+try {
+  const adapterContent = readFileSync(adapterFile, 'utf8');
+  if (adapterContent.includes('mountBundledWeb')) {
+    pass('Optional single-process bundled adapter exists at apps/api/src/adapter/bundled-web.ts.');
+  } else {
+    fail('apps/api/src/adapter/bundled-web.ts must export mountBundledWeb.');
+  }
+} catch {
+  fail('Missing optional bundled adapter at apps/api/src/adapter/bundled-web.ts.');
+}
+
+if (failed) {
+  console.error('\nDependency-rule check FAILED (OSR-13).');
+  process.exit(1);
+} else {
+  console.log('\n🎉 All frontend & backend decoupling dependency rules PASSED (OSR-13).');
+}

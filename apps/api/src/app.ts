@@ -11,22 +11,6 @@ import {
 } from '@living-portfolio/db';
 import { BudgetGovernor, MockModelProvider, OpenAICompatibleProvider, resolveConfiguredProviders, AnswerCache, type ModelProvider } from '@living-portfolio/ai';
 import { DEFAULT_STRATA_THEME, buildOpenApiDocument } from '@living-portfolio/core';
-import {
-  renderAdminImportPage,
-  renderAdminLoginPage,
-  renderAdminSettingsPage,
-  renderAdminSetupPage,
-  renderAdminWorkspacePage,
-  renderAskPage,
-  renderAskStatusPage,
-  renderBookPage,
-  renderBuildPage,
-  renderEntryDetailPage,
-  renderHomePage,
-  renderStaticPage,
-  renderTimelinePage,
-  renderWorkOrWritingPage,
-} from '@living-portfolio/web';
 import { AuthManager, createAuthRoutes } from './auth/security.js';
 import { createHealthRoutes } from './routes/health.js';
 import { createEntriesRoutes } from './routes/entries.js';
@@ -49,6 +33,8 @@ export function createApp(
     allowedOrigins?: string[];
     providers?: ModelProvider[];
     databaseKind?: 'in-memory' | 'postgres' | 'dual-write';
+    bundledWeb?: boolean;
+    bundledWebAdapter?: (app: Hono, repo: IPortfolioRepository, runtimeState?: any, auth?: AuthManager) => void;
   }
 ) {
   const app = new Hono();
@@ -260,41 +246,6 @@ export function createApp(
   app.route('/healthz', healthRouter);
   app.get('/openapi.json', (c) => c.json(openApiDoc));
 
-  // Admin UI routes (UX P0-1, 20261020-UX-01 / V1)
-  app.get('/admin/setup', (c) => {
-    if (auth.isSetupCompleted()) {
-      return c.redirect('/admin/login', 302);
-    }
-    return c.html(renderAdminSetupPage());
-  });
-  app.get('/admin/login', (c) => c.html(renderAdminLoginPage()));
-  app.get('/admin', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminWorkspacePage(repo, runtimeState)));
-  app.get('/admin/import', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminImportPage(repo)));
-  app.get('/admin/settings', auth.requireAdminMiddleware(), async (c) => c.html(await renderAdminSettingsPage(repo, runtimeState)));
-
-  // Public visitor booking & escalation status routes (UX-08, UX-11)
-  app.get('/book', (c) => c.html(renderBookPage(c.req.query('q'), c.req.query('facets'))));
-  app.get('/ask/status/:token', async (c) => c.html(await renderAskStatusPage(repo, c.req.param('token'))));
-
-  // Strata Public Site & Content Routes (F1, §5, §7)
-  app.get('/home', async (c) => c.html(await renderHomePage(repo)));
-  app.get('/work', async (c) => c.html(await renderWorkOrWritingPage(repo, 'work', c.req.query('outcome'), c.req.query('as_of'))));
-  app.get('/work/:slug', async (c) => {
-    const res = await renderEntryDetailPage(repo, c.req.param('slug'), c.req.query('view'), c.req.query('as_of'));
-    return c.html(res.html, res.status as any);
-  });
-  app.get('/writing', async (c) => c.html(await renderWorkOrWritingPage(repo, 'writing', undefined, c.req.query('as_of'))));
-  app.get('/writing/:slug', async (c) => {
-    const res = await renderEntryDetailPage(repo, c.req.param('slug'), 'article', c.req.query('as_of'));
-    return c.html(res.html, res.status as any);
-  });
-  app.get('/build', async (c) => c.html(await renderBuildPage(repo)));
-  app.get('/timeline', async (c) => c.html(await renderTimelinePage(repo, c.req.query('as_of'))));
-  app.get('/ask', async (c) => c.html(await renderAskPage(c.req.query('q'), c.req.query('scope'), c.req.query('as_of'))));
-  app.get('/now', (c) => c.html(renderStaticPage('now')));
-  app.get('/about', (c) => c.html(renderStaticPage('about')));
-  app.get('/uses', (c) => c.html(renderStaticPage('uses')));
-
   // Federation manifest (§17)
   app.get('/.well-known/living-portfolio.json', async (c) => {
     // SIMULATED(M1): Cryptographic credential verification for federation manifest (§17) is not yet implemented.
@@ -309,41 +260,20 @@ export function createApp(
     );
   });
 
-  // RSS Feed (§5.1)
-  app.get('/rss.xml', async (c) => {
-    const entries = await repo.listEntries({ visibility: ['public'] });
-    const items = entries
-      .map(
-        (e) =>
-          `    <item>\n      <title>${e.title}</title>\n      <link>${primarySiteOrigin}/writing/${e.slug}</link>\n      <pubDate>${new Date(e.created_at).toUTCString()}</pubDate>\n    </item>`
-      )
-      .join('\n');
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>\n    <title>${cfg.PUBLIC_SITE_NAME}</title>\n    <link>${primarySiteOrigin}</link>\n    <description>Time-aware personal portfolio and engineering log</description>\n${items}\n  </channel>\n</rss>`;
-    return c.text(xml, 200, { 'Content-Type': 'application/rss+xml; charset=utf-8' });
-  });
+  // Optional single-process convenience adapter (Spec §4.3, OSR-13)
+  if (options?.bundledWeb && options?.bundledWebAdapter) {
+    options.bundledWebAdapter(app, repo, runtimeState, auth);
+  }
 
-  // Sitemap XML (§5.1)
-  app.get('/sitemap.xml', async (c) => {
-    const entries = await repo.listEntries({ visibility: ['public'] });
-    const urls = entries
-      .map((e) => `  <url><loc>${primarySiteOrigin}/work/${e.slug}</loc></url>`)
-      .join('\n');
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${primarySiteOrigin}/</loc></url>\n  <url><loc>${primarySiteOrigin}/work</loc></url>\n  <url><loc>${primarySiteOrigin}/writing</loc></url>\n  <url><loc>${primarySiteOrigin}/build</loc></url>\n  <url><loc>${primarySiteOrigin}/timeline</loc></url>\n  <url><loc>${primarySiteOrigin}/ask</loc></url>\n${urls}\n</urlset>`;
-    return c.text(xml, 200, { 'Content-Type': 'application/xml; charset=utf-8' });
-  });
-
-  // Root welcome & content negotiation (F1)
+  // Root welcome (pure API contract when decoupled)
   app.get('/', async (c) => {
-    const accept = c.req.header('accept') || '';
-    if (accept.includes('text/html')) {
-      return c.html(await renderHomePage(repo));
-    }
     return c.json({
-      name: cfg.PUBLIC_SITE_NAME,
+      name: `${cfg.PUBLIC_SITE_NAME} API`,
       version: '0.1.0-alpha.0',
       status: 'online',
       schema_version: 'qrxp_v1.0.0',
       docs: '/healthz',
+      api_version: '/api/v1',
     });
   });
 

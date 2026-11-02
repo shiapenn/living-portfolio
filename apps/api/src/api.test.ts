@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { MockModelProvider } from '@living-portfolio/ai';
 import { seedDemoPortfolio } from '@living-portfolio/db';
 import { createApp } from './app.js';
+import { mountBundledWeb } from './adapter/bundled-web.js';
 import { computeTotpCode } from './auth/security.js';
 
 describe('Living Portfolio API Integration Tests', () => {
@@ -707,7 +708,13 @@ describe('Living Portfolio API Integration Tests', () => {
     });
 
     it('serves /admin/settings page with 200 HTML under admin authentication', async () => {
-      const res = await app.request('/admin/settings', { headers: authHeaders });
+      const { app: bundledApp } = createApp(repo, {
+        bootstrapAdminToken: 'test-admin-token-suite-001',
+        providers: [new MockModelProvider()],
+        bundledWeb: true,
+        bundledWebAdapter: mountBundledWeb,
+      });
+      const res = await bundledApp.request('/admin/settings', { headers: authHeaders });
       expect(res.status).toBe(200);
       const text = await res.text();
       expect(text).toContain('Admin Operations &amp; System Calibration');
@@ -857,22 +864,28 @@ describe('Living Portfolio API Integration Tests', () => {
     });
 
     it('mounts public site routes and performs HTML vs JSON content negotiation on / (F1)', async () => {
+      const { app: bundledApp } = createApp(repo, {
+        bootstrapAdminToken: 'test-admin-token-suite-001',
+        providers: [new MockModelProvider()],
+        bundledWeb: true,
+        bundledWebAdapter: mountBundledWeb,
+      });
       // Public HTML sub-routes
-      const workRes = await app.request('/work');
+      const workRes = await bundledApp.request('/work');
       expect(workRes.status).toBe(200);
       expect(await workRes.text()).toContain('Case Studies');
 
-      const timelineRes = await app.request('/timeline');
+      const timelineRes = await bundledApp.request('/timeline');
       expect(timelineRes.status).toBe(200);
 
       // Root content negotiation
-      const htmlRes = await app.request('/', {
+      const htmlRes = await bundledApp.request('/', {
         headers: { Accept: 'text/html,application/xhtml+xml' },
       });
       expect(htmlRes.status).toBe(200);
       expect(await htmlRes.text()).toContain('<!DOCTYPE html>');
 
-      const jsonRes = await app.request('/', {
+      const jsonRes = await bundledApp.request('/', {
         headers: { Accept: 'application/json' },
       });
       expect(jsonRes.status).toBe(200);
