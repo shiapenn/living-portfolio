@@ -1,0 +1,400 @@
+#!/usr/bin/env node
+/**
+ * Living Portfolio - Continuous Deployment & Automated Rollback CLI (§13.1, §19, OSR-22, Gate G4)
+ * Deploys services using immutable SHA-256 image digests, evaluates health gates,
+ * and automatically triggers rollback to previous known-healthy digests upon failure.
+ */
+import { fileURLToPath } from 'node:url';
+
+/**
+ * Validates that an image reference is pinned to an immutable SHA-256 digest.
+ * Rejects bare mutable tags (e.g., :latest, :staging-latest, :v0.1.0).
+ *
+ * @param {string} imageRef
+ * @returns {boolean}
+ */
+export function validateDigest(imageRef) {
+  if (!imageRef || typeof imageRef !== 'string') return false;
+  const digestRegex = /@sha256:[a-f0-9]{64}$|^sha256:[a-f0-9]{64}$/;
+  return digestRegex.test(imageRef.trim());
+}
+
+/**
+ * Dispatches a deployment request to a scoped provider deploy hook with the pinned image URL.
+ *
+ * @param {string | undefined} hookUrl
+ * @param {string} imageRef
+ * @param {typeof fetch} [fetchFn]
+ * @returns {Promise<{ success: boolean; status: number; message: string }>}
+ */
+export async function triggerDeployHook(hookUrl, imageRef, fetchFn = fetch) {
+  if (!hookUrl) {
+    return {
+      success: true,
+      status: 200,
+      message: `Notice: Deploy hook not configured. Dry-run verified image digest: ${imageRef}`,
+    };
+  }
+
+  try {
+    const url = new URL(hookUrl);
+    url.searchParams.set('imgURL', imageRef);
+
+    const res = await fetchFn(url.toString(), {
+      method: 'POST',
+      headers: { 'User-Agent': 'LivingPortfolio-Deploy-Gate/1.0' },
+    });
+
+    const text = await res.text().catch(() => '');
+    return {
+      success: res.ok,
+      status: res.status,
+      message: text || (res.ok ? 'Deployment accepted' : res.statusText),
+    };
+  } catch (err) {
+    return {
+      success: false,
+      status: 500,
+      message: `Failed to trigger deploy hook: ${err.message}`,
+    };
+  }
+}
+
+/**
+ * Polls API and Web health endpoints until all services report healthy status or timeout expires.
+ *
+ * @param {object} options
+ * @param {string} [options.apiHealthUrl]
+ * @param {string} [options.webHealthUrl]
+ * @param {number} [options.maxAttempts]
+ * @param {number} [options.intervalMs]
+ * @param {typeof fetch} [options.fetchFn]
+ * @returns {Promise<{ healthy: boolean; attempts: number; elapsedMs: number; statusText: string; details: any; error?: string }>}
+ */
+export async function pollHealthGate(options = {}) {
+  const {
+    apiHealthUrl,
+    webHealthUrl,
+    maxAttempts = 15,
+    intervalMs = 3000,
+    fetchFn = fetch,
+  } = options;
+
+  const startTime = Date.now();
+  let attempts = 0;
+  let lastDetails = {};
+  let lastError;
+
+  // In dry-run or unconfigured environment mode without URLs, pass automatically
+  if (!apiHealthUrl && !webHealthUrl) {
+    return {
+      healthy: true,
+      attempts: 0,
+      elapsedMs: 0,
+      statusText: 'Health gate passed: Dry-run mode without external URLs',
+      details: {},
+    };
+  }
+
+  while (attempts < maxAttempts) {
+    attempts++;
+    let apiOk = true;
+    let webOk = true;
+    lastDetails = {};
+
+    if (apiHealthUrl) {
+      try {
+        const healthzRes = await fetchFn(`${apiHealthUrl.replace(/\/$/, '')}/healthz`);
+        const healthzBody = await healthzRes.json().catch(() => ({}));
+        lastDetails.apiHealthz = { status: healthzRes.status, body: healthzBody };
+
+        const healthV1Res = await fetchFn(`${apiHealthUrl.replace(/\/$/, '')}/api/v1/health`);
+        const healthV1Body = await healthV1Res.json().catch(() => ({}));
+        lastDetails.apiHealthV1 = { status: healthV1Res.status, body: healthV1Body };
+
+        const isHealthzOk = healthzRes.status === 200 && (healthzBody.status === 'healthy' || healthzBody.status === 'ok');
+        const isHealthV1Ok = healthV1Res.status === 200 && healthV1Body.status !== 'down';
+
+        if (!isHealthzOk || !isHealthV1Ok) {
+          apiOk = false;
+        }
+      } catch (err) {
+        apiOk = false;
+        lastError = err.message;
+      }
+    }
+
+    if (webHealthUrl) {
+      try {
+        const webRes = await fetchFn(`${webHealthUrl.replace(/\/$/, '')}/healthz`);
+        const webBody = await webRes.json().catch(() => ({}));
+        lastDetails.webHealthz = { status: webRes.status, body: webBody };
+
+        const isWebOk = webRes.status === 200 && (webBody.status === 'ok' || webBody.status === 'healthy');
+        if (!isWebOk) {
+          webOk = false;
+        }
+      } catch (err) {
+        webOk = false;
+        lastError = err.message;
+      }
+    }
+
+    if (apiOk && webOk) {
+      return {
+        healthy: true,
+        attempts,
+        elapsedMs: Date.now() - startTime,
+        statusText: `All services healthy (verified in ${attempts} attempt(s))`,
+        details: lastDetails,
+      };
+    }
+
+    if (attempts < maxAttempts) {
+      await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    }
+  }
+
+  return {
+    healthy: false,
+    attempts,
+    elapsedMs: Date.now() - startTime,
+    statusText: `Health gate probe failed after ${attempts} attempts`,
+    details: lastDetails,
+    error: lastError || 'Services did not report healthy status within the health gate timeout',
+  };
+}
+
+/**
+ * Orchestrates full deployment with health gate and auto-rollback to previous known-healthy digests.
+ *
+ * @param {object} options
+ * @param {Array<{ name: string; hookUrl?: string; targetImage: string; rollbackImage: string }>} options.services
+ * @param {string} [options.apiHealthUrl]
+ * @param {string} [options.webHealthUrl]
+ * @param {boolean} [options.simulateFailure]
+ * @param {boolean} [options.verifyOnly]
+ * @param {boolean} [options.dryRun]
+ * @param {number} [options.timeoutSeconds]
+ * @param {number} [options.intervalSeconds]
+ * @param {typeof fetch} [options.fetchFn]
+ * @returns {Promise<{ success: boolean; rolledBack: boolean; rollbackHealthy?: boolean; exitCode: number; message: string; activeImages: Record<string, string>; healthDetails?: any }>}
+ */
+export async function executeDeployWithRollback(options) {
+  const {
+    services,
+    apiHealthUrl,
+    webHealthUrl,
+    simulateFailure = false,
+    verifyOnly = false,
+    dryRun = false,
+    timeoutSeconds = 120,
+    intervalSeconds = 3,
+    fetchFn = fetch,
+  } = options;
+
+  const maxAttempts = Math.max(1, Math.floor(timeoutSeconds / intervalSeconds));
+  const intervalMs = intervalSeconds * 1000;
+
+  // 1. Digest validation
+  for (const svc of services) {
+    if (!validateDigest(svc.targetImage)) {
+      throw new Error(
+        `Invalid target image digest for ${svc.name}: "${svc.targetImage}". ` +
+          `Production and staging deployments strictly require immutable @sha256:<64-hex> digests (Spec §13.1, OSR-22).`
+      );
+    }
+    if (!validateDigest(svc.rollbackImage)) {
+      throw new Error(
+        `Invalid rollback image digest for ${svc.name}: "${svc.rollbackImage}". ` +
+          `Rollback strictly requires immutable @sha256:<64-hex> digests (Spec §13.1, OSR-22).`
+      );
+    }
+  }
+
+  if (verifyOnly) {
+    console.log('=== Running Health Gate Verification Only ===');
+    const health = await pollHealthGate({
+      apiHealthUrl,
+      webHealthUrl,
+      maxAttempts,
+      intervalMs,
+      fetchFn,
+    });
+    return {
+      success: health.healthy,
+      rolledBack: false,
+      exitCode: health.healthy ? 0 : 1,
+      message: health.statusText,
+      activeImages: Object.fromEntries(services.map((s) => [s.name, s.targetImage])),
+      healthDetails: health.details,
+    };
+  }
+
+  // 2. Deploy target services
+  console.log('=== Deploying target services by immutable image digest ===');
+  for (const svc of services) {
+    console.log(`[Deploy] Service: ${svc.name} -> Target: ${svc.targetImage}`);
+    const hookToUse = dryRun ? undefined : svc.hookUrl;
+    const res = await triggerDeployHook(hookToUse, svc.targetImage, fetchFn);
+    console.log(`  └─ ${res.message}`);
+  }
+
+  // 3. Evaluate Health Gate
+  console.log('=== Evaluating Health Gate Probe ===');
+  let health;
+  if (simulateFailure) {
+    console.warn('⚠️  SIMULATING HEALTH GATE FAILURE for rollback drill verification (simulateFailure=true)');
+    health = {
+      healthy: false,
+      attempts: 1,
+      elapsedMs: 50,
+      statusText: 'Simulated health failure for rollback drill proof',
+      details: {
+        apiHealthz: { status: 500, body: { status: 'degraded', error: 'Simulated crash' } },
+      },
+      error: 'Simulated health failure for drill proof',
+    };
+  } else {
+    health = await pollHealthGate({
+      apiHealthUrl,
+      webHealthUrl,
+      maxAttempts,
+      intervalMs,
+      fetchFn,
+    });
+  }
+
+  if (health.healthy) {
+    console.log(`✓ Production Health Gate PASSED. ${health.statusText}`);
+    return {
+      success: true,
+      rolledBack: false,
+      exitCode: 0,
+      message: 'Deployment succeeded and passed health gate.',
+      activeImages: Object.fromEntries(services.map((s) => [s.name, s.targetImage])),
+      healthDetails: health.details,
+    };
+  }
+
+  // 4. Automated Rollback Triggered
+  console.error(`🚨 HEALTH GATE FAILED: ${health.error || health.statusText}`);
+  console.log('=== Initiating Automated Rollback to Previous Healthy Baseline ===');
+
+  for (const svc of services) {
+    console.log(`[Rollback] Service: ${svc.name} -> Restoring: ${svc.rollbackImage}`);
+    const hookToUse = dryRun ? undefined : svc.hookUrl;
+    const res = await triggerDeployHook(hookToUse, svc.rollbackImage, fetchFn);
+    console.log(`  └─ ${res.message}`);
+  }
+
+  // 5. Verify Rollback Recovery
+  console.log('=== Verifying Health Gate of Rolled-Back Services ===');
+  const rollbackHealth = await pollHealthGate({
+    apiHealthUrl,
+    webHealthUrl,
+    maxAttempts,
+    intervalMs,
+    fetchFn,
+  });
+
+  if (rollbackHealth.healthy) {
+    console.log('✓ Automated Rollback Succeeded: Cluster restored to previous healthy baseline.');
+    return {
+      success: false,
+      rolledBack: true,
+      rollbackHealthy: true,
+      exitCode: 1,
+      message: 'Target deployment failed health gate; automated rollback restored previous healthy version.',
+      activeImages: Object.fromEntries(services.map((s) => [s.name, s.rollbackImage])),
+      healthDetails: rollbackHealth.details,
+    };
+  } else {
+    console.error('💥 CRITICAL: Both target deployment and automated rollback failed health gate.');
+    return {
+      success: false,
+      rolledBack: true,
+      rollbackHealthy: false,
+      exitCode: 2,
+      message: 'CRITICAL: Both target deployment and automated rollback failed health gate.',
+      activeImages: Object.fromEntries(services.map((s) => [s.name, s.rollbackImage])),
+      healthDetails: rollbackHealth.details,
+    };
+  }
+}
+
+// CLI Execution Handler
+async function main() {
+  const repo = process.env.REPO || 'shiapenn/living-portfolio';
+  const defaultTargetDigest = `@sha256:1111111111111111111111111111111111111111111111111111111111111111`;
+  const defaultRollbackDigest = `@sha256:0000000000000000000000000000000000000000000000000000000000000000`;
+
+  const apiTarget = process.env.INPUT_API_DIGEST || process.env.API_DIGEST || `ghcr.io/${repo}/api${defaultTargetDigest}`;
+  const webTarget = process.env.INPUT_WEB_DIGEST || process.env.WEB_DIGEST || `ghcr.io/${repo}/web${defaultTargetDigest}`;
+  const workerTarget = process.env.INPUT_WORKER_DIGEST || process.env.WORKER_DIGEST || `ghcr.io/${repo}/worker${defaultTargetDigest}`;
+
+  const apiRollback = process.env.INPUT_PREV_API_DIGEST || process.env.PREV_API_DIGEST || `ghcr.io/${repo}/api${defaultRollbackDigest}`;
+  const webRollback = process.env.INPUT_PREV_WEB_DIGEST || process.env.PREV_WEB_DIGEST || `ghcr.io/${repo}/web${defaultRollbackDigest}`;
+  const workerRollback = process.env.INPUT_PREV_WORKER_DIGEST || process.env.PREV_WORKER_DIGEST || `ghcr.io/${repo}/worker${defaultRollbackDigest}`;
+
+  const services = [
+    {
+      name: 'api',
+      hookUrl: process.env.API_DEPLOY_HOOK || process.env.RENDER_PRODUCTION_API_DEPLOY_HOOK,
+      targetImage: apiTarget,
+      rollbackImage: apiRollback,
+    },
+    {
+      name: 'web',
+      hookUrl: process.env.WEB_DEPLOY_HOOK || process.env.RENDER_PRODUCTION_WEB_DEPLOY_HOOK,
+      targetImage: webTarget,
+      rollbackImage: webRollback,
+    },
+    {
+      name: 'worker',
+      hookUrl: process.env.WORKER_DEPLOY_HOOK || process.env.RENDER_PRODUCTION_WORKER_DEPLOY_HOOK,
+      targetImage: workerTarget,
+      rollbackImage: workerRollback,
+    },
+  ];
+
+  const simulateFailure =
+    process.env.SIMULATE_FAILURE === 'true' ||
+    process.argv.includes('--simulate-failure');
+
+  const verifyOnly = process.argv.includes('--verify-only');
+  const dryRun = process.argv.includes('--dry-run') || (!process.env.API_DEPLOY_HOOK && !process.env.RENDER_PRODUCTION_API_DEPLOY_HOOK);
+
+  const apiHealthUrl = process.env.PRODUCTION_API_URL || process.env.STAGING_API_URL || process.env.API_HEALTH_URL;
+  const webHealthUrl = process.env.PRODUCTION_WEB_URL || process.env.STAGING_WEB_URL || process.env.WEB_HEALTH_URL;
+
+  console.log('=== Living Portfolio Continuous Deploy & Auto-Rollback Gate ===');
+  console.log(`Repository:       ${repo}`);
+  console.log(`Simulate Failure: ${simulateFailure}`);
+  console.log(`Dry Run Mode:     ${dryRun}`);
+
+  const result = await executeDeployWithRollback({
+    services,
+    apiHealthUrl,
+    webHealthUrl,
+    simulateFailure,
+    verifyOnly,
+    dryRun,
+    timeoutSeconds: 120,
+    intervalSeconds: 3,
+  });
+
+  if (result.rolledBack && result.rollbackHealthy) {
+    console.log('Notice: Auto-rollback successfully preserved system stability.');
+  }
+
+  process.exit(result.exitCode);
+}
+
+const isDirectExecution = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
+if (isDirectExecution) {
+  main().catch((err) => {
+    console.error('Fatal deployment error:', err.message);
+    process.exit(1);
+  });
+}

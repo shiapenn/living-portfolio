@@ -28,6 +28,7 @@
     "db:migrate": "pnpm --filter @living-portfolio/db migrate",
     "db:backup": "node scripts/backup-db",
     "db:restore-drill": "node scripts/restore-drill",
+    "deploy:rollback": "node scripts/deploy-with-rollback",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean"

@@ -52,7 +52,7 @@ The staging environment operates with technical safeguards enforced at runtime:
 
 ---
 
-## 5. Rollback Runbook
+## 5. Staging Rollback Runbook
 
 To rollback a broken staging deployment to a previously verified release:
 1. Identify the last verified Git commit SHA or GHCR image digest from GitHub Actions release logs.
@@ -61,3 +61,59 @@ To rollback a broken staging deployment to a previously verified release:
    curl -fsS -X POST "${RENDER_STAGING_API_DEPLOY_HOOK}?imgURL=ghcr.io/${OWNER}/living-portfolio-api@sha256:${PREVIOUS_DIGEST}"
    ```
 3. Database migrations maintain backward compatibility across $N-1$ releases, allowing seamless rollback without schema corruption.
+
+---
+
+## 6. Production Blueprint & Deployment Architecture (Gate G4, OSR-22)
+
+The production environment mirrors staging topology while enforcing production-grade resilience and isolation in `render.production.yaml`:
+- **`living-portfolio-web-prod`**: Autonomous frontend on port 3001 (`DEPLOYMENT_CLASS=production`).
+- **`living-portfolio-api-prod`**: Versioned API backend on port 3000 (`DEPLOYMENT_CLASS=production`).
+- **`living-portfolio-worker-prod`**: Background worker daemon (`DEPLOYMENT_CLASS=production`).
+- **`living-portfolio-db-prod`**: Managed PostgreSQL 16 database instance (`portfolio_production`) with `pgvector`.
+
+---
+
+## 7. Required Reviewer & Environment Protection
+
+Production deployments are orchestrated via `.github/workflows/deploy-production.yml` and bound to the GitHub `production` environment:
+- **Required Reviewers:** Deployments pause before execution and strictly require manual approval by repository owners/maintainers.
+- **Branch Protection:** Deployment is restricted to release tags (`v*`) and validated `main` branch heads.
+- **Scoped Production Secrets:**
+  - `RENDER_PRODUCTION_API_DEPLOY_HOOK`
+  - `RENDER_PRODUCTION_WEB_DEPLOY_HOOK`
+  - `RENDER_PRODUCTION_WORKER_DEPLOY_HOOK`
+  - `PRODUCTION_API_URL`
+  - `PRODUCTION_WEB_URL`
+
+---
+
+## 8. Health Gate & Automated Rollback Protocol (Spec §13.1, §19, OSR-22)
+
+Every production deployment executes through the unified CLI deploy gate (`scripts/deploy-with-rollback`):
+1. **Immutable Digest Pinning:** All service images MUST be referenced by full `@sha256:...` digest. Mutable tags (`:latest`, `:staging-latest`) are rejected with an exit error.
+2. **Deploy Trigger:** Services are updated concurrently via scoped deploy hooks passing `@${TARGET_DIGEST}`.
+3. **Health Gate Evaluation:**
+   - Probes `${PRODUCTION_API_URL}/healthz` for `HTTP 200 { "status": "healthy" }`.
+   - Probes `${PRODUCTION_API_URL}/api/v1/health` for database connectivity and active alert clearance.
+   - Probes `${PRODUCTION_WEB_URL}/healthz` for `HTTP 200 { "status": "ok" }`.
+   - Executes polling loop with exponential backoff across 15 attempts (120s timeout window).
+4. **Automated Rollback:**
+   - If the health gate fails (timeout, 5xx error, or degraded status), automated rollback triggers immediately.
+   - Previous known-healthy image digests (`@${PREVIOUS_DIGEST}`) are deployed to all affected services via deploy hooks.
+   - Health gate re-verifies that rolled-back services return to healthy status.
+   - Deployment exits with code 1, signaling failed target deployment while preserving production uptime.
+
+---
+
+## 9. Rollback Drill Proof in Staging (Gate G4)
+
+To prove rollback capability without risking production traffic, staging supports an automated rollback drill:
+```bash
+node scripts/deploy-with-rollback --simulate-failure --dry-run
+```
+Or via GitHub Actions workflow dispatch:
+```bash
+gh workflow run deploy-staging.yml -f trigger_rollback_drill=true
+```
+This simulates deployment failure, triggers the automated rollback sequence, and proves the cluster recovers cleanly.

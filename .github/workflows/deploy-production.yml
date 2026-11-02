@@ -1,0 +1,104 @@
+name: Production Deployment & Automated Rollback Gate (Gate G4)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      api_digest:
+        description: "Target API immutable image digest (e.g. ghcr.io/shiapenn/living-portfolio/api@sha256:...)"
+        required: false
+        type: string
+      web_digest:
+        description: "Target Web immutable image digest (e.g. ghcr.io/shiapenn/living-portfolio/web@sha256:...)"
+        required: false
+        type: string
+      worker_digest:
+        description: "Target Worker immutable image digest (e.g. ghcr.io/shiapenn/living-portfolio/worker@sha256:...)"
+        required: false
+        type: string
+      prev_api_digest:
+        description: "Previous healthy API image digest for rollback"
+        required: false
+        type: string
+      prev_web_digest:
+        description: "Previous healthy Web image digest for rollback"
+        required: false
+        type: string
+      prev_worker_digest:
+        description: "Previous healthy Worker image digest for rollback"
+        required: false
+        type: string
+      simulate_failure:
+        description: "Simulate health gate failure for rollback drill proof"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy-production:
+    name: Production Deploy with Required Reviewer, Health Gate & Auto-Rollback
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pre-flight Gate G4 Verification
+        run: |
+          echo "=== Verifying Production Readiness & Gate G4 Requirements ==="
+          node scripts/hardcode-check
+          node scripts/verify-dependency-rules
+          node scripts/verify-openapi-drift
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+
+      - name: Log in to GitHub Container Registry (GHCR)
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Execute Production Deploy with Health Gate & Auto-Rollback
+        env:
+          API_DEPLOY_HOOK: ${{ secrets.RENDER_PRODUCTION_API_DEPLOY_HOOK }}
+          WEB_DEPLOY_HOOK: ${{ secrets.RENDER_PRODUCTION_WEB_DEPLOY_HOOK }}
+          WORKER_DEPLOY_HOOK: ${{ secrets.RENDER_PRODUCTION_WORKER_DEPLOY_HOOK }}
+          PRODUCTION_API_URL: ${{ secrets.PRODUCTION_API_URL }}
+          PRODUCTION_WEB_URL: ${{ secrets.PRODUCTION_WEB_URL }}
+          INPUT_API_DIGEST: ${{ inputs.api_digest }}
+          INPUT_WEB_DIGEST: ${{ inputs.web_digest }}
+          INPUT_WORKER_DIGEST: ${{ inputs.worker_digest }}
+          INPUT_PREV_API_DIGEST: ${{ inputs.prev_api_digest }}
+          INPUT_PREV_WEB_DIGEST: ${{ inputs.prev_web_digest }}
+          INPUT_PREV_WORKER_DIGEST: ${{ inputs.prev_worker_digest }}
+          SIMULATE_FAILURE: ${{ inputs.simulate_failure }}
+          REPO: ${{ github.repository }}
+        run: |
+          node scripts/deploy-with-rollback

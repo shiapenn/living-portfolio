@@ -11,6 +11,12 @@ on:
       - "deploy/**"
       - ".github/workflows/deploy-staging.yml"
   workflow_dispatch:
+    inputs:
+      trigger_rollback_drill:
+        description: "Prove automated rollback in staging (OSR-22 Gate G4)"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -145,3 +151,9 @@ jobs:
             done
           fi
           echo "✓ Staging deployment and smoke verification complete."
+
+      - name: Staging Rollback Drill Proof (OSR-22 Gate G4)
+        if: ${{ inputs.trigger_rollback_drill == true }}
+        run: |
+          echo "=== Staging Automated Rollback Drill Proof (Gate G4) ==="
+          node scripts/deploy-with-rollback --simulate-failure --dry-run
