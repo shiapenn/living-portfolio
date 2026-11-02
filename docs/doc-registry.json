@@ -544,5 +544,13 @@
     "path": "docs/execution-reports/A039-wp-82-staging-provider-config-and-deploy-workflow.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A040",
+    "title": "WP-8.3 Staging safeguards and deployment class handling",
+    "class": "A",
+    "path": "docs/execution-reports/A040-wp-83-staging-safeguards-and-deployment-class-handling.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

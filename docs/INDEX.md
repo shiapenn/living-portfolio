@@ -45,6 +45,7 @@
 | `A037` | WP-7.3 API boundary ADR and configuration contract | `active` | [A037-wp-73-api-boundary-adr-and-configuration-contract.md](execution-reports/A037-wp-73-api-boundary-adr-and-configuration-contract.md) | — |
 | `A038` | WP-8.1 Hosting provider spike and staging ADR | `active` | [A038-wp-81-hosting-provider-spike-and-staging-adr.md](execution-reports/A038-wp-81-hosting-provider-spike-and-staging-adr.md) | — |
 | `A039` | WP-8.2 Staging provider config and deploy workflow | `active` | [A039-wp-82-staging-provider-config-and-deploy-workflow.md](execution-reports/A039-wp-82-staging-provider-config-and-deploy-workflow.md) | — |
+| `A040` | WP-8.3 Staging safeguards and deployment class handling | `active` | [A040-wp-83-staging-safeguards-and-deployment-class-handling.md](execution-reports/A040-wp-83-staging-safeguards-and-deployment-class-handling.md) | — |
 
 ## Handover Snapshots (Class H)
 
