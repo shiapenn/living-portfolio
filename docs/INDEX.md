@@ -47,6 +47,7 @@
 | `A039` | WP-8.2 Staging provider config and deploy workflow | `active` | [A039-wp-82-staging-provider-config-and-deploy-workflow.md](execution-reports/A039-wp-82-staging-provider-config-and-deploy-workflow.md) | — |
 | `A040` | WP-8.3 Staging safeguards and deployment class handling | `active` | [A040-wp-83-staging-safeguards-and-deployment-class-handling.md](execution-reports/A040-wp-83-staging-safeguards-and-deployment-class-handling.md) | — |
 | `A041` | WP-9.1 Real Backups and Restore Drill | `active` | [A041-wp-91-real-backups-and-restore-drill.md](execution-reports/A041-wp-91-real-backups-and-restore-drill.md) | — |
+| `A042` | WP-9.2 Observability, Budget Caps and Spend Alerts | `active` | [A042-wp-92-observability-budget-caps-and-spend-alerts.md](execution-reports/A042-wp-92-observability-budget-caps-and-spend-alerts.md) | — |
 
 ## Handover Snapshots (Class H)
 

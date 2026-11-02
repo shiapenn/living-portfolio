@@ -568,5 +568,13 @@
     "path": "docs/execution-reports/A041-wp-91-real-backups-and-restore-drill.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A042",
+    "title": "WP-9.2 Observability, Budget Caps and Spend Alerts",
+    "class": "A",
+    "path": "docs/execution-reports/A042-wp-92-observability-budget-caps-and-spend-alerts.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
