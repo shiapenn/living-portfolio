@@ -480,5 +480,13 @@
     "path": "docs/execution-reports/A035-wp-71-api-versioning-and-openapi-client.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A036",
+    "title": "WP-7.2 Web Decoupling and HTTP Client Enforcement",
+    "class": "A",
+    "path": "docs/execution-reports/A036-wp-72-web-decoupling-and-http-client-enforcement.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

@@ -41,6 +41,7 @@
 | `A033` | WP-5.3 Web Mounting and Redaction Drawer | `active` | [A033-wp5-3-web-mounting-and-redaction-drawer.md](execution-reports/A033-wp5-3-web-mounting-and-redaction-drawer.md) | — |
 | `A034` | WP-6.1 Release Packaging, Container Workflow, and SBOM Generation | `active` | [A034-wp6-1-release-packaging-and-container-workflow.md](execution-reports/A034-wp6-1-release-packaging-and-container-workflow.md) | — |
 | `A035` | WP-7.1 API Versioning and OpenAPI Client | `active` | [A035-wp-71-api-versioning-and-openapi-client.md](execution-reports/A035-wp-71-api-versioning-and-openapi-client.md) | — |
+| `A036` | WP-7.2 Web Decoupling and HTTP Client Enforcement | `active` | [A036-wp-72-web-decoupling-and-http-client-enforcement.md](execution-reports/A036-wp-72-web-decoupling-and-http-client-enforcement.md) | — |
 
 ## Handover Snapshots (Class H)
 
