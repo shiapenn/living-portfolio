@@ -8,7 +8,7 @@ import {
   InMemoryPortfolioRepository,
 } from '@living-portfolio/db';
 import { DEFAULT_STRATA_THEME, verifyThemeConformance } from '@living-portfolio/core';
-import { getDefaultExclusions } from '@living-portfolio/ai';
+import { getDefaultExclusions, type BudgetGovernor, type ModelProvider } from '@living-portfolio/ai';
 
 export interface RuntimeSettingsState {
   automatedAnsweringEnabled: boolean;
@@ -25,7 +25,9 @@ export interface RuntimeSettingsState {
 export function createSettingsRoutes(
   repo?: IPortfolioRepository,
   sharedState?: RuntimeSettingsState,
-  auth?: { isConfigured: () => boolean }
+  auth?: { isConfigured: () => boolean },
+  governor?: BudgetGovernor,
+  providers?: ModelProvider[]
 ) {
   const router = new Hono();
 
@@ -100,6 +102,7 @@ export function createSettingsRoutes(
         hard_threshold: 1.0,
         fallback: 'extractive',
         per_visitor: { questions_per_hour: 10, bot_challenge: true },
+        utilization: governor ? governor.getUtilization(providers) : [],
       },
       // P0-9 (20261020-UX-05): no status string without a measured source. Notification and backup
       // adapters are not implemented yet (findings M1 / M8), so report `not_configured` instead of

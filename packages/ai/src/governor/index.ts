@@ -1,4 +1,9 @@
-import type { DataClass, DegradationStep } from '@living-portfolio/core';
+import type {
+  DataClass,
+  DegradationStep,
+  ObservabilityAlert,
+  BudgetUtilization,
+} from '@living-portfolio/core';
 import type { ModelProvider } from '../providers/types.js';
 import { isPolicyAllowedForDataClass } from '../providers/types.js';
 
@@ -40,8 +45,13 @@ export class BudgetGovernor {
   private ledgers = new Map<string, ProviderLedger>();
   private visitorHistory = new Map<string, number[]>(); // ip/sessionId -> timestamps
   private storage?: GovernorStorageAdapter;
+  private onAlert?: (alert: ObservabilityAlert) => void;
 
-  constructor(config: Partial<BudgetConfig> = {}, storage?: GovernorStorageAdapter) {
+  constructor(
+    config: Partial<BudgetConfig> = {},
+    storage?: GovernorStorageAdapter,
+    onAlert?: (alert: ObservabilityAlert) => void
+  ) {
     this.config = {
       visitorShare: config.visitorShare ?? 0.6,
       backgroundReserve: config.backgroundReserve ?? 0.3,
@@ -51,6 +61,11 @@ export class BudgetGovernor {
       perVisitorHourlyCap: config.perVisitorHourlyCap ?? 10,
     };
     this.storage = storage;
+    this.onAlert = onAlert;
+  }
+
+  setAlertListener(fn?: (alert: ObservabilityAlert) => void): void {
+    this.onAlert = fn;
   }
 
   setStorageAdapter(storage: GovernorStorageAdapter): void {
@@ -212,6 +227,16 @@ export class BudgetGovernor {
 
       // Hard threshold: global cap across all usage
       if (projectedTokens > dailyTokensMax * this.config.hardThreshold) {
+        if (this.onAlert) {
+          this.onAlert({
+            code: 'BUDGET_HARD_CAP',
+            severity: 'critical',
+            subsystem: 'provider',
+            message: `Provider '${provider.id}' daily token spend reached hard budget cap (100%). Falling back to extractive mode (§10.8, §13.5).`,
+            timestamp: new Date().toISOString(),
+            metadata: { providerId: provider.id, projectedTokens, dailyTokensMax },
+          });
+        }
         continue;
       }
 
@@ -221,6 +246,16 @@ export class BudgetGovernor {
       // Step 4: Global soft threshold triggers smaller_model step
       if (projectedTokens / dailyTokensMax >= this.config.softThreshold) {
         step = 'smaller_model';
+        if (this.onAlert) {
+          this.onAlert({
+            code: 'BUDGET_SOFT_CAP',
+            severity: 'warning',
+            subsystem: 'provider',
+            message: `Provider '${provider.id}' daily token spend reached soft budget cap (>= 80%). Trimming context and routing to smaller models (§13.5).`,
+            timestamp: new Date().toISOString(),
+            metadata: { providerId: provider.id, projectedTokens, dailyTokensMax },
+          });
+        }
       }
 
       // Priority enforcement (B1, B2, B3)
@@ -361,6 +396,114 @@ export class BudgetGovernor {
     ledger.isRateLimitedUntil = new Date(Date.now() + backoffMs + jitter).toISOString();
     ledger.effectiveTpmDiscount = Math.max(0.2, ledger.effectiveTpmDiscount * 0.7);
     this.syncToStorage(providerId);
+
+    if (this.onAlert) {
+      this.onAlert({
+        code: 'PROVIDER_RATE_LIMITED',
+        severity: 'warning',
+        subsystem: 'provider',
+        message: `Provider '${providerId}' received a 429 rate limit backoff until ${ledger.isRateLimitedUntil}.`,
+        timestamp: new Date().toISOString(),
+        metadata: { providerId, rateLimitedUntil: ledger.isRateLimitedUntil },
+      });
+    }
+  }
+
+  /**
+   * Returns current token and request utilization for all tracked providers (§13.5, OSR-21).
+   */
+  getUtilization(providers?: ModelProvider[]): BudgetUtilization[] {
+    const providerMap = new Map<string, ModelProvider>();
+    if (providers) {
+      for (const p of providers) providerMap.set(p.id, p);
+    }
+
+    const allProviderIds = new Set<string>([
+      ...this.ledgers.keys(),
+      ...(providers ? providers.map((p) => p.id) : []),
+    ]);
+
+    const result: BudgetUtilization[] = [];
+    const now = new Date();
+
+    for (const providerId of allProviderIds) {
+      const ledger = this.getLedger(providerId);
+      const provider = providerMap.get(providerId);
+      const dailyTokensMax = ledger.learnedDailyTokens ?? provider?.limits().dailyTokens ?? 1000000;
+      const ratio = dailyTokensMax > 0 ? ledger.tokensToday / dailyTokensMax : 0;
+      const isRateLimited = Boolean(ledger.isRateLimitedUntil && new Date(ledger.isRateLimitedUntil) > now);
+
+      result.push({
+        providerId,
+        requestsToday: ledger.requestsToday,
+        tokensToday: ledger.tokensToday,
+        visitorTokensToday: ledger.visitorTokensToday,
+        ownerTokensToday: ledger.ownerTokensToday,
+        backgroundTokensToday: ledger.backgroundTokensToday,
+        dailyLimitTokens: dailyTokensMax,
+        utilizationPercent: Number((ratio * 100).toFixed(2)),
+        softThresholdReached: ratio >= this.config.softThreshold,
+        hardThresholdReached: ratio >= this.config.hardThreshold,
+        isRateLimited,
+        rateLimitedUntil: isRateLimited ? (ledger.isRateLimitedUntil ?? null) : null,
+      });
+    }
+
+    return result;
+  }
+
+  /**
+   * Evaluates all tracked provider ledgers and produces active observability alerts (§13.5, §13.9, OSR-21).
+   */
+  getAlerts(providers?: ModelProvider[]): ObservabilityAlert[] {
+    const utilizations = this.getUtilization(providers);
+    const alerts: ObservabilityAlert[] = [];
+    const nowIso = new Date().toISOString();
+
+    for (const u of utilizations) {
+      if (u.isRateLimited) {
+        alerts.push({
+          code: 'PROVIDER_RATE_LIMITED',
+          severity: 'warning',
+          subsystem: 'provider',
+          message: `Provider '${u.providerId}' received a 429 rate limit backoff until ${u.rateLimitedUntil}.`,
+          timestamp: nowIso,
+          metadata: { providerId: u.providerId, rateLimitedUntil: u.rateLimitedUntil },
+        });
+      }
+
+      if (u.hardThresholdReached) {
+        alerts.push({
+          code: 'BUDGET_HARD_CAP',
+          severity: 'critical',
+          subsystem: 'provider',
+          message: `Provider '${u.providerId}' daily token spend (${u.tokensToday}) reached 100% of daily limit (${u.dailyLimitTokens}). Stepping down to extractive mode (§10.8, §13.5).`,
+          timestamp: nowIso,
+          metadata: {
+            providerId: u.providerId,
+            tokensToday: u.tokensToday,
+            dailyLimit: u.dailyLimitTokens,
+            utilizationPercent: u.utilizationPercent,
+          },
+        });
+      } else if (u.softThresholdReached) {
+        alerts.push({
+          code: 'BUDGET_SOFT_CAP',
+          severity: 'warning',
+          subsystem: 'provider',
+          message: `Provider '${u.providerId}' daily token spend (${u.tokensToday}) reached ${u.utilizationPercent.toFixed(1)}% of daily limit (${u.dailyLimitTokens}). Applying context trimming and smaller model routing (§13.5).`,
+          timestamp: nowIso,
+          metadata: {
+            providerId: u.providerId,
+            tokensToday: u.tokensToday,
+            dailyLimit: u.dailyLimitTokens,
+            utilizationPercent: u.utilizationPercent,
+          },
+        });
+      }
+    }
+
+    return alerts;
   }
 }
 

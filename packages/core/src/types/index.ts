@@ -259,3 +259,41 @@ export interface DomainConfig {
   soft_facets: string[];
   facet_weight: Record<string, number>;
 }
+
+export type AlertSeverity = 'info' | 'warning' | 'critical';
+export type AlertSubsystem = 'api' | 'provider' | 'backup' | 'system';
+
+export interface ObservabilityAlert {
+  code: string;
+  severity: AlertSeverity;
+  subsystem: AlertSubsystem;
+  message: string;
+  timestamp: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ObservabilityMetrics {
+  totalRequests: number;
+  errorCount5xx: number;
+  errorCount4xx: number;
+  rateLimitedCount429: number;
+  errorRate5xx: number;
+  uptimeSeconds: number;
+  windowDurationMs: number;
+}
+
+export interface BudgetUtilization {
+  providerId: string;
+  requestsToday: number;
+  tokensToday: number;
+  visitorTokensToday: number;
+  ownerTokensToday: number;
+  backgroundTokensToday: number;
+  dailyLimitTokens: number;
+  utilizationPercent: number;
+  softThresholdReached: boolean;
+  hardThresholdReached: boolean;
+  isRateLimited: boolean;
+  rateLimitedUntil?: string | null;
+}
+

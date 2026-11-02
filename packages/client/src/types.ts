@@ -17,6 +17,9 @@ import type {
   Relation,
   Evidence,
   Span,
+  ObservabilityMetrics,
+  ObservabilityAlert,
+  BudgetUtilization,
 } from '@living-portfolio/core';
 
 export interface ClientOptions {
@@ -45,12 +48,20 @@ export interface HealthResponse {
   backup: {
     lastBackup: string | null;
     lastRestoreTestStatus: string;
+    alert?: string;
   };
   providers: {
-    configured: string[];
-    count: number;
-    fallbackChain: string[];
-    circuitStatus: Record<string, 'healthy' | 'tripped' | 'disabled'>;
+    status?: string;
+    active?: string[];
+    configured?: string[];
+    count?: number;
+    fallbackChain?: string[];
+    circuitStatus?: Record<string, 'healthy' | 'tripped' | 'disabled'>;
+    utilization?: BudgetUtilization[];
+  };
+  monitoring?: {
+    metrics: ObservabilityMetrics;
+    alerts: ObservabilityAlert[];
   };
 }
 

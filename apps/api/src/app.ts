@@ -10,8 +10,9 @@ import {
   type IPortfolioRepository,
 } from '@living-portfolio/db';
 import { BudgetGovernor, MockModelProvider, OpenAICompatibleProvider, resolveConfiguredProviders, AnswerCache, type ModelProvider } from '@living-portfolio/ai';
-import { DEFAULT_STRATA_THEME, buildOpenApiDocument } from '@living-portfolio/core';
+import { DEFAULT_STRATA_THEME, buildOpenApiDocument, type NotificationChannel } from '@living-portfolio/core';
 import { AuthManager, createAuthRoutes } from './auth/security.js';
+import { MetricsCollector } from './observability/metrics.js';
 import { createHealthRoutes } from './routes/health.js';
 import { createEntriesRoutes } from './routes/entries.js';
 import { createStructureRoutes } from './routes/structure.js';
@@ -33,6 +34,9 @@ export function createApp(
     authStoragePath?: string;
     allowedOrigins?: string[];
     providers?: ModelProvider[];
+    governor?: BudgetGovernor;
+    metricsCollector?: MetricsCollector;
+    notificationChannel?: NotificationChannel;
     databaseKind?: 'in-memory' | 'postgres' | 'dual-write';
     bundledWeb?: boolean;
     bundledWebAdapter?: (app: Hono, repo: IPortfolioRepository, runtimeState?: any, auth?: AuthManager) => void;
@@ -67,7 +71,27 @@ export function createApp(
       : dbKind === 'postgres'
       ? new PostgresPortfolioRepository()
       : new InMemoryPortfolioRepository());
-  const governor = new BudgetGovernor({}, repo);
+  const governor = options?.governor ?? new BudgetGovernor({}, repo);
+  const metricsCollector = options?.metricsCollector ?? new MetricsCollector();
+
+  if (options?.notificationChannel) {
+    const channel = options.notificationChannel;
+    metricsCollector.setAlertListener((alert) => {
+      channel.send({
+        title: alert.code,
+        message: alert.message,
+        severity: alert.severity,
+      }).catch(() => {});
+    });
+    governor.setAlertListener((alert) => {
+      channel.send({
+        title: alert.code,
+        message: alert.message,
+        severity: alert.severity,
+      }).catch(() => {});
+    });
+  }
+
   const mockProvider = new MockModelProvider();
 
   // Resolve model providers strictly from configuration or explicit options (Spec §10.8, §13.5)
@@ -103,8 +127,14 @@ export function createApp(
     theme: structuredClone(DEFAULT_STRATA_THEME),
   };
 
-  // Global middleware: logging, security headers + CSP (S5), and origin-restricted CORS (S5)
+  // Global middleware: logging, security headers + CSP (S5), origin-restricted CORS (S5), and observability metrics (§13.5, §13.9, OSR-21)
   app.use('*', logger());
+  app.use('*', async (c, next) => {
+    const start = Date.now();
+    await next();
+    const duration = Date.now() - start;
+    metricsCollector.recordRequest(c.res.status, duration);
+  });
   app.use('*', async (c, next) => {
     c.header(
       'Content-Security-Policy',
@@ -148,6 +178,9 @@ export function createApp(
     {
       databaseKind: dbKind,
       configuredProviders: providerNames,
+      governor,
+      metricsCollector,
+      providers,
     }
   );
   const answerCache = new AnswerCache();
@@ -210,7 +243,7 @@ export function createApp(
   apiV1.route('/import', createImportRoutes(repo, auth, cfg.DEPLOYMENT_CLASS));
   apiV1.use('/settings', auth.requireAdminMiddleware());
   apiV1.use('/settings/*', auth.requireAdminMiddleware());
-  apiV1.route('/settings', createSettingsRoutes(repo, runtimeState, auth));
+  apiV1.route('/settings', createSettingsRoutes(repo, runtimeState, auth, governor, providers));
 
   // Consultation booking routes (§6.1, UX-11) - public POST, admin GET
   apiV1.use('/book', (c, next) => (c.req.method === 'GET' ? auth.requireAdminMiddleware()(c, next) : next()));
@@ -311,5 +344,5 @@ export function createApp(
     });
   });
 
-  return { app, repo, governor, mockProvider, providers, runtimeState, auth, adminToken, answerCache };
+  return { app, repo, governor, mockProvider, providers, runtimeState, auth, adminToken, answerCache, metricsCollector };
 }
