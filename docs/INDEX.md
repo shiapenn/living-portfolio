@@ -49,6 +49,7 @@
 | `A041` | WP-9.1 Real Backups and Restore Drill | `active` | [A041-wp-91-real-backups-and-restore-drill.md](execution-reports/A041-wp-91-real-backups-and-restore-drill.md) | — |
 | `A042` | WP-9.2 Observability, Budget Caps and Spend Alerts | `active` | [A042-wp-92-observability-budget-caps-and-spend-alerts.md](execution-reports/A042-wp-92-observability-budget-caps-and-spend-alerts.md) | — |
 | `A043` | WP-9.3 Production Deploy Workflow, Health Gate and Auto-Rollback | `active` | [A043-wp-93-production-deploy-and-auto-rollback.md](execution-reports/A043-wp-93-production-deploy-and-auto-rollback.md) | — |
+| `A044` | WP-9.4 Worker buildsToday Reset and Static Artifact Emission | `active` | [A044-wp-94-worker-midnight-reset-static-artifacts.md](execution-reports/A044-wp-94-worker-midnight-reset-static-artifacts.md) | — |
 
 ## Handover Snapshots (Class H)
 
