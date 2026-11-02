@@ -183,6 +183,38 @@
       ],
       "closingReceipt": "A040",
       "handover": "H009"
+    },
+    "WP-9": {
+      "name": "Work Package 9 (Gate G4 Backup, Restore Drill, Observability & Hardening)",
+      "description": "Automated pg_dump + age encrypted backups, scratch-container restore drill, backup retention policy, observability, budget caps & spend alerts, production deploy workflow with required reviewer, health gate & auto-rollback, and worker buildsToday counter UTC midnight reset & static artifact emission (OSR-20, OSR-21, OSR-22, P5, Gate G4).",
+      "requiredTaskIds": [
+        "WP-9.1",
+        "WP-9.2",
+        "WP-9.3",
+        "WP-9.4"
+      ],
+      "requiredPassingTests": [
+        "Database Backup, Restore Drill, Retention & Freshness Conformance (§13.9, §18.1, §20, OSR-20, M8) › 1. Age Authenticated Encryption & Decryption (§13.9) › round-trips arbitrary database payloads using authenticated encryption",
+        "Database Backup, Restore Drill, Retention & Freshness Conformance (§13.9, §18.1, §20, OSR-20, M8) › 2. Automated Backup Creation & Metadata Sidecar (§13.9, OSR-20) › exports repository data, computes SHA-256, encrypts archive, and creates sidecar",
+        "Database Backup, Restore Drill, Retention & Freshness Conformance (§13.9, §18.1, §20, OSR-20, M8) › 3. Automated Scratch Restore Drill (§13.9, §18.1, OSR-20) › decrypts backup archive, verifies checksum, and restores data into scratch repo",
+        "Database Backup, Restore Drill, Retention & Freshness Conformance (§13.9, §18.1, §20, OSR-20, M8) › 4. Configurable Retention Policy Enforcement (§13.9) › enforces retention thresholds (daily, weekly, monthly) and prunes expired backups",
+        "Database Backup, Restore Drill, Retention & Freshness Conformance (§13.9, §18.1, §20, OSR-20, M8) › 5. Backup Freshness & BACKUP_STALE Alerts (§13.9, OSR-20) › detects unconfigured, fresh, and stale backups with BACKUP_STALE alert",
+        "Observability, Budget Caps, Error Rate Monitoring & Spend Alerts (Spec §13.5, §13.9, OSR-21) › 1. MetricsCollector & Error Rate Threshold Monitoring (§13.5, §13.9) › accurately tracks requests, error counts, and computes sliding-window error rates",
+        "Observability, Budget Caps, Error Rate Monitoring & Spend Alerts (Spec §13.5, §13.9, OSR-21) › 1. MetricsCollector & Error Rate Threshold Monitoring (§13.5, §13.9) › stages failure: triggers HIGH_ERROR_RATE critical alert when 5xx rate exceeds threshold on sufficient volume",
+        "Observability, Budget Caps, Error Rate Monitoring & Spend Alerts (Spec §13.5, §13.9, OSR-21) › 2. BudgetGovernor Spend Tracking, Soft/Hard Caps & Rate Limit Alerts (§13.5) › stages soft budget cap (>= 80%): fires BUDGET_SOFT_CAP warning alert and triggers smaller_model step",
+        "Observability, Budget Caps, Error Rate Monitoring & Spend Alerts (Spec §13.5, §13.9, OSR-21) › 2. BudgetGovernor Spend Tracking, Soft/Hard Caps & Rate Limit Alerts (§13.5) › stages hard budget cap (100%): fires BUDGET_HARD_CAP critical alert and falls back to extractive degradation",
+        "Observability, Budget Caps, Error Rate Monitoring & Spend Alerts (Spec §13.5, §13.9, OSR-21) › 2. BudgetGovernor Spend Tracking, Soft/Hard Caps & Rate Limit Alerts (§13.5) › stages 429 response: records jittered backoff and fires PROVIDER_RATE_LIMITED warning alert",
+        "Production Deploy Workflow, Health Gate & Auto-Rollback Conformance (OSR-22, Gate G4) › 1. Declarative Production Blueprint (deploy/render/render.production.yaml) › exists and parses as valid YAML",
+        "Production Deploy Workflow, Health Gate & Auto-Rollback Conformance (OSR-22, Gate G4) › 2. Production Deployment Workflow (.github/workflows/deploy-production.yml) › targets production environment enforcing required reviewer protection",
+        "Production Deploy Workflow, Health Gate & Auto-Rollback Conformance (OSR-22, Gate G4) › 3. Automated Deploy & Rollback Engine (scripts/deploy-with-rollback) › validateDigest › rejects mutable tags and invalid digests (Spec §13.1, OSR-18, OSR-22)",
+        "Production Deploy Workflow, Health Gate & Auto-Rollback Conformance (OSR-22, Gate G4) › 3. Automated Deploy & Rollback Engine (scripts/deploy-with-rollback) › executeDeployWithRollback › happy path: deploys target digests, passes health gate, and returns success exit code 0",
+        "Production Deploy Workflow, Health Gate & Auto-Rollback Conformance (OSR-22, Gate G4) › 3. Automated Deploy & Rollback Engine (scripts/deploy-with-rollback) › executeDeployWithRollback › staged failure & auto-rollback: health gate failure triggers automated rollback and recovers healthy state",
+        "PortfolioWorker Pipeline (§8, §13.7, §13.9, §15) › resets buildsToday counter across UTC midnight boundaries (§13.7, Finding P5, Fix 19)",
+        "PortfolioWorker Pipeline (§8, §13.7, §13.9, §15) › emits real static HTML bundle, keyword search index, and manifest to disk (§13.7, Finding P5, Fix 19)",
+        "PortfolioWorker Pipeline (§8, §13.7, §13.9, §15) › calculates ms until next UTC midnight and manages reset timer (§13.7, Finding P5, Fix 19)"
+      ],
+      "closingReceipt": "A044",
+      "handover": "H010"
     }
   }
 }

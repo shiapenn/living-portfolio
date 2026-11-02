@@ -558,7 +558,7 @@
     "title": "WP-8 Gate closure and WP-9 kickoff",
     "class": "H",
     "path": "docs/handovers/H009-wp-8-gate-closure-and-wp-9-kickoff.md",
-    "status": "active",
+    "status": "superseded",
     "supersedes": "H008"
   },
   {
@@ -592,5 +592,13 @@
     "path": "docs/execution-reports/A044-wp-94-worker-midnight-reset-static-artifacts.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "H010",
+    "title": "WP-9 Gate closure and WP-10 kickoff",
+    "class": "H",
+    "path": "docs/handovers/H010-wp-9-gate-closure-and-wp-10-kickoff.md",
+    "status": "active",
+    "supersedes": "H009"
   }
 ]
