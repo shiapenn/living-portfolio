@@ -171,8 +171,8 @@ Found 5 section(s) marked verbatim.
 
 ## 9. Handover Decision
 
-- Decision: NOT REQUIRED
-- Rule(s): HO-R5
-- Receipts since last handover: 3 (A038, A039, A040); work packages since: 0
+- Decision: REQUIRED
+- Rule(s): HO-R1
+- Receipts since last handover: 3 (A038, A039, A040); work packages since: 1 (WP-8)
 - Clean-boundary preconditions: met
-- Next action: execute WP-8.4 (Gate G3 Closure & Handover Snapshot H009)
+- Next action: produce and publish Handover H009 (WP-8 Gate Closure and WP-9 Kickoff) per HO-R1

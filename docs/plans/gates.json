@@ -160,6 +160,29 @@
       ],
       "closingReceipt": "A037",
       "handover": "H008"
+    },
+    "WP-8": {
+      "name": "Work Package 8 (Gate G3 Cloud Staging Readiness)",
+      "description": "Hosting provider spike & staging ADR, declarative provider config (deploy/render/render.yaml), staging continuous deploy workflow (.github/workflows/deploy-staging.yml), scoped credentials, and Spec §6.4 staging safeguards & DEPLOYMENT_CLASS handling (OSR-17, OSR-18, OSR-19).",
+      "requiredTaskIds": [
+        "WP-8.1",
+        "WP-8.2",
+        "WP-8.3"
+      ],
+      "requiredPassingTests": [
+        "Staging Deploy Conformance & Infrastructure Blueprint (OSR-18, Gate G3, Spec §6.4, §13.1, §15) › 1. Declarative Render Blueprint (deploy/render/render.yaml) › defines all 4 decoupled services and managed PostgreSQL",
+        "Staging Deploy Conformance & Infrastructure Blueprint (OSR-18, Gate G3, Spec §6.4, §13.1, §15) › 2. Continuous Staging Deploy Workflow (.github/workflows/deploy-staging.yml) › verifies workflow configuration and security controls",
+        "Staging Deploy Conformance & Infrastructure Blueprint (OSR-18, Gate G3, Spec §6.4, §13.1, §15) › 3. Container Images & Multi-stage Dockerfiles › verifies Dockerfile.web structure and security controls",
+        "Staging Deploy Conformance & Infrastructure Blueprint (OSR-18, Gate G3, Spec §6.4, §13.1, §15) › 4. Web Liveness Probe (/healthz) › returns 200 { status: 'ok', service: 'web' }",
+        "Staging Deploy Conformance & Infrastructure Blueprint (OSR-18, Gate G3, Spec §6.4, §13.1, §15) › 5. Staging Operational Documentation (deploy/render/README.md) › documents staging deployment architecture and runbooks",
+        "Staging Safeguards & DEPLOYMENT_CLASS Handling (OSR-19, Gate G3, Spec §6.4) › 1. Persistent Staging Warning Banner (§6.4 item 1) › renders sticky \"Staging: synthetic data only.\" banner on public and admin pages when DEPLOYMENT_CLASS=staging",
+        "Staging Safeguards & DEPLOYMENT_CLASS Handling (OSR-19, Gate G3, Spec §6.4) › 2. Search Engine Crawler Indexing Prevention (§6.4 item 2) › GET /robots.txt disallows all indexing and sets X-Robots-Tag when DEPLOYMENT_CLASS=staging",
+        "Staging Safeguards & DEPLOYMENT_CLASS Handling (OSR-19, Gate G3, Spec §6.4) › 3. Disabled Import and Connector Features (§6.4 item 2) › returns 403 STAGING_IMPORT_DISABLED for all import endpoints when DEPLOYMENT_CLASS=staging",
+        "Staging Safeguards & DEPLOYMENT_CLASS Handling (OSR-19, Gate G3, Spec §6.4) › 4. Synthetic Seed Isolation & Production Seeding Ban (§6.4 item 3, OSR-04) › rejects POST /api/v1/seed in production mode with 403",
+        "Staging Safeguards & DEPLOYMENT_CLASS Handling (OSR-19, Gate G3, Spec §6.4) › 5. Production Startup Guard (§6.4 item 5) › refuses to start when DEPLOYMENT_CLASS=production without Gate G4 sign-off record"
+      ],
+      "closingReceipt": "A040",
+      "handover": "H009"
     }
   }
 }

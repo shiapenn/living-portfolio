@@ -518,7 +518,7 @@
     "title": "WP-7 Gate closure and WP-8 kickoff",
     "class": "H",
     "path": "docs/handovers/H008-wp-7-gate-closure-and-wp-8-kickoff.md",
-    "status": "active",
+    "status": "superseded",
     "supersedes": "H007"
   },
   {
@@ -552,5 +552,13 @@
     "path": "docs/execution-reports/A040-wp-83-staging-safeguards-and-deployment-class-handling.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "H009",
+    "title": "WP-8 Gate closure and WP-9 kickoff",
+    "class": "H",
+    "path": "docs/handovers/H009-wp-8-gate-closure-and-wp-9-kickoff.md",
+    "status": "active",
+    "supersedes": "H008"
   }
 ]

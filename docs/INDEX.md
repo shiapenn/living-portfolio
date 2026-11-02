@@ -58,7 +58,8 @@
 | `H005` | WP-4 Gate Closure and WP-5 Kickoff | `superseded` | [H005-wp-4-gate-closure-and-wp-5-kickoff.md](handovers/H005-wp-4-gate-closure-and-wp-5-kickoff.md) | `H004` |
 | `H006` | WP-5 Gate Closure and WP-6 Kickoff | `superseded` | [H006-wp-5-gate-closure-and-wp-6-kickoff.md](handovers/H006-wp-5-gate-closure-and-wp-6-kickoff.md) | `H005` |
 | `H007` | WP-6 Gate Closure and WP-7 Kickoff | `superseded` | [H007-wp-6-gate-closure-and-wp-7-kickoff.md](handovers/H007-wp-6-gate-closure-and-wp-7-kickoff.md) | `H006` |
-| `H008` | WP-7 Gate closure and WP-8 kickoff | `active` | [H008-wp-7-gate-closure-and-wp-8-kickoff.md](handovers/H008-wp-7-gate-closure-and-wp-8-kickoff.md) | `H007` |
+| `H008` | WP-7 Gate closure and WP-8 kickoff | `superseded` | [H008-wp-7-gate-closure-and-wp-8-kickoff.md](handovers/H008-wp-7-gate-closure-and-wp-8-kickoff.md) | `H007` |
+| `H009` | WP-8 Gate closure and WP-9 kickoff | `active` | [H009-wp-8-gate-closure-and-wp-9-kickoff.md](handovers/H009-wp-8-gate-closure-and-wp-9-kickoff.md) | `H008` |
 
 ## Plans & Protocols (Class P)
 
