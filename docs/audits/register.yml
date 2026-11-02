@@ -1516,7 +1516,7 @@
   spec_sections:
     - "19"
   severity: P3
-  status: open
+  status: in-progress
   owner: A
   verified_by: null
   links:
@@ -1528,6 +1528,9 @@
     - date: 2026-10-19
       status: open
       note: Added from OSR-001 §7 task register
+    - date: 2026-11-02
+      status: in-progress
+      note: "Part 1 completed in WP-7.3: Published API boundary ADR (P002), configuration reference contract (G002), and updated README."
 
 - id: 20261020-UX-01
   audit: AUD-2026-10-20

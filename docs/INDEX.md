@@ -60,12 +60,14 @@
 | ID | Title | Status | File | Supersedes |
 | :--- | :--- | :--- | :--- | :--- |
 | `P001` | Iterative Agent Handover Protocol (IAHP) | `active` | [P001-iterative-agent-handover-protocol.md](plans/P001-iterative-agent-handover-protocol.md) | — |
+| `P002` | API Boundary and Web Decoupling Architecture Decision Record | `active` | [P002-api-boundary-and-web-decoupling-adr.md](plans/P002-api-boundary-and-web-decoupling-adr.md) | — |
 
 ## Guides, References & Templates (Class G)
 
 | ID | Title | Status | File | Supersedes |
 | :--- | :--- | :--- | :--- | :--- |
 | `G001` | Handover template | `active` | [G001-handover-template.md](templates/G001-handover-template.md) | — |
+| `G002` | Configuration Reference and Environment Contract | `active` | [G002-configuration-reference-and-environment-contract.md](G002-configuration-reference-and-environment-contract.md) | — |
 
 ## Grandfathered Legacy Documents (Class L)
 

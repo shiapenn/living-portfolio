@@ -488,5 +488,21 @@
     "path": "docs/execution-reports/A036-wp-72-web-decoupling-and-http-client-enforcement.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "P002",
+    "title": "API Boundary and Web Decoupling Architecture Decision Record",
+    "class": "P",
+    "path": "docs/plans/P002-api-boundary-and-web-decoupling-adr.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "G002",
+    "title": "Configuration Reference and Environment Contract",
+    "class": "G",
+    "path": "docs/G002-configuration-reference-and-environment-contract.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

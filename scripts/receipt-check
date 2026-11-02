@@ -126,12 +126,12 @@ export function stripAnsiAndTimestamps(raw) {
   let currentGroup = null;
 
   for (const line of lines) {
-    // Strip tab-prefixed job names if coming from `gh run view --log`
-    const withoutPrefix = line.includes('\t') ? line.split('\t').slice(1).join('\t') : line;
-    // Strip ISO 8601 timestamps
-    const withoutTimestamp = withoutPrefix.replace(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z\s*/, '');
-    // Strip ANSI color codes
-    const clean = withoutTimestamp.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '').trimEnd();
+    // Strip tab-prefixed job/step names if coming from `gh run view --log`
+    const lastPart = line.includes('\t') ? line.split('\t').pop() : line;
+    // Strip optional BOM and ISO 8601 timestamps
+    const withoutTimestamp = lastPart.replace(/^\uFEFF/, '').replace(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z\s*/, '');
+    // Strip ANSI color codes (both raw byte 0x1b and caret-notated ^[)
+    const clean = withoutTimestamp.replace(/(?:\x1b|\^\[)\[?[0-9;]*[a-zA-Z]/g, '').trimEnd();
     if (!clean.trim()) continue;
 
     // Detect GitHub Actions group markers for vitest packages
@@ -207,6 +207,14 @@ export function fetchLogs(jobOrRunId, options = {}) {
     if (ghOutput && ghOutput.length > 50) return ghOutput;
   } catch {}
 
+  try {
+    const ghJobOutput = execSync(`gh run view --log --job ${jobOrRunId}`, {
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'ignore'],
+    });
+    if (ghJobOutput && ghJobOutput.length > 50) return ghJobOutput;
+  } catch {}
+
   // 2. Try GitHub REST API
   const token = getGithubToken();
   if (!token) {
@@ -225,27 +233,50 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
 
-opener = urllib.request.build_opener(NoRedirect)
+direct_opener = urllib.request.build_opener(NoRedirect, urllib.request.ProxyHandler({}))
+default_opener = urllib.request.build_opener(NoRedirect)
+s3_direct_opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+s3_default_opener = urllib.request.build_opener()
+
+def open_api_url(req, timeout=30):
+    for opener in (direct_opener, default_opener):
+        try:
+            return opener.open(req, timeout=timeout)
+        except urllib.error.HTTPError:
+            raise
+        except Exception:
+            pass
+    return direct_opener.open(req, timeout=timeout)
+
+def open_s3_url(s3_url, timeout=30):
+    s3_req = urllib.request.Request(s3_url, headers={"User-Agent": "Receipt-Check"})
+    for opener in (s3_direct_opener, s3_default_opener):
+        try:
+            with opener.open(s3_req, timeout=timeout) as resp:
+                return resp.read().decode("utf-8", errors="replace")
+        except Exception:
+            pass
+    with s3_direct_opener.open(s3_req, timeout=timeout) as resp:
+        return resp.read().decode("utf-8", errors="replace")
 
 def fetch_job_log(jid):
-    for attempt in range(3):
+    for attempt in range(4):
         try:
             req = urllib.request.Request(
                 f"https://api.github.com/repos/shiapenn/living-portfolio/actions/jobs/{jid}/logs",
                 headers={"Authorization": f"Bearer {token}", "User-Agent": "Receipt-Check"}
             )
             try:
-                opener.open(req)
+                open_api_url(req)
             except urllib.error.HTTPError as e:
                 if e.code == 302:
                     s3_url = e.headers["Location"]
-                    with urllib.request.urlopen(s3_url, timeout=30) as s3_resp:
-                        return s3_resp.read().decode("utf-8", errors="replace")
+                    return open_s3_url(s3_url)
             return ""
         except Exception:
-            if attempt == 2:
+            if attempt == 3:
                 raise
-            time.sleep(1)
+            time.sleep(1 + attempt)
 
 # Try direct job ID
 log = fetch_job_log(job_or_run)
@@ -259,7 +290,7 @@ req = urllib.request.Request(
     headers={"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json", "User-Agent": "Receipt-Check"}
 )
 try:
-    with urllib.request.urlopen(req) as resp:
+    with open_api_url(req) as resp:
         data = json.loads(resp.read().decode())
         all_logs = []
         for job in data.get("jobs", []):
