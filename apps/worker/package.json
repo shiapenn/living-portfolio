@@ -16,6 +16,7 @@
     "@living-portfolio/ai": "workspace:*",
     "@living-portfolio/core": "workspace:*",
     "@living-portfolio/db": "workspace:*",
+    "@living-portfolio/web": "workspace:*",
     "pg-boss": "^10.1.5"
   },
   "devDependencies": {

@@ -26,7 +26,49 @@ export interface WorkerProcessInstance {
   queueManager: WorkerQueueManager | null;
   worker: PortfolioWorker;
   repo: IPortfolioRepository;
+  cancelMidnightReset?: () => void;
   stop: () => Promise<void>;
+}
+
+/**
+ * Calculates milliseconds until the next UTC midnight boundary.
+ */
+export function msUntilNextUtcMidnight(nowMs: number = Date.now()): number {
+  const d = new Date(nowMs);
+  const next = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1, 0, 0, 0, 0));
+  return next.getTime() - nowMs;
+}
+
+/**
+ * Schedules an automated UTC midnight reset for worker buildsToday counters (§13.7, Finding P5).
+ */
+export function scheduleUtcMidnightReset(
+  worker: PortfolioWorker,
+  onReset?: () => void
+): () => void {
+  let timer: NodeJS.Timeout | null = null;
+  let interval: NodeJS.Timeout | null = null;
+
+  const arm = () => {
+    const delay = Math.max(50, msUntilNextUtcMidnight());
+    timer = setTimeout(() => {
+      worker.checkAndResetBuildsToday();
+      onReset?.();
+      interval = setInterval(() => {
+        worker.checkAndResetBuildsToday();
+        onReset?.();
+      }, 24 * 60 * 60 * 1000);
+      interval.unref();
+    }, delay);
+    timer.unref();
+  };
+
+  arm();
+
+  return () => {
+    if (timer) clearTimeout(timer);
+    if (interval) clearInterval(interval);
+  };
 }
 
 /**
@@ -65,7 +107,12 @@ export async function startWorkerProcess(
     await queueManager.registerWorkers();
   }
 
+  const cancelMidnightReset = scheduleUtcMidnightReset(worker, () => {
+    console.log('[Worker] UTC midnight reached: buildsToday counter reset to 0.');
+  });
+
   const stop = async () => {
+    cancelMidnightReset();
     if (boss) {
       await boss.stop({ graceful: true, timeout: 5000 });
     }
@@ -79,6 +126,7 @@ export async function startWorkerProcess(
     queueManager,
     worker,
     repo,
+    cancelMidnightReset,
     stop,
   };
 }

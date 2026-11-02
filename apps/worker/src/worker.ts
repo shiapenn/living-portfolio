@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { chunkMarkdown, generateGapQuestions, getProfile, type DataClass } from '@living-portfolio/core';
 import {
   extractFacetsFromMarkdown,
@@ -21,10 +23,22 @@ import {
   type BackupMetadata,
   type RestoreDrillResult,
 } from '@living-portfolio/db';
+import {
+  renderHomePage,
+  renderWorkOrWritingPage,
+  renderEntryDetailPage,
+  renderTimelinePage,
+  renderAskPage,
+  renderStaticPage,
+  renderBookPage,
+  renderBuildPage,
+  STRATA_DESIGN_SYSTEM_CSS,
+} from '@living-portfolio/web';
 
 export interface PublishBuildConfig {
   debounceMinutes: number; // default 10
   maxBuildsPerDay: number; // default 12
+  outputDir?: string;
 }
 
 export interface BackupJobOptions {
@@ -58,10 +72,13 @@ export interface PublishJobResult {
   built: boolean;
   reason?: string;
   buildsToday: number;
+  outputDir?: string;
   bundleSummary?: {
     pagesCount: number;
     keywordIndexEntries: number;
     publishedAt: string;
+    filesCount?: number;
+    files?: string[];
   };
 }
 
@@ -77,6 +94,7 @@ export class PortfolioWorker {
   private redactionExclusionsFilePath?: string;
   private customScanOptions?: ScanOptions;
   private lastBuildTimeMs: number | null = null;
+  private lastBuildDayUtc: string | null = null;
   private buildsToday = 0;
 
   constructor(options?: PortfolioWorkerOptions) {
@@ -86,6 +104,7 @@ export class PortfolioWorker {
     this.publishConfig = {
       debounceMinutes: options?.publishConfig?.debounceMinutes ?? 10,
       maxBuildsPerDay: options?.publishConfig?.maxBuildsPerDay ?? 12,
+      outputDir: options?.publishConfig?.outputDir,
     };
     this.redactionExclusions = options?.redactionExclusions ?? [];
     this.redactionExclusionsFilePath = options?.redactionExclusionsFilePath;
@@ -94,6 +113,41 @@ export class PortfolioWorker {
 
   get provider(): ModelProvider {
     return this.providers[0];
+  }
+
+  /**
+   * Resets the buildsToday counter if UTC midnight has passed since the last build/reset.
+   * Returns true if a reset occurred, false otherwise (§13.7, Finding P5).
+   */
+  checkAndResetBuildsToday(nowMs: number = Date.now()): boolean {
+    const currentDayUtc = new Date(nowMs).toISOString().slice(0, 10);
+    if (this.lastBuildDayUtc !== currentDayUtc) {
+      this.buildsToday = 0;
+      this.lastBuildDayUtc = currentDayUtc;
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Returns current buildsToday counter, reflecting UTC midnight reset if day boundary crossed.
+   */
+  getBuildsToday(nowMs: number = Date.now()): number {
+    const currentDayUtc = new Date(nowMs).toISOString().slice(0, 10);
+    if (this.lastBuildDayUtc !== currentDayUtc) {
+      return 0;
+    }
+    return this.buildsToday;
+  }
+
+  /**
+   * Testing helper to seed buildsToday and lastBuildDayUtc.
+   */
+  setBuildsTodayForTesting(count: number, dayUtc?: string) {
+    this.buildsToday = count;
+    if (dayUtc) {
+      this.lastBuildDayUtc = dayUtc;
+    }
   }
 
   /**
@@ -347,12 +401,22 @@ export class PortfolioWorker {
   }
 
   /**
-   * 4. PUBLISH (§13.7): Debounced static site build with daily build cap.
+   * 4. PUBLISH (§13.7, Finding P5, Fix 19):
+   * Debounced static site build with daily build cap, UTC midnight counter reset,
+   * and real static artifact emission to disk (HTML pages, keyword search index, styles, manifest).
    */
-  async runPublishStaticSiteJob(options?: { forceNow?: boolean; nowMs?: number }): Promise<PublishJobResult> {
+  async runPublishStaticSiteJob(options?: {
+    forceNow?: boolean;
+    nowMs?: number;
+    outputDir?: string;
+  }): Promise<PublishJobResult> {
     const nowMs = options?.nowMs ?? Date.now();
     const forceNow = options?.forceNow ?? false;
 
+    // 1. UTC Midnight Reset (§13.7, Finding P5)
+    this.checkAndResetBuildsToday(nowMs);
+
+    // 2. Daily Build Cap
     if (!forceNow && this.buildsToday >= this.publishConfig.maxBuildsPerDay) {
       return {
         built: false,
@@ -361,6 +425,7 @@ export class PortfolioWorker {
       };
     }
 
+    // 3. Debounce Window
     if (!forceNow && this.lastBuildTimeMs !== null) {
       const elapsedMinutes = (nowMs - this.lastBuildTimeMs) / (60 * 1000);
       if (elapsedMinutes < this.publishConfig.debounceMinutes) {
@@ -372,17 +437,148 @@ export class PortfolioWorker {
       }
     }
 
-    const publicEntries = await this.repo.listEntries({ visibility: ['public'] });
+    // 4. Update internal counters
     this.lastBuildTimeMs = nowMs;
     this.buildsToday += 1;
+
+    // 5. Emit real static site artifacts to disk (§13.7, Finding P5)
+    const outputDir =
+      options?.outputDir ??
+      this.publishConfig.outputDir ??
+      process.env.STATIC_EXPORT_DIR ??
+      path.resolve(process.cwd(), 'dist/static');
+
+    await fs.mkdir(outputDir, { recursive: true });
+
+    const writtenFiles: string[] = [];
+    const writeStaticFile = async (relPath: string, content: string | Buffer) => {
+      const fullPath = path.join(outputDir, relPath);
+      await fs.mkdir(path.dirname(fullPath), { recursive: true });
+      await fs.writeFile(fullPath, content, 'utf8');
+      writtenFiles.push(relPath);
+    };
+
+    const publicEntries = await this.repo.listEntries({ visibility: ['public'] });
+
+    // 5a. Core static pages
+    const homeHtml = await renderHomePage(this.repo as any);
+    await writeStaticFile('index.html', homeHtml);
+
+    const workHtml = await renderWorkOrWritingPage(this.repo as any, 'work');
+    await writeStaticFile('work/index.html', workHtml);
+
+    const writingHtml = await renderWorkOrWritingPage(this.repo as any, 'writing');
+    await writeStaticFile('writing/index.html', writingHtml);
+
+    const timelineHtml = await renderTimelinePage(this.repo as any);
+    await writeStaticFile('timeline/index.html', timelineHtml);
+
+    const askHtml = await renderAskPage();
+    await writeStaticFile('ask/index.html', askHtml);
+
+    const aboutHtml = renderStaticPage('about');
+    await writeStaticFile('about/index.html', aboutHtml);
+
+    const nowHtml = renderStaticPage('now');
+    await writeStaticFile('now/index.html', nowHtml);
+
+    const usesHtml = renderStaticPage('uses');
+    await writeStaticFile('uses/index.html', usesHtml);
+
+    const bookHtml = renderBookPage();
+    await writeStaticFile('book/index.html', bookHtml);
+
+    const buildHtml = await renderBuildPage(this.repo as any);
+    await writeStaticFile('build/index.html', buildHtml);
+
+    const notFoundHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>404 — Page Not Found</title><style>${STRATA_DESIGN_SYSTEM_CSS}</style></head><body><main style="max-width:680px;margin:80px auto;padding:24px;"><h1>404 — Not Found</h1><p>The requested page was not found on this static portfolio mirror.</p><p><a href="/">Return to home</a></p></main></body></html>`;
+    await writeStaticFile('404.html', notFoundHtml);
+
+    // 5b. Detail pages for each public entry
+    for (const entry of publicEntries) {
+      const detail = await renderEntryDetailPage(this.repo as any, entry.slug);
+      if (detail && detail.status === 200) {
+        await writeStaticFile(`work/${entry.slug}/index.html`, detail.html);
+        if (entry.profile === 'freeform') {
+          await writeStaticFile(`writing/${entry.slug}/index.html`, detail.html);
+        }
+      }
+    }
+
+    // 5c. Design system stylesheet asset
+    await writeStaticFile('assets/strata.css', STRATA_DESIGN_SYSTEM_CSS);
+
+    // 5d. Keyword search index (§13.7: build-time keyword index so search works offline)
+    const keywordIndex = [];
+    for (const entry of publicEntries) {
+      const full = await this.repo.getEntry(entry.id);
+      const rev = full?.currentRevision;
+      const facets = await this.repo.getFacetsForEntry(entry.id);
+      const claims = rev ? await this.repo.getClaimsForRevision(rev.id) : [];
+
+      const keywordSet = new Set<string>();
+      entry.title
+        .toLowerCase()
+        .split(/\W+/)
+        .filter((w: string) => w.length > 2)
+        .forEach((w: string) => keywordSet.add(w));
+      facets.forEach((f) => {
+        keywordSet.add(f.key.toLowerCase());
+        String(f.value ?? '')
+          .toLowerCase()
+          .split(/\W+/)
+          .filter((w: string) => w.length > 2)
+          .forEach((w: string) => keywordSet.add(w));
+      });
+      claims.forEach((c) => {
+        c.text
+          .toLowerCase()
+          .split(/\W+/)
+          .filter((w: string) => w.length > 2)
+          .forEach((w: string) => keywordSet.add(w));
+      });
+
+      keywordIndex.push({
+        id: entry.id,
+        slug: entry.slug,
+        title: entry.title,
+        profile: entry.profile,
+        visibility: entry.visibility,
+        excerpt: rev ? rev.body_md.slice(0, 240).replace(/\s+/g, ' ') : '',
+        keywords: Array.from(keywordSet),
+        facets: facets.map((f) => ({ key: f.key, value: f.value })),
+        claimsCount: claims.length,
+        url: `/work/${entry.slug}`,
+      });
+    }
+
+    const keywordIndexJson = JSON.stringify(keywordIndex, null, 2);
+    await writeStaticFile('keyword-index.json', keywordIndexJson);
+    await writeStaticFile('search-index.json', keywordIndexJson);
+
+    // 5e. Static bundle manifest
+    const pagesCount = writtenFiles.filter((f) => f.endsWith('.html')).length;
+    const bundleManifest = {
+      version: '1.0',
+      publishedAt: new Date(nowMs).toISOString(),
+      buildsToday: this.buildsToday,
+      pagesCount,
+      keywordIndexEntries: keywordIndex.length,
+      filesCount: writtenFiles.length,
+      files: writtenFiles,
+    };
+    await writeStaticFile('manifest.json', JSON.stringify(bundleManifest, null, 2));
 
     return {
       built: true,
       buildsToday: this.buildsToday,
+      outputDir,
       bundleSummary: {
-        pagesCount: publicEntries.length + 10,
-        keywordIndexEntries: publicEntries.length,
+        pagesCount,
+        keywordIndexEntries: keywordIndex.length,
         publishedAt: new Date(nowMs).toISOString(),
+        filesCount: writtenFiles.length,
+        files: writtenFiles,
       },
     };
   }

@@ -36,6 +36,8 @@ export interface EnrichJobPayload {
 
 export interface PublishJobPayload {
   forceNow?: boolean;
+  nowMs?: number;
+  outputDir?: string;
 }
 
 export interface DeleteEntryJobPayload {

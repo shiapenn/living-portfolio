@@ -261,6 +261,9 @@ importers:
       '@living-portfolio/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@living-portfolio/web':
+        specifier: workspace:*
+        version: link:../web
       pg-boss:
         specifier: ^10.1.5
         version: 10.4.2

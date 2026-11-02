@@ -625,7 +625,7 @@
   spec_sections:
     - "13.7"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 19
@@ -633,12 +633,15 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/worker/src/worker.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit
-  verified_by: null
+    - date: 2026-11-02
+      status: fixed
+      note: Worker buildsToday counter resets across UTC midnight boundaries with scheduleUtcMidnightReset, and runPublishStaticSiteJob emits real HTML pages, assets, offline keyword search index, and manifest to disk.
+  verified_by: A
 - id: P6
   audit: AUD-2026-10-19
   title: Revisions are mutable via updateEntry and duplicate entry slugs are not

@@ -220,11 +220,11 @@
 
 - section: "13.7"
   title: "Static build and publish"
-  status: stub
-  audit_matrix_status: "Stub"
+  status: implemented
+  audit_matrix_status: "Pass"
   findings: ["P5"]
-  last_scored: "2026-10-19"
-  evidence_and_gaps: "Debounce and daily build cap counters exist in memory; buildsToday never resets; no static HTML bundle or keyword index emitted to disk."
+  last_scored: "2026-11-02"
+  evidence_and_gaps: "Debounce and daily build cap counters enforced with UTC midnight reset and background schedule; static site builder emits real HTML pages, keyword search index, design tokens CSS, and bundle manifest to disk."
 
 - section: "13.8-13.9"
   title: "Edge security and operations"
