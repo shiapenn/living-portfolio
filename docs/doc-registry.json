@@ -470,7 +470,7 @@
     "title": "WP-6 Gate Closure and WP-7 Kickoff",
     "class": "H",
     "path": "docs/handovers/H007-wp-6-gate-closure-and-wp-7-kickoff.md",
-    "status": "active",
+    "status": "superseded",
     "supersedes": "H006"
   },
   {
@@ -512,5 +512,13 @@
     "path": "docs/execution-reports/A037-wp-73-api-boundary-adr-and-configuration-contract.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "H008",
+    "title": "WP-7 Gate closure and WP-8 kickoff",
+    "class": "H",
+    "path": "docs/handovers/H008-wp-7-gate-closure-and-wp-8-kickoff.md",
+    "status": "active",
+    "supersedes": "H007"
   }
 ]

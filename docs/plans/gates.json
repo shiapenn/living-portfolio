@@ -135,6 +135,31 @@
       ],
       "closingReceipt": "A034",
       "handover": "H007"
+    },
+    "WP-7": {
+      "name": "Work Package 7 (Gate G2 Finalization: API Versioning & Web Decoupling)",
+      "description": "Versioned API (/api/v1), committed OpenAPI specification, generated TypeScript client (@living-portfolio/client), strict HTTP decoupling of web frontend, and API boundary ADR & configuration contract (OSR-12, OSR-13, OSR-23 Part 1).",
+      "requiredTaskIds": [
+        "WP-7.1",
+        "WP-7.2",
+        "WP-7.3"
+      ],
+      "requiredPassingTests": [
+        "OpenAPI Specification & Versioned API Conformance (OSR-12, Spec §7, §8) › 1. Committed OpenAPI document exists and matches generated schema",
+        "OpenAPI Specification & Versioned API Conformance (OSR-12, Spec §7, §8) › 2. OpenAPI schema specifies valid 3.1.0 document with required metadata and security schemes",
+        "OpenAPI Specification & Versioned API Conformance (OSR-12, Spec §7, §8) › 3. OpenAPI paths cover all core endpoints with versioned prefixes and tags",
+        "OpenAPI Specification & Versioned API Conformance (OSR-12, Spec §7, §8) › 4. Hono app serves OpenAPI specification on /api/v1/openapi.json and root alias",
+        "OpenAPI Specification & Versioned API Conformance (OSR-12, Spec §7, §8) › 5. Hono app mounts versioned /api/v1 endpoints and preserves backward compatibility",
+        "OpenAPI Specification & Versioned API Conformance (OSR-12, Spec §7, §8) › 6. @living-portfolio/client executes typed requests against versioned /api/v1 endpoints",
+        "LivingPortfolioClient (@living-portfolio/client, OSR-12) › normalizes base URLs correctly to canonical /api/v1 endpoint",
+        "LivingPortfolioClient (@living-portfolio/client, OSR-12) › handles and throws typed API errors on non-200 responses",
+        "OSR-13: Frontend & Backend Decoupling Conformance Gate (Gate G2, Spec §4.2, §4.3) › 1. createApp() API Server Decoupling › does not mount web UI routes on default API server",
+        "OSR-13: Frontend & Backend Decoupling Conformance Gate (Gate G2, Spec §4.2, §4.3) › 2. HTTP-Only Communication Enforcement › createApp() enforces HTTP isolation without leaking in-memory repository into web",
+        "OSR-13: Frontend & Backend Decoupling Conformance Gate (Gate G2, Spec §4.2, §4.3) › 3. Standalone apps/web Running Against Remote API over HTTP › renders complete Strata site and feed via @living-portfolio/client HTTP calls to decoupled API",
+        "OSR-13: Frontend & Backend Decoupling Conformance Gate (Gate G2, Spec §4.2, §4.3) › 4. Architecture Invariants › verifies apps/web package.json does not depend on apps/api or drizzle-orm"
+      ],
+      "closingReceipt": "A037",
+      "handover": "H008"
     }
   }
 }
