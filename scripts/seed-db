@@ -1,0 +1,34 @@
+#!/usr/bin/env node
+/**
+ * Living Portfolio - Demo Data Seeder CLI (OSR-04 §3.3)
+ * Seeds synthetic demo portfolio entries into Postgres or In-Memory repository.
+ */
+import { PostgresPortfolioRepository, InMemoryPortfolioRepository, seedDemoPortfolio } from '../packages/db/dist/index.js';
+
+async function main() {
+  if (process.env.DEPLOYMENT_CLASS === 'production') {
+    throw new Error('[OSR-04] Refusing to seed synthetic demo data when DEPLOYMENT_CLASS=production.');
+  }
+
+  const dbUrl = process.env.DATABASE_URL;
+  let repo;
+  if (dbUrl) {
+    try {
+      repo = new PostgresPortfolioRepository(dbUrl);
+    } catch (e) {
+      console.warn('Postgres connection failed, using in-memory repo:', e);
+      repo = new InMemoryPortfolioRepository();
+    }
+  } else {
+    repo = new InMemoryPortfolioRepository();
+  }
+
+  await seedDemoPortfolio(repo);
+  const entries = await repo.listEntries({ visibility: ['public', 'unlisted', 'private'] });
+  console.log(`✓ Seeded ${entries.length} synthetic demo entries.`);
+}
+
+main().catch((err) => {
+  console.error('✗ Seeding failed:', err);
+  process.exit(1);
+});

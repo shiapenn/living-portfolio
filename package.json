@@ -24,7 +24,7 @@
     "openapi:generate": "node scripts/generate-openapi",
     "openapi:drift": "node scripts/verify-openapi-drift",
     "dependency:rules": "node scripts/verify-dependency-rules",
-    "seed:demo": "npx tsx examples/seed-demo.ts",
+    "seed:demo": "node scripts/seed-db",
     "db:migrate": "pnpm --filter @living-portfolio/db migrate",
     "db:backup": "node scripts/backup-db",
     "db:restore-drill": "node scripts/restore-drill",
