@@ -520,5 +520,13 @@
     "path": "docs/handovers/H008-wp-7-gate-closure-and-wp-8-kickoff.md",
     "status": "active",
     "supersedes": "H007"
+  },
+  {
+    "id": "P003",
+    "title": "Hosting provider evaluation and staging architecture ADR",
+    "class": "P",
+    "path": "docs/plans/P003-hosting-provider-evaluation-and-staging-architecture-adr.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
