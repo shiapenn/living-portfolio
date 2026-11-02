@@ -8,4 +8,5 @@ export * from './algorithms/temporal.js';
 export * from './algorithms/gateAndRoute.js';
 export * from './algorithms/staleness.js';
 export * from './algorithms/calibration.js';
+export * from './openapi/index.js';
 export * from './sdk/index.js';

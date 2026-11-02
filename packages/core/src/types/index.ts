@@ -66,6 +66,8 @@ export interface EntryRevision {
   is_hindsight: boolean;
 }
 
+export type Revision = EntryRevision;
+
 export interface Span {
   id: string;
   revision_id: string;

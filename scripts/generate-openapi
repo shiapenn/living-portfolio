@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+import { writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { buildOpenApiDocument } from '../packages/core/dist/index.js';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const target = resolve(ROOT, 'docs/spec/openapi.json');
+const doc = buildOpenApiDocument();
+writeFileSync(target, JSON.stringify(doc, null, 2) + '\n', 'utf8');
+console.log('✓ Generated docs/spec/openapi.json from @living-portfolio/core Zod schemas.');

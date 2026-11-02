@@ -29,6 +29,7 @@ console.log('=== Living Portfolio Audit Governance Check (DR-AUD-001) ===\n');
 // 1. Verify required layout (AUD-01, AUD-02, AUD-05, AUD-06, A.1, OSR-06..OSR-11)
 const requiredPaths = [
   'docs/spec/The_Living_Portfolio_Open_Source_Spec.md',
+  'docs/spec/openapi.json',
   'docs/governance/DR-AUD-001.md',
   'docs/governance/flip-day-checklist.md',
   'docs/governance/CHANGELOG.md',
@@ -54,7 +55,10 @@ const requiredPaths = [
   'scripts/sarif-gate',
   'scripts/gitleaks-scan',
   'scripts/verify-all',
+  'scripts/generate-openapi',
+  'scripts/verify-openapi-drift',
   'apps/api/src/conformance/sarif-gate.conformance.test.ts',
+  'apps/api/src/conformance/openapi.conformance.test.ts',
   'docs/audits/2026-10-19-independent-technical-audit/report.md',
   'docs/audits/2026-10-19-independent-technical-audit/findings.snapshot.yml',
   'docs/audits/2026-10-19-independent-technical-audit/repro/p0-probes.ts',

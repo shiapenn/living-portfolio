@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { buildOpenApiDocument } from '../packages/core/dist/index.js';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const target = resolve(ROOT, 'docs/spec/openapi.json');
+
+if (!existsSync(target)) {
+  console.error('✗ docs/spec/openapi.json does not exist. Run "node scripts/generate-openapi" to generate.');
+  process.exit(1);
+}
+
+const current = readFileSync(target, 'utf8');
+const expected = JSON.stringify(buildOpenApiDocument(), null, 2) + '\n';
+
+if (current !== expected) {
+  console.error('✗ docs/spec/openapi.json has drifted from @living-portfolio/core schemas!');
+  console.error('Run "node scripts/generate-openapi" to update the committed specification.');
+  process.exit(1);
+}
+
+console.log('✓ [OSR-12] OpenAPI specification matches schema definition (0 drift).');

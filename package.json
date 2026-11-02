@@ -21,6 +21,8 @@
     "dco:check": "node scripts/dco-check",
     "sbom:generate": "node scripts/generate-sbom",
     "config:generate-env": "node scripts/generate-env-example",
+    "openapi:generate": "node scripts/generate-openapi",
+    "openapi:drift": "node scripts/verify-openapi-drift",
     "seed:demo": "npx tsx examples/seed-demo.ts",
     "db:migrate": "pnpm --filter @living-portfolio/db migrate",
     "lint": "turbo run lint",

@@ -10,7 +10,7 @@ import {
   type IPortfolioRepository,
 } from '@living-portfolio/db';
 import { BudgetGovernor, MockModelProvider, OpenAICompatibleProvider, resolveConfiguredProviders, AnswerCache, type ModelProvider } from '@living-portfolio/ai';
-import { DEFAULT_STRATA_THEME } from '@living-portfolio/core';
+import { DEFAULT_STRATA_THEME, buildOpenApiDocument } from '@living-portfolio/core';
 import {
   renderAdminImportPage,
   renderAdminLoginPage,
@@ -156,13 +156,20 @@ export function createApp(
     }
   );
   const answerCache = new AnswerCache();
+  const openApiDoc = buildOpenApiDocument();
 
-  app.route('/healthz', healthRouter);
-  app.route('/api/health', healthRouter);
-  app.route('/api/auth', createAuthRoutes(auth));
-  app.route('/api/entries', createEntriesRoutes(repo, auth, runtimeState, answerCache));
-  app.route(
-    '/api/ask',
+  // Canonical Versioned API Router (/api/v1, OSR-12 §4.1)
+  const apiV1 = new Hono();
+
+  // Public system & diagnostic endpoints
+  apiV1.route('/health', healthRouter);
+  apiV1.get('/openapi.json', (c) => c.json(openApiDoc));
+
+  // Public & Authenticated Core Routes
+  apiV1.route('/auth', createAuthRoutes(auth));
+  apiV1.route('/entries', createEntriesRoutes(repo, auth, runtimeState, answerCache));
+  apiV1.route(
+    '/ask',
     createAskRoutes({
       repo,
       governor,
@@ -174,31 +181,35 @@ export function createApp(
       getRuntimeSettings: () => runtimeState,
     })
   );
-  app.route('/api/timeline', createTimelineRoutes(repo));
+  apiV1.route('/timeline', createTimelineRoutes(repo));
 
   // Admin-only routes protected by default-deny auth middleware (Fix 1 / S1, S2)
-  app.use('/api/structure/*', auth.requireAdminMiddleware());
-  app.use('/api/inbox', auth.requireAdminMiddleware());
-  app.use('/api/inbox/*', auth.requireAdminMiddleware());
-  app.use('/api/calibration/*', auth.requireAdminMiddleware());
-  app.use('/api/audit/*', auth.requireAdminMiddleware());
-  app.use('/api/import/*', auth.requireAdminMiddleware());
-  app.use('/api/settings', auth.requireAdminMiddleware());
-  app.use('/api/settings/*', auth.requireAdminMiddleware());
+  apiV1.use('/structure/*', auth.requireAdminMiddleware());
+  apiV1.use('/structure', auth.requireAdminMiddleware());
+  apiV1.use('/inbox', auth.requireAdminMiddleware());
+  apiV1.use('/inbox/*', auth.requireAdminMiddleware());
+  apiV1.use('/calibration/*', auth.requireAdminMiddleware());
+  apiV1.use('/calibration', auth.requireAdminMiddleware());
+  apiV1.use('/audit/*', auth.requireAdminMiddleware());
+  apiV1.use('/audit', auth.requireAdminMiddleware());
+  apiV1.use('/import/*', auth.requireAdminMiddleware());
+  apiV1.use('/import', auth.requireAdminMiddleware());
+  apiV1.use('/settings', auth.requireAdminMiddleware());
+  apiV1.use('/settings/*', auth.requireAdminMiddleware());
 
-  app.route('/api/structure', createStructureRoutes(repo, answerCache));
-  app.route('/api/inbox', createInboxRoutes(repo));
-  app.route('/api/calibration', createCalibrationRoutes(repo));
-  app.route('/api/audit', createAuditRoutes(repo));
-  app.route('/api/import', createImportRoutes(repo, auth));
-  app.route('/api/settings', createSettingsRoutes(repo, runtimeState, auth));
+  apiV1.route('/structure', createStructureRoutes(repo, answerCache));
+  apiV1.route('/inbox', createInboxRoutes(repo));
+  apiV1.route('/calibration', createCalibrationRoutes(repo));
+  apiV1.route('/audit', createAuditRoutes(repo));
+  apiV1.route('/import', createImportRoutes(repo, auth));
+  apiV1.route('/settings', createSettingsRoutes(repo, runtimeState, auth));
 
   // Consultation booking routes (§6.1, UX-11) - public POST, admin GET
-  app.use('/api/book', (c, next) => c.req.method === 'GET' ? auth.requireAdminMiddleware()(c, next) : next());
-  app.route('/api/book', createBookRoutes(repo));
+  apiV1.use('/book', (c, next) => (c.req.method === 'GET' ? auth.requireAdminMiddleware()(c, next) : next()));
+  apiV1.route('/book', createBookRoutes(repo));
 
   // Shadow verification & metrics endpoints (WP-2.4, Fix 8, Fix 10, OSR-15)
-  app.get('/api/admin/metrics/shadow', auth.requireAdminMiddleware(), (c) => {
+  apiV1.get('/admin/metrics/shadow', auth.requireAdminMiddleware(), (c) => {
     if (repo instanceof DualWritePortfolioRepository) {
       return c.json({
         ok: true,
@@ -214,7 +225,7 @@ export function createApp(
     });
   });
 
-  app.post('/api/admin/metrics/shadow/reset', auth.requireAdminMiddleware(), (c) => {
+  apiV1.post('/admin/metrics/shadow/reset', auth.requireAdminMiddleware(), (c) => {
     if (repo instanceof DualWritePortfolioRepository) {
       repo.resetShadowMetrics();
       return c.json({ ok: true, reset: true });
@@ -222,7 +233,7 @@ export function createApp(
     return c.json({ ok: false, message: 'Dual-write repository is not active.' }, 400);
   });
 
-  app.get('/api/admin/metrics/shadow/parity', auth.requireAdminMiddleware(), async (c) => {
+  apiV1.get('/admin/metrics/shadow/parity', auth.requireAdminMiddleware(), async (c) => {
     if (repo instanceof DualWritePortfolioRepository) {
       const parity = await repo.verifyParity();
       return c.json({ ok: true, parity });
@@ -231,7 +242,7 @@ export function createApp(
   });
 
   // Seed demo portfolio on demand (Admin-only, S1; disabled in production per OSR-04)
-  app.post('/api/seed', auth.requireAdminMiddleware(), async (c) => {
+  apiV1.post('/seed', auth.requireAdminMiddleware(), async (c) => {
     if (cfg.DEPLOYMENT_CLASS === 'production') {
       return c.json({ error: 'Demo seeding is disabled in production (OSR-04).' }, 403);
     }
@@ -239,6 +250,15 @@ export function createApp(
     const entries = await repo.listEntries({ visibility: ['public', 'unlisted', 'private'] });
     return c.json({ seeded: true, entriesCount: entries.length });
   });
+
+  // Mount canonical versioned API at /api/v1 (OSR-12)
+  app.route('/api/v1', apiV1);
+  // Mount backward-compatible alias at /api during transition phase (OSR-12)
+  app.route('/api', apiV1);
+
+  // Root probes and OpenAPI specification endpoint
+  app.route('/healthz', healthRouter);
+  app.get('/openapi.json', (c) => c.json(openApiDoc));
 
   // Admin UI routes (UX P0-1, 20261020-UX-01 / V1)
   app.get('/admin/setup', (c) => {

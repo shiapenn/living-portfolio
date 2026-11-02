@@ -1,0 +1,2616 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Living Portfolio API",
+    "version": "1.0.0",
+    "description": "Dynamic professional identity system providing proof-first claims, query-guided interactive answers, NDA-safe confidential redacting, and multi-tier AI responses without vendor or domain lock-in.",
+    "contact": {
+      "name": "Living Portfolio Community"
+    },
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "Living Portfolio API v1 canonical endpoint"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "Visibility": {
+        "type": "string",
+        "enum": [
+          "private",
+          "unlisted",
+          "public"
+        ]
+      },
+      "EntryView": {
+        "type": "string",
+        "enum": [
+          "article",
+          "structured"
+        ]
+      },
+      "TemporalLevel": {
+        "type": "string",
+        "enum": [
+          "exact",
+          "range",
+          "estimated"
+        ]
+      },
+      "AnnotationSource": {
+        "type": "string",
+        "enum": [
+          "machine",
+          "owner"
+        ]
+      },
+      "AnnotationStatus": {
+        "type": "string",
+        "enum": [
+          "suggested",
+          "accepted",
+          "rejected"
+        ]
+      },
+      "FacetStatus": {
+        "type": "string",
+        "enum": [
+          "suggested",
+          "confirmed",
+          "rejected"
+        ]
+      },
+      "ClaimKind": {
+        "type": "string",
+        "enum": [
+          "lesson",
+          "decision",
+          "outcome",
+          "finding",
+          "fact"
+        ]
+      },
+      "OutcomeStatus": {
+        "type": "string",
+        "enum": [
+          "worked",
+          "partly",
+          "failed",
+          "unresolved",
+          "unknown"
+        ]
+      },
+      "RelationType": {
+        "type": "string",
+        "enum": [
+          "supports",
+          "refines",
+          "contradicts",
+          "supersedes",
+          "depends_on"
+        ]
+      },
+      "RelationStatus": {
+        "type": "string",
+        "enum": [
+          "proposed",
+          "accepted",
+          "dismissed"
+        ]
+      },
+      "EvidenceKind": {
+        "type": "string",
+        "enum": [
+          "url",
+          "commit",
+          "file",
+          "media",
+          "product"
+        ]
+      },
+      "QueryClass": {
+        "type": "string",
+        "enum": [
+          "lookup",
+          "advisory",
+          "about"
+        ]
+      },
+      "DataClass": {
+        "type": "string",
+        "enum": [
+          "public",
+          "unpublished",
+          "private",
+          "sensitive"
+        ]
+      },
+      "EntryCreate": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minimum": 1,
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "profile": {
+            "type": "string",
+            "default": "case-study"
+          },
+          "view": {
+            "type": "string",
+            "enum": [
+              "article",
+              "structured"
+            ],
+            "default": "article"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "unlisted",
+              "public"
+            ],
+            "default": "private"
+          },
+          "venture_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "body_md": {
+            "type": "string",
+            "minimum": 1
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "valid_to": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "temporal_level": {
+            "type": "string",
+            "enum": [
+              "exact",
+              "range",
+              "estimated"
+            ],
+            "default": "estimated"
+          },
+          "valid_from_range_end": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "is_hindsight": {
+            "type": "boolean",
+            "default": false
+          },
+          "redactionPreviewToken": {
+            "type": "string"
+          },
+          "nda_confirmed": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "slug",
+          "body_md"
+        ]
+      },
+      "EntryUpdate": {
+        "type": "object",
+        "properties": {
+          "profile": {
+            "type": "string"
+          },
+          "view": {
+            "type": "string",
+            "enum": [
+              "article",
+              "structured"
+            ]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "private",
+              "unlisted",
+              "public"
+            ]
+          },
+          "venture_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "redactionPreviewToken": {
+            "type": "string"
+          },
+          "nda_confirmed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RevisionCreate": {
+        "type": "object",
+        "properties": {
+          "entry_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "body_md": {
+            "type": "string",
+            "minimum": 1
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "valid_to": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "temporal_level": {
+            "type": "string",
+            "enum": [
+              "exact",
+              "range",
+              "estimated"
+            ],
+            "default": "estimated"
+          },
+          "valid_from_range_end": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "is_hindsight": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "entry_id",
+          "body_md"
+        ]
+      },
+      "AnnotationUpdate": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "suggested",
+              "accepted",
+              "rejected"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "FacetUpsert": {
+        "type": "object",
+        "properties": {
+          "entry_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "key": {
+            "type": "string",
+            "minimum": 1
+          },
+          "value": {},
+          "source": {
+            "type": "string",
+            "enum": [
+              "machine",
+              "owner"
+            ],
+            "default": "owner"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "suggested",
+              "confirmed",
+              "rejected"
+            ],
+            "default": "confirmed"
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "nullable": true
+          },
+          "source_span_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "required": [
+          "entry_id",
+          "key",
+          "value"
+        ]
+      },
+      "ClaimUpsert": {
+        "type": "object",
+        "properties": {
+          "revision_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "text": {
+            "type": "string",
+            "minimum": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "lesson",
+              "decision",
+              "outcome",
+              "finding",
+              "fact"
+            ]
+          },
+          "outcome_status": {
+            "type": "string",
+            "enum": [
+              "worked",
+              "partly",
+              "failed",
+              "unresolved",
+              "unknown"
+            ],
+            "nullable": true
+          },
+          "scope": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "valid_to": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "temporal_level": {
+            "type": "string",
+            "enum": [
+              "exact",
+              "range",
+              "estimated"
+            ],
+            "nullable": true
+          },
+          "is_hindsight": {
+            "type": "boolean",
+            "default": false
+          },
+          "source_span_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "machine",
+              "owner"
+            ],
+            "default": "owner"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "suggested",
+              "accepted",
+              "rejected"
+            ],
+            "default": "accepted"
+          }
+        },
+        "required": [
+          "revision_id",
+          "text",
+          "kind"
+        ]
+      },
+      "RelationUpsert": {
+        "type": "object",
+        "properties": {
+          "src_claim": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "dst_claim": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "supports",
+              "refines",
+              "contradicts",
+              "supersedes",
+              "depends_on"
+            ]
+          },
+          "scope": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "proposed",
+              "accepted",
+              "dismissed"
+            ],
+            "default": "proposed"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "src_claim",
+          "dst_claim",
+          "type"
+        ]
+      },
+      "EvidenceUpsert": {
+        "type": "object",
+        "properties": {
+          "entry_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "span_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "claim_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "url",
+              "commit",
+              "file",
+              "media",
+              "product"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "media_id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "verification": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true
+          },
+          "verified_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "AskQuery": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minimum": 1
+          },
+          "as_of_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "facets": {
+            "type": "object",
+            "additionalProperties": {},
+            "default": {}
+          },
+          "session_id": {
+            "type": "string"
+          },
+          "scope_entry_slug": {
+            "type": "string"
+          },
+          "visitor_contact": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "BookingCreate": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "minimum": 1
+          },
+          "visitor_name": {
+            "type": "string"
+          },
+          "visitor_contact": {
+            "type": "string",
+            "minimum": 1
+          },
+          "facets": {
+            "type": "object",
+            "additionalProperties": {},
+            "default": {}
+          },
+          "preferred_time": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "topic",
+          "visitor_contact"
+        ]
+      },
+      "RoutingConfig": {
+        "type": "object",
+        "properties": {
+          "tier1_floor": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.82
+          },
+          "tier2_floor": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.55
+          },
+          "facet_known_threshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.9
+          },
+          "lookup_threshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.7
+          },
+          "w1": {
+            "type": "number",
+            "default": 1
+          },
+          "w2": {
+            "type": "number",
+            "default": 0.5
+          },
+          "w3": {
+            "type": "number",
+            "default": 0.5
+          }
+        }
+      },
+      "AuthSetupInput": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "minimum": 12
+          },
+          "totpSecret": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthLoginInput": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "totpCode": {
+            "type": "string"
+          }
+        }
+      },
+      "TokenIssueInput": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "default": "owner-api-token"
+          }
+        }
+      },
+      "QuickLogInput": {
+        "type": "object",
+        "required": [
+          "body_md"
+        ],
+        "properties": {
+          "body_md": {
+            "type": "string"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "profile": {
+            "type": "string",
+            "default": "observation"
+          }
+        }
+      },
+      "RedactionPreviewInput": {
+        "type": "object",
+        "required": [
+          "body_md"
+        ],
+        "properties": {
+          "body_md": {
+            "type": "string"
+          },
+          "entryId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "RedactApplyInput": {
+        "type": "object",
+        "required": [
+          "body_md"
+        ],
+        "properties": {
+          "body_md": {
+            "type": "string"
+          },
+          "redactionPreviewToken": {
+            "type": "string"
+          }
+        }
+      },
+      "PublishInput": {
+        "type": "object",
+        "properties": {
+          "redactionPreviewToken": {
+            "type": "string"
+          },
+          "nda_confirmed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AskFeedbackInput": {
+        "type": "object",
+        "required": [
+          "query_id",
+          "rating"
+        ],
+        "properties": {
+          "query_id": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "string",
+            "enum": [
+              "helpful",
+              "unhelpful"
+            ]
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "ImportPlanInput": {
+        "type": "object",
+        "required": [
+          "source"
+        ],
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object"
+          }
+        }
+      },
+      "ImportBatchInput": {
+        "type": "object",
+        "required": [
+          "plan_id",
+          "approved_items"
+        ],
+        "properties": {
+          "plan_id": {
+            "type": "string"
+          },
+          "approved_items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Hashed revocable API bearer token issued to the owner or automated tools."
+      },
+      "SessionAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "lp_session",
+        "description": "HTTP-only authenticated owner session cookie."
+      },
+      "CsrfToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token",
+        "description": "Cross-Site Request Forgery prevention token bound to the current session."
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "System health, measured subsystem statuses, and provider availability",
+        "tags": [
+          "System"
+        ],
+        "responses": {
+          "200": {
+            "description": "Health status object with measured subsystem statuses and providers"
+          }
+        }
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "summary": "Committed OpenAPI 3.1.0 specification document",
+        "tags": [
+          "System"
+        ],
+        "responses": {
+          "200": {
+            "description": "Complete OpenAPI specification document"
+          }
+        }
+      }
+    },
+    "/auth/setup": {
+      "post": {
+        "summary": "First-run admin account initialization",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthSetupInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Admin account created successfully with initial credentials"
+          },
+          "400": {
+            "description": "Missing or invalid credentials format"
+          },
+          "409": {
+            "description": "Admin account has already been initialized"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Owner credentials authentication and session creation",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthLoginInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication successful; session cookie and CSRF token returned"
+          },
+          "401": {
+            "description": "Invalid credentials or TOTP challenge failure"
+          },
+          "429": {
+            "description": "Too many authentication attempts (throttled)"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Invalidate current session and clear authentication cookies",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session successfully revoked"
+          }
+        }
+      }
+    },
+    "/auth/session": {
+      "get": {
+        "summary": "Inspect active session state and CSRF token",
+        "tags": [
+          "Authentication"
+        ],
+        "responses": {
+          "200": {
+            "description": "Session status and authenticated state"
+          }
+        }
+      }
+    },
+    "/auth/tokens": {
+      "get": {
+        "summary": "List active revocable API bearer tokens",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of bearer token records"
+          }
+        }
+      },
+      "post": {
+        "summary": "Issue a new hashed revocable API bearer token",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenIssueInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bearer token issued with raw secret displayed once"
+          }
+        }
+      }
+    },
+    "/auth/tokens/{id}": {
+      "delete": {
+        "summary": "Revoke an existing API bearer token by ID",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token revoked successfully"
+          },
+          "404": {
+            "description": "Token not found"
+          }
+        }
+      }
+    },
+    "/entries": {
+      "get": {
+        "summary": "List portfolio entries with structure levels and visibility filtering",
+        "tags": [
+          "Entries"
+        ],
+        "parameters": [
+          {
+            "name": "visibility",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated visibility filter (public, unlisted, private) or all"
+          },
+          {
+            "name": "venture_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Filter entries by venture UUID"
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "description": "Bitemporal time-travel historical snapshot view date"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of portfolio entry summaries"
+          },
+          "401": {
+            "description": "Unauthorized filter request on non-public entries"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new portfolio entry and initial revision",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entry and revision created successfully"
+          },
+          "400": {
+            "description": "Validation error in entry payload"
+          },
+          "401": {
+            "description": "Unauthorized: admin authentication required"
+          }
+        }
+      }
+    },
+    "/entries/{id}": {
+      "get": {
+        "summary": "Retrieve entry details, current revision, facets, and evidence",
+        "tags": [
+          "Entries"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Entry UUID or unique slug"
+          },
+          {
+            "name": "view",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/EntryView"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detailed entry response with revision and facets"
+          },
+          "404": {
+            "description": "Entry not found"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update entry metadata, visibility, or profile",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntryUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated entry details"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "404": {
+            "description": "Entry not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete portfolio entry",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry successfully deleted"
+          },
+          "404": {
+            "description": "Entry not found"
+          }
+        }
+      }
+    },
+    "/entries/{id}/revisions": {
+      "get": {
+        "summary": "List historical revisions for an entry",
+        "tags": [
+          "Entries"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of immutable entry revisions"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new immutable revision for an entry",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Revision appended and structure level computed"
+          },
+          "400": {
+            "description": "Validation error in revision content"
+          }
+        }
+      }
+    },
+    "/entries/{id}/redaction-scan": {
+      "post": {
+        "summary": "Scan entry body for confidential data and entity mentions",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Scan findings, categories, and signed preview token"
+          }
+        }
+      }
+    },
+    "/entries/redaction-preview": {
+      "post": {
+        "summary": "Scan body content on the fly and issue preview verification token",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedactionPreviewInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scan results and signed preview confirmation token"
+          }
+        }
+      }
+    },
+    "/entries/quick-log": {
+      "post": {
+        "summary": "Quickly capture an observation or engineering note",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuickLogInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Observation entry created"
+          }
+        }
+      }
+    },
+    "/entries/{id}/redact": {
+      "post": {
+        "summary": "Apply entity-level redactions with signed confirmation token",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedactApplyInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Masked body markdown and redaction audit summary"
+          }
+        }
+      }
+    },
+    "/entries/{id}/publish": {
+      "post": {
+        "summary": "Publish entry verifying preview tokens and NDA safety invariants",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entry successfully published to public visibility"
+          },
+          "403": {
+            "description": "Publication blocked: unconfirmed confidential findings"
+          }
+        }
+      }
+    },
+    "/entries/{id}/archive": {
+      "post": {
+        "summary": "Archive entry to private visibility",
+        "tags": [
+          "Entries"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry archived"
+          }
+        }
+      }
+    },
+    "/ask": {
+      "post": {
+        "summary": "Query the multi-tier conversational portfolio engine",
+        "tags": [
+          "Ask"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskQuery"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Synthesized answer, citations, and provider disclosure"
+          },
+          "429": {
+            "description": "Rate limit or token budget governor capacity reached"
+          }
+        }
+      }
+    },
+    "/ask/feedback": {
+      "post": {
+        "summary": "Submit visitor feedback on an Ask answer",
+        "tags": [
+          "Ask"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AskFeedbackInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Feedback recorded"
+          }
+        }
+      }
+    },
+    "/ask/status/{token}": {
+      "get": {
+        "summary": "Check the status of an escalated visitor inquiry",
+        "tags": [
+          "Ask"
+        ],
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Escalation status and answer if resolved"
+          },
+          "404": {
+            "description": "Escalation token not found"
+          }
+        }
+      }
+    },
+    "/timeline": {
+      "get": {
+        "summary": "Get Strata chronological entry aggregations and theme metrics",
+        "tags": [
+          "Timeline"
+        ],
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Strata monthly buckets and total counts"
+          }
+        }
+      }
+    },
+    "/book": {
+      "get": {
+        "summary": "List consultation booking requests (admin only)",
+        "tags": [
+          "Consultations"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of consultation bookings"
+          }
+        }
+      },
+      "post": {
+        "summary": "Submit a consultation booking inquiry",
+        "tags": [
+          "Consultations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Booking created and confirmation token returned"
+          },
+          "400": {
+            "description": "Validation error in booking payload"
+          }
+        }
+      }
+    },
+    "/structure/entries/{id}/facets": {
+      "get": {
+        "summary": "Get structured facets for an entry",
+        "tags": [
+          "Structure"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of confirmed and suggested facets"
+          }
+        }
+      }
+    },
+    "/structure/facets": {
+      "post": {
+        "summary": "Upsert structured facet",
+        "tags": [
+          "Structure"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FacetUpsert"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Facet upserted"
+          }
+        }
+      }
+    },
+    "/structure/facets/{id}": {
+      "patch": {
+        "summary": "Update facet confirmation status or value",
+        "tags": [
+          "Structure"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Facet updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete facet",
+        "tags": [
+          "Structure"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Facet deleted"
+          }
+        }
+      }
+    },
+    "/structure/entries/{id}/evidence": {
+      "get": {
+        "summary": "Get proof artifacts and evidence items for an entry",
+        "tags": [
+          "Structure"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of evidence records"
+          }
+        }
+      }
+    },
+    "/structure/evidence": {
+      "post": {
+        "summary": "Upsert proof artifact or evidence record",
+        "tags": [
+          "Structure"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvidenceUpsert"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Evidence record created"
+          }
+        }
+      }
+    },
+    "/structure/evidence/{id}": {
+      "delete": {
+        "summary": "Delete evidence record",
+        "tags": [
+          "Structure"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evidence record deleted"
+          }
+        }
+      }
+    },
+    "/structure/revisions/{id}/spans": {
+      "get": {
+        "summary": "Get annotated semantic spans for a revision",
+        "tags": [
+          "Structure"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of spans with character offsets and role suggestions"
+          }
+        }
+      }
+    },
+    "/structure/annotations": {
+      "post": {
+        "summary": "Create span annotation",
+        "tags": [
+          "Structure"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Annotation created"
+          }
+        }
+      }
+    },
+    "/structure/annotations/{id}": {
+      "patch": {
+        "summary": "Update annotation role or acceptance status",
+        "tags": [
+          "Structure"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnnotationUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Annotation updated"
+          }
+        }
+      }
+    },
+    "/structure/claims": {
+      "post": {
+        "summary": "Upsert verified claim with outcome status",
+        "tags": [
+          "Structure"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimUpsert"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Claim created"
+          }
+        }
+      }
+    },
+    "/structure/claims/{id}": {
+      "patch": {
+        "summary": "Update claim status or outcome",
+        "tags": [
+          "Structure"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Claim updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete claim",
+        "tags": [
+          "Structure"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Claim deleted"
+          }
+        }
+      }
+    },
+    "/structure/relations": {
+      "post": {
+        "summary": "Create typed relation edge between claims",
+        "tags": [
+          "Structure"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelationUpsert"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Relation edge established"
+          }
+        }
+      }
+    },
+    "/structure/relations/{id}": {
+      "delete": {
+        "summary": "Delete relation edge",
+        "tags": [
+          "Structure"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Relation deleted"
+          }
+        }
+      }
+    },
+    "/inbox": {
+      "get": {
+        "summary": "List inbox triage items and suggested annotations",
+        "tags": [
+          "Inbox"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of triage items"
+          }
+        }
+      },
+      "post": {
+        "summary": "Enqueue new inbox item",
+        "tags": [
+          "Inbox"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Inbox item created"
+          }
+        }
+      }
+    },
+    "/inbox/{id}/approve": {
+      "post": {
+        "summary": "Approve inbox suggestion",
+        "tags": [
+          "Inbox"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inbox item approved"
+          }
+        }
+      }
+    },
+    "/inbox/{id}/reject": {
+      "post": {
+        "summary": "Reject and discard inbox suggestion",
+        "tags": [
+          "Inbox"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inbox item rejected"
+          }
+        }
+      }
+    },
+    "/calibration": {
+      "get": {
+        "summary": "Get self-calibration metrics and routing state",
+        "tags": [
+          "Calibration"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Calibration metrics and window stats"
+          }
+        }
+      },
+      "post": {
+        "summary": "Update routing calibration parameters",
+        "tags": [
+          "Calibration"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Calibration updated"
+          }
+        }
+      }
+    },
+    "/audit": {
+      "get": {
+        "summary": "Get system audit status and active checks",
+        "tags": [
+          "Audit"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit summary"
+          }
+        }
+      },
+      "post": {
+        "summary": "Trigger audit execution",
+        "tags": [
+          "Audit"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit execution report"
+          }
+        }
+      }
+    },
+    "/audit/topology-conflicts": {
+      "get": {
+        "summary": "Topology Conflicts (SIMULATED honest 501 endpoint per Fix 3 / AUD-18)",
+        "tags": [
+          "Audit"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "501": {
+            "description": "Honest 501 Not Implemented response"
+          }
+        }
+      }
+    },
+    "/import/plan": {
+      "post": {
+        "summary": "Analyze import payload and produce reviewable plan",
+        "tags": [
+          "Import"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportPlanInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Import plan with candidate entries"
+          }
+        }
+      }
+    },
+    "/import/batch": {
+      "post": {
+        "summary": "Execute batch import of approved items",
+        "tags": [
+          "Import"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportBatchInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch import result with success count"
+          }
+        }
+      }
+    },
+    "/settings": {
+      "get": {
+        "summary": "Get runtime settings and system configuration",
+        "tags": [
+          "Settings"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Runtime settings object"
+          }
+        }
+      }
+    },
+    "/settings/routing": {
+      "patch": {
+        "summary": "Update query routing thresholds and tier floors",
+        "tags": [
+          "Settings"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoutingConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated routing parameters"
+          }
+        }
+      }
+    },
+    "/settings/theme": {
+      "patch": {
+        "summary": "Update Strata design tokens and theme",
+        "tags": [
+          "Settings"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated theme state"
+          }
+        }
+      }
+    },
+    "/settings/notifications/test": {
+      "post": {
+        "summary": "Dispatch test notification to verify adapter health",
+        "tags": [
+          "Settings"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notification test result"
+          }
+        }
+      }
+    },
+    "/settings/backups/run-drill": {
+      "post": {
+        "summary": "Execute automated scratch backup and restore verification drill",
+        "tags": [
+          "Settings"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drill completed successfully"
+          }
+        }
+      }
+    },
+    "/settings/constraints/{id}/confirm": {
+      "patch": {
+        "summary": "Confirm system constraint mined from data",
+        "tags": [
+          "Settings"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Constraint confirmed"
+          }
+        }
+      }
+    },
+    "/settings/constraints/{id}/discard": {
+      "patch": {
+        "summary": "Discard mined system constraint",
+        "tags": [
+          "Settings"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Constraint discarded"
+          }
+        }
+      }
+    },
+    "/admin/metrics/shadow": {
+      "get": {
+        "summary": "Get dual-write shadow repository execution metrics",
+        "tags": [
+          "Operations"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shadow execution metrics"
+          }
+        }
+      }
+    },
+    "/admin/metrics/shadow/reset": {
+      "post": {
+        "summary": "Reset dual-write shadow metrics counters",
+        "tags": [
+          "Operations"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Counters reset"
+          }
+        }
+      }
+    },
+    "/admin/metrics/shadow/parity": {
+      "get": {
+        "summary": "Run bit-for-bit parity check between primary and shadow stores",
+        "tags": [
+          "Operations"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Parity check status"
+          }
+        }
+      }
+    },
+    "/seed": {
+      "post": {
+        "summary": "Seed demo entries (disabled in production per OSR-04)",
+        "tags": [
+          "Operations"
+        ],
+        "security": [
+          {
+            "SessionAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Seeded entries summary"
+          },
+          "403": {
+            "description": "Seeding forbidden in production deployments"
+          }
+        }
+      }
+    }
+  }
+}

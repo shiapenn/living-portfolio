@@ -1286,18 +1286,21 @@
     - "7"
     - "8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   verified_by: null
   links:
     issue: null
     pr: null
     plan: docs/plans/osr-001-open-source-release.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/openapi.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Added from OSR-001 §7 task register
+    - date: 2026-11-02
+      status: fixed
+      note: "Fixed in WP-7.1 (OSR-12): versioned /api/v1 mounted in createApp(), committed OpenAPI 3.1 schema generated from Zod schemas at docs/spec/openapi.json with CI drift gate, and strongly typed @living-portfolio/client package implemented and verified."
 - id: OSR-13
   audit: OSR-001
   title: Decouple web from API; remove web mounting from createApp(); optional

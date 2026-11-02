@@ -514,5 +514,27 @@ export function createAuthRoutes(auth: AuthManager) {
     return c.json({ revoked: true, id });
   });
 
+  // Inspect active session (C.3, OSR-12)
+  router.get('/session', (c) => {
+    const check = auth.isAdminAuthenticated(c);
+    const cookieHeader = c.req.header('cookie') || '';
+    const sessionMatch = cookieHeader.match(/(?:^|;\s*)lp_session=([a-f0-9]+)/);
+    let csrfToken: string | undefined = undefined;
+    let username: string | undefined = undefined;
+    if (sessionMatch) {
+      const s = (auth as any).sessions?.get(sessionMatch[1]);
+      if (s) {
+        csrfToken = s.csrfToken;
+        username = s.username;
+      }
+    }
+    return c.json({
+      authenticated: check.authenticated,
+      username,
+      csrfToken,
+      setupRequired: !auth.isSetupCompleted(),
+    });
+  });
+
   return router;
 }
