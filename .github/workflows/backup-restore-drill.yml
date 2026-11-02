@@ -10,6 +10,8 @@ on:
       - 'packages/db/src/backup/**'
       - 'scripts/backup-db'
       - 'scripts/restore-drill'
+      - 'scripts/seed-db'
+      - 'package.json'
       - '.github/workflows/backup-restore-drill.yml'
   pull_request:
     branches: [main]
@@ -17,6 +19,8 @@ on:
       - 'packages/db/src/backup/**'
       - 'scripts/backup-db'
       - 'scripts/restore-drill'
+      - 'scripts/seed-db'
+      - 'package.json'
       - '.github/workflows/backup-restore-drill.yml'
 
 permissions:
