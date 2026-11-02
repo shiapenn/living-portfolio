@@ -528,5 +528,13 @@
     "path": "docs/plans/P003-hosting-provider-evaluation-and-staging-architecture-adr.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A038",
+    "title": "WP-8.1 Hosting provider spike and staging ADR",
+    "class": "A",
+    "path": "docs/execution-reports/A038-wp-81-hosting-provider-spike-and-staging-adr.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
