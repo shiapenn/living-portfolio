@@ -1,4 +1,5 @@
 import { readFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
 
@@ -131,6 +132,15 @@ export const CONFIG_SETTINGS_METADATA: readonly SettingMetadata[] = [
     description: 'S3-compatible bucket name for encrypted backup archives (§13.9)',
     defaultValue: '',
     exampleValue: '',
+    secret: false,
+    public: false,
+  },
+  {
+    key: 'G4_SIGNOFF_PATH',
+    category: 'deploy',
+    description: 'Path to Gate G4 sign-off record (defaults to docs/releases/g4-signoff.md) (§6.4 item 5, OSR-19)',
+    defaultValue: '',
+    exampleValue: 'docs/releases/g4-signoff.md',
     secret: false,
     public: false,
   },
@@ -282,6 +292,7 @@ export const AppConfigSchema = z
     NTFY_TOPIC: z.string().default(''),
     AGE_PUBLIC_KEY: z.string().default(''),
     S3_BACKUP_BUCKET: z.string().default(''),
+    G4_SIGNOFF_PATH: z.string().default(''),
     PUBLIC_API_BASE_URL: z.string().min(1).default('/api'),
     PUBLIC_SITE_NAME: z.string().min(1).default('Portfolio Sandbox'),
     PUBLIC_OWNER_NAME: z.string().min(1).default('Portfolio Owner'),
@@ -332,8 +343,31 @@ export const AppConfigSchema = z
           message: 'SEED_DEMO cannot be enabled when DEPLOYMENT_CLASS=production',
         });
       }
+
+      // Gate G4 Production Sign-off Guard (§6.4 item 5, OSR-19)
+      const signoffPath = cfg.G4_SIGNOFF_PATH || findG4SignoffPath();
+      if (!existsSync(signoffPath)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['DEPLOYMENT_CLASS'],
+          message: 'Production startup refused: missing required Gate G4 sign-off record (docs/releases/g4-signoff.md)',
+        });
+      }
     }
   });
+
+export function findG4SignoffPath(): string {
+  if (process.env.G4_SIGNOFF_PATH) return process.env.G4_SIGNOFF_PATH;
+  let curr = process.cwd();
+  for (let i = 0; i < 5; i++) {
+    const candidate = resolve(curr, 'docs/releases/g4-signoff.md');
+    if (existsSync(candidate)) return candidate;
+    const parent = resolve(curr, '..');
+    if (parent === curr) break;
+    curr = parent;
+  }
+  return resolve(process.cwd(), 'docs/releases/g4-signoff.md');
+}
 
 export type AppConfig = z.infer<typeof AppConfigSchema>;
 

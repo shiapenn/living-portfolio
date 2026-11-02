@@ -4,8 +4,27 @@ import { chunkMarkdown } from '@living-portfolio/core';
 import { scanForConfidentialData } from '@living-portfolio/ai';
 import { AuthManager, sha256Hex } from '../auth/security.js';
 
-export function createImportRoutes(repo: IPortfolioRepository, auth: AuthManager) {
+export function createImportRoutes(
+  repo: IPortfolioRepository,
+  auth: AuthManager,
+  deploymentClass?: string
+) {
   const router = new Hono();
+
+  // Staging Safeguards (§6.4 item 2, OSR-19): Import and connector features are strictly disabled in staging
+  if (deploymentClass === 'staging') {
+    const disabledHandler = (c: any) =>
+      c.json(
+        {
+          error: 'Import and connector features are disabled in staging environment (synthetic data only).',
+          code: 'STAGING_IMPORT_DISABLED',
+        },
+        403
+      );
+    router.all('*', disabledHandler);
+    router.all('/', disabledHandler);
+    return router;
+  }
 
   // Import Planner estimate (§13.6)
   router.post('/plan', async (c) => {

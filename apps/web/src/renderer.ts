@@ -261,7 +261,12 @@ function renderLayout(title: string, activePath: string, mainContentHtml: string
 
   const stagingBannerHtml =
     cfg.DEPLOYMENT_CLASS === 'staging'
-      ? `<div class="as-of-banner" data-banner="staging-synthetic-only" role="status" style="margin:0;border-radius:0;justify-content:center"><strong>Staging: synthetic data only.</strong></div>`
+      ? `<div class="as-of-banner" data-banner="staging-synthetic-only" role="status" style="position:sticky;top:0;z-index:999;margin:0;border-radius:0;justify-content:center;background:var(--surface-raised);border-bottom:2px solid var(--role-challenge,#f59e0b)"><strong>Staging: synthetic data only.</strong></div>`
+      : '';
+
+  const robotsMetaHtml =
+    cfg.DEPLOYMENT_CLASS === 'staging'
+      ? '  <meta name="robots" content="noindex, nofollow" />\n'
       : '';
 
   const unofficialForkSlotHtml = cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE
@@ -273,7 +278,7 @@ function renderLayout(title: string, activePath: string, mainContentHtml: string
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_NAME)}</title>
+${robotsMetaHtml}  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_NAME)}</title>
   <style>${STRATA_DESIGN_SYSTEM_CSS}</style>
 </head>
 <body>
@@ -4055,6 +4060,14 @@ export function renderAdminSetupPage(): string {
 
 export async function renderAdminImportPage(repo: WebDataClient): Promise<string> {
   repo = adaptDataSource(repo);
+  const cfg = loadConfig();
+  const stagingNoticeHtml =
+    cfg.DEPLOYMENT_CLASS === 'staging'
+      ? `    <div class="later-thinking-banner" data-banner="staging-import-disabled" role="alert" style="margin-bottom:16px;border-left:4px solid var(--role-challenge,#f59e0b)">
+      <strong>Import Disabled on Staging:</strong> Import connectors and ingestion pipelines are strictly disabled in staging environments to enforce synthetic data isolation (§6.4, OSR-19).
+    </div>\n`
+      : '';
+
   const content = `
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
       <div>
@@ -4066,7 +4079,7 @@ export async function renderAdminImportPage(repo: WebDataClient): Promise<string
       <a href="/admin" class="btn btn-secondary" style="text-decoration:none">← Back to Workspace</a>
     </div>
 
-    <!-- Triage Stepper -->
+    ${stagingNoticeHtml}<!-- Triage Stepper -->
     <div class="triage-stepper" role="navigation" aria-label="Import stages">
       <div class="triage-step active" id="step-tab-add">1. Add Material</div>
       <div class="triage-step" id="step-tab-plan">2. Import Planner</div>

@@ -1444,18 +1444,21 @@
     - "13.1"
     - "15"
   severity: P1
-  status: open
+  status: fixed
   owner: A
-  verified_by: null
+  verified_by: apps/api/src/conformance/staging-safeguards.conformance.test.ts
   links:
     issue: null
     pr: null
     plan: docs/plans/osr-001-open-source-release.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/staging-safeguards.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Added from OSR-001 §7 task register
+    - date: 2026-11-02
+      status: fixed
+      note: Implemented staging synthetic warning banner, robots.txt crawler disallow, X-Robots-Tag, disabled staging import routes (403 STAGING_IMPORT_DISABLED), production seed ban, and Gate G4 production sign-off startup guard.
 - id: OSR-20
   audit: OSR-001
   title: Real backups and restore drill, backup-age alert (Gate G4)

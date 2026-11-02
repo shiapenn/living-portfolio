@@ -48,8 +48,28 @@ export function createWebApp(options?: WebAppOptions) {
     })
   );
 
+  // Search engine indexing prevention (§6.4 item 2, OSR-19)
+  if (cfg.DEPLOYMENT_CLASS === 'staging') {
+    app.use('*', async (c, next) => {
+      await next();
+      c.header('X-Robots-Tag', 'noindex, nofollow');
+    });
+  }
+
   // Liveness / health endpoint for load balancers & container health checks
   app.get('/healthz', (c) => c.json({ status: 'ok', service: 'web' }));
+
+  // Search engine crawler instructions (§6.4 item 2, OSR-19)
+  app.get('/robots.txt', (c) => {
+    if (cfg.DEPLOYMENT_CLASS === 'staging') {
+      return c.text('User-agent: *\nDisallow: /\n', 200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+      });
+    }
+    return c.text(`User-agent: *\nAllow: /\nSitemap: ${primarySiteOrigin}/sitemap.xml\n`, 200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+    });
+  });
 
   // Admin UI routes
   app.get('/admin/setup', (c) => c.html(renderAdminSetupPage()));

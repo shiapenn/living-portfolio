@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { loadConfig } from '@living-portfolio/config';
+import { loadConfig, type AppConfig } from '@living-portfolio/config';
 import {
   InMemoryPortfolioRepository,
   PostgresPortfolioRepository,
@@ -27,6 +27,7 @@ import { createSettingsRoutes, type RuntimeSettingsState } from './routes/settin
 export function createApp(
   customRepo?: IPortfolioRepository,
   options?: {
+    config?: AppConfig;
     signingKey?: string;
     bootstrapAdminToken?: string;
     authStoragePath?: string;
@@ -38,7 +39,7 @@ export function createApp(
   }
 ) {
   const app = new Hono();
-  const cfg = loadConfig();
+  const cfg = options?.config ?? loadConfig();
   const defaultDbKind =
     process.env.NODE_ENV === 'test'
       ? 'in-memory'
@@ -85,8 +86,8 @@ export function createApp(
   });
 
   const configuredOrigins = [
-    ...cfg.SITE_ORIGIN.split(',').map((s) => s.trim()),
-    ...cfg.ADMIN_ORIGIN.split(',').map((s) => s.trim()),
+    ...cfg.SITE_ORIGIN.split(',').map((s: string) => s.trim()),
+    ...cfg.ADMIN_ORIGIN.split(',').map((s: string) => s.trim()),
   ].filter(Boolean);
   const primarySiteOrigin = configuredOrigins[0] || cfg.SITE_ORIGIN;
   const allowedOrigins = new Set(options?.allowedOrigins ?? configuredOrigins);
@@ -126,6 +127,14 @@ export function createApp(
       credentials: true,
     })
   );
+
+  // Search engine indexing prevention (§6.4 item 2, OSR-19)
+  if (cfg.DEPLOYMENT_CLASS === 'staging') {
+    app.use('*', async (c, next) => {
+      await next();
+      c.header('X-Robots-Tag', 'noindex, nofollow');
+    });
+  }
 
   // Public & Auth routes
   const providerNames = providers.map((p) => p.name);
@@ -178,16 +187,29 @@ export function createApp(
   apiV1.use('/calibration', auth.requireAdminMiddleware());
   apiV1.use('/audit/*', auth.requireAdminMiddleware());
   apiV1.use('/audit', auth.requireAdminMiddleware());
-  apiV1.use('/import/*', auth.requireAdminMiddleware());
-  apiV1.use('/import', auth.requireAdminMiddleware());
-  apiV1.use('/settings', auth.requireAdminMiddleware());
-  apiV1.use('/settings/*', auth.requireAdminMiddleware());
+  if (cfg.DEPLOYMENT_CLASS === 'staging') {
+    const stagingImportDisabled = (c: any) =>
+      c.json(
+        {
+          error: 'Import and connector features are disabled in staging environment (synthetic data only).',
+          code: 'STAGING_IMPORT_DISABLED',
+        },
+        403
+      );
+    apiV1.all('/import', stagingImportDisabled);
+    apiV1.all('/import/*', stagingImportDisabled);
+  } else {
+    apiV1.use('/import/*', auth.requireAdminMiddleware());
+    apiV1.use('/import', auth.requireAdminMiddleware());
+  }
 
   apiV1.route('/structure', createStructureRoutes(repo, answerCache));
   apiV1.route('/inbox', createInboxRoutes(repo));
   apiV1.route('/calibration', createCalibrationRoutes(repo));
   apiV1.route('/audit', createAuditRoutes(repo));
-  apiV1.route('/import', createImportRoutes(repo, auth));
+  apiV1.route('/import', createImportRoutes(repo, auth, cfg.DEPLOYMENT_CLASS));
+  apiV1.use('/settings', auth.requireAdminMiddleware());
+  apiV1.use('/settings/*', auth.requireAdminMiddleware());
   apiV1.route('/settings', createSettingsRoutes(repo, runtimeState, auth));
 
   // Consultation booking routes (§6.1, UX-11) - public POST, admin GET
@@ -245,6 +267,18 @@ export function createApp(
   // Root probes and OpenAPI specification endpoint
   app.route('/healthz', healthRouter);
   app.get('/openapi.json', (c) => c.json(openApiDoc));
+
+  // Search engine crawler instructions (§6.4 item 2, OSR-19)
+  app.get('/robots.txt', (c) => {
+    if (cfg.DEPLOYMENT_CLASS === 'staging') {
+      return c.text('User-agent: *\nDisallow: /\n', 200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+      });
+    }
+    return c.text('User-agent: *\nDisallow: /api/\n', 200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+    });
+  });
 
   // Federation manifest (§17)
   app.get('/.well-known/living-portfolio.json', async (c) => {
