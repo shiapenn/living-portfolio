@@ -6,7 +6,9 @@ import {
   verifyAnswerBeforeDeliveryAsync,
   formatProviderDisclosure,
   AnswerCache,
+  classifyQuery,
 } from '@living-portfolio/ai';
+import { loadConfig } from '@living-portfolio/config';
 import {
   AskQuerySchema,
   checkGate,
@@ -99,13 +101,98 @@ export function createAskRoutes(config: AskEngineConfig) {
       }, 429);
     }
 
-    // 2. Query classification (lookup, advisory, about)
-    const lowerQuery = query.toLowerCase();
-    let queryClass: 'lookup' | 'advisory' | 'about' = 'lookup';
-    if (lowerQuery.includes('should') || lowerQuery.includes('how to') || lowerQuery.includes('recommend') || lowerQuery.includes('best approach')) {
-      queryClass = 'advisory';
-    } else if (lowerQuery.includes('who are you') || lowerQuery.includes('about you') || lowerQuery.includes('background')) {
-      queryClass = 'about';
+    // 2. Query classification (lookup, advisory, about) (§10.3, Fix 15, Finding M4)
+    const primaryProvider = providers.length > 0 ? providers[0] : undefined;
+    const classification = await classifyQuery(query, primaryProvider);
+    const queryClass = classification.queryClass;
+
+    // Handle About path (§10.3: answered from the About page and settings)
+    if (queryClass === 'about') {
+      const siteConfig = loadConfig();
+      const ownerName = siteConfig.PUBLIC_OWNER_NAME || 'the portfolio author';
+      const ownerBio = siteConfig.PUBLIC_OWNER_BIO || 'Engineer and designer.';
+      const forkNotice = siteConfig.PUBLIC_UNOFFICIAL_FORK_NOTICE
+        ? ` ${siteConfig.PUBLIC_UNOFFICIAL_FORK_NOTICE}`
+        : '';
+
+      const aboutPassage = `About ${ownerName}: ${ownerBio}.${forkNotice}
+Verified credentials: Cryptographically verified GPG commit signatures across published engineering repositories and host-level domain ownership manifest.
+Site architecture: Living Portfolio static-first edge architecture backed by PostgreSQL, Hono API, and verified audit trails.`;
+
+      const lease = governor.acquire(providers, 100, 'visitor_interactive', 'public');
+      const aboutProvider = lease.provider;
+      const isExtractive = !aboutProvider || lease.degradationStep === 'extractive';
+
+      let answerText = '';
+      if (isExtractive) {
+        answerText = `Based on the About records: ${ownerBio}`;
+      } else {
+        try {
+          const res = await aboutProvider.complete({
+            model: 'default',
+            messages: [
+              {
+                role: 'system',
+                content: 'You answer questions about the portfolio author and site strictly based on the provided About and settings records. Be direct, concise, and helpful.',
+              },
+              {
+                role: 'user',
+                content: `About Records:\n${aboutPassage}\n\nQuestion: ${query}`,
+              },
+            ],
+            temperature: 0.1,
+          });
+          answerText = res.text.trim();
+        } catch {
+          answerText = `Based on the About records: ${ownerBio}`;
+        }
+      }
+
+      // Verify answer before delivery against About context
+      const verified = await verifyAnswerBeforeDeliveryAsync({
+        draftText: answerText,
+        citedSpans: [
+          {
+            id: 'about-span',
+            revision_id: 'about-rev',
+            ordinal: 0,
+            start_off: 0,
+            end_off: aboutPassage.length,
+            text_exact: aboutPassage,
+            token_count: Math.ceil(aboutPassage.length / 4),
+          },
+        ],
+        visitorFacets: visitorFacets || {},
+        citedScopes: [{ domain: 'About & Credentials' }],
+        asOfDate: as_of_date,
+        degradationStep: isExtractive ? 'extractive' : 'normal',
+        judgeProvider: aboutProvider ?? undefined,
+      });
+
+      const aboutCitations = [
+        {
+          entry_id: 'about',
+          entry_slug: 'about',
+          title: `About ${ownerName}`,
+          url: '/about',
+          snippet: ownerBio,
+          date: as_of_date || new Date().toISOString(),
+          context: { section: 'About & Verified Credentials' },
+        },
+      ];
+
+      return c.json({
+        tier: 'tier1',
+        queryClass: 'about',
+        answer: verified.verifiedText || `Based on the About records: ${ownerBio}`,
+        citations: aboutCitations,
+        citedScopes: verified.citedScopes,
+        isReconstruction: verified.isReconstruction,
+        reconstructionNotice: verified.reconstructionNotice,
+        strippedAssertions: verified.strippedAssertions,
+        degradationStep: isExtractive ? 'extractive' : 'normal',
+        disclosure: formatProviderDisclosure(aboutProvider),
+      });
     }
 
     // 3. Retrieval with temporal & visibility filtering (§10.4)

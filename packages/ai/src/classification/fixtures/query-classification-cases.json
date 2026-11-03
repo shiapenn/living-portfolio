@@ -1,0 +1,149 @@
+{
+  "version": "1.0",
+  "cases": [
+    {
+      "id": "lookup-01",
+      "query": "What database did you use for webhook locks in 2021?",
+      "expectedClass": "lookup",
+      "reason": "Direct factual lookup about past technology records in 2021."
+    },
+    {
+      "id": "lookup-02",
+      "query": "Did you migrate away from Redis in 2024?",
+      "expectedClass": "lookup",
+      "reason": "Boolean verification query about historical migration."
+    },
+    {
+      "id": "lookup-03",
+      "query": "When was the Strata Timeline design project completed?",
+      "expectedClass": "lookup",
+      "reason": "Temporal inquiry seeking exact date from portfolio records."
+    },
+    {
+      "id": "lookup-04",
+      "query": "Where was the Redis lock cluster deployed?",
+      "expectedClass": "lookup",
+      "reason": "Location/topology question answerable from entry text."
+    },
+    {
+      "id": "lookup-05",
+      "query": "What was the outcome of the Redis Redlock implementation?",
+      "expectedClass": "lookup",
+      "reason": "Factual query on recorded outcome metric and results."
+    },
+    {
+      "id": "lookup-06",
+      "query": "Which version of PostgreSQL was used in pg-pulse?",
+      "expectedClass": "lookup",
+      "reason": "Specific version extraction from portfolio facts."
+    },
+    {
+      "id": "lookup-07",
+      "query": "Did the 2022 microservices split succeed?",
+      "expectedClass": "lookup",
+      "reason": "Historical retrospection check against recorded decision record."
+    },
+    {
+      "id": "advisory-01",
+      "query": "Should I use Redis or PostgreSQL for distributed locking?",
+      "expectedClass": "advisory",
+      "reason": "Recommendation question requiring visitor context and constraints."
+    },
+    {
+      "id": "advisory-02",
+      "query": "How should we handle webhook idempotency in a microservices architecture?",
+      "expectedClass": "advisory",
+      "reason": "Actionable guidance question dependent on visitor stack and scale."
+    },
+    {
+      "id": "advisory-03",
+      "query": "What approach do you recommend for high-throughput locking under 50k TPS?",
+      "expectedClass": "advisory",
+      "reason": "Explicit recommendation query."
+    },
+    {
+      "id": "advisory-04",
+      "query": "What are the tradeoffs between external lock managers and database transactions?",
+      "expectedClass": "advisory",
+      "reason": "Tradeoff evaluation requiring applicability considerations."
+    },
+    {
+      "id": "advisory-05",
+      "query": "Is it better to split a monolith early or wait until team size exceeds 10?",
+      "expectedClass": "advisory",
+      "reason": "Best practice advisory question requiring team context."
+    },
+    {
+      "id": "advisory-06",
+      "query": "How to structure an engineering portfolio with time-travel?",
+      "expectedClass": "advisory",
+      "reason": "Methodological how-to query."
+    },
+    {
+      "id": "advisory-07",
+      "query": "Would you advise using Redis Redlock across availability zones?",
+      "expectedClass": "advisory",
+      "reason": "Direct advice request conditioned on latency and failure modes."
+    },
+    {
+      "id": "about-01",
+      "query": "Who are you and what do you work on?",
+      "expectedClass": "about",
+      "reason": "Author identity and biographical inquiry answered from About page."
+    },
+    {
+      "id": "about-02",
+      "query": "Tell me about your background and experience.",
+      "expectedClass": "about",
+      "reason": "Personal history and profile inquiry."
+    },
+    {
+      "id": "about-03",
+      "query": "What tech stack powers this portfolio site?",
+      "expectedClass": "about",
+      "reason": "Meta inquiry about the site implementation and settings."
+    },
+    {
+      "id": "about-04",
+      "query": "How does the Living Portfolio site architecture work?",
+      "expectedClass": "about",
+      "reason": "Questions about this software platform and hosting topology."
+    },
+    {
+      "id": "about-05",
+      "query": "What verified credentials or GPG signatures do you hold?",
+      "expectedClass": "about",
+      "reason": "Verification and credentials inquiry answered from About page."
+    },
+    {
+      "id": "about-06",
+      "query": "How can I contact the author?",
+      "expectedClass": "about",
+      "reason": "Contact and communication request answered from About settings."
+    },
+    {
+      "id": "ambiguous-01",
+      "query": "Database locking strategies",
+      "expectedClass": "advisory",
+      "reason": "Ambiguous noun phrase; treated as advisory per §10.3 strictness rule."
+    },
+    {
+      "id": "ambiguous-02",
+      "query": "Redis vs Postgres",
+      "expectedClass": "advisory",
+      "reason": "Ambiguous comparison without explicit lookup scope; treated as advisory."
+    },
+    {
+      "id": "ambiguous-03",
+      "query": "Microservice architectural patterns",
+      "expectedClass": "advisory",
+      "reason": "Ambiguous topic search defaulting to advisory to ensure applicability gating."
+    },
+    {
+      "id": "ambiguous-04",
+      "query": "Distributed systems",
+      "expectedClass": "advisory",
+      "reason": "Broad ambiguous keyword; treated as advisory per §10.3."
+    }
+  ]
+}
