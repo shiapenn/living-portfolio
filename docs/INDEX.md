@@ -59,6 +59,7 @@
 | `A051` | WP-11.1: Debounced Publish & Ask Flow Repair | `active` | [A051-wp-111-debounced-publish-ask-flow-repair.md](execution-reports/A051-wp-111-debounced-publish-ask-flow-repair.md) | — |
 | `A052` | WP-11.2: Navigation Redesign & System States | `active` | [A052-wp-112-navigation-redesign-system-states.md](execution-reports/A052-wp-112-navigation-redesign-system-states.md) | — |
 | `A053` | WP-11.3: Accessibility Mechanics & Structured View Repair | `active` | [A053-wp-113-accessibility-mechanics-structured-view-repair.md](execution-reports/A053-wp-113-accessibility-mechanics-structured-view-repair.md) | — |
+| `A054` | WP-11.4: Markdown Engine Tokens and Responsive Layout | `active` | [A054-wp-114-markdown-engine-tokens-and-responsive-layout.md](execution-reports/A054-wp-114-markdown-engine-tokens-and-responsive-layout.md) | — |
 
 ## Handover Snapshots (Class H)
 
