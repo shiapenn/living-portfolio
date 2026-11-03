@@ -600,5 +600,13 @@
     "path": "docs/handovers/H010-wp-9-gate-closure-and-wp-10-kickoff.md",
     "status": "active",
     "supersedes": "H009"
+  },
+  {
+    "id": "A045",
+    "title": "WP-10.1 Pre-Delivery Entailment Verification Judge",
+    "class": "A",
+    "path": "docs/execution-reports/A045-wp-101-pre-delivery-entailment-verification-judge.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
