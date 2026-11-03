@@ -188,7 +188,7 @@ describe('WP-11.5 Conformance: Copy Harmonization & Spec-Jargon Removal (2026102
 
     const app = createTestWeb(repo);
 
-    // 1. Zero section numbers (§...) in visible DOM of public and admin routes
+    // 1. Zero section numbers (§...) in public and admin routes
     const routesToTest = [
       '/work',
       '/build',
@@ -206,12 +206,7 @@ describe('WP-11.5 Conformance: Copy Harmonization & Spec-Jargon Removal (2026102
     for (const route of routesToTest) {
       const res = await app.request(route);
       const html = await res.text();
-      // Strip <style> and <script> tags to inspect rendered user-facing markup
-      const visibleHtml = html
-        .replace(/<style[\s\S]*?<\/style>/gi, '')
-        .replace(/<script[\s\S]*?<\/script>/gi, '');
-      const specMatch = visibleHtml.match(/\(§\d+(\.\d+)*\)/);
-      expect(specMatch, `Route ${route} should not contain spec section numbers (§...) in visible DOM`).toBeNull();
+      expect(html, `Route ${route} should not leak section numbers (§...)`).not.toContain('(§');
     }
 
     // 2. Structured entry view: no "Structure: L2" or schema codes, shows "Structured" chip
