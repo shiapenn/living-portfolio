@@ -215,6 +215,46 @@
       ],
       "closingReceipt": "A044",
       "handover": "H010"
+    },
+    "WP-10": {
+      "name": "Work Package 10 (Milestone v0.2 Algorithms, Retrieval & Quality Tuning)",
+      "description": "Pre-delivery verification entailment judge, assertion stripping & citedScopes wiring, query classification upgrade & about path handling, self-calibration routing with held-out validation & ECE, dynamic topology audit detector & scope-overlap staleness detector, import planner budget enforcement with core connectors, and labeled evaluation runner with chaos/accessibility suites (M3, M4, M5, M6, M7, M9, M11).",
+      "requiredTaskIds": [
+        "WP-10.1",
+        "WP-10.2",
+        "WP-10.3",
+        "WP-10.4",
+        "WP-10.5",
+        "WP-10.6"
+      ],
+      "requiredPassingTests": [
+        "M3 Conformance: Pre-delivery verification entailment judge, assertion stripping, citedScopes, and reconstruction labeling (§10.6, §10.8, Fix 14) › 1. Strips ungrounded assertions from synthesized answer before delivery (§10.6, M3)",
+        "M3 Conformance: Pre-delivery verification entailment judge, assertion stripping, citedScopes, and reconstruction labeling (§10.6, §10.8, Fix 14) › 2. Downgrades completely ungrounded or fabricated answer to extractive excerpts (§10.6, M3)",
+        "M3 Conformance: Pre-delivery verification entailment judge, assertion stripping, citedScopes, and reconstruction labeling (§10.6, §10.8, Fix 14) › 3. Wires citedScopes into API responses and matches against visitor facets (§10.6, M3)",
+        "M3 Conformance: Pre-delivery verification entailment judge, assertion stripping, citedScopes, and reconstruction labeling (§10.6, §10.8, Fix 14) › 4. Attaches explicit reconstruction labeling for time-travel queries and fallback degradation (§10.6, §10.8, M3)",
+        "M4 Query Classification, About Path & Needs-Context Conformance (§10.3, §12.6, Finding M4, Fix 4, Fix 15) › classifies queries using model provider and adheres to §10.3 strict advisory default for ambiguous cases",
+        "M4 Query Classification, About Path & Needs-Context Conformance (§10.3, §12.6, Finding M4, Fix 4, Fix 15) › answers About path queries from About page records and settings with /about citation (§10.3)",
+        "M4 Query Classification, About Path & Needs-Context Conformance (§10.3, §12.6, Finding M4, Fix 4, Fix 15) › returns needs_context state with missing hard facets on first-time advisory queries (§10.5, §12.6, G6)",
+        "M4 Query Classification, About Path & Needs-Context Conformance (§10.3, §12.6, Finding M4, Fix 4, Fix 15) › allows visitor to supply context or skip needs_context without repeated prompts (§6.1, §10.3, §12.6)",
+        "Self-Calibration Layer & Routing Calibration Conformance (§11, Finding M5, Fix 16) › GET /api/calibration returns live calibration state, mechanisms flags, sliding window, and ECE report (§11)",
+        "Self-Calibration Layer & Routing Calibration Conformance (§11, Finding M5, Fix 16) › POST /api/calibration/apply enforces bounded step clamping and updates runtime state (§11, Fix 16)",
+        "Self-Calibration Layer & Routing Calibration Conformance (§11, Finding M5, Fix 16) › honors calibrationFrozen setting by suppressing proposals and rejecting apply with 409 Conflict (§11, Fix 16)",
+        "Self-Calibration Layer & Routing Calibration Conformance (§11, Finding M5, Fix 16) › POST /api/calibration/rollback/:id restores live parameter value and marks record reverted (§11, Fix 16)",
+        "WP-10.4: Dynamic Topology Audit & Staleness Scope Overlap (Findings M6, M7 / Fix 17, Fix 18, §10.7, §11, §18.1) › 1. GET /api/audit/topology-conflicts?live=true dynamically detects conflicting claim pairs without creating edges (§11, Fix 17)",
+        "WP-10.4: Dynamic Topology Audit & Staleness Scope Overlap (Findings M6, M7 / Fix 17, Fix 18, §10.7, §11, §18.1) › 2. Owner-Only Write Test (§18.1): neither topology audit nor constraint mining writes an active relation or confirmed constraint without owner action",
+        "WP-10.4: Dynamic Topology Audit & Staleness Scope Overlap (Findings M6, M7 / Fix 17, Fix 18, §10.7, §11, §18.1) › 3. POST /api/audit/topology-conflicts/:id/resolve creates accepted relation edge and triggers staleness recompute upon owner action (§11, §10.7, Fix 17, Fix 18)",
+        "WP-10.4: Dynamic Topology Audit & Staleness Scope Overlap (Findings M6, M7 / Fix 17, Fix 18, §10.7, §11, §18.1) › 4. Scope-overlap staleness detector suppresses banner when scopes are disjoint (§10.7, Fix 18)",
+        "WP-10.5: Import Planner Budgets, Resumable Jobs, Core Connectors & Notifications (Finding M9 / Fix 21, §4, §13.6, §14) › 1. POST /api/import/plan enforces configured budgets and provides document preview (§13.6, Fix 21)",
+        "WP-10.5: Import Planner Budgets, Resumable Jobs, Core Connectors & Notifications (Finding M9 / Fix 21, §4, §13.6, §14) › 2. Resumable import jobs checkpoint per document and survive interruptions (§13.6, Fix 21)",
+        "WP-10.5: Import Planner Budgets, Resumable Jobs, Core Connectors & Notifications (Finding M9 / Fix 21, §4, §13.6, §14) › 3. Core source connectors expose declared permissions and crawl imported assets (§14, Fix 21)",
+        "WP-10.5: Import Planner Budgets, Resumable Jobs, Core Connectors & Notifications (Finding M9 / Fix 21, §4, §13.6, §14) › 4. Concrete notification adapters send and test delivery across channels (§13.9, §14, Fix 21)",
+        "WP-10.6 / Finding M11: Evaluation Runner, Provider Chaos & Security Gate (Spec §18.1, §18.2, Fix 25, Fix 26) › 1. GET /api/settings/evaluation preserves 501 SIMULATED(M1) by default, and runs live evaluation with ?live=true (§18.2, Fix 26)",
+        "WP-10.6 / Finding M11: Evaluation Runner, Provider Chaos & Security Gate (Spec §18.1, §18.2, Fix 25, Fix 26) › 2. POST /api/settings/evaluation/run executes model-quality benchmark harness (§18.2, Fix 26)",
+        "WP-10.6 / Finding M11: Evaluation Runner, Provider Chaos & Security Gate (Spec §18.1, §18.2, Fix 25, Fix 26) › 3. Provider chaos tests verify degradation ladder: primary timeout/429 falls back to secondary and extractive mode (§18.1)",
+        "WP-10.6 / Finding M11: Evaluation Runner, Provider Chaos & Security Gate (Spec §18.1, §18.2, Fix 25, Fix 26) › 4. Security gate tests verify auth requirement and prompt-injection resistance (§18.1, Fix 25)"
+      ],
+      "closingReceipt": "A050",
+      "handover": "H011"
     }
   }
 }

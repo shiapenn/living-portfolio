@@ -598,7 +598,7 @@
     "title": "WP-9 Gate closure and WP-10 kickoff",
     "class": "H",
     "path": "docs/handovers/H010-wp-9-gate-closure-and-wp-10-kickoff.md",
-    "status": "active",
+    "status": "superseded",
     "supersedes": "H009"
   },
   {
@@ -648,5 +648,13 @@
     "path": "docs/execution-reports/A050-wp-106-labeled-evaluation-runner-and-chaos-suites.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "H011",
+    "title": "WP-10 Gate closure and WP-11 kickoff",
+    "class": "H",
+    "path": "docs/handovers/H011-wp-10-gate-closure-and-wp-11-kickoff.md",
+    "status": "active",
+    "supersedes": "H010"
   }
 ]
