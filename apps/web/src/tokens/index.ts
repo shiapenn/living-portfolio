@@ -93,7 +93,7 @@ export const SEMANTIC_TOKENS_LIGHT = `
   --text-muted: #4B5A66;
   --text-on-accent: #FFFFFF;
   --rule: #CBD3D8;
-  --border-control: #6B7B88; /* 3:1 contrast against surface for interactive boundaries (§12.3) */
+  --border-control: #6B7B88; /* 3:1 contrast against surface for interactive boundaries (Spec 12.3) */
   --accent: #3A4FD0;
   --focus-ring: #3A4FD0;
 

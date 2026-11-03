@@ -3579,7 +3579,7 @@ export async function renderAdminWorkspacePage(
           });
         }
 
-        // Escalation inbox interactive review & approval (§6.2, UX-08)
+        // Escalation inbox interactive review & approval (Spec 6.2, UX-08)
         document.querySelectorAll('.btn-approve-escalation').forEach(function(btn) {
           btn.addEventListener('click', async function() {
             var id = btn.getAttribute('data-id');
@@ -3649,7 +3649,7 @@ export async function renderAdminWorkspacePage(
             }
           });
         });
-        // Scoped constraints confirm & discard actions (§11, UX-09)
+        // Scoped constraints confirm & discard actions (Spec 11, UX-09)
         document.querySelectorAll('.btn-confirm-constraint').forEach(function(btn) {
           btn.addEventListener('click', async function() {
             var id = btn.getAttribute('data-id');
