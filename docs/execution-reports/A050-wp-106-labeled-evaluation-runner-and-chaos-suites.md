@@ -173,8 +173,8 @@ Found 5 section(s) marked verbatim.
 
 ## 9. Handover Decision
 
-- Decision: RECOMMENDED
-- Rule(s): HO-R3
-- Receipts since last handover: 6 (A045 to A050); work packages since: 0
+- Decision: REQUIRED
+- Rule(s): HO-R1
+- Receipts since last handover: 6 (A045 to A050); work packages since: 1 (WP-10)
 - Clean-boundary preconditions: met
-- Next action: execute task WP-10.7 (Work Package 10 Gate Closure & Handover Snapshot H011)
+- Next action: produce and publish Handover H011 (WP-10 Gate Closure and WP-11 Kickoff) per HO-R1
