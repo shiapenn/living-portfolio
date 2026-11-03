@@ -252,3 +252,17 @@ export const governorLedger = pgTable('governor_ledger', {
   effective_tpm_discount: real('effective_tpm_discount').notNull().default(1.0),
   updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const importJobs = pgTable('import_jobs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  status: text('status').notNull(), // pending | in_progress | completed | paused | failed
+  total_documents: integer('total_documents').notNull().default(0),
+  processed_count: integer('processed_count').notNull().default(0),
+  failed_count: integer('failed_count').notNull().default(0),
+  checkpoints: jsonb('checkpoints').notNull(),
+  items: jsonb('items').notNull(),
+  config: jsonb('config'),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updated_at: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+

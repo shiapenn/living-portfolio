@@ -9,6 +9,7 @@ import type {
   Escalation,
   Evidence,
   Facet,
+  ImportJob,
   MediaAsset,
   Relation,
   ScopedConstraint,
@@ -105,6 +106,12 @@ export interface IPortfolioRepository {
   getTopologyReports(status?: string): Promise<TopologyReport[]>;
   updateTopologyReport(id: string, updates: Partial<TopologyReport>): Promise<TopologyReport | null>;
 
+  // Resumable Import Jobs (§13.6, Fix 21)
+  createImportJob(job: Omit<ImportJob, 'id' | 'created_at' | 'updated_at'>): Promise<ImportJob>;
+  getImportJob(id: string): Promise<ImportJob | null>;
+  updateImportJob(id: string, updates: Partial<ImportJob>): Promise<ImportJob | null>;
+
+
   // Search & Graph Traversal
   hybridSearch(query: string, options: {
     visibility: Visibility[];
@@ -181,6 +188,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   private calibrationChanges = new Map<string, CalibrationChange>();
   private scopedConstraints = new Map<string, ScopedConstraint>();
   private topologyReports = new Map<string, TopologyReport>();
+  private importJobs = new Map<string, ImportJob>();
   private chunkVectors = new Map<string, ChunkVectorRecord>();
   private governorLedgers = new Map<string, GovernorLedgerEntry>();
 
@@ -699,6 +707,36 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
       id,
     };
     this.topologyReports.set(id, updated);
+    return updated;
+  }
+
+  async createImportJob(job: Omit<ImportJob, 'id' | 'created_at' | 'updated_at'>): Promise<ImportJob> {
+    const id = (job as any).id ?? crypto.randomUUID();
+    const now = new Date().toISOString();
+    const item: ImportJob = {
+      ...job,
+      id,
+      created_at: now,
+      updated_at: now,
+    };
+    this.importJobs.set(id, item);
+    return item;
+  }
+
+  async getImportJob(id: string): Promise<ImportJob | null> {
+    return this.importJobs.get(id) || null;
+  }
+
+  async updateImportJob(id: string, updates: Partial<ImportJob>): Promise<ImportJob | null> {
+    const existing = this.importJobs.get(id);
+    if (!existing) return null;
+    const updated: ImportJob = {
+      ...existing,
+      ...updates,
+      id,
+      updated_at: new Date().toISOString(),
+    };
+    this.importJobs.set(id, updated);
     return updated;
   }
 

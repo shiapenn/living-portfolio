@@ -9,6 +9,7 @@ import type {
   Escalation,
   Evidence,
   Facet,
+  ImportJob,
   MediaAsset,
   Relation,
   ScopedConstraint,
@@ -868,6 +869,30 @@ export class DualWritePortfolioRepository implements IPortfolioRepository {
       'updateTopologyReport',
       () => this.primary.updateTopologyReport(id, updates),
       (res) => (res ? this.shadow.updateTopologyReport(id, updates) : Promise.resolve(null))
+    );
+  }
+
+  async createImportJob(job: Omit<ImportJob, 'id' | 'created_at' | 'updated_at'>): Promise<ImportJob> {
+    return this.executeWrite(
+      'createImportJob',
+      () => this.primary.createImportJob(job),
+      (res) => this.shadow.createImportJob({ ...job, id: res.id } as any)
+    );
+  }
+
+  async getImportJob(id: string): Promise<ImportJob | null> {
+    return this.executeRead(
+      'getImportJob',
+      () => this.primary.getImportJob(id),
+      () => this.shadow.getImportJob(id)
+    );
+  }
+
+  async updateImportJob(id: string, updates: Partial<ImportJob>): Promise<ImportJob | null> {
+    return this.executeWrite(
+      'updateImportJob',
+      () => this.primary.updateImportJob(id, updates),
+      (res) => (res ? this.shadow.updateImportJob(id, updates) : Promise.resolve(null))
     );
   }
 

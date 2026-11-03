@@ -195,3 +195,7 @@ export interface PaymentProvider {
   }): Promise<{ checkoutUrl: string; sessionId: string }>;
   verifyWebhook(payload: string, signature: string): Promise<{ valid: boolean; eventType: string }>;
 }
+
+export * from './connectors.js';
+export * from './notifications.js';
+

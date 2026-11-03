@@ -9,6 +9,7 @@ import type {
   Escalation,
   Evidence,
   Facet,
+  ImportJob,
   MediaAsset,
   Relation,
   ScopedConstraint,
@@ -262,6 +263,21 @@ function mapTopologyReport(row: typeof schema.topologyReports.$inferSelect): Top
     overlap: (row.overlap as any) ?? null,
     status: row.status as any,
     at: toIsoRequired(row.at),
+  };
+}
+
+function mapImportJob(row: typeof schema.importJobs.$inferSelect): ImportJob {
+  return {
+    id: row.id,
+    status: row.status as any,
+    total_documents: row.total_documents,
+    processed_count: row.processed_count,
+    failed_count: row.failed_count,
+    checkpoints: (row.checkpoints as any) || [],
+    items: (row.items as any) || [],
+    config: (row.config as any) || {},
+    created_at: toIsoRequired(row.created_at),
+    updated_at: toIsoRequired(row.updated_at),
   };
 }
 
@@ -1089,6 +1105,47 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
       .where(eq(schema.topologyReports.id, id))
       .returning();
     return row ? mapTopologyReport(row) : null;
+  }
+
+  async createImportJob(job: Omit<ImportJob, 'id' | 'created_at' | 'updated_at'>): Promise<ImportJob> {
+    const [row] = await this.db
+      .insert(schema.importJobs)
+      .values({
+        id: (job as any).id ?? crypto.randomUUID(),
+        status: job.status,
+        total_documents: job.total_documents,
+        processed_count: job.processed_count,
+        failed_count: job.failed_count,
+        checkpoints: job.checkpoints as any,
+        items: job.items as any,
+        config: job.config as any,
+      })
+      .returning();
+    return mapImportJob(row);
+  }
+
+  async getImportJob(id: string): Promise<ImportJob | null> {
+    const [row] = await this.db.select().from(schema.importJobs).where(eq(schema.importJobs.id, id));
+    return row ? mapImportJob(row) : null;
+  }
+
+  async updateImportJob(id: string, updates: Partial<ImportJob>): Promise<ImportJob | null> {
+    const updateValues: Record<string, any> = {
+      updated_at: new Date(),
+    };
+    if (updates.status !== undefined) updateValues.status = updates.status;
+    if (updates.processed_count !== undefined) updateValues.processed_count = updates.processed_count;
+    if (updates.failed_count !== undefined) updateValues.failed_count = updates.failed_count;
+    if (updates.checkpoints !== undefined) updateValues.checkpoints = updates.checkpoints;
+    if (updates.items !== undefined) updateValues.items = updates.items;
+    if (updates.config !== undefined) updateValues.config = updates.config;
+
+    const [row] = await this.db
+      .update(schema.importJobs)
+      .set(updateValues)
+      .where(eq(schema.importJobs.id, id))
+      .returning();
+    return row ? mapImportJob(row) : null;
   }
 
   // --- Hybrid Search & Graph Traversal (§10.4) ---

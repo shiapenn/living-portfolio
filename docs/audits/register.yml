@@ -976,7 +976,7 @@
     - "13.6"
     - "14"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 21
@@ -984,12 +984,15 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/m9-import-planner-connectors.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit (Section 4 §4/§13.6/§14, Section 7 Fix 21)
-  verified_by: null
+    - date: 2026-11-03
+      status: fixed
+      note: "Fixed in WP-10.5 (Fix 21): Import planner enforces configured token and audio budgets, generates structured document previews, and calculates free/paid ETAs (§13.6); resumable import jobs checkpoint per document and survive interruptions (§13.6); core source connectors (GitHub, RSS, file drop) and concrete notification adapters (ntfy, Telegram, email, webhook) implemented (§14)."
+  verified_by: m9-import-planner-connectors.conformance.test.ts
 - id: M10
   audit: AUD-2026-10-19
   title: Missing Apache-2.0 LICENSE, GOVERNANCE.md, CONTRIBUTING.md,

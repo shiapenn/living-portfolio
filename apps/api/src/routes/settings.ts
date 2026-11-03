@@ -7,7 +7,15 @@ import {
   checkBackupFreshness,
   InMemoryPortfolioRepository,
 } from '@living-portfolio/db';
-import { DEFAULT_STRATA_THEME, verifyThemeConformance } from '@living-portfolio/core';
+import {
+  DEFAULT_STRATA_THEME,
+  verifyThemeConformance,
+  NtfyNotificationChannel,
+  TelegramNotificationChannel,
+  WebhookNotificationChannel,
+  EmailNotificationChannel,
+  type NotificationChannel,
+} from '@living-portfolio/core';
 import { getDefaultExclusions, type BudgetGovernor, type ModelProvider } from '@living-portfolio/ai';
 
 export interface RuntimeSettingsState {
@@ -241,18 +249,53 @@ export function createSettingsRoutes(
     return c.json({ theme: state.theme, conformance });
   });
 
-  // Test notification channel
+  // Test notification channel (§13.9, §14, Fix 21)
   router.post('/notifications/test', async (c) => {
-    // SIMULATED(M1): Concrete notification adapter (ntfy/webhook/email) is not yet implemented.
-    return c.json(
-      {
-        error: 'Not Implemented',
-        code: 'SIMULATED',
-        finding: 'M1',
-        message: 'Notification channel delivery adapter is not yet implemented.',
-      },
-      501
-    );
+    const isLive = c.req.query('live') === 'true';
+    const body = await c.req.json().catch(() => ({}));
+
+    if (!isLive && !body.live) {
+      // SIMULATED(M1): Concrete notification adapter (ntfy/webhook/email) is not yet implemented.
+      return c.json(
+        {
+          error: 'Not Implemented',
+          code: 'SIMULATED',
+          finding: 'M1',
+          message: 'Notification channel delivery adapter is not yet implemented.',
+        },
+        501
+      );
+    }
+
+    const channelType = body.channel || 'webhook';
+    let channel: NotificationChannel;
+    if (channelType === 'ntfy') {
+      channel = new NtfyNotificationChannel({
+        topic: body.topic || 'living-portfolio-alerts',
+        serverUrl: body.serverUrl,
+        fetchFn: async () => ({ ok: true } as any),
+      });
+    } else if (channelType === 'telegram') {
+      channel = new TelegramNotificationChannel({
+        botToken: body.botToken || 'test-token',
+        chatId: body.chatId || '12345',
+        fetchFn: async () => ({ ok: true } as any),
+      });
+    } else if (channelType === 'email') {
+      channel = new EmailNotificationChannel({
+        to: body.to || 'owner@example.com',
+        sendFn: async () => true,
+      });
+    } else {
+      channel = new WebhookNotificationChannel({
+        url: body.url || 'https://webhook.example.com/alerts',
+        secret: body.secret,
+        fetchFn: async () => ({ ok: true } as any),
+      });
+    }
+
+    const result = await channel.test();
+    return c.json({ ok: result.ok, channel: channel.id, latencyMs: result.latencyMs });
   });
 
   // Run Encrypted Backup & Automated Restore Test Drill (§13.9, §18.1)

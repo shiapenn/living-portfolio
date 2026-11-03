@@ -8,6 +8,13 @@ import { detectLaterThinking, checkScopeOverlap } from './staleness.js';
 import { detectTopologyConflicts } from './topology.js';
 import { mineScopedConstraintFromRejection } from './constraintMining.js';
 import { CalibrationEngine } from './calibration.js';
+import { planImport } from './importPlanner.js';
+import { GitHubConnector, RSSConnector, FileDropConnector } from '../sdk/connectors.js';
+import {
+  NtfyNotificationChannel,
+  TelegramNotificationChannel,
+  WebhookNotificationChannel,
+} from '../sdk/notifications.js';
 import { CASE_STUDY_PROFILE } from '../profiles/index.js';
 
 describe('Chunking and Re-anchoring (§10.1)', () => {
@@ -687,5 +694,160 @@ describe('Self-Calibration Engine (§11)', () => {
     expect(result.restoredValue).toBe(0.82);
     expect(currentParams.tier1_floor).toBe(0.82);
     expect(result.rollbackChange.reversible).toBe(false);
+  });
+});
+
+describe('Import Planner with Configured Budgets (§13.6, Fix 21)', () => {
+  it('honors configured dailyTokenBudget and calculates days and paid-fast estimate', () => {
+    const docs = [
+      { id: 'd1', title: 'System Arch', text: 'A '.repeat(20000) }, // 20k chars ~ 5k tokens
+      { id: 'd2', title: 'Distributed Locks', text: 'B '.repeat(40000) }, // 40k chars ~ 10k tokens
+    ];
+
+    // Standard 100k budget
+    const planStandard = planImport(docs, { dailyTokenBudget: 100000 });
+    expect(planStandard.documentCount).toBe(2);
+    expect(planStandard.daysWithinFree).toBe(1);
+    expect(planStandard.freePlanEstimate).toContain('1 day');
+
+    // Tight 5,000 token budget -> should require 7 days (30k tokens / 5k)
+    const planTight = planImport(docs, { dailyTokenBudget: 5000, costPerMillionTokensUsd: 0.20 });
+    expect(planTight.daysWithinFree).toBe(7);
+    expect(planTight.freePlanEstimate).toContain('About 7 days within free limits');
+    expect(planTight.paidFastCostUsd).toBeGreaterThan(0);
+    expect(planTight.paidFastEstimate).toContain('Finish in minutes');
+  });
+
+  it('incorporates audio seconds into quota and cost estimation', () => {
+    const docs = [
+      { id: 'd1', title: 'Keynote Talk', text: 'Short summary', audioDurationSeconds: 7200 }, // 2 hours
+    ];
+
+    const plan = planImport(docs, {
+      dailyAudioSecondsBudget: 1800, // 30 mins free daily
+      costPerAudioMinuteUsd: 0.01,
+    });
+
+    // 7200 / 1800 = 4 days
+    expect(plan.totalAudioSeconds).toBe(7200);
+    expect(plan.daysWithinFree).toBe(4);
+    expect(plan.paidFastCostUsd).toBeCloseTo(1.20, 1); // 120 mins * 0.01 = $1.20
+  });
+});
+
+describe('Core Source Connectors (§14, Fix 21)', () => {
+  it('GitHubConnector crawls repository assets and infers exact temporal confidence', async () => {
+    const connector = new GitHubConnector();
+    expect(connector.id).toBe('github');
+    expect(connector.permissions.networkHosts).toContain('api.github.com');
+
+    const authOk = await connector.authenticate({ token: 'mock-gh-token' });
+    expect(authOk).toBe(true);
+
+    const items = [
+      {
+        sha: 'abc1234',
+        message: 'feat: add distributed lock\n\nFull details here',
+        date: '2026-05-10T14:30:00Z',
+      },
+    ];
+
+    const assets = [];
+    for await (const asset of connector.crawl({ repo: 'owner/repo', items })) {
+      assets.push(asset);
+    }
+
+    expect(assets.length).toBe(1);
+    expect(assets[0].title).toBe('feat: add distributed lock');
+    expect(assets[0].occurredAt).toBe('2026-05-10T14:30:00.000Z');
+    expect(assets[0].temporalLevel).toBe('exact');
+  });
+
+  it('RSSConnector crawls feed items and FileDropConnector handles local files', async () => {
+    const rss = new RSSConnector();
+    expect(rss.id).toBe('rss');
+    const rssAssets = [];
+    for await (const asset of rss.crawl({
+      items: [
+        {
+          id: 'rss-1',
+          title: 'Architecture Retrospective',
+          description: 'Lessons from 3 years of microservices.',
+          pubDate: '2025-11-01T10:00:00Z',
+        },
+      ],
+    })) {
+      rssAssets.push(asset);
+    }
+    expect(rssAssets.length).toBe(1);
+    expect(rssAssets[0].title).toBe('Architecture Retrospective');
+    expect(rssAssets[0].temporalLevel).toBe('exact');
+
+    const fileDrop = new FileDropConnector();
+    expect(fileDrop.id).toBe('file-drop');
+    const fileAssets = [];
+    for await (const asset of fileDrop.crawl({
+      files: [
+        {
+          name: 'project-notes.md',
+          content: '# Project Notes\n\nAll notes.',
+          modifiedAt: '2026-01-15T09:00:00Z',
+        },
+      ],
+    })) {
+      fileAssets.push(asset);
+    }
+    expect(fileAssets.length).toBe(1);
+    expect(fileAssets[0].title).toBe('project notes');
+    expect(fileAssets[0].temporalLevel).toBe('exact');
+  });
+});
+
+describe('Concrete Notification Channels (§13.9, §14, Fix 21)', () => {
+  it('NtfyNotificationChannel, TelegramNotificationChannel, and WebhookNotificationChannel format and send alerts', async () => {
+    const capturedFetches: Array<{ url: string; options: any }> = [];
+    const mockFetch = (async (url: string, options: any) => {
+      capturedFetches.push({ url, options });
+      return { ok: true, status: 200, json: async () => ({ ok: true }) };
+    }) as any;
+
+    const ntfy = new NtfyNotificationChannel({
+      topic: 'test-topic',
+      fetchFn: mockFetch,
+    });
+    const ntfyRes = await ntfy.send({
+      title: 'High Latency Alert',
+      message: 'p99 > 500ms',
+      severity: 'critical',
+    });
+    expect(ntfyRes.delivered).toBe(true);
+    expect(capturedFetches[0].options.headers.Title).toBe('High Latency Alert');
+    expect(capturedFetches[0].options.headers.Priority).toBe('urgent');
+
+    const tg = new TelegramNotificationChannel({
+      botToken: 'bot12345',
+      chatId: '98765',
+      fetchFn: mockFetch,
+    });
+    const tgRes = await tg.send({
+      title: 'Deployment Success',
+      message: 'Version 0.2.0 deployed',
+      severity: 'info',
+    });
+    expect(tgRes.delivered).toBe(true);
+    expect(capturedFetches[1].url).toContain('api.telegram.org/botbot12345/sendMessage');
+
+    const webhook = new WebhookNotificationChannel({
+      url: 'https://webhook.site/test',
+      secret: 'sig-secret-123',
+      fetchFn: mockFetch,
+    });
+    const hookRes = await webhook.send({
+      title: 'Staleness Detected',
+      message: 'Entry superseded',
+      severity: 'warning',
+    });
+    expect(hookRes.delivered).toBe(true);
+    expect(capturedFetches[2].options.headers['X-Portfolio-Secret']).toBe('sig-secret-123');
   });
 });

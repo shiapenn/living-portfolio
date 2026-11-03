@@ -212,11 +212,11 @@
 
 - section: "13.6"
   title: "Media and imports"
-  status: stub
-  audit_matrix_status: "Stub"
+  status: implemented
+  audit_matrix_status: "Pass"
   findings: ["M9"]
-  last_scored: "2026-10-19"
-  evidence_and_gaps: "Import planner uses fixed 100k token constant; no ffmpeg, OCR, ASR, resumability, or per-document checkpoints."
+  last_scored: "2026-11-03"
+  evidence_and_gaps: "Import planner enforces configured token and audio budgets, generates structured document previews, and calculates free/paid ETAs (§13.6); resumable import jobs checkpoint per document and survive interruptions (§13.6)."
 
 - section: "13.7"
   title: "Static build and publish"
@@ -244,11 +244,11 @@
 
 - section: "14"
   title: "Plugin and extension SDK"
-  status: stub
-  audit_matrix_status: "Interfaces only"
+  status: implemented
+  audit_matrix_status: "Pass"
   findings: ["M9"]
-  last_scored: "2026-10-19"
-  evidence_and_gaps: "TypeScript interfaces and theme token/slot checks exist; no concrete connector, notification, or backup adapters."
+  last_scored: "2026-11-03"
+  evidence_and_gaps: "Core source connectors (GitHub, RSS, file drop) and concrete notification adapters (ntfy, Telegram, email, webhook) implemented with declared permissions and verified delivery (§14)."
 
 - section: "15"
   title: "Security and privacy"
