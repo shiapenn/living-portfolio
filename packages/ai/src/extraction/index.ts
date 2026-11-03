@@ -264,7 +264,10 @@ ${bodyMd.slice(0, 3000)}`;
       temperature: 0.1,
     });
 
-    const parsed = JSON.parse(res.text.match(/\{[\s\S]*\}/)?.[0] || '{"facets": []}');
+    const startIdx = res.text.indexOf('{');
+    const endIdx = res.text.lastIndexOf('}');
+    const jsonStr = startIdx !== -1 && endIdx > startIdx ? res.text.slice(startIdx, endIdx + 1) : '{"facets": []}';
+    const parsed = JSON.parse(jsonStr);
     return parsed.facets || [];
   } catch {
     return [];
@@ -299,7 +302,10 @@ export async function suggestRolesForSpans(
       temperature: 0.1,
     });
 
-    const parsed = JSON.parse(res.text.match(/\{[\s\S]*\}/)?.[0] || '{"roles": []}');
+    const startIdx = res.text.indexOf('{');
+    const endIdx = res.text.lastIndexOf('}');
+    const jsonStr = startIdx !== -1 && endIdx > startIdx ? res.text.slice(startIdx, endIdx + 1) : '{"roles": []}';
+    const parsed = JSON.parse(jsonStr);
     return parsed.roles || [];
   } catch {
     return [];
@@ -353,7 +359,10 @@ ${spanSummaries}`;
       temperature: 0.1,
     });
 
-    const parsed = JSON.parse(res.text.match(/\{[\s\S]*\}/)?.[0] || '{"claims": []}');
+    const startIdx = res.text.indexOf('{');
+    const endIdx = res.text.lastIndexOf('}');
+    const jsonStr = startIdx !== -1 && endIdx > startIdx ? res.text.slice(startIdx, endIdx + 1) : '{"claims": []}';
+    const parsed = JSON.parse(jsonStr);
     const rawClaims = Array.isArray(parsed.claims) ? parsed.claims : [];
 
     return rawClaims.map((c: any) => {

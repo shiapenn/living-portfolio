@@ -1,0 +1,58 @@
+[
+  {
+    "id": "case-01-direct-paraphrase",
+    "premise": "In 2021 we migrated our primary database from MySQL to PostgreSQL to handle 50,000 writes per second.",
+    "hypothesis": "The team migrated from MySQL to PostgreSQL in 2021 to support high write throughput.",
+    "expected": "entailed",
+    "description": "Direct paraphrase preserving key entities (MySQL, PostgreSQL), date (2021), and causal reasoning."
+  },
+  {
+    "id": "case-02-metric-fact-extraction",
+    "premise": "Designed a multi-region deployment across 3 AWS regions reducing p99 latency by 45%.",
+    "hypothesis": "Multi-region deployment across 3 regions reduced 99th percentile latency by 45%.",
+    "expected": "entailed",
+    "description": "Factual extraction with identical numerical quantities (3 regions, 45% latency reduction)."
+  },
+  {
+    "id": "case-03-subset-selection",
+    "premise": "We evaluated Kafka, RabbitMQ, and Redis Streams, ultimately choosing Kafka for event streaming.",
+    "hypothesis": "Kafka was selected for event streaming after evaluating multiple message brokers.",
+    "expected": "entailed",
+    "description": "Entailed conclusion accurately reflecting the chosen technology from evaluated alternatives."
+  },
+  {
+    "id": "case-04-hallucinated-metric",
+    "premise": "In 2021 we migrated our primary database from MySQL to PostgreSQL.",
+    "hypothesis": "The migration reduced operating costs by $200,000 per month.",
+    "expected": "unsupported",
+    "description": "Fabricated cost reduction metric ($200,000 per month) completely absent from premise."
+  },
+  {
+    "id": "case-05-contradicted-technology",
+    "premise": "The team chose not to adopt Kubernetes due to operational complexity on a 4-person team.",
+    "hypothesis": "The architecture was orchestrated using Kubernetes clusters in production.",
+    "expected": "contradicted",
+    "description": "Direct contradiction of architectural non-adoption decision."
+  },
+  {
+    "id": "case-06-unseen-vendor-entity",
+    "premise": "Implemented custom vector search on top of pgvector for internal documentation.",
+    "hypothesis": "The system runs Elasticsearch and Pinecone for vector indexing.",
+    "expected": "unsupported",
+    "description": "Introduction of unmentioned third-party SaaS vendors (Elasticsearch, Pinecone)."
+  },
+  {
+    "id": "case-07-temporal-contradiction",
+    "premise": "PostgreSQL adoption completed in Q3 2021.",
+    "hypothesis": "The database migration was completed in 2018.",
+    "expected": "contradicted",
+    "description": "Conflicting year assertion (2018 vs 2021)."
+  },
+  {
+    "id": "case-08-unsupported-scale-claim",
+    "premise": "Built an internal CLI tool used by engineering teams during deployments.",
+    "hypothesis": "The deployment tool processed 10 billion daily requests across global infrastructure.",
+    "expected": "unsupported",
+    "description": "Extravagant ungrounded scale claim not justified by premise."
+  }
+]

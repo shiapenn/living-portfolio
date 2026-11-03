@@ -4,10 +4,19 @@ export class MockModelProvider implements ModelProvider {
   id: string;
   name: string;
   isLocal: boolean = true;
+  options?: { completionText?: string; shouldFail?: boolean; [key: string]: any };
 
-  constructor(id: string = 'mock', name: string = 'Mock Provider (Local/Test)') {
+  constructor(
+    id: string = 'mock',
+    nameOrOptions: string | { completionText?: string; shouldFail?: boolean; [key: string]: any } = 'Mock Provider (Local/Test)'
+  ) {
     this.id = id;
-    this.name = name;
+    if (typeof nameOrOptions === 'string') {
+      this.name = nameOrOptions;
+    } else {
+      this.name = 'Mock Provider (Local/Test)';
+      this.options = nameOrOptions;
+    }
   }
   dataPolicy: DataPolicy = {
     trainsOnInputs: false,
@@ -30,10 +39,25 @@ export class MockModelProvider implements ModelProvider {
   }
 
   async complete(req: CompletionRequest): Promise<CompletionResponse> {
+    if (this.options?.shouldFail) {
+      throw new Error(`Mock provider ${this.id} simulated failure`);
+    }
+    if (this.options?.completionText) {
+      return {
+        text: this.options.completionText,
+        usage: { promptTokens: 50, completionTokens: 20, totalTokens: 70 },
+      };
+    }
     const lastMessage = req.messages[req.messages.length - 1]?.content ?? '';
     let responseText = '';
 
-    if (lastMessage.includes('Classify')) {
+    if (lastMessage.includes('entailment judge') || lastMessage.includes('verification entailment')) {
+      responseText = JSON.stringify({
+        status: 'entailed',
+        confidence: 0.95,
+        reason: 'Assertions are grounded in provided context chunks.',
+      });
+    } else if (lastMessage.includes('Classify')) {
       if (lastMessage.includes('how') || lastMessage.includes('should') || lastMessage.includes('recommend')) {
         responseText = '{"class": "advisory"}';
       } else if (lastMessage.includes('who') || lastMessage.includes('about')) {

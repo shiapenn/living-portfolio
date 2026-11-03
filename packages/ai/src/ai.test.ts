@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
 import {
   BudgetGovernor,
   isPolicyAllowedForDataClass,
@@ -11,6 +12,12 @@ import {
   scanForConfidentialData,
   extractEntitiesMultiPass,
   verifyAnswerBeforeDelivery,
+  verifyAnswerBeforeDeliveryAsync,
+  judgeEntailment,
+  judgeEntailmentLLM,
+  extractAssertions,
+  stripUngroundedAssertions,
+  stripUngroundedAssertionsSync,
   resolveConfiguredProviders,
   formatProviderDisclosure,
   AnswerCache,
@@ -474,5 +481,130 @@ describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redact
     expect(res.pass3Entities.some((e) => e.type === 'email')).toBe(true);
     expect(res.pass3Entities.some((e) => e.type === 'ip')).toBe(true);
     expect(res.allWarnings.length).toBe(res.pass1Secrets.length + res.pass2NdaMarkers.length + res.pass3Entities.length);
+  });
+
+  it('[M3, Fix 14] judges entailment across labeled test set (§10.6, fixtures/entailment-cases.json)', () => {
+    const fixturePath = resolve(import.meta.dirname, 'verification/fixtures/entailment-cases.json');
+    const cases = JSON.parse(readFileSync(fixturePath, 'utf8'));
+    expect(cases.length).toBeGreaterThanOrEqual(8);
+
+    for (const testCase of cases) {
+      const res = judgeEntailment(testCase.hypothesis, [testCase.premise]);
+      expect(res.status).toBe(testCase.expected);
+      expect(res.confidence).toBeGreaterThan(0.5);
+    }
+  });
+
+  it('[M3, Fix 14] LLM entailment judge classifies statements and falls back gracefully on provider errors', async () => {
+    // 1. LLM provider returning structured entailment JSON
+    const mockJudgeProvider = new MockModelProvider('judge-mock', {
+      completionText: JSON.stringify({
+        status: 'entailed',
+        confidence: 0.96,
+        reason: 'The hypothesis is directly supported by the retrieved premise.',
+      }),
+    });
+
+    const llmRes = await judgeEntailmentLLM(
+      'The database was upgraded to PostgreSQL in 2021.',
+      ['In 2021 we migrated our primary database to PostgreSQL.'],
+      mockJudgeProvider
+    );
+    expect(llmRes.status).toBe('entailed');
+    expect(llmRes.judgeMode).toBe('llm');
+
+    // 2. Provider error falls back to deterministic judge
+    const failingProvider = new MockModelProvider('failing-mock', { shouldFail: true });
+    const fallbackRes = await judgeEntailmentLLM(
+      'The database was upgraded to PostgreSQL in 2021.',
+      ['In 2021 we migrated our primary database to PostgreSQL.'],
+      failingProvider
+    );
+    expect(fallbackRes.status).toBe('entailed');
+    expect(fallbackRes.judgeMode).toBe('deterministic');
+  });
+
+  it('[M3, Fix 14] strips ungrounded assertions while preserving verified entailed claims (§10.6)', async () => {
+    const premise = [
+      {
+        id: 's1',
+        revision_id: 'r1',
+        ordinal: 0,
+        start_off: 0,
+        end_off: 60,
+        text_exact: 'In 2021 we migrated our primary database to PostgreSQL to handle 50,000 writes per second.',
+        token_count: 15,
+      },
+    ];
+
+    const draftWithHallucination =
+      'In 2021 we migrated our primary database to PostgreSQL. The migration reduced operating costs by $200,000 per month.';
+
+    const stripRes = stripUngroundedAssertionsSync(draftWithHallucination, premise);
+    expect(stripRes.totalAssertions).toBe(2);
+    expect(stripRes.entailedAssertions.length).toBe(1);
+    expect(stripRes.strippedAssertions.length).toBe(1);
+    expect(stripRes.strippedAssertions[0]).toContain('$200,000');
+    expect(stripRes.verifiedText).toContain('PostgreSQL');
+    expect(stripRes.verifiedText).not.toContain('$200,000');
+  });
+
+  it('[M3, Fix 14] wires citedScopes, attaches explicit reconstruction labeling, and rejects fully ungrounded drafts (§10.6, §10.8)', async () => {
+    const premiseSpans = [
+      {
+        id: 's1',
+        revision_id: 'r1',
+        ordinal: 0,
+        start_off: 0,
+        end_off: 50,
+        text_exact: 'Architected high-throughput message streaming with Apache Kafka.',
+        token_count: 10,
+      },
+    ];
+
+    // 1. Partial ungrounded draft gets assertion stripped and reconstruction notice attached
+    const resPartial = await verifyAnswerBeforeDeliveryAsync({
+      draftText: 'Architected message streaming using Apache Kafka. We also implemented Kubernetes orchestration.',
+      citedSpans: premiseSpans,
+      visitorFacets: { stack: 'Kafka' },
+      citedScopes: [{ stack: 'Kafka', scale: '1M events/sec' }],
+      degradationStep: 'fallback_provider',
+    });
+
+    expect(resPartial.passed).toBe(true);
+    expect(resPartial.faithfulnessPassed).toBe(true);
+    expect(resPartial.isReconstruction).toBe(true);
+    expect(resPartial.reconstructionNotice).toContain('fallback_provider');
+    expect(resPartial.verifiedText).toContain('Kafka');
+    expect(resPartial.verifiedText).not.toContain('Kubernetes');
+    expect(resPartial.strippedAssertions).toContain('We also implemented Kubernetes orchestration.');
+    expect(resPartial.citedScopes).toEqual([{ stack: 'Kafka', scale: '1M events/sec' }]);
+    expect(resPartial.applicabilityNote).toContain('Matches: stack: Kafka');
+
+    // 2. Time-travel query attaches explicit time-travel reconstruction label
+    const resTimeTravel = verifyAnswerBeforeDelivery({
+      draftText: 'Architected high-throughput message streaming with Apache Kafka.',
+      citedSpans: premiseSpans,
+      visitorFacets: {},
+      citedScopes: [{ stack: 'Kafka' }],
+      asOfDate: '2021-06-01T00:00:00Z',
+    });
+
+    expect(resTimeTravel.passed).toBe(true);
+    expect(resTimeTravel.isReconstruction).toBe(true);
+    expect(resTimeTravel.reconstructionNotice).toContain('Reconstructed from historical records as of 2021-06-01');
+    expect(resTimeTravel.verifiedText).toContain('Reconstructed from historical records');
+
+    // 3. Completely ungrounded draft fails faithfulness and verification
+    const resFabricated = verifyAnswerBeforeDelivery({
+      draftText: 'Built distributed machine learning pipelines with PyTorch and Ray.',
+      citedSpans: premiseSpans,
+      visitorFacets: {},
+      citedScopes: [],
+    });
+
+    expect(resFabricated.passed).toBe(false);
+    expect(resFabricated.faithfulnessPassed).toBe(false);
+    expect(resFabricated.verifiedText).toBe('');
   });
 });

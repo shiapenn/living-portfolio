@@ -825,7 +825,7 @@
   spec_sections:
     - "10.6"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 4
@@ -834,12 +834,15 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/m3-verification-entailment.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit (Section 3, Section 4 §10.6, Section 7 Fix 14)
-  verified_by: null
+    - date: 2026-11-03
+      status: fixed
+      note: "Fixed in WP-10.1 (Fix 14): Pre-delivery entailment judge comparing statements against retrieved passages with LLM judge and deterministic fallback, assertion stripping for ungrounded claims, wiring citedScopes into answer metadata and API response, and explicit reconstruction labeling for time-travel queries and degradation steps."
+  verified_by: m3-verification-entailment.conformance.test.ts
 - id: M4
   audit: AUD-2026-10-19
   title: Query classification uses substring heuristics defaulting to lookup
