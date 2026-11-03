@@ -873,7 +873,7 @@ describe('Living Portfolio API Integration Tests', () => {
       // Public HTML sub-routes
       const workRes = await bundledApp.request('/work');
       expect(workRes.status).toBe(200);
-      expect(await workRes.text()).toContain('Case Studies');
+      expect(await workRes.text()).toContain('>Work</h1>');
 
       const timelineRes = await bundledApp.request('/timeline');
       expect(timelineRes.status).toBe(200);

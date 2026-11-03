@@ -119,7 +119,7 @@ describe('WP-11.2 Conformance: Navigation Redesign & System States (20261020-UX-
     expect(html).toContain('Strata Core Engine');
     expect(html).toContain('Status: <strong>active</strong>');
     expect(html).toContain('TypeScript');
-    expect(html).toContain('Attached Dev-Logs &amp; Decisions (1)');
+    expect(html).toContain('Dev log: 1 entry');
     expect(html).toContain('strata-core-v1');
     expect(html).toContain('<a href="/build" aria-current="page">Build</a>');
 
@@ -313,10 +313,10 @@ describe('WP-11.2 Conformance: Navigation Redesign & System States (20261020-UX-
     const homeHtml = await homeRes.text();
     expect(homeHtml).toContain('Ask about my work');
 
-    // 2. Entry detail renders "Ask about this project"
+    // 2. Entry detail renders "Ask about this entry" (CP-01 harmonized)
     const entryRes = await app.request('/work/project-titan');
     expect(entryRes.status).toBe(200);
     const entryHtml = await entryRes.text();
-    expect(entryHtml).toContain('Ask about this project');
+    expect(entryHtml).toContain('Ask about this entry');
   });
 });

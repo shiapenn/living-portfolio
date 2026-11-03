@@ -173,7 +173,7 @@ test.describe.serial('WP-11.1: Debounced Static Rebuild UI & Ask Flow Repair (20
     // Verify clarification panel is rendered
     const contextCard = page.locator('#needs-context-card');
     await expect(contextCard).toBeVisible();
-    await expect(contextCard).toContainText('Additional context required');
+    await expect(contextCard).toContainText('A few details will help me check this against my experience');
 
     // Verify both "Submit with Context" and "Skip" buttons exist
     const submitWithContextBtn = page.locator('#btn-submit-with-context');

@@ -19,7 +19,7 @@ import {
 import type { LivingPortfolioClient } from '@living-portfolio/client';
 import { STRATA_DESIGN_SYSTEM_CSS } from './styles.js';
 import { renderMarkdown } from './markdown.js';
-import { renderEntryRow, renderField, renderButton, renderChip } from './components/index.js';
+import { renderEntryRow, renderField, renderButton, renderChip, formatOutcome } from './components/index.js';
 
 export interface WebDataClient {
   entries?: {
@@ -477,11 +477,11 @@ export async function renderStrataTimelineSection(
   const html = `<section class="strata-section" aria-labelledby="strata-heading">
     <div class="strata-header">
       <div>
-        <h2 id="strata-heading" style="margin:0;font-size:18px;font-family:var(--font-reading)">Strata timeline (2021–2026)</h2>
-        <span style="font-size:14px;color:var(--text-muted)">Select any layer to scrub the knowledge graph to that point in time.</span>
+        <h2 id="strata-heading" style="margin:0;font-size:18px;font-family:var(--font-reading)">Strata timeline</h2>
+        <span style="font-size:14px;color:var(--text-muted)">Pick a month to see this site as it was then.</span>
       </div>
       <form method="GET" action="/timeline" style="display:flex;gap:8px;align-items:center">
-        <label for="as-of-input" style="font-size:14px">Time-travel as of:</label>
+        <label for="as-of-input" style="font-size:14px">As of:</label>
         <input id="as-of-input" name="as_of" type="date" value="${escapeHtml(defaultInputValue)}" class="ask-input" style="padding:4px 8px;width:auto" />
         <button type="submit" class="btn btn-secondary" style="min-height:44px;padding:6px 16px">Apply Date</button>
       </form>
@@ -494,10 +494,10 @@ export async function renderStrataTimelineSection(
       <span>■ Case study</span>
       <span>◆ Decision record</span>
       <span>▲ Design project</span>
-      <span>Keyboard: Left/Right arrows move by layer, Enter time-travels to layer</span>
+      <span>Keyboard: Left and Right arrows move between months. Enter opens a month.</span>
     </div>
     <details style="margin-top:12px;font-size:14px">
-      <summary style="cursor:pointer;color:var(--text-muted)">Text-equivalent accessible timeline list</summary>
+      <summary style="cursor:pointer;color:var(--text-muted)">Timeline as a list</summary>
       <ul style="margin-top:8px">
         ${textListHtml}
       </ul>
@@ -598,7 +598,7 @@ export async function renderHomePage(repo: WebDataClient): Promise<string> {
 
     <section aria-labelledby="featured-heading">
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-        <h2 id="featured-heading" style="font-family:var(--font-reading);font-size:21px;margin:0">Featured and recent work</h2>
+        <h2 id="featured-heading" style="font-family:var(--font-reading);font-size:21px;margin:0">Recent work</h2>
         <a href="/work" style="font-size:14px;color:var(--accent);text-decoration:none">View all work (${publicEntries.length}) →</a>
       </div>
       ${rowsHtml.length > 0 ? `
@@ -620,11 +620,11 @@ export async function renderHomePage(repo: WebDataClient): Promise<string> {
     <section class="ask-box" aria-labelledby="home-ask-heading">
       <h2 id="home-ask-heading" style="margin:0;font-family:var(--font-reading);font-size:21px">Ask about my work</h2>
       <p style="margin:4px 0 0;color:var(--text-muted);font-size:15px">
-        Answered from my actual records with inline citations, scope verification, and explicit uncertainty.
+        Answers come from my own entries, with sources you can open. If I can't back something up, I'll say so.
       </p>
       <form action="/ask" method="GET" class="ask-input-row">
         <input type="text" name="q" class="ask-input" placeholder="e.g., What did you use to replace Redis distributed locks?" aria-label="Ask a question about my work" required />
-        <button type="submit" class="btn">Ask about my work</button>
+        <button type="submit" class="btn">Ask</button>
       </form>
     </section>
   `;
@@ -767,7 +767,7 @@ export async function renderEntryDetailPage(
       const renderedSections = blocks.map((block) => {
         const combinedText = block.texts.map((t) => renderMarkdownToHtml(t)).join('\n');
         if (block.roleId && block.roleLabel) {
-          return `<section class="role-section role-${escapeHtml(block.roleId)}" style="margin-bottom:24px;padding-left:16px;border-left:3px solid var(--role-${escapeHtml(block.roleId)}, var(--accent))">
+          return `<section class="role-section role-${escapeHtml(block.roleId)}" data-role="${escapeHtml(block.roleId)}" style="margin-bottom:24px;padding-left:16px;border-left:3px solid var(--role-${escapeHtml(block.roleId)}, var(--accent))">
             <h2 style="font-size:18px;margin:0 0 8px 0">${escapeHtml(block.roleLabel)}</h2>
             <div class="reading-column">${combinedText}</div>
           </section>`;
@@ -787,7 +787,7 @@ export async function renderEntryDetailPage(
   const writtenDate = rev.written_at.slice(0, 10);
   const dateDisplay =
     happenedDate !== writtenDate
-      ? `Happened ${happenedDate} · Written ${writtenDate}${rev.is_hindsight ? ', looking back (hindsight)' : ''}`
+      ? `Happened ${happenedDate} · Written ${writtenDate}${rev.is_hindsight ? ', looking back' : ''}`
       : `Happened & written ${happenedDate}`;
 
   const evidenceHtml =
@@ -795,9 +795,8 @@ export async function renderEntryDetailPage(
       ? evidence
           .map((ev) => {
             const safeUrl = sanitizeHttpUrl(ev.url);
-            const linkMarkup = safeUrl
-              ? `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">${escapeHtml(ev.url || ev.kind)}</a>`
-              : `<span class="chip" data-unsafe-url="blocked">Blocked non-HTTP(S) URL (${escapeHtml(ev.kind)})</span>`;
+            if (!safeUrl) return '';
+            const linkMarkup = `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">${escapeHtml(ev.url || ev.kind)}</a>`;
             return `<div style="margin-bottom:8px">
               ${linkMarkup}
               ${
@@ -807,8 +806,9 @@ export async function renderEntryDetailPage(
               }
             </div>`;
           })
-          .join('\n')
-      : '<p style="color:var(--text-muted);margin:0">No external artifacts attached.</p>';
+          .filter(Boolean)
+          .join('\n') || '<p style="color:var(--text-muted);margin:0">No links or files attached to this entry.</p>'
+      : '<p style="color:var(--text-muted);margin:0">No links or files attached to this entry.</p>';
 
   const claimsHtml =
     claims.filter((c) => c.status === 'accepted').length > 0
@@ -816,7 +816,7 @@ export async function renderEntryDetailPage(
           .filter((c) => c.status === 'accepted')
           .map(
             (c) => `<div style="margin-bottom:8px;padding:8px;border:1px solid var(--rule);background:var(--surface-raised)">
-              <div style="font-size:12px;color:var(--text-muted)">${escapeHtml(c.kind.toUpperCase())} · Outcome: <strong>${escapeHtml(c.outcome_status || 'unknown')}</strong></div>
+              <div style="font-size:12px;color:var(--text-muted)">${escapeHtml(c.kind.charAt(0).toUpperCase() + c.kind.slice(1).toLowerCase())}. Outcome: <strong>${escapeHtml(formatOutcome(c.outcome_status) || 'Unknown')}</strong></div>
               <div style="font-size:14px;margin-top:4px">${escapeHtml(c.text)}</div>
             </div>`
           )
@@ -856,10 +856,10 @@ export async function renderEntryDetailPage(
         <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px">
           <h1 style="font-family:var(--font-reading);font-size:30px;margin:0">${escapeHtml(entry.title)}</h1>
           <div style="display:flex;gap:8px">
-            <span class="chip">Structure: ${structureLevel}</span>
+            ${qualifiesForStructured ? `<span class="chip">Structured</span>` : ''}
             ${
               qualifiesForStructured
-                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}${asOfAndPart}" class="btn btn-secondary" style="padding:6px 14px;min-height:44px;display:inline-flex;align-items:center;font-size:14px;text-decoration:none">Switch to ${activeView === 'structured' ? 'Article' : 'Structured'} view</a>`
+                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}${asOfAndPart}" class="btn btn-secondary" data-action="view-switch" style="padding:6px 14px;min-height:44px;display:inline-flex;align-items:center;font-size:14px;text-decoration:none">${activeView === 'structured' ? 'Read as one article' : 'Read by section'}</a>`
                 : ''
             }
           </div>
@@ -878,15 +878,15 @@ export async function renderEntryDetailPage(
           <h3 style="margin:0 0 8px;font-size:15px">Evidence</h3>
           ${evidenceHtml}
 
-          ${claimsHtml ? `<h3 style="margin:20px 0 8px;font-size:15px">Key claims & outcomes</h3>${claimsHtml}` : ''}
+          ${claimsHtml ? `<h3 style="margin:20px 0 8px;font-size:15px">Conclusions</h3>${claimsHtml}` : ''}
 
           <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--rule)">
             <h3 style="margin:0 0 8px;font-size:15px">Ask about this entry</h3>
             <form action="/ask" method="GET">
               <input type="hidden" name="scope" value="${escapeHtml(entry.slug)}" />
               ${asOfInfo && asOfInfo.valid ? `<input type="hidden" name="as_of" value="${escapeHtml(asOfInfo.raw)}" />` : ''}
-              <input type="text" name="q" class="ask-input" style="width:100%;margin-bottom:8px" placeholder="Question about this entry..." aria-label="Ask about this entry" required />
-              <button type="submit" class="btn" style="width:100%">Ask about this project</button>
+              <input type="text" name="q" class="ask-input" style="width:100%;margin-bottom:8px" placeholder="What would you like to know?" aria-label="Ask about this entry" required />
+              <button type="submit" class="btn" style="width:100%">Ask</button>
             </form>
           </div>
         </aside>
@@ -956,18 +956,18 @@ export async function renderWorkOrWritingPage(
     );
   }
 
-  const title = mode === 'work' ? 'Work & Case Studies' : 'Writing & Chronological Log';
+  const title = mode === 'work' ? 'Work' : 'Writing';
   const asOfParamQuery = asOfInfo && asOfInfo.valid ? `&as_of=${encodeURIComponent(asOfInfo.raw)}` : '';
   const asOfPrefixQuery = asOfInfo && asOfInfo.valid ? `?as_of=${encodeURIComponent(asOfInfo.raw)}` : '';
 
   const filterBar =
     mode === 'work'
       ? `<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-          <span style="font-size:14px;color:var(--text-muted)">Filter by outcome:</span>
+          <span style="font-size:14px;color:var(--text-muted)">Outcome:</span>
           <a href="/work${asOfPrefixQuery}" class="chip${!filterOutcome ? ' active' : ''}">All</a>
           <a href="/work?outcome=worked${asOfParamQuery}" class="chip${filterOutcome === 'worked' ? ' active' : ''}">Worked</a>
-          <a href="/work?outcome=partly${asOfParamQuery}" class="chip${filterOutcome === 'partly' ? ' active' : ''}">Worked partly</a>
-          <a href="/work?outcome=failed${asOfParamQuery}" class="chip${filterOutcome === 'failed' ? ' active' : ''}">What didn't work (Failed)</a>
+          <a href="/work?outcome=partly${asOfParamQuery}" class="chip${filterOutcome === 'partly' ? ' active' : ''}">Partly worked</a>
+          <a href="/work?outcome=failed${asOfParamQuery}" class="chip${filterOutcome === 'failed' ? ' active' : ''}">Didn't work</a>
           <a href="/work?outcome=unresolved${asOfParamQuery}" class="chip${filterOutcome === 'unresolved' ? ' active' : ''}">Unresolved</a>
         </div>`
       : '';
@@ -982,7 +982,7 @@ export async function renderWorkOrWritingPage(
   const content = `
     <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">${title}</h1>
     <p style="color:var(--text-muted);margin:0 0 24px 0">
-      ${mode === 'work' ? 'Structured case studies, architecture decisions, and design projects with verified evidence.' : 'All public entries ordered chronologically.'}
+      ${mode === 'work' ? 'Case studies, decisions and design projects, with the evidence behind them.' : "Everything I've published, newest first."}
     </p>
     ${filterBar}
     ${asOfBanner}
@@ -998,8 +998,8 @@ export async function renderWorkOrWritingPage(
         </p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
           ${filterOutcome ? `<a href="/work${asOfPrefixQuery}" class="btn btn-secondary">Reset all filters</a>` : ''}
-          ${asOfInfo && asOfInfo.valid ? `<a href="/${mode}" class="btn btn-secondary">Reset time-travel to present</a>` : ''}
-          <a href="/ask" class="btn">Ask Questions</a>
+          ${asOfInfo && asOfInfo.valid ? `<a href="/${mode}" class="btn btn-secondary">Reset to present</a>` : ''}
+          <a href="/ask" class="btn">Ask</a>
         </div>
       </div>
     `}
@@ -1069,13 +1069,13 @@ export async function renderBuildVenturePage(
         ${devLog.map((e) => renderEntryRow(e, { basePath: '/work' })).join('\n')}
       </ul>`
     : `<div class="empty-state" style="padding:24px;text-align:center;border:1px dashed var(--rule);border-radius:var(--radius-card);margin-top:12px">
-        <p style="color:var(--text-muted);font-size:14px;margin:0">No attached dev-log entries recorded for this venture yet.</p>
+        <p style="color:var(--text-muted);font-size:14px;margin:0">No dev log entries recorded for this venture yet.</p>
       </div>`;
 
   const content = `
     <article class="reading-column" style="max-width:var(--layout-max);margin:0 auto">
       <div style="margin-bottom:16px">
-        <a href="/build" class="btn btn-secondary" style="display:inline-flex;align-items:center;padding:4px 10px;font-size:13px">← Back to Ventures</a>
+        <a href="/build" class="btn btn-secondary" style="display:inline-flex;align-items:center;padding:4px 10px;font-size:13px">← Back to Build</a>
       </div>
       <header style="margin-bottom:24px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
@@ -1087,7 +1087,7 @@ export async function renderBuildVenturePage(
       </header>
 
       <section class="strata-section" style="margin-bottom:24px">
-        <h2 style="font-family:var(--font-reading);font-size:20px;margin:0 0 12px 0">Attached Dev-Logs &amp; Decisions (${devLog.length})</h2>
+        <h2 style="font-family:var(--font-reading);font-size:20px;margin:0 0 12px 0">Dev log: ${devLog.length} ${devLog.length === 1 ? 'entry' : 'entries'}</h2>
         ${devLogListHtml}
       </section>
 
@@ -1128,13 +1128,13 @@ export async function renderBuildPage(repo: WebDataClient): Promise<string> {
         <p style="margin:8px 0 12px;max-width:65ch">${escapeHtml(v.description || '')}</p>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${facetChips}</div>
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)">
-          <strong style="font-size:14px">Attached dev-log entries (${devLog.length}):</strong>
+          <strong style="font-size:14px">Dev log: ${devLog.length} ${devLog.length === 1 ? 'entry' : 'entries'}</strong>
           ${devLog.length > 0 ? `
             <ul style="margin:6px 0 0;padding-left:20px">
               ${devLog.map((e) => `<li><a href="/work/${escapeHtml(e.slug)}">${escapeHtml(e.title)}</a></li>`).join('\n            ')}
             </ul>
           ` : `
-            <p style="color:var(--text-muted);font-size:13px;margin:4px 0 0">No dev-log entries attached yet.</p>
+            <p style="color:var(--text-muted);font-size:13px;margin:4px 0 0">No dev log entries attached yet.</p>
           `}
         </div>
       </section>`;
@@ -1142,15 +1142,15 @@ export async function renderBuildPage(repo: WebDataClient): Promise<string> {
     .join('\n');
 
   const content = `
-    <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Build — Ventures & Shipped Products</h1>
-    <p style="color:var(--text-muted);margin:0 0 24px 0">Long-running products and open-source tools with linked dev-logs and constraint facets.</p>
+    <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Build</h1>
+    <p style="color:var(--text-muted);margin:0 0 24px 0">Things I've shipped and keep improving, with a log of how each one changed.</p>
     ${ventures.length > 0 ? ventureBlocks : `
       <div class="empty-state" style="padding:48px 16px;text-align:center;border:1px dashed var(--rule);border-radius:var(--radius-card);margin-top:24px">
         <p style="font-weight:600;font-size:18px;margin:0 0 8px 0">No ventures or products listed yet</p>
         <p style="color:var(--text-muted);font-size:15px;margin:0 0 20px 0">Long-running software products, tools, and production deployments will appear here with linked architectural dev-logs.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
           <a href="/work" class="btn btn-secondary">Explore Technical Work</a>
-          <a href="/ask" class="btn">Ask About Projects</a>
+          <a href="/ask" class="btn">Ask</a>
         </div>
       </div>
     `}
@@ -1196,14 +1196,14 @@ export async function renderTimelinePage(
   const activeDateLabel = asOfInfo && asOfInfo.valid ? `as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}` : 'at present';
 
   const content = `
-    <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Time-Travel Knowledge Graph</h1>
+    <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Timeline</h1>
     <p style="color:var(--text-muted);margin:0 0 24px 0">
-      Scrub the timeline to see only what was recorded and believed as of that date. Hindsight entries written later are automatically filtered out.
+      Move the cursor to see what I had written by that date. Later entries, and entries written looking back, are hidden.
     </p>
     ${strataHtml}
     <section>
       <h2 style="font-family:var(--font-reading);font-size:21px;margin:0 0 12px 0">
-        Records active ${activeDateLabel} (${filtered.length} visible${excludedCount > 0 ? `, ${excludedCount} future/hindsight excluded` : ''})
+        ${filtered.length} ${filtered.length === 1 ? 'entry' : 'entries'} as of ${activeDateLabel.replace('as of ', '')}${excludedCount > 0 ? '. ' + excludedCount + ' hidden because they were written later.' : ''}
       </h2>
       ${listContentHtml}
     </section>
@@ -1272,9 +1272,9 @@ export async function renderAskPage(
     : '';
 
   const content = `
-    <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Ask the Portfolio</h1>
+    <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Ask about my work</h1>
     <p style="color:var(--text-muted);margin:0 0 24px 0;max-width:65ch">
-      Answers are synthesized strictly from public records with inline citations, scope applicability checks, and explicit uncertainty. Numeric confidence scores are never shown.
+      Answers come from my published entries and cite them. When my records don't cover your situation, I'll say so and offer a conversation.
     </p>
 
     <div class="ask-box" style="margin-top:0">
@@ -1288,10 +1288,10 @@ export async function renderAskPage(
         </div>
 
         <details style="margin-top:16px" ${queryText?.toLowerCase().includes('should') || hasValidAsOf ? 'open' : ''}>
-          <summary style="cursor:pointer;font-size:14px;color:var(--text-muted)">Optional context facets (for advisory questions — skippable)</summary>
+          <summary style="cursor:pointer;font-size:14px;color:var(--text-muted)">Tell me about your situation (optional)</summary>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px">
             <div>
-              <label for="facet-db" style="font-size:13px;display:block">Database engine (hard constraint)</label>
+              <label for="facet-db" style="font-size:13px;display:block">Database</label>
               <input id="facet-db" type="text" class="ask-input" style="width:100%;padding:6px" placeholder="e.g., PostgreSQL or MySQL" />
             </div>
             <div>
@@ -1299,7 +1299,7 @@ export async function renderAskPage(
               <input id="facet-stack" type="text" class="ask-input" style="width:100%;padding:6px" placeholder="e.g., Node.js, PgBouncer" />
             </div>
             <div>
-              <label for="facet-asof" style="font-size:13px;display:block">Time-travel as of date</label>
+              <label for="facet-asof" style="font-size:13px;display:block">Answer as of (optional)</label>
               <input id="facet-asof" type="date" class="ask-input" style="width:100%;padding:6px" value="${escapeHtml(initialAsOfDate)}" />
             </div>
           </div>
@@ -1307,7 +1307,7 @@ export async function renderAskPage(
       </form>
 
       <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <span style="font-size:13px;color:var(--text-muted)">Examples from records:</span>
+        <span style="font-size:13px;color:var(--text-muted)">Try asking:</span>
         ${examplesHtml}
       </div>
     </div>
@@ -1407,7 +1407,7 @@ export async function renderAskPage(
                   '<span class="chip" data-status="rate-limited"><strong>Question limit reached</strong></span>' +
                   '<p style="margin:12px 0">' + esc((data && (data.answer || data.error)) || 'Hourly question limit reached. Please wait before asking another question, or book a live session.') + '</p>' +
                   '<p style="font-size:13px;color:var(--text-muted)">Please try again in about ' + retryMinutes + ' minute' + (retryMinutes > 1 ? 's' : '') + ' (' + retrySecs + 's), or book a session directly.</p>' +
-                  '<div style="margin-top:12px"><a href="/book?q=' + encodeURIComponent(queryText) + '" class="btn" style="display:inline-block;text-decoration:none">Book a session →</a></div>' +
+                  '<div style="margin-top:12px"><a href="/book?q=' + encodeURIComponent(queryText) + '" class="btn" style="display:inline-block;text-decoration:none">Book a conversation →</a></div>' +
                 '</div>';
               return;
             }
@@ -1419,13 +1419,13 @@ export async function renderAskPage(
 
             const tierLabels = {
               tier1: "Automated answer from the owner's records",
-              tier2: "Needs the owner's review",
-              tier3: "Better as a live conversation",
+              tier2: "This needs the owner's review. Typical reply within 24 hours.",
+              tier3: "This is better as a conversation.",
               extractive: "Showing excerpts from the owner's records. Automated answers are paused for now.",
-              no_match: "That isn't in these records. You can ask the owner or book a conversation.",
-              disabled: "Automated answers paused",
+              no_match: "That isn't in these records.",
+              disabled: "Automated answers are off.",
               rate_limited: "Hourly question limit reached",
-              needs_context: "Additional context required"
+              needs_context: "A few details will help me check this against my experience. Skip any you don't know."
             };
 
             const scopeNoticeHtml = currentScope
@@ -1437,7 +1437,7 @@ export async function renderAskPage(
               const facetFieldsHtml = missingList.map(function(f) {
                 const label = esc(f.charAt(0).toUpperCase() + f.slice(1).replace(/_/g, ' '));
                 return '<div style="margin-bottom:8px">' +
-                  '<label for="ctx-facet-' + esc(f) + '" style="font-size:12px;font-weight:600;display:block;margin-bottom:2px">' + label + ' (hard constraint)</label>' +
+                  '<label for="ctx-facet-' + esc(f) + '" style="font-size:12px;font-weight:600;display:block;margin-bottom:2px">' + label + '</label>' +
                   '<input type="text" id="ctx-facet-' + esc(f) + '" class="ask-input dynamic-facet-input" data-facet="' + esc(f) + '" style="width:100%;padding:6px" placeholder="e.g. your ' + esc(f) + '..." />' +
                   '</div>';
               }).join('');
@@ -1486,7 +1486,7 @@ export async function renderAskPage(
 
             const disclosureText = data.provider_disclosure || data.aiDisclosure;
             const disclosureHtml = disclosureText
-              ? '<p class="provider-disclosure" style="font-size:12px;color:var(--text-muted);margin:16px 0 0 0;border-top:1px solid var(--rule);padding-top:8px">AI Disclosure: ' + esc(disclosureText) + '</p>'
+              ? '<p class="provider-disclosure" style="font-size:12px;color:var(--text-muted);margin:16px 0 0 0;border-top:1px solid var(--rule);padding-top:8px">Automated answer: ' + esc(disclosureText) + '</p>'
               : '';
 
             let receiptHtml = '';
@@ -1494,7 +1494,7 @@ export async function renderAskPage(
               const rUrl = safePath(data.receiptUrl || ('/ask/status/' + (data.statusToken || '')));
               receiptHtml =
                 '<div style="margin:16px 0;padding:12px;border:1px solid var(--accent);border-radius:var(--radius-control);background:var(--surface-raised)">' +
-                  '<strong style="font-size:14px;display:block;margin-bottom:4px">Escalation Receipt Created (§6.1, UX-08)</strong>' +
+                  '<strong style="font-size:14px;display:block;margin-bottom:4px">Receipt Created</strong>' +
                   '<p style="margin:0 0 8px 0;font-size:13px">You can track the owner&#39;s review and view the delivered reply at your personal receipt URL:</p>' +
                   '<a href="' + rUrl + '" class="btn" id="btn-view-receipt" style="display:inline-block;text-decoration:none">View Status Receipt →</a>' +
                 '</div>';
@@ -1509,12 +1509,12 @@ export async function renderAskPage(
                 (data.basis ? '<p style="font-size:13px;color:var(--text-muted);margin:0 0 8px 0">' + esc(data.basis) + '</p>' : '') +
                 '<div class="reading-column" style="white-space:pre-wrap;margin-bottom:16px">' + esc(data.answer) + '</div>' +
                 receiptHtml +
-                (citationsHtml ? '<div style="border-top:1px solid var(--rule);padding-top:12px"><strong style="font-size:14px">Cited passages:</strong><ul style="margin:8px 0 0;padding-left:20px;font-size:14px">' + citationsHtml + '</ul></div>' : '') +
-                (data.bookingUrl ? '<div style="margin-top:12px"><a href="' + safePath(data.bookingUrl) + '" class="btn" style="display:inline-block;text-decoration:none">Book live session with prefilled context →</a></div>' : '') +
+                (citationsHtml ? '<div style="border-top:1px solid var(--rule);padding-top:12px"><strong style="font-size:14px">Sources</strong><ul style="margin:8px 0 0;padding-left:20px;font-size:14px">' + citationsHtml + '</ul></div>' : '') +
+                (data.bookingUrl ? '<div style="margin-top:12px"><a href="' + safePath(data.bookingUrl) + '" class="btn" style="display:inline-block;text-decoration:none">Book a conversation →</a></div>' : '') +
                 disclosureHtml +
               '</div>';
           } catch (err) {
-            region.innerHTML = '<div class="strata-section"><p>Unable to reach server. Please check your network connection and retry. <a href="/book">Book a session or leave a message</a>.</p></div>';
+            region.innerHTML = '<div class="strata-section"><p>Can\\\'t reach the server, so answers aren\\\'t available right now. Try again in a minute, or <a href="/book">book a conversation</a>.</p></div>';
           } finally {
             if (submitBtn) {
               submitBtn.removeAttribute('disabled');
@@ -1555,7 +1555,7 @@ export async function renderAskPage(
     </script>
   `;
 
-  return renderLayout('Ask', '/ask', content);
+  return renderLayout('Ask about my work', '/ask', content);
 }
 
 export function renderStaticPage(page: 'now' | 'about' | 'uses' | 'book', queryParam?: string): string {
@@ -1565,12 +1565,7 @@ export function renderStaticPage(page: 'now' | 'about' | 'uses' | 'book', queryP
       '/now',
       `<div class="reading-column">
         <h1>What I'm focused on now</h1>
-        <p><em>Updated October 2026</em></p>
-        <ul>
-          <li>Refining local ONNX embedding pipelines for zero-maintenance personal knowledge graphs.</li>
-          <li>Publishing benchmark suites comparing PostgreSQL 16 advisory locks and pg-boss queues against external brokers.</li>
-          <li>Maintaining the open-source Strata Design System for static-first technical portfolios.</li>
-        </ul>
+        <p class="neutral-empty-note"><em>Nothing here yet.</em></p>
       </div>`
     );
   }
@@ -1586,12 +1581,9 @@ export function renderStaticPage(page: 'now' | 'about' | 'uses' | 'book', queryP
         <h1>About ${escapeHtml(cfg.PUBLIC_OWNER_NAME)}</h1>
         <p>${escapeHtml(cfg.PUBLIC_OWNER_BIO)}</p>
         ${forkNoticeHtml}
-        <h2>Verified credentials (§6.1)</h2>
-        <p>Badges appear only for artifacts with cryptographic or host-level verification records:</p>
-        <ul>
-          <li><span class="chip" style="border-color:var(--role-outcome)">✓ Verified GPG Commits</span> Signed commits verified against GitHub repository history.</li>
-          <li><span class="chip" style="border-color:var(--role-outcome)">✓ Verified Domain Ownership</span> DNS TXT &amp; /.well-known/living-portfolio.json manifest.</li>
-        </ul>
+        <h2>Verified credentials</h2>
+        <p>A badge appears only when it can be proved: signed commits checked against GitHub, or ownership of this domain.</p>
+        <p class="neutral-empty-note"><em>Nothing has been verified yet.</em></p>
       </div>`
     );
   }
@@ -1601,12 +1593,7 @@ export function renderStaticPage(page: 'now' | 'about' | 'uses' | 'book', queryP
       '/uses',
       `<div class="reading-column">
         <h1>Tools &amp; Stack</h1>
-        <ul>
-          <li><strong>Database &amp; Queue:</strong> PostgreSQL 16 + pgvector + pg-boss</li>
-          <li><strong>Runtime &amp; API:</strong> TypeScript, Node.js LTS, Hono, Drizzle ORM</li>
-          <li><strong>Local AI:</strong> ONNX Runtime (bge-small-en-v1.5 embeddings), Tesseract OCR</li>
-          <li><strong>Typography:</strong> Literata, Atkinson Hyperlegible Next, JetBrains Mono (SIL OFL)</li>
-        </ul>
+        <p class="neutral-empty-note"><em>Instance stack information.</em></p>
       </div>`
     );
   }
@@ -1618,11 +1605,11 @@ export function renderBookPage(queryParam?: string, facetsParam?: string): strin
   const defaultFacets = facetsParam || '';
 
   return renderLayout(
-    'Book a Live Session',
+    'Book a conversation',
     '/book',
     `<div class="reading-column">
-      <h1>Book a Live Conversation (Tier 3)</h1>
-      <p>When your architectural constraints differ from documented records, a direct conversation avoids bad extrapolation.</p>
+      <h1>Book a conversation</h1>
+      <p>If your situation differs from what I've written about, a conversation will serve you better than a guess.</p>
 
       ${(defaultTopic || defaultFacets) ? `
       <div style="padding:10px 14px;background:var(--surface-raised);border:1px solid var(--rule);border-radius:var(--radius-control);margin-bottom:16px;font-size:13px">
@@ -1677,7 +1664,7 @@ export function renderBookPage(queryParam?: string, facetsParam?: string): strin
           <textarea id="book-notes" name="notes" class="ask-input" style="width:100%;min-height:70px;line-height:1.4" placeholder="Optional notes or links to relevant repos..."></textarea>
         </div>
 
-        <button type="submit" id="btn-submit-booking" class="btn">Request 30-Minute Architecture Review</button>
+        <button type="submit" id="btn-submit-booking" class="btn">Send request</button>
       </form>
 
       <script>
@@ -1745,13 +1732,13 @@ export function renderBookPage(queryParam?: string, facetsParam?: string): strin
                   errorDiv.textContent = data.error || 'Failed to submit request. Please try again.';
                   errorDiv.style.display = 'block';
                   submitBtn.removeAttribute('disabled');
-                  submitBtn.textContent = 'Request 30-Minute Architecture Review';
+                  submitBtn.textContent = 'Send request';
                 }
               } catch (err) {
                 errorDiv.textContent = 'Network error submitting booking request. Please check connection and try again.';
                 errorDiv.style.display = 'block';
                 submitBtn.removeAttribute('disabled');
-                submitBtn.textContent = 'Request 30-Minute Architecture Review';
+                submitBtn.textContent = 'Send request';
               }
             });
           }
@@ -2041,7 +2028,7 @@ export async function renderAdminWorkspacePage(
 
               <div style="margin-bottom:12px">
                 <label for="draft-${esc.id}" style="display:block;font-size:12px;font-weight:600;margin-bottom:4px">
-                  ${isPending ? 'Review / Edit Proposed Draft Reply (§6.2, §11):' : 'Final Reply / Decision:'}
+                  ${isPending ? 'Proposed draft reply:' : 'Final reply:'}
                 </label>
                 <textarea id="draft-${esc.id}" class="ask-input escalation-draft-textarea" style="width:100%;min-height:90px;font-size:13px;line-height:1.4" ${!isPending ? 'readonly' : ''}>${escapeHtml(esc.final || esc.draft || '')}</textarea>
               </div>
@@ -2091,7 +2078,7 @@ export async function renderAdminWorkspacePage(
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px">
       <div>
-        <h1 style="font-family:var(--font-reading);font-size:28px;margin:0">Owner Admin Workspace</h1>
+        <h1 style="font-family:var(--font-reading);font-size:28px;margin:0">Admin Workspace</h1>
         <p style="color:var(--text-muted);margin:4px 0 0;font-size:14px">
           Entry-first authoring, machine-suggested structure inspector, routing kill-switch, self-calibration, and encrypted backups.
         </p>
@@ -2112,13 +2099,13 @@ export async function renderAdminWorkspacePage(
 
     <div id="admin-walkthrough-card" style="padding:12px 16px;border:1px solid var(--accent);border-radius:var(--radius-control);background:var(--surface-raised);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
       <div>
-        <strong>First-Run Authoring Walkthrough (§4.1):</strong>
+        <strong>First-Run Authoring Walkthrough:</strong>
         <span style="font-size:13px;color:var(--text-muted);margin-left:6px">1. Paste write-up or choose Guided mode. 2. Use Inspector to accept suggested roles &amp; confirm facets. 3. Preview redactions and publish.</span>
       </div>
       <button type="button" class="btn btn-secondary" id="btn-dismiss-walkthrough" style="padding:2px 8px;font-size:12px">Dismiss</button>
     </div>
 
-    <!-- §12.6 Header Status Area (20261020-UI-06) -->
+    <!-- Header Status Area (20261020-UI-06) -->
     <div class="admin-header-status" role="region" aria-label="System status">
       <div style="display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap">
         <strong>Status:</strong>
@@ -2130,7 +2117,7 @@ export async function renderAdminWorkspacePage(
       </div>
     </div>
 
-    <!-- §12.6 Three-Pane Entry Workspace -->
+    <!-- Three-Pane Entry Workspace -->
     <div class="admin-shell">
       <!-- Pane 1: Entries & Filters -->
       <aside class="admin-pane" aria-label="Entries list and filters">
@@ -2145,16 +2132,16 @@ export async function renderAdminWorkspacePage(
 
       <!-- Pane 2: Editor (Rich Text / Markdown, Hindsight Question, Redaction Preview, Publish as is) -->
       <section class="admin-pane" aria-label="Entry editor">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-          <h2 id="editor-mode-heading" style="font-size:18px;margin:0">Author / Paste Entry (L0 Immediate Publish)</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:gap;gap:8px">
+          <h2 id="editor-mode-heading" style="font-size:18px;margin:0">New entry</h2>
           <div style="display:flex;gap:6px">
             <button type="button" class="btn btn-secondary active" id="mode-btn-paste" style="font-size:12px;padding:2px 8px">Paste / Freeform</button>
-            <button type="button" class="btn btn-secondary" id="mode-btn-guided" style="font-size:12px;padding:2px 8px">Guided Mode (§4.2)</button>
-            <button type="button" class="btn btn-secondary" id="mode-btn-quick" style="font-size:12px;padding:2px 8px">Quick Log (§4.4)</button>
+            <button type="button" class="btn btn-secondary" id="mode-btn-guided" style="font-size:12px;padding:2px 8px">Guided Mode</button>
+            <button type="button" class="btn btn-secondary" id="mode-btn-quick" style="font-size:12px;padding:2px 8px">Quick Log</button>
           </div>
         </div>
 
-        <!-- Guided Mode Panel (§4.2) -->
+        <!-- Guided Mode Panel -->
         <div id="editor-guided-panel" style="display:none;margin-bottom:12px;border:1px solid var(--rule);border-radius:var(--radius-control);padding:12px;background:var(--surface-page)">
           <div style="font-size:13px;font-weight:600;margin-bottom:8px">Guided Mode — Per-Role Prompts</div>
           <div style="margin-bottom:8px">
@@ -2179,7 +2166,7 @@ export async function renderAdminWorkspacePage(
           <button type="button" class="btn btn-secondary" id="btn-guided-compile" style="font-size:12px;padding:4px 8px">Compile into Body →</button>
         </div>
 
-        <!-- Quick Log Panel (§4.4) -->
+        <!-- Quick Log Panel -->
         <div id="editor-quick-panel" style="display:none;margin-bottom:12px;border:1px solid var(--rule);border-radius:var(--radius-control);padding:12px;background:var(--surface-page)">
           <div style="font-size:13px;font-weight:600;margin-bottom:4px">Quick Log — Fast Thought Capture (under 30s)</div>
           <textarea id="quick-log-text" rows="3" class="ask-input" style="width:100%;font-size:13px;margin-bottom:8px" placeholder="Capture notes, a milestone, or snippet..."></textarea>
@@ -2201,7 +2188,7 @@ export async function renderAdminWorkspacePage(
 
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px">
             <div>
-              <label for="entry-profile" style="font-size:13px;font-weight:600;display:block">Role profile (§3.4)</label>
+              <label for="entry-profile" style="font-size:13px;font-weight:600;display:block">Role profile</label>
               <select id="entry-profile" class="ask-input" style="width:100%;padding:6px">
                 <option value="case-study">Case study (default)</option>
                 <option value="decision-record">Decision record</option>
@@ -2212,7 +2199,7 @@ export async function renderAdminWorkspacePage(
               </select>
             </div>
             <div>
-              <label for="entry-visibility" style="font-size:13px;font-weight:600;display:block">Visibility (§3.11)</label>
+              <label for="entry-visibility" style="font-size:13px;font-weight:600;display:block">Visibility</label>
               <select id="entry-visibility" class="ask-input" style="width:100%;padding:6px">
                 <option value="private">Private (Draft)</option>
                 <option value="unlisted">Unlisted</option>
@@ -2226,7 +2213,7 @@ export async function renderAdminWorkspacePage(
             <div style="display:flex;align-items:flex-end;padding-bottom:6px">
               <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
                 <input id="entry-hindsight" type="checkbox" />
-                Happened earlier? (Hindsight §3.9)
+                Are you writing about something that happened earlier?
               </label>
             </div>
           </div>
@@ -2264,26 +2251,26 @@ export async function renderAdminWorkspacePage(
           <div style="margin-bottom:12px;padding:10px 12px;border:1px solid var(--rule);border-radius:4px;background:var(--bg-subtle)">
             <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer">
               <input type="checkbox" id="entry-nda-confirmed" name="nda_confirmed" value="true" style="margin-top:2px" />
-              <span><strong>Confidentiality &amp; NDA Confirmation (§4.3):</strong> I confirm this content is not subject to an active Non-Disclosure Agreement (NDA) or client confidentiality restrictions, or that all necessary client approvals and redactions have been completed.</span>
+              <span><strong>Confidentiality &amp; NDA Confirmation:</strong> I confirm this content is not subject to an active Non-Disclosure Agreement (NDA) or client confidentiality restrictions, or that all necessary client approvals and redactions have been completed.</span>
             </label>
           </div>
 
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;gap:8px">
             <div style="display:flex;gap:8px;flex-wrap:wrap" id="editor-action-buttons">
               <button type="button" class="btn btn-secondary" id="btn-save-draft">Save draft</button>
-              <button type="submit" class="btn" id="btn-publish-entry">Publish as is (L0)</button>
-              <button type="button" class="btn btn-secondary" id="btn-redaction-check">Preview Redaction (§4.3)</button>
+              <button type="submit" class="btn" id="btn-publish-entry">Publish</button>
+              <button type="button" class="btn btn-secondary" id="btn-redaction-check">Check for private details</button>
               <button type="button" class="btn btn-secondary" id="btn-unpublish" style="display:none">Unpublish</button>
               <button type="button" class="btn btn-secondary" id="btn-delete-entry" style="display:none;color:var(--red-700,#b42318)">Delete</button>
             </div>
-            <span style="font-size:13px;color:var(--text-muted)">"Good enough" exit always active — structure never blocks publishing.</span>
+            <span style="font-size:13px;color:var(--text-muted)">Structure is optional. You can publish now and add more later.</span>
           </div>
         </form>
 
-        <!-- UI Redaction Preview Drawer (§4.3, §15, 20261020-UX-03) -->
+        <!-- UI Redaction Preview Drawer -->
         <aside id="redaction-preview-drawer" class="redaction-drawer" style="display:none;position:fixed;top:0;right:0;width:460px;max-width:92vw;height:100vh;background:var(--bg-base);box-shadow:-4px 0 24px rgba(0,0,0,0.18);border-left:1px solid var(--rule);z-index:9999;padding:24px;overflow-y:auto;box-sizing:border-box" role="dialog" aria-labelledby="redaction-drawer-title" aria-modal="true">
           <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:16px">
-            <h2 id="redaction-drawer-title" style="margin:0;font-size:18px">Redaction Review Drawer (§4.3)</h2>
+            <h2 id="redaction-drawer-title" style="margin:0;font-size:18px">Redaction Review Drawer</h2>
             <button type="button" class="btn btn-secondary" id="btn-close-redaction-drawer" style="padding:4px 8px">✕ Close</button>
           </div>
           <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px 0">
@@ -2329,11 +2316,11 @@ export async function renderAdminWorkspacePage(
         </aside>
       </section>
 
-      <!-- Pane 3: Structure Inspector & Answerability Preview (§12.6, §15, 20261020-UX-06) -->
+      <!-- Pane 3: Structure Inspector & Answerability Preview -->
       <aside class="admin-pane" aria-label="Structure inspector and answerability preview">
         <h2 style="font-size:16px;margin:0 0 8px 0">Inspector: <span id="inspector-heading">${escapeHtml(firstEntry?.title || 'Sample')}</span></h2>
 
-        <!-- Inspector Tabs (§12.6) -->
+        <!-- Inspector Tabs -->
         <div class="inspector-tabs" role="tablist" aria-label="Inspector Panels">
           <button type="button" role="tab" id="tab-btn-structure" aria-controls="panel-structure" aria-selected="true" class="inspector-tab-btn active">Structure</button>
           <button type="button" role="tab" id="tab-btn-context" aria-controls="panel-context" aria-selected="false" class="inspector-tab-btn">Context</button>
@@ -2346,14 +2333,14 @@ export async function renderAdminWorkspacePage(
         <div class="inspector-tab-panel active" id="panel-structure" role="tabpanel" aria-labelledby="tab-btn-structure">
           <div style="font-size:13px;color:var(--text-muted)">Four-step structure map (never a percentage score):</div>
           <div class="level-steps" id="inspector-level-steps" role="list" aria-label="Structure level indicator">
-            <div class="level-step" role="listitem" data-level="L0" data-active="${firstLevel === 'L0' || firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">L0 Text</div>
-            <div class="level-step" role="listitem" data-level="L1" data-active="${firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">L1 Context</div>
-            <div class="level-step" role="listitem" data-level="L2" data-active="${firstLevel === 'L2' || firstLevel === 'L3'}">L2 Roles</div>
-            <div class="level-step" role="listitem" data-level="L3" data-active="${firstLevel === 'L3'}">L3 Claims</div>
+            <div class="level-step" role="listitem" data-level="L0" data-active="${firstLevel === 'L0' || firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">Text</div>
+            <div class="level-step" role="listitem" data-level="L1" data-active="${firstLevel === 'L1' || firstLevel === 'L2' || firstLevel === 'L3'}">Context</div>
+            <div class="level-step" role="listitem" data-level="L2" data-active="${firstLevel === 'L2' || firstLevel === 'L3'}">Roles</div>
+            <div class="level-step" role="listitem" data-level="L3" data-active="${firstLevel === 'L3'}">Claims</div>
           </div>
           <p style="font-size:13px;margin:4px 0 12px 0" id="inspector-unlocks"><strong>Unlocks:</strong> ${escapeHtml(levelDetails.unlocked.join(', '))}</p>
 
-          <h3 style="font-size:14px;margin:12px 0 6px 0">Role Annotations &amp; Suggestions (§3.5)</h3>
+          <h3 style="font-size:14px;margin:12px 0 6px 0">Role Annotations &amp; Suggestions</h3>
           <div id="inspector-annotations-list" style="font-size:13px">
             <p style="color:var(--text-muted)">Select an entry to review machine-suggested roles.</p>
           </div>
@@ -2385,7 +2372,7 @@ export async function renderAdminWorkspacePage(
 
         <!-- Tab 3: Evidence Panel -->
         <div class="inspector-tab-panel" id="panel-evidence" role="tabpanel" aria-labelledby="tab-btn-evidence">
-          <h3 style="font-size:14px;margin:0 0 4px 0">Attached Evidence (§3.8)</h3>
+          <h3 style="font-size:14px;margin:0 0 4px 0">Attached Evidence</h3>
           <p style="font-size:12px;color:var(--text-muted);margin:0 0 8px 0">
             Evidence verification confirms artifact authenticity but does not prove the narrative.
           </p>
@@ -2411,7 +2398,7 @@ export async function renderAdminWorkspacePage(
 
         <!-- Tab 4: Answerability Panel -->
         <div class="inspector-tab-panel" id="panel-answerability" role="tabpanel" aria-labelledby="tab-btn-answerability">
-          <h3 style="font-size:14px;margin:0 0 6px 0">Answerability &amp; Gap Questions (§10.2)</h3>
+          <h3 style="font-size:14px;margin:0 0 6px 0">Answerability &amp; Gap Questions</h3>
           <ul id="inspector-gap-questions" style="font-size:13px;padding-left:18px;margin:0">
             ${gapHtml}
           </ul>
@@ -2419,7 +2406,7 @@ export async function renderAdminWorkspacePage(
 
         <!-- Tab 5: History Panel -->
         <div class="inspector-tab-panel" id="panel-history" role="tabpanel" aria-labelledby="tab-btn-history">
-          <h3 style="font-size:14px;margin:0 0 6px 0">Revision History (§3.11, §15)</h3>
+          <h3 style="font-size:14px;margin:0 0 6px 0">Revision History</h3>
           <div id="inspector-revisions-list" style="font-size:13px">
             ${firstEntryRevisionsHtml}
           </div>
@@ -2430,17 +2417,17 @@ export async function renderAdminWorkspacePage(
     <!-- Operational Panels: Inbox Escalations, Audit, Routing & Calibration -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px;margin-top:24px">
       <section class="admin-pane" aria-labelledby="inbox-heading">
-        <h2 id="inbox-heading" style="font-size:18px;margin:0 0 12px 0">Escalation Inbox — Tier 2 Review (${escalations.length})</h2>
+        <h2 id="inbox-heading" style="font-size:18px;margin:0 0 12px 0">Inbox (${escalations.length})</h2>
         ${escalationsHtml}
       </section>
 
       <section class="admin-pane" aria-labelledby="audit-heading">
-        <h2 id="audit-heading" style="font-size:18px;margin:0 0 12px 0">Topology Audit &amp; Scoped Constraints (§11)</h2>
+        <h2 id="audit-heading" style="font-size:18px;margin:0 0 12px 0">Conflicts to review</h2>
 
         <!-- Honest Topology Conflicts Card (20261020-UX-09) -->
         <div class="topology-conflicts-card" id="topology-conflicts-card" style="margin-bottom:16px;padding:12px;border:1px solid var(--rule);border-radius:var(--radius-control);background:var(--surface-page)">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <h3 style="font-size:13px;margin:0">Topology Conflict Detection (§11)</h3>
+            <h3 style="font-size:13px;margin:0">Topology Conflict Detection</h3>
             <span class="chip" style="font-size:11px" id="chip-topology-status">501 Not Implemented</span>
           </div>
           <p id="topology-status-msg" style="font-size:12px;color:var(--text-muted);margin:0">
@@ -2448,7 +2435,7 @@ export async function renderAdminWorkspacePage(
           </p>
         </div>
 
-        <h3 style="font-size:14px;margin:12px 0 6px 0">Mined Scoped Constraints (${scopedConstraints.length})</h3>
+        <h3 style="font-size:14px;margin:12px 0 6px 0">Suggested rules from your replies (${scopedConstraints.length})</h3>
         ${scopedConstraintsHtml}
       </section>
     </div>
@@ -3088,7 +3075,7 @@ export async function renderAdminWorkspacePage(
             const entryId = entryIdInput?.value;
             if (!entryId) return;
             const title = document.getElementById('entry-title')?.value || '';
-            if (!window.confirm('Delete entry "' + title + '" and all its revisions, spans, and claims? (§15)')) {
+            if (!window.confirm('Delete entry "' + title + '" and all its revisions, spans, and claims?')) {
               return;
             }
             try {
@@ -3325,7 +3312,7 @@ export async function renderAdminWorkspacePage(
               if (tokenInput) tokenInput.value = '';
               const badge = document.getElementById('preview-token-badge');
               if (badge) badge.remove();
-              redactBox.innerHTML = '<div class="later-thinking-banner" data-state="invalidated" role="status">Body edited since last check — preview token invalidated. Re-run "Preview Redaction (§4.3)" before publishing.</div>';
+              redactBox.innerHTML = '<div class="later-thinking-banner" data-state="invalidated" role="status">Body edited since last check — preview token invalidated. Re-run "Check for private details" before publishing.</div>';
             }
           });
         }
@@ -3425,7 +3412,7 @@ export async function renderAdminWorkspacePage(
 
             // Publish gate: signed preview token required
             if (!currentPreviewToken) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert" data-gate="preview-token">Redaction preview check is required before publishing. Please click "Preview Redaction (§4.3)".</div>';
+              banner.innerHTML = '<div class="later-thinking-banner" role="alert" data-gate="preview-token">Redaction preview check is required before publishing. Please click "Check for private details".</div>';
               return;
             }
 
@@ -3744,7 +3731,7 @@ export async function renderAdminSettingsPage(
       <div>
         <h1 style="font-family:var(--font-reading);font-size:28px;margin:0">Admin Operations &amp; System Calibration</h1>
         <p style="color:var(--text-muted);margin:4px 0 0;font-size:14px">
-          Configure routing floors, provider registry, degradation ladders, theme tokens, notification channels, and backup restore drills (§6.4, §11, §12.3, §13.8, §13.9).
+          Configure routing floors, provider registry, degradation ladders, theme tokens, notification channels, and backup restore drills.
         </p>
       </div>
       <div>
@@ -3757,7 +3744,7 @@ export async function renderAdminSettingsPage(
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px">
       <!-- Section 1: Routing Floors & Calibration -->
       <section class="admin-pane" aria-labelledby="routing-heading">
-        <h2 id="routing-heading" style="font-size:18px;margin:0 0 12px 0">Routing Floors &amp; Calibration (§6.4, §11)</h2>
+        <h2 id="routing-heading" style="font-size:18px;margin:0 0 12px 0">Routing Floors &amp; Calibration</h2>
         <div style="margin-bottom:12px">
           <label for="setting-tier1-floor" style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">
             Tier 1 Advisory Floor (shipped default: 0.82):
@@ -3784,7 +3771,7 @@ export async function renderAdminSettingsPage(
 
         <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px">
           <input type="checkbox" id="setting-calibration-frozen" ${calibrationFrozen ? 'checked' : ''} />
-          <label for="setting-calibration-frozen" style="font-size:13px">Freeze Calibration (§6.4)</label>
+          <label for="setting-calibration-frozen" style="font-size:13px">Freeze Calibration</label>
         </div>
 
         <div style="margin-bottom:16px;display:flex;align-items:center;gap:8px">
@@ -3797,7 +3784,7 @@ export async function renderAdminSettingsPage(
 
       <!-- Section 2: Provider Registry & Degradation Ladder -->
       <section class="admin-pane" aria-labelledby="providers-heading">
-        <h2 id="providers-heading" style="font-size:18px;margin:0 0 12px 0">Provider Registry &amp; Degradation Ladder (§10.8, §13.5)</h2>
+        <h2 id="providers-heading" style="font-size:18px;margin:0 0 12px 0">Provider Registry &amp; Degradation Ladder</h2>
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
           Active Provider Chain &amp; Zero-Retention Disclosures:
         </div>
@@ -3830,7 +3817,7 @@ export async function renderAdminSettingsPage(
 
         <div style="margin-bottom:16px">
           <label for="setting-degradation-mode" style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">
-            Simulated Degradation Mode (§10.8):
+            Simulated Degradation Mode:
           </label>
           <select id="setting-degradation-mode" class="ask-input" style="width:100%">
             <option value="normal" ${degradationMode === 'normal' ? 'selected' : ''}>Normal (Extractive + Generative)</option>
@@ -3844,7 +3831,7 @@ export async function renderAdminSettingsPage(
 
       <!-- Section 3: Theme Customization & WCAG Conformance -->
       <section class="admin-pane" aria-labelledby="theme-heading">
-        <h2 id="theme-heading" style="font-size:18px;margin:0 0 12px 0">Theme Customization &amp; Conformance (§12.3, §12.10)</h2>
+        <h2 id="theme-heading" style="font-size:18px;margin:0 0 12px 0">Theme Customization &amp; Conformance</h2>
         <div style="margin-bottom:12px">
           <label for="setting-theme-light-accent" style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">
             Light Theme Primary Accent:
@@ -3870,7 +3857,7 @@ export async function renderAdminSettingsPage(
 
       <!-- Section 4: Notification Channel Delivery -->
       <section class="admin-pane" aria-labelledby="notifications-heading">
-        <h2 id="notifications-heading" style="font-size:18px;margin:0 0 12px 0">Notification Delivery (§13.8)</h2>
+        <h2 id="notifications-heading" style="font-size:18px;margin:0 0 12px 0">Notification Delivery</h2>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <span style="font-size:13px">Channel Status:</span>
           <span class="chip" id="chip-notify-status">not_configured</span>
@@ -3890,7 +3877,7 @@ export async function renderAdminSettingsPage(
 
       <!-- Section 5: Encrypted Backups & Restore Verification Drill -->
       <section class="admin-pane" aria-labelledby="backups-heading">
-        <h2 id="backups-heading" style="font-size:18px;margin:0 0 12px 0">Encrypted Backups &amp; Restore Drill (§13.9, §18.1)</h2>
+        <h2 id="backups-heading" style="font-size:18px;margin:0 0 12px 0">Encrypted Backups &amp; Restore Drill</h2>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <span style="font-size:13px">Backup Subsystem:</span>
           <span class="chip" id="chip-backup-status">not_configured</span>
@@ -4209,7 +4196,7 @@ export function renderAdminSetupPage(): string {
     <div class="admin-setup-container" style="max-width:680px;margin:32px auto;padding:24px;border:1px solid var(--rule);background:var(--surface-page)">
       <div class="wizard-header" style="margin-bottom:20px;border-bottom:1px solid var(--rule);padding-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span class="chip" id="wizard-step-chip">Step 1 of 6 · First-Run Wizard (§13.13)</span>
+          <span class="chip" id="wizard-step-chip">Step 1 of 6 · First-Run Wizard</span>
           <span style="font-size:12px;color:var(--text-muted)">The Living Portfolio</span>
         </div>
         <div class="wizard-progress-bar" style="height:4px;background:var(--surface-panel);border-radius:2px;overflow:hidden">
@@ -4255,7 +4242,7 @@ export function renderAdminSetupPage(): string {
         </div>
       </div>
 
-      <!-- Step 2: Hosting Option & Preset (§13.13) -->
+      <!-- Step 2: Hosting Option & Preset -->
       <div id="wizard-step-2" class="wizard-step" style="display:none">
         <h2 style="font-size:22px;margin:4px 0 8px 0">Step 2: Hosting Option &amp; Presets</h2>
         <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px 0">
@@ -4298,7 +4285,7 @@ export function renderAdminSetupPage(): string {
         </div>
       </div>
 
-      <!-- Step 3: Model Providers & Privacy Router (§10.8, §13.5) -->
+      <!-- Step 3: Model Providers & Privacy Router -->
       <div id="wizard-step-3" class="wizard-step" style="display:none">
         <h2 style="font-size:22px;margin:4px 0 8px 0">Step 3: Model Providers &amp; Privacy Router</h2>
         <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px 0">
@@ -4345,7 +4332,7 @@ export function renderAdminSetupPage(): string {
         </div>
 
         <div class="as-of-banner" style="margin-bottom:16px">
-          <strong>Zero-Trust Boundary:</strong> When no external provider is configured, Ask gracefully degrades to honest extractive quotes (§10.8).
+          <strong>Zero-Trust Boundary:</strong> When no external provider is configured, Ask gracefully degrades to honest extractive quotes.
         </div>
 
         <div style="display:flex;justify-content:space-between">
@@ -4354,7 +4341,7 @@ export function renderAdminSetupPage(): string {
         </div>
       </div>
 
-      <!-- Step 4: Notifications (§13.9) -->
+      <!-- Step 4: Notifications -->
       <div id="wizard-step-4" class="wizard-step" style="display:none">
         <h2 style="font-size:22px;margin:4px 0 8px 0">Step 4: Notifications &amp; Alerts</h2>
         <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px 0">
@@ -4387,7 +4374,7 @@ export function renderAdminSetupPage(): string {
         </div>
       </div>
 
-      <!-- Step 5: Backups (§13.9) -->
+      <!-- Step 5: Backups -->
       <div id="wizard-step-5" class="wizard-step" style="display:none">
         <h2 style="font-size:22px;margin:4px 0 8px 0">Step 5: Encrypted Backup Destination</h2>
         <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px 0">
@@ -4419,7 +4406,7 @@ export function renderAdminSetupPage(): string {
         </div>
       </div>
 
-      <!-- Step 6: Theme Selection & First-Run Walkthrough (§13.6, §13.13) -->
+      <!-- Step 6: Theme Selection & First-Run Walkthrough -->
       <div id="wizard-step-6" class="wizard-step" style="display:none">
         <h2 style="font-size:22px;margin:4px 0 8px 0">Step 6: Theme &amp; First-Run Walkthrough</h2>
         <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px 0">
@@ -4441,7 +4428,7 @@ export function renderAdminSetupPage(): string {
           </div>
         </div>
 
-        <!-- First-Run Walkthrough Worked Example Card (§13.13) -->
+        <!-- First-Run Walkthrough Worked Example Card -->
         <div class="as-of-banner" style="margin-bottom:20px">
           <h3 style="font-size:16px;margin:0 0 6px 0">Worked Example: Case Study Profile</h3>
           <p style="font-size:13px;line-height:1.5;margin:0 0 10px 0">
@@ -4460,7 +4447,7 @@ export function renderAdminSetupPage(): string {
 
         <div style="display:flex;gap:12px">
           <a href="/admin" class="btn btn-primary" id="btn-setup-finish-login" style="flex:1;text-align:center;padding:12px">Launch Portfolio &amp; Sign in →</a>
-          <a href="/admin/import" class="btn btn-secondary" id="btn-setup-launch-import" style="flex:1;text-align:center;padding:12px">Launch Import Planner (§13.6) →</a>
+          <a href="/admin/import" class="btn btn-secondary" id="btn-setup-launch-import" style="flex:1;text-align:center;padding:12px">Launch Import Planner →</a>
         </div>
 
         <div style="margin-top:16px;text-align:left">
@@ -4502,7 +4489,7 @@ export function renderAdminSetupPage(): string {
             progressFill.style.width = Math.round((stepNum / 6) * 100) + '%';
           }
           if (chip) {
-            chip.textContent = 'Step ' + stepNum + ' of 6 · First-Run Wizard (§13.13)';
+            chip.textContent = 'Step ' + stepNum + ' of 6 · First-Run Wizard';
           }
         }
 
@@ -4610,7 +4597,7 @@ export async function renderAdminImportPage(repo: WebDataClient): Promise<string
   const stagingNoticeHtml =
     cfg.DEPLOYMENT_CLASS === 'staging'
       ? `    <div class="later-thinking-banner" data-banner="staging-import-disabled" role="alert" style="margin-bottom:16px;border-left:4px solid var(--role-challenge,#f59e0b)">
-      <strong>Import Disabled on Staging:</strong> Import connectors and ingestion pipelines are strictly disabled in staging environments to enforce synthetic data isolation (§6.4, OSR-19).
+      <strong>Import Disabled on Staging:</strong> Import connectors and ingestion pipelines are strictly disabled in staging environments to enforce synthetic data isolation.
     </div>\n`
       : '';
 
@@ -4619,7 +4606,7 @@ export async function renderAdminImportPage(repo: WebDataClient): Promise<string
       <div>
         <h1 style="font-family:var(--font-reading);font-size:28px;margin:0">Import &amp; Triage</h1>
         <p style="color:var(--text-muted);margin:4px 0 0;font-size:14px">
-          Connect or paste existing material, plan processing budget, and triage with confidence sorting and keyboard controls (§6.2, §12.6, 20261020-UX-07).
+          Connect or paste existing material, plan processing budget, and triage with confidence sorting and keyboard controls.
         </p>
       </div>
       <a href="/admin" class="btn btn-secondary" style="text-decoration:none">← Back to Workspace</a>
@@ -4657,7 +4644,7 @@ export async function renderAdminImportPage(repo: WebDataClient): Promise<string
     <!-- Step 2: Import Planner -->
     <div id="import-step-plan" style="display:none">
       <div class="admin-pane" style="max-width:800px">
-        <h2 style="font-size:18px;margin:0 0 8px 0">Import Processing Planner (§13.6, §21)</h2>
+        <h2 style="font-size:18px;margin:0 0 8px 0">Import Processing Planner</h2>
         <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px 0">
           Estimated token workload and turnaround schedule based on detected document length.
         </p>
