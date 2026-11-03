@@ -51,6 +51,7 @@
 | `A043` | WP-9.3 Production Deploy Workflow, Health Gate and Auto-Rollback | `active` | [A043-wp-93-production-deploy-and-auto-rollback.md](execution-reports/A043-wp-93-production-deploy-and-auto-rollback.md) | — |
 | `A044` | WP-9.4 Worker buildsToday Reset and Static Artifact Emission | `active` | [A044-wp-94-worker-midnight-reset-static-artifacts.md](execution-reports/A044-wp-94-worker-midnight-reset-static-artifacts.md) | — |
 | `A045` | WP-10.1 Pre-Delivery Entailment Verification Judge | `active` | [A045-wp-101-pre-delivery-entailment-verification-judge.md](execution-reports/A045-wp-101-pre-delivery-entailment-verification-judge.md) | — |
+| `A046` | WP-10.2 Query Classification Upgrade and About Path | `active` | [A046-wp-102-query-classification-upgrade-and-about-path.md](execution-reports/A046-wp-102-query-classification-upgrade-and-about-path.md) | — |
 
 ## Handover Snapshots (Class H)
 

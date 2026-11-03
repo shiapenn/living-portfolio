@@ -608,5 +608,13 @@
     "path": "docs/execution-reports/A045-wp-101-pre-delivery-entailment-verification-judge.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A046",
+    "title": "WP-10.2 Query Classification Upgrade and About Path",
+    "class": "A",
+    "path": "docs/execution-reports/A046-wp-102-query-classification-upgrade-and-about-path.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
