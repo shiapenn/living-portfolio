@@ -7,3 +7,4 @@ export * from './cache/answer-cache.js';
 export * from './verification/index.js';
 export * from './extraction/index.js';
 export * from './classification/index.js';
+export * from './evaluation/index.js';

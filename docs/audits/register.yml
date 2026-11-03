@@ -1025,7 +1025,7 @@
     - "18.1"
     - "18.2"
   severity: P3
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 25
@@ -1034,11 +1034,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/m11-evaluation-chaos.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit (Section 4 §18.1/§18.2, Section 7 Fixes 25 & 26)
+    - date: 2026-11-03
+      status: fixed
+      note: 'Fixed in WP-10.6: Labeled evaluation runner, structure ablation, baseline comparison, calibration ECE, time-travel leakage, provider chaos, axe accessibility tests, and CI supply chain decoupling checks (Fix 25, Fix 26, §18.1, §18.2)'
   verified_by: null
 - id: OSR-01
   audit: OSR-001
