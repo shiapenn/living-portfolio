@@ -7,6 +7,7 @@ import {
   renderAdminSettingsPage,
   renderAdminSetupPage,
   renderAdminWorkspacePage,
+  renderNotFoundPage,
 } from '@living-portfolio/web';
 import type { AuthManager } from '../auth/security.js';
 
@@ -44,4 +45,12 @@ export function mountBundledWeb(
   // Mount the public web application routes
   const { app: webApp } = createWebApp({ client: repo as any });
   app.route('/', webApp);
+
+  app.notFound((c) => {
+    const path = c.req.path;
+    if (path.startsWith('/api/')) {
+      return c.json({ error: 'Not Found', path }, 404);
+    }
+    return c.html(renderNotFoundPage('Page not found', path), 404);
+  });
 }
