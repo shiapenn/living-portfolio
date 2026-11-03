@@ -6,7 +6,7 @@
 | Date | 2026-11-03 |
 | Author | A (Implementer) |
 | Task ID | `WP-11.1 (20261020-UX-05 & 20261020-UX-10)` |
-| Evidence SHA | `7dd7d7b` |
+| Evidence SHA | `43b25f3` |
 | CI run | https://github.com/shiapenn/living-portfolio/actions/runs/41600341951 |
 
 ---
@@ -159,8 +159,8 @@ Matches `git diff --name-only 80c82f0..7dd7d7b` (22 files):
 === Validating Receipt A051-wp-111-debounced-publish-ask-flow-repair.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA '7dd7d7b' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff 9b0495e..7dd7d7b (17 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA '43b25f3' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 80c82f0..43b25f3 (22 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A051-wp-111-debounced-publish-ask-flow-repair.md.
 Found 5 section(s) marked verbatim.
 
