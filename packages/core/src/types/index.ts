@@ -365,3 +365,86 @@ export interface BudgetUtilization {
   rateLimitedUntil?: string | null;
 }
 
+/**
+ * §13.6 Import Planner & Resumable Imports (Finding M9, Fix 21)
+ */
+export interface ImportPlannerConfig {
+  dailyTokenBudget: number;
+  dailyAudioSecondsBudget?: number;
+  costPerMillionTokensUsd?: number;
+  costPerAudioMinuteUsd?: number;
+}
+
+export interface ImportDocumentInput {
+  id?: string;
+  title?: string;
+  text: string;
+  audioDurationSeconds?: number;
+  dataClass?: DataClass;
+  sourceUrl?: string;
+}
+
+export interface DocumentPreview {
+  id: string;
+  title: string;
+  wordCount: number;
+  estimatedTokens: number;
+  audioDurationSeconds: number;
+  dataClass: DataClass;
+}
+
+export interface ImportPlanResult {
+  documentCount: number;
+  estimatedTokens: number;
+  totalAudioSeconds: number;
+  configuredBudget: {
+    dailyTokenBudget: number;
+    dailyAudioSecondsBudget: number;
+    costPerMillionTokensUsd: number;
+    costPerAudioMinuteUsd: number;
+  };
+  daysWithinFree: number;
+  freePlanEstimate: string;
+  paidFastCostUsd: number;
+  paidFastEstimate: string;
+  documentsPreview: DocumentPreview[];
+}
+
+export type ImportJobStatus = 'pending' | 'in_progress' | 'completed' | 'paused' | 'failed';
+
+export interface ImportJobDocument {
+  id: string;
+  title?: string;
+  slug?: string;
+  body_md: string;
+  profile?: string;
+  temporal_level?: TemporalLevel;
+  valid_from?: string;
+  publish_as_is?: boolean;
+  redaction_preview_token?: string;
+  data_class?: DataClass;
+}
+
+export interface ImportJobCheckpoint {
+  documentId: string;
+  importedAt: string;
+  entryId: string;
+  revisionId: string;
+  status: 'imported' | 'failed' | 'skipped';
+  error?: string;
+}
+
+export interface ImportJob {
+  id: string;
+  status: ImportJobStatus;
+  total_documents: number;
+  processed_count: number;
+  failed_count: number;
+  checkpoints: ImportJobCheckpoint[];
+  items: ImportJobDocument[];
+  config?: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+}
+
+
