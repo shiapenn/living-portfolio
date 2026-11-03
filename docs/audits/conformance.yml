@@ -183,8 +183,8 @@
   status: partial
   audit_matrix_status: "Partial"
   findings: ["M1", "M5", "M6"]
-  last_scored: "2026-10-19"
-  evidence_and_gaps: "Role suggestion threshold proposals implemented; missing routing calibration, sliding window, held-out validation, ECE, freeze guard, and real state rollback."
+  last_scored: "2026-11-03"
+  evidence_and_gaps: "Self-calibration routing calibration, sliding window, held-out validation, ECE, freeze guard, and real state rollback implemented (Fix 16 / M5). Topology audit conflict detection and constraint mining remain to complete section (M6)."
 
 - section: "12"
   title: "UI design system"

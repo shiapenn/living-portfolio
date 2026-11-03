@@ -35,25 +35,10 @@ describe('AUD-18 / AUD-19 Honest Reporting for Simulated Endpoints (Findings M1,
     expect(body.code).toBe('SIMULATED');
   });
 
-  it('GET /api/calibration/parameters, POST /apply, and POST /rollback/:id return 501 Not Implemented', async () => {
+  it('GET /api/calibration/parameters returns 501 Not Implemented (Finding M1 / Fix 3)', async () => {
     const resParams = await app.request('/api/calibration/parameters', { headers: authHeaders });
     expect(resParams.status).toBe(501);
     expect((await resParams.json()).finding).toBe('M1');
-
-    const resApply = await app.request('/api/calibration/apply', {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({ parameter: 'tier1_floor', old_value: 0.82, new_value: 0.8 }),
-    });
-    expect(resApply.status).toBe(501);
-    expect((await resApply.json()).finding).toBe('M5');
-
-    const resRollback = await app.request('/api/calibration/rollback/change-1', {
-      method: 'POST',
-      headers: authHeaders,
-    });
-    expect(resRollback.status).toBe(501);
-    expect((await resRollback.json()).finding).toBe('M5');
   });
 
   it('GET /.well-known/living-portfolio.json returns 501 Not Implemented until credential verification exists', async () => {

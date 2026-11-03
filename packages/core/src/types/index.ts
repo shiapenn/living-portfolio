@@ -215,6 +215,65 @@ export interface CalibrationChange {
   at: string;
 }
 
+export type CalibrationMechanism =
+  | 'suggestion_thresholds'
+  | 'routing_calibration'
+  | 'topology_audit'
+  | 'scoped_constraint_mining';
+
+export interface MechanismFlags {
+  suggestion_thresholds: boolean;
+  routing_calibration: boolean;
+  topology_audit: boolean;
+  scoped_constraint_mining: boolean;
+}
+
+export interface SlidingWindowConfig {
+  windowDays: number;
+  maxWindowSize: number;
+}
+
+export interface RoutingInteractionLog {
+  id: string;
+  domain: string;
+  escalation_id?: string;
+  draft_edit_ratio?: number;
+  citation_clicked?: boolean;
+  converted_to_booking?: boolean;
+  scoped_constraints_count?: number;
+  confidence?: number;
+  outcome?: boolean;
+  at: string;
+}
+
+export interface ReliabilityBin {
+  binIndex: number;
+  minConfidence: number;
+  maxConfidence: number;
+  count: number;
+  accuracy: number;
+  confidence: number;
+}
+
+export interface CalibrationQualityReport {
+  sampleSize: number;
+  expectedCalibrationError: number;
+  maxCalibrationError: number;
+  brierScore: number;
+  reliabilityCurve: ReliabilityBin[];
+  isCalibrated: boolean;
+}
+
+export interface ValidationResult {
+  passed: boolean;
+  trainingSamples: number;
+  heldOutSamples: number;
+  baselineEce: number;
+  proposedEce: number;
+  eceDelta: number;
+  reason: string;
+}
+
 export interface TopologyReport {
   id: string;
   claim_a: string;

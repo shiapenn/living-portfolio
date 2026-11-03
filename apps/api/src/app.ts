@@ -238,7 +238,7 @@ export function createApp(
 
   apiV1.route('/structure', createStructureRoutes(repo, answerCache));
   apiV1.route('/inbox', createInboxRoutes(repo));
-  apiV1.route('/calibration', createCalibrationRoutes(repo));
+  apiV1.route('/calibration', createCalibrationRoutes(repo, runtimeState));
   apiV1.route('/audit', createAuditRoutes(repo));
   apiV1.route('/import', createImportRoutes(repo, auth, cfg.DEPLOYMENT_CLASS));
   apiV1.use('/settings', auth.requireAdminMiddleware());
