@@ -688,5 +688,13 @@
     "path": "docs/execution-reports/A054-wp-114-markdown-engine-tokens-and-responsive-layout.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A055",
+    "title": "WP-11.5: Copy Harmonization & Spec-Jargon Removal",
+    "class": "A",
+    "path": "docs/execution-reports/A055-wp-115-copy-harmonization-spec-jargon-removal.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

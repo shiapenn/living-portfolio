@@ -60,6 +60,7 @@
 | `A052` | WP-11.2: Navigation Redesign & System States | `active` | [A052-wp-112-navigation-redesign-system-states.md](execution-reports/A052-wp-112-navigation-redesign-system-states.md) | — |
 | `A053` | WP-11.3: Accessibility Mechanics & Structured View Repair | `active` | [A053-wp-113-accessibility-mechanics-structured-view-repair.md](execution-reports/A053-wp-113-accessibility-mechanics-structured-view-repair.md) | — |
 | `A054` | WP-11.4: Markdown Engine Tokens and Responsive Layout | `active` | [A054-wp-114-markdown-engine-tokens-and-responsive-layout.md](execution-reports/A054-wp-114-markdown-engine-tokens-and-responsive-layout.md) | — |
+| `A055` | WP-11.5: Copy Harmonization & Spec-Jargon Removal | `active` | [A055-wp-115-copy-harmonization-spec-jargon-removal.md](execution-reports/A055-wp-115-copy-harmonization-spec-jargon-removal.md) | — |
 
 ## Handover Snapshots (Class H)
 
