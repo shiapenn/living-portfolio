@@ -118,19 +118,34 @@ export interface EntryDetailResponse {
 }
 
 export interface AskResponse {
-  query_class: string;
-  synthesis: string;
+  query_class?: string;
+  queryClass?: string;
+  tier?: string;
+  answer?: string;
+  synthesis?: string;
   citations: Array<{
+    citationId?: number;
     entry_id?: string;
     slug?: string;
     title?: string;
     span_id?: string;
+    text?: string;
     excerpt?: string;
   }>;
-  citedScopes: string[];
-  providerDisclosure: string;
-  requiresEscalation: boolean;
+  citedScopes: Array<Record<string, any> | string>;
+  isReconstruction?: boolean;
+  reconstructionNotice?: string;
+  strippedAssertions?: string[];
+  verificationPassed?: boolean;
+  degradationStep?: string;
+  providerDisclosure?: string;
+  provider_disclosure?: string;
+  aiDisclosure?: string;
+  requiresEscalation?: boolean;
   escalationToken?: string;
+  statusToken?: string;
+  receiptUrl?: string;
+  dueAt?: string;
 }
 
 export interface TimelineBucket {

@@ -1,7 +1,12 @@
 import { Hono } from 'hono';
 import type { IPortfolioRepository, SearchResult } from '@living-portfolio/db';
 import type { BudgetGovernor, ModelProvider } from '@living-portfolio/ai';
-import { verifyAnswerBeforeDelivery, formatProviderDisclosure, AnswerCache } from '@living-portfolio/ai';
+import {
+  verifyAnswerBeforeDelivery,
+  verifyAnswerBeforeDeliveryAsync,
+  formatProviderDisclosure,
+  AnswerCache,
+} from '@living-portfolio/ai';
 import {
   AskQuerySchema,
   checkGate,
@@ -199,11 +204,15 @@ export function createAskRoutes(config: AskEngineConfig) {
     const activeTier2Floor = runtime?.tier2_floor ?? tier2Floor;
 
     // 5. Routing tier decision (G2: computed dynamically from repository)
+    const candidateScopes: Record<string, any>[] = [];
     const routeMatches = await Promise.all(
       candidateMatches.map(async (m) => {
         const claims = await repo.getClaimsForRevision(m.span.revision_id);
         const evList = await repo.getEvidenceForEntry(m.entry.id);
         const claim = claims.find((c) => c.source_span_id === m.span.id) || claims[0];
+        if (claim?.scope && Object.keys(claim.scope).length > 0) {
+          candidateScopes.push(claim.scope);
+        }
         const hasEvidence = evList.length > 0;
         const hasVerifiedEvidence = evList.some((e) => e.verified_at != null || e.verification != null);
         const outcomeStatus = claim?.outcome_status ?? null;
@@ -217,6 +226,9 @@ export function createAskRoutes(config: AskEngineConfig) {
         };
       })
     );
+    if (candidateScopes.length === 0 && Object.keys(entryScope).length > 0) {
+      candidateScopes.push(entryScope);
+    }
 
     const routeDecision = routeQuery({
       queryClass,
@@ -234,6 +246,10 @@ export function createAskRoutes(config: AskEngineConfig) {
       const excerpts = candidateMatches.slice(0, 3).map((m, i) => `[${i + 1}] "${m.span.text_exact}" (from ${m.entry.title})`).join('\n\n');
       const disclosure = formatProviderDisclosure(null);
       const answer = reasonNote ? `${disclosure} (${reasonNote})\n\n${excerpts}` : `${disclosure}\n\n${excerpts}`;
+      const isReconstruction = Boolean(as_of_date);
+      const reconstructionNotice = as_of_date
+        ? `Reconstructed from historical records as of ${new Date(as_of_date).toISOString().split('T')[0]}, not direct owner testimony.`
+        : undefined;
       return c.json({
         tier: 'extractive',
         queryClass,
@@ -244,8 +260,11 @@ export function createAskRoutes(config: AskEngineConfig) {
           title: m.entry.title,
           text: m.span.text_exact,
         })),
+        citedScopes: candidateScopes,
         contextChips: Object.entries(entryScope).map(([k, v]) => `${k}: ${v}`),
         degradationStep: 'extractive',
+        isReconstruction,
+        reconstructionNotice,
         provider_disclosure: disclosure,
         aiDisclosure: disclosure,
       });
@@ -300,12 +319,14 @@ export function createAskRoutes(config: AskEngineConfig) {
             temperature: 0.1,
           });
           governor.reconcileUsage(provider.id, 'visitor_interactive', 250, draftCompletion.usage?.totalTokens ?? 250);
-          const vDraft = verifyAnswerBeforeDelivery({
+          const vDraft = await verifyAnswerBeforeDeliveryAsync({
             draftText: draftCompletion.text,
             citedSpans: candidateMatches.map((m) => m.span),
             visitorFacets,
-            citedScopes: [],
+            citedScopes: candidateScopes,
             asOfDate: as_of_date,
+            judgeProvider: provider,
+            degradationStep,
           });
           escalationDraft = vDraft.verifiedText;
         } catch {
@@ -338,6 +359,7 @@ export function createAskRoutes(config: AskEngineConfig) {
         statusToken,
         receiptUrl: `/ask/status/${statusToken}`,
         dueAt,
+        citedScopes: candidateScopes,
         degradationStep,
       });
     }
@@ -414,13 +436,15 @@ export function createAskRoutes(config: AskEngineConfig) {
       return buildExtractiveResponse();
     }
 
-    // Verification check (§10.6, G5: downgrade to extractive on failed verification)
-    const verification = verifyAnswerBeforeDelivery({
+    // Verification check (§10.6, G5, M3: entailment judge, assertion stripping, citedScopes, reconstruction)
+    const verification = await verifyAnswerBeforeDeliveryAsync({
       draftText: completionText,
       citedSpans: candidateMatches.map((m) => m.span),
       visitorFacets,
-      citedScopes: [],
+      citedScopes: candidateScopes,
       asOfDate: as_of_date,
+      judgeProvider: activeProvider,
+      degradationStep,
     });
 
     if (!verification.passed) {
@@ -443,9 +467,13 @@ export function createAskRoutes(config: AskEngineConfig) {
       queryClass,
       answer: finalAnswer,
       citations,
+      citedScopes: verification.citedScopes,
       verificationPassed: verification.passed,
       degradationStep,
       basis: `Based on ${citations.length} entries from the owner's records.`,
+      isReconstruction: verification.isReconstruction,
+      reconstructionNotice: verification.reconstructionNotice,
+      strippedAssertions: verification.strippedAssertions,
       provider_disclosure: disclosure,
       aiDisclosure: disclosure,
     };
