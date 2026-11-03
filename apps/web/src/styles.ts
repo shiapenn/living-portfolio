@@ -156,11 +156,14 @@ a {
   color: var(--text);
   border: 1px solid var(--rule);
   border-radius: var(--radius-control);
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-2) var(--space-3);
   cursor: pointer;
   font-family: var(--font-ui);
   font-size: 14px;
-  min-height: 36px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Main container */
@@ -227,6 +230,10 @@ a {
 }
 
 .strata-band {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  text-decoration: none;
   flex: 1;
   min-width: 56px;
   background: var(--surface-page);
@@ -240,7 +247,22 @@ a {
 }
 
 .strata-band[data-dimmed="true"] {
-  opacity: 0.35;
+  border-top-color: var(--text-muted);
+  color: var(--text-muted);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--surface-page),
+    var(--surface-page) 6px,
+    var(--surface-raised) 6px,
+    var(--surface-raised) 12px
+  );
+}
+
+.strata-band[data-dimmed="true"] .band-label-future {
+  font-size: 11px;
+  font-style: italic;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .strata-band:hover,
@@ -599,6 +621,51 @@ a {
 .skip-link:focus {
   top: var(--space-2);
   outline: 2px solid var(--focus-ring);
+}
+
+/* Accessibility Utility Classes (UX-15) */
+.visually-hidden,
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Touch Target Size (WCAG 2.5.8 & Spec §12.5) */
+.btn,
+.theme-toggle-btn,
+button[type="submit"] {
+  min-height: 44px;
+}
+
+@media (pointer: coarse) {
+  .btn,
+  .theme-toggle-btn,
+  .chip,
+  button,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Structured View Role Sections & Unlabeled Spans (UX-16) */
+.role-section {
+  margin-bottom: var(--space-6);
+  padding-left: var(--space-4);
+  border-left: 3px solid var(--accent);
+}
+
+.unlabeled-span {
+  margin-bottom: var(--space-6);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -287,7 +287,7 @@ ${robotsMetaHtml}  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_
       <a href="/" class="site-brand"${activePath === '/' ? ' aria-current="page"' : ''}>${brandHtml}</a>
       <div class="nav-links">
         ${navHtml}
-        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle color theme" aria-pressed="false">◐ Theme</button>
+        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-pressed="false" style="min-height:44px"><span aria-hidden="true">◐</span> <span class="theme-label">Dark theme</span></button>
       </div>
     </nav>
   </header>
@@ -310,28 +310,38 @@ ${robotsMetaHtml}  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_
   <script>
     (function() {
       const btn = document.getElementById('theme-toggle');
-      function getEffectiveTheme() {
-        const attr = document.documentElement.getAttribute('data-theme');
-        if (attr) return attr;
+      function getStoredTheme() {
         try {
           const saved = localStorage.getItem('strata-theme');
-          if (saved) return saved;
-        } catch (e) {}
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          return 'dark';
-        }
+          if (saved === 'dark' || saved === 'light') return saved;
+        } catch (_) {}
+        return null;
+      }
+      function getSystemTheme() {
+        try {
+          if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+          }
+        } catch (_) {}
         return 'light';
       }
-      const initialTheme = getEffectiveTheme();
-      document.documentElement.setAttribute('data-theme', initialTheme);
+      function updateThemeUI(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        if (btn) {
+          const isDark = theme === 'dark';
+          btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+          btn.innerHTML = isDark
+            ? '<span aria-hidden="true">☀</span> <span class="theme-label">Light theme</span>'
+            : '<span aria-hidden="true">◐</span> <span class="theme-label">Dark theme</span>';
+        }
+      }
+      let currentTheme = getStoredTheme() || getSystemTheme();
+      updateThemeUI(currentTheme);
       if (btn) {
-        btn.setAttribute('aria-pressed', initialTheme === 'dark' ? 'true' : 'false');
         btn.addEventListener('click', function() {
-          const current = getEffectiveTheme();
-          const next = current === 'dark' ? 'light' : 'dark';
-          document.documentElement.setAttribute('data-theme', next);
-          btn.setAttribute('aria-pressed', next === 'dark' ? 'true' : 'false');
-          try { localStorage.setItem('strata-theme', next); } catch(e) {}
+          currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          updateThemeUI(currentTheme);
+          try { localStorage.setItem('strata-theme', currentTheme); } catch (_) {}
         });
       }
     })();
@@ -422,10 +432,12 @@ export async function renderStrataTimelineSection(
       const padDay = String(lastDay).padStart(2, '0');
       const bandAsOf = `${b.yearMonth}-${padDay}T23:59:59Z`;
 
-      return `<button type="button" class="strata-band" style="height:${heightPx}px" data-ym="${b.yearMonth}" data-slug="${b.slugs[0]}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" onclick="window.location.href='/timeline?as_of=${bandAsOf}'" aria-label="${b.yearMonth}: ${b.count} entries (${b.profiles.join(', ')})">
+      const layerText = `${b.count} layer${b.count > 1 ? 's' : ''}`;
+      return `<a href="/timeline?as_of=${bandAsOf}" class="strata-band" style="height:${heightPx}px" data-ym="${b.yearMonth}" data-slug="${b.slugs[0]}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" aria-label="${b.yearMonth} ${layerText}: ${b.profiles.join(', ')}${dimmed ? ' (after as-of date)' : ''}">
         <div style="font-weight:700;font-size:13px">${b.yearMonth}</div>
-        <div style="font-size:12px;color:var(--text-muted)">${b.count} layer${b.count > 1 ? 's' : ''}</div>
-      </button>`;
+        <div style="font-size:12px;color:var(--text-muted)">${layerText}</div>
+        ${dimmed ? '<div class="band-label-future">(future)</div>' : ''}
+      </a>`;
     })
     .join('\n      ');
 
@@ -455,7 +467,7 @@ export async function renderStrataTimelineSection(
       <form method="GET" action="/timeline" style="display:flex;gap:8px;align-items:center">
         <label for="as-of-input" style="font-size:14px">Time-travel as of:</label>
         <input id="as-of-input" name="as_of" type="date" value="${escapeHtml(defaultInputValue)}" class="ask-input" style="padding:4px 8px;width:auto" />
-        <button type="submit" class="btn btn-secondary" style="min-height:34px;padding:4px 12px">Apply</button>
+        <button type="submit" class="btn btn-secondary" style="min-height:44px;padding:6px 16px">Apply Date</button>
       </form>
     </div>
     ${asOfBanner}
@@ -696,32 +708,67 @@ export async function renderEntryDetailPage(
     )
     .join('\n');
 
-  // §5.2 Structured view qualifies when entry reaches L2 or L3
+  // §5.2 Structured view qualifies when entry reaches L2 or L3, or when explicitly requested
   const qualifiesForStructured = structureLevel === 'L2' || structureLevel === 'L3';
-  const activeView = requestedView === 'article' ? 'article' : qualifiesForStructured && entry.view === 'structured' ? 'structured' : 'article';
+  const activeView = requestedView === 'article' ? 'article' : requestedView === 'structured' ? 'structured' : qualifiesForStructured && entry.view === 'structured' ? 'structured' : 'article';
 
   let bodyHtml = '';
   if (activeView === 'structured' && profile.roles.length > 0) {
-    const sectionsHtml = profile.roles
-      .map((roleDef) => {
-        const matchingSpanIds = new Set(
-          annotations.filter((a) => a.role === roleDef.id && a.status === 'accepted').map((a) => a.span_id)
-        );
-        const matchingSpans = spans.filter((s) => matchingSpanIds.has(s.id));
-        const sectionText =
-          matchingSpans.length > 0
-            ? matchingSpans.map((s) => renderMarkdownToHtml(s.text_exact)).join('\n')
-            : '';
-        if (!sectionText) return '';
-        return `<section style="margin-bottom:24px;padding-left:16px;border-left:3px solid var(--role-${roleDef.id}, var(--accent))">
-          <h2 style="font-size:18px;margin:0 0 8px 0" title="Schema role: ${roleDef.id}">${escapeHtml(roleDef.label)}</h2>
-          <div class="reading-column">${sectionText}</div>
-        </section>`;
-      })
-      .filter(Boolean)
-      .join('\n');
+    if (spans.length > 0) {
+      // Sort spans by start_off (or ordinal) to preserve document order
+      const sortedSpans = [...spans].sort((a, b) => {
+        const offA = a.start_off ?? a.ordinal ?? 0;
+        const offB = b.start_off ?? b.ordinal ?? 0;
+        return offA - offB;
+      });
 
-    bodyHtml = sectionsHtml || `<div class="reading-column">${renderMarkdownToHtml(rev.body_md || (rev as any).body || '')}</div>`;
+      interface RenderBlock {
+        roleId?: string;
+        roleLabel?: string;
+        texts: string[];
+      }
+
+      const blocks: RenderBlock[] = [];
+
+      for (const span of sortedSpans) {
+        const acceptedAnn = annotations.find(
+          (a) => a.span_id === span.id && a.status === 'accepted'
+        );
+        const roleId = acceptedAnn ? acceptedAnn.role : undefined;
+        const roleDef = roleId
+          ? profile.roles.find((r) => r.id === roleId) || {
+              id: roleId,
+              label: roleId.charAt(0).toUpperCase() + roleId.slice(1),
+            }
+          : undefined;
+
+        const lastBlock = blocks[blocks.length - 1];
+        if (lastBlock && lastBlock.roleId === roleId) {
+          lastBlock.texts.push(span.text_exact);
+        } else {
+          blocks.push({
+            roleId,
+            roleLabel: roleDef?.label,
+            texts: [span.text_exact],
+          });
+        }
+      }
+
+      const renderedSections = blocks.map((block) => {
+        const combinedText = block.texts.map((t) => renderMarkdownToHtml(t)).join('\n');
+        if (block.roleId && block.roleLabel) {
+          return `<section class="role-section role-${escapeHtml(block.roleId)}" style="margin-bottom:24px;padding-left:16px;border-left:3px solid var(--role-${escapeHtml(block.roleId)}, var(--accent))">
+            <h2 style="font-size:18px;margin:0 0 8px 0">${escapeHtml(block.roleLabel)}</h2>
+            <div class="reading-column">${combinedText}</div>
+          </section>`;
+        }
+        return `<div class="unlabeled-span reading-column" style="margin-bottom:24px">${combinedText}</div>`;
+      });
+
+      bodyHtml = renderedSections.join('\n');
+    } else {
+      bodyHtml = `<div class="reading-column">${renderMarkdownToHtml(rev.body_md || (rev as any).body || '')}</div>`;
+    }
   } else {
     bodyHtml = `<div class="reading-column">${renderMarkdownToHtml(rev.body_md || (rev as any).body || '')}</div>`;
   }
@@ -802,7 +849,7 @@ export async function renderEntryDetailPage(
             <span class="chip">Structure: ${structureLevel}</span>
             ${
               qualifiesForStructured
-                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}${asOfAndPart}" class="btn btn-secondary" style="padding:4px 10px;min-height:30px;font-size:13px;text-decoration:none">Switch to ${activeView === 'structured' ? 'Article' : 'Structured'} view</a>`
+                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}${asOfAndPart}" class="btn btn-secondary" style="padding:6px 14px;min-height:44px;display:inline-flex;align-items:center;font-size:14px;text-decoration:none">Switch to ${activeView === 'structured' ? 'Article' : 'Structured'} view</a>`
                 : ''
             }
           </div>
@@ -2047,7 +2094,7 @@ export async function renderAdminWorkspacePage(
       : '<p style="color:var(--text-muted);font-size:13px">No active scoped constraints recorded.</p>';
 
   const content = `
-    <div class="later-thinking-banner" data-banner="alpha-warning" role="alert" style="margin-bottom:16px">
+    <div class="later-thinking-banner" data-banner="alpha-warning" role="note" style="margin-bottom:16px">
       <strong>${escapeHtml(ALPHA_WARNING_TEXT)}</strong>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px">
