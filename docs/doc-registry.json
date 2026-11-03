@@ -616,5 +616,13 @@
     "path": "docs/execution-reports/A046-wp-102-query-classification-upgrade-and-about-path.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A047",
+    "title": "WP-10.3 Self-Calibration Routing Calibration Rollback",
+    "class": "A",
+    "path": "docs/execution-reports/A047-wp-103-self-calibration-routing-calibration-rollback.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
