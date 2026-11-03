@@ -18,6 +18,8 @@ import {
 } from '@living-portfolio/core';
 import type { LivingPortfolioClient } from '@living-portfolio/client';
 import { STRATA_DESIGN_SYSTEM_CSS } from './styles.js';
+import { renderMarkdown } from './markdown.js';
+import { renderEntryRow, renderField, renderButton, renderChip } from './components/index.js';
 
 export interface WebDataClient {
   entries?: {
@@ -217,25 +219,24 @@ export function sanitizeHttpUrl(rawUrl?: string | null): string | null {
   }
 }
 
-function renderMarkdownToHtml(md: string): string {
+export function renderMarkdownToHtml(md: string): string {
   if (!md || typeof md !== 'string') return '';
-  return md
-    .split(/\n\s*\n/)
-    .map((block) => {
-      const trimmed = block.trim();
-      if (!trimmed) return '';
-      if (trimmed.startsWith('## ')) {
-        return `<h2>${escapeHtml(trimmed.slice(3))}</h2>`;
-      }
-      if (trimmed.startsWith('# ')) {
-        return `<h2>${escapeHtml(trimmed.slice(2))}</h2>`;
-      }
-      return `<p>${escapeHtml(trimmed)}</p>`;
-    })
-    .join('\n');
+  return renderMarkdown(md, { demoteHeadings: true });
 }
 
-function renderLayout(title: string, activePath: string, mainContentHtml: string): string {
+export interface RenderLayoutOptions {
+  nonce?: string;
+  headSlot?: string;
+  headerSlot?: string;
+  footerSlot?: string;
+}
+
+export function renderLayout(
+  title: string,
+  activePath: string,
+  mainContentHtml: string,
+  options?: RenderLayoutOptions
+): string {
   const cfg = loadConfig();
   const navItems = [
     { href: '/work', label: 'Work' },
@@ -271,19 +272,34 @@ function renderLayout(title: string, activePath: string, mainContentHtml: string
     ? `<div class="unofficial-fork-slot" data-slot="unofficial-fork-notice" style="margin-top:6px;font-size:13px;color:var(--text-muted)">${escapeHtml(cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE)}</div>`
     : '';
 
+  const nonceAttr = options?.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : '';
+
+  // Inject nonce into any <script> tags inside mainContentHtml if specified
+  let safeMainContent = mainContentHtml;
+  if (options?.nonce) {
+    safeMainContent = safeMainContent.replace(
+      /<script\b(?![^>]*\bnonce=)([^>]*)>/gi,
+      `<script nonce="${escapeHtml(options.nonce)}"$1>`
+    );
+  }
+
+  const headSlotHtml = options?.headSlot ? `  ${options.headSlot}\n` : '';
+  const headerSlotHtml = options?.headerSlot ? `    ${options.headerSlot}\n` : '';
+  const footerSlotHtml = options?.footerSlot ? `    ${options.footerSlot}\n` : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-${robotsMetaHtml}  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_NAME)}</title>
-  <style>${STRATA_DESIGN_SYSTEM_CSS}</style>
+${robotsMetaHtml}${headSlotHtml}  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_NAME)}</title>
+  <style${nonceAttr}>${STRATA_DESIGN_SYSTEM_CSS}</style>
 </head>
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
   ${stagingBannerHtml}
   <header class="site-header">
-    <nav class="site-nav" aria-label="Primary navigation">
+${headerSlotHtml}    <nav class="site-nav" aria-label="Primary navigation">
       <a href="/" class="site-brand"${activePath === '/' ? ' aria-current="page"' : ''}>${brandHtml}</a>
       <div class="nav-links">
         ${navHtml}
@@ -292,10 +308,10 @@ ${robotsMetaHtml}  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_
     </nav>
   </header>
   <main class="site-main" id="main-content">
-    ${mainContentHtml}
+    ${safeMainContent}
   </main>
   <footer class="site-footer" style="max-width:var(--layout-max);margin:48px auto 24px;padding:16px 24px;border-top:1px solid var(--rule);font-size:14px;color:var(--text-muted)">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+${footerSlotHtml}    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px">
       <nav aria-label="Secondary navigation" style="display:flex;gap:16px;flex-wrap:wrap">
         <a href="/about">About</a>
         <a href="/now">Now</a>
@@ -307,7 +323,7 @@ ${robotsMetaHtml}  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_
     </div>
     ${unofficialForkSlotHtml}
   </footer>
-  <script>
+  <script${nonceAttr}>
     (function() {
       const btn = document.getElementById('theme-toggle');
       function getStoredTheme() {
@@ -556,22 +572,16 @@ export async function renderHomePage(repo: WebDataClient): Promise<string> {
         acceptedRelations
       );
 
-      const dateLabel = (rev.valid_from || rev.written_at).slice(0, 10);
       const bodyText = rev.body_md || (rev as any).body || '';
       const firstSentence = bodyText.replace(/#+\s+[^\n]+\n+/g, '').split('.')[0] + '.';
 
-      return `<li class="entry-row">
-        <div class="entry-row-top">
-          <a href="/work/${escapeHtml(entry.slug)}" class="entry-title-link">${escapeHtml(entry.title)}</a>
-          <div class="entry-meta">
-            <time datetime="${dateLabel}">${dateLabel}</time>
-            <span class="chip">${level} · ${escapeHtml(entry.profile)}</span>
-            ${rev.is_hindsight ? '<span class="chip">Hindsight retrospective</span>' : ''}
-            ${alerts.length > 0 ? '<span class="chip" style="border-color:var(--status-warn)">Updated later</span>' : ''}
-          </div>
-        </div>
-        <div style="color:var(--text-muted);max-width:65ch">${escapeHtml(firstSentence)}</div>
-      </li>`;
+      return renderEntryRow(entry, {
+        basePath: '/work',
+        level,
+        isHindsight: rev.is_hindsight,
+        hasLaterUpdates: alerts.length > 0,
+        summary: firstSentence,
+      });
     })
   );
 
@@ -934,25 +944,16 @@ export async function renderWorkOrWritingPage(
       annotations,
       claims,
     });
-    const dateLabel = (rev.valid_from || rev.written_at).slice(0, 10);
-    const confirmedChips = facets
-      .filter((f) => f.status === 'confirmed')
-      .map((f) => `<span class="chip">${escapeHtml(f.key)}: ${escapeHtml(String(f.value))}</span>`)
-      .join(' ');
+    const confirmedFacets = facets.filter((f) => f.status === 'confirmed');
 
-    const asOfQuery = asOfInfo && asOfInfo.valid ? `?as_of=${encodeURIComponent(asOfInfo.raw)}` : '';
-    const entryHref = mode === 'work' ? `/work/${entry.slug}${asOfQuery}` : `/writing/${entry.slug}${asOfQuery}`;
-
-    rows.push(`<li class="entry-row">
-      <div class="entry-row-top">
-        <a href="${entryHref}" class="entry-title-link">${escapeHtml(entry.title)}</a>
-        <div class="entry-meta">
-          <time datetime="${dateLabel}">${dateLabel}</time>
-          <span class="chip">${level} · ${escapeHtml(entry.profile)}</span>
-        </div>
-      </div>
-      ${confirmedChips ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${confirmedChips}</div>` : ''}
-    </li>`);
+    rows.push(
+      renderEntryRow(entry, {
+        basePath: mode === 'work' ? '/work' : '/writing',
+        asOf: asOfInfo && asOfInfo.valid ? asOfInfo.raw : undefined,
+        level,
+        facets: confirmedFacets.map((f) => ({ key: f.key, value: f.value })),
+      })
+    );
   }
 
   const title = mode === 'work' ? 'Work & Case Studies' : 'Writing & Chronological Log';
@@ -1065,14 +1066,7 @@ export async function renderBuildVenturePage(
 
   const devLogListHtml = devLog.length > 0
     ? `<ul class="entry-list" style="margin-top:8px">
-        ${devLog.map((e) => `
-          <li class="entry-row">
-            <div class="entry-row-top">
-              <a href="/work/${escapeHtml(e.slug)}" class="entry-title-link">${escapeHtml(e.title)}</a>
-              <span class="chip">${escapeHtml(e.profile)}</span>
-            </div>
-          </li>
-        `).join('\n')}
+        ${devLog.map((e) => renderEntryRow(e, { basePath: '/work' })).join('\n')}
       </ul>`
     : `<div class="empty-state" style="padding:24px;text-align:center;border:1px dashed var(--rule);border-radius:var(--radius-card);margin-top:12px">
         <p style="color:var(--text-muted);font-size:14px;margin:0">No attached dev-log entries recorded for this venture yet.</p>
@@ -1189,13 +1183,11 @@ export async function renderTimelinePage(
     `;
   } else {
     const listHtml = filtered
-      .map(
-        (e) => `<li class="entry-row">
-          <div class="entry-row-top">
-            <a href="/work/${e.slug}${asOfQuery}" class="entry-title-link">${escapeHtml(e.title)}</a>
-            <span class="chip">${escapeHtml(e.profile)}</span>
-          </div>
-        </li>`
+      .map((e) =>
+        renderEntryRow(e, {
+          basePath: '/work',
+          asOf: asOfInfo && asOfInfo.valid ? asOfInfo.raw : undefined,
+        })
       )
       .join('\n');
     listContentHtml = `<ul class="entry-list">${listHtml}</ul>`;
@@ -2126,6 +2118,18 @@ export async function renderAdminWorkspacePage(
       <button type="button" class="btn btn-secondary" id="btn-dismiss-walkthrough" style="padding:2px 8px;font-size:12px">Dismiss</button>
     </div>
 
+    <!-- §12.6 Header Status Area (20261020-UI-06) -->
+    <div class="admin-header-status" role="region" aria-label="System status">
+      <div style="display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap">
+        <strong>Status:</strong>
+        <span class="chip" id="admin-status-build">Static rebuild: Idle</span>
+        <span class="chip" id="admin-status-answering">${answeringEnabledInitial ? 'Answering: Active' : 'Answering: Paused'}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:var(--space-2)">
+        <span class="chip" style="border-color:var(--role-outcome)">● Operational</span>
+      </div>
+    </div>
+
     <!-- §12.6 Three-Pane Entry Workspace -->
     <div class="admin-shell">
       <!-- Pane 1: Entries & Filters -->
@@ -2227,11 +2231,31 @@ export async function renderAdminWorkspacePage(
             </div>
           </div>
 
-          <div style="margin-bottom:12px">
-            <label for="entry-body" style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">
-              Body (Markdown + GFM — only a body and date are required; structure is optional)
-            </label>
-            <textarea id="entry-body" rows="8" class="ask-input" style="width:100%;font-family:var(--font-code);font-size:14px" placeholder="Paste any existing write-up or answer the profile prompts..."></textarea>
+          <div class="editor-workspace" style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <label for="entry-body" style="font-size:13px;font-weight:600;display:block">
+                Body (Markdown + GFM — min 60vh editor workspace; only body and date required)
+              </label>
+              <div style="display:flex;gap:4px">
+                <button type="button" class="btn btn-secondary" id="btn-toggle-editor-mode" style="padding:2px 8px;font-size:12px">Preview</button>
+              </div>
+            </div>
+            <div class="editor-toolbar" role="toolbar" aria-label="Markdown formatting toolbar">
+              <button type="button" data-action="h2" title="Insert H2 Heading">H2</button>
+              <button type="button" data-action="h3" title="Insert H3 Heading">H3</button>
+              <button type="button" data-action="bold" title="Insert Bold Text"><strong>B</strong></button>
+              <button type="button" data-action="italic" title="Insert Italic Text"><em>I</em></button>
+              <button type="button" data-action="list" title="Insert Bullet List">• List</button>
+              <button type="button" data-action="code" title="Insert Code Block">&lt;/&gt;</button>
+              <button type="button" data-action="quote" title="Insert Blockquote">“ Quote</button>
+              <button type="button" data-action="link" title="Insert Link">🔗 Link</button>
+            </div>
+            <textarea id="entry-body" rows="12" class="ask-input editor-textarea" placeholder="Paste any existing write-up or write in Markdown / GFM..."></textarea>
+            <div id="entry-body-preview" class="editor-preview reading-column" style="display:none;min-height:var(--editor-min-height, 60vh);padding:16px;background:var(--surface-raised);border:1px solid var(--rule);border-radius:0 0 var(--radius-control) var(--radius-control);overflow-y:auto"></div>
+            <div class="editor-statusbar">
+              <span id="editor-word-count">0 words (soft cap: 3,000)</span>
+              <span id="editor-word-warning" style="display:none;color:var(--status-warn);font-weight:600">Entry exceeds 3,000 words. Consider breaking into a multi-part series for readability.</span>
+            </div>
             <input type="hidden" id="entry-preview-token" name="redactionPreviewToken" value="" />
           </div>
 
@@ -2535,7 +2559,10 @@ export async function renderAdminWorkspacePage(
             const hindsightCheck = document.getElementById('entry-hindsight');
             if (hindsightCheck) hindsightCheck.checked = !!currentRev?.is_hindsight;
             const bodyEl = document.getElementById('entry-body');
-            if (bodyEl) bodyEl.value = currentRev?.body_md || '';
+            if (bodyEl) {
+              bodyEl.value = currentRev?.body_md || '';
+              updateWordCount();
+            }
 
             if (modeHeading) modeHeading.textContent = 'Edit Entry: ' + entry.title;
             if (stateBadge) stateBadge.textContent = 'State: ' + entry.visibility.toUpperCase();
@@ -3274,10 +3301,24 @@ export async function renderAdminWorkspacePage(
           redactBtn.addEventListener('click', runRedactionCheck);
         }
 
-        // Token invalidated after a body edit
+        function updateWordCount() {
+          const bodyEl = document.getElementById('entry-body');
+          const countEl = document.getElementById('editor-word-count');
+          const warnEl = document.getElementById('editor-word-warning');
+          if (!bodyEl || !countEl) return;
+          const text = bodyEl.value || '';
+          const words = text.trim() ? text.trim().split(/\\s+/).length : 0;
+          countEl.textContent = words + ' words (soft cap: 3,000)';
+          if (warnEl) {
+            warnEl.style.display = words > 3000 ? 'block' : 'none';
+          }
+        }
+
+        // Token invalidated after a body edit & word count update
         const bodyInputEl = document.getElementById('entry-body');
         if (bodyInputEl) {
           bodyInputEl.addEventListener('input', function() {
+            updateWordCount();
             if (currentPreviewToken) {
               currentPreviewToken = '';
               const tokenInput = document.getElementById('entry-preview-token');
@@ -3285,6 +3326,90 @@ export async function renderAdminWorkspacePage(
               const badge = document.getElementById('preview-token-badge');
               if (badge) badge.remove();
               redactBox.innerHTML = '<div class="later-thinking-banner" data-state="invalidated" role="status">Body edited since last check — preview token invalidated. Re-run "Preview Redaction (§4.3)" before publishing.</div>';
+            }
+          });
+        }
+
+        // Markdown Formatting Toolbar Actions (20261020-UI-01)
+        const editorToolbar = document.querySelector('.editor-toolbar');
+        if (editorToolbar) {
+          editorToolbar.addEventListener('click', function(e) {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return;
+            const action = btn.getAttribute('data-action');
+            const textarea = document.getElementById('entry-body');
+            if (!textarea) return;
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const sel = textarea.value.substring(start, end);
+            const needsLeadingNewline = start > 0 && textarea.value[start - 1] !== '\\n';
+            const prefix = needsLeadingNewline ? '\\n\\n' : '';
+            let replacement = '';
+
+            switch (action) {
+              case 'h2':
+                replacement = prefix + '## ' + (sel || 'Heading 2');
+                break;
+              case 'h3':
+                replacement = prefix + '### ' + (sel || 'Heading 3');
+                break;
+              case 'bold':
+                replacement = '**' + (sel || 'bold text') + '**';
+                break;
+              case 'italic':
+                replacement = '*' + (sel || 'italic text') + '*';
+                break;
+              case 'list':
+                replacement = prefix + '- ' + (sel || 'List item');
+                break;
+              case 'code':
+                replacement = prefix + '\x60\x60\x60\\n' + (sel || '// code') + '\\n\x60\x60\x60';
+                break;
+              case 'quote':
+                replacement = prefix + '> ' + (sel || 'Blockquote');
+                break;
+              case 'link':
+                replacement = '[' + (sel || 'link text') + '](https://example.com)';
+                break;
+            }
+
+            if (replacement) {
+              textarea.setRangeText(replacement, start, end, 'end');
+              textarea.focus();
+              updateWordCount();
+            }
+          });
+        }
+
+        // Markdown Source / Preview Toggle (20261020-UI-01)
+        const toggleEditorModeBtn = document.getElementById('btn-toggle-editor-mode');
+        const previewPane = document.getElementById('entry-body-preview');
+        if (toggleEditorModeBtn && previewPane && bodyInputEl) {
+          toggleEditorModeBtn.addEventListener('click', function() {
+            const isEditing = bodyInputEl.style.display !== 'none';
+            if (isEditing) {
+              bodyInputEl.style.display = 'none';
+              previewPane.style.display = 'block';
+              toggleEditorModeBtn.textContent = 'Edit source';
+              const rawMd = bodyInputEl.value;
+              previewPane.innerHTML = rawMd
+                .split(/\\n\\s*\\n/)
+                .map(function(block) {
+                  const t = block.trim();
+                  if (!t) return '';
+                  if (t.startsWith('### ')) return '<h3>' + escapeClientHtml(t.slice(4)) + '</h3>';
+                  if (t.startsWith('## ')) return '<h2>' + escapeClientHtml(t.slice(3)) + '</h2>';
+                  if (t.startsWith('# ')) return '<h2>' + escapeClientHtml(t.slice(2)) + '</h2>';
+                  if (t.startsWith('> ')) return '<blockquote class="reading-quote"><p>' + escapeClientHtml(t.slice(2)) + '</p></blockquote>';
+                  if (t.startsWith('\x60\x60\x60')) return '<pre class="code-block"><code>' + escapeClientHtml(t.replace(/^\x60\x60\x60[a-z]*\\n?/, '').replace(/\x60\x60\x60$/, '')) + '</code></pre>';
+                  return '<p>' + escapeClientHtml(t) + '</p>';
+                })
+                .join('\\n');
+            } else {
+              bodyInputEl.style.display = 'block';
+              previewPane.style.display = 'none';
+              toggleEditorModeBtn.textContent = 'Preview';
+              bodyInputEl.focus();
             }
           });
         }

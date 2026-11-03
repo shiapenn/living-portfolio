@@ -16,6 +16,23 @@ import {
   renderHomePage,
   renderTimelinePage,
   renderWorkOrWritingPage,
+  renderMarkdown,
+  sanitizeHtml,
+  renderInlineMarkdown,
+  PRIMITIVE_TOKENS,
+  SEMANTIC_TOKENS_LIGHT,
+  SEMANTIC_TOKENS_DARK,
+  COMPONENT_TOKENS,
+  renderField,
+  renderButton,
+  renderChip,
+  renderEntryRow,
+  renderEntryArticleWithSlots,
+  renderEntryStructuredWithSlots,
+  renderVentureWithSlots,
+  renderHomeWithSlots,
+  renderTimelineWithSlots,
+  renderLayout,
 } from './index.js';
 
 describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', () => {
@@ -624,6 +641,189 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
 
       const adminRes = await app.fetch(new Request('http://localhost/admin/login'));
       expect(adminRes.status).toBe(200);
+    });
+  });
+
+  describe('WP-11.4: Full Markdown Engine, Design Tokens & Responsive Multi-Pane Layout', () => {
+    it('1. Markdown Engine parses CommonMark/GFM with demotion, fenced code, tables, and sanitization (F4, 20261020-UI-01)', () => {
+      const markdown = `
+# Main Header
+Introductory text with **bold** and *italic* and \`inline code\`.
+
+## Section Two
+A list of items:
+- Item one
+- Item two with [safe link](/work/test)
+
+### Subsection Three
+\`\`\`typescript
+const x: number = 42;
+console.log(x);
+\`\`\`
+
+> A notable insight from production.
+
+| Metric | Redis Redlock | Postgres 15 |
+|---|---|---|
+| Contention | High | Zero |
+| Latency P99 | 62ms | 20ms |
+
+<script>alert('xss')</script>
+<a href="javascript:steal()">bad link</a>
+      `;
+
+      const rendered = renderMarkdown(markdown);
+
+      // Heading demotion: # demotes to <h2>, ## to <h3>, ### to <h4>
+      expect(rendered).toContain('<h2>Main Header</h2>');
+      expect(rendered).toContain('<h3>Section Two</h3>');
+      expect(rendered).toContain('<h4>Subsection Three</h4>');
+      expect(rendered).not.toContain('<h1>Main Header</h1>');
+
+      // Inline styles and safe links
+      expect(rendered).toContain('<strong>bold</strong>');
+      expect(rendered).toContain('<em>italic</em>');
+      expect(rendered).toContain('<code class="inline-code">inline code</code>');
+      expect(rendered).toContain('<a href="/work/test">safe link</a>');
+
+      // Fenced code block with language class
+      expect(rendered).toContain('<pre class="code-block language-typescript"><code class="language-typescript">const x: number = 42;\nconsole.log(x);</code></pre>');
+
+      // Blockquote
+      expect(rendered).toContain('<blockquote class="reading-quote"><p>A notable insight from production.</p></blockquote>');
+
+      // Table
+      expect(rendered).toContain('<table class="data-table">');
+      expect(rendered).toContain('<th>Metric</th>');
+      expect(rendered).toContain('<th>Redis Redlock</th>');
+      expect(rendered).toContain('<td>High</td>');
+
+      // Security sanitization: strip executable script tags and escape raw tags
+      expect(rendered).not.toContain('<script>');
+      expect(rendered).toContain('&lt;script&gt;');
+      expect(rendered).not.toContain('href="javascript:steal()"');
+    });
+
+    it('2. Multi-tier design tokens define primitives, semantics, scale, and layout-max (20261020-UI-02)', () => {
+      // Scale 14/16/18/21/25/30/36/44
+      expect(PRIMITIVE_TOKENS).toContain('--font-size-1: 14px;');
+      expect(PRIMITIVE_TOKENS).toContain('--font-size-2: 16px;');
+      expect(PRIMITIVE_TOKENS).toContain('--font-size-3: 18px;');
+      expect(PRIMITIVE_TOKENS).toContain('--font-size-4: 21px;');
+      expect(PRIMITIVE_TOKENS).toContain('--font-size-5: 25px;');
+      expect(PRIMITIVE_TOKENS).toContain('--font-size-6: 30px;');
+      expect(PRIMITIVE_TOKENS).toContain('--font-size-7: 36px;');
+      expect(PRIMITIVE_TOKENS).toContain('--font-size-8: 44px;');
+
+      // Breakpoints
+      expect(PRIMITIVE_TOKENS).toContain('--bp-sm: 480px;');
+      expect(PRIMITIVE_TOKENS).toContain('--bp-md: 768px;');
+      expect(PRIMITIVE_TOKENS).toContain('--bp-lg: 1024px;');
+      expect(PRIMITIVE_TOKENS).toContain('--bp-xl: 1280px;');
+
+      // Semantic tokens
+      expect(SEMANTIC_TOKENS_LIGHT).toContain('--surface-page: #F3F5F4;');
+      expect(SEMANTIC_TOKENS_LIGHT).toContain('--surface-raised: #FFFFFF;');
+      expect(SEMANTIC_TOKENS_LIGHT).toContain('--border-control: #6B7B88;');
+      expect(SEMANTIC_TOKENS_LIGHT).toContain('--layout-max: 1180px;');
+      expect(SEMANTIC_TOKENS_LIGHT).toContain('--size-layout-max: 1180px;');
+      expect(SEMANTIC_TOKENS_LIGHT).toContain('--measure-reading: 68ch;');
+
+      // Dark semantic tokens
+      expect(SEMANTIC_TOKENS_DARK).toContain('--surface-page: #0F1A22;');
+      expect(SEMANTIC_TOKENS_DARK).toContain('--surface-raised: #16232D;');
+
+      // Component tokens
+      expect(COMPONENT_TOKENS).toContain('--admin-nav-width: 240px;');
+      expect(COMPONENT_TOKENS).toContain('--admin-inspector-width: 340px;');
+      expect(COMPONENT_TOKENS).toContain('--editor-min-height: 60vh;');
+    });
+
+    it('3. Component layer: Field, Button, Chip, and EntryRow abstractions (20261020-UI-04)', () => {
+      // Field abstraction
+      const fieldHtml = renderField({
+        id: 'user-email',
+        label: 'Email address',
+        hint: 'We will send your escalation receipt here',
+        error: 'Please enter a valid email address',
+        required: true,
+        controlHtml: '<input type="email" id="user-email" class="ask-input" />',
+      });
+      expect(fieldHtml).toContain('for="user-email"');
+      expect(fieldHtml).toContain('id="user-email-hint"');
+      expect(fieldHtml).toContain('id="user-email-error"');
+      expect(fieldHtml).toContain('role="alert"');
+      expect(fieldHtml).toContain('Email address');
+
+      // Button abstraction
+      const btnPrimary = renderButton({ label: 'Save Draft', variant: 'primary' });
+      expect(btnPrimary).toContain('class="btn btn-primary btn-md"');
+
+      const btnLink = renderButton({ label: 'View Profile', href: '/about', variant: 'secondary' });
+      expect(btnLink).toContain('<a href="/about"');
+      expect(btnLink).toContain('class="btn btn-secondary btn-md"');
+
+      const btnLoading = renderButton({ label: 'Publishing...', loading: true, disabled: true });
+      expect(btnLoading).toContain('aria-busy="true"');
+      expect(btnLoading).toContain('disabled');
+
+      // Chip abstraction
+      const chipFilter = renderChip({ label: 'Worked', kind: 'filter', selected: true });
+      expect(chipFilter).toContain('chip chip-filter active');
+
+      const chipProvisional = renderChip({ label: 'Suggested Role', provisional: true });
+      expect(chipProvisional).toContain('chip-provisional chip-suggested');
+
+      // Unified EntryRow
+      const entryRow = renderEntryRow({
+        id: 'e1',
+        title: 'Unified Design Token Pipeline',
+        slug: 'token-pipeline',
+        profile: 'case-study',
+        valid_from: '2026-10-15',
+        outcome: 'worked',
+      }, {
+        basePath: '/work',
+        level: 'L2',
+        summary: 'A multi-tier design token architecture for living-portfolio.',
+      });
+      expect(entryRow).toContain('class="entry-row"');
+      expect(entryRow).toContain('href="/work/token-pipeline"');
+      expect(entryRow).toContain('Unified Design Token Pipeline');
+      expect(entryRow).toContain('L2 · case-study');
+      expect(entryRow).toContain('A multi-tier design token architecture for living-portfolio.');
+    });
+
+    it('4. Admin workspace renders editor workspace with 60vh min-height, formatting toolbar, and header status area (20261020-UI-01, 20261020-UI-06)', async () => {
+      const html = await renderAdminWorkspacePage(repo);
+      expect(html).toContain('class="admin-header-status"');
+      expect(html).toContain('class="editor-workspace"');
+      expect(html).toContain('class="editor-toolbar"');
+      expect(html).toContain('data-action="h2"');
+      expect(html).toContain('data-action="bold"');
+      expect(html).toContain('data-action="code"');
+      expect(html).toContain('id="editor-word-count"');
+      expect(html).toContain('soft cap: 3,000');
+      expect(html).toContain('id="btn-toggle-editor-mode"');
+      expect(html).toContain('id="entry-body-preview"');
+    });
+
+    it('5. Slot layout composers fulfill core slot contracts and renderLayout supports nonces (20261020-UI-10)', () => {
+      const articleHtml = renderEntryArticleWithSlots({
+        header: '<h1>Article Title</h1>',
+        contextStrip: '<div>Context badges</div>',
+        body: '<p>Article body</p>',
+        marginRail: '<div>Margin rail notes</div>',
+      });
+      expect(articleHtml).toContain('class="entry-article-view"');
+      expect(articleHtml).toContain('class="entry-margin-rail"');
+
+      // Nonce support in layout
+      const layoutWithNonce = renderLayout('Test Page', '/test', '<p>Hello</p><script>console.log("hi")</script>', {
+        nonce: 'rAnd0mN0nc3',
+      });
+      expect(layoutWithNonce).toContain('<style nonce="rAnd0mN0nc3">');
+      expect(layoutWithNonce).toContain('<script nonce="rAnd0mN0nc3">');
     });
   });
 });
