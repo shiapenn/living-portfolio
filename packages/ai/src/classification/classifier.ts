@@ -8,7 +8,7 @@ const ABOUT_PATTERNS = [
   /\byour\s+(?:background|experience|bio|career|resume|cv)\b/i,
   /\b(?:who\s+wrote|author\s+bio|about\s+the\s+site)\b/i,
   /\bwhat\s+(?:tech\s+)?stack\s+powers\s+(?:this|the)\s+(?:site|portfolio)\b/i,
-  /\bhow\s+does\s+(?:this|the)?\s*(?:living\s+portfolio|site)(?:\s+architecture|\s+system)?\s+work\b/i,
+  /\bhow\s+does\s+(?:(?:this|the)\s+)?(?:living\s+portfolio|site)(?:\s+(?:architecture|system))?\s+work\b/i,
   /\b(?:site\s+architecture|architecture\s+of\s+this\s+site|living\s+portfolio)\b/i,
   /\b(?:contact\s+(?:the\s+)?author|how\s+can\s+i\s+contact|get\s+in\s+touch)\b/i,
   /\b(?:verified\s+credentials|gpg\s+signatures?|domain\s+ownership)\b/i,
