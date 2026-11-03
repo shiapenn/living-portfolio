@@ -656,5 +656,13 @@
     "path": "docs/handovers/H011-wp-10-gate-closure-and-wp-11-kickoff.md",
     "status": "active",
     "supersedes": "H010"
+  },
+  {
+    "id": "A051",
+    "title": "WP-11.1: Debounced Publish & Ask Flow Repair",
+    "class": "A",
+    "path": "docs/execution-reports/A051-wp-111-debounced-publish-ask-flow-repair.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
