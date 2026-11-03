@@ -36,22 +36,65 @@ function sanitizeUrl(rawUrl: string): string | null {
 }
 
 /**
- * Sanitizes raw HTML input to strip dangerous tags and attributes.
+ * Sanitizes raw HTML input to strip dangerous tags and attributes
+ * using an allowlist tokenizer approach that avoids incomplete regex replacements.
  */
 export function sanitizeHtml(html: string): string {
-  // Strip <script>, <iframe>, <object>, <embed>, <style> and their contents
-  let safe = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-  safe = safe.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '');
-  safe = safe.replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '');
-  safe = safe.replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '');
-  safe = safe.replace(/<embed\b[^>]*>/gi, '');
-  
-  // Strip inline event handlers like onclick=, onerror=, onload=
-  safe = safe.replace(/\s+on[a-z]+\s*=\s*(?:'[^']*'|"[^"]*"|[^\s>]+)/gi, '');
-  // Strip javascript: hrefs / srcs
-  safe = safe.replace(/(href|src)\s*=\s*['"]\s*javascript:[^'"]*['"]/gi, '$1="#"');
+  if (!html || typeof html !== 'string') return '';
 
-  return safe;
+  let clean = '';
+  let inScript = false;
+  let inStyle = false;
+
+  const tokens = html.split(/(<[^>]*>)/g);
+  for (const token of tokens) {
+    if (token.startsWith('<') && token.endsWith('>')) {
+      const match = token.match(/^<\s*(\/?\s*[a-zA-Z0-9]+)([\s\S]*?)>$/);
+      if (!match) continue;
+      const rawTag = match[1].trim().toLowerCase();
+      const isClosing = rawTag.startsWith('/');
+      const tagName = isClosing ? rawTag.slice(1).trim() : rawTag;
+
+      if (tagName === 'script') {
+        inScript = !isClosing;
+        continue;
+      }
+      if (tagName === 'style') {
+        inStyle = !isClosing;
+        continue;
+      }
+      if (inScript || inStyle) continue;
+      if (['iframe', 'object', 'embed'].includes(tagName)) continue;
+
+      if (isClosing) {
+        clean += '</' + tagName + '>';
+        continue;
+      }
+
+      // Safe attribute builder (disallow on* handlers and javascript: URLs)
+      let safeAttrs = '';
+      const attrStr = match[2];
+      const attrRegex = /([a-zA-Z0-9_-]+)(?:\s*=\s*(?:'([^']*)'|"([^"]*)"|([^\s>]+)))?/g;
+      let m: RegExpExecArray | null;
+      while ((m = attrRegex.exec(attrStr)) !== null) {
+        const attrName = m[1].toLowerCase();
+        if (attrName.startsWith('on')) continue;
+        let attrVal = m[2] !== undefined ? m[2] : m[3] !== undefined ? m[3] : m[4] !== undefined ? m[4] : '';
+        if ((attrName === 'href' || attrName === 'src') && /^javascript:/i.test(attrVal.trim())) {
+          attrVal = '#';
+        }
+        safeAttrs += ' ' + attrName + '="' + escapeHtml(attrVal) + '"';
+      }
+
+      clean += '<' + tagName + safeAttrs + '>';
+    } else {
+      if (!inScript && !inStyle) {
+        clean += token;
+      }
+    }
+  }
+
+  return clean;
 }
 
 /**
