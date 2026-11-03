@@ -6,7 +6,7 @@ test.describe.serial('WP-4.2: Visitor Escalation Loop and Booking System (202610
     // Navigate with prefilled topic and facets from Ask routing
     await page.goto('/book?q=Distributed%20Locking%20in%20Postgres&facets=scale%3Ahigh%2Cdatabase%3Apostgres');
 
-    await expect(page.locator('h1')).toContainText('Book a Live Conversation');
+    await expect(page.locator('h1')).toContainText('Book a conversation');
     await expect(page.locator('#book-topic')).toHaveValue('Distributed Locking in Postgres');
     await expect(page.locator('#book-facets')).toHaveValue('scale:high,database:postgres');
 
@@ -81,7 +81,7 @@ test.describe.serial('WP-4.2: Visitor Escalation Loop and Booking System (202610
     await page.goto('/admin');
     const inboxHeading = page.locator('#inbox-heading');
     await expect(inboxHeading).toBeVisible();
-    await expect(inboxHeading).toContainText('Escalation Inbox');
+    await expect(inboxHeading).toContainText('Inbox');
 
     // Verify contact details are displayed on the admin escalation card
     const card = page.locator('.escalation-card').first();

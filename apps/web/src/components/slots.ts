@@ -109,7 +109,7 @@ export function renderHomeWithSlots(slots: HomeSlots): string {
       <section class="home-entries-slot" aria-label="Featured Entries">
         ${slots.entryList}
       </section>
-      <section class="home-ask-slot" aria-label="Ask the Portfolio">
+      <section class="home-ask-slot" aria-label="Ask about my work">
         ${slots.askField}
       </section>
     </div>

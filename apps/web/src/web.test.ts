@@ -83,7 +83,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
 
   it('renders Work, Build Ventures, Ask, and 3-Pane Admin Workspace (§5.1, §12.6)', async () => {
     const workHtml = await renderWorkOrWritingPage(repo, 'work');
-    expect(workHtml).toContain('Work &amp; Case Studies');
+    expect(workHtml).toContain('>Work</h1>');
 
     const buildHtml = await renderBuildPage(repo);
     expect(buildHtml).toContain('Strata Engine');
@@ -93,9 +93,11 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     expect(askHtml).toContain('aria-live="polite"');
 
     const adminHtml = await renderAdminWorkspacePage(repo);
-    expect(adminHtml).toContain('Owner Admin Workspace');
-    expect(adminHtml).toContain('L0 Text');
-    expect(adminHtml).toContain('L3 Claims');
+    expect(adminHtml).toContain('Admin Workspace');
+    expect(adminHtml).toContain('data-level="L0"');
+    expect(adminHtml).toContain('Text');
+    expect(adminHtml).toContain('data-level="L3"');
+    expect(adminHtml).toContain('Claims');
     expect(adminHtml).toContain('chip-suggested');
   });
 
@@ -190,7 +192,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     // Script includes handling for needs_context and rate_limited
     expect(askHtml).toContain('needs_context');
     expect(askHtml).toContain('rate_limited');
-    expect(askHtml).toContain('Unable to reach server');
+    expect(askHtml).toContain("Can\\'t reach the server");
     expect(askHtml).not.toContain('Origin unreachable');
   });
 
@@ -202,7 +204,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
 
   it('renders Booking page with prefilled topic and facets without alert() (20261020-UX-11)', () => {
     const html = renderBookPage('How did you scale postgres?', 'architecture, databases');
-    expect(html).toContain('Book a Live Conversation (Tier 3)');
+    expect(html).toContain('Book a conversation');
     expect(html).toContain('id="booking-form"');
     expect(html).toContain('id="book-topic"');
     expect(html).toContain('value="How did you scale postgres?"');
@@ -289,7 +291,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     });
 
     const adminHtml = await renderAdminWorkspacePage(repo);
-    expect(adminHtml).toContain('Escalation Inbox — Tier 2 Review');
+    expect(adminHtml).toContain('Inbox (');
     expect(adminHtml).toContain(saved.id);
     expect(adminHtml).toContain('Do you offer fractional CTO services?');
     expect(adminHtml).toContain('escalation-draft-textarea');
@@ -323,7 +325,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
 
       // Applying today's date should include recent entries up to today
       const htmlToday = await renderTimelinePage(repo, todayIso);
-      expect(htmlToday).toContain('Records active as of');
+      expect(htmlToday).toContain('entries as of');
       expect(htmlToday).toContain('Advisory Locks, Revisited: Dropping Redis for Postgres 15');
       expect(htmlToday).toContain('Local CPU Embeddings with ONNX Runtime on Arm64');
     });
@@ -517,7 +519,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
       const html = renderAdminSetupPage();
 
       // Stepper header and progress bar
-      expect(html).toContain('Step 1 of 6 · First-Run Wizard (§13.13)');
+      expect(html).toContain('Step 1 of 6 · First-Run Wizard');
       expect(html).toContain('id="wizard-progress-fill"');
       expect(html).toContain('id="step-lbl-1"');
       expect(html).toContain('id="step-lbl-6"');
@@ -590,7 +592,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
       expect(html).toContain('id="redaction-preview-drawer"');
       expect(html).toContain('role="dialog"');
       expect(html).toContain('id="redaction-drawer-title"');
-      expect(html).toContain('Redaction Review Drawer (§4.3)');
+      expect(html).toContain('Redaction Review Drawer');
       expect(html).toContain('id="btn-close-redaction-drawer"');
 
       // Drawer actions and pass sections
@@ -790,7 +792,7 @@ console.log(x);
       expect(entryRow).toContain('class="entry-row"');
       expect(entryRow).toContain('href="/work/token-pipeline"');
       expect(entryRow).toContain('Unified Design Token Pipeline');
-      expect(entryRow).toContain('L2 · case-study');
+      expect(entryRow).toContain('Structured');
       expect(entryRow).toContain('A multi-tier design token architecture for living-portfolio.');
     });
 

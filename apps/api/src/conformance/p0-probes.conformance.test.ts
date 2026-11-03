@@ -366,7 +366,7 @@ describe('AUD-2026-10-19 P0 Regression Probes (Bound to docs/audits/register.yml
 
       const workRes = await bundledApp.request('/work');
       expect(workRes.status).toBe(200);
-      expect(await workRes.text()).toContain('Case Studies');
+      expect(await workRes.text()).toContain('>Work</h1>');
 
       const timelineRes = await bundledApp.request('/timeline');
       expect(timelineRes.status).toBe(200);

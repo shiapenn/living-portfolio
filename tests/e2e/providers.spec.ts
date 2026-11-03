@@ -4,7 +4,7 @@ import { ensureAdminLoggedIn } from './helpers.js';
 test.describe('Ask Flow, Provider Disclosure & Extractive Degradation E2E (Spec §10.8, §13.5, 20261021-AI-01)', () => {
   test('1. Ask page displays query input and example question buttons', async ({ page }) => {
     await page.goto('/ask');
-    await expect(page.locator('h1')).toContainText('Ask the Portfolio');
+    await expect(page.locator('h1')).toContainText('Ask about my work');
     await expect(page.locator('#ask-q')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
     await expect(page.locator('.example-q').first()).toBeVisible();

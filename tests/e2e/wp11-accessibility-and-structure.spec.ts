@@ -98,7 +98,7 @@ test.describe('WP-11.3: Accessibility Mechanics (UX-15) & Structured View Repair
     expect(applyDateBox!.height).toBeGreaterThanOrEqual(44);
 
     await page.goto('/work/redis-distributed-locks-2021');
-    const viewSwitchBox = await page.locator('a.btn:has-text("Switch to")').boundingBox();
+    const viewSwitchBox = await page.locator('a[data-action="view-switch"]').boundingBox();
     expect(viewSwitchBox).not.toBeNull();
     expect(viewSwitchBox!.height).toBeGreaterThanOrEqual(44);
   });
@@ -144,7 +144,7 @@ test.describe('WP-11.3: Accessibility Mechanics (UX-15) & Structured View Repair
     await expect(page.locator('article')).toContainText('Use Redis distributed locks when you already run Redis at scale');
 
     // 4. Switch to article view and verify content parity
-    await page.click('a.btn:has-text("Switch to Article view")');
+    await page.click('a[data-action="view-switch"]');
     await expect(page).toHaveURL(/view=article/);
     await expect(page.locator('article')).toContainText('We needed distributed job coordination across 16 worker nodes');
     await expect(page.locator('article')).toContainText("What I'd tell someone else");

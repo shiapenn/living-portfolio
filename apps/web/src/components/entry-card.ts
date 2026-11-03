@@ -14,6 +14,28 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#39;');
 }
 
+export function formatOutcome(outcome?: string | null): string {
+  if (!outcome) return '';
+  const lower = outcome.toLowerCase().trim();
+  switch (lower) {
+    case 'worked':
+      return 'Worked';
+    case 'partly':
+    case 'worked partly':
+      return 'Partly worked';
+    case 'failed':
+    case "didn't work":
+    case "what didn't work (failed)":
+      return "Didn't work";
+    case 'unresolved':
+      return 'Unresolved';
+    case 'unknown':
+      return 'Unknown';
+    default:
+      return outcome.charAt(0).toUpperCase() + outcome.slice(1);
+  }
+}
+
 export interface EntryRowOptions {
   asOf?: string;
   showSummary?: boolean;
@@ -35,24 +57,26 @@ export function renderEntryRow(entry: any, opts?: EntryRowOptions): string {
   const rawDate = entry.valid_from || entry.created_at || entry.written_at || '';
   const dateLabel = rawDate ? rawDate.slice(0, 10) : '';
 
-  const levelBadge = opts?.level
-    ? `<span class="chip">${escapeHtml(opts.level)}${entry.profile ? ` · ${escapeHtml(entry.profile)}` : ''}</span>`
-    : entry.profile
-    ? `<span class="chip">${escapeHtml(entry.profile)}</span>`
+  const isStructured = opts?.level
+    ? opts.level === 'Structured' || opts.level === 'L1' || opts.level === 'L2' || opts.level === 'L3'
+    : false;
+  const levelBadge = isStructured
+    ? '<span class="chip">Structured</span>'
     : '';
 
   const hindsightBadge =
     opts?.isHindsight ?? entry.is_hindsight
-      ? '<span class="chip">Hindsight retrospective</span>'
+      ? '<span class="chip">Written looking back</span>'
       : '';
 
   const updatedLaterBadge =
     opts?.hasLaterUpdates
-      ? '<span class="chip" style="border-color:var(--status-warn)">Updated later</span>'
+      ? '<span class="chip" style="border-color:var(--status-warn)">Later thinking</span>'
       : '';
 
-  const outcomeBadge = entry.outcome
-    ? `<span class="chip chip-outcome">${escapeHtml(entry.outcome)}</span>`
+  const outcomeText = formatOutcome(entry.outcome);
+  const outcomeBadge = outcomeText
+    ? `<span class="chip chip-outcome">${escapeHtml(outcomeText)}</span>`
     : '';
 
   let facetChips = '';

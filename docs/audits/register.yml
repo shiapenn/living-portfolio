@@ -2702,7 +2702,7 @@
     - "12.5"
     - "12.6"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-13
   related_to:
@@ -2712,12 +2712,15 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-copy-harmonization.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-01 / P1-13;
         staged in v0.2)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.5 (A055): harmonized section titles to match nav, standardized outcome labels (Worked, Partly worked, Didn't work, Unresolved, Unknown), normalized action verbs (Ask, Ask about this entry, Book a conversation, As of, Later thinking). Backed by wp11-copy-harmonization.conformance.test.ts."
   verified_by: null
 - id: 20261020-CP-02
   audit: AUD-2026-10-20
@@ -2730,7 +2733,7 @@
     - "12.1"
     - "20"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-13
   related_to:
@@ -2741,12 +2744,15 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-copy-harmonization.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-02 / P0-5 &
         P1-13)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.5 (A055): removed section numbers (§...) from user-facing headings, labels, button texts, and alerts; eliminated (hard constraint) from Ask facets; moved schema roles to data-role attributes; retired visible L0..L3 structure codes in favor of neutral Structured chips; updated view switcher to Read as one article / Read by section. Backed by wp11-copy-harmonization.conformance.test.ts."
   verified_by: null
 - id: 20261020-CP-03
   audit: AUD-2026-10-20
@@ -2762,7 +2768,7 @@
     - "12.6"
     - "13.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-13
   related_to:
@@ -2772,12 +2778,15 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-copy-harmonization.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-03 / P0-8 &
         P1-13)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.5 (A055): removed hardcoded owner personal content from /now, /about, and /uses. /now renders neutral empty fallback, /about removes unproven verified badges and explains verification requirements, and /uses displays neutral instance stack information. Backed by wp11-copy-harmonization.conformance.test.ts."
   verified_by: null
 - id: 20261020-CP-04
   audit: AUD-2026-10-20
