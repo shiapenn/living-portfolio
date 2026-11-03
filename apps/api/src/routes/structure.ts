@@ -125,6 +125,20 @@ export function createStructureRoutes(repo: IPortfolioRepository, answerCache?: 
     return c.json({ relation }, 201);
   });
 
+  router.patch('/relations/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json();
+    const updated = await repo.updateRelation(id, body);
+    if (!updated) return c.json({ error: 'Relation not found' }, 404);
+
+    if (answerCache) {
+      if (updated.src_claim) answerCache.invalidateClaim(updated.src_claim);
+      if (updated.dst_claim) answerCache.invalidateClaim(updated.dst_claim);
+    }
+
+    return c.json({ relation: updated, recomputed: updated.status === 'accepted' });
+  });
+
   // Evidence
   router.get('/entries/:entryId/evidence', async (c) => {
     const entryId = c.req.param('entryId');

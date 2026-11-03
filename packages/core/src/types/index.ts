@@ -129,6 +129,11 @@ export interface Relation {
   status: RelationStatus;
   recorded_at: string;
   valid_from?: string | null;
+  dst_claim_text?: string;
+  dst_claim_scope?: Record<string, any> | null;
+  dst_entry_slug?: string;
+  dst_entry_title?: string;
+  dst_written_at?: string;
 }
 
 export interface Evidence {
@@ -282,6 +287,10 @@ export interface TopologyReport {
   overlap?: Record<string, any> | null;
   status: 'pending' | 'resolved' | 'dismissed';
   at: string;
+  question?: string;
+  claim_a_text?: string;
+  claim_b_text?: string;
+  resolution?: string | null;
 }
 
 export interface ScopedConstraint {

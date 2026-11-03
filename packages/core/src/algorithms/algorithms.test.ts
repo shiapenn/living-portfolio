@@ -4,7 +4,9 @@ import { computeStructureLevel, getStructureLevelDetails } from './structureLeve
 import { generateGapQuestions } from './gapQuestions.js';
 import { isTemporallyValid } from './temporal.js';
 import { checkGate, routeQuery } from './gateAndRoute.js';
-import { detectLaterThinking } from './staleness.js';
+import { detectLaterThinking, checkScopeOverlap } from './staleness.js';
+import { detectTopologyConflicts } from './topology.js';
+import { mineScopedConstraintFromRejection } from './constraintMining.js';
 import { CalibrationEngine } from './calibration.js';
 import { CASE_STUDY_PROFILE } from '../profiles/index.js';
 
@@ -278,6 +280,182 @@ describe('Staleness and Later-Thinking (§10.7)', () => {
     expect(alerts.length).toBe(1);
     expect(alerts[0].newer_entry_slug).toBe('advisory-locks-revisited');
     expect(alerts[0].message).toContain('superseded');
+  });
+
+  it('verifies scope overlap rules and suppresses alerts when scopes are disjoint (§10.7, Fix 18)', () => {
+    // 1. checkScopeOverlap rules
+    expect(checkScopeOverlap(null, null)).toBe(true);
+    expect(checkScopeOverlap({}, { architecture: 'single-node' })).toBe(true);
+    expect(checkScopeOverlap({ architecture: 'single-node' }, { architecture: 'single-node' })).toBe(true);
+    expect(checkScopeOverlap({ architecture: 'single-node' }, { architecture: 'cluster' })).toBe(false);
+    expect(checkScopeOverlap({ env: ['aws', 'gcp'] }, { env: 'aws' })).toBe(true);
+    expect(checkScopeOverlap({ env: ['aws', 'gcp'] }, { env: 'azure' })).toBe(false);
+
+    // 2. Staleness with matching scope
+    const claims = [
+      {
+        id: 'claim-redis',
+        revision_id: 'rev-redis',
+        entry_id: 'entry-redis',
+        entry_slug: 'redis-leases',
+        text: 'Use Redis Redlock leases for worker coordination',
+        kind: 'decision' as const,
+        scope: { architecture: 'cluster', database: 'redis' },
+        recorded_at: '2021-01-01T00:00:00Z',
+        is_hindsight: false,
+        source: 'owner' as const,
+        status: 'accepted' as const,
+      },
+    ];
+
+    // Non-overlapping relation: destination applies strictly to single-node
+    const disjointRelations = [
+      {
+        id: 'rel-disjoint',
+        src_claim: 'claim-redis',
+        dst_claim: 'claim-pg-single',
+        type: 'supersedes' as const,
+        status: 'accepted' as const,
+        scope: { architecture: 'single-node' },
+        recorded_at: '2024-01-01T00:00:00Z',
+        dst_entry_slug: 'pg-locks',
+        dst_entry_title: 'Postgres Locks',
+      },
+    ];
+
+    const disjointAlerts = detectLaterThinking(claims, disjointRelations);
+    expect(disjointAlerts.length).toBe(0);
+
+    // Overlapping relation: destination applies to cluster
+    const overlappingRelations = [
+      {
+        id: 'rel-overlap',
+        src_claim: 'claim-redis',
+        dst_claim: 'claim-pg-cluster',
+        type: 'supersedes' as const,
+        status: 'accepted' as const,
+        scope: { architecture: 'cluster' },
+        recorded_at: '2024-01-01T00:00:00Z',
+        dst_entry_slug: 'pg-locks-cluster',
+        dst_entry_title: 'Postgres Advisory Locks in Clusters',
+      },
+    ];
+
+    const overlappingAlerts = detectLaterThinking(claims, overlappingRelations);
+    expect(overlappingAlerts.length).toBe(1);
+    expect(overlappingAlerts[0].superseding_claim_id).toBe('claim-pg-cluster');
+    expect(overlappingAlerts[0].scope_overlap).toBe(true);
+  });
+});
+
+describe('Dynamic Topology Audit and Scoped Constraint Mining (§11, §18.1, Fix 17)', () => {
+  it('detects conflicting claim pairs on overlapping scope with opposing conclusions or polarity', () => {
+    const claims = [
+      {
+        id: 'claim-redis-lock',
+        revision_id: 'rev-1',
+        text: 'Use Redis Redlock leases for distributed job coordination across worker nodes.',
+        kind: 'decision' as const,
+        outcome_status: 'worked' as const,
+        scope: { scale: 'high', database: 'redis' },
+        recorded_at: '2021-01-01T00:00:00Z',
+        is_hindsight: false,
+        source: 'owner' as const,
+        status: 'accepted' as const,
+      },
+      {
+        id: 'claim-pg-lock',
+        revision_id: 'rev-2',
+        text: 'Transaction-scoped PostgreSQL advisory locks outperform external Redis locks under 50k TPS and avoid distributed split-brain.',
+        kind: 'decision' as const,
+        outcome_status: 'worked' as const,
+        scope: { scale: 'high', database: 'postgres' },
+        recorded_at: '2024-01-01T00:00:00Z',
+        is_hindsight: false,
+        source: 'owner' as const,
+        status: 'accepted' as const,
+      },
+    ];
+
+    const conflicts = detectTopologyConflicts(claims, []);
+    expect(conflicts.length).toBeGreaterThanOrEqual(1);
+    const top = conflicts[0];
+    expect(top.claim_a).toBe('claim-redis-lock');
+    expect(top.claim_b).toBe('claim-pg-lock');
+    expect(top.confidence).toBeGreaterThanOrEqual(0.6);
+    expect(top.status).toBe('pending');
+    expect(top.question).toBe('Does the later claim supersede the earlier one, or do they apply to different situations?');
+  });
+
+  it('ignores claim pairs that already have a relation edge connecting them', () => {
+    const claims = [
+      {
+        id: 'claim-a',
+        revision_id: 'rev-1',
+        text: 'Use DynamoDB for low-latency session cache.',
+        kind: 'decision' as const,
+        outcome_status: 'worked' as const,
+        scope: { tier: 'web' },
+        recorded_at: '2022-01-01T00:00:00Z',
+        is_hindsight: false,
+        source: 'owner' as const,
+        status: 'accepted' as const,
+      },
+      {
+        id: 'claim-b',
+        revision_id: 'rev-2',
+        text: 'DynamoDB underperforms in-memory Redis session caching under high traffic.',
+        kind: 'decision' as const,
+        outcome_status: 'failed' as const,
+        scope: { tier: 'web' },
+        recorded_at: '2023-01-01T00:00:00Z',
+        is_hindsight: false,
+        source: 'owner' as const,
+        status: 'accepted' as const,
+      },
+    ];
+
+    // Already linked via relation
+    const existingRelations = [
+      {
+        id: 'rel-ab',
+        src_claim: 'claim-a',
+        dst_claim: 'claim-b',
+        type: 'supersedes' as const,
+        status: 'accepted' as const,
+        recorded_at: '2023-01-01T00:00:00Z',
+      },
+    ];
+
+    const conflicts = detectTopologyConflicts(claims, existingRelations);
+    expect(conflicts.length).toBe(0);
+  });
+
+  it('mines technical boundary constraints and ignores non-technical rejections (§11)', () => {
+    // 1. Technical memory ceiling
+    const resMem = mineScopedConstraintFromRejection('Declined because memory strictly <= 512MB in this Lambda runtime.');
+    expect(resMem.isTechnical).toBe(true);
+    expect(resMem.constraint).toEqual({ max_memory_mb: 512 });
+
+    // 2. Technical throughput limit
+    const resTps = mineScopedConstraintFromRejection('We capped traffic throughput <= 50k tps for Postgres advisory locks.');
+    expect(resTps.isTechnical).toBe(true);
+    expect(resTps.constraint).toEqual({ max_tps: 50000 });
+
+    // 3. Technical single-node architecture
+    const resArch = mineScopedConstraintFromRejection('This advisory advice applies to single-node only configurations.');
+    expect(resArch.isTechnical).toBe(true);
+    expect(resArch.constraint).toEqual({ architecture: 'single-node' });
+
+    // 4. Non-technical rejections must NOT be auto-converted (§11)
+    const resBusy = mineScopedConstraintFromRejection('Sorry, too busy right now with client launches.');
+    expect(resBusy.isTechnical).toBe(false);
+
+    const resVacation = mineScopedConstraintFromRejection('Declined: on vacation until next month.');
+    expect(resVacation.isTechnical).toBe(false);
+
+    const resFit = mineScopedConstraintFromRejection('Not a good fit for my current advisory focus.');
+    expect(resFit.isTechnical).toBe(false);
   });
 });
 
