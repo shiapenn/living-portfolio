@@ -850,7 +850,7 @@
   spec_sections:
     - "10.3"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 4
@@ -859,12 +859,15 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/m4-query-classification.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit (Section 4 §10.3, Section 7 Fix 15)
-  verified_by: null
+    - date: 2026-11-03
+      status: fixed
+      note: "Fixed in WP-10.2 (Fix 4, Fix 15): Upgraded query classification from substring heuristics to provider-backed classification with labeled benchmark suite, implemented About path answered from About page records and settings with /about citation, enforced strict default to advisory for ambiguous cases, and verified needs_context state mechanics."
+  verified_by: m4-query-classification.conformance.test.ts
 - id: M5
   audit: AUD-2026-10-19
   title: Self-calibration missing routing calibration, sliding window, held-out

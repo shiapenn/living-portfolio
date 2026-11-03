@@ -132,11 +132,11 @@
 
 - section: "10.3"
   title: "Query classification"
-  status: stub
-  audit_matrix_status: "Stub, wrong default"
+  status: implemented
+  audit_matrix_status: "Implemented"
   findings: ["M4"]
-  last_scored: "2026-10-19"
-  evidence_and_gaps: "Uses substring heuristics in ask.ts defaulting to lookup instead of advisory; missing about path."
+  last_scored: "2026-11-03"
+  evidence_and_gaps: "Provider-based query classification with labeled benchmark suite, strict advisory default for ambiguous cases, About path answered from About page records/settings, and Needs-context state. Verified by m4-query-classification.conformance.test.ts."
 
 - section: "10.4"
   title: "Retrieval and expansion"

@@ -21,6 +21,8 @@ import {
   resolveConfiguredProviders,
   formatProviderDisclosure,
   AnswerCache,
+  classifyQuery,
+  classifyQuerySync,
 } from './index.js';
 
 describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redaction (§10.6, §13.5, §15)', () => {
@@ -606,5 +608,63 @@ describe('AI Package: Budget Governor, Data-Class Routing, Verification & Redact
     expect(resFabricated.passed).toBe(false);
     expect(resFabricated.faithfulnessPassed).toBe(false);
     expect(resFabricated.verifiedText).toBe('');
+  });
+
+  describe('Query Classification & Labeled Benchmark Suite (§10.3, Fix 15, Finding M4)', () => {
+    const fixturePath = resolve(__dirname, 'classification/fixtures/query-classification-cases.json');
+    const casesData = JSON.parse(readFileSync(fixturePath, 'utf8'));
+
+    it('classifies labeled benchmark query cases accurately (Fix 15, §10.3, §18)', () => {
+      for (const tc of casesData.cases) {
+        const result = classifyQuerySync(tc.query);
+        expect(
+          result.queryClass,
+          `Query "${tc.query}" expected class "${tc.expectedClass}" but got "${result.queryClass}" (reason: ${result.reason})`
+        ).toBe(tc.expectedClass);
+      }
+    });
+
+    it('defaults ambiguous and borderline queries to advisory per §10.3 strictness rule', () => {
+      const ambiguousQueries = [
+        'Database locking strategies',
+        'Redis vs Postgres',
+        'Microservice architectural patterns',
+        'Distributed systems',
+        'Kafka performance',
+        'Cache invalidation',
+      ];
+
+      for (const q of ambiguousQueries) {
+        const result = classifyQuerySync(q);
+        expect(result.queryClass).toBe('advisory');
+        expect(result.isAmbiguous).toBe(true);
+      }
+    });
+
+    it('classifies queries via ModelProvider and falls back gracefully on provider errors', async () => {
+      const provider = new MockModelProvider('test-classifier', 'Test Provider');
+
+      // 1. Provider-based classification
+      const resLookup = await classifyQuery('What database did you use for webhook locks in 2021?', provider);
+      expect(resLookup.queryClass).toBe('lookup');
+      expect(resLookup.source).toBe('provider');
+
+      const resAdvisory = await classifyQuery('Should I use Redis or PostgreSQL for distributed locking?', provider);
+      expect(resAdvisory.queryClass).toBe('advisory');
+      expect(resAdvisory.source).toBe('provider');
+
+      const resAbout = await classifyQuery('Who are you and what do you work on?', provider);
+      expect(resAbout.queryClass).toBe('about');
+      expect(resAbout.source).toBe('provider');
+
+      const resAmbiguous = await classifyQuery('Random phrase without context', provider);
+      expect(resAmbiguous.queryClass).toBe('advisory');
+
+      // 2. Fallback on provider failure
+      const failingProvider = new MockModelProvider('failing', { shouldFail: true });
+      const resFallback = await classifyQuery('What database did you use for webhook locks in 2021?', failingProvider);
+      expect(resFallback.queryClass).toBe('lookup');
+      expect(resFallback.source).toBe('rule_fallback');
+    });
   });
 });

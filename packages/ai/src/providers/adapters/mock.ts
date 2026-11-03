@@ -57,13 +57,38 @@ export class MockModelProvider implements ModelProvider {
         confidence: 0.95,
         reason: 'Assertions are grounded in provided context chunks.',
       });
-    } else if (lastMessage.includes('Classify')) {
-      if (lastMessage.includes('how') || lastMessage.includes('should') || lastMessage.includes('recommend')) {
-        responseText = '{"class": "advisory"}';
-      } else if (lastMessage.includes('who') || lastMessage.includes('about')) {
-        responseText = '{"class": "about"}';
+    } else if (lastMessage.includes('classify') || lastMessage.includes('Classify') || lastMessage.includes('visitor query classifier')) {
+      const userQueryMatch = lastMessage.match(/User Query:\s*"([^"]+)"/i);
+      const targetText = userQueryMatch ? userQueryMatch[1].toLowerCase() : lastMessage.toLowerCase();
+      if (targetText.includes('who are you') || targetText.includes('about you') || targetText.includes('background') || targetText.includes('credentials') || targetText.includes('site architecture') || targetText.includes('what tech stack powers') || targetText.includes('contact')) {
+        responseText = JSON.stringify({
+          queryClass: 'about',
+          confidence: 0.95,
+          reason: 'Author or site inquiry answered from About page and settings.',
+          isAmbiguous: false,
+        });
+      } else if (targetText.includes('should') || targetText.includes('recommend') || targetText.includes('how to') || targetText.includes('how should') || targetText.includes('tradeoff') || targetText.includes('patterns') || targetText.includes('strategies') || targetText.includes('advise')) {
+        responseText = JSON.stringify({
+          queryClass: 'advisory',
+          confidence: 0.92,
+          reason: 'Architecture advisory inquiry requiring applicability context.',
+          isAmbiguous: false,
+        });
+      } else if (targetText.includes('did you') || targetText.includes('did the') || targetText.includes('how do we') || targetText.includes('how did') || targetText.includes('when was') || targetText.includes('where was') || targetText.includes('what database did you') || targetText.includes('outcome of') || targetText.includes('version of') || targetText.startsWith('what ') || targetText.startsWith('which ')) {
+        responseText = JSON.stringify({
+          queryClass: 'lookup',
+          confidence: 0.94,
+          reason: 'Factual lookup against recorded portfolio entries.',
+          isAmbiguous: false,
+        });
       } else {
-        responseText = '{"class": "lookup"}';
+        // §10.3 strict default to advisory for ambiguous cases
+        responseText = JSON.stringify({
+          queryClass: 'advisory',
+          confidence: 0.75,
+          reason: 'Ambiguous query defaulting to advisory per §10.3 strictness rule.',
+          isAmbiguous: true,
+        });
       }
     } else if (lastMessage.includes('Extract facets') || lastMessage.includes('Extract structured context facets')) {
       responseText = JSON.stringify({
