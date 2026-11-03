@@ -1728,7 +1728,7 @@
     - "11"
     - "13.9"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-6
   related_to:
@@ -1739,7 +1739,7 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: apps/api/src/conformance/ux-p0-probes.conformance.test.ts
+  regression_test: apps/api/src/conformance/wp11-publish-ask.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
@@ -1750,6 +1750,9 @@
     - date: 2026-10-21
       status: open
       note: "Reclassified to P1-6 and kept open per auditor review: kill-switch state requires persistence in database."
+    - date: 2026-11-03
+      status: fixed
+      note: "Fixed in WP-11.1 (UX-05, Task Receipt A051): Implemented debounced static site rebuild progress UI (10-minute window, 12/day cap counters) in admin workspace, GET /api/v1/publish/status, POST /api/v1/publish/now (forceNow bypass), and real background enrichment queueing on publication and via POST /api/v1/publish/enrich. Conformance in wp11-publish-ask.conformance.test.ts and E2E in wp11-publish-and-ask.spec.ts."
   verified_by: null
 - id: 20261020-UX-06
   audit: AUD-2026-10-20
@@ -1883,7 +1886,7 @@
     - "6.5"
     - "12.6"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-7
   related_to:
@@ -1893,11 +1896,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-publish-ask.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-10 / P1-1; staged in v0.2)
+    - date: 2026-11-03
+      status: fixed
+      note: "Fixed in WP-11.1 (UX-10, Task Receipt A051): Implemented needs_context interactive clarification form with dynamic facet prompts, context_asked submission & skip options, persistent entry-scoped notice on screen with reset trigger, double-submit lockout (aria-busy and button/input disablement), truthful 429 rate limit backoff display with countdown/booking CTA, dynamic question examples extracted from published entries, and honest non-JSON error handling. Conformance in wp11-publish-ask.conformance.test.ts and E2E in wp11-publish-and-ask.spec.ts."
   verified_by: null
 - id: 20261020-UX-11
   audit: AUD-2026-10-20

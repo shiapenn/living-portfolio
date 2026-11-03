@@ -1277,6 +1277,52 @@ export function buildOpenApiDocument() {
           },
         },
       },
+      '/publish/status': {
+        get: {
+          summary: 'Get current debounced static rebuild status and daily build counts (§13.7)',
+          tags: ['Publishing'],
+          responses: {
+            '200': responseJson('Current publish and static site rebuild status'),
+          },
+        },
+      },
+      '/publish/now': {
+        post: {
+          summary: 'Trigger immediate static site rebuild bypassing 10-minute debounce window (§13.7)',
+          tags: ['Publishing'],
+          security: [{ SessionAuth: [] }, { BearerAuth: [] }],
+          responses: {
+            '200': responseJson('Publish build executed successfully'),
+            '401': responseJson('Unauthorized: Admin credentials required'),
+          },
+        },
+      },
+      '/publish/enrich': {
+        post: {
+          summary: 'Queue or trigger background enrichment for an entry (§8, UX-05)',
+          tags: ['Publishing'],
+          security: [{ SessionAuth: [] }, { BearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    entryId: { type: 'string' },
+                    revisionId: { type: 'string' },
+                  },
+                  required: ['entryId'],
+                },
+              },
+            },
+          },
+          responses: {
+            '200': responseJson('Background enrichment queued'),
+            '401': responseJson('Unauthorized: Admin credentials required'),
+          },
+        },
+      },
       '/seed': {
         post: {
           summary: 'Seed demo entries (disabled in production per OSR-04)',

@@ -100,7 +100,9 @@ export function createWebApp(options?: WebAppOptions) {
   });
   app.get('/build', async (c) => c.html(await renderBuildPage(client)));
   app.get('/timeline', async (c) => c.html(await renderTimelinePage(client, c.req.query('as_of'))));
-  app.get('/ask', async (c) => c.html(await renderAskPage(c.req.query('q'), c.req.query('scope'), c.req.query('as_of'))));
+  app.get('/ask', async (c) =>
+    c.html(await renderAskPage(client, c.req.query('q'), c.req.query('scope') || c.req.query('entry'), c.req.query('as_of')))
+  );
   app.get('/now', (c) => c.html(renderStaticPage('now')));
   app.get('/about', (c) => c.html(renderStaticPage('about')));
   app.get('/uses', (c) => c.html(renderStaticPage('uses')));

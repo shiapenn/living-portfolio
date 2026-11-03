@@ -199,6 +199,9 @@ importers:
       '@living-portfolio/web':
         specifier: workspace:*
         version: link:../web
+      '@living-portfolio/worker':
+        specifier: workspace:*
+        version: link:../worker
       hono:
         specifier: ^4.7.2
         version: 4.13.13
@@ -209,9 +212,6 @@ importers:
       '@living-portfolio/client':
         specifier: workspace:*
         version: link:../../packages/client
-      '@living-portfolio/worker':
-        specifier: workspace:*
-        version: link:../worker
       '@types/node':
         specifier: ^22.13.4
         version: 22.20.5

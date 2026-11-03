@@ -149,6 +149,14 @@ export class WorkerQueueManager {
     return this.boss.send(QUEUE_NAMES.DELETE_ENTRY, payload);
   }
 
+  getPublishStatus(nowMs: number = Date.now()) {
+    return this.worker.getPublishStatus(nowMs);
+  }
+
+  isEnrichmentPending(entryId: string): boolean {
+    return this.worker.isEnrichmentPending(entryId);
+  }
+
   getHealth() {
     return {
       status: this.isListening ? 'active' : 'idle',

@@ -166,6 +166,28 @@ export interface BookingResponse {
   message?: string;
 }
 
+export interface PublishStatusResponse {
+  status: 'idle' | 'queued' | 'building' | 'live' | 'cap_reached';
+  state: 'idle' | 'queued' | 'building' | 'live' | 'cap_reached';
+  buildsToday: number;
+  maxBuildsPerDay: number;
+  debounceMinutes: number;
+  lastBuildTime: string | null;
+  nextAllowedBuildTime: string | null;
+  minutesRemaining: number;
+  secondsRemaining: number;
+  lastBuildResult?: any;
+}
+
+export interface PublishNowResponse {
+  ok: boolean;
+  built: boolean;
+  reason?: string;
+  buildsToday: number;
+  bundleSummary?: any;
+  status: PublishStatusResponse;
+}
+
 export interface ClientError {
   error: string;
   status: number;

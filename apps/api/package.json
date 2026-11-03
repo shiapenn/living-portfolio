@@ -20,12 +20,12 @@
     "@living-portfolio/core": "workspace:*",
     "@living-portfolio/db": "workspace:*",
     "@living-portfolio/web": "workspace:*",
+    "@living-portfolio/worker": "workspace:*",
     "hono": "^4.7.2",
     "zod": "^3.24.2"
   },
   "devDependencies": {
     "@living-portfolio/client": "workspace:*",
-    "@living-portfolio/worker": "workspace:*",
     "@types/node": "^22.13.4",
     "tsx": "^4.19.3",
     "typescript": "^5.7.3",
