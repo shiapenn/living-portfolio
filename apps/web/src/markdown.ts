@@ -37,7 +37,7 @@ function sanitizeUrl(rawUrl: string): string | null {
 
 /**
  * Sanitizes raw HTML input to strip dangerous tags and attributes
- * using an allowlist tokenizer approach that avoids incomplete regex replacements.
+ * using a non-backtracking character scanner that avoids regex ReDoS.
  */
 export function sanitizeHtml(html: string): string {
   if (!html || typeof html !== 'string') return '';
@@ -45,53 +45,133 @@ export function sanitizeHtml(html: string): string {
   let clean = '';
   let inScript = false;
   let inStyle = false;
+  let i = 0;
+  const len = html.length;
 
-  const tokens = html.split(/(<[^>]*>)/g);
-  for (const token of tokens) {
-    if (token.startsWith('<') && token.endsWith('>')) {
-      const match = token.match(/^<\s*(\/?\s*[a-zA-Z0-9]+)([\s\S]*?)>$/);
-      if (!match) continue;
-      const rawTag = match[1].trim().toLowerCase();
-      const isClosing = rawTag.startsWith('/');
-      const tagName = isClosing ? rawTag.slice(1).trim() : rawTag;
-
-      if (tagName === 'script') {
-        inScript = !isClosing;
-        continue;
-      }
-      if (tagName === 'style') {
-        inStyle = !isClosing;
-        continue;
-      }
-      if (inScript || inStyle) continue;
-      if (['iframe', 'object', 'embed'].includes(tagName)) continue;
-
-      if (isClosing) {
-        clean += '</' + tagName + '>';
-        continue;
-      }
-
-      // Safe attribute builder (disallow on* handlers and javascript: URLs)
-      let safeAttrs = '';
-      const attrStr = match[2];
-      const attrRegex = /([a-zA-Z0-9_-]+)(?:\s*=\s*(?:'([^']*)'|"([^"]*)"|([^\s>]+)))?/g;
-      let m: RegExpExecArray | null;
-      while ((m = attrRegex.exec(attrStr)) !== null) {
-        const attrName = m[1].toLowerCase();
-        if (attrName.startsWith('on')) continue;
-        let attrVal = m[2] !== undefined ? m[2] : m[3] !== undefined ? m[3] : m[4] !== undefined ? m[4] : '';
-        if ((attrName === 'href' || attrName === 'src') && /^javascript:/i.test(attrVal.trim())) {
-          attrVal = '#';
-        }
-        safeAttrs += ' ' + attrName + '="' + escapeHtml(attrVal) + '"';
-      }
-
-      clean += '<' + tagName + safeAttrs + '>';
-    } else {
+  while (i < len) {
+    const openTag = html.indexOf('<', i);
+    if (openTag === -1) {
       if (!inScript && !inStyle) {
-        clean += token;
+        clean += html.slice(i);
+      }
+      break;
+    }
+
+    if (!inScript && !inStyle) {
+      clean += html.slice(i, openTag);
+    }
+
+    const closeTag = html.indexOf('>', openTag);
+    if (closeTag === -1) {
+      // Unclosed tag
+      break;
+    }
+
+    const tagContent = html.slice(openTag + 1, closeTag).trim();
+    i = closeTag + 1;
+
+    if (!tagContent) continue;
+
+    const isClosing = tagContent.charCodeAt(0) === 47; // '/'
+    const afterSlash = isClosing ? tagContent.slice(1).trim() : tagContent;
+    if (!afterSlash) continue;
+
+    // Extract tag name: letters or digits
+    let nameEnd = 0;
+    while (nameEnd < afterSlash.length) {
+      const code = afterSlash.charCodeAt(nameEnd);
+      // a-z (97-122), A-Z (65-90), 0-9 (48-57)
+      if (
+        (code >= 97 && code <= 122) ||
+        (code >= 65 && code <= 90) ||
+        (code >= 48 && code <= 57)
+      ) {
+        nameEnd++;
+      } else {
+        break;
       }
     }
+
+    if (nameEnd === 0) continue;
+    const tagName = afterSlash.slice(0, nameEnd).toLowerCase();
+
+    if (tagName === 'script') {
+      inScript = !isClosing;
+      continue;
+    }
+    if (tagName === 'style') {
+      inStyle = !isClosing;
+      continue;
+    }
+    if (inScript || inStyle) continue;
+    if (tagName === 'iframe' || tagName === 'object' || tagName === 'embed') continue;
+
+    if (isClosing) {
+      clean += `</${tagName}>`;
+      continue;
+    }
+
+    // Parse attributes linearly without regex
+    let safeAttrs = '';
+    let p = nameEnd;
+    const tagLen = afterSlash.length;
+
+    while (p < tagLen) {
+      // Skip whitespace
+      while (p < tagLen && afterSlash.charCodeAt(p) <= 32) p++;
+      if (p >= tagLen) break;
+
+      // Extract attribute name
+      const attrNameStart = p;
+      while (p < tagLen) {
+        const c = afterSlash.charCodeAt(p);
+        if (c <= 32 || c === 61 /* = */ || c === 47 /* / */ || c === 62 /* > */) break;
+        p++;
+      }
+      const attrName = afterSlash.slice(attrNameStart, p).toLowerCase();
+      if (!attrName) break;
+
+      // Skip whitespace before '='
+      while (p < tagLen && afterSlash.charCodeAt(p) <= 32) p++;
+
+      let attrVal = '';
+      if (p < tagLen && afterSlash.charCodeAt(p) === 61 /* = */) {
+        p++; // skip '='
+        // Skip whitespace after '='
+        while (p < tagLen && afterSlash.charCodeAt(p) <= 32) p++;
+        if (p < tagLen) {
+          const quote = afterSlash.charAt(p);
+          if (quote === '"' || quote === "'") {
+            p++;
+            const valStart = p;
+            const quoteEnd = afterSlash.indexOf(quote, valStart);
+            if (quoteEnd === -1) {
+              attrVal = afterSlash.slice(valStart);
+              p = tagLen;
+            } else {
+              attrVal = afterSlash.slice(valStart, quoteEnd);
+              p = quoteEnd + 1;
+            }
+          } else {
+            const valStart = p;
+            while (p < tagLen && afterSlash.charCodeAt(p) > 32 && afterSlash.charAt(p) !== '/' && afterSlash.charAt(p) !== '>') {
+              p++;
+            }
+            attrVal = afterSlash.slice(valStart, p);
+          }
+        }
+      }
+
+      // Ignore event handlers (onclick, onerror, onload, etc.)
+      if (attrName.startsWith('on')) continue;
+      // Sanitize javascript: URIs in href and src
+      if ((attrName === 'href' || attrName === 'src') && /^javascript:/i.test(attrVal.trim())) {
+        attrVal = '#';
+      }
+      safeAttrs += ` ${attrName}="${escapeHtml(attrVal)}"`;
+    }
+
+    clean += `<${tagName}${safeAttrs}>`;
   }
 
   return clean;
