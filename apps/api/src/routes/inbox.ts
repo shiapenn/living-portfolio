@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { IPortfolioRepository } from '@living-portfolio/db';
+import { mineScopedConstraintFromRejection } from '@living-portfolio/core';
 
 export function createInboxRoutes(repo: IPortfolioRepository) {
   const router = new Hono();
@@ -56,18 +57,29 @@ export function createInboxRoutes(repo: IPortfolioRepository) {
       rejection_reason: reason || 'Declined without specific constraint',
     });
 
-    // If rejection included a technical constraint, mine it as a proposed scoped constraint (§11)
+    // Automated Scoped Constraint Mining (§11, Fix 17)
+    let mined: { isTechnical: boolean; constraint?: Record<string, any>; quote?: string } = { isTechnical: false };
     if (technicalConstraint && typeof technicalConstraint === 'object') {
-      await repo.saveScopedConstraint({
+      mined = {
+        isTechnical: true,
         constraint: technicalConstraint,
+        quote: reason || 'Owner provided technical constraint',
+      };
+    } else if (reason) {
+      mined = mineScopedConstraintFromRejection(reason, existing.facets);
+    }
+
+    if (mined.isTechnical && mined.constraint) {
+      await repo.saveScopedConstraint({
+        constraint: mined.constraint,
         scope: existing.facets || {},
         source_escalation: id,
-        source_quote: reason || 'Owner rejected with technical boundary condition',
-        status: 'proposed',
+        source_quote: mined.quote || reason || 'Technical constraint mined from rejection',
+        status: 'proposed', // Invariant: ALWAYS proposed! Never active/confirmed without owner action!
       });
     }
 
-    return c.json({ escalation: updated, minedConstraint: !!technicalConstraint });
+    return c.json({ escalation: updated, minedConstraint: mined.isTechnical, constraint: mined.constraint });
   });
 
   return router;

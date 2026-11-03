@@ -13,6 +13,7 @@ import type {
   Relation,
   ScopedConstraint,
   Span,
+  TopologyReport,
   Venture,
   Visibility,
 } from '@living-portfolio/core';
@@ -247,6 +248,18 @@ function mapScopedConstraint(row: typeof schema.scopedConstraints.$inferSelect):
     scope: row.scope as any,
     source_escalation: row.source_escalation ?? undefined,
     source_quote: row.source_quote ?? undefined,
+    status: row.status as any,
+    at: toIsoRequired(row.at),
+  };
+}
+
+function mapTopologyReport(row: typeof schema.topologyReports.$inferSelect): TopologyReport {
+  return {
+    id: row.id,
+    claim_a: row.claim_a,
+    claim_b: row.claim_b,
+    confidence: row.confidence,
+    overlap: (row.overlap as any) ?? null,
     status: row.status as any,
     at: toIsoRequired(row.at),
   };
@@ -744,6 +757,20 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
     return mapRelation(row);
   }
 
+  async updateRelation(id: string, updates: Partial<Relation>): Promise<Relation | null> {
+    const patch: Record<string, any> = {};
+    if (updates.type !== undefined) patch.type = updates.type;
+    if (updates.status !== undefined) patch.status = updates.status;
+    if (updates.scope !== undefined) patch.scope = updates.scope;
+    if (updates.valid_from !== undefined) patch.valid_from = toDate(updates.valid_from);
+    if (Object.keys(patch).length === 0) {
+      const [existing] = await this.db.select().from(schema.relations).where(eq(schema.relations.id, id));
+      return existing ? mapRelation(existing) : null;
+    }
+    const [row] = await this.db.update(schema.relations).set(patch).where(eq(schema.relations.id, id)).returning();
+    return row ? mapRelation(row) : null;
+  }
+
   async getRelationsForClaim(claim_id: string): Promise<Relation[]> {
     const rows = await this.db
       .select()
@@ -786,7 +813,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
 
       return {
         ...mapRelation(r),
-        ...(dstClaim ? { dst_claim_text: dstClaim.text } : {}),
+        ...(dstClaim ? { dst_claim_text: dstClaim.text, dst_claim_scope: dstClaim.scope as any } : {}),
         ...(dstEntry ? { dst_entry_slug: dstEntry.slug, dst_entry_title: dstEntry.title } : {}),
         ...(dstRev ? { dst_written_at: toIso(dstRev.written_at) } : {}),
       };
@@ -1021,6 +1048,47 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
       .where(eq(schema.scopedConstraints.id, id))
       .returning();
     return row ? mapScopedConstraint(row) : null;
+  }
+
+  async saveTopologyReport(report: Omit<TopologyReport, 'id' | 'at'>): Promise<TopologyReport> {
+    const [row] = await this.db
+      .insert(schema.topologyReports)
+      .values({
+        id: (report as any).id ?? undefined,
+        claim_a: report.claim_a,
+        claim_b: report.claim_b,
+        confidence: report.confidence,
+        overlap: report.overlap ?? null,
+        status: report.status,
+        at: (report as any).at ? new Date((report as any).at) : undefined,
+      })
+      .returning();
+    return mapTopologyReport(row);
+  }
+
+  async getTopologyReports(status?: string): Promise<TopologyReport[]> {
+    let query = this.db.select().from(schema.topologyReports);
+    const rows = status
+      ? await query.where(eq(schema.topologyReports.status, status)).orderBy(desc(schema.topologyReports.confidence))
+      : await query.orderBy(desc(schema.topologyReports.confidence));
+    return rows.map(mapTopologyReport);
+  }
+
+  async updateTopologyReport(id: string, updates: Partial<TopologyReport>): Promise<TopologyReport | null> {
+    const patch: Record<string, any> = {};
+    if (updates.status !== undefined) patch.status = updates.status;
+    if (updates.confidence !== undefined) patch.confidence = updates.confidence;
+    if (updates.overlap !== undefined) patch.overlap = updates.overlap;
+    if (Object.keys(patch).length === 0) {
+      const [existing] = await this.db.select().from(schema.topologyReports).where(eq(schema.topologyReports.id, id));
+      return existing ? mapTopologyReport(existing) : null;
+    }
+    const [row] = await this.db
+      .update(schema.topologyReports)
+      .set(patch)
+      .where(eq(schema.topologyReports.id, id))
+      .returning();
+    return row ? mapTopologyReport(row) : null;
   }
 
   // --- Hybrid Search & Graph Traversal (§10.4) ---

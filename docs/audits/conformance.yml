@@ -164,11 +164,11 @@
 
 - section: "10.7"
   title: "Staleness"
-  status: partial
-  audit_matrix_status: "Partial"
+  status: implemented
+  audit_matrix_status: "Full"
   findings: ["M7"]
-  last_scored: "2026-10-19"
-  evidence_and_gaps: "Later-thinking banner triggers on accepted supersedes/contradicts relations without checking scope overlap or recomputing on accept."
+  last_scored: "2026-11-03"
+  evidence_and_gaps: "Scope-overlap staleness detector implemented with checkScopeOverlap and recompute-on-accept trigger on relation mutation (Fix 18 / M7)."
 
 - section: "10.8"
   title: "Degradation ladder"
@@ -184,7 +184,7 @@
   audit_matrix_status: "Partial"
   findings: ["M1", "M5", "M6"]
   last_scored: "2026-11-03"
-  evidence_and_gaps: "Self-calibration routing calibration, sliding window, held-out validation, ECE, freeze guard, and real state rollback implemented (Fix 16 / M5). Topology audit conflict detection and constraint mining remain to complete section (M6)."
+  evidence_and_gaps: "Self-calibration routing calibration, sliding window, held-out validation, ECE, freeze guard, and state rollback implemented (Fix 16 / M5). Dynamic topology conflict detection and scoped constraint mining implemented with owner-only write guard (Fix 17 / M6). Evaluation harness in settings remains open (M1)."
 
 - section: "12"
   title: "UI design system"

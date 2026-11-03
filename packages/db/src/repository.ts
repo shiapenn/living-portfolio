@@ -71,6 +71,7 @@ export interface IPortfolioRepository {
   getClaimsForRevision(revision_id: string): Promise<Claim[]>;
   listClaimsForEntry(entry_id: string): Promise<Claim[]>;
   saveRelation(r: Omit<Relation, 'id' | 'recorded_at'>): Promise<Relation>;
+  updateRelation(id: string, updates: Partial<Relation>): Promise<Relation | null>;
   getRelationsForClaim(claim_id: string): Promise<Relation[]>;
   listAcceptedRelations(): Promise<Relation[]>;
 
@@ -98,6 +99,11 @@ export interface IPortfolioRepository {
   saveScopedConstraint(sc: Omit<ScopedConstraint, 'id' | 'at'>): Promise<ScopedConstraint>;
   getScopedConstraints(status?: string): Promise<ScopedConstraint[]>;
   updateScopedConstraint(id: string, updates: Partial<Pick<ScopedConstraint, 'status'>>): Promise<ScopedConstraint | null>;
+
+  // Topology Reports (§11, Fix 17)
+  saveTopologyReport(report: Omit<TopologyReport, 'id' | 'at'>): Promise<TopologyReport>;
+  getTopologyReports(status?: string): Promise<TopologyReport[]>;
+  updateTopologyReport(id: string, updates: Partial<TopologyReport>): Promise<TopologyReport | null>;
 
   // Search & Graph Traversal
   hybridSearch(query: string, options: {
@@ -174,6 +180,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   private correctionLogs = new Map<string, CorrectionLog>();
   private calibrationChanges = new Map<string, CalibrationChange>();
   private scopedConstraints = new Map<string, ScopedConstraint>();
+  private topologyReports = new Map<string, TopologyReport>();
   private chunkVectors = new Map<string, ChunkVectorRecord>();
   private governorLedgers = new Map<string, GovernorLedgerEntry>();
 
@@ -481,6 +488,18 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     return relation;
   }
 
+  async updateRelation(id: string, updates: Partial<Relation>): Promise<Relation | null> {
+    const existing = this.relations.get(id);
+    if (!existing) return null;
+    const updated: Relation = {
+      ...existing,
+      ...updates,
+      id,
+    };
+    this.relations.set(id, updated);
+    return updated;
+  }
+
   async getRelationsForClaim(claim_id: string): Promise<Relation[]> {
     return Array.from(this.relations.values()).filter(
       (r) => r.src_claim === claim_id || r.dst_claim === claim_id
@@ -496,7 +515,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
         const dstEntry = dstRev ? this.entries.get(dstRev.entry_id) : undefined;
         return {
           ...r,
-          ...(dstClaim ? { dst_claim_text: dstClaim.text } : {}),
+          ...(dstClaim ? { dst_claim_text: dstClaim.text, dst_claim_scope: dstClaim.scope } : {}),
           ...(dstEntry ? { dst_entry_slug: dstEntry.slug, dst_entry_title: dstEntry.title } : {}),
           ...(dstRev ? { dst_written_at: dstRev.written_at } : {}),
         };
@@ -649,6 +668,37 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
       ...updates,
     };
     this.scopedConstraints.set(id, updated);
+    return updated;
+  }
+
+  async saveTopologyReport(report: Omit<TopologyReport, 'id' | 'at'>): Promise<TopologyReport> {
+    const id = (report as any).id ?? crypto.randomUUID();
+    const item: TopologyReport = {
+      ...report,
+      id,
+      at: (report as any).at ?? new Date().toISOString(),
+    };
+    this.topologyReports.set(id, item);
+    return item;
+  }
+
+  async getTopologyReports(status?: string): Promise<TopologyReport[]> {
+    let list = Array.from(this.topologyReports.values());
+    if (status) {
+      list = list.filter((r) => r.status === status);
+    }
+    return list.sort((a, b) => b.confidence - a.confidence);
+  }
+
+  async updateTopologyReport(id: string, updates: Partial<TopologyReport>): Promise<TopologyReport | null> {
+    const existing = this.topologyReports.get(id);
+    if (!existing) return null;
+    const updated: TopologyReport = {
+      ...existing,
+      ...updates,
+      id,
+    };
+    this.topologyReports.set(id, updated);
     return updated;
   }
 

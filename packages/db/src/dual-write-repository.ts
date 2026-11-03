@@ -13,6 +13,7 @@ import type {
   Relation,
   ScopedConstraint,
   Span,
+  TopologyReport,
   Venture,
   Visibility,
 } from '@living-portfolio/core';
@@ -666,6 +667,14 @@ export class DualWritePortfolioRepository implements IPortfolioRepository {
     );
   }
 
+  async updateRelation(id: string, updates: Partial<Relation>): Promise<Relation | null> {
+    return this.executeWrite(
+      'updateRelation',
+      () => this.primary.updateRelation(id, updates),
+      () => this.shadow.updateRelation(id, updates)
+    );
+  }
+
   async getRelationsForClaim(claim_id: string): Promise<Relation[]> {
     return this.executeRead(
       'getRelationsForClaim',
@@ -834,6 +843,31 @@ export class DualWritePortfolioRepository implements IPortfolioRepository {
       'updateScopedConstraint',
       () => this.primary.updateScopedConstraint(id, updates),
       (res) => (res ? this.shadow.updateScopedConstraint(id, updates) : Promise.resolve(null))
+    );
+  }
+
+  // --- Topology Reports (§11, Fix 17) ---
+  async saveTopologyReport(report: Omit<TopologyReport, 'id' | 'at'>): Promise<TopologyReport> {
+    return this.executeWrite(
+      'saveTopologyReport',
+      () => this.primary.saveTopologyReport(report),
+      (res) => this.shadow.saveTopologyReport({ ...report, id: res.id, at: res.at } as any)
+    );
+  }
+
+  async getTopologyReports(status?: string): Promise<TopologyReport[]> {
+    return this.executeRead(
+      'getTopologyReports',
+      () => this.primary.getTopologyReports(status),
+      () => this.shadow.getTopologyReports(status)
+    );
+  }
+
+  async updateTopologyReport(id: string, updates: Partial<TopologyReport>): Promise<TopologyReport | null> {
+    return this.executeWrite(
+      'updateTopologyReport',
+      () => this.primary.updateTopologyReport(id, updates),
+      (res) => (res ? this.shadow.updateTopologyReport(id, updates) : Promise.resolve(null))
     );
   }
 
