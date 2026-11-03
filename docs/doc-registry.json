@@ -664,5 +664,13 @@
     "path": "docs/execution-reports/A051-wp-111-debounced-publish-ask-flow-repair.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A052",
+    "title": "WP-11.2: Navigation Redesign & System States",
+    "class": "A",
+    "path": "docs/execution-reports/A052-wp-112-navigation-redesign-system-states.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

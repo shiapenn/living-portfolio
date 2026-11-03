@@ -57,6 +57,7 @@
 | `A049` | WP-10.5 Import Planner Budgets and Core Connectors | `active` | [A049-wp-105-import-planner-budgets-and-core-connectors.md](execution-reports/A049-wp-105-import-planner-budgets-and-core-connectors.md) | — |
 | `A050` | WP-10.6 Labeled Evaluation Runner and Chaos Suites | `active` | [A050-wp-106-labeled-evaluation-runner-and-chaos-suites.md](execution-reports/A050-wp-106-labeled-evaluation-runner-and-chaos-suites.md) | — |
 | `A051` | WP-11.1: Debounced Publish & Ask Flow Repair | `active` | [A051-wp-111-debounced-publish-ask-flow-repair.md](execution-reports/A051-wp-111-debounced-publish-ask-flow-repair.md) | — |
+| `A052` | WP-11.2: Navigation Redesign & System States | `active` | [A052-wp-112-navigation-redesign-system-states.md](execution-reports/A052-wp-112-navigation-redesign-system-states.md) | — |
 
 ## Handover Snapshots (Class H)
 
