@@ -39,11 +39,14 @@
     - date: 2026-10-20
       status: open
       note: "Reopened by AUD-2026-10-20 (20261020-UX-01 / probe V5): createApp() fell
-        back to hard-coded default bearer token lp_pat_default_test_admin_token_001
-        when ADMIN_API_TOKEN was unset, and /admin had no browser login or setup UI"
+        back to hard-coded default bearer token
+        lp_pat_default_test_admin_token_001 when ADMIN_API_TOKEN was unset, and
+        /admin had no browser login or setup UI"
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+: removed hard-coded fallback admin token from createApp(), mounted HTML login & first-run setup routes with 302 redirect for browser navigation, and verified default token rejection."
+      note: "Fixed in Gate 1b+: removed hard-coded fallback admin token from
+        createApp(), mounted HTML login & first-run setup routes with 302
+        redirect for browser navigation, and verified default token rejection."
   verified_by: null
 - id: S2
   audit: AUD-2026-10-19
@@ -81,7 +84,9 @@
         redactionPreviewToken"
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+: server-side publish gate requires signed redactionPreviewToken bound to bodyHash and rejects empty/whitespace body_md on POST /api/entries."
+      note: "Fixed in Gate 1b+: server-side publish gate requires signed
+        redactionPreviewToken bound to bodyHash and rejects empty/whitespace
+        body_md on POST /api/entries."
   verified_by: null
 - id: S3
   audit: AUD-2026-10-19
@@ -212,7 +217,10 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: "Fixed in WP-3.4 (Fix 13): routed enrichment through selectProviderForDataClass and BudgetGovernor, skipped external cloud calls on sensitive/excluded data, and replaced keyword claim extraction with structured model extraction"
+      note: "Fixed in WP-3.4 (Fix 13): routed enrichment through
+        selectProviderForDataClass and BudgetGovernor, skipped external cloud
+        calls on sensitive/excluded data, and replaced keyword claim extraction
+        with structured model extraction"
   verified_by: null
 - id: G1
   audit: AUD-2026-10-19
@@ -236,7 +244,8 @@
       note: Raised by audit
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+ (Fix 4): checkGate returns INDETERMINATE when entry-side hard facet is unknown/missing."
+      note: "Fixed in Gate 1b+ (Fix 4): checkGate returns INDETERMINATE when
+        entry-side hard facet is unknown/missing."
   verified_by: null
 - id: G2
   audit: AUD-2026-10-19
@@ -260,7 +269,9 @@
       note: Raised by audit
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+ (Fix 4): routing inputs (hasEvidence, hasVerifiedEvidence, outcomeStatus, hasScope) computed dynamically from repository rather than hard-coded."
+      note: "Fixed in Gate 1b+ (Fix 4): routing inputs (hasEvidence,
+        hasVerifiedEvidence, outcomeStatus, hasScope) computed dynamically from
+        repository rather than hard-coded."
   verified_by: null
 - id: G3
   audit: AUD-2026-10-19
@@ -285,7 +296,9 @@
       note: Raised by audit
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+ (Fix 4): checkGate evaluates confirmed scoped constraints against visitor facets/values and ask.ts loads scopedConstraints from repo."
+      note: "Fixed in Gate 1b+ (Fix 4): checkGate evaluates confirmed scoped
+        constraints against visitor facets/values and ask.ts loads
+        scopedConstraints from repo."
   verified_by: null
 - id: G4
   audit: AUD-2026-10-19
@@ -310,7 +323,8 @@
       note: Raised by audit
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+ (Fix 4): ask.ts loads domainConfig hard/soft facets instead of hard-coded inline arrays."
+      note: "Fixed in Gate 1b+ (Fix 4): ask.ts loads domainConfig hard/soft facets
+        instead of hard-coded inline arrays."
   verified_by: null
 - id: G5
   audit: AUD-2026-10-19
@@ -335,7 +349,9 @@
       note: Raised by audit
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+ (Fix 4): verifyAnswerBeforeDelivery strips future-year references from verifiedText in time-travel mode, and ask.ts downgrades unverified synthesis to extractive response."
+      note: "Fixed in Gate 1b+ (Fix 4): verifyAnswerBeforeDelivery strips future-year
+        references from verifiedText in time-travel mode, and ask.ts downgrades
+        unverified synthesis to extractive response."
   verified_by: null
 - id: G6
   audit: AUD-2026-10-19
@@ -362,7 +378,8 @@
       note: Raised by audit
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+ (Fix 4): advisory queries with INDETERMINATE gate return needs_context asking visitor once for missing facets."
+      note: "Fixed in Gate 1b+ (Fix 4): advisory queries with INDETERMINATE gate
+        return needs_context asking visitor once for missing facets."
   verified_by: null
 - id: G7
   audit: AUD-2026-10-19
@@ -388,7 +405,9 @@
       note: Raised by audit
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+ (Fix 4): Tier 2 escalation synthesizes draft via model provider + verifyAnswerBeforeDelivery instead of static placeholder string."
+      note: "Fixed in Gate 1b+ (Fix 4): Tier 2 escalation synthesizes draft via model
+        provider + verifyAnswerBeforeDelivery instead of static placeholder
+        string."
   verified_by: null
 - id: G8
   audit: AUD-2026-10-19
@@ -413,7 +432,8 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: "Fixed in WP-3.2 (Fix 11): ask.ts avoids spending budget quota on extractive or non-generating routes, and reconciles provisional spend"
+      note: "Fixed in WP-3.2 (Fix 11): ask.ts avoids spending budget quota on
+        extractive or non-generating routes, and reconciles provisional spend"
   verified_by: null
 - id: B1
   audit: AUD-2026-10-19
@@ -436,7 +456,9 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: "Fixed in WP-3.2 (Fix 11): BudgetGovernor enforces >=20% owner-interactive reserve and priority access (owner_interactive > visitor_interactive > background)"
+      note: "Fixed in WP-3.2 (Fix 11): BudgetGovernor enforces >=20% owner-interactive
+        reserve and priority access (owner_interactive > visitor_interactive >
+        background)"
   verified_by: null
 - id: B2
   audit: AUD-2026-10-19
@@ -461,7 +483,9 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: "Fixed in WP-3.2 (Fix 11): BudgetGovernor enables smaller_model step at visitor soft threshold (80% of visitor allocation) rather than blocking visitors prematurely"
+      note: "Fixed in WP-3.2 (Fix 11): BudgetGovernor enables smaller_model step at
+        visitor soft threshold (80% of visitor allocation) rather than blocking
+        visitors prematurely"
   verified_by: null
 - id: B3
   audit: AUD-2026-10-19
@@ -485,7 +509,9 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: "Fixed in WP-3.2 (Fix 11): Visitor share and soft/hard thresholds are computed against visitor token allocation (visitorTokensToday / visitorAllocation)"
+      note: "Fixed in WP-3.2 (Fix 11): Visitor share and soft/hard thresholds are
+        computed against visitor token allocation (visitorTokensToday /
+        visitorAllocation)"
   verified_by: null
 - id: B4
   audit: AUD-2026-10-19
@@ -509,7 +535,9 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: "Fixed in WP-3.2 (Fix 11): Wired per-minute limits (TPM/RPM), response header learning, 429 backoff discount with jitter, token reconciliation, and UTC midnight resets persisted in PostgreSQL governor_ledger"
+      note: "Fixed in WP-3.2 (Fix 11): Wired per-minute limits (TPM/RPM), response
+        header learning, 429 backoff discount with jitter, token reconciliation,
+        and UTC midnight resets persisted in PostgreSQL governor_ledger"
   verified_by: null
 - id: P1
   audit: AUD-2026-10-19
@@ -535,7 +563,9 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): default database engine cut over to PostgreSQL in production and server.ts guards seedDemoPortfolio behind config.SEED_DEMO'
+      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): default database engine cut
+        over to PostgreSQL in production and server.ts guards seedDemoPortfolio
+        behind config.SEED_DEMO'
   verified_by: null
 - id: P2
   audit: AUD-2026-10-19
@@ -562,7 +592,9 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): Drizzle schema connected to PostgreSQL with connection pooling, migrations, schema_info verification, and complete PostgresPortfolioRepository implementation'
+      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): Drizzle schema connected to
+        PostgreSQL with connection pooling, migrations, schema_info
+        verification, and complete PostgresPortfolioRepository implementation'
   verified_by: null
 - id: P3
   audit: AUD-2026-10-19
@@ -589,7 +621,9 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): Worker process daemon entrypoint created, pg-boss 5-queue manager wired with autoChain, and ONNX embeddings persisted via repo.saveChunkVectors'
+      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): Worker process daemon
+        entrypoint created, pg-boss 5-queue manager wired with autoChain, and
+        ONNX embeddings persisted via repo.saveChunkVectors'
   verified_by: null
 - id: P4
   audit: AUD-2026-10-19
@@ -616,7 +650,9 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: "Fixed in WP-3.1 (Fix 9 / P4): Stopped overwriting written_at with valid_from for non-hindsight entries in repository; worker uses real SHA-256 for body_hash."
+      note: "Fixed in WP-3.1 (Fix 9 / P4): Stopped overwriting written_at with
+        valid_from for non-hindsight entries in repository; worker uses real
+        SHA-256 for body_hash."
   verified_by: null
 - id: P5
   audit: AUD-2026-10-19
@@ -640,7 +676,9 @@
       note: Raised by audit
     - date: 2026-11-02
       status: fixed
-      note: Worker buildsToday counter resets across UTC midnight boundaries with scheduleUtcMidnightReset, and runPublishStaticSiteJob emits real HTML pages, assets, offline keyword search index, and manifest to disk.
+      note: Worker buildsToday counter resets across UTC midnight boundaries with
+        scheduleUtcMidnightReset, and runPublishStaticSiteJob emits real HTML
+        pages, assets, offline keyword search index, and manifest to disk.
   verified_by: A
 - id: P6
   audit: AUD-2026-10-19
@@ -665,7 +703,8 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: "Fixed in WP-3.1 (Fix 9 / P6): Enforced revision immutability and duplicate slug rejection across API and repositories (409 Conflict)."
+      note: "Fixed in WP-3.1 (Fix 9 / P6): Enforced revision immutability and
+        duplicate slug rejection across API and repositories (409 Conflict)."
   verified_by: null
 - id: F1
   audit: AUD-2026-10-19
@@ -690,7 +729,10 @@
       note: Raised by audit
     - date: 2026-10-27
       status: fixed
-      note: "Fixed in WP-5.3 (F1): mounted all apps/web public site sub-routes (/home, /work, /work/:slug, /writing, /writing/:slug, /build, /timeline, /ask, /now, /about, /uses) and content-negotiated root HTML directly in createApp(), verified by p0-probes conformance test."
+      note: "Fixed in WP-5.3 (F1): mounted all apps/web public site sub-routes (/home,
+        /work, /work/:slug, /writing, /writing/:slug, /build, /timeline, /ask,
+        /now, /about, /uses) and content-negotiated root HTML directly in
+        createApp(), verified by p0-probes conformance test."
   verified_by: null
 - id: F2
   audit: AUD-2026-10-19
@@ -717,7 +759,9 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): Multi-stage, non-root Dockerfile.api and Dockerfile.worker created in docker/ for docker-compose'
+      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): Multi-stage, non-root
+        Dockerfile.api and Dockerfile.worker created in docker/ for
+        docker-compose'
   verified_by: null
 - id: F3
   audit: AUD-2026-10-19
@@ -741,7 +785,9 @@
       note: Raised by audit
     - date: 2026-10-26
       status: fixed
-      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): /healthz wired to measured repo.checkHealth() check returning 200 (healthy) or 503 (degraded) based on live DB connectivity'
+      note: 'Fixed in WP-2.5 (Gate 1c / G2 alpha close): /healthz wired to measured
+        repo.checkHealth() check returning 200 (healthy) or 503 (degraded) based
+        on live DB connectivity'
   verified_by: null
 - id: F4
   audit: AUD-2026-10-19
@@ -751,7 +797,7 @@
     - "4"
     - "12"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 22
@@ -759,11 +805,18 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-markdown-tokens.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.4 (A054): implemented full CommonMark / GFM markdown
+        rendering engine with HTML sanitization, heading demotion (# -> <h2>),
+        fenced code blocks with language classes, GFM tables, blockquotes,
+        lists, and safe link validation. Backed by
+        wp11-markdown-tokens.conformance.test.ts."
   verified_by: null
 - id: M1
   audit: AUD-2026-10-19
@@ -816,7 +869,9 @@
       note: Raised by audit (Section 4 §10.8, Section 7 Fix 12)
     - date: 2026-10-26
       status: fixed
-      note: "Fixed in WP-3.3 (Fix 12): AnswerCache Step 2 degradation caching with revision/claim invalidation, fallback_provider Step 3 step down, and database/subsystem offline Step 6 handoff."
+      note: "Fixed in WP-3.3 (Fix 12): AnswerCache Step 2 degradation caching with
+        revision/claim invalidation, fallback_provider Step 3 step down, and
+        database/subsystem offline Step 6 handoff."
   verified_by: p0-probes.conformance.test.ts
 - id: M3
   audit: AUD-2026-10-19
@@ -841,7 +896,11 @@
       note: Raised by audit (Section 3, Section 4 §10.6, Section 7 Fix 14)
     - date: 2026-11-03
       status: fixed
-      note: "Fixed in WP-10.1 (Fix 14): Pre-delivery entailment judge comparing statements against retrieved passages with LLM judge and deterministic fallback, assertion stripping for ungrounded claims, wiring citedScopes into answer metadata and API response, and explicit reconstruction labeling for time-travel queries and degradation steps."
+      note: "Fixed in WP-10.1 (Fix 14): Pre-delivery entailment judge comparing
+        statements against retrieved passages with LLM judge and deterministic
+        fallback, assertion stripping for ungrounded claims, wiring citedScopes
+        into answer metadata and API response, and explicit reconstruction
+        labeling for time-travel queries and degradation steps."
   verified_by: m3-verification-entailment.conformance.test.ts
 - id: M4
   audit: AUD-2026-10-19
@@ -866,7 +925,11 @@
       note: Raised by audit (Section 4 §10.3, Section 7 Fix 15)
     - date: 2026-11-03
       status: fixed
-      note: "Fixed in WP-10.2 (Fix 4, Fix 15): Upgraded query classification from substring heuristics to provider-backed classification with labeled benchmark suite, implemented About path answered from About page records and settings with /about citation, enforced strict default to advisory for ambiguous cases, and verified needs_context state mechanics."
+      note: "Fixed in WP-10.2 (Fix 4, Fix 15): Upgraded query classification from
+        substring heuristics to provider-backed classification with labeled
+        benchmark suite, implemented About path answered from About page records
+        and settings with /about citation, enforced strict default to advisory
+        for ambiguous cases, and verified needs_context state mechanics."
   verified_by: m4-query-classification.conformance.test.ts
 - id: M5
   audit: AUD-2026-10-19
@@ -890,7 +953,12 @@
       note: Raised by audit (Section 3, Section 4 §11, Section 7 Fix 16)
     - date: 2026-11-03
       status: fixed
-      note: "Fixed in WP-10.3 (Fix 16): Implemented self-calibration routing calibration with sliding-window metrics, held-out validation, Expected Calibration Error (ECE), reliability curve generation, per-mechanism on/off flags (parameter-changing mechanisms off by default), freeze guard honoring calibrationFrozen, bounded max-step clamping on /apply, and stateful rollback restoring live parameter state."
+      note: "Fixed in WP-10.3 (Fix 16): Implemented self-calibration routing
+        calibration with sliding-window metrics, held-out validation, Expected
+        Calibration Error (ECE), reliability curve generation, per-mechanism
+        on/off flags (parameter-changing mechanisms off by default), freeze
+        guard honoring calibrationFrozen, bounded max-step clamping on /apply,
+        and stateful rollback restoring live parameter state."
   verified_by: m5-self-calibration.conformance.test.ts
 - id: M6
   audit: AUD-2026-10-19
@@ -915,7 +983,11 @@
       note: Raised by audit (Section 4 §11, Section 7 Fix 17)
     - date: 2026-11-03
       status: fixed
-      note: "Fixed in WP-10.4 (Fix 17): Automated dynamic topology conflict detector (detectTopologyConflicts) and scoped constraint mining (mineScopedConstraintFromRejection) implemented; owner-only write test verifies no relation edges or active constraints are created without owner action (§11, §18.1)."
+      note: "Fixed in WP-10.4 (Fix 17): Automated dynamic topology conflict detector
+        (detectTopologyConflicts) and scoped constraint mining
+        (mineScopedConstraintFromRejection) implemented; owner-only write test
+        verifies no relation edges or active constraints are created without
+        owner action (§11, §18.1)."
   verified_by: m6-m7-topology-staleness.conformance.test.ts
 - id: M7
   audit: AUD-2026-10-19
@@ -939,7 +1011,9 @@
       note: Raised by audit (Section 3, Section 4 §10.7, Section 7 Fix 18)
     - date: 2026-11-03
       status: fixed
-      note: "Fixed in WP-10.4 (Fix 18): Scope-overlap staleness detector implemented with checkScopeOverlap and recompute-on-accept trigger on relation mutation (§10.7)."
+      note: "Fixed in WP-10.4 (Fix 18): Scope-overlap staleness detector implemented
+        with checkScopeOverlap and recompute-on-accept trigger on relation
+        mutation (§10.7)."
   verified_by: m6-m7-topology-staleness.conformance.test.ts
 - id: M8
   audit: AUD-2026-10-19
@@ -965,7 +1039,8 @@
       note: Raised by audit (Section 3, Section 4 §13.9, Section 7 Fix 20)
     - date: 2026-11-02
       status: fixed
-      note: Automated pg_dump + age encrypted backups, scratch-container restore drill, retention policy enforcement, and backup freshness alerts.
+      note: Automated pg_dump + age encrypted backups, scratch-container restore
+        drill, retention policy enforcement, and backup freshness alerts.
   verified_by: apps/api/src/conformance/backup-restore.conformance.test.ts
 - id: M9
   audit: AUD-2026-10-19
@@ -991,7 +1066,12 @@
       note: Raised by audit (Section 4 §4/§13.6/§14, Section 7 Fix 21)
     - date: 2026-11-03
       status: fixed
-      note: "Fixed in WP-10.5 (Fix 21): Import planner enforces configured token and audio budgets, generates structured document previews, and calculates free/paid ETAs (§13.6); resumable import jobs checkpoint per document and survive interruptions (§13.6); core source connectors (GitHub, RSS, file drop) and concrete notification adapters (ntfy, Telegram, email, webhook) implemented (§14)."
+      note: "Fixed in WP-10.5 (Fix 21): Import planner enforces configured token and
+        audio budgets, generates structured document previews, and calculates
+        free/paid ETAs (§13.6); resumable import jobs checkpoint per document
+        and survive interruptions (§13.6); core source connectors (GitHub, RSS,
+        file drop) and concrete notification adapters (ntfy, Telegram, email,
+        webhook) implemented (§14)."
   verified_by: m9-import-planner-connectors.conformance.test.ts
 - id: M10
   audit: AUD-2026-10-19
@@ -1041,7 +1121,10 @@
       note: Raised by audit (Section 4 §18.1/§18.2, Section 7 Fixes 25 & 26)
     - date: 2026-11-03
       status: fixed
-      note: 'Fixed in WP-10.6: Labeled evaluation runner, structure ablation, baseline comparison, calibration ECE, time-travel leakage, provider chaos, axe accessibility tests, and CI supply chain decoupling checks (Fix 25, Fix 26, §18.1, §18.2)'
+      note: 'Fixed in WP-10.6: Labeled evaluation runner, structure ablation, baseline
+        comparison, calibration ECE, time-travel leakage, provider chaos, axe
+        accessibility tests, and CI supply chain decoupling checks (Fix 25, Fix
+        26, §18.1, §18.2)'
   verified_by: null
 - id: OSR-01
   audit: OSR-001
@@ -1327,7 +1410,10 @@
       note: Added from OSR-001 §7 task register
     - date: 2026-11-02
       status: fixed
-      note: "Fixed in WP-7.1 (OSR-12): versioned /api/v1 mounted in createApp(), committed OpenAPI 3.1 schema generated from Zod schemas at docs/spec/openapi.json with CI drift gate, and strongly typed @living-portfolio/client package implemented and verified."
+      note: "Fixed in WP-7.1 (OSR-12): versioned /api/v1 mounted in createApp(),
+        committed OpenAPI 3.1 schema generated from Zod schemas at
+        docs/spec/openapi.json with CI drift gate, and strongly typed
+        @living-portfolio/client package implemented and verified."
 - id: OSR-13
   audit: OSR-001
   title: Decouple web from API; remove web mounting from createApp(); optional
@@ -1350,7 +1436,9 @@
       note: Added from OSR-001 §7 task register
     - date: 2026-11-02
       status: fixed
-      note: Decoupled apps/web from apps/api and database imports; createApp() is pure API by default; optional bundled web adapter behind ENABLE_BUNDLED_WEB=true; added verify-dependency-rules script.
+      note: Decoupled apps/web from apps/api and database imports; createApp() is pure
+        API by default; optional bundled web adapter behind
+        ENABLE_BUNDLED_WEB=true; added verify-dependency-rules script.
 - id: OSR-14
   audit: OSR-001
   title: Repository conformance suite over in-memory and Postgres (Gate G2)
@@ -1372,7 +1460,8 @@
       note: Added from OSR-001 §7 task register
     - date: 2026-10-26
       status: fixed
-      note: 'Fixed in WP-2.2 and WP-2.3: Repository conformance suite executed over in-memory and Postgres with temporal bisimulation checks'
+      note: 'Fixed in WP-2.2 and WP-2.3: Repository conformance suite executed over
+        in-memory and Postgres with temporal bisimulation checks'
 - id: OSR-15
   audit: OSR-001
   title: Integration and E2E lanes with Postgres service container and local
@@ -1394,7 +1483,8 @@
       note: Added from OSR-001 §7 task register
     - date: 2026-10-26
       status: fixed
-      note: 'Fixed in WP-2.1 to WP-2.4: Real postgres service container wired in CI and dual-write bit-for-bit parity test suite verified'
+      note: 'Fixed in WP-2.1 to WP-2.4: Real postgres service container wired in CI
+        and dual-write bit-for-bit parity test suite verified'
 - id: OSR-16
   audit: OSR-001
   title: Dockerfiles, compose stack, quickstart test in CI; release workflow with
@@ -1418,7 +1508,9 @@
       note: Added from OSR-001 §7 task register
     - date: 2026-10-27
       status: fixed
-      note: "Fixed in WP-6.1 (OSR-16): Multi-stage Dockerfiles, reference compose stack, quickstart container workflow, SPDX 2.3 SBOM generator, and signed multi-arch release workflow."
+      note: "Fixed in WP-6.1 (OSR-16): Multi-stage Dockerfiles, reference compose
+        stack, quickstart container workflow, SPDX 2.3 SBOM generator, and
+        signed multi-arch release workflow."
 - id: OSR-17
   audit: OSR-001
   title: Hosting provider spike and ADR (image by digest, credential model,
@@ -1441,7 +1533,9 @@
       note: Added from OSR-001 §7 task register
     - date: 2026-11-02
       status: fixed
-      note: Completed hosting provider spike and committed Architecture Decision Record P003 (Render selected as lead, Fly.io alternate) with conformance verification (WP-8.1).
+      note: Completed hosting provider spike and committed Architecture Decision
+        Record P003 (Render selected as lead, Fly.io alternate) with conformance
+        verification (WP-8.1).
 - id: OSR-18
   audit: OSR-001
   title: Provider config in deploy/<provider>/, staging deploy workflow, scoped
@@ -1463,7 +1557,10 @@
       note: Added from OSR-001 §7 task register
     - date: 2026-11-02
       status: fixed
-      note: Created Render Blueprint (deploy/render/render.yaml), staging deploy workflow (.github/workflows/deploy-staging.yml) with image digest pinning and scoped deploy credentials, Dockerfile.web, and regression test (WP-8.2).
+      note: Created Render Blueprint (deploy/render/render.yaml), staging deploy
+        workflow (.github/workflows/deploy-staging.yml) with image digest
+        pinning and scoped deploy credentials, Dockerfile.web, and regression
+        test (WP-8.2).
 - id: OSR-19
   audit: OSR-001
   title: Staging safeguards (§6.4) and DEPLOYMENT_CLASS handling (Gate G3)
@@ -1485,7 +1582,10 @@
       note: Added from OSR-001 §7 task register
     - date: 2026-11-02
       status: fixed
-      note: Implemented staging synthetic warning banner, robots.txt crawler disallow, X-Robots-Tag, disabled staging import routes (403 STAGING_IMPORT_DISABLED), production seed ban, and Gate G4 production sign-off startup guard.
+      note: Implemented staging synthetic warning banner, robots.txt crawler disallow,
+        X-Robots-Tag, disabled staging import routes (403
+        STAGING_IMPORT_DISABLED), production seed ban, and Gate G4 production
+        sign-off startup guard.
 - id: OSR-20
   audit: OSR-001
   title: Real backups and restore drill, backup-age alert (Gate G4)
@@ -1508,7 +1608,9 @@
       note: Added from OSR-001 §7 task register
     - date: 2026-11-02
       status: fixed
-      note: Automated pg_dump + age encrypted backups, scratch-container restore drill, retention policy enforcement (7 daily, 4 weekly, 6 monthly), and BACKUP_STALE freshness alerts.
+      note: Automated pg_dump + age encrypted backups, scratch-container restore
+        drill, retention policy enforcement (7 daily, 4 weekly, 6 monthly), and
+        BACKUP_STALE freshness alerts.
 - id: OSR-21
   audit: OSR-001
   title: Observability, budget caps and alerts (Gate G4)
@@ -1530,7 +1632,9 @@
       note: Added from OSR-001 §7 task register
     - date: 2026-11-02
       status: fixed
-      note: Provider budget governor limits, spend tracking, rate limit backoff alerts, sliding-window error rate monitoring, soft/hard spend threshold alerts, and healthz observability integration.
+      note: Provider budget governor limits, spend tracking, rate limit backoff
+        alerts, sliding-window error rate monitoring, soft/hard spend threshold
+        alerts, and healthz observability integration.
 - id: OSR-22
   audit: OSR-001
   title: Production deploy workflow with required reviewer, health gate,
@@ -1553,7 +1657,11 @@
       note: Added from OSR-001 §7 task register
     - date: 2026-11-02
       status: fixed
-      note: "Production deployment workflow (.github/workflows/deploy-production.yml) with required reviewer, health gate, auto-rollback to previous healthy digests (scripts/deploy-with-rollback), production blueprint (deploy/render/render.production.yaml), and staging rollback drill proof."
+      note: "Production deployment workflow (.github/workflows/deploy-production.yml)
+        with required reviewer, health gate, auto-rollback to previous healthy
+        digests (scripts/deploy-with-rollback), production blueprint
+        (deploy/render/render.production.yaml), and staging rollback drill
+        proof."
 - id: OSR-23
   audit: OSR-001
   title: Self-host guide, config reference, upgrade guide, contributor guide, and
@@ -1575,11 +1683,15 @@
       note: Added from OSR-001 §7 task register
     - date: 2026-11-02
       status: in-progress
-      note: "Part 1 completed in WP-7.3: Published API boundary ADR (P002), configuration reference contract (G002), and updated README."
+      note: "Part 1 completed in WP-7.3: Published API boundary ADR (P002),
+        configuration reference contract (G002), and updated README."
 
 - id: 20261020-UX-01
   audit: AUD-2026-10-20
-  title: 'Owner has no way to sign in or set up. A browser at `/admin` gets raw JSON 401. `setupWizardCompleted` is hard-coded `true`. If `ADMIN_API_TOKEN` is unset, a published default token (`lp_pat_default_test_admin_token_001`) grants admin; it worked in my run'
+  title: 'Owner has no way to sign in or set up. A browser at `/admin` gets raw
+    JSON 401. `setupWizardCompleted` is hard-coded `true`. If `ADMIN_API_TOKEN`
+    is unset, a published default token (`lp_pat_default_test_admin_token_001`)
+    grants admin; it worked in my run'
   spec_sections:
     - "3.11"
     - "4.4"
@@ -1603,20 +1715,29 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-01, probes V1 & V5)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-01, probes V1
+        & V5)
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+ (UX P0-1): implemented /admin/login and /admin/setup HTML views, 302 redirect from /admin when unauthenticated, and removed createApp default fallback token."
+      note: "Fixed in Gate 1b+ (UX P0-1): implemented /admin/login and /admin/setup
+        HTML views, 302 redirect from /admin when unauthenticated, and removed
+        createApp default fallback token."
     - date: 2026-10-21
       status: partial
-      note: "Set to partial per auditor review pending full criteria fulfillment (complete setup wizard and token revocation persistence)."
+      note: "Set to partial per auditor review pending full criteria fulfillment
+        (complete setup wizard and token revocation persistence)."
     - date: 2026-10-27
       status: fixed
-      note: "Fixed in WP-5.2 (20261020-UX-01): Implemented complete 6-step setup wizard UI (§13.13) at /admin/setup, token revocation persistence across reboots in AuthManager, 429 login rate-limiting explanations, and setup lockdown. Backed by web.test.ts and api.test.ts."
+      note: "Fixed in WP-5.2 (20261020-UX-01): Implemented complete 6-step setup
+        wizard UI (§13.13) at /admin/setup, token revocation persistence across
+        reboots in AuthManager, 429 login rate-limiting explanations, and setup
+        lockdown. Backed by web.test.ts and api.test.ts."
   verified_by: null
 - id: 20261020-UX-02
   audit: AUD-2026-10-20
-  title: 'Every admin `fetch` omits `X-CSRF-Token` and `Authorization`, so with a cookie session they hit the CSRF 403 (`auth/security.ts:273-275`). No failure branch exists; Publish ignores `res.ok`'
+  title: 'Every admin `fetch` omits `X-CSRF-Token` and `Authorization`, so with a
+    cookie session they hit the CSRF 403 (`auth/security.ts:273-275`). No
+    failure branch exists; Publish ignores `res.ok`'
   spec_sections:
     - "4.2"
     - "6.2"
@@ -1642,11 +1763,16 @@
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-02, probe V2)
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+ (UX P0-2): admin workspace apiClient attaches X-CSRF-Token, verifies res.ok, and shows specific error message without false green confidentiality on 401/error."
+      note: "Fixed in Gate 1b+ (UX P0-2): admin workspace apiClient attaches
+        X-CSRF-Token, verifies res.ok, and shows specific error message without
+        false green confidentiality on 401/error."
   verified_by: null
 - id: 20261020-UX-03
   audit: AUD-2026-10-20
-  title: 'Redaction preview is optional, and a failed request renders green "✓ No confidential secrets…". In my test the scanner flagged an email but not an `sk-…` key or "NDA". `POST /api/entries` publishes public with no token (verified: secret served at `/work/leaky-1`)'
+  title: 'Redaction preview is optional, and a failed request renders green "✓ No
+    confidential secrets…". In my test the scanner flagged an email but not an
+    `sk-…` key or "NDA". `POST /api/entries` publishes public with no token
+    (verified: secret served at `/work/leaky-1`)'
   spec_sections:
     - "0"
     - "1"
@@ -1670,23 +1796,39 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-03, probes V2, V3 & V4)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-03, probes V2,
+        V3 & V4)
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+ (UX P0-3): broadened scanForConfidentialData to catch sk- keys, NDA markers, and client names; enforced server-side publish gate on POST /api/entries rejecting public create without token and empty body."
+      note: "Fixed in Gate 1b+ (UX P0-3): broadened scanForConfidentialData to catch
+        sk- keys, NDA markers, and client names; enforced server-side publish
+        gate on POST /api/entries rejecting public create without token and
+        empty body."
     - date: 2026-10-21
       status: partial
-      note: "Set to partial per auditor review pending full criteria fulfillment (multi-pass entity extraction and UI redaction preview drawer)."
+      note: "Set to partial per auditor review pending full criteria fulfillment
+        (multi-pass entity extraction and UI redaction preview drawer)."
     - date: 2026-10-22
       status: partial
-      note: "WP-1 Task 3 delivered: owner exclusion list in settings and data file (no Acme literal), 4-state UI result (checking/clean/needs review/could not check), retry button, and mandatory NDA question publish gate."
+      note: "WP-1 Task 3 delivered: owner exclusion list in settings and data file (no
+        Acme literal), 4-state UI result (checking/clean/needs review/could not
+        check), retry button, and mandatory NDA question publish gate."
     - date: 2026-10-27
       status: fixed
-      note: "Fixed in WP-5.3 (20261020-UX-03): delivered multi-pass entity extraction pipeline (Pass 1 Secrets, Pass 2 NDA markers, Pass 3 Entities/Exclusions) in packages/ai, and interactive UI redaction preview drawer in apps/web with highlighted preview and one-click masking."
+      note: "Fixed in WP-5.3 (20261020-UX-03): delivered multi-pass entity extraction
+        pipeline (Pass 1 Secrets, Pass 2 NDA markers, Pass 3
+        Entities/Exclusions) in packages/ai, and interactive UI redaction
+        preview drawer in apps/web with highlighted preview and one-click
+        masking."
   verified_by: null
 - id: 20261020-UX-04
   audit: AUD-2026-10-20
-  title: 'Truncated CMS lifecycle (Anti-pattern C). One action, "Publish as is", creates a *public* entry. No draft/save, no edit of existing entries, no revision list, no visibility control, no unpublish, no delete (API exists for all). Empty body is replaced with a stub and published (`:1097`). Slug is manual. Admin list links to `/work/…` which 404s for private entries. No undo or confirm'
+  title: 'Truncated CMS lifecycle (Anti-pattern C). One action, "Publish as is",
+    creates a *public* entry. No draft/save, no edit of existing entries, no
+    revision list, no visibility control, no unpublish, no delete (API exists
+    for all). Empty body is replaced with a stub and published (`:1097`). Slug
+    is manual. Admin list links to `/work/…` which 404s for private entries. No
+    undo or confirm'
   spec_sections:
     - "5.2"
     - "6.2"
@@ -1712,14 +1854,20 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-04; staged in G2 alpha inside OSR-13)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-04; staged in
+        G2 alpha inside OSR-13)
     - date: 2026-10-26
       status: fixed
-      note: "Fixed in WP-3.1 (UX-04, P0-4): Implemented CMS lifecycle extension with draft save, revision history inspector, visibility selection, unpublish, delete, undo confirmation banner, auto-slug generator, and private entry 404 link prevention."
+      note: "Fixed in WP-3.1 (UX-04, P0-4): Implemented CMS lifecycle extension with
+        draft save, revision history inspector, visibility selection, unpublish,
+        delete, undo confirmation banner, auto-slug generator, and private entry
+        404 link prevention."
   verified_by: null
 - id: 20261020-UX-05
   audit: AUD-2026-10-20
-  title: 'Two meanings of "publish" are collapsed. Visibility change is instant; the static site rebuild is debounced (10 min, 12 per day) and has no UI. "Background enrichment queued" is shown but nothing enqueues (verified)'
+  title: 'Two meanings of "publish" are collapsed. Visibility change is instant;
+    the static site rebuild is debounced (10 min, 12 per day) and has no UI.
+    "Background enrichment queued" is shown but nothing enqueues (verified)'
   spec_sections:
     - "0"
     - "1"
@@ -1746,17 +1894,30 @@
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-05 / P0-9)
     - date: 2026-10-21
       status: fixed
-      note: "Fixed in Gate 1b+ (UX P0-9): removed hard-coded Detected Claim Conflict card, removed false background enrichment queued claim, reflected server kill-switch aria-pressed state, and healthz reports not_configured for unconfigured subsystems."
+      note: "Fixed in Gate 1b+ (UX P0-9): removed hard-coded Detected Claim Conflict
+        card, removed false background enrichment queued claim, reflected server
+        kill-switch aria-pressed state, and healthz reports not_configured for
+        unconfigured subsystems."
     - date: 2026-10-21
       status: open
-      note: "Reclassified to P1-6 and kept open per auditor review: kill-switch state requires persistence in database."
+      note: "Reclassified to P1-6 and kept open per auditor review: kill-switch state
+        requires persistence in database."
     - date: 2026-11-03
       status: fixed
-      note: "Fixed in WP-11.1 (UX-05, Task Receipt A051): Implemented debounced static site rebuild progress UI (10-minute window, 12/day cap counters) in admin workspace, GET /api/v1/publish/status, POST /api/v1/publish/now (forceNow bypass), and real background enrichment queueing on publication and via POST /api/v1/publish/enrich. Conformance in wp11-publish-ask.conformance.test.ts and E2E in wp11-publish-and-ask.spec.ts."
+      note: "Fixed in WP-11.1 (UX-05, Task Receipt A051): Implemented debounced static
+        site rebuild progress UI (10-minute window, 12/day cap counters) in
+        admin workspace, GET /api/v1/publish/status, POST /api/v1/publish/now
+        (forceNow bypass), and real background enrichment queueing on
+        publication and via POST /api/v1/publish/enrich. Conformance in
+        wp11-publish-ask.conformance.test.ts and E2E in
+        wp11-publish-and-ask.spec.ts."
   verified_by: null
 - id: 20261020-UX-06
   audit: AUD-2026-10-20
-  title: 'The structure loop (the Spec''s core value) is read-only. Inspector is bound to `entries[0]`. No accept/change/ignore, no facet confirm, no outcome picker, no evidence attach, no answerability preview, no tabs. Gap questions are a bullet list you cannot answer'
+  title: 'The structure loop (the Spec''s core value) is read-only. Inspector is
+    bound to `entries[0]`. No accept/change/ignore, no facet confirm, no outcome
+    picker, no evidence attach, no answerability preview, no tabs. Gap questions
+    are a bullet list you cannot answer'
   spec_sections:
     - "3.5"
     - "3.6"
@@ -1778,14 +1939,20 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-06 / P0-6; staged before G4)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-06 / P0-6;
+        staged before G4)
     - date: 2026-10-27
       status: fixed
-      note: Implemented 5-tab structure review loop with interactive role annotations, context facet confirmation, and evidence attachment (WP-4.1). Backed by web.test.ts and Playwright E2E harness.
+      note: Implemented 5-tab structure review loop with interactive role annotations,
+        context facet confirmation, and evidence attachment (WP-4.1). Backed by
+        web.test.ts and Playwright E2E harness.
   verified_by: null
 - id: 20261020-UX-07
   audit: AUD-2026-10-20
-  title: 'Onboarding and alternative authoring paths are missing: first-run walkthrough, import upload and planner, confidence-sorted triage with `J K A R D S`, guided mode with per-role prompts, quick log (no route or API at all)'
+  title: 'Onboarding and alternative authoring paths are missing: first-run
+    walkthrough, import upload and planner, confidence-sorted triage with `J K A
+    R D S`, guided mode with per-role prompts, quick log (no route or API at
+    all)'
   spec_sections:
     - "6.1"
     - "10.3"
@@ -1812,14 +1979,21 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-07 / P0-8; staged before G4)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-07 / P0-8;
+        staged before G4)
     - date: 2026-10-27
       status: fixed
-      note: Implemented first-run walkthrough, import planner and triage with J K A R D S keyboard UX, guided per-role authoring mode, and quick log endpoint (WP-4.1). Backed by web.test.ts and Playwright E2E harness.
+      note: Implemented first-run walkthrough, import planner and triage with J K A R
+        D S keyboard UX, guided per-role authoring mode, and quick log endpoint
+        (WP-4.1). Backed by web.test.ts and Playwright E2E harness.
   verified_by: null
 - id: 20261020-UX-08
   audit: AUD-2026-10-20
-  title: 'Escalation loop is open at both ends. Owner list is read-only (no approve, edit or reject). Visitor side captures no contact, so an approved reply cannot be delivered; the 24-hour promise has no receipt or status page. The draft is a static template string (`ask.ts:175`, repo finding `G7`)'
+  title: 'Escalation loop is open at both ends. Owner list is read-only (no
+    approve, edit or reject). Visitor side captures no contact, so an approved
+    reply cannot be delivered; the 24-hour promise has no receipt or status
+    page. The draft is a static template string (`ask.ts:175`, repo finding
+    `G7`)'
   spec_sections:
     - "6.1"
     - "6.4"
@@ -1843,14 +2017,24 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-08 / P0-10; staged before G4)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-08 / P0-10;
+        staged before G4)
     - date: 2026-10-27
       status: fixed
-      note: Closed escalation loop at both ends with owner approve/edit/reject controls, visitor contact capture, 24-hr status token and personal status receipt page at /ask/status/:token (WP-4.2). Backed by api.test.ts, web.test.ts, and visitor-escalation-booking.spec.ts.
+      note: Closed escalation loop at both ends with owner approve/edit/reject
+        controls, visitor contact capture, 24-hr status token and personal
+        status receipt page at /ask/status/:token (WP-4.2). Backed by
+        api.test.ts, web.test.ts, and visitor-escalation-booking.spec.ts.
   verified_by: null
 - id: 20261020-UX-09
   audit: AUD-2026-10-20
-  title: 'Admin operations are static, fabricated or absent. The topology-conflict card is hard-coded text while the API returns an honest 501. Scoped constraints list lacks confirm and discard. Kill-switch UI starts from a local `answeringEnabled = true`, ignoring server state. Calibration, routing floors, theme, providers, notifications and backups have no screens. `health.ts` and `settings.ts` return invented "passed" and "verified" statuses'
+  title: 'Admin operations are static, fabricated or absent. The topology-conflict
+    card is hard-coded text while the API returns an honest 501. Scoped
+    constraints list lacks confirm and discard. Kill-switch UI starts from a
+    local `answeringEnabled = true`, ignoring server state. Calibration, routing
+    floors, theme, providers, notifications and backups have no screens.
+    `health.ts` and `settings.ts` return invented "passed" and "verified"
+    statuses'
   spec_sections:
     - "6.4"
     - "11"
@@ -1870,17 +2054,30 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-09 / P0-11; staged before G4)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-09 / P0-11;
+        staged before G4)
     - date: 2026-10-21
       status: partial
-      note: "Set to partial per auditor review pending edit-before-send and visitor notification implementation."
+      note: "Set to partial per auditor review pending edit-before-send and visitor
+        notification implementation."
     - date: 2026-10-27
       status: fixed
-      note: Implemented honest topology conflict status, interactive scoped constraints confirm and discard actions, server-synchronized kill-switch state, and full /admin/settings operational screens for routing floors, provider registry, theme tokens, notification testing, and backup drills (WP-5.1). Backed by api.test.ts, web.test.ts, and wp5-admin-settings.spec.ts.
+      note: Implemented honest topology conflict status, interactive scoped
+        constraints confirm and discard actions, server-synchronized kill-switch
+        state, and full /admin/settings operational screens for routing floors,
+        provider registry, theme tokens, notification testing, and backup drills
+        (WP-5.1). Backed by api.test.ts, web.test.ts, and
+        wp5-admin-settings.spec.ts.
   verified_by: null
 - id: 20261020-UX-10
   audit: AUD-2026-10-20
-  title: 'Ask flow gaps. No `needs_context` state; facets are two hard-coded inputs revealed by a keyword heuristic that duplicates the server classifier (`:652`). Entry-scoped asks lose their scope on screen. A 429 comes back as `tier: ''no_match''` and displays as "Not in records". Submit is not disabled while waiting (double submit burns the hourly limit). No streaming. Example questions are hard-coded, not from entries. Non-JSON errors fall to a misleading "Origin unreachable"'
+  title: 'Ask flow gaps. No `needs_context` state; facets are two hard-coded
+    inputs revealed by a keyword heuristic that duplicates the server classifier
+    (`:652`). Entry-scoped asks lose their scope on screen. A 429 comes back as
+    `tier: ''no_match''` and displays as "Not in records". Submit is not
+    disabled while waiting (double submit burns the hourly limit). No streaming.
+    Example questions are hard-coded, not from entries. Non-JSON errors fall to
+    a misleading "Origin unreachable"'
   spec_sections:
     - "3.9"
     - "6.5"
@@ -1900,14 +2097,24 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-10 / P1-1; staged in v0.2)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-10 / P1-1;
+        staged in v0.2)
     - date: 2026-11-03
       status: fixed
-      note: "Fixed in WP-11.1 (UX-10, Task Receipt A051): Implemented needs_context interactive clarification form with dynamic facet prompts, context_asked submission & skip options, persistent entry-scoped notice on screen with reset trigger, double-submit lockout (aria-busy and button/input disablement), truthful 429 rate limit backoff display with countdown/booking CTA, dynamic question examples extracted from published entries, and honest non-JSON error handling. Conformance in wp11-publish-ask.conformance.test.ts and E2E in wp11-publish-and-ask.spec.ts."
+      note: "Fixed in WP-11.1 (UX-10, Task Receipt A051): Implemented needs_context
+        interactive clarification form with dynamic facet prompts, context_asked
+        submission & skip options, persistent entry-scoped notice on screen with
+        reset trigger, double-submit lockout (aria-busy and button/input
+        disablement), truthful 429 rate limit backoff display with
+        countdown/booking CTA, dynamic question examples extracted from
+        published entries, and honest non-JSON error handling. Conformance in
+        wp11-publish-ask.conformance.test.ts and E2E in
+        wp11-publish-and-ask.spec.ts."
   verified_by: null
 - id: 20261020-UX-11
   audit: AUD-2026-10-20
-  title: 'Booking is an `alert()`; no endpoint, no storage, no contact field, facets not carried (Tier 3 dead end)'
+  title: 'Booking is an `alert()`; no endpoint, no storage, no contact field,
+    facets not carried (Tier 3 dead end)'
   spec_sections:
     - "3.6"
     - "3.7"
@@ -1931,14 +2138,23 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-11 / P0-7; staged in G2 alpha)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-11 / P0-7;
+        staged in G2 alpha)
     - date: 2026-10-27
       status: fixed
-      note: Replaced dead-end alert() with Tier 3 booking page carrying context topic and facets, POST /api/book endpoint with PostgreSQL/dual-write persistence, confirmation screen, and admin review API (WP-4.2). Backed by api.test.ts, web.test.ts, and visitor-escalation-booking.spec.ts.
+      note: Replaced dead-end alert() with Tier 3 booking page carrying context topic
+        and facets, POST /api/book endpoint with PostgreSQL/dual-write
+        persistence, confirmation screen, and admin review API (WP-4.2). Backed
+        by api.test.ts, web.test.ts, and visitor-escalation-booking.spec.ts.
   verified_by: null
 - id: 20261020-UX-12
   audit: AUD-2026-10-20
-  title: 'Time-travel does not travel. The as-of date is not carried to entries (links go to `/work/slug`, which shows the latest revision), to Ask, or to nav. Default date is a fixed `2026-10-19`, so "Apply" without edits excludes recent entries (verified). Band click hard-codes day 28. Keyboard hint promises arrows, Page Up/Down and Enter, but no handler exists. All-filtered result has no empty state'
+  title: 'Time-travel does not travel. The as-of date is not carried to entries
+    (links go to `/work/slug`, which shows the latest revision), to Ask, or to
+    nav. Default date is a fixed `2026-10-19`, so "Apply" without edits excludes
+    recent entries (verified). Band click hard-codes day 28. Keyboard hint
+    promises arrows, Page Up/Down and Enter, but no handler exists. All-filtered
+    result has no empty state'
   spec_sections:
     - "3.10"
     - "5.1"
@@ -1962,14 +2178,24 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-12 / P0-5; staged in G2 alpha inside OSR-13)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-12 / P0-5;
+        staged in G2 alpha inside OSR-13)
     - date: 2026-10-27
       status: fixed
-      note: "Remediated in WP-4.3: defaulted strata timeline date to today, dynamic month-end band calculations, keyboard navigation (Arrow keys, Enter), friendly invalid date alert banner, empty state on all-filtered timeline, and carried as_of context across timeline, work, entry detail (sticky as-of bar & historical revision lookup), and ask routes. Backed by web.test.ts and visitor-time-travel.spec.ts."
+      note: "Remediated in WP-4.3: defaulted strata timeline date to today, dynamic
+        month-end band calculations, keyboard navigation (Arrow keys, Enter),
+        friendly invalid date alert banner, empty state on all-filtered
+        timeline, and carried as_of context across timeline, work, entry detail
+        (sticky as-of bar & historical revision lookup), and ask routes. Backed
+        by web.test.ts and visitor-time-travel.spec.ts."
   verified_by: null
 - id: 20261020-UX-13
   audit: AUD-2026-10-20
-  title: 'Anti-pattern A. See 2.2 for the full IA critique. Eight flat nav items incl. **Admin** for anonymous visitors; `/now /uses /book /about` mixed with primary destinations or unreachable; `/build/:slug` 404; `/writing` and `/work` duplicate each other and cross-link; "featured" is every entry; `/work` filters outcome only; Home makes five repo calls per entry'
+  title: 'Anti-pattern A. See 2.2 for the full IA critique. Eight flat nav items
+    incl. **Admin** for anonymous visitors; `/now /uses /book /about` mixed with
+    primary destinations or unreachable; `/build/:slug` 404; `/writing` and
+    `/work` duplicate each other and cross-link; "featured" is every entry;
+    `/work` filters outcome only; Home makes five repo calls per entry'
   spec_sections:
     - "3.2"
     - "3.4"
@@ -1994,10 +2220,20 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-13 / P1-2 & P1-3; staged in v0.2)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-13 / P1-2 &
+        P1-3; staged in v0.2)
     - date: 2026-11-03
       status: fixed
-      note: "Remediated in WP-11.2 (A052): retired flat 8-item navigation to 5 primary destinations (Work, Writing, Build, Timeline, Ask) plus brand link and theme toggle in Spec order; moved secondary links (About, Now, Uses, Book, RSS) to footer; removed Admin from visitor header; set aria-current='page' on active sections; fixed /build/:slug 404 with renderBuildVenturePage; canonical 301 redirect from /writing/:slug to /work/:slug for structured profiles; added all four outcome filters with .chip.active; eliminated N+1 repo calls on Home via top 5 limit and Promise.all concurrency. Backed by wp11-nav-states.conformance.test.ts and wp11-navigation-and-states.spec.ts."
+      note: "Remediated in WP-11.2 (A052): retired flat 8-item navigation to 5 primary
+        destinations (Work, Writing, Build, Timeline, Ask) plus brand link and
+        theme toggle in Spec order; moved secondary links (About, Now, Uses,
+        Book, RSS) to footer; removed Admin from visitor header; set
+        aria-current='page' on active sections; fixed /build/:slug 404 with
+        renderBuildVenturePage; canonical 301 redirect from /writing/:slug to
+        /work/:slug for structured profiles; added all four outcome filters with
+        .chip.active; eliminated N+1 repo calls on Home via top 5 limit and
+        Promise.all concurrency. Backed by wp11-nav-states.conformance.test.ts
+        and wp11-navigation-and-states.spec.ts."
   verified_by: null
 - id: 20261020-UX-14
   audit: AUD-2026-10-20
@@ -2021,14 +2257,26 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-14 / P1-9; staged in v0.2)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-14 / P1-9;
+        staged in v0.2)
     - date: 2026-11-03
       status: fixed
-      note: "Remediated in WP-11.2 (A052): implemented complete system-state coverage with dedicated empty state containers and full 404 Page Not Found layout with search input and navigation CTAs. Backed by wp11-nav-states.conformance.test.ts and wp11-navigation-and-states.spec.ts."
+      note: "Remediated in WP-11.2 (A052): implemented complete system-state coverage
+        with dedicated empty state containers and full 404 Page Not Found layout
+        with search input and navigation CTAs. Backed by
+        wp11-nav-states.conformance.test.ts and
+        wp11-navigation-and-states.spec.ts."
   verified_by: null
 - id: 20261020-UX-15
   audit: AUD-2026-10-20
-  title: 'Accessibility mechanics. No skip link (`#main-content` exists, unreferenced). Home has no `<h1>` (verified). Theme toggle: with a dark OS and no saved choice, the first click sets "dark" (no visible change). Timeline bands are `<button onclick=location.href>` (navigation as buttons). Dimmed bands use `opacity:.35` *(contrast likely below 4.5:1, inferred)*. Controls with `min-height` 30 and 34px *(inferred below 44px)*. `localStorage` is unguarded. Static alpha banner uses `role="alert"`. No Playwright or axe'
+  title: 'Accessibility mechanics. No skip link (`#main-content` exists,
+    unreferenced). Home has no `<h1>` (verified). Theme toggle: with a dark OS
+    and no saved choice, the first click sets "dark" (no visible change).
+    Timeline bands are `<button onclick=location.href>` (navigation as buttons).
+    Dimmed bands use `opacity:.35` *(contrast likely below 4.5:1, inferred)*.
+    Controls with `min-height` 30 and 34px *(inferred below 44px)*.
+    `localStorage` is unguarded. Static alpha banner uses `role="alert"`. No
+    Playwright or axe'
   spec_sections:
     - "12.5"
     - "12.8"
@@ -2047,14 +2295,26 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-15 / P1-8; staged in v0.2)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-15 / P1-8;
+        staged in v0.2)
     - date: 2026-11-03
       status: fixed
-      note: "Remediated in WP-11.3 (A053): implemented keyboard skip link targeting #main-content, semantic h1 hierarchy, system dark mode synchronized theme toggle with guarded localStorage, semantic anchor strata navigation with high-contrast future indicators, min 44px touch targets across interactive controls, static alpha note role, and automated Playwright axe-core WCAG 2.2 AA test suite. Backed by wp11-accessibility.conformance.test.ts and wp11-accessibility-and-structure.spec.ts."
+      note: "Remediated in WP-11.3 (A053): implemented keyboard skip link targeting
+        #main-content, semantic h1 hierarchy, system dark mode synchronized
+        theme toggle with guarded localStorage, semantic anchor strata
+        navigation with high-contrast future indicators, min 44px touch targets
+        across interactive controls, static alpha note role, and automated
+        Playwright axe-core WCAG 2.2 AA test suite. Backed by
+        wp11-accessibility.conformance.test.ts and
+        wp11-accessibility-and-structure.spec.ts."
   verified_by: null
 - id: 20261020-UX-16
   audit: AUD-2026-10-20
-  title: 'The structured view renders only spans carrying an *accepted* role annotation and silently drops everything else. On `redis-distributed-locks-2021` (L3): 3 spans, 1 shown, 603 characters lost, including the lesson (verified). Violates "unlabeled is valid" (§3.5) and "nothing breaks" (§5.2)'
+  title: 'The structured view renders only spans carrying an *accepted* role
+    annotation and silently drops everything else. On
+    `redis-distributed-locks-2021` (L3): 3 spans, 1 shown, 603 characters lost,
+    including the lesson (verified). Violates "unlabeled is valid" (§3.5) and
+    "nothing breaks" (§5.2)'
   spec_sections:
     - "3.11"
     - "6.2"
@@ -2076,20 +2336,29 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-16 / P1-14; staged in v0.2)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-16 / P1-14;
+        staged in v0.2)
     - date: 2026-11-03
       status: fixed
-      note: "Remediated in WP-11.3 (A053): repaired structured view to preserve 100% of body text in document order ('unlabeled is valid'), cleanly interleaving role-annotated sections with unlabeled body spans. Restored 603 dropped characters on redis-distributed-locks-2021. Backed by wp11-accessibility.conformance.test.ts and wp11-accessibility-and-structure.spec.ts."
+      note: "Remediated in WP-11.3 (A053): repaired structured view to preserve 100%
+        of body text in document order ('unlabeled is valid'), cleanly
+        interleaving role-annotated sections with unlabeled body spans. Restored
+        603 dropped characters on redis-distributed-locks-2021. Backed by
+        wp11-accessibility.conformance.test.ts and
+        wp11-accessibility-and-structure.spec.ts."
   verified_by: null
 - id: 20261020-UI-01
   audit: AUD-2026-10-20
-  title: 'The content renderer handles `#`, `##` and paragraphs only, and escapes everything else. Verified: a body with `### heading`, a list, a fenced `ts` block and a link renders as four literal paragraphs. The authoring control is an 8-row `<textarea>`'
+  title: 'The content renderer handles `#`, `##` and paragraphs only, and escapes
+    everything else. Verified: a body with `### heading`, a list, a fenced `ts`
+    block and a link renders as four literal paragraphs. The authoring control
+    is an 8-row `<textarea>`'
   spec_sections:
     - "5.1"
     - "12.1"
     - "12.3"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-11
   related_to:
@@ -2099,21 +2368,42 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-markdown-tokens.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-01 / P0-5 & P1-11)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-01 / P0-5 &
+        P1-11)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.4 (A054): upgraded content renderer to full
+        CommonMark/GFM with demotion, fenced code blocks, and lists; upgraded
+        authoring control to enhanced editor workspace with min-height 60vh,
+        markdown formatting toolbar, preview/source toggle, and live word
+        counter with soft 3,000-word cap. Backed by
+        wp11-markdown-tokens.conformance.test.ts and
+        wp11-markdown-tokens-layout.spec.ts."
   verified_by: null
 - id: 20261020-UI-02
   audit: AUD-2026-10-20
-  title: 'Tokens exist for colour, spacing and radius, in one flat semantic tier. Missing: primitive tier, component tier, size, elevation, z-index, motion, breakpoint and text-style tokens. `--layout-max` is referenced (`renderer.ts:114`) and never defined, so the footer width is unconstrained. The dark palette is declared twice (`styles.ts:44-62` and `64-80`), so the two copies can drift. Font sizes in use: 13px (22 times), 14px (17), 15px (5), 12px (3), 24px (1), 28px (1), none on the Spec''s 14/16/18/21/25/30/36/44 scale. **Measured contrast:** the control border token `--rule` is 1.52:1 (light) and 1.35:1 (dark) against `--surface-raised`; §12.3 requires 3:1 for UI boundaries. Dimmed timeline text (`opacity:.35`) is 2.14:1 light and 2.91:1 dark against the page; text needs 4.5:1'
+  title: 'Tokens exist for colour, spacing and radius, in one flat semantic tier.
+    Missing: primitive tier, component tier, size, elevation, z-index, motion,
+    breakpoint and text-style tokens. `--layout-max` is referenced
+    (`renderer.ts:114`) and never defined, so the footer width is unconstrained.
+    The dark palette is declared twice (`styles.ts:44-62` and `64-80`), so the
+    two copies can drift. Font sizes in use: 13px (22 times), 14px (17), 15px
+    (5), 12px (3), 24px (1), 28px (1), none on the Spec''s
+    14/16/18/21/25/30/36/44 scale. **Measured contrast:** the control border
+    token `--rule` is 1.52:1 (light) and 1.35:1 (dark) against
+    `--surface-raised`; §12.3 requires 3:1 for UI boundaries. Dimmed timeline
+    text (`opacity:.35`) is 2.14:1 light and 2.91:1 dark against the page; text
+    needs 4.5:1'
   spec_sections:
     - "12.2"
     - "13.7"
     - "15"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-10
   related_to:
@@ -2122,20 +2412,32 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-markdown-tokens.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-02 / P1-10; staged in v0.2)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-02 / P1-10;
+        staged in v0.2)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.4 (A054): established multi-tier design tokens
+        (primitives, semantics, components), defined missing --layout-max:
+        1180px, unified dark theme declaration in CSS tokens, mapped typographic
+        scale 14/16/18/21/25/30/36/44, and raised control border contrast ratio
+        to >= 3:1. Backed by wp11-markdown-tokens.conformance.test.ts and
+        wp11-markdown-tokens-layout.spec.ts."
   verified_by: null
 - id: 20261020-UI-03
   audit: AUD-2026-10-20
-  title: '`--font-reading`, `--font-ui`, `--font-code` name Literata, Atkinson Hyperlegible Next and JetBrains Mono, but no `@font-face` exists and no font files ship. Every visitor sees Georgia and system sans. This violates §12.4 (self-hosted, subset, `font-display: swap`) and the reading-comfort goal'
+  title: '`--font-reading`, `--font-ui`, `--font-code` name Literata, Atkinson
+    Hyperlegible Next and JetBrains Mono, but no `@font-face` exists and no font
+    files ship. Every visitor sees Georgia and system sans. This violates §12.4
+    (self-hosted, subset, `font-display: swap`) and the reading-comfort goal'
   spec_sections:
     - "12.2"
     - "12.3"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P2-2
   related_to:
@@ -2144,20 +2446,31 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-markdown-tokens.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-03 / P2-2; staged before G5)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-03 / P2-2;
+        staged before G5)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.4 (A054): declared self-hosted @font-face rules with
+        font-display: swap for Literata, Atkinson Hyperlegible Next, and
+        JetBrains Mono with robust local fallbacks. Backed by
+        wp11-markdown-tokens.conformance.test.ts."
   verified_by: null
 - id: 20261020-UI-04
   audit: AUD-2026-10-20
-  title: 'No component layer. The entry row is hand-built three times with different content; there are three separate Ask forms; chips are used as navigation links and as buttons; `.btn` has one variant and no loading, disabled or invalid states; forms have no `Field` abstraction, so labels, hints and errors are styled by hand 12 times'
+  title: 'No component layer. The entry row is hand-built three times with
+    different content; there are three separate Ask forms; chips are used as
+    navigation links and as buttons; `.btn` has one variant and no loading,
+    disabled or invalid states; forms have no `Field` abstraction, so labels,
+    hints and errors are styled by hand 12 times'
   spec_sections:
     - "12.4"
     - "12.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-11
   related_to:
@@ -2166,15 +2479,27 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-markdown-tokens.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-04 / P1-11; staged in v0.2)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-04 / P1-11;
+        staged in v0.2)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.4 (A054): created accessible component abstractions
+        for Field (wired label/hint/error), Button (variants, sizes, loading,
+        disabled), Chip (facet, filter, status, provisional), and unified
+        EntryRow across Home, Work, and Writing views. Backed by
+        wp11-markdown-tokens.conformance.test.ts and web.test.ts."
   verified_by: null
 - id: 20261020-UI-05
   audit: AUD-2026-10-20
-  title: 'The strata timeline, the Spec''s one bold element, is a row of equal-width buttons. It is not a time axis; empty months are skipped. The legend promises ■ ◆ ▲ by profile (`:220-222`) but no band carries a glyph, so colour-or-shape encoding is absent. Height formula `Math.min(110, 44 + n*24)` is a magic number. Bands have a single accent colour'
+  title: 'The strata timeline, the Spec''s one bold element, is a row of
+    equal-width buttons. It is not a time axis; empty months are skipped. The
+    legend promises ■ ◆ ▲ by profile (`:220-222`) but no band carries a glyph,
+    so colour-or-shape encoding is absent. Height formula `Math.min(110, 44 +
+    n*24)` is a magic number. Bands have a single accent colour'
   spec_sections:
     - "12.1"
     - "12.3"
@@ -2193,18 +2518,22 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-05 / P2-1; staged before G5)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-05 / P2-1;
+        staged before G5)
   verified_by: null
 - id: 20261020-UI-06
   audit: AUD-2026-10-20
-  title: 'Admin is one page: a three-pane editor shell followed by a grid of unrelated panels. There is no application shell, no density system, no header status area. Below 1024px the shell becomes one long stack (the Spec specifies two panes on tablet)'
+  title: 'Admin is one page: a three-pane editor shell followed by a grid of
+    unrelated panels. There is no application shell, no density system, no
+    header status area. Below 1024px the shell becomes one long stack (the Spec
+    specifies two panes on tablet)'
   spec_sections:
     - "4.2"
     - "12.2"
     - "12.3"
     - "15"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-12
   related_to:
@@ -2214,22 +2543,34 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-markdown-tokens.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-06 / P1-12; staged in v0.2)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-06 / P1-12;
+        staged in v0.2)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.4 (A054): restructured admin interface into a
+        dedicated application shell with a persistent header status area
+        (.admin-header-status) and responsive 2-pane editor layout on tablet
+        viewports. Backed by wp11-markdown-tokens.conformance.test.ts and
+        wp11-markdown-tokens-layout.spec.ts."
   verified_by: null
 - id: 20261020-UI-07
   audit: AUD-2026-10-20
-  title: 'One breakpoint (1024). Spec breakpoints 480/768/1024/1280 are not tokens. The margin rail stacks after the whole body on narrow screens instead of following the relevant paragraph. No `pointer: coarse` rules; interactive controls at 30, 34, 36 and 40px *(Spec: 44px on touch)*. Wide tables and strata rely on ad-hoc `overflow-x`'
+  title: 'One breakpoint (1024). Spec breakpoints 480/768/1024/1280 are not
+    tokens. The margin rail stacks after the whole body on narrow screens
+    instead of following the relevant paragraph. No `pointer: coarse` rules;
+    interactive controls at 30, 34, 36 and 40px *(Spec: 44px on touch)*. Wide
+    tables and strata rely on ad-hoc `overflow-x`'
   spec_sections:
     - "3.5"
     - "6.1"
     - "10.6"
     - "12.5"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P0-8
   related_to:
@@ -2239,15 +2580,28 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-markdown-tokens.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-07 / P0-8; staged before G4)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-07 / P0-8;
+        staged before G4)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.4 (A054): standardized responsive breakpoints
+        (480/768/1024/1280), ensured margin rail stacks inline under narrow
+        viewports, and enforced minimum 44px touch targets on pointer: coarse
+        devices. Backed by wp11-markdown-tokens.conformance.test.ts and
+        wp11-markdown-tokens-layout.spec.ts."
   verified_by: null
 - id: 20261020-UI-08
   audit: AUD-2026-10-20
-  title: 'The role classes `.role-marker` and `.role-goal` to `.role-lesson` are defined and never used (verified: 0 occurrences in `renderer.ts`); the structured view re-implements the same border with inline styles. Claim cards are inline-styled boxes, against §12.1 ("deliberately avoids card grids"). Date line, context strip and rail headings use three different spacing rhythms'
+  title: 'The role classes `.role-marker` and `.role-goal` to `.role-lesson` are
+    defined and never used (verified: 0 occurrences in `renderer.ts`); the
+    structured view re-implements the same border with inline styles. Claim
+    cards are inline-styled boxes, against §12.1 ("deliberately avoids card
+    grids"). Date line, context strip and rail headings use three different
+    spacing rhythms'
   spec_sections:
     - "12.4"
   severity: P2
@@ -2264,11 +2618,15 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-08 / P2-3; staged before G5)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-08 / P2-3;
+        staged before G5)
   verified_by: null
 - id: 20261020-UI-09
   audit: AUD-2026-10-20
-  title: 'No surface craft beyond rules and a single accent: no optical alignment, tabular numerals, text-wrap tuning, code styling, selection colour, or motion that answers actions (the file has no transitions at all, only a reduced-motion reset at `styles.ts:470`)'
+  title: 'No surface craft beyond rules and a single accent: no optical alignment,
+    tabular numerals, text-wrap tuning, code styling, selection colour, or
+    motion that answers actions (the file has no transitions at all, only a
+    reduced-motion reset at `styles.ts:470`)'
   spec_sections:
     - "12.4"
     - "12.7"
@@ -2287,17 +2645,23 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-09 / P2-4; staged before G5)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-09 / P2-4;
+        staged before G5)
   verified_by: null
 - id: 20261020-UI-10
   audit: AUD-2026-10-20
-  title: 'One file holds layout, ten pages, the admin app and three inline scripts. The theme contract (`DEFAULT_STRATA_THEME`, `verifyThemeConformance`) exists in core but the renderer neither exposes slots (§12.10) nor consumes theme tokens at build time. Inline scripts and `onclick` handlers force `script-src ''unsafe-inline''` in the CSP (`app.ts:59`)'
+  title: 'One file holds layout, ten pages, the admin app and three inline
+    scripts. The theme contract (`DEFAULT_STRATA_THEME`,
+    `verifyThemeConformance`) exists in core but the renderer neither exposes
+    slots (§12.10) nor consumes theme tokens at build time. Inline scripts and
+    `onclick` handlers force `script-src ''unsafe-inline''` in the CSP
+    (`app.ts:59`)'
   spec_sections:
     - "5.2"
     - "12.1"
     - "12.3"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P0-4
   related_to:
@@ -2307,15 +2671,30 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-markdown-tokens.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-10 / P0-4; staged in G2 alpha)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-10 / P0-4;
+        staged in G2 alpha)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.4 (A054): implemented slot composers conforming to
+        core REQUIRED_THEME_SLOTS (EntryArticle, EntryStructured, Venture, Home,
+        Timeline) and added CSP nonce injection support across layout and
+        scripts. Backed by wp11-markdown-tokens.conformance.test.ts."
   verified_by: null
 - id: 20261020-CP-01
   audit: AUD-2026-10-20
-  title: '**Naming drift.** The same objects and actions carry different names across files. *Ask*: "Ask" (nav), "Ask the Portfolio", "Ask about my work", "Ask records", "Ask scoped record", "Ask about this entry". *Publish*: "Publish as is (L0)", "Immediate Publish", "Published stub entry", "Published … at L0". *Time*: "Timeline", "Strata timeline", "Time-Travel Knowledge Graph", "Time-travel as of", "Viewing as of". *Entry*: "entry", "record", "layer", "write-up", "dev-log entry". *Booking*: five names (see 3b.2). *Outcome*: "Worked partly" and "What didn''t work (Failed)" against schema values `partly` and `failed`'
+  title: '**Naming drift.** The same objects and actions carry different names
+    across files. *Ask*: "Ask" (nav), "Ask the Portfolio", "Ask about my work",
+    "Ask records", "Ask scoped record", "Ask about this entry". *Publish*:
+    "Publish as is (L0)", "Immediate Publish", "Published stub entry",
+    "Published … at L0". *Time*: "Timeline", "Strata timeline", "Time-Travel
+    Knowledge Graph", "Time-travel as of", "Viewing as of". *Entry*: "entry",
+    "record", "layer", "write-up", "dev-log entry". *Booking*: five names (see
+    3b.2). *Outcome*: "Worked partly" and "What didn''t work (Failed)" against
+    schema values `partly` and `failed`'
   spec_sections:
     - "3.2"
     - "3.9"
@@ -2337,11 +2716,15 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-01 / P1-13; staged in v0.2)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-01 / P1-13;
+        staged in v0.2)
   verified_by: null
 - id: 20261020-CP-02
   audit: AUD-2026-10-20
-  title: '**Spec and schema vocabulary leaks into the interface.** Section numbers, tier names, level codes and internal terms appear in labels. The Spec requires naming things by what users understand and keeping schema terms as developer tooltips (§4.1, §12.9). Upper-casing contradicts §12.1'
+  title: '**Spec and schema vocabulary leaks into the interface.** Section
+    numbers, tier names, level codes and internal terms appear in labels. The
+    Spec requires naming things by what users understand and keeping schema
+    terms as developer tooltips (§4.1, §12.9). Upper-casing contradicts §12.1'
   spec_sections:
     - "5.1"
     - "12.1"
@@ -2362,11 +2745,17 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-02 / P0-5 & P1-13)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-02 / P0-5 &
+        P1-13)
   verified_by: null
 - id: 20261020-CP-03
   audit: AUD-2026-10-20
-  title: '**Hard-coded owner content shipped in code.** Every instance renders one particular author''s "What I''m focused on now", tool list and two unconditional "Verified" badges. A new owner''s site would assert credentials nobody verified, which breaks §6.1 ("badges appear only for evidence that was verified") and the honesty invariant. (The fabricated conflict card is UX-09; its *wording* is rewritten below.)'
+  title: '**Hard-coded owner content shipped in code.** Every instance renders one
+    particular author''s "What I''m focused on now", tool list and two
+    unconditional "Verified" badges. A new owner''s site would assert
+    credentials nobody verified, which breaks §6.1 ("badges appear only for
+    evidence that was verified") and the honesty invariant. (The fabricated
+    conflict card is UX-09; its *wording* is rewritten below.)'
   spec_sections:
     - "6.1"
     - "10.8"
@@ -2387,11 +2776,17 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-03 / P0-8 & P1-13)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-03 / P0-8 &
+        P1-13)
   verified_by: null
 - id: 20261020-CP-04
   audit: AUD-2026-10-20
-  title: '**Errors do not say what failed, why, or what to do.** "Origin unreachable" (infrastructure term); developer strings such as "Unauthorized: admin authentication required" and "Validation failed" with raw Zod issues; `Invalid query` has no UI branch, so the Ask card renders blank (the code looks up `tierLabels[undefined]`, `renderer.ts:744`); admin fetches show nothing on failure'
+  title: '**Errors do not say what failed, why, or what to do.** "Origin
+    unreachable" (infrastructure term); developer strings such as "Unauthorized:
+    admin authentication required" and "Validation failed" with raw Zod issues;
+    `Invalid query` has no UI branch, so the Ask card renders blank (the code
+    looks up `tierLabels[undefined]`, `renderer.ts:744`); admin fetches show
+    nothing on failure'
   spec_sections:
     - "12.1"
   severity: P2
@@ -2408,11 +2803,15 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-04 / P2-5; staged before G5)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-04 / P2-5;
+        staged before G5)
   verified_by: null
 - id: 20261020-CP-05
   audit: AUD-2026-10-20
-  title: '**Empty states and CTAs are not invitations.** Home and Build lists render blank when empty; "No matching entries found." has no next action; CTAs name the system ("Ask records", "Ask scoped record", "Apply") instead of the outcome'
+  title: '**Empty states and CTAs are not invitations.** Home and Build lists
+    render blank when empty; "No matching entries found." has no next action;
+    CTAs name the system ("Ask records", "Ask scoped record", "Apply") instead
+    of the outcome'
   spec_sections:
     - "4.4"
     - "6.2"
@@ -2431,14 +2830,24 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-05 / P0-5 & P1-13)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-05 / P0-5 &
+        P1-13)
     - date: 2026-11-03
       status: fixed
-      note: "Remediated in WP-11.2 (A052): converted empty states into inviting entry points across Home, Build, Work filter results, and Timeline; replaced passive text with clear recovery CTAs ('Reset all filters', 'Explore Work', 'Ask about my work'); updated action-oriented CTAs across rails ('Ask about this project', 'Ask about this venture', 'Apply Date'). Backed by wp11-nav-states.conformance.test.ts and wp11-navigation-and-states.spec.ts."
+      note: "Remediated in WP-11.2 (A052): converted empty states into inviting entry
+        points across Home, Build, Work filter results, and Timeline; replaced
+        passive text with clear recovery CTAs ('Reset all filters', 'Explore
+        Work', 'Ask about my work'); updated action-oriented CTAs across rails
+        ('Ask about this project', 'Ask about this venture', 'Apply Date').
+        Backed by wp11-nav-states.conformance.test.ts and
+        wp11-navigation-and-states.spec.ts."
   verified_by: null
 - id: 20261020-CP-06
   audit: AUD-2026-10-20
-  title: '**No string architecture.** All text is inline in TypeScript; `lang="en"` is fixed (no per-entry language); plurals are hand-coded (`count > 1 ? ''s'' : ''''`); dates are raw ISO slices ("2024-03-12", "2021-03") where the Spec writes "March 2024"; no ICU message format (§12.8)'
+  title: '**No string architecture.** All text is inline in TypeScript;
+    `lang="en"` is fixed (no per-entry language); plurals are hand-coded (`count
+    > 1 ? ''s'' : ''''`); dates are raw ISO slices ("2024-03-12", "2021-03")
+    where the Spec writes "March 2024"; no ICU message format (§12.8)'
   spec_sections:
     - "4.2"
     - "6.2"
@@ -2457,11 +2866,15 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-06 / P2-6; staged before G5)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-06 / P2-6;
+        staged before G5)
   verified_by: null
 - id: 20261020-CP-07
   audit: AUD-2026-10-20
-  title: '**Ask states do not use the Spec''s fixed strings.** Four of nine differ ("Reduced mode — Extractive excerpts only", "Better as a live conversation", "Not in records", "Automated answers paused"). A rate limit is mislabelled "Not in records" (flow fix is UX-10; the *strings* are here)'
+  title: '**Ask states do not use the Spec''s fixed strings.** Four of nine differ
+    ("Reduced mode — Extractive excerpts only", "Better as a live conversation",
+    "Not in records", "Automated answers paused"). A rate limit is mislabelled
+    "Not in records" (flow fix is UX-10; the *strings* are here)'
   spec_sections:
     - "0"
     - "1"
@@ -2484,11 +2897,13 @@
   history:
     - date: 2026-10-20
       status: open
-      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-07 / P2-7; staged before G5)
+      note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-07 / P2-7;
+        staged before G5)
   verified_by: null
 - id: 20261021-AI-01
   audit: AUD-2026-10-21
-  title: 'createApp() hardcoded MockModelProvider at runtime producing synthetic text claiming to be owner records without real model configuration'
+  title: 'createApp() hardcoded MockModelProvider at runtime producing synthetic
+    text claiming to be owner records without real model configuration'
   spec_sections:
     - "10.8"
     - "13.5"
@@ -2507,8 +2922,18 @@
   history:
     - date: 2026-10-21
       status: fixed
-      note: "Disclosed during A006 review. createApp() unconditionally instantiated MockModelProvider whose default completion text falsely asserted 'Based on the owner records...'. Fixed in A007: providers strictly resolved from configuration/options; with none configured, Ask degrades to extractive excerpts with disclosure (Spec §10.8); MockModelProvider text purged of owner record claims."
+      note: "Disclosed during A006 review. createApp() unconditionally instantiated
+        MockModelProvider whose default completion text falsely asserted 'Based
+        on the owner records...'. Fixed in A007: providers strictly resolved
+        from configuration/options; with none configured, Ask degrades to
+        extractive excerpts with disclosure (Spec §10.8); MockModelProvider text
+        purged of owner record claims."
     - date: 2026-10-22
       status: fixed
-      note: "WP-1.5: Config-driven AI provider registry (Groq, Gemini, OpenAI) strictly sourced from @living-portfolio/config presets (free-cloud, hobbyist-vps, local-only). Extractive degradation ladder cascades across providers on failures and rate limits down to deterministic extractive excerpts with fixed sentence, surfacing provider disclosure lines in API responses and web UI (Spec §10.8, §13.5)."
+      note: "WP-1.5: Config-driven AI provider registry (Groq, Gemini, OpenAI)
+        strictly sourced from @living-portfolio/config presets (free-cloud,
+        hobbyist-vps, local-only). Extractive degradation ladder cascades across
+        providers on failures and rate limits down to deterministic extractive
+        excerpts with fixed sentence, surfacing provider disclosure lines in API
+        responses and web UI (Spec §10.8, §13.5)."
   verified_by: null
