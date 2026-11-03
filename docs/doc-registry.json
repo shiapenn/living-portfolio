@@ -640,5 +640,13 @@
     "path": "docs/execution-reports/A049-wp-105-import-planner-budgets-and-core-connectors.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A050",
+    "title": "WP-10.6 Labeled Evaluation Runner and Chaos Suites",
+    "class": "A",
+    "path": "docs/execution-reports/A050-wp-106-labeled-evaluation-runner-and-chaos-suites.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

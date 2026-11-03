@@ -55,6 +55,7 @@
 | `A047` | WP-10.3 Self-Calibration Routing Calibration Rollback | `active` | [A047-wp-103-self-calibration-routing-calibration-rollback.md](execution-reports/A047-wp-103-self-calibration-routing-calibration-rollback.md) | — |
 | `A048` | WP-10.4 Dynamic Topology Audit and Staleness | `active` | [A048-wp-104-dynamic-topology-audit-and-staleness.md](execution-reports/A048-wp-104-dynamic-topology-audit-and-staleness.md) | — |
 | `A049` | WP-10.5 Import Planner Budgets and Core Connectors | `active` | [A049-wp-105-import-planner-budgets-and-core-connectors.md](execution-reports/A049-wp-105-import-planner-budgets-and-core-connectors.md) | — |
+| `A050` | WP-10.6 Labeled Evaluation Runner and Chaos Suites | `active` | [A050-wp-106-labeled-evaluation-runner-and-chaos-suites.md](execution-reports/A050-wp-106-labeled-evaluation-runner-and-chaos-suites.md) | — |
 
 ## Handover Snapshots (Class H)
 
