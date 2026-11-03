@@ -1979,7 +1979,7 @@
     - "6.2"
     - "12.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-2
   related_to:
@@ -1990,11 +1990,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-nav-states.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-13 / P1-2 & P1-3; staged in v0.2)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.2 (A052): retired flat 8-item navigation to 5 primary destinations (Work, Writing, Build, Timeline, Ask) plus brand link and theme toggle in Spec order; moved secondary links (About, Now, Uses, Book, RSS) to footer; removed Admin from visitor header; set aria-current='page' on active sections; fixed /build/:slug 404 with renderBuildVenturePage; canonical 301 redirect from /writing/:slug to /work/:slug for structured profiles; added all four outcome filters with .chip.active; eliminated N+1 repo calls on Home via top 5 limit and Promise.all concurrency. Backed by wp11-nav-states.conformance.test.ts and wp11-navigation-and-states.spec.ts."
   verified_by: null
 - id: 20261020-UX-14
   audit: AUD-2026-10-20
@@ -2004,7 +2007,7 @@
     - "12.3"
     - "12.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-9
   related_to:
@@ -2014,11 +2017,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-nav-states.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-14 / P1-9; staged in v0.2)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.2 (A052): implemented complete system-state coverage with dedicated empty state containers and full 404 Page Not Found layout with search input and navigation CTAs. Backed by wp11-nav-states.conformance.test.ts and wp11-navigation-and-states.spec.ts."
   verified_by: null
 - id: 20261020-UX-15
   audit: AUD-2026-10-20
@@ -2406,7 +2412,7 @@
     - "6.2"
     - "12.6"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-13
   related_to:
@@ -2415,11 +2421,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-nav-states.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 3 CP-05 / P0-5 & P1-13)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.2 (A052): converted empty states into inviting entry points across Home, Build, Work filter results, and Timeline; replaced passive text with clear recovery CTAs ('Reset all filters', 'Explore Work', 'Ask about my work'); updated action-oriented CTAs across rails ('Ask about this project', 'Ask about this venture', 'Apply Date'). Backed by wp11-nav-states.conformance.test.ts and wp11-navigation-and-states.spec.ts."
   verified_by: null
 - id: 20261020-CP-06
   audit: AUD-2026-10-20

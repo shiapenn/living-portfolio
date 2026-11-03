@@ -218,6 +218,7 @@ export function sanitizeHttpUrl(rawUrl?: string | null): string | null {
 }
 
 function renderMarkdownToHtml(md: string): string {
+  if (!md || typeof md !== 'string') return '';
   return md
     .split(/\n\s*\n/)
     .map((block) => {
@@ -242,15 +243,12 @@ function renderLayout(title: string, activePath: string, mainContentHtml: string
     { href: '/build', label: 'Build' },
     { href: '/timeline', label: 'Timeline' },
     { href: '/ask', label: 'Ask' },
-    { href: '/now', label: 'Now' },
-    { href: '/about', label: 'About' },
-    { href: '/admin', label: 'Admin' },
   ];
 
   const navHtml = navItems
     .map(
       (item) =>
-        `<a href="${item.href}"${activePath.startsWith(item.href) ? ' aria-current="page"' : ''}>${item.label}</a>`
+        `<a href="${item.href}"${activePath === item.href || (item.href !== '/' && activePath.startsWith(item.href)) ? ' aria-current="page"' : ''}>${item.label}</a>`
     )
     .join('\n          ');
 
@@ -286,10 +284,10 @@ ${robotsMetaHtml}  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_
   ${stagingBannerHtml}
   <header class="site-header">
     <nav class="site-nav" aria-label="Primary navigation">
-      <a href="/" class="site-brand">${brandHtml}</a>
+      <a href="/" class="site-brand"${activePath === '/' ? ' aria-current="page"' : ''}>${brandHtml}</a>
       <div class="nav-links">
         ${navHtml}
-        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle color theme">◐ Theme</button>
+        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="Toggle color theme" aria-pressed="false">◐ Theme</button>
       </div>
     </nav>
   </header>
@@ -297,20 +295,43 @@ ${robotsMetaHtml}  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_
     ${mainContentHtml}
   </main>
   <footer class="site-footer" style="max-width:var(--layout-max);margin:48px auto 24px;padding:16px 24px;border-top:1px solid var(--rule);font-size:14px;color:var(--text-muted)">
-    <div>${escapeHtml(cfg.PUBLIC_SITE_FOOTER_TEXT)}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+      <nav aria-label="Secondary navigation" style="display:flex;gap:16px;flex-wrap:wrap">
+        <a href="/about">About</a>
+        <a href="/now">Now</a>
+        <a href="/uses">Uses</a>
+        <a href="/book">Book</a>
+        <a href="/rss.xml">RSS</a>
+      </nav>
+      <div>${escapeHtml(cfg.PUBLIC_SITE_FOOTER_TEXT)}</div>
+    </div>
     ${unofficialForkSlotHtml}
   </footer>
   <script>
     (function() {
       const btn = document.getElementById('theme-toggle');
-      const saved = localStorage.getItem('strata-theme');
-      if (saved) document.documentElement.setAttribute('data-theme', saved);
+      function getEffectiveTheme() {
+        const attr = document.documentElement.getAttribute('data-theme');
+        if (attr) return attr;
+        try {
+          const saved = localStorage.getItem('strata-theme');
+          if (saved) return saved;
+        } catch (e) {}
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark';
+        }
+        return 'light';
+      }
+      const initialTheme = getEffectiveTheme();
+      document.documentElement.setAttribute('data-theme', initialTheme);
       if (btn) {
+        btn.setAttribute('aria-pressed', initialTheme === 'dark' ? 'true' : 'false');
         btn.addEventListener('click', function() {
-          const current = document.documentElement.getAttribute('data-theme');
+          const current = getEffectiveTheme();
           const next = current === 'dark' ? 'light' : 'dark';
           document.documentElement.setAttribute('data-theme', next);
-          localStorage.setItem('strata-theme', next);
+          btn.setAttribute('aria-pressed', next === 'dark' ? 'true' : 'false');
+          try { localStorage.setItem('strata-theme', next); } catch(e) {}
         });
       }
     })();
@@ -496,44 +517,53 @@ export async function renderHomePage(repo: WebDataClient): Promise<string> {
   const publicEntries = await repo.listEntries({ visibility: ['public'] });
   const acceptedRelations = await repo.listAcceptedRelations();
 
-  const rowsHtml: string[] = [];
-  for (const entry of publicEntries) {
-    const full = await repo.getEntry(entry.id);
-    if (!full || !full.currentRevision) continue;
-    const rev = full.currentRevision;
-    const [facets, annotations, claims] = await Promise.all([
-      repo.getFacetsForEntry(entry.id),
-      repo.listAnnotationsForRevision(rev.id),
-      repo.getClaimsForRevision(rev.id),
-    ]);
-    const level = computeStructureLevel({
-      revision: rev,
-      profile: getProfile(entry.profile),
-      facets,
-      annotations,
-      claims,
-    });
-    const alerts = detectLaterThinking(
-      claims.map((c) => ({ ...c, entry_id: entry.id, entry_slug: entry.slug })),
-      acceptedRelations
-    );
+  // Featured entries: owner-set flag with fallback to top 5 most recent public entries (20261020-UX-13)
+  const candidateFeatured = publicEntries.filter((e: any) => e.featured);
+  const featuredList = (candidateFeatured.length > 0 ? candidateFeatured : publicEntries).slice(0, 5);
 
-    const dateLabel = (rev.valid_from || rev.written_at).slice(0, 10);
-    const firstSentence = rev.body_md.replace(/#+\s+[^\n]+\n+/g, '').split('.')[0] + '.';
+  // Compute list rows concurrently for only the featured entries (eliminating N+1 serial calls)
+  const rows = await Promise.all(
+    featuredList.map(async (entry) => {
+      const full = await repo.getEntry(entry.id);
+      if (!full || !full.currentRevision) return null;
+      const rev = full.currentRevision;
+      const [facets, annotations, claims] = await Promise.all([
+        repo.getFacetsForEntry(entry.id),
+        repo.listAnnotationsForRevision(rev.id),
+        repo.getClaimsForRevision(rev.id),
+      ]);
+      const level = computeStructureLevel({
+        revision: rev,
+        profile: getProfile(entry.profile),
+        facets,
+        annotations,
+        claims,
+      });
+      const alerts = detectLaterThinking(
+        claims.map((c) => ({ ...c, entry_id: entry.id, entry_slug: entry.slug })),
+        acceptedRelations
+      );
 
-    rowsHtml.push(`<li class="entry-row">
-      <div class="entry-row-top">
-        <a href="/work/${entry.slug}" class="entry-title-link">${escapeHtml(entry.title)}</a>
-        <div class="entry-meta">
-          <time datetime="${dateLabel}">${dateLabel}</time>
-          <span class="chip">${level} · ${escapeHtml(entry.profile)}</span>
-          ${rev.is_hindsight ? '<span class="chip">Hindsight retrospective</span>' : ''}
-          ${alerts.length > 0 ? '<span class="chip" style="border-color:var(--status-warn)">Updated later</span>' : ''}
+      const dateLabel = (rev.valid_from || rev.written_at).slice(0, 10);
+      const bodyText = rev.body_md || (rev as any).body || '';
+      const firstSentence = bodyText.replace(/#+\s+[^\n]+\n+/g, '').split('.')[0] + '.';
+
+      return `<li class="entry-row">
+        <div class="entry-row-top">
+          <a href="/work/${escapeHtml(entry.slug)}" class="entry-title-link">${escapeHtml(entry.title)}</a>
+          <div class="entry-meta">
+            <time datetime="${dateLabel}">${dateLabel}</time>
+            <span class="chip">${level} · ${escapeHtml(entry.profile)}</span>
+            ${rev.is_hindsight ? '<span class="chip">Hindsight retrospective</span>' : ''}
+            ${alerts.length > 0 ? '<span class="chip" style="border-color:var(--status-warn)">Updated later</span>' : ''}
+          </div>
         </div>
-      </div>
-      <div style="color:var(--text-muted);max-width:65ch">${escapeHtml(firstSentence)}</div>
-    </li>`);
-  }
+        <div style="color:var(--text-muted);max-width:65ch">${escapeHtml(firstSentence)}</div>
+      </li>`;
+    })
+  );
+
+  const rowsHtml = rows.filter(Boolean) as string[];
 
   const cfg = loadConfig();
   const content = `
@@ -545,10 +575,24 @@ export async function renderHomePage(repo: WebDataClient): Promise<string> {
     ${strataHtml}
 
     <section aria-labelledby="featured-heading">
-      <h2 id="featured-heading" style="font-family:var(--font-reading);font-size:21px;margin-bottom:12px">Recent and featured work</h2>
-      <ul class="entry-list">
-        ${rowsHtml.join('\n')}
-      </ul>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <h2 id="featured-heading" style="font-family:var(--font-reading);font-size:21px;margin:0">Featured and recent work</h2>
+        <a href="/work" style="font-size:14px;color:var(--accent);text-decoration:none">View all work (${publicEntries.length}) →</a>
+      </div>
+      ${rowsHtml.length > 0 ? `
+        <ul class="entry-list">
+          ${rowsHtml.join('\n')}
+        </ul>
+      ` : `
+        <div class="empty-state" style="padding:40px 16px;text-align:center;border:1px dashed var(--rule);border-radius:var(--radius-card);margin-top:16px">
+          <p style="font-weight:600;font-size:18px;margin:0 0 8px 0">No entries published yet</p>
+          <p style="color:var(--text-muted);font-size:15px;margin:0 0 20px 0">Technical case studies and architectural decisions will appear here as they are published.</p>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            <a href="/timeline" class="btn btn-secondary">Explore Timeline</a>
+            <a href="/ask" class="btn">Ask Questions</a>
+          </div>
+        </div>
+      `}
     </section>
 
     <section class="ask-box" aria-labelledby="home-ask-heading">
@@ -558,7 +602,7 @@ export async function renderHomePage(repo: WebDataClient): Promise<string> {
       </p>
       <form action="/ask" method="GET" class="ask-input-row">
         <input type="text" name="q" class="ask-input" placeholder="e.g., What did you use to replace Redis distributed locks?" aria-label="Ask a question about my work" required />
-        <button type="submit" class="btn">Ask records</button>
+        <button type="submit" class="btn">Ask about my work</button>
       </form>
     </section>
   `;
@@ -570,14 +614,15 @@ export async function renderEntryDetailPage(
   repo: WebDataClient,
   slug: string,
   requestedView?: string,
-  asOfParam?: string | null
-): Promise<{ status: number; html: string }> {
+  asOfParam?: string | null,
+  activeSection: string = '/work'
+): Promise<{ status: number; html: string; entry?: any }> {
   repo = adaptDataSource(repo);
   const result = await repo.getEntryBySlug(slug);
   if (!result || !result.currentRevision || result.entry.visibility === 'private') {
     return {
       status: 404,
-      html: renderLayout('Entry not found', '/work', `<p>Entry not found. <a href="/work">Browse all work</a>.</p>`),
+      html: renderNotFoundPage(`Entry "${escapeHtml(slug)}" not found`, activeSection),
     };
   }
 
@@ -676,9 +721,9 @@ export async function renderEntryDetailPage(
       .filter(Boolean)
       .join('\n');
 
-    bodyHtml = sectionsHtml || `<div class="reading-column">${renderMarkdownToHtml(rev.body_md)}</div>`;
+    bodyHtml = sectionsHtml || `<div class="reading-column">${renderMarkdownToHtml(rev.body_md || (rev as any).body || '')}</div>`;
   } else {
-    bodyHtml = `<div class="reading-column">${renderMarkdownToHtml(rev.body_md)}</div>`;
+    bodyHtml = `<div class="reading-column">${renderMarkdownToHtml(rev.body_md || (rev as any).body || '')}</div>`;
   }
 
   const happenedDate = (rev.valid_from || rev.written_at).slice(0, 10);
@@ -784,7 +829,7 @@ export async function renderEntryDetailPage(
               <input type="hidden" name="scope" value="${escapeHtml(entry.slug)}" />
               ${asOfInfo && asOfInfo.valid ? `<input type="hidden" name="as_of" value="${escapeHtml(asOfInfo.raw)}" />` : ''}
               <input type="text" name="q" class="ask-input" style="width:100%;margin-bottom:8px" placeholder="Question about this entry..." aria-label="Ask about this entry" required />
-              <button type="submit" class="btn" style="width:100%">Ask scoped record</button>
+              <button type="submit" class="btn" style="width:100%">Ask about this project</button>
             </form>
           </div>
         </aside>
@@ -792,7 +837,7 @@ export async function renderEntryDetailPage(
     </article>
   `;
 
-  return { status: 200, html: renderLayout(entry.title, '/work', content) };
+  return { status: 200, html: renderLayout(entry.title, activeSection, content), entry };
 }
 
 export async function renderWorkOrWritingPage(
@@ -849,10 +894,11 @@ export async function renderWorkOrWritingPage(
       .join(' ');
 
     const asOfQuery = asOfInfo && asOfInfo.valid ? `?as_of=${encodeURIComponent(asOfInfo.raw)}` : '';
+    const entryHref = mode === 'work' ? `/work/${entry.slug}${asOfQuery}` : `/writing/${entry.slug}${asOfQuery}`;
 
     rows.push(`<li class="entry-row">
       <div class="entry-row-top">
-        <a href="/work/${entry.slug}${asOfQuery}" class="entry-title-link">${escapeHtml(entry.title)}</a>
+        <a href="${entryHref}" class="entry-title-link">${escapeHtml(entry.title)}</a>
         <div class="entry-meta">
           <time datetime="${dateLabel}">${dateLabel}</time>
           <span class="chip">${level} · ${escapeHtml(entry.profile)}</span>
@@ -870,10 +916,11 @@ export async function renderWorkOrWritingPage(
     mode === 'work'
       ? `<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
           <span style="font-size:14px;color:var(--text-muted)">Filter by outcome:</span>
-          <a href="/work${asOfPrefixQuery}" class="chip">All</a>
-          <a href="/work?outcome=worked${asOfParamQuery}" class="chip">Worked</a>
-          <a href="/work?outcome=partly${asOfParamQuery}" class="chip">Worked partly</a>
-          <a href="/work?outcome=failed${asOfParamQuery}" class="chip">What didn't work (Failed)</a>
+          <a href="/work${asOfPrefixQuery}" class="chip${!filterOutcome ? ' active' : ''}">All</a>
+          <a href="/work?outcome=worked${asOfParamQuery}" class="chip${filterOutcome === 'worked' ? ' active' : ''}">Worked</a>
+          <a href="/work?outcome=partly${asOfParamQuery}" class="chip${filterOutcome === 'partly' ? ' active' : ''}">Worked partly</a>
+          <a href="/work?outcome=failed${asOfParamQuery}" class="chip${filterOutcome === 'failed' ? ' active' : ''}">What didn't work (Failed)</a>
+          <a href="/work?outcome=unresolved${asOfParamQuery}" class="chip${filterOutcome === 'unresolved' ? ' active' : ''}">Unresolved</a>
         </div>`
       : '';
 
@@ -891,12 +938,128 @@ export async function renderWorkOrWritingPage(
     </p>
     ${filterBar}
     ${asOfBanner}
-    <ul class="entry-list">
-      ${rows.length > 0 ? rows.join('\n') : '<li class="entry-row">No matching entries found.</li>'}
-    </ul>
+    ${rows.length > 0 ? `
+      <ul class="entry-list">
+        ${rows.join('\n')}
+      </ul>
+    ` : `
+      <div class="empty-state" style="padding:48px 16px;text-align:center;border:1px dashed var(--rule);border-radius:var(--radius-card);margin:24px 0">
+        <p style="font-weight:600;font-size:18px;margin:0 0 8px 0">${filterOutcome ? 'No entries match the selected filters' : (mode === 'work' ? 'No matching case studies found' : 'No writing entries found')}</p>
+        <p style="color:var(--text-muted);font-size:14px;margin:0 0 20px 0">
+          ${filterOutcome ? `No public case studies match the outcome filter "${escapeHtml(filterOutcome)}".` : (asOfInfo && asOfInfo.valid ? 'No public entries were recorded on or before this as-of date.' : 'No public entries have been published yet.')}
+        </p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          ${filterOutcome ? `<a href="/work${asOfPrefixQuery}" class="btn btn-secondary">Reset all filters</a>` : ''}
+          ${asOfInfo && asOfInfo.valid ? `<a href="/${mode}" class="btn btn-secondary">Reset time-travel to present</a>` : ''}
+          <a href="/ask" class="btn">Ask Questions</a>
+        </div>
+      </div>
+    `}
   `;
 
   return renderLayout(title, `/${mode}`, content);
+}
+
+export function renderNotFoundPage(
+  message?: string,
+  activePath: string = '/'
+): string {
+  const content = `
+    <div class="empty-state" style="padding:48px 16px;text-align:center;max-width:640px;margin:40px auto">
+      <h1 style="font-family:var(--font-reading);font-size:32px;margin:0 0 12px 0">404 — Page Not Found</h1>
+      <p style="color:var(--text-muted);font-size:16px;margin:0 0 24px 0">
+        ${escapeHtml(message || 'The page or record you requested does not exist or may have been moved.')}
+      </p>
+      <div style="margin-bottom:28px">
+        <form action="/ask" method="GET" style="display:flex;gap:8px;max-width:440px;margin:0 auto">
+          <input type="text" name="q" class="ask-input" placeholder="Search records or ask a question..." aria-label="Search records" style="flex:1" required />
+          <button type="submit" class="btn">Search</button>
+        </form>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a href="/work" class="btn btn-secondary">Explore Work</a>
+        <a href="/writing" class="btn btn-secondary">Browse Writing</a>
+        <a href="/timeline" class="btn btn-secondary">View Timeline</a>
+        <a href="/ask" class="btn">Ask Questions</a>
+      </div>
+    </div>
+  `;
+  return renderLayout('404 — Page Not Found', activePath, content);
+}
+
+export async function renderBuildVenturePage(
+  repo: WebDataClient,
+  slug: string
+): Promise<{ status: number; html: string }> {
+  repo = adaptDataSource(repo);
+  const ventures = await repo.listVentures();
+  const venture = ventures.find((v) => (v.slug || v.id) === slug || v.id === slug);
+
+  if (!venture) {
+    const entryRes = await repo.getEntryBySlug(slug);
+    if (entryRes && entryRes.currentRevision && entryRes.entry.visibility === 'public') {
+      return renderEntryDetailPage(repo, slug, 'article', undefined, '/build');
+    }
+    return {
+      status: 404,
+      html: renderNotFoundPage(`Venture or build project "${escapeHtml(slug)}" not found`, '/build'),
+    };
+  }
+
+  const entries = await repo.listEntries({ visibility: ['public'] });
+  const devLog = entries.filter((e) => e.venture_id === venture.id);
+
+  const facetChips = venture.facets
+    ? (Array.isArray(venture.facets)
+        ? venture.facets.map((f: any) => `<span class="chip">${escapeHtml(f.facet || f.name || '')}: <strong>${escapeHtml(String(f.value ?? ''))}</strong></span>`)
+        : Object.entries(venture.facets).map(([k, val]) => `<span class="chip">${escapeHtml(k)}: <strong>${escapeHtml(String(val))}</strong></span>`))
+        .join(' ')
+    : '';
+
+  const devLogListHtml = devLog.length > 0
+    ? `<ul class="entry-list" style="margin-top:8px">
+        ${devLog.map((e) => `
+          <li class="entry-row">
+            <div class="entry-row-top">
+              <a href="/work/${escapeHtml(e.slug)}" class="entry-title-link">${escapeHtml(e.title)}</a>
+              <span class="chip">${escapeHtml(e.profile)}</span>
+            </div>
+          </li>
+        `).join('\n')}
+      </ul>`
+    : `<div class="empty-state" style="padding:24px;text-align:center;border:1px dashed var(--rule);border-radius:var(--radius-card);margin-top:12px">
+        <p style="color:var(--text-muted);font-size:14px;margin:0">No attached dev-log entries recorded for this venture yet.</p>
+      </div>`;
+
+  const content = `
+    <article class="reading-column" style="max-width:var(--layout-max);margin:0 auto">
+      <div style="margin-bottom:16px">
+        <a href="/build" class="btn btn-secondary" style="display:inline-flex;align-items:center;padding:4px 10px;font-size:13px">← Back to Ventures</a>
+      </div>
+      <header style="margin-bottom:24px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
+          <h1 style="font-family:var(--font-reading);font-size:32px;margin:0">${escapeHtml(venture.name)}</h1>
+          <span class="chip">Status: <strong>${escapeHtml(venture.status)}</strong></span>
+        </div>
+        <p style="font-size:17px;color:var(--text-muted);margin:12px 0 16px">${escapeHtml(venture.description || '')}</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">${facetChips}</div>
+      </header>
+
+      <section class="strata-section" style="margin-bottom:24px">
+        <h2 style="font-family:var(--font-reading);font-size:20px;margin:0 0 12px 0">Attached Dev-Logs &amp; Decisions (${devLog.length})</h2>
+        ${devLogListHtml}
+      </section>
+
+      <div style="margin-top:24px">
+        <a href="/ask?scope=${encodeURIComponent(venture.slug || venture.id)}" class="btn">Ask about this venture</a>
+      </div>
+    </article>
+  `;
+
+  return {
+    status: 200,
+    html: renderLayout(venture.name, '/build', content),
+  };
 }
 
 export async function renderBuildPage(repo: WebDataClient): Promise<string> {
@@ -908,23 +1071,30 @@ export async function renderBuildPage(repo: WebDataClient): Promise<string> {
     .map((v) => {
       const devLog = entries.filter((e) => e.venture_id === v.id);
       const facetChips = v.facets
-        ? Object.entries(v.facets)
-            .map(([k, val]) => `<span class="chip">${escapeHtml(k)}: ${escapeHtml(String(val))}</span>`)
+        ? (Array.isArray(v.facets)
+            ? v.facets.map((f: any) => `<span class="chip">${escapeHtml(f.facet || f.name || '')}: <strong>${escapeHtml(String(f.value ?? ''))}</strong></span>`)
+            : Object.entries(v.facets).map(([k, val]) => `<span class="chip">${escapeHtml(k)}: <strong>${escapeHtml(String(val))}</strong></span>`))
             .join(' ')
         : '';
 
       return `<section class="strata-section" style="margin-bottom:24px">
         <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
-          <h2 style="font-family:var(--font-reading);font-size:24px;margin:0">${escapeHtml(v.name)}</h2>
+          <h2 style="font-family:var(--font-reading);font-size:24px;margin:0">
+            <a href="/build/${escapeHtml(v.slug || v.id)}" style="color:inherit;text-decoration:none">${escapeHtml(v.name)}</a>
+          </h2>
           <span class="chip">Status: <strong>${escapeHtml(v.status)}</strong></span>
         </div>
         <p style="margin:8px 0 12px;max-width:65ch">${escapeHtml(v.description || '')}</p>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${facetChips}</div>
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)">
           <strong style="font-size:14px">Attached dev-log entries (${devLog.length}):</strong>
-          <ul style="margin:6px 0 0;padding-left:20px">
-            ${devLog.map((e) => `<li><a href="/work/${e.slug}">${escapeHtml(e.title)}</a></li>`).join('\n            ')}
-          </ul>
+          ${devLog.length > 0 ? `
+            <ul style="margin:6px 0 0;padding-left:20px">
+              ${devLog.map((e) => `<li><a href="/work/${escapeHtml(e.slug)}">${escapeHtml(e.title)}</a></li>`).join('\n            ')}
+            </ul>
+          ` : `
+            <p style="color:var(--text-muted);font-size:13px;margin:4px 0 0">No dev-log entries attached yet.</p>
+          `}
         </div>
       </section>`;
     })
@@ -933,7 +1103,16 @@ export async function renderBuildPage(repo: WebDataClient): Promise<string> {
   const content = `
     <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Build — Ventures & Shipped Products</h1>
     <p style="color:var(--text-muted);margin:0 0 24px 0">Long-running products and open-source tools with linked dev-logs and constraint facets.</p>
-    ${ventureBlocks}
+    ${ventures.length > 0 ? ventureBlocks : `
+      <div class="empty-state" style="padding:48px 16px;text-align:center;border:1px dashed var(--rule);border-radius:var(--radius-card);margin-top:24px">
+        <p style="font-weight:600;font-size:18px;margin:0 0 8px 0">No ventures or products listed yet</p>
+        <p style="color:var(--text-muted);font-size:15px;margin:0 0 20px 0">Long-running software products, tools, and production deployments will appear here with linked architectural dev-logs.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <a href="/work" class="btn btn-secondary">Explore Technical Work</a>
+          <a href="/ask" class="btn">Ask About Projects</a>
+        </div>
+      </div>
+    `}
   `;
 
   return renderLayout('Build', '/build', content);

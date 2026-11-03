@@ -317,6 +317,12 @@ a {
   color: var(--text);
 }
 
+.chip.active, a.chip.active {
+  border-color: var(--accent);
+  font-weight: 600;
+  background: var(--surface-raised);
+}
+
 /* §12.2 & §12.7 Machine-suggested items: dashed outline + "suggested" label */
 .chip-suggested {
   border-style: dashed;

@@ -347,7 +347,7 @@ export function createApp(
     options.bundledWebAdapter(app, repo, runtimeState, auth);
   }
 
-  // Root welcome (pure API contract when decoupled)
+  // Root welcome (pure API contract when decoupled or content-negotiated via next())
   app.get('/', async (c) => {
     return c.json({
       name: `${cfg.PUBLIC_SITE_NAME} API`,
