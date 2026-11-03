@@ -632,5 +632,13 @@
     "path": "docs/execution-reports/A048-wp-104-dynamic-topology-audit-and-staleness.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A049",
+    "title": "WP-10.5 Import Planner Budgets and Core Connectors",
+    "class": "A",
+    "path": "docs/execution-reports/A049-wp-105-import-planner-budgets-and-core-connectors.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
