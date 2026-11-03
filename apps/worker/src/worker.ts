@@ -82,6 +82,19 @@ export interface PublishJobResult {
   };
 }
 
+export interface PublishStatus {
+  status: 'idle' | 'queued' | 'building' | 'live' | 'cap_reached';
+  state: 'idle' | 'queued' | 'building' | 'live' | 'cap_reached';
+  buildsToday: number;
+  maxBuildsPerDay: number;
+  debounceMinutes: number;
+  lastBuildTime: string | null;
+  nextAllowedBuildTime: string | null;
+  minutesRemaining: number;
+  secondsRemaining: number;
+  lastBuildResult?: PublishJobResult;
+}
+
 /**
  * §8 & §13 Asynchronous Pipeline Worker (INGEST -> EMBED -> ENRICH -> PUBLISH -> BACKUP -> DELETE)
  */
@@ -96,6 +109,9 @@ export class PortfolioWorker {
   private lastBuildTimeMs: number | null = null;
   private lastBuildDayUtc: string | null = null;
   private buildsToday = 0;
+  private isBuilding = false;
+  private lastBuildResult?: PublishJobResult;
+  private pendingEnrichments = new Set<string>();
 
   constructor(options?: PortfolioWorkerOptions) {
     this.repo = options?.repo ?? new InMemoryPortfolioRepository();
@@ -148,6 +164,49 @@ export class PortfolioWorker {
     if (dayUtc) {
       this.lastBuildDayUtc = dayUtc;
     }
+  }
+
+  isEnrichmentPending(entryId: string): boolean {
+    return this.pendingEnrichments.has(entryId);
+  }
+
+  getPublishStatus(nowMs: number = Date.now()): PublishStatus {
+    this.checkAndResetBuildsToday(nowMs);
+    let state: 'idle' | 'queued' | 'building' | 'live' | 'cap_reached' = 'idle';
+    let minutesRemaining = 0;
+    let secondsRemaining = 0;
+    let nextAllowedBuildTime: string | null = null;
+
+    if (this.isBuilding) {
+      state = 'building';
+    } else if (this.buildsToday >= this.publishConfig.maxBuildsPerDay) {
+      state = 'cap_reached';
+    } else if (this.lastBuildTimeMs !== null) {
+      const elapsedMs = nowMs - this.lastBuildTimeMs;
+      const windowMs = this.publishConfig.debounceMinutes * 60 * 1000;
+      if (elapsedMs < windowMs) {
+        state = 'queued';
+        const remainingMs = windowMs - elapsedMs;
+        secondsRemaining = Math.max(0, Math.ceil(remainingMs / 1000));
+        minutesRemaining = Math.max(1, Math.ceil(remainingMs / (60 * 1000)));
+        nextAllowedBuildTime = new Date(this.lastBuildTimeMs + windowMs).toISOString();
+      } else {
+        state = 'live';
+      }
+    }
+
+    return {
+      status: state,
+      state,
+      buildsToday: this.buildsToday,
+      maxBuildsPerDay: this.publishConfig.maxBuildsPerDay,
+      debounceMinutes: this.publishConfig.debounceMinutes,
+      lastBuildTime: this.lastBuildTimeMs ? new Date(this.lastBuildTimeMs).toISOString() : null,
+      nextAllowedBuildTime,
+      minutesRemaining,
+      secondsRemaining,
+      lastBuildResult: this.lastBuildResult,
+    };
   }
 
   /**
@@ -245,10 +304,12 @@ export class PortfolioWorker {
    * Routes model calls strictly by data class through BudgetGovernor and local redaction scan.
    */
   async runEnrichJob(entryId: string, revisionId: string) {
-    const full = await this.repo.getEntry(entryId);
-    if (!full || !full.currentRevision) {
-      throw new Error(`Entry ${entryId} not found`);
-    }
+    this.pendingEnrichments.add(entryId);
+    try {
+      const full = await this.repo.getEntry(entryId);
+      if (!full || !full.currentRevision) {
+        throw new Error(`Entry ${entryId} not found`);
+      }
 
     const spans = await this.repo.getSpans(revisionId);
     const profile = getProfile(full.entry.profile);
@@ -398,6 +459,9 @@ export class PortfolioWorker {
       evidenceDiscovered: savedEvidence.length,
       gapQuestions,
     };
+    } finally {
+      this.pendingEnrichments.delete(entryId);
+    }
   }
 
   /**
@@ -440,8 +504,10 @@ export class PortfolioWorker {
     // 4. Update internal counters
     this.lastBuildTimeMs = nowMs;
     this.buildsToday += 1;
+    this.isBuilding = true;
 
-    // 5. Emit real static site artifacts to disk (§13.7, Finding P5)
+    try {
+      // 5. Emit real static site artifacts to disk (§13.7, Finding P5)
     const outputDir =
       options?.outputDir ??
       this.publishConfig.outputDir ??
@@ -569,18 +635,23 @@ export class PortfolioWorker {
     };
     await writeStaticFile('manifest.json', JSON.stringify(bundleManifest, null, 2));
 
-    return {
-      built: true,
-      buildsToday: this.buildsToday,
-      outputDir,
-      bundleSummary: {
-        pagesCount,
-        keywordIndexEntries: keywordIndex.length,
-        publishedAt: new Date(nowMs).toISOString(),
-        filesCount: writtenFiles.length,
-        files: writtenFiles,
-      },
-    };
+      const result: PublishJobResult = {
+        built: true,
+        buildsToday: this.buildsToday,
+        outputDir,
+        bundleSummary: {
+          pagesCount,
+          keywordIndexEntries: keywordIndex.length,
+          publishedAt: new Date(nowMs).toISOString(),
+          filesCount: writtenFiles.length,
+          files: writtenFiles,
+        },
+      };
+      this.lastBuildResult = result;
+      return result;
+    } finally {
+      this.isBuilding = false;
+    }
   }
 
   /**

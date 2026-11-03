@@ -24,6 +24,8 @@ import { createAuditRoutes } from './routes/audit.js';
 import { createImportRoutes } from './routes/import.js';
 import { createBookRoutes } from './routes/book.js';
 import { createSettingsRoutes, type RuntimeSettingsState } from './routes/settings.js';
+import { createPublishRoutes } from './routes/publish.js';
+import { PortfolioWorker, type WorkerQueueManager } from '@living-portfolio/worker';
 
 export function createApp(
   customRepo?: IPortfolioRepository,
@@ -40,6 +42,8 @@ export function createApp(
     databaseKind?: 'in-memory' | 'postgres' | 'dual-write';
     bundledWeb?: boolean;
     bundledWebAdapter?: (app: Hono, repo: IPortfolioRepository, runtimeState?: any, auth?: AuthManager) => void;
+    worker?: PortfolioWorker;
+    queueManager?: WorkerQueueManager;
   }
 ) {
   const app = new Hono();
@@ -186,6 +190,14 @@ export function createApp(
   const answerCache = new AnswerCache();
   const openApiDoc = buildOpenApiDocument();
 
+  const worker =
+    options?.worker ??
+    new PortfolioWorker({
+      repo,
+      providers,
+      governor,
+    });
+
   // Canonical Versioned API Router (/api/v1, OSR-12 §4.1)
   const apiV1 = new Hono();
 
@@ -195,7 +207,7 @@ export function createApp(
 
   // Public & Authenticated Core Routes
   apiV1.route('/auth', createAuthRoutes(auth));
-  apiV1.route('/entries', createEntriesRoutes(repo, auth, runtimeState, answerCache));
+  apiV1.route('/entries', createEntriesRoutes(repo, auth, runtimeState, answerCache, worker));
   apiV1.route(
     '/ask',
     createAskRoutes({
@@ -210,6 +222,9 @@ export function createApp(
     })
   );
   apiV1.route('/timeline', createTimelineRoutes(repo));
+  apiV1.use('/publish/now', auth.requireAdminMiddleware());
+  apiV1.use('/publish/enrich', auth.requireAdminMiddleware());
+  apiV1.route('/publish', createPublishRoutes(worker, repo, options?.queueManager));
 
   // Admin-only routes protected by default-deny auth middleware (Fix 1 / S1, S2)
   apiV1.use('/structure/*', auth.requireAdminMiddleware());
@@ -344,5 +359,5 @@ export function createApp(
     });
   });
 
-  return { app, repo, governor, mockProvider, providers, runtimeState, auth, adminToken, answerCache, metricsCollector };
+  return { app, repo, governor, mockProvider, providers, runtimeState, auth, adminToken, answerCache, metricsCollector, worker };
 }

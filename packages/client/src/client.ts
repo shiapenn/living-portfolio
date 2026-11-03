@@ -22,6 +22,8 @@ import type {
   AskResponse,
   TimelineResponse,
   BookingResponse,
+  PublishStatusResponse,
+  PublishNowResponse,
 } from './types.js';
 
 export class LivingPortfolioClient {
@@ -515,6 +517,24 @@ export class LivingPortfolioClient {
 
     verifyShadowParity: (): Promise<{ ok: boolean; parity: any }> =>
       this.request('/admin/metrics/shadow/parity'),
+  };
+
+  // --- Publish & Static Rebuild (§13.7, UX-05) ---
+  public publish = {
+    status: (): Promise<PublishStatusResponse> =>
+      this.request('/publish/status'),
+
+    now: (): Promise<PublishNowResponse> =>
+      this.request('/publish/now', { method: 'POST' }),
+
+    enrich: (entryId: string, revisionId?: string): Promise<{ ok: boolean; queued: boolean; entryId: string }> =>
+      this.request('/publish/enrich', {
+        method: 'POST',
+        body: JSON.stringify({ entryId, revisionId }),
+      }),
+
+    enrichStatus: (entryId: string): Promise<{ entryId: string; queued: boolean }> =>
+      this.request(`/publish/enrich/status/${entryId}`),
   };
 
   // --- Seed Demo ---

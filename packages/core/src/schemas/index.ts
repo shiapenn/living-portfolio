@@ -107,6 +107,7 @@ export const AskQuerySchema = z.object({
   session_id: z.string().optional(),
   scope_entry_slug: z.string().optional(), // for scoped "Ask about this"
   visitor_contact: z.string().optional(),
+  context_asked: z.boolean().optional(),
 });
 
 export const BookingCreateSchema = z.object({

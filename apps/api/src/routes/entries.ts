@@ -13,6 +13,7 @@ import {
   RevisionCreateSchema,
 } from '@living-portfolio/core';
 import { scanForConfidentialData, extractEntitiesMultiPass, type AnswerCache } from '@living-portfolio/ai';
+import type { PortfolioWorker } from '@living-portfolio/worker';
 import { AuthManager, sha256Hex } from '../auth/security.js';
 import type { RuntimeSettingsState } from './settings.js';
 
@@ -20,7 +21,8 @@ export function createEntriesRoutes(
   repo: IPortfolioRepository,
   auth: AuthManager,
   settingsState?: RuntimeSettingsState,
-  answerCache?: AnswerCache
+  answerCache?: AnswerCache,
+  worker?: PortfolioWorker
 ) {
   const router = new Hono();
 
@@ -322,6 +324,17 @@ export function createEntriesRoutes(
       warnings: redactionWarnings,
     });
 
+    let enrichmentQueued = false;
+    if (data.visibility === 'public' && worker) {
+      enrichmentQueued = true;
+      worker.runEnrichJob(entry.id, revision.id).catch((err) => {
+        console.error(`[Entries] Auto background enrichment failed for ${entry.id}:`, err);
+      });
+      worker.runPublishStaticSiteJob({ forceNow: false }).catch((err) => {
+        console.error(`[Entries] Debounced static rebuild trigger failed for ${entry.id}:`, err);
+      });
+    }
+
     return c.json(
       {
         entry,
@@ -329,6 +342,7 @@ export function createEntriesRoutes(
         spansCount: savedSpans.length,
         redactionWarnings,
         redactionPreviewToken,
+        enrichmentQueued,
       },
       201
     );
@@ -392,7 +406,18 @@ export function createEntriesRoutes(
       answerCache.invalidateRevision(existing.currentRevision.id);
     }
 
-    return c.json({ entry: updatedEntry });
+    let enrichmentQueued = false;
+    if (parsed.data.visibility === 'public' && worker && existing.currentRevision) {
+      enrichmentQueued = true;
+      worker.runEnrichJob(id, existing.currentRevision.id).catch((err) => {
+        console.error(`[Entries] Auto background enrichment failed for ${id}:`, err);
+      });
+      worker.runPublishStaticSiteJob({ forceNow: false }).catch((err) => {
+        console.error(`[Entries] Debounced static rebuild trigger failed for ${id}:`, err);
+      });
+    }
+
+    return c.json({ entry: updatedEntry, enrichmentQueued });
   });
 
   // Delete entry and all derived records (§15 Deletion, Admin-only)
