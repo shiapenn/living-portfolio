@@ -16,7 +16,7 @@ import {
   EmailNotificationChannel,
   type NotificationChannel,
 } from '@living-portfolio/core';
-import { getDefaultExclusions, type BudgetGovernor, type ModelProvider } from '@living-portfolio/ai';
+import { getDefaultExclusions, type BudgetGovernor, type ModelProvider, runEvaluation } from '@living-portfolio/ai';
 
 export interface RuntimeSettingsState {
   automatedAnsweringEnabled: boolean;
@@ -414,7 +414,13 @@ export function createSettingsRoutes(
   });
 
   // Model-Quality Evaluation Harness (§18.2)
-  router.get('/evaluation', (c) => {
+  router.get('/evaluation', async (c) => {
+    const isLive = c.req.query('live') === 'true' || c.req.query('run') === 'true';
+    if (isLive) {
+      const report = await runEvaluation();
+      return c.json(report, 200);
+    }
+
     // SIMULATED(M1): Labeled evaluation dataset and runner (§18.2) are not yet implemented.
     return c.json(
       {
@@ -425,6 +431,11 @@ export function createSettingsRoutes(
       },
       501
     );
+  });
+
+  router.post('/evaluation/run', async (c) => {
+    const report = await runEvaluation();
+    return c.json(report, 200);
   });
 
   return router;

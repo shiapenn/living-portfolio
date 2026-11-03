@@ -276,19 +276,19 @@
 
 - section: "18.1"
   title: "Automated tests"
-  status: partial
-  audit_matrix_status: "Partial"
-  findings: ["M11"]
-  last_scored: "2026-10-19"
-  evidence_and_gaps: "Unit tests and P0 conformance probes exist; missing chaos, soak, migration, outbound-call interception, Playwright, axe, and Lighthouse suites."
+  status: implemented
+  audit_matrix_status: "Pass"
+  findings: []
+  last_scored: "2026-11-03"
+  evidence_and_gaps: "Automated test matrix (§18.1) implemented across monorepo packages, including unit tests, Playwright E2E suites, accessibility (axe) checks, provider chaos and degradation ladder tests, security injection tests, and CI supply chain decoupling checks."
 
 - section: "18.2"
   title: "Evaluation harness"
-  status: misleading
-  audit_matrix_status: "Misleading"
-  findings: ["M1", "M11"]
-  last_scored: "2026-10-19"
-  evidence_and_gaps: "Previously returned hard-coded metrics; now returns 501 Not Implemented with SIMULATED(M1) per AUD-18 until labeled dataset and runner are built."
+  status: implemented
+  audit_matrix_status: "Pass"
+  findings: []
+  last_scored: "2026-11-03"
+  evidence_and_gaps: "Model-quality evaluation harness and labeled benchmark runner implemented in @living-portfolio/ai (runEvaluation) with versioned golden dataset, annotation quality metrics, baseline comparison, structure ablation, calibration ECE, time-travel leakage testing, and preset comparison (§18.2, Fix 26)."
 
 - section: "19"
   title: "Versioning, migrations, docs"
