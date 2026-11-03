@@ -2034,7 +2034,7 @@
     - "12.8"
     - "18.1"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-10
   related_to:
@@ -2043,11 +2043,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-accessibility.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-15 / P1-8; staged in v0.2)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.3 (A053): implemented keyboard skip link targeting #main-content, semantic h1 hierarchy, system dark mode synchronized theme toggle with guarded localStorage, semantic anchor strata navigation with high-contrast future indicators, min 44px touch targets across interactive controls, static alpha note role, and automated Playwright axe-core WCAG 2.2 AA test suite. Backed by wp11-accessibility.conformance.test.ts and wp11-accessibility-and-structure.spec.ts."
   verified_by: null
 - id: 20261020-UX-16
   audit: AUD-2026-10-20
@@ -2059,7 +2062,7 @@
     - "11"
     - "12.6"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P1-14
   related_to:
@@ -2069,11 +2072,14 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp11-accessibility.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 1 UX-16 / P1-14; staged in v0.2)
+    - date: 2026-11-03
+      status: fixed
+      note: "Remediated in WP-11.3 (A053): repaired structured view to preserve 100% of body text in document order ('unlabeled is valid'), cleanly interleaving role-annotated sections with unlabeled body spans. Restored 603 dropped characters on redis-distributed-locks-2021. Backed by wp11-accessibility.conformance.test.ts and wp11-accessibility-and-structure.spec.ts."
   verified_by: null
 - id: 20261020-UI-01
   audit: AUD-2026-10-20
