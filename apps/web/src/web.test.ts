@@ -33,6 +33,7 @@ import {
   renderHomeWithSlots,
   renderTimelineWithSlots,
   renderLayout,
+  renderStrataTimelineSection,
 } from './index.js';
 
 describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', () => {
@@ -826,6 +827,89 @@ console.log(x);
       });
       expect(layoutWithNonce).toContain('<style nonce="rAnd0mN0nc3">');
       expect(layoutWithNonce).toContain('<script nonce="rAnd0mN0nc3">');
+    });
+  });
+
+  describe('WP-12.1: Strata Timeline Visual Overhaul & Typography Craft (20261020-UI-05, UI-08, UI-09)', () => {
+    it('1. Overhauls Strata timeline into continuous time axis with empty month hairlines and profile glyphs (20261020-UI-05)', async () => {
+      const { html, visibleSlugs } = await renderStrataTimelineSection(repo);
+
+      // Continuous axis renders empty months as hairlines
+      expect(html).toContain('class="strata-band strata-band-empty"');
+      expect(html).toContain('class="band-empty-hairline"');
+      expect(html).toContain('data-count="0"');
+
+      // Profile glyphs and pattern data attributes on active bands
+      expect(html).toContain('data-profile="case-study"');
+      expect(html).toContain('data-profile="design-project"');
+      expect(html).toContain('class="band-glyphs"');
+      expect(html).toContain('■'); // Case study glyph
+      expect(html).toContain('▲'); // Design project glyph
+
+      // Legend promises and defines all three glyphs and venture notch
+      expect(html).toContain('■</span> Case study');
+      expect(html).toContain('◆</span> Decision record');
+      expect(html).toContain('▲</span> Design project');
+      expect(html).toContain('class="band-venture-notch"');
+    });
+
+    it('2. Scales band heights non-linearly (square-root) and renders as-of cursor with slider semantics (20261020-UI-05)', async () => {
+      // Scrub to a historical date
+      const { html } = await renderStrataTimelineSection(repo, '2024-03-15T00:00:00Z');
+
+      // As-of slider cursor is rendered with handle
+      expect(html).toContain('id="strata-cursor"');
+      expect(html).toContain('role="slider"');
+      expect(html).toContain('aria-label="As of date cursor"');
+      expect(html).toContain('aria-valuetext="2024-03-15"');
+      expect(html).toContain('Viewing as of 2024-03');
+
+      // Band height matches square-root formula Math.min(120, Math.round(52 + Math.sqrt(count) * 28))
+      // e.g. for count=1: 80px
+      expect(html).toMatch(/style="height:(?:80|92|100|120|44)px"/);
+    });
+
+    it('3. Applies active role styling (.role-marker, .role-goal to .role-lesson) without inline border styles (20261020-UI-08)', async () => {
+      const res = await renderEntryDetailPage(repo, 'advisory-locks-revisited', 'structured');
+      expect(res.status).toBe(200);
+
+      // Role section classes and marker classes applied
+      expect(res.html).toContain('class="role-section role-goal"');
+      expect(res.html).toContain('class="role-marker role-goal"');
+
+      // No inline border-left styles overriding CSS classes
+      expect(res.html).not.toMatch(/style="[^"]*border-left:\s*3px solid var\(--role-/);
+    });
+
+    it('4. Renders claim items text-first without card grid boxes (20261020-UI-08)', async () => {
+      const res = await renderEntryDetailPage(repo, 'advisory-locks-revisited');
+      expect(res.status).toBe(200);
+
+      // Text-first claim items
+      expect(res.html).toContain('class="claim-item"');
+      expect(res.html).toContain('class="claim-meta"');
+      expect(res.html).toContain('class="claim-text"');
+
+      // No inline box styles with card borders
+      expect(res.html).not.toMatch(/style="margin-bottom:8px;padding:8px;border:1px solid var\(--rule\);background:var\(--surface-raised\)"/);
+    });
+
+    it('5. Typography craft: tabular numerals, text-wrap tuning, and differentiation date glyph (20261020-UI-09)', async () => {
+      const res = await renderEntryDetailPage(repo, 'advisory-locks-revisited');
+      expect(res.status).toBe(200);
+
+      // Tabular numerals applied to entry date line
+      expect(res.html).toContain('class="entry-date-line tabular-nums"');
+
+      // Two-layer strata date glyph differentiation device
+      expect(res.html).toContain('class="strata-date-glyph');
+      expect(res.html).toContain('class="strata-glyph-layer happened-layer"');
+      expect(res.html).toContain('class="strata-glyph-layer written-layer');
+
+      // Hindsight entry has shifted layer
+      const resHindsight = await renderEntryDetailPage(repo, 'premature-microservices-retrospective');
+      expect(resHindsight.html).toContain('is-hindsight');
+      expect(resHindsight.html).toContain('written-layer shifted');
     });
   });
 });

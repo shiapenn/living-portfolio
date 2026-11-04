@@ -26,10 +26,43 @@ body {
   outline-offset: 2px;
 }
 
+/* §12.4 Surface Craft: Selection & Text Wrapping (Finding 20261020-UI-09) */
+::selection {
+  background-color: var(--accent);
+  color: var(--text-on-accent, #FFFFFF);
+}
+
+h1, h2, h3, h4, h5, h6,
+.text-h1, .text-h2, .text-h3, .text-display {
+  text-wrap: balance;
+}
+
+p, .reading-column, .text-body {
+  text-wrap: pretty;
+}
+
+/* §12.4 Tabular Numerals for Chronology & Metrics (Finding 20261020-UI-09) */
+.tabular-nums,
+.strata-band,
+.entry-meta,
+.date-display,
+.entry-date-line,
+.level-step,
+.data-table td,
+time {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Optical Alignment: Hanging Punctuation in Blockquotes */
+blockquote, .reading-quote {
+  hanging-punctuation: first allow-end;
+}
+
 a {
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 3px;
+  transition: color var(--duration-fast, 120ms) ease;
 }
 
 /* §12.4 Semantic Typography Scale (Finding 20261020-UI-02) */
@@ -204,14 +237,21 @@ a {
   margin-bottom: var(--space-4);
 }
 
+.strata-layers-container {
+  position: relative;
+  overflow-x: auto;
+  padding: var(--space-6) 0 var(--space-2);
+  border-bottom: 2px solid var(--rule);
+}
+
 .strata-layers {
   display: flex;
   align-items: flex-end;
-  gap: var(--space-2);
-  min-height: 120px;
-  padding: var(--space-4) 0 var(--space-2);
-  border-bottom: 2px solid var(--rule);
-  overflow-x: auto;
+  gap: 2px;
+  min-height: 140px;
+  position: relative;
+  width: max-content;
+  min-width: 100%;
 }
 
 .strata-band {
@@ -219,18 +259,132 @@ a {
   flex-direction: column;
   justify-content: flex-end;
   text-decoration: none;
-  flex: 1;
-  min-width: 56px;
+  flex: 1 0 32px;
+  min-width: 32px;
   background: var(--surface-page);
   border: 1px solid var(--rule);
   border-top: 4px solid var(--accent);
-  padding: var(--space-2);
+  padding: var(--space-1) var(--space-2);
   cursor: pointer;
   text-align: left;
   color: var(--text);
   border-radius: var(--radius-chip);
+  position: relative;
+  transition: transform var(--duration-fast, 120ms) var(--ease-out),
+              border-color var(--duration-fast, 120ms) ease,
+              background-color var(--duration-fast, 120ms) ease;
 }
 
+.strata-band:hover {
+  transform: translateY(-2px);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.strata-band:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  z-index: 3;
+}
+
+/* Empty Month Hairline along Continuous Time Axis (Finding 20261020-UI-05) */
+.strata-band.strata-band-empty {
+  background: transparent;
+  border: 1px solid transparent;
+  border-top: 1px solid var(--rule);
+  border-radius: 0;
+  height: 44px !important;
+  padding: 2px var(--space-1);
+  color: var(--text-muted);
+}
+
+.strata-band.strata-band-empty:hover {
+  border-top-color: var(--accent);
+  background: var(--surface-page);
+}
+
+.band-empty-hairline {
+  width: 100%;
+  height: 1px;
+  background: var(--rule);
+  margin-bottom: auto;
+}
+
+.band-ym-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: block;
+  text-align: center;
+}
+
+/* Profile Visual Texture Encodings (■ ◆ ▲) */
+.strata-band[data-profile="case-study"],
+.strata-band.profile-case-study {
+  border-top-color: var(--role-goal, var(--accent));
+  background: var(--surface-page);
+}
+
+.strata-band[data-profile="decision-record"],
+.strata-band.profile-decision-record {
+  border-top-color: var(--role-decision, #5B3FA0);
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--surface-page),
+    var(--surface-page) 4px,
+    var(--surface-raised) 4px,
+    var(--surface-raised) 8px
+  );
+}
+
+.strata-band[data-profile="design-project"],
+.strata-band.profile-design-project {
+  border-top-color: var(--role-outcome, #1F7A5A);
+  background: radial-gradient(
+    circle,
+    var(--rule) 1.5px,
+    var(--surface-page) 1.5px
+  );
+  background-size: 8px 8px;
+}
+
+/* Venture Notch on Top Edge */
+.band-venture-notch {
+  position: absolute;
+  top: -4px;
+  right: 4px;
+  width: 8px;
+  height: 4px;
+  background-color: var(--accent);
+  border-radius: 1px;
+}
+
+/* As-Of Timeline Cursor */
+.as-of-cursor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--accent);
+  z-index: 4;
+  pointer-events: none;
+  transition: left var(--duration-base, 160ms) var(--ease-out);
+}
+
+.as-of-cursor-handle {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent);
+  color: var(--text-on-accent, #ffffff);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--radius-chip);
+  white-space: nowrap;
+}
+
+/* Future Dimmed Bands */
 .strata-band[data-dimmed="true"] {
   border-top-color: var(--text-muted);
   background: repeating-linear-gradient(
@@ -241,6 +395,7 @@ a {
     var(--surface-raised) 12px
   );
   border-style: dashed;
+  color: var(--state-future-text, var(--text-muted));
 }
 
 .strata-band .band-label-future {
@@ -253,10 +408,25 @@ a {
   margin-top: var(--space-1);
 }
 
-.strata-band:hover,
-.strata-band:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
+.strata-band .band-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-1);
+}
+
+.strata-band .band-glyphs {
+  font-size: 11px;
+  color: var(--accent);
+}
+
+.strata-band .band-ym {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.strata-band .band-count {
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .strata-legend {
@@ -266,12 +436,19 @@ a {
   font-size: 13px;
   color: var(--text-muted);
   margin-top: var(--space-3);
+  align-items: center;
 }
 
 .strata-legend-item {
   display: flex;
   align-items: center;
   gap: var(--space-1);
+}
+
+.strata-legend-hint {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .strata-legend-swatch {
@@ -792,21 +969,130 @@ button[type="submit"] {
   }
 }
 
-/* Structured View Role Sections & Unlabeled Spans (UX-16) */
+/* Differentiation Device: Two-layer Strata Date Glyph (Finding 20261020-UI-09) */
+.strata-date-glyph {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 14px;
+  height: 10px;
+  vertical-align: middle;
+  margin-right: var(--space-1);
+}
+
+.strata-glyph-layer {
+  height: 3px;
+  border-radius: 1px;
+  background: var(--accent);
+  display: block;
+}
+
+.strata-glyph-layer.happened-layer {
+  width: 14px;
+}
+
+.strata-glyph-layer.written-layer {
+  width: 14px;
+  background: var(--role-goal, var(--accent));
+}
+
+.strata-glyph-layer.written-layer.shifted {
+  width: 9px;
+  margin-left: 5px;
+  background: var(--role-friction, #9A6A00);
+}
+
+/* §12.1 Text-First Claim Items (deliberately avoids card grids, Finding 20261020-UI-08) */
+.claim-item {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.claim-item:last-child {
+  border-bottom: none;
+}
+
+.claim-meta {
+  font-family: var(--font-ui);
+  font-size: var(--font-size-1, 13px);
+  color: var(--text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.claim-text {
+  font-family: var(--font-reading);
+  font-size: var(--font-size-2, 15px);
+  line-height: 1.5;
+}
+
+/* §12.3 & §12.4 Role Markers & Sections (Findings 20261020-UI-08, 20261020-UI-09) */
+.role-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-2, 16px);
+  font-weight: 600;
+  border-radius: var(--radius-chip, 2px);
+  border-left: var(--role-section-rule-width, 3px) solid var(--accent);
+  background: var(--surface-raised);
+  color: var(--text);
+  margin: 0 0 var(--space-2) 0;
+}
+
 .role-section {
   margin-bottom: var(--space-6);
   padding-left: var(--space-4);
   border-left: var(--role-section-rule-width, 3px) solid var(--accent);
+  transition: border-color var(--duration-fast, 120ms) ease;
 }
+
+.role-marker.role-goal, .role-section.role-goal { border-left-color: var(--role-goal); }
+.role-marker.role-approach, .role-section.role-approach { border-left-color: var(--role-approach); }
+.role-marker.role-friction, .role-section.role-friction { border-left-color: var(--role-friction); }
+.role-marker.role-decision, .role-section.role-decision { border-left-color: var(--role-decision); }
+.role-marker.role-outcome, .role-section.role-outcome { border-left-color: var(--role-outcome); }
+.role-marker.role-lesson, .role-section.role-lesson { border-left-color: var(--role-lesson); }
+
+/* Other role profiles (Decision Record, Design Project) */
+.role-marker.role-brief, .role-section.role-brief { border-left-color: var(--role-goal); }
+.role-marker.role-exploration, .role-section.role-exploration { border-left-color: var(--role-approach); }
+.role-marker.role-critique, .role-section.role-critique { border-left-color: var(--role-friction); }
+.role-marker.role-iteration, .role-section.role-iteration { border-left-color: var(--role-approach); }
+.role-marker.role-final, .role-section.role-final { border-left-color: var(--role-outcome); }
+.role-marker.role-impact, .role-section.role-impact { border-left-color: var(--role-outcome); }
+.role-marker.role-context, .role-section.role-context { border-left-color: var(--role-approach); }
+.role-marker.role-options, .role-section.role-options { border-left-color: var(--role-friction); }
+.role-marker.role-consequences, .role-section.role-consequences { border-left-color: var(--role-outcome); }
 
 .unlabeled-span {
   margin-bottom: var(--space-6);
+}
+
+/* §12.7 Choreographed Micro-Transitions */
+.btn {
+  transition: background-color var(--duration-fast, 120ms) ease,
+              border-color var(--duration-fast, 120ms) ease,
+              color var(--duration-fast, 120ms) ease,
+              transform var(--duration-fast, 120ms) ease;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.chip {
+  transition: background-color var(--duration-fast, 120ms) ease,
+              border-color var(--duration-fast, 120ms) ease,
+              color var(--duration-fast, 120ms) ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+    transform: none !important;
   }
 }
 `;

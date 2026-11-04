@@ -19,7 +19,7 @@ import {
 import type { LivingPortfolioClient } from '@living-portfolio/client';
 import { STRATA_DESIGN_SYSTEM_CSS } from './styles.js';
 import { renderMarkdown } from './markdown.js';
-import { renderEntryRow, renderField, renderButton, renderChip, formatOutcome } from './components/index.js';
+import { renderEntryRow, renderField, renderButton, renderChip, formatOutcome, renderStrataDateGlyph } from './components/index.js';
 
 export interface WebDataClient {
   entries?: {
@@ -391,7 +391,17 @@ export async function renderStrataTimelineSection(
 ): Promise<{ html: string; visibleSlugs: Set<string> | null }> {
   repo = adaptDataSource(repo);
   const entries = await repo.listEntries({ visibility: ['public'] });
-  const buckets: Record<string, { yearMonth: string; count: number; titles: string[]; slugs: string[]; profiles: string[] }> = {};
+  const buckets: Record<
+    string,
+    {
+      yearMonth: string;
+      count: number;
+      titles: string[];
+      slugs: string[];
+      profiles: string[];
+      ventureIds: string[];
+    }
+  > = {};
   const asOfInfo = parseAsOfDate(asOfParam);
   let visibleSlugs: Set<string> | null = null;
 
@@ -407,12 +417,22 @@ export async function renderStrataTimelineSection(
     const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 
     if (!buckets[ym]) {
-      buckets[ym] = { yearMonth: ym, count: 0, titles: [], slugs: [], profiles: [] };
+      buckets[ym] = {
+        yearMonth: ym,
+        count: 0,
+        titles: [],
+        slugs: [],
+        profiles: [],
+        ventureIds: [],
+      };
     }
     buckets[ym].count++;
     buckets[ym].titles.push(entry.title);
     buckets[ym].slugs.push(entry.slug);
     buckets[ym].profiles.push(entry.profile);
+    if (entry.venture_id) {
+      buckets[ym].ventureIds.push(entry.venture_id);
+    }
 
     if (asOfInfo && asOfInfo.valid && visibleSlugs) {
       const check = isTemporallyValid(rev, asOfInfo.date);
@@ -420,7 +440,42 @@ export async function renderStrataTimelineSection(
     }
   }
 
-  const sorted = Object.values(buckets).sort((a, b) => a.yearMonth.localeCompare(b.yearMonth));
+  // Generate continuous month axis across all years (Finding 20261020-UI-05)
+  const populatedYms = Object.keys(buckets).sort();
+  const today = new Date();
+  const currentYm = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+
+  let minYm = populatedYms[0] || currentYm;
+  let maxYm = populatedYms[populatedYms.length - 1] || currentYm;
+  if (currentYm > maxYm) maxYm = currentYm;
+
+  if (asOfInfo && asOfInfo.valid) {
+    const asOfYm = asOfInfo.raw.slice(0, 7);
+    if (asOfYm < minYm) minYm = asOfYm;
+    if (asOfYm > maxYm) maxYm = asOfYm;
+  }
+
+  const allMonths: string[] = [];
+  {
+    const [startYear, startMonth] = minYm.split('-').map(Number);
+    const [endYear, endMonth] = maxYm.split('-').map(Number);
+    let y = startYear;
+    let m = startMonth;
+    while (y < endYear || (y === endYear && m <= endMonth)) {
+      allMonths.push(`${y}-${String(m).padStart(2, '0')}`);
+      m++;
+      if (m > 12) {
+        m = 1;
+        y++;
+      }
+    }
+  }
+
+  const profileGlyphMap: Record<string, string> = {
+    'case-study': '■',
+    'decision-record': '◆',
+    'design-project': '▲',
+  };
 
   let asOfBanner = '';
   if (asOfInfo) {
@@ -437,29 +492,60 @@ export async function renderStrataTimelineSection(
     }
   }
 
-  const bandsHtml = sorted
-    .map((b) => {
-      const heightPx = Math.min(110, 44 + b.count * 24);
-      const dimmed = asOfInfo && asOfInfo.valid ? b.yearMonth > asOfInfo.raw.slice(0, 7) : false;
-      const [yearStr, monthStr] = b.yearMonth.split('-');
+  const bandsHtml = allMonths
+    .map((ym) => {
+      const b = buckets[ym] || {
+        yearMonth: ym,
+        count: 0,
+        titles: [],
+        slugs: [],
+        profiles: [],
+        ventureIds: [],
+      };
+
+      const [yearStr, monthStr] = ym.split('-');
       const year = parseInt(yearStr, 10);
       const month = parseInt(monthStr, 10);
       const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
       const padDay = String(lastDay).padStart(2, '0');
-      const bandAsOf = `${b.yearMonth}-${padDay}T23:59:59Z`;
+      const bandAsOf = `${ym}-${padDay}T23:59:59Z`;
 
+      const dimmed = asOfInfo && asOfInfo.valid ? ym > asOfInfo.raw.slice(0, 7) : false;
+      const isCursor = asOfInfo && asOfInfo.valid && ym === asOfInfo.raw.slice(0, 7);
+
+      if (b.count === 0) {
+        return `<a href="/timeline?as_of=${bandAsOf}" class="strata-band strata-band-empty" style="height:44px" data-ym="${ym}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" data-count="0"${isCursor ? ' data-cursor="true"' : ''} aria-label="${ym}: No entries${dimmed ? ' (after as-of date)' : ''}">
+          <div class="band-empty-hairline" aria-hidden="true"></div>
+          <span class="band-ym-empty">${month === 1 ? ym : monthStr}</span>
+          ${dimmed ? '<div class="band-label-future">(future)</div>' : ''}
+        </a>`;
+      }
+
+      // Height formula: non-linear square-root scale between 52px and 120px (Finding 20261020-UI-05)
+      const heightPx = Math.min(120, Math.round(52 + Math.sqrt(b.count) * 28));
       const layerText = `${b.count} layer${b.count > 1 ? 's' : ''}`;
-      return `<a href="/timeline?as_of=${bandAsOf}" class="strata-band" style="height:${heightPx}px" data-ym="${b.yearMonth}" data-slug="${b.slugs[0]}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" aria-label="${b.yearMonth} ${layerText}: ${b.profiles.join(', ')}${dimmed ? ' (after as-of date)' : ''}">
-        <div style="font-weight:700;font-size:13px">${b.yearMonth}</div>
-        <div style="font-size:12px;color:var(--text-muted)">${layerText}</div>
+      const uniqueProfiles = Array.from(new Set(b.profiles));
+      const primaryProfile = uniqueProfiles[0] || 'case-study';
+      const glyphs = uniqueProfiles.map((p) => profileGlyphMap[p] || '■').join(' ');
+      const hasVenture = b.ventureIds.length > 0;
+
+      return `<a href="/timeline?as_of=${bandAsOf}" class="strata-band" data-profile="${escapeHtml(primaryProfile)}" style="height:${heightPx}px" data-ym="${ym}" data-slug="${b.slugs[0]}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" data-count="${b.count}"${isCursor ? ' data-cursor="true"' : ''} aria-label="${ym} ${layerText}: ${uniqueProfiles.join(', ')}${dimmed ? ' (after as-of date)' : ''}">
+        ${hasVenture ? '<span class="band-venture-notch" title="Venture project" aria-hidden="true"></span>' : ''}
+        <div class="band-header">
+          <span class="band-glyphs" aria-hidden="true">${glyphs}</span>
+          <span class="band-ym">${ym}</span>
+        </div>
+        <div class="band-count">${layerText}</div>
         ${dimmed ? '<div class="band-label-future">(future)</div>' : ''}
       </a>`;
     })
     .join('\n      ');
 
   const asOfQuery = asOfInfo && asOfInfo.valid ? `?as_of=${encodeURIComponent(asOfInfo.raw)}` : '';
-  const textListHtml = sorted
-    .map((b) => {
+  const textListHtml = allMonths
+    .map((ym) => {
+      const b = buckets[ym];
+      if (!b || b.count === 0) return '';
       const visibleIndices = b.slugs
         .map((s, idx) => (!visibleSlugs || visibleSlugs.has(s) ? idx : -1))
         .filter((idx) => idx !== -1);
@@ -478,7 +564,7 @@ export async function renderStrataTimelineSection(
     <div class="strata-header">
       <div>
         <h2 id="strata-heading" style="margin:0;font-size:18px;font-family:var(--font-reading)">Strata timeline</h2>
-        <span style="font-size:14px;color:var(--text-muted)">Pick a month to see this site as it was then.</span>
+        <span style="font-size:14px;color:var(--text-muted)">Pick a month to see this site as it was then. Gaps show time between projects.</span>
       </div>
       <form method="GET" action="/timeline" style="display:flex;gap:8px;align-items:center">
         <label for="as-of-input" style="font-size:14px">As of:</label>
@@ -487,14 +573,18 @@ export async function renderStrataTimelineSection(
       </form>
     </div>
     ${asOfBanner}
-    <div class="strata-layers" role="region" aria-label="Chronological strata layers">
-      ${bandsHtml}
+    <div class="strata-layers-container">
+      <div class="strata-layers" role="region" aria-label="Chronological strata layers">
+        ${asOfInfo && asOfInfo.valid ? `<div class="as-of-cursor" id="strata-cursor" role="slider" aria-label="As of date cursor" aria-valuetext="${escapeHtml(asOfInfo.raw.slice(0, 10))}" tabindex="0"><span class="as-of-cursor-handle">Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 7))}</span></div>` : ''}
+        ${bandsHtml}
+      </div>
     </div>
-    <div class="strata-legend">
-      <span>■ Case study</span>
-      <span>◆ Decision record</span>
-      <span>▲ Design project</span>
-      <span>Keyboard: Left and Right arrows move between months. Enter opens a month.</span>
+    <div class="strata-legend" role="list" aria-label="Strata encoding legend">
+      <span class="strata-legend-item" role="listitem"><span class="glyph-case-study" aria-hidden="true">■</span> Case study</span>
+      <span class="strata-legend-item" role="listitem"><span class="glyph-decision-record" aria-hidden="true">◆</span> Decision record</span>
+      <span class="strata-legend-item" role="listitem"><span class="glyph-design-project" aria-hidden="true">▲</span> Design project</span>
+      <span class="strata-legend-item" role="listitem"><span class="band-venture-notch" style="position:static;display:inline-block;margin-right:4px" aria-hidden="true"></span> Venture notch</span>
+      <span class="strata-legend-hint">Keyboard: Left/Right arrows move between months, PageUp/PageDown by year, Enter opens month.</span>
     </div>
     <details style="margin-top:12px;font-size:14px">
       <summary style="cursor:pointer;color:var(--text-muted)">Timeline as a list</summary>
@@ -505,7 +595,21 @@ export async function renderStrataTimelineSection(
     <script>
       (function() {
         const bands = Array.from(document.querySelectorAll('.strata-band'));
+        const cursor = document.getElementById('strata-cursor');
         if (bands.length === 0) return;
+
+        function updateCursor(targetBand) {
+          if (!cursor || !targetBand) return;
+          const leftPos = targetBand.offsetLeft + (targetBand.offsetWidth / 2);
+          cursor.style.left = leftPos + 'px';
+        }
+
+        const activeBand = document.querySelector('.strata-band[data-cursor="true"]') ||
+                           document.querySelector('.strata-band[data-dimmed="true"]');
+        if (activeBand && cursor) {
+          updateCursor(activeBand);
+        }
+
         bands.forEach(function(band, idx) {
           band.addEventListener('keydown', function(e) {
             let targetIdx = -1;
@@ -518,9 +622,9 @@ export async function renderStrataTimelineSection(
             } else if (e.key === 'End') {
               targetIdx = bands.length - 1;
             } else if (e.key === 'PageUp') {
-              targetIdx = Math.max(0, idx - 3);
+              targetIdx = Math.max(0, idx - 12);
             } else if (e.key === 'PageDown') {
-              targetIdx = Math.min(bands.length - 1, idx + 3);
+              targetIdx = Math.min(bands.length - 1, idx + 12);
             } else if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               band.click();
@@ -529,6 +633,7 @@ export async function renderStrataTimelineSection(
             if (targetIdx !== -1 && targetIdx !== idx) {
               e.preventDefault();
               bands[targetIdx].focus();
+              updateCursor(bands[targetIdx]);
             }
           });
         });
@@ -767,8 +872,9 @@ export async function renderEntryDetailPage(
       const renderedSections = blocks.map((block) => {
         const combinedText = block.texts.map((t) => renderMarkdownToHtml(t)).join('\n');
         if (block.roleId && block.roleLabel) {
-          return `<section class="role-section role-${escapeHtml(block.roleId)}" data-role="${escapeHtml(block.roleId)}" style="margin-bottom:24px;padding-left:16px;border-left:3px solid var(--role-${escapeHtml(block.roleId)}, var(--accent))">
-            <h2 style="font-size:18px;margin:0 0 8px 0">${escapeHtml(block.roleLabel)}</h2>
+          const roleClass = `role-${escapeHtml(block.roleId)}`;
+          return `<section class="role-section ${roleClass}" data-role="${escapeHtml(block.roleId)}">
+            <h2 class="role-marker ${roleClass}">${escapeHtml(block.roleLabel)}</h2>
             <div class="reading-column">${combinedText}</div>
           </section>`;
         }
@@ -785,6 +891,7 @@ export async function renderEntryDetailPage(
 
   const happenedDate = (rev.valid_from || rev.written_at).slice(0, 10);
   const writtenDate = rev.written_at.slice(0, 10);
+  const dateGlyphHtml = renderStrataDateGlyph(rev.valid_from, rev.written_at, rev.is_hindsight);
   const dateDisplay =
     happenedDate !== writtenDate
       ? `Happened ${happenedDate} · Written ${writtenDate}${rev.is_hindsight ? ', looking back' : ''}`
@@ -815,9 +922,9 @@ export async function renderEntryDetailPage(
       ? claims
           .filter((c) => c.status === 'accepted')
           .map(
-            (c) => `<div style="margin-bottom:8px;padding:8px;border:1px solid var(--rule);background:var(--surface-raised)">
-              <div style="font-size:12px;color:var(--text-muted)">${escapeHtml(c.kind.charAt(0).toUpperCase() + c.kind.slice(1).toLowerCase())}. Outcome: <strong>${escapeHtml(formatOutcome(c.outcome_status) || 'Unknown')}</strong></div>
-              <div style="font-size:14px;margin-top:4px">${escapeHtml(c.text)}</div>
+            (c) => `<div class="claim-item">
+              <div class="claim-meta">${escapeHtml(c.kind.charAt(0).toUpperCase() + c.kind.slice(1).toLowerCase())}. Outcome: <strong>${escapeHtml(formatOutcome(c.outcome_status) || 'Unknown')}</strong></div>
+              <div class="claim-text">${escapeHtml(c.text)}</div>
             </div>`
           )
           .join('\n')
@@ -852,7 +959,7 @@ export async function renderEntryDetailPage(
   const content = `
     <article>
       ${asOfBannerHtml}
-      <header style="margin-bottom:24px;border-bottom:1px solid var(--rule);padding-bottom:16px">
+      <header style="margin-bottom:var(--space-6);border-bottom:1px solid var(--rule);padding-bottom:var(--space-4)">
         <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px">
           <h1 style="font-family:var(--font-reading);font-size:30px;margin:0">${escapeHtml(entry.title)}</h1>
           <div style="display:flex;gap:8px">
@@ -864,7 +971,7 @@ export async function renderEntryDetailPage(
             }
           </div>
         </div>
-        <p style="color:var(--text-muted);margin:8px 0 0;font-size:15px">${escapeHtml(dateDisplay)}</p>
+        <p class="entry-date-line tabular-nums" style="color:var(--text-muted);margin:var(--space-2) 0 var(--space-3);font-size:var(--font-size-1,14px);display:flex;align-items:center;gap:var(--space-1)">${dateGlyphHtml}<span>${escapeHtml(dateDisplay)}</span></p>
         ${contextStripHtml}
       </header>
 
@@ -875,13 +982,13 @@ export async function renderEntryDetailPage(
           ${bodyHtml}
         </div>
         <aside class="margin-rail" aria-label="Entry evidence, claims, and scoped ask">
-          <h3 style="margin:0 0 8px;font-size:15px">Evidence</h3>
+          <h3 style="margin:0 0 var(--space-2);font-size:var(--font-size-2,15px);font-family:var(--font-reading)">Evidence</h3>
           ${evidenceHtml}
 
-          ${claimsHtml ? `<h3 style="margin:20px 0 8px;font-size:15px">Conclusions</h3>${claimsHtml}` : ''}
+          ${claimsHtml ? `<h3 style="margin:var(--space-6) 0 var(--space-2);font-size:var(--font-size-2,15px);font-family:var(--font-reading)">Conclusions</h3>${claimsHtml}` : ''}
 
-          <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--rule)">
-            <h3 style="margin:0 0 8px;font-size:15px">Ask about this entry</h3>
+          <div style="margin-top:var(--space-6);padding-top:var(--space-4);border-top:1px solid var(--rule)">
+            <h3 style="margin:0 0 var(--space-2);font-size:var(--font-size-2,15px);font-family:var(--font-reading)">Ask about this entry</h3>
             <form action="/ask" method="GET">
               <input type="hidden" name="scope" value="${escapeHtml(entry.slug)}" />
               ${asOfInfo && asOfInfo.valid ? `<input type="hidden" name="as_of" value="${escapeHtml(asOfInfo.raw)}" />` : ''}

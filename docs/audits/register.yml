@@ -2505,7 +2505,7 @@
     - "12.3"
     - "12.5"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P2-1
   related_to:
@@ -2514,12 +2514,19 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp12-strata-craft.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-05 / P2-1;
         staged before G5)
+    - date: 2026-11-04
+      status: fixed
+      note: "Remediated in WP-12.1 (A056): transformed Strata timeline into a continuous
+        monthly time axis with empty-month hairline slots, visual texture fills, glyph
+        encoding (■ ◆ ▲), venture notches, square-root height scaling, and vertical
+        as-of cursor with slider role and settle transition. Backed by
+        wp12-strata-craft.conformance.test.ts and web.test.ts."
   verified_by: null
 - id: 20261020-UI-06
   audit: AUD-2026-10-20
@@ -2605,7 +2612,7 @@
   spec_sections:
     - "12.4"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P2-3
   related_to:
@@ -2614,12 +2621,20 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp12-strata-craft.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-08 / P2-3;
         staged before G5)
+    - date: 2026-11-04
+      status: fixed
+      note: "Remediated in WP-12.1 (A056): activated `.role-marker` and `.role-section`
+        across schema roles (`role-goal` through `role-lesson`) eliminating inline
+        border overrides; converted claim items into text-first `.claim-item` list
+        eliminating card grids; harmonized vertical spacing rhythms across date lines,
+        context strip, and rail headings. Backed by
+        wp12-strata-craft.conformance.test.ts and web.test.ts."
   verified_by: null
 - id: 20261020-UI-09
   audit: AUD-2026-10-20
@@ -2632,7 +2647,7 @@
     - "12.7"
     - "12.8"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   ux_priority_id: P2-4
   related_to:
@@ -2641,12 +2656,21 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp12-strata-craft.conformance.test.ts
   history:
     - date: 2026-10-20
       status: open
       note: Raised by UX specification audit AUD-2026-10-20 (Layer 2 UI-09 / P2-4;
         staged before G5)
+    - date: 2026-11-04
+      status: fixed
+      note: "Remediated in WP-12.1 (A056): implemented typography craft with tabular
+        numerals (.tabular-nums) for dates, counters, tables, and timeline bands;
+        added optical alignment (hanging punctuation) on blockquotes; tuned text-wrap
+        (balance on headings, pretty on body); defined selection highlight tokens;
+        added two-layer strata date glyph differentiation device; choreographed
+        micro-transitions with reduced-motion fallbacks. Backed by
+        wp12-strata-craft.conformance.test.ts and web.test.ts."
   verified_by: null
 - id: 20261020-UI-10
   audit: AUD-2026-10-20

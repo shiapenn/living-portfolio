@@ -14,6 +14,19 @@ function escapeHtml(text: string): string {
     .replace(/'/g, '&#39;');
 }
 
+export function renderStrataDateGlyph(
+  happenedIso?: string | null,
+  writtenIso?: string | null,
+  isHindsight?: boolean
+): string {
+  if (!happenedIso && !writtenIso) return '';
+  const happened = (happenedIso || '').slice(0, 10);
+  const written = (writtenIso || happenedIso || '').slice(0, 10);
+  const isDifferent = isHindsight || (happened && written && happened !== written);
+
+  return `<span class="strata-date-glyph${isDifferent ? ' is-hindsight' : ''}" aria-hidden="true" title="${isDifferent ? 'Hindsight retrospective layer' : 'Concurrent record layer'}"><span class="strata-glyph-layer happened-layer"></span><span class="strata-glyph-layer written-layer${isDifferent ? ' shifted' : ''}"></span></span>`;
+}
+
 export function formatOutcome(outcome?: string | null): string {
   if (!outcome) return '';
   const lower = outcome.toLowerCase().trim();
@@ -97,8 +110,8 @@ export function renderEntryRow(entry: any, opts?: EntryRowOptions): string {
   return `<${tag} class="entry-row">
   <div class="entry-row-top">
     <a href="${href}" class="entry-title-link">${title}</a>
-    <div class="entry-meta">
-      ${dateLabel ? `<time datetime="${dateLabel}">${dateLabel}</time>` : ''}
+    <div class="entry-meta tabular-nums">
+      ${dateLabel ? `${renderStrataDateGlyph(entry.valid_from, entry.written_at || rawDate, opts?.isHindsight ?? entry.is_hindsight)}<time datetime="${dateLabel}">${dateLabel}</time>` : ''}
       ${levelBadge}
       ${hindsightBadge}
       ${updatedLaterBadge}
