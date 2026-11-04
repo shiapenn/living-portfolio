@@ -702,7 +702,7 @@
     "title": "WP-11 Gate closure and WP-12 kickoff",
     "class": "H",
     "path": "docs/handovers/H012-wp-11-gate-closure-and-wp-12-kickoff.md",
-    "status": "active",
+    "status": "superseded",
     "supersedes": null
   },
   {
@@ -744,5 +744,13 @@
     "path": "docs/execution-reports/A058-wp-123-open-source-governance-and-documentation-suite.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "H013",
+    "title": "WP-12 Gate closure and v0.1.0 GA release",
+    "class": "H",
+    "path": "docs/handovers/H013-wp-12-gate-closure-and-v010-ga-release.md",
+    "status": "active",
+    "supersedes": "H012"
   }
 ]

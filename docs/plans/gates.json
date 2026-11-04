@@ -290,6 +290,43 @@
       ],
       "closingReceipt": "A055",
       "handover": "H012"
+    },
+    "WP-12": {
+      "name": "Work Package 12 (Gate G5 General Availability Release Certification)",
+      "description": "Strata timeline continuous monthly axis & typography craft, actionable user-facing errors & string architecture, complete open-source governance file set & documentation suite, and Gate G5 GA release certification (20261020-UI-05, UI-08, UI-09, 20261020-CP-04, CP-06, CP-07, M10, OSR-23).",
+      "requiredTaskIds": [
+        "WP-12.1",
+        "WP-12.2",
+        "WP-12.3",
+        "WP-12.4"
+      ],
+      "requiredPassingTests": [
+        "WP-12.1 Conformance: Strata Timeline Visual Overhaul & Typography Craft › [UI-05] Strata timeline continuous monthly time axis with empty months",
+        "WP-12.1 Conformance: Strata Timeline Visual Overhaul & Typography Craft › [UI-05] Strata timeline encodes profiles with texture patterns and glyphs",
+        "WP-12.1 Conformance: Strata Timeline Visual Overhaul & Typography Craft › [UI-05] Strata timeline applies square-root height formula",
+        "WP-12.1 Conformance: Strata Timeline Visual Overhaul & Typography Craft › [UI-08] Structured view activates .role-marker and .role-section classes",
+        "WP-12.1 Conformance: Strata Timeline Visual Overhaul & Typography Craft › [UI-08] Claims render as text-first list eliminating card grids",
+        "WP-12.1 Conformance: Strata Timeline Visual Overhaul & Typography Craft › [UI-09] Tabular numerals applied to dates, timeline bands, counters, and data tables",
+        "WP-12.2 Conformance: Actionable Errors & String Architecture (20261020-CP-04, CP-06, CP-07) › 20261020-CP-04: Actionable user-facing error messages with concrete recovery guidance › 1. 400 Invalid query on /api/ask returns actionable tier and message instead of raw validation error",
+        "WP-12.2 Conformance: Actionable Errors & String Architecture (20261020-CP-04, CP-06, CP-07) › 20261020-CP-04: Actionable user-facing error messages with concrete recovery guidance › 2. Actionable error formatter produces 3-part recovery structure",
+        "WP-12.2 Conformance: Actionable Errors & String Architecture (20261020-CP-04, CP-06, CP-07) › 20261020-CP-04: Actionable user-facing error messages with concrete recovery guidance › 3. Admin authentication failures return user-actionable messages",
+        "WP-12.2 Conformance: Actionable Errors & String Architecture (20261020-CP-04, CP-06, CP-07) › 20261020-CP-06: String architecture, date localization & grammatical pluralization › 1. formatMonthYear formats dates as Month Year",
+        "WP-12.2 Conformance: Actionable Errors & String Architecture (20261020-CP-04, CP-06, CP-07) › 20261020-CP-06: String architecture, date localization & grammatical pluralization › 2. formatPlural adheres to grammatical pluralization rules",
+        "WP-12.2 Conformance: Actionable Errors & String Architecture (20261020-CP-04, CP-06, CP-07) › 20261020-CP-06: String architecture, date localization & grammatical pluralization › 3. formatIcu parses variable and plural tokens linearly without regex backtracking",
+        "WP-12.2 Conformance: Actionable Errors & String Architecture (20261020-CP-04, CP-06, CP-07) › 20261020-CP-07: Spec-standard canonical strings across all 9 Ask flow response states › 1. /api/ask returns canonical answer for tier1 verification",
+        "WP-12.2 Conformance: Actionable Errors & String Architecture (20261020-CP-04, CP-06, CP-07) › 20261020-CP-07: Spec-standard canonical strings across all 9 Ask flow response states › 2. /api/ask returns canonical answer for tier2 synthesis",
+        "WP-12.2 Conformance: Actionable Errors & String Architecture (20261020-CP-04, CP-06, CP-07) › 20261020-CP-07: Spec-standard canonical strings across all 9 Ask flow response states › 3. /api/ask returns canonical answer for tier3 escalation",
+        "WP-12.3 Open-Source Governance & Full Documentation Suite (M10, OSR-23) › Open-Source Governance File Set (M10 [P3]) › LICENSE exists and contains Apache-2.0 license terms",
+        "WP-12.3 Open-Source Governance & Full Documentation Suite (M10, OSR-23) › Open-Source Governance File Set (M10 [P3]) › GOVERNANCE.md exists with required governance sections",
+        "WP-12.3 Open-Source Governance & Full Documentation Suite (M10, OSR-23) › Open-Source Governance File Set (M10 [P3]) › CODE_OF_CONDUCT.md exists and contains Contributor Covenant v2.1",
+        "WP-12.3 Open-Source Governance & Full Documentation Suite (M10, OSR-23) › Open-Source Governance File Set (M10 [P3]) › THIRD_PARTY_NOTICES lists all direct runtime dependencies",
+        "WP-12.3 Open-Source Governance & Full Documentation Suite (M10, OSR-23) › Complete Documentation Suite (OSR-23 [P3]) › Self-Hosting Guide (docs/self-hosting.md) covers deployment, configuration, and trademarks",
+        "WP-12.3 Open-Source Governance & Full Documentation Suite (M10, OSR-23) › Complete Documentation Suite (OSR-23 [P3]) › Configuration Reference (G002) is active and registered in docs registry",
+        "WP-12.3 Open-Source Governance & Full Documentation Suite (M10, OSR-23) › Complete Documentation Suite (OSR-23 [P3]) › Upgrade Guide (G003) covers semver, migrations, backups, and embedding transitions",
+        "WP-12.3 Open-Source Governance & Full Documentation Suite (M10, OSR-23) › Complete Documentation Suite (OSR-23 [P3]) › ADR Archive (G004) indexes P002, P003, and DR-AUD-001 with governance guidelines"
+      ],
+      "closingReceipt": "A059",
+      "handover": "H013"
     }
   }
 }
