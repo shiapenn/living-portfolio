@@ -122,8 +122,8 @@ Found 5 section(s) marked verbatim.
 
 ## 9. Handover Decision
 
-- Decision: NOT REQUIRED
-- Rule(s): HO-R5
-- Receipts since last handover: 0 (H013 authored as part of Gate G5 release certification); work packages since: 0
-- Clean-boundary preconditions: met
+- Decision: REQUIRED
+- Rule(s): HO-R1
+- Receipts since last handover: 1 (A059); work packages since: 1 (WP-12)
+- Clean-boundary preconditions: met (H013 authored and Gate G5 certified in docs/plans/gates.json)
 - Next action: tag v0.1.0 and publish General Availability release
