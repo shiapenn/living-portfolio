@@ -157,8 +157,8 @@ Found 5 section(s) marked verbatim.
 
 ## 9. Handover Decision
 
-- Decision: NOT REQUIRED
-- Rule(s): HO-R5
-- Receipts since last handover: 5 (A051, A052, A053, A054, A055); work packages since: 0
-- Clean-boundary preconditions: met
-- Next action: proceed to WP-11.6 (Work Package 11 Gate Closure & Handover Snapshot H012)
+- Decision: REQUIRED
+- Rule(s): HO-R1
+- Receipts since last handover: 5 (A051, A052, A053, A054, A055); work packages since: 1 (WP-11)
+- Clean-boundary preconditions: met (all WP-11 implementation tasks A051 through A055 verified in CI)
+- Next action: Author Handover Snapshot H012 for Work Package 11 Gate Closure & Milestone v0.2 UX Certification

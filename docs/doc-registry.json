@@ -696,5 +696,13 @@
     "path": "docs/execution-reports/A055-wp-115-copy-harmonization-spec-jargon-removal.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "H012",
+    "title": "WP-11 Gate closure and WP-12 kickoff",
+    "class": "H",
+    "path": "docs/handovers/H012-wp-11-gate-closure-and-wp-12-kickoff.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

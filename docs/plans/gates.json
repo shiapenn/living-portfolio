@@ -255,6 +255,41 @@
       ],
       "closingReceipt": "A050",
       "handover": "H011"
+    },
+    "WP-11": {
+      "name": "Work Package 11 (Milestone v0.2 UX & Structural Information Architecture)",
+      "description": "Debounced static site rebuild progress UI, Ask flow repair with needs_context and rate limiting, navigation redesign with system states & empty states, accessibility mechanics with #main-content skip link and structured view repair, full CommonMark/GFM markdown engine with multi-tier design tokens & responsive layouts, and cross-route copy harmonization with zero hardcoded owner content (20261020-UX-05, UX-10, UX-13, UX-14, UX-15, UX-16, F4, 20261020-UI-01, UI-02, UI-03, UI-04, UI-06, UI-07, UI-10, 20261020-CP-01, CP-02, CP-03, CP-05).",
+      "requiredTaskIds": [
+        "WP-11.1",
+        "WP-11.2",
+        "WP-11.3",
+        "WP-11.4",
+        "WP-11.5"
+      ],
+      "requiredPassingTests": [
+        "WP-11.1 Conformance: Debounced Static Rebuild UI & Ask Flow Repair (20261020-UX-05 & 20261020-UX-10) › [UX-05] GET /api/v1/publish/status reports debounced build window and 12/day cap counters",
+        "WP-11.1 Conformance: Debounced Static Rebuild UI & Ask Flow Repair (20261020-UX-05 & 20261020-UX-10) › [UX-05] POST /api/v1/publish/now bypasses 10-minute debounce window and requires admin authentication",
+        "WP-11.1 Conformance: Debounced Static Rebuild UI & Ask Flow Repair (20261020-UX-05 & 20261020-UX-10) › [UX-05] POST /api/v1/publish/enrich enqueues background enrichment and tracks pending status",
+        "WP-11.1 Conformance: Debounced Static Rebuild UI & Ask Flow Repair (20261020-UX-05 & 20261020-UX-10) › [UX-10] Ask flow returns needs_context state for indeterminate advisory queries",
+        "WP-11.1 Conformance: Debounced Static Rebuild UI & Ask Flow Repair (20261020-UX-05 & 20261020-UX-10) › [UX-10] Ask flow enforces hourly question rate limit with 429 and rate_limited tier",
+        "WP-11.2 Conformance: Navigation Redesign & System States (20261020-UX-13, 20261020-UX-14, 20261020-CP-05) › [UX-13] primary navigation has exactly 5 links in Spec order without admin link, and secondary links are in footer",
+        "WP-11.2 Conformance: Navigation Redesign & System States (20261020-UX-13, 20261020-UX-14, 20261020-CP-05) › [UX-13] deduplicates /writing & /work with 301 redirect for structured profiles",
+        "WP-11.2 Conformance: Navigation Redesign & System States (20261020-UX-13, 20261020-UX-14, 20261020-CP-05) › [UX-14 & CP-05] renders complete system states (empty states and 404 not found page) with actionable CTAs",
+        "WP-11.3 Conformance: Accessibility Mechanics (UX-15) & Structured View Repair (UX-16) › renders skip link as first body child pointing to #main-content",
+        "WP-11.3 Conformance: Accessibility Mechanics (UX-15) & Structured View Repair (UX-16) › renders exactly one semantic h1 heading on Home",
+        "WP-11.3 Conformance: Accessibility Mechanics (UX-15) & Structured View Repair (UX-16) › synchronizes theme toggle with system dark mode and guards localStorage",
+        "WP-11.3 Conformance: Accessibility Mechanics (UX-15) & Structured View Repair (UX-16) › renders all spans in document order without dropping unannotated text",
+        "WP-11.4 Conformance: Markdown Engine, Design Tokens, Layouts, and Theme Slots › [F4 & UI-01] parses headings with automatic demotion so page h1 is never usurped",
+        "WP-11.4 Conformance: Markdown Engine, Design Tokens, Layouts, and Theme Slots › [F4 & UI-01] sanitizes dangerous HTML tags and script protocols",
+        "WP-11.4 Conformance: Markdown Engine, Design Tokens, Layouts, and Theme Slots › [UI-02 & UI-03] defines 3-tier token hierarchy with complete primitives, semantics, and component tokens",
+        "WP-11.4 Conformance: Markdown Engine, Design Tokens, Layouts, and Theme Slots › [UI-04] Field abstraction associates label, hint, and error with appropriate accessibility attributes",
+        "WP-11.4 Conformance: Markdown Engine, Design Tokens, Layouts, and Theme Slots › [UI-06, UI-07, UI-10] conforms to core REQUIRED_THEME_SLOTS and passes verifyThemeConformance",
+        "WP-11.5 Conformance: Copy Harmonization & Spec-Jargon Removal (20261020-CP-01, 20261020-CP-02, 20261020-CP-03) › [CP-01] Cross-route naming harmonization: headings, outcome chips, and action verbs",
+        "WP-11.5 Conformance: Copy Harmonization & Spec-Jargon Removal (20261020-CP-01, 20261020-CP-02, 20261020-CP-03) › [CP-02] Removal of spec & schema jargon: no section numbers, data-role attributes, neutral structured chips",
+        "WP-11.5 Conformance: Copy Harmonization & Spec-Jargon Removal (20261020-CP-01, 20261020-CP-02, 20261020-CP-03) › [CP-03] Zero hard-coded owner/sample content in UI templates (/now, /about, /uses)"
+      ],
+      "closingReceipt": "A055",
+      "handover": "H012"
     }
   }
 }
