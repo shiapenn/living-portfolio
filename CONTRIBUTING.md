@@ -1,6 +1,6 @@
 # Contributing Guide (`CONTRIBUTING.md`)
 
-Thank you for contributing to **The Living Portfolio**. Every contribution is governed by the [Apache-2.0 License](LICENSE), the [Developer Certificate of Origin 1.1](DCO), [`DR-AUD-001`](docs/governance/DR-AUD-001.md), and [`OSR-001`](docs/plans/osr-001-open-source-release.md).
+Thank you for contributing to **The Living Portfolio**. Every contribution is governed by the [Apache-2.0 License](LICENSE), the [Developer Certificate of Origin 1.1](DCO), [Project Governance](GOVERNANCE.md), the [Code of Conduct](CODE_OF_CONDUCT.md), [`DR-AUD-001`](docs/governance/DR-AUD-001.md), and [`OSR-001`](docs/plans/osr-001-open-source-release.md).
 
 ---
 

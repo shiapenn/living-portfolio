@@ -1082,7 +1082,7 @@
     - "7"
     - "19"
   severity: P3
-  status: open
+  status: fixed
   owner: A
   fix_ids:
     - 23
@@ -1091,11 +1091,16 @@
     issue: null
     pr: null
     plan: docs/plans/remediation-plan-AUD-2026-10-19.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp12-governance-docs.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
       note: Raised by audit (Section 4 §2/§7/§19, Section 7 Fixes 23 & 24)
+    - date: 2026-11-04
+      status: fixed
+      note: "Fixed in WP-12.3: Established complete open-source governance file
+        set (LICENSE Apache-2.0, GOVERNANCE.md, CONTRIBUTING.md, CODE_OF_CONDUCT.md
+        Contributor Covenant v2.1, and exhaustive THIRD_PARTY_NOTICES)."
   verified_by: null
 - id: M11
   audit: AUD-2026-10-19
@@ -1669,14 +1674,14 @@
   spec_sections:
     - "19"
   severity: P3
-  status: in-progress
+  status: fixed
   owner: A
   verified_by: null
   links:
     issue: null
     pr: null
     plan: docs/plans/osr-001-open-source-release.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp12-governance-docs.conformance.test.ts
   history:
     - date: 2026-10-19
       status: open
@@ -1685,6 +1690,12 @@
       status: in-progress
       note: "Part 1 completed in WP-7.3: Published API boundary ADR (P002),
         configuration reference contract (G002), and updated README."
+    - date: 2026-11-04
+      status: fixed
+      note: "Completed in WP-12.3: Published complete documentation suite
+        including Self-Hosting Guide (docs/self-hosting.md), Configuration Reference
+        (G002), Upgrade and Migration Guide (G003), ADR Archive Index (G004), and
+        updated README."
 
 - id: 20261020-UX-01
   audit: AUD-2026-10-20

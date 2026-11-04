@@ -95,6 +95,8 @@
 | :--- | :--- | :--- | :--- | :--- |
 | `G001` | Handover template | `active` | [G001-handover-template.md](templates/G001-handover-template.md) | — |
 | `G002` | Configuration Reference and Environment Contract | `active` | [G002-configuration-reference-and-environment-contract.md](G002-configuration-reference-and-environment-contract.md) | — |
+| `G003` | Upgrade and Migration Guide | `active` | [G003-upgrade-and-migration-guide.md](G003-upgrade-and-migration-guide.md) | — |
+| `G004` | Architecture Decision Records Archive | `active` | [G004-architecture-decision-records-archive.md](G004-architecture-decision-records-archive.md) | — |
 
 ## Grandfathered Legacy Documents (Class L)
 

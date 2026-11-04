@@ -720,5 +720,21 @@
     "path": "docs/execution-reports/A057-wp-122-actionable-errors-and-string-architecture.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "G003",
+    "title": "Upgrade and Migration Guide",
+    "class": "G",
+    "path": "docs/G003-upgrade-and-migration-guide.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "G004",
+    "title": "Architecture Decision Records Archive",
+    "class": "G",
+    "path": "docs/G004-architecture-decision-records-archive.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

@@ -9,8 +9,12 @@ Direct runtime and build dependencies distributed or linked by this repository u
 | `hono` | MIT | Copyright (c) Yusuke Wada and Hono contributors |
 | `@hono/node-server` | MIT | Copyright (c) Yusuke Wada and Hono contributors |
 | `drizzle-orm` | Apache-2.0 | Copyright (c) Drizzle Team |
+| `pg` | MIT | Copyright (c) Brian Carlson and node-postgres contributors |
+| `pg-boss` | MIT | Copyright (c) Tim Jones and pg-boss contributors |
+| `pgvector` | Apache-2.0 | Copyright (c) Andrew Kane and pgvector contributors |
 | `zod` | MIT | Copyright (c) Colin McDonnell |
 | `yaml` | ISC | Copyright (c) Eemeli Aro |
 | `typescript` | Apache-2.0 | Copyright (c) Microsoft Corporation |
 | `vitest` | MIT | Copyright (c) Anthony Fu and Matias Capeletto |
+| `playwright` | Apache-2.0 | Copyright (c) Microsoft Corporation |
 | `turbo` | MIT | Copyright (c) Vercel, Inc. |
