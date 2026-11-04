@@ -712,5 +712,13 @@
     "path": "docs/execution-reports/A056-wp-121-strata-timeline-overhaul-and-typography-craft.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A057",
+    "title": "WP-12.2: Actionable Error Messages & String Architecture",
+    "class": "A",
+    "path": "docs/execution-reports/A057-wp-122-actionable-errors-and-string-architecture.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

@@ -62,6 +62,7 @@
 | `A054` | WP-11.4: Markdown Engine Tokens and Responsive Layout | `active` | [A054-wp-114-markdown-engine-tokens-and-responsive-layout.md](execution-reports/A054-wp-114-markdown-engine-tokens-and-responsive-layout.md) | — |
 | `A055` | WP-11.5: Copy Harmonization & Spec-Jargon Removal | `active` | [A055-wp-115-copy-harmonization-spec-jargon-removal.md](execution-reports/A055-wp-115-copy-harmonization-spec-jargon-removal.md) | — |
 | `A056` | WP-12.1: Strata Timeline Visual Overhaul & Typography Craft | `active` | [A056-wp-121-strata-timeline-overhaul-and-typography-craft.md](execution-reports/A056-wp-121-strata-timeline-overhaul-and-typography-craft.md) | — |
+| `A057` | WP-12.2: Actionable Error Messages & String Architecture | `active` | [A057-wp-122-actionable-errors-and-string-architecture.md](execution-reports/A057-wp-122-actionable-errors-and-string-architecture.md) | — |
 
 ## Handover Snapshots (Class H)
 
