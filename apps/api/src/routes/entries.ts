@@ -248,7 +248,11 @@ export function createEntriesRoutes(
     const parsed = EntryCreateSchema.safeParse(body);
 
     if (!parsed.success) {
-      return c.json({ error: 'Validation failed', details: parsed.error.issues }, 400);
+      return c.json({
+        error: 'Validation failed',
+        message: "Couldn't save entry. Fix the highlighted fields and retry.",
+        details: parsed.error.issues,
+      }, 400);
     }
 
     const data = parsed.data;
@@ -272,7 +276,8 @@ export function createEntriesRoutes(
         return c.json(
           {
             error: 'Redaction preview confirmation required before publishing as public',
-            reason: tokenCheck.reason,
+            message: 'Check this entry for private details before making it public.',
+            reason: tokenCheck.reason || 'Run the redaction check before publishing as public.',
           },
           400
         );
@@ -355,7 +360,11 @@ export function createEntriesRoutes(
     const parsed = EntryUpdateSchema.safeParse(body);
 
     if (!parsed.success) {
-      return c.json({ error: 'Validation failed', details: parsed.error.issues }, 400);
+      return c.json({
+        error: 'Validation failed',
+        message: "Couldn't save entry. Fix the highlighted fields and retry.",
+        details: parsed.error.issues,
+      }, 400);
     }
 
     const existing = await repo.getEntry(id, ['private', 'unlisted', 'public']);
@@ -376,7 +385,8 @@ export function createEntriesRoutes(
         return c.json(
           {
             error: 'Redaction preview confirmation required before changing visibility to public',
-            reason: tokenCheck.reason,
+            message: 'Check this entry for private details before making it public.',
+            reason: tokenCheck.reason || 'You edited the entry after the last check. Run the check again.',
           },
           400
         );
@@ -446,7 +456,11 @@ export function createEntriesRoutes(
     const parsed = RevisionCreateSchema.safeParse({ ...body, entry_id: entryId });
 
     if (!parsed.success) {
-      return c.json({ error: 'Validation failed', details: parsed.error.issues }, 400);
+      return c.json({
+        error: 'Validation failed',
+        message: "Couldn't save entry. Fix the highlighted fields and retry.",
+        details: parsed.error.issues,
+      }, 400);
     }
 
     const data = parsed.data;

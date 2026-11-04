@@ -252,21 +252,26 @@ export class AuthManager {
     totpCode: string,
     hashedClientIp: string,
     nowMs = Date.now()
-  ): { ok: true; session: AdminSession } | { ok: false; status: 401 | 429; error: string } {
+  ): { ok: true; session: AdminSession } | { ok: false; status: 401 | 429; error: string; message?: string } {
     if (!this.checkLoginThrottle(hashedClientIp, nowMs)) {
-      return { ok: false, status: 429, error: 'Too many failed login attempts. Try again later.' };
+      return {
+        ok: false,
+        status: 429,
+        error: 'Too many failed login attempts. Try again later.',
+        message: 'Too many sign-in attempts. Try again in 15 minutes.',
+      };
     }
     if (!this.account || this.account.username !== username) {
       this.recordLoginFailure(hashedClientIp, nowMs);
-      return { ok: false, status: 401, error: 'Invalid credentials' };
+      return { ok: false, status: 401, error: 'Invalid credentials', message: 'Check your username and password, then retry.' };
     }
     if (!verifyPassword(password, this.account.passwordSalt, this.account.passwordHash)) {
       this.recordLoginFailure(hashedClientIp, nowMs);
-      return { ok: false, status: 401, error: 'Invalid credentials' };
+      return { ok: false, status: 401, error: 'Invalid credentials', message: 'Check your username and password, then retry.' };
     }
     if (!verifyTotpCode(this.account.totpSecret, totpCode, nowMs)) {
       this.recordLoginFailure(hashedClientIp, nowMs);
-      return { ok: false, status: 401, error: 'Invalid TOTP code' };
+      return { ok: false, status: 401, error: 'Invalid TOTP code', message: 'Check the 6-digit code in your authenticator app and retry.' };
     }
 
     this.clearLoginFailures(hashedClientIp);
@@ -335,14 +340,20 @@ export class AuthManager {
       const check = this.isAdminAuthenticated(c);
       if (!check.authenticated) {
         if (check.csrfFailed) {
-          return c.json({ error: 'Forbidden: missing or invalid CSRF token' }, 403);
+          return c.json({
+            error: 'Forbidden: missing or invalid CSRF token',
+            message: 'Your session expired. Reload the page and sign in again.',
+          }, 403);
         }
         const accept = c.req.header('accept') || c.req.header('Accept') || '';
         if (accept.includes('text/html')) {
           const target = this.isSetupCompleted() ? '/admin/login' : '/admin/setup';
           return c.redirect(target, 302);
         }
-        return c.json({ error: 'Unauthorized: admin authentication required' }, 401);
+        return c.json({
+          error: 'Unauthorized: admin authentication required',
+          message: "You're signed out. Sign in to continue.",
+        }, 401);
       }
       await next();
     };

@@ -47,7 +47,13 @@ export function createAskRoutes(config: AskEngineConfig) {
     const parsed = AskQuerySchema.safeParse(body);
 
     if (!parsed.success) {
-      return c.json({ error: 'Invalid query', details: parsed.error.issues }, 400);
+      return c.json({
+        tier: 'invalid_query',
+        error: 'Invalid query',
+        message: 'Type a question to ask. It can be up to 1000 characters.',
+        answer: 'Type a question to ask. It can be up to 1000 characters.',
+        details: parsed.error.issues,
+      }, 400);
     }
 
     const { query, as_of_date, facets: visitorFacets, scope_entry_slug, visitor_contact } = parsed.data;
@@ -57,7 +63,7 @@ export function createAskRoutes(config: AskEngineConfig) {
     if (runtime && (!runtime.automatedAnsweringEnabled || runtime.simulatedDegradationMode === 'disabled')) {
       return c.json({
         tier: 'disabled',
-        answer: 'Automated answers are currently paused by the owner. You can book a live conversation or send a message directly.',
+        answer: 'Automated answers are off right now. You can book a conversation or send the owner a message.',
         bookingUrl: `/book?q=${encodeURIComponent(query)}`,
         degradationStep: 'handoff',
         citations: [],
@@ -71,7 +77,7 @@ export function createAskRoutes(config: AskEngineConfig) {
         if (!isHealthy) {
           return c.json({
             tier: 'disabled',
-            answer: 'Automated answers are temporarily unavailable while systems are offline. You can book a live conversation or send a message directly.',
+            answer: 'Automated answers are off right now while systems are offline. You can book a conversation or send the owner a message.',
             bookingUrl: `/book?q=${encodeURIComponent(query)}`,
             degradationStep: 'handoff',
             citations: [],
@@ -80,7 +86,7 @@ export function createAskRoutes(config: AskEngineConfig) {
       } catch {
         return c.json({
           tier: 'disabled',
-          answer: 'Automated answers are temporarily unavailable while systems are offline. You can book a live conversation or send a message directly.',
+          answer: 'Automated answers are off right now while systems are offline. You can book a conversation or send the owner a message.',
           bookingUrl: `/book?q=${encodeURIComponent(query)}`,
           degradationStep: 'handoff',
           citations: [],
@@ -95,7 +101,7 @@ export function createAskRoutes(config: AskEngineConfig) {
       return c.json({
         tier: 'rate_limited',
         error: 'Hourly question limit reached',
-        answer: 'Hourly question limit reached. Please wait before asking another question, or book a live session.',
+        answer: "Hourly question limit reached. You've reached the limit of questions per hour. Try again in 60 minutes, or book a conversation.",
         retryAfter: 3600,
         handoffBooking: true,
       }, 429);
@@ -365,7 +371,7 @@ Site architecture: Living Portfolio static-first edge architecture backed by Pos
       return c.json({
         tier: 'tier3',
         queryClass,
-        answer: 'This topic involves specific constraints that are better addressed in a live conversation.',
+        answer: "This is better as a conversation. Your situation has details my past work doesn't cover.",
         bookingUrl: `/book?q=${encodeURIComponent(query)}`,
         degradationStep: 'normal',
       });

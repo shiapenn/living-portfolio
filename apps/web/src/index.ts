@@ -1,4 +1,5 @@
 export * from './tokens/index.js';
+export * from './strings.js';
 export * from './markdown.js';
 export * from './components/index.js';
 export * from './styles.js';

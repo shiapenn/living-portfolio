@@ -34,6 +34,12 @@ import {
   renderTimelineWithSlots,
   renderLayout,
   renderStrataTimelineSection,
+  formatMonthYear,
+  formatEntryDateLine,
+  formatPlural,
+  formatIcu,
+  formatActionableError,
+  STRINGS_EN,
 } from './index.js';
 
 describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', () => {
@@ -910,6 +916,56 @@ console.log(x);
       const resHindsight = await renderEntryDetailPage(repo, 'premature-microservices-retrospective');
       expect(resHindsight.html).toContain('is-hindsight');
       expect(resHindsight.html).toContain('written-layer shifted');
+    });
+  });
+
+  describe('WP-12.2: Actionable Error Messages & String Architecture (20261020-CP-04, CP-06, CP-07)', () => {
+    it('1. Formats Month Year and entry date lines according to Spec §12.6 (20261020-CP-06)', () => {
+      expect(formatMonthYear('2024-03-12T00:00:00Z')).toBe('March 2024');
+      expect(formatEntryDateLine('2024-03-12', '2026-09-01', true)).toBe(
+        'Happened March 2024. Written September 2026, looking back.'
+      );
+      expect(formatEntryDateLine('2026-10-19', '2026-10-19', false)).toBe('Written October 2026.');
+    });
+
+    it('2. Intl-backed pluralization and ICU templating (20261020-CP-06)', () => {
+      expect(formatPlural(1, 'entry', 'entries')).toBe('1 entry');
+      expect(formatPlural(4, 'entry', 'entries')).toBe('4 entries');
+      expect(
+        formatIcu('{count, plural, one {# entry} other {# entries}} active', { count: 3 })
+      ).toBe('3 entries active');
+    });
+
+    it('3. Three-part actionable error formatting (20261020-CP-04)', () => {
+      const err = formatActionableError({
+        action: "Can't reach the server",
+        reason: "Answers aren't available right now",
+        recovery: 'Try again in a minute, or book a conversation.',
+      });
+      expect(err).toBe(
+        "Can't reach the server. Answers aren't available right now. Try again in a minute, or book a conversation."
+      );
+    });
+
+    it('4. Ask page renders invalid_query branch with actionable card (20261020-CP-04, CP-07)', async () => {
+      const askHtml = await renderAskPage();
+      expect(askHtml).toContain('data.tier === \'invalid_query\'');
+      expect(askHtml).toContain('Type a question to ask. It can be up to 1000 characters.');
+      expect(askHtml).toContain('role="alert"');
+      expect(askHtml).toContain('tierLabels');
+      expect(askHtml).toContain('invalid_query: "Type a question to ask"');
+    });
+
+    it('5. Entry row renders per-entry lang attribute when set (20261020-CP-06)', () => {
+      const rowHtml = renderEntryRow({
+        slug: 'mon-article',
+        title: 'Mon Article',
+        profile: 'case-study',
+        lang: 'fr',
+        valid_from: '2024-03-01T00:00:00Z',
+      });
+      expect(rowHtml).toContain('lang="fr"');
+      expect(rowHtml).toContain('March 2024');
     });
   });
 });

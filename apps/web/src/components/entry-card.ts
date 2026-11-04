@@ -5,6 +5,8 @@
  * reusable, accessible, WCAG-conformant component.
  */
 
+import { formatMonthYear } from '../strings.js';
+
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, '&amp;')
@@ -106,12 +108,13 @@ export function renderEntryRow(entry: any, opts?: EntryRowOptions): string {
   }
 
   const tag = opts?.asArticle ? 'article' : 'li';
+  const langAttr = entry.lang ? ` lang="${escapeHtml(entry.lang)}"` : '';
 
-  return `<${tag} class="entry-row">
+  return `<${tag} class="entry-row"${langAttr}>
   <div class="entry-row-top">
     <a href="${href}" class="entry-title-link">${title}</a>
     <div class="entry-meta tabular-nums">
-      ${dateLabel ? `${renderStrataDateGlyph(entry.valid_from, entry.written_at || rawDate, opts?.isHindsight ?? entry.is_hindsight)}<time datetime="${dateLabel}">${dateLabel}</time>` : ''}
+      ${dateLabel ? `${renderStrataDateGlyph(entry.valid_from, entry.written_at || rawDate, opts?.isHindsight ?? entry.is_hindsight)}<time datetime="${dateLabel}">${escapeHtml(formatMonthYear(rawDate))}</time>` : ''}
       ${levelBadge}
       ${hindsightBadge}
       ${updatedLaterBadge}

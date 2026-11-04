@@ -20,6 +20,7 @@ import type { LivingPortfolioClient } from '@living-portfolio/client';
 import { STRATA_DESIGN_SYSTEM_CSS } from './styles.js';
 import { renderMarkdown } from './markdown.js';
 import { renderEntryRow, renderField, renderButton, renderChip, formatOutcome, renderStrataDateGlyph } from './components/index.js';
+import { formatMonthYear, formatEntryDateLine, formatPlural, STRINGS_EN, formatActionableError } from './strings.js';
 
 export interface WebDataClient {
   entries?: {
@@ -481,13 +482,13 @@ export async function renderStrataTimelineSection(
   if (asOfInfo) {
     if (asOfInfo.valid) {
       asOfBanner = `<div class="as-of-banner" role="status">
-         <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 7))}</strong> — Later entries and hindsight retrospectives written after this date are excluded.</span>
-         <a href="/timeline">Reset to present</a>
+         <span><strong>Viewing as of ${formatMonthYear(asOfInfo.raw)} (${escapeHtml(asOfInfo.raw.slice(0, 7))})</strong> — Entries written later are hidden.</span>
+         <a href="/timeline">Back to today</a>
        </div>`;
     } else {
       asOfBanner = `<div class="as-of-banner" role="alert" style="border-left-color:var(--role-challenge,#f59e0b);background:var(--surface-raised)">
          <span><strong>Invalid as-of date ("${escapeHtml(asOfInfo.raw)}")</strong> — Showing records as of present.</span>
-         <a href="/timeline">Reset to present</a>
+         <a href="/timeline">Back to today</a>
        </div>`;
     }
   }
@@ -514,7 +515,7 @@ export async function renderStrataTimelineSection(
       const isCursor = asOfInfo && asOfInfo.valid && ym === asOfInfo.raw.slice(0, 7);
 
       if (b.count === 0) {
-        return `<a href="/timeline?as_of=${bandAsOf}" class="strata-band strata-band-empty" style="height:44px" data-ym="${ym}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" data-count="0"${isCursor ? ' data-cursor="true"' : ''} aria-label="${ym}: No entries${dimmed ? ' (after as-of date)' : ''}">
+        return `<a href="/timeline?as_of=${bandAsOf}" class="strata-band strata-band-empty" style="height:44px" data-ym="${ym}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" data-count="0"${isCursor ? ' data-cursor="true"' : ''} aria-label="${ym}: No entries (${formatMonthYear(ym)})${dimmed ? ' (after as-of date)' : ''}">
           <div class="band-empty-hairline" aria-hidden="true"></div>
           <span class="band-ym-empty">${month === 1 ? ym : monthStr}</span>
           ${dimmed ? '<div class="band-label-future">(future)</div>' : ''}
@@ -523,13 +524,13 @@ export async function renderStrataTimelineSection(
 
       // Height formula: non-linear square-root scale between 52px and 120px (Finding 20261020-UI-05)
       const heightPx = Math.min(120, Math.round(52 + Math.sqrt(b.count) * 28));
-      const layerText = `${b.count} layer${b.count > 1 ? 's' : ''}`;
+      const layerText = formatPlural(b.count, 'entry', 'entries');
       const uniqueProfiles = Array.from(new Set(b.profiles));
       const primaryProfile = uniqueProfiles[0] || 'case-study';
       const glyphs = uniqueProfiles.map((p) => profileGlyphMap[p] || '■').join(' ');
       const hasVenture = b.ventureIds.length > 0;
 
-      return `<a href="/timeline?as_of=${bandAsOf}" class="strata-band" data-profile="${escapeHtml(primaryProfile)}" style="height:${heightPx}px" data-ym="${ym}" data-slug="${b.slugs[0]}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" data-count="${b.count}"${isCursor ? ' data-cursor="true"' : ''} aria-label="${ym} ${layerText}: ${uniqueProfiles.join(', ')}${dimmed ? ' (after as-of date)' : ''}">
+      return `<a href="/timeline?as_of=${bandAsOf}" class="strata-band" data-profile="${escapeHtml(primaryProfile)}" style="height:${heightPx}px" data-ym="${ym}" data-slug="${b.slugs[0]}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" data-count="${b.count}"${isCursor ? ' data-cursor="true"' : ''} aria-label="${ym} (${formatMonthYear(ym)}): ${layerText} (${uniqueProfiles.join(', ')})${dimmed ? ' (after as-of date)' : ''}">
         ${hasVenture ? '<span class="band-venture-notch" title="Venture project" aria-hidden="true"></span>' : ''}
         <div class="band-header">
           <span class="band-glyphs" aria-hidden="true">${glyphs}</span>
@@ -550,7 +551,7 @@ export async function renderStrataTimelineSection(
         .map((s, idx) => (!visibleSlugs || visibleSlugs.has(s) ? idx : -1))
         .filter((idx) => idx !== -1);
       if (visibleIndices.length === 0) return '';
-      return `<li><strong>${b.yearMonth}</strong> (${visibleIndices.length}): ${visibleIndices
+      return `<li><strong>${formatMonthYear(b.yearMonth)}</strong> (${formatPlural(visibleIndices.length, 'entry', 'entries')}): ${visibleIndices
         .map((i) => `<a href="/work/${b.slugs[i]}${asOfQuery}">${escapeHtml(b.titles[i])}</a>`)
         .join(', ')}</li>`;
     })
@@ -575,7 +576,7 @@ export async function renderStrataTimelineSection(
     ${asOfBanner}
     <div class="strata-layers-container">
       <div class="strata-layers" role="region" aria-label="Chronological strata layers">
-        ${asOfInfo && asOfInfo.valid ? `<div class="as-of-cursor" id="strata-cursor" role="slider" aria-label="As of date cursor" aria-valuetext="${escapeHtml(asOfInfo.raw.slice(0, 10))}" tabindex="0"><span class="as-of-cursor-handle">Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 7))}</span></div>` : ''}
+        ${asOfInfo && asOfInfo.valid ? `<div class="as-of-cursor" id="strata-cursor" role="slider" aria-label="As of date cursor" aria-valuetext="${escapeHtml(asOfInfo.raw.slice(0, 10))}" tabindex="0"><span class="as-of-cursor-handle" title="Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 7))}">Viewing as of ${formatMonthYear(asOfInfo.raw)} (${escapeHtml(asOfInfo.raw.slice(0, 7))})</span></div>` : ''}
         ${bandsHtml}
       </div>
     </div>
@@ -892,10 +893,12 @@ export async function renderEntryDetailPage(
   const happenedDate = (rev.valid_from || rev.written_at).slice(0, 10);
   const writtenDate = rev.written_at.slice(0, 10);
   const dateGlyphHtml = renderStrataDateGlyph(rev.valid_from, rev.written_at, rev.is_hindsight);
-  const dateDisplay =
-    happenedDate !== writtenDate
-      ? `Happened ${happenedDate} · Written ${writtenDate}${rev.is_hindsight ? ', looking back' : ''}`
-      : `Happened & written ${happenedDate}`;
+  const dateDisplay = formatEntryDateLine(
+    rev.valid_from,
+    rev.written_at,
+    rev.is_hindsight,
+    (entry as any).lang || 'en-US'
+  );
 
   const evidenceHtml =
     evidence.length > 0
@@ -957,7 +960,7 @@ export async function renderEntryDetailPage(
   }
 
   const content = `
-    <article>
+    <article${(entry as any).lang ? ` lang="${escapeHtml((entry as any).lang)}"` : ''}>
       ${asOfBannerHtml}
       <header style="margin-bottom:var(--space-6);border-bottom:1px solid var(--rule);padding-bottom:var(--space-4)">
         <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px">
@@ -1194,7 +1197,7 @@ export async function renderBuildVenturePage(
       </header>
 
       <section class="strata-section" style="margin-bottom:24px">
-        <h2 style="font-family:var(--font-reading);font-size:20px;margin:0 0 12px 0">Dev log: ${devLog.length} ${devLog.length === 1 ? 'entry' : 'entries'}</h2>
+        <h2 style="font-family:var(--font-reading);font-size:20px;margin:0 0 12px 0">Dev log: ${formatPlural(devLog.length, 'entry', 'entries')}</h2>
         ${devLogListHtml}
       </section>
 
@@ -1235,7 +1238,7 @@ export async function renderBuildPage(repo: WebDataClient): Promise<string> {
         <p style="margin:8px 0 12px;max-width:65ch">${escapeHtml(v.description || '')}</p>
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">${facetChips}</div>
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)">
-          <strong style="font-size:14px">Dev log: ${devLog.length} ${devLog.length === 1 ? 'entry' : 'entries'}</strong>
+          <strong style="font-size:14px">Dev log: ${formatPlural(devLog.length, 'entry', 'entries')}</strong>
           ${devLog.length > 0 ? `
             <ul style="margin:6px 0 0;padding-left:20px">
               ${devLog.map((e) => `<li><a href="/work/${escapeHtml(e.slug)}">${escapeHtml(e.title)}</a></li>`).join('\n            ')}
@@ -1300,7 +1303,9 @@ export async function renderTimelinePage(
     listContentHtml = `<ul class="entry-list">${listHtml}</ul>`;
   }
 
-  const activeDateLabel = asOfInfo && asOfInfo.valid ? `as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}` : 'at present';
+  const activeDateLabel = asOfInfo && asOfInfo.valid ? formatMonthYear(asOfInfo.raw) : 'at present';
+  const entryCountText = formatPlural(filtered.length, 'entry', 'entries');
+  const hiddenText = excludedCount > 0 ? `. ${excludedCount} are hidden because they were written later.` : '';
 
   const content = `
     <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Timeline</h1>
@@ -1310,7 +1315,7 @@ export async function renderTimelinePage(
     ${strataHtml}
     <section>
       <h2 style="font-family:var(--font-reading);font-size:21px;margin:0 0 12px 0">
-        ${filtered.length} ${filtered.length === 1 ? 'entry' : 'entries'} as of ${activeDateLabel.replace('as of ', '')}${excludedCount > 0 ? '. ' + excludedCount + ' hidden because they were written later.' : ''}
+        ${entryCountText} as of ${activeDateLabel}${hiddenText}
       </h2>
       ${listContentHtml}
     </section>
@@ -1493,34 +1498,40 @@ export async function renderAskPage(
             try {
               data = await res.json();
             } catch (jsonErr) {
-              if (res.status >= 500) {
-                region.innerHTML = '<div class="strata-section"><p style="color:var(--status-warn,#d97706);font-weight:600">The server encountered an internal error processing your query (' + res.status + '). Please retry.</p></div>';
-              } else {
-                region.innerHTML = '<div class="strata-section"><p style="color:var(--status-warn,#d97706);font-weight:600">Unexpected server response (' + res.status + '). Please retry.</p></div>';
-              }
+              const statusSnippet = res.status ? ' (' + res.status + ')' : '';
+              region.innerHTML = '<div class="strata-section" role="alert"><p>Can\\\'t reach the server' + statusSnippet + ', so answers aren\\\'t available right now. Try again in a minute, or <a href="/book">book a conversation</a>.</p></div>';
               return;
             }
 
-            if (res.status === 400) {
-              region.innerHTML = '<div class="strata-section"><p style="color:var(--status-warn,#d97706);font-weight:600">Please enter a valid question (at least 3 characters).</p></div>';
+            if (res.status === 400 || (data && (data.tier === 'invalid_query' || data.error === 'Invalid query'))) {
+              const msg = (data && (data.answer || data.message)) || 'Type a question to ask. It can be up to 1000 characters.';
+              region.innerHTML =
+                '<div class="strata-section" role="alert">' +
+                  '<div style="display:flex;justify-content:space-between;flex-wrap:gap:8px;margin-bottom:12px">' +
+                    '<span class="chip" data-status="invalid-query"><strong>Type a question to ask</strong></span>' +
+                  '</div>' +
+                  '<p style="margin:0 0 12px 0">' + esc(msg) + '</p>' +
+                '</div>';
               return;
             }
 
             if (res.status === 429 || (data && data.tier === 'rate_limited')) {
               const retrySecs = (data && data.retryAfter) ? data.retryAfter : 3600;
               const retryMinutes = Math.max(1, Math.ceil(retrySecs / 60));
+              const answerText = (data && (data.answer || data.error)) || "Hourly question limit reached. You've reached the limit of questions per hour. Try again in " + retryMinutes + " minutes, or book a conversation.";
               region.innerHTML =
-                '<div class="strata-section">' +
-                  '<span class="chip" data-status="rate-limited"><strong>Question limit reached</strong></span>' +
-                  '<p style="margin:12px 0">' + esc((data && (data.answer || data.error)) || 'Hourly question limit reached. Please wait before asking another question, or book a live session.') + '</p>' +
-                  '<p style="font-size:13px;color:var(--text-muted)">Please try again in about ' + retryMinutes + ' minute' + (retryMinutes > 1 ? 's' : '') + ' (' + retrySecs + 's), or book a session directly.</p>' +
+                '<div class="strata-section" role="alert">' +
+                  '<span class="chip" data-status="rate-limited"><strong>Hourly question limit reached</strong></span>' +
+                  '<p style="margin:12px 0">' + esc(answerText) + '</p>' +
+                  '<p style="font-size:13px;color:var(--text-muted)">Please try again in about ' + retryMinutes + ' minutes (' + retrySecs + 's), or book a session directly.</p>' +
                   '<div style="margin-top:12px"><a href="/book?q=' + encodeURIComponent(queryText) + '" class="btn" style="display:inline-block;text-decoration:none">Book a conversation →</a></div>' +
                 '</div>';
               return;
             }
 
             if (res.status >= 500) {
-              region.innerHTML = '<div class="strata-section"><p style="color:var(--status-warn,#d97706);font-weight:600">The server encountered an error processing your query. Please try again later.</p></div>';
+              const statusSnippet = res.status ? ' (' + res.status + ')' : '';
+              region.innerHTML = '<div class="strata-section" role="alert"><p>Can\\\'t reach the server' + statusSnippet + ', so answers aren\\\'t available right now. Try again in a minute, or <a href="/book">book a conversation</a>.</p></div>';
               return;
             }
 
@@ -1532,7 +1543,8 @@ export async function renderAskPage(
               no_match: "That isn't in these records.",
               disabled: "Automated answers are off.",
               rate_limited: "Hourly question limit reached",
-              needs_context: "A few details will help me check this against my experience. Skip any you don't know."
+              needs_context: "A few details will help me check this against my experience. Skip any you don't know.",
+              invalid_query: "Type a question to ask"
             };
 
             const scopeNoticeHtml = currentScope
@@ -1621,7 +1633,7 @@ export async function renderAskPage(
                 disclosureHtml +
               '</div>';
           } catch (err) {
-            region.innerHTML = '<div class="strata-section"><p>Can\\\'t reach the server, so answers aren\\\'t available right now. Try again in a minute, or <a href="/book">book a conversation</a>.</p></div>';
+            region.innerHTML = '<div class="strata-section" role="alert"><p>Can\\\'t reach the server, so answers aren\\\'t available right now. Try again in a minute, or <a href="/book">book a conversation</a>.</p></div>';
           } finally {
             if (submitBtn) {
               submitBtn.removeAttribute('disabled');
@@ -2574,16 +2586,19 @@ export async function renderAdminWorkspacePage(
         ${ADMIN_API_CLIENT_SCRIPT}
 
         function renderAdminError(res) {
+          if (!res) {
+            return '<div class="later-thinking-banner" role="alert" data-error="network">Can&#39;t reach the server. Please check your connection and retry.</div>';
+          }
           if (res.status === 401) {
-            return '<div class="later-thinking-banner" role="alert" data-error="401">Your session has expired. <a href="/admin/login" style="margin-left:8px;font-weight:600">Sign in again →</a></div>';
+            return '<div class="later-thinking-banner" role="alert" data-error="401">Your session has expired. You&#39;re signed out. <a href="/admin/login" style="margin-left:8px;font-weight:600">Sign in again →</a></div>';
           }
           if (res.status === 403) {
-            return '<div class="later-thinking-banner" role="alert" data-error="403">Security check failed (CSRF token invalid or missing). Please refresh and retry.</div>';
+            return '<div class="later-thinking-banner" role="alert" data-error="403">Security check failed (CSRF token invalid or missing). Your session expired. Reload the page and sign in again.</div>';
           }
           if (res.status >= 500) {
-            return '<div class="later-thinking-banner" role="alert" data-error="500">Server error (HTTP ' + res.status + '). Please retry your request.</div>';
+            return '<div class="later-thinking-banner" role="alert" data-error="500">Server error (HTTP ' + res.status + '). Can&#39;t reach the server. Please retry your request.</div>';
           }
-          return '<div class="later-thinking-banner" role="alert" data-error="' + res.status + '">Request failed (HTTP ' + res.status + '). Please check inputs and retry.</div>';
+          return '<div class="later-thinking-banner" role="alert" data-error="' + res.status + '">Action failed. Check your input and retry.</div>';
         }
 
         function showUndoBanner(message, onUndo) {
@@ -2632,7 +2647,11 @@ export async function renderAdminWorkspacePage(
         async function selectEntry(id) {
           try {
             const res = await apiClient('/api/entries/' + id);
-            if (!res.ok) return;
+            if (!res.ok) {
+              const banner = document.getElementById('admin-status-banner');
+              if (banner) banner.innerHTML = renderAdminError(res);
+              return;
+            }
             const data = await res.json();
             const entry = data.entry;
             const currentRev = data.currentRevision;
