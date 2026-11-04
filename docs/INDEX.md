@@ -64,6 +64,7 @@
 | `A056` | WP-12.1: Strata Timeline Visual Overhaul & Typography Craft | `active` | [A056-wp-121-strata-timeline-overhaul-and-typography-craft.md](execution-reports/A056-wp-121-strata-timeline-overhaul-and-typography-craft.md) | — |
 | `A057` | WP-12.2: Actionable Error Messages & String Architecture | `active` | [A057-wp-122-actionable-errors-and-string-architecture.md](execution-reports/A057-wp-122-actionable-errors-and-string-architecture.md) | — |
 | `A058` | WP-12.3: Open-Source Governance & Full Documentation Suite | `active` | [A058-wp-123-open-source-governance-and-documentation-suite.md](execution-reports/A058-wp-123-open-source-governance-and-documentation-suite.md) | — |
+| `A059` | WP-12.4: Gate G5 Release Certification & v0.1.0 GA Tag | `active` | [A059-wp-124-gate-g5-release-certification.md](execution-reports/A059-wp-124-gate-g5-release-certification.md) | — |
 
 ## Handover Snapshots (Class H)
 

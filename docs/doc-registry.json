@@ -752,5 +752,13 @@
     "path": "docs/handovers/H013-wp-12-gate-closure-and-v010-ga-release.md",
     "status": "active",
     "supersedes": "H012"
+  },
+  {
+    "id": "A059",
+    "title": "WP-12.4: Gate G5 Release Certification & v0.1.0 GA Tag",
+    "class": "A",
+    "path": "docs/execution-reports/A059-wp-124-gate-g5-release-certification.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
