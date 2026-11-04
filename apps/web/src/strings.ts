@@ -208,18 +208,61 @@ export function formatIcu(
   params: Record<string, string | number>,
   locale = 'en-US'
 ): string {
-  let result = template;
-  result = result.replace(
-    /\{(\w+),\s*plural,\s*one\s*\{([^}]+)\}\s*other\s*\{([^}]+)\}\}/g,
-    (_match, varName, oneVal, otherVal) => {
-      const n = Number(params[varName] ?? 0);
-      const pr = new Intl.PluralRules(locale);
-      const chosen = pr.select(n) === 'one' ? oneVal : otherVal;
-      return chosen.replace(/#/g, String(n));
+  let result = '';
+  let i = 0;
+  while (i < template.length) {
+    if (template[i] === '{') {
+      const close = template.indexOf('}', i);
+      if (close !== -1) {
+        const fullToken = template.slice(i, close + 1);
+        if (fullToken.includes(', plural,') || fullToken.includes(',plural,')) {
+          // Find the outer closing brace for the plural block
+          const outerClose = template.indexOf('}}', i);
+          if (outerClose !== -1) {
+            const block = template.slice(i + 1, outerClose + 1);
+            const comma1 = block.indexOf(',');
+            const varName = comma1 !== -1 ? block.slice(0, comma1).trim() : '';
+            const rest = comma1 !== -1 ? block.slice(comma1 + 1) : '';
+            
+            // Extract one {...} and other {...} deterministically without backtracking
+            let oneVal = '';
+            let otherVal = '';
+            const oneIdx = rest.indexOf('one');
+            if (oneIdx !== -1) {
+              const oneOpen = rest.indexOf('{', oneIdx);
+              const oneClose = rest.indexOf('}', oneOpen);
+              if (oneOpen !== -1 && oneClose !== -1) {
+                oneVal = rest.slice(oneOpen + 1, oneClose);
+              }
+            }
+            const otherIdx = rest.indexOf('other');
+            if (otherIdx !== -1) {
+              const otherOpen = rest.indexOf('{', otherIdx);
+              const otherClose = rest.indexOf('}', otherOpen);
+              if (otherOpen !== -1 && otherClose !== -1) {
+                otherVal = rest.slice(otherOpen + 1, otherClose);
+              }
+            }
+
+            const n = Number(params[varName] ?? 0);
+            const pr = new Intl.PluralRules(locale);
+            const chosen = pr.select(n) === 'one' ? oneVal : otherVal;
+            result += chosen.split('#').join(String(n));
+            i = outerClose + 2;
+            continue;
+          }
+        } else {
+          const varName = fullToken.slice(1, -1).trim();
+          if (varName in params) {
+            result += String(params[varName]);
+            i = close + 1;
+            continue;
+          }
+        }
+      }
     }
-  );
-  for (const [k, v] of Object.entries(params)) {
-    result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+    result += template[i];
+    i++;
   }
   return result;
 }
