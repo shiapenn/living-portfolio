@@ -704,5 +704,13 @@
     "path": "docs/handovers/H012-wp-11-gate-closure-and-wp-12-kickoff.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A056",
+    "title": "WP-12.1: Strata Timeline Visual Overhaul & Typography Craft",
+    "class": "A",
+    "path": "docs/execution-reports/A056-wp-121-strata-timeline-overhaul-and-typography-craft.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
