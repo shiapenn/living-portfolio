@@ -736,5 +736,13 @@
     "path": "docs/G004-architecture-decision-records-archive.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A058",
+    "title": "WP-12.3: Open-Source Governance & Full Documentation Suite",
+    "class": "A",
+    "path": "docs/execution-reports/A058-wp-123-open-source-governance-and-documentation-suite.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
