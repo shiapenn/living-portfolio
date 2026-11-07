@@ -71,6 +71,7 @@
 | `A063` | WP-13.3 Credentials screen | `active` | [A063-wp-133-credentials-screen.md](execution-reports/A063-wp-133-credentials-screen.md) | — |
 | `A064` | WP-13.4 Persist wizard choices | `active` | [A064-wp-134-persist-wizard-choices.md](execution-reports/A064-wp-134-persist-wizard-choices.md) | — |
 | `A065` | WP-13.5 Wizard wording and states | `active` | [A065-wp-135-wizard-wording-and-states.md](execution-reports/A065-wp-135-wizard-wording-and-states.md) | — |
+| `A066` | WP-13.6 Login and sign-out | `active` | [A066-wp-136-login-and-sign-out.md](execution-reports/A066-wp-136-login-and-sign-out.md) | — |
 
 ## Handover Snapshots (Class H)
 

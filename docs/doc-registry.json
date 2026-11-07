@@ -825,5 +825,13 @@
     "path": "docs/execution-reports/A065-wp-135-wizard-wording-and-states.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A066",
+    "title": "WP-13.6 Login and sign-out",
+    "class": "A",
+    "path": "docs/execution-reports/A066-wp-136-login-and-sign-out.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
