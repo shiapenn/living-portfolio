@@ -20,6 +20,25 @@ function computeTotp(secretHex: string, timestampMs = Date.now()): string {
   return (binary % 1_000_000).toString().padStart(6, '0');
 }
 
+function base32ToHex(b32: string): string {
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  const clean = b32.toUpperCase().replace(/[\s\-=]/g, '');
+  let bits = 0;
+  let value = 0;
+  const bytes: number[] = [];
+  for (let i = 0; i < clean.length; i++) {
+    const idx = alphabet.indexOf(clean[i]);
+    if (idx === -1) continue;
+    value = (value << 5) | idx;
+    bits += 5;
+    if (bits >= 8) {
+      bytes.push((value >>> (bits - 8)) & 255);
+      bits -= 8;
+    }
+  }
+  return Buffer.from(bytes).toString('hex');
+}
+
 const TEST_USERNAME = 'admin_tester';
 const TEST_PASSWORD = 'StrongMasterPassword2026!';
 let sharedTotpSecret = '';
@@ -37,6 +56,30 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
 
     await page.click('button[type="submit"]');
 
+    // WP-13.1: Enrolment container displays QR code SVG and manual Base32 key
+    const enrolContainer = page.locator('#totp-enrolment-container');
+    await expect(enrolContainer).toBeVisible();
+    await expect(enrolContainer.locator('#setup-qr-code svg')).toBeVisible();
+
+    const manualKeyEl = enrolContainer.locator('#setup-manual-key');
+    await expect(manualKeyEl).toBeVisible();
+    const manualBase32 = (await manualKeyEl.innerText()).trim();
+    expect(manualBase32).toMatch(/^[A-Z2-7]{32}$/);
+    const hexFromBase32 = base32ToHex(manualBase32);
+
+    // Entering a wrong code fails verification and keeps setup incomplete
+    await page.fill('#confirm-totp-code', '000000');
+    await page.click('#btn-confirm-totp');
+    const confirmError = page.locator('#totp-confirm-error');
+    await expect(confirmError).toBeVisible();
+    await expect(confirmError).toContainText('Check the 6-digit code');
+    await expect(page.locator('#setup-status')).toBeHidden();
+
+    // Entering the correct TOTP code completes setup
+    const validCode = computeTotp(hexFromBase32);
+    await page.fill('#confirm-totp-code', validCode);
+    await page.click('#btn-confirm-totp');
+
     // Setup success banner appears with confirmation and generated TOTP secret
     const statusBox = page.locator('#setup-status');
     await expect(statusBox).toBeVisible();
@@ -47,6 +90,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     sharedTotpSecret = (await secretCode.innerText()).trim();
     saveSharedTotp(sharedTotpSecret);
     expect(sharedTotpSecret).toMatch(/^[a-f0-9]{40}$/i);
+    expect(sharedTotpSecret.toLowerCase()).toBe(hexFromBase32.toLowerCase());
 
     await expect(page.locator('a[href="/admin/login"]')).toBeVisible();
   });

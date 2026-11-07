@@ -3455,17 +3455,20 @@
     - "13.4"
     - "13.13"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-07
+      status: fixed
+      note: "Remediated in WP-13.1 (A061): derived RFC 4648 Base32 secret from stored hex, built canonical otpauth URI with configured site issuer, generated self-contained SVG QR code locally with no network calls, displayed Base32 manual key and QR code in setup wizard, and implemented POST /auth/totp/confirm requiring 6-digit code verification before setup is marked complete. Backed by wp13-auth.conformance.test.ts, totp.test.ts, and tests/e2e/auth.spec.ts."
   verified_by: null
 - id: 20261106-UX-27
   audit: AUD-2026-11-06

@@ -4363,6 +4363,26 @@ export function renderAdminSetupPage(): string {
           <button type="submit" class="btn" style="width:100%;padding:10px">Complete Account Setup &amp; View TOTP</button>
         </form>
 
+        <div id="totp-enrolment-container" style="display:none;margin-top:16px;padding:16px;border:1px solid var(--rule);background:var(--surface-subtle)">
+          <h3 style="font-size:18px;margin:0 0 8px 0">Enrol Authenticator App</h3>
+          <p style="font-size:13px;color:var(--text-muted);margin:0 0 12px 0">
+            Scan this QR code with Google Authenticator, 1Password, or any standard TOTP app. Or enter the manual key below.
+          </p>
+          <div id="setup-qr-code" style="max-width:200px;margin:12px auto;background:#fff;padding:8px;border-radius:4px;text-align:center"></div>
+          <div style="margin:12px 0;text-align:center">
+            <span style="font-size:12px;color:var(--text-muted)">Manual Key (Base32): </span>
+            <code id="setup-manual-key" style="font-size:14px;font-weight:700;word-break:break-all"></code>
+          </div>
+          <form id="totp-confirm-form" style="margin-top:16px">
+            <div style="margin-bottom:12px">
+              <label for="confirm-totp-code" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Enter 6-digit code to verify enrolment</label>
+              <input id="confirm-totp-code" type="text" maxlength="6" pattern="[0-9]{6}" class="ask-input" style="width:100%;padding:8px;text-align:center;font-size:18px;letter-spacing:4px" placeholder="000000" required />
+            </div>
+            <div id="totp-confirm-error" role="alert" class="later-thinking-banner" style="display:none;margin-bottom:12px"></div>
+            <button id="btn-confirm-totp" type="submit" class="btn btn-primary" style="width:100%;padding:10px">Verify Code &amp; Complete Setup</button>
+          </form>
+        </div>
+
         <div id="account-completed-actions" style="display:none;margin-top:16px">
           <button type="button" class="btn btn-primary" id="btn-continue-step2" style="width:100%;padding:10px;margin-bottom:8px">Continue to Step 2: Hosting Option &amp; Preset →</button>
         </div>
@@ -4633,6 +4653,8 @@ export function renderAdminSetupPage(): string {
           });
         }
 
+        let cachedSetupData = null;
+
         form.addEventListener('submit', async function(e) {
           e.preventDefault();
           statusBox.style.display = 'none';
@@ -4647,11 +4669,14 @@ export function renderAdminSetupPage(): string {
             });
             const data = await res.json();
             if (res.ok) {
-              statusBox.className = 'as-of-banner';
-              statusBox.innerHTML = '<strong>Setup Completed!</strong> Save your TOTP secret hex: <code>' + data.totpSecret + '</code>. Your initial API bearer token is: <code>' + data.bearerToken + '</code>. <br/><a href="/admin/login" class="btn" style="display:inline-block;margin-top:8px">Proceed to Sign in →</a>';
-              statusBox.style.display = 'block';
+              cachedSetupData = data;
               form.style.display = 'none';
-              if (completedActions) completedActions.style.display = 'block';
+              const qrBox = document.getElementById('setup-qr-code');
+              if (qrBox) qrBox.innerHTML = data.qrCodeSvg || '';
+              const keyEl = document.getElementById('setup-manual-key');
+              if (keyEl) keyEl.textContent = data.totpSecretBase32 || '';
+              const enrolBox = document.getElementById('totp-enrolment-container');
+              if (enrolBox) enrolBox.style.display = 'block';
             } else if (res.status === 409) {
               statusBox.className = 'later-thinking-banner';
               statusBox.textContent = data.error || 'Account setup already completed.';
@@ -4671,6 +4696,45 @@ export function renderAdminSetupPage(): string {
             statusBox.style.display = 'block';
           }
         });
+
+        const confirmForm = document.getElementById('totp-confirm-form');
+        if (confirmForm) {
+          confirmForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const codeInput = document.getElementById('confirm-totp-code');
+            const code = codeInput ? codeInput.value.trim() : '';
+            const confirmError = document.getElementById('totp-confirm-error');
+            if (confirmError) confirmError.style.display = 'none';
+
+            try {
+              const res = await apiClient('/api/auth/totp/confirm', {
+                method: 'POST',
+                body: JSON.stringify({ code })
+              });
+              const data = await res.json();
+              if (res.ok) {
+                const enrolBox = document.getElementById('totp-enrolment-container');
+                if (enrolBox) enrolBox.style.display = 'none';
+                statusBox.className = 'as-of-banner';
+                const secret = (cachedSetupData && cachedSetupData.totpSecret) || '';
+                const bearer = (cachedSetupData && cachedSetupData.bearerToken) || '';
+                statusBox.innerHTML = '<strong>Setup Completed!</strong> Save your TOTP secret hex: <code>' + secret + '</code>. Your initial API bearer token is: <code>' + bearer + '</code>. <br/><a href="/admin/login" class="btn" style="display:inline-block;margin-top:8px">Proceed to Sign in →</a>';
+                statusBox.style.display = 'block';
+                if (completedActions) completedActions.style.display = 'block';
+              } else {
+                if (confirmError) {
+                  confirmError.textContent = data.message || data.error || 'Invalid TOTP code. Please check your authenticator app.';
+                  confirmError.style.display = 'block';
+                }
+              }
+            } catch (err) {
+              if (confirmError) {
+                confirmError.textContent = 'Network error verifying TOTP code.';
+                confirmError.style.display = 'block';
+              }
+            }
+          });
+        }
 
         // Step 4: Test Alert button
         const testAlertBtn = document.getElementById('btn-setup-test-alert');
