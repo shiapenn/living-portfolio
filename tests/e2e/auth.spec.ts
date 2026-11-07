@@ -255,7 +255,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     // Visible notice about post-setup application
     const themeNotice = sharedPage.locator('#step6-theme-notice');
     await expect(themeNotice).toBeVisible();
-    await expect(themeNotice).toContainText('Applied to your public site after setup. Change it any time in Theme.');
+    await expect(themeNotice).toContainText("Your choice is saved. It isn't applied to your public site yet. You'll be able to apply it in Theme.");
 
     // 3 presets
     await expect(sharedPage.locator('input[name="theme-preset"]')).toHaveCount(3);

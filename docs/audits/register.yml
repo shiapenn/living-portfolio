@@ -3169,7 +3169,7 @@
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
     - date: 2026-11-07
       status: partial
-      note: Step 3 stays read-only in wizard; button-like styling removed from badges and explainer added (keys added later in Settings > Providers; Ask shows direct quotes until then). Full provider registry and key entry scheduled for WP-17.2.
+      note: "Partially addressed in WP-13.9 (A069): Step 3 stays read-only in wizard; button-like styling removed from badges and explainer added (keys added later in Settings > Providers; Ask shows direct quotes until then). UX-09 completes in WP-17.2."
   verified_by: null
 - id: 20261106-UX-10
   audit: AUD-2026-11-06
@@ -3482,7 +3482,7 @@
   spec_sections:
     - "13.13"
   severity: P0
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -3494,8 +3494,8 @@
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
     - date: 2026-11-07
-      status: fixed
-      note: "Remediated in WP-13.4 (A064): Converted theme cards to real radio inputs, implemented step-by-step persistence across steps 2-6 via PATCH /api/settings endpoints, restored saved settings upon revisiting and reload, and recorded wizard choices (hosting preset, public domain, notification channel/target, backup destination, age key, theme preset). Verified in wp13-auth.conformance.test.ts and tests/e2e/auth.spec.ts."
+      status: partial
+      note: "Partially addressed in WP-13.4 (A064) and WP-13.10 (A070): Converted theme cards to real radio inputs, implemented step-by-step persistence across steps 2-6 via PATCH /api/settings endpoints, restored saved settings upon revisiting and reload, and recorded wizard choices (hosting preset, public domain, notification channel/target, backup destination, age key, theme preset). Verified in wp13-auth.conformance.test.ts and tests/e2e/auth.spec.ts. Live application of the theme to the public site is partial because dynamic theme compilation arrives in WP-17.8 and WP-20.1; Step 6 honestly explains: 'Your choice is saved. It isn't applied to your public site yet. You'll be able to apply it in Theme.'"
   verified_by: null
 - id: 20261106-UX-28
   audit: AUD-2026-11-06
@@ -3635,7 +3635,7 @@
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
     - date: 2026-11-07
       status: partial
-      note: "Partially addressed in WP-13.5 (A065): disabled unconfigured buttons. Walkthrough identified live delivery test showing 501 and backup drill failing on default /var/backups. Remediation in WP-13.9: disable notification test with clear reason ('Test alerts aren't available in this version yet'), move default backup path under app data directory with configuration support, and map disk errors cleanly without HTTP/raw leaks. Full live capabilities scheduled for WP-17.2."
+      note: "Partially addressed in WP-13.5 (A065): disabled unconfigured buttons. Walkthrough identified live delivery test showing 501 and backup drill failing on default /var/backups. Remediation in WP-13.9: disable notification test with clear reason ('Test alerts aren't available in this version yet'), move default backup path under app data directory with configuration support, and map disk errors cleanly without HTTP/raw leaks. UX-33 completes in WP-17.2 and WP-17.3."
   verified_by: null
 - id: 20261106-UX-34
   audit: AUD-2026-11-06
@@ -3777,7 +3777,7 @@
     - "5.1"
     - "13.4"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -3789,8 +3789,8 @@
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
     - date: 2026-11-07
-      status: open
-      note: Partially addressed in WP-13.6 (A066). Added Sign out action to admin workspace navigation header that calls POST /api/auth/logout, clears session, and redirects to login. Account management screens scheduled for WP-17.4.
+      status: partial
+      note: "Partially addressed in WP-13.6 (A066): Added Sign out action to admin workspace navigation header that calls POST /api/auth/logout, clears session, and redirects to login. Full account management screens (change username/password, re-enrol authenticator, API token management) complete in WP-17.4."
   verified_by: null
 - id: 20261106-UX-42
   audit: AUD-2026-11-06
