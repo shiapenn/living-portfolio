@@ -219,6 +219,66 @@ describe('WP-13.3 Conformance: Credentials Screen & Recovery Codes', () => {
       }),
     });
     expect(loginRes2.status).toBe(401);
+    const errData2 = await loginRes2.json();
+    expect(errData2.message).toBe("That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once.");
+
+    // Multiple codes in recoveryCode returns 400 with "Enter one code at a time" (WP-13.8)
+    const multiCodeRes = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'recovery_owner',
+        password: 'ValidPassword12345!',
+        recoveryCode: `${setupData.recoveryCodes[1]}\n${setupData.recoveryCodes[2]}`,
+      }),
+    });
+    expect(multiCodeRes.status).toBe(400);
+    const multiData = await multiCodeRes.json();
+    expect(multiData.message).toBe('Enter one code at a time');
+
+    // Code normalization (spaces, uppercase) succeeds (WP-13.8)
+    const rawCode1 = setupData.recoveryCodes[1];
+    const messyCode = `  ${rawCode1.slice(0, 4).toUpperCase()} - ${rawCode1.slice(5).toUpperCase()}  `;
+    const normRes = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'recovery_owner',
+        password: 'ValidPassword12345!',
+        recoveryCode: messyCode,
+      }),
+    });
+    expect(normRes.status).toBe(200);
+
+    // Every remaining code in the generated list (2 through 7) signs in exactly once
+    for (let i = 2; i < setupData.recoveryCodes.length; i++) {
+      const code = setupData.recoveryCodes[i];
+      const res = await app.request('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: 'recovery_owner',
+          password: 'ValidPassword12345!',
+          recoveryCode: code,
+        }),
+      });
+      expect(res.status).toBe(200);
+    }
+    expect(account.recoveryCodeHashes.length).toBe(0);
+
+    // After all 8 codes are consumed, attempting to reuse any of them fails with specific recovery error
+    const reuseRes = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'recovery_owner',
+        password: 'ValidPassword12345!',
+        recoveryCode: setupData.recoveryCodes[3],
+      }),
+    });
+    expect(reuseRes.status).toBe(401);
+    const reuseData = await reuseRes.json();
+    expect(reuseData.message).toBe("That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once.");
   });
 });
 

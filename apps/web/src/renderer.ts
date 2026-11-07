@@ -4231,7 +4231,7 @@ export function renderAdminLoginPage(): string {
         </div>
         <div style="margin-bottom:16px">
           <label id="login-code-label" for="login-totp" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">6-Digit Authenticator Code</label>
-          <input id="login-totp" type="text" maxlength="16" class="ask-input" style="width:100%;padding:8px;font-family:var(--font-code);letter-spacing:2px" placeholder="000000" autocomplete="one-time-code" required />
+          <input id="login-totp" type="text" class="ask-input" style="width:100%;padding:8px;font-family:var(--font-code);letter-spacing:2px" placeholder="000000" autocomplete="one-time-code" required />
           <div id="login-code-help" style="font-size:12px;color:var(--text-muted);margin-top:4px">
             Enter the 6-digit verification code from your authenticator app (Google Authenticator, 1Password, etc.).
           </div>
@@ -4255,9 +4255,31 @@ export function renderAdminLoginPage(): string {
         const codeHelp = document.getElementById('login-code-help');
         let recoveryMode = false;
 
+        function checkMultipleCodes(val) {
+          if (!val) return false;
+          const lines = val.trim().split(new RegExp('\\r?\\n')).filter(function(l) { return l.trim().length > 0; });
+          const matches = val.match(new RegExp('[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}', 'g'));
+          return lines.length > 1 || (matches && matches.length > 1);
+        }
+
+        if (codeInput) {
+          codeInput.addEventListener('paste', function(e) {
+            const pasteData = (e.clipboardData || window.clipboardData) ? (e.clipboardData || window.clipboardData).getData('text') : '';
+            if (pasteData && checkMultipleCodes(pasteData)) {
+              e.preventDefault();
+              errBox.className = 'later-thinking-banner';
+              errBox.textContent = 'Enter one code at a time';
+              errBox.style.display = 'block';
+              codeInput.value = '';
+              return;
+            }
+          });
+        }
+
         if (toggleBtn && codeLabel && codeInput && codeHelp) {
           toggleBtn.addEventListener('click', function() {
             recoveryMode = !recoveryMode;
+            errBox.style.display = 'none';
             if (recoveryMode) {
               codeLabel.textContent = 'Single-Use Recovery Code';
               codeInput.placeholder = 'xxxx-xxxx';
@@ -4279,12 +4301,33 @@ export function renderAdminLoginPage(): string {
           errBox.style.display = 'none';
           const username = document.getElementById('login-username').value;
           const password = document.getElementById('login-password').value;
-          const totpCode = document.getElementById('login-totp').value;
+          const rawCode = document.getElementById('login-totp').value.trim();
+
+          if (checkMultipleCodes(rawCode)) {
+            errBox.className = 'later-thinking-banner';
+            errBox.textContent = 'Enter one code at a time';
+            errBox.style.display = 'block';
+            return;
+          }
+
+          let normalizedCode = rawCode;
+          if (recoveryMode || rawCode.includes('-')) {
+            const noSpaces = rawCode.toLowerCase().replace(new RegExp('\\s+', 'g'), '');
+            const hasEight = new RegExp('^[a-z0-9]{8}$').test(noSpaces);
+            normalizedCode = hasEight ? noSpaces.slice(0, 4) + '-' + noSpaces.slice(4) : noSpaces;
+          }
 
           try {
+            const payload = {
+              username: username,
+              password: password,
+              totpCode: recoveryMode ? undefined : normalizedCode,
+              recoveryCode: recoveryMode ? normalizedCode : undefined,
+              code: normalizedCode,
+            };
             const res = await apiClient('/api/auth/login', {
               method: 'POST',
-              body: JSON.stringify({ username, password, totpCode })
+              body: JSON.stringify(payload)
             });
             const data = await res.json();
             if (res.ok) {
@@ -4328,17 +4371,23 @@ export function renderAdminLoginPage(): string {
               }
               const rawNext = new URLSearchParams(window.location.search).get('next');
               window.location.href = sanitizeNext(rawNext);
+            } else if (res.status === 400) {
+              errBox.className = 'later-thinking-banner';
+              errBox.textContent = data.message || data.error || 'Enter one code at a time';
+              errBox.style.display = 'block';
             } else if (res.status === 401) {
               errBox.className = 'later-thinking-banner';
-              errBox.textContent = data.error || 'Invalid credentials or TOTP code.';
+              errBox.textContent = data.message || data.error || (recoveryMode
+                ? "That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once."
+                : 'Invalid credentials or TOTP code.');
               errBox.style.display = 'block';
             } else if (res.status === 403) {
               errBox.className = 'later-thinking-banner';
-              errBox.textContent = data.error || 'Access forbidden (security check failed).';
+              errBox.textContent = data.message || data.error || 'Access forbidden (security check failed).';
               errBox.style.display = 'block';
             } else if (res.status === 429) {
               errBox.className = 'later-thinking-banner';
-              errBox.textContent = data.error || 'Too many failed login attempts. Try again in 15 minutes.';
+              errBox.textContent = data.message || data.error || 'Too many failed login attempts. Try again in 15 minutes.';
               errBox.style.display = 'block';
             } else if (res.status >= 500) {
               errBox.className = 'later-thinking-banner';
@@ -4346,7 +4395,7 @@ export function renderAdminLoginPage(): string {
               errBox.style.display = 'block';
             } else {
               errBox.className = 'later-thinking-banner';
-              errBox.textContent = data.error || ('Sign-in failed (HTTP ' + res.status + ')');
+              errBox.textContent = data.message || data.error || ('Sign-in failed (HTTP ' + res.status + ')');
               errBox.style.display = 'block';
             }
           } catch (err) {

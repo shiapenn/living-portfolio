@@ -238,8 +238,13 @@ export function runTriage(options = {}) {
         }
 
         if (expectedDecision !== 'REQUIRED' && receiptsSinceHandover >= 6) {
-          expectedDecision = 'RECOMMENDED';
-          expectedRule = 'HO-R3';
+          if (reportedDecision === 'REQUIRED') {
+            expectedDecision = 'REQUIRED';
+            expectedRule = 'HO-R1';
+          } else {
+            expectedDecision = 'RECOMMENDED';
+            expectedRule = 'HO-R3';
+          }
         }
 
         if (reportedDecision && reportedDecision !== expectedDecision) {
