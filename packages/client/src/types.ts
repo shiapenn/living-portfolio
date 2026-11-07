@@ -69,7 +69,19 @@ export interface AuthSetupResponse {
   configured: boolean;
   username: string;
   totpSecret: string;
+  totpSecretBase32?: string;
+  otpauthUri?: string;
+  qrCodeSvg?: string;
   bearerToken: string;
+}
+
+export interface AuthConfirmTotpResponse {
+  ok: boolean;
+  message?: string;
+  authenticated?: boolean;
+  username?: string;
+  csrfToken?: string;
+  expiresAt?: string;
 }
 
 export interface AuthLoginResponse {

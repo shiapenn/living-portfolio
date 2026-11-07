@@ -15,6 +15,7 @@ import type {
   ClientOptions,
   HealthResponse,
   AuthSetupResponse,
+  AuthConfirmTotpResponse,
   AuthLoginResponse,
   AuthSessionResponse,
   ApiBearerTokenRecord,
@@ -151,6 +152,12 @@ export class LivingPortfolioClient {
   public auth = {
     setup: (body: { username: string; password: string; totpSecret?: string }): Promise<AuthSetupResponse> =>
       this.request<AuthSetupResponse>('/auth/setup', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+
+    confirmTotp: (body: { code: string }): Promise<AuthConfirmTotpResponse> =>
+      this.request<AuthConfirmTotpResponse>('/auth/totp/confirm', {
         method: 'POST',
         body: JSON.stringify(body),
       }),
