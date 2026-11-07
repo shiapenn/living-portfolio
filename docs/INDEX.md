@@ -76,6 +76,7 @@
 | `A068` | WP-13.8 Recovery code sign-in and normalisation | `active` | [A068-wp-138-recovery-code-sign-in-and-normalisation.md](execution-reports/A068-wp-138-recovery-code-sign-in-and-normalisation.md) | — |
 | `A069` | WP-13.9 Honest wizard controls in default install | `active` | [A069-wp-139-honest-wizard-controls-in-default-install.md](execution-reports/A069-wp-139-honest-wizard-controls-in-default-install.md) | — |
 | `A070` | WP-13.10 Honest Step 6 theme copy | `active` | [A070-wp-1310-honest-step-6-theme-copy.md](execution-reports/A070-wp-1310-honest-step-6-theme-copy.md) | — |
+| `A071` | WP-13.11 Recovery code entropy and backup path | `active` | [A071-wp-1311-recovery-code-entropy-and-backup-path.md](execution-reports/A071-wp-1311-recovery-code-entropy-and-backup-path.md) | — |
 
 ## Handover Snapshots (Class H)
 
