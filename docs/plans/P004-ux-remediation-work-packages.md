@@ -1,0 +1,235 @@
+# P004 — UX remediation work packages
+
+| Field | Value |
+| --- | --- |
+| Doc ID | `P004` |
+| Class | P |
+| Status | Active |
+| Supersedes | none |
+
+---
+
+## 1. Overview
+
+This document establishes the phased engineering remediation work packages (WP-13 through WP-20) following the 2026-11-06 UX specification audit, incorporating all owner decisions from Section 8.
+
+## 7. Work packages for agent execution
+
+### 7.0 Is the roadmap a set of phased work packages?
+
+**No.** The P0/P1/P2 roadmap in §3 ranks problems by severity. An agent can’t execute a ranking without making decisions the ranking never records. The table shows what is missing.
+
+| Property an agent needs | §3 roadmap | Work package (this section) |
+| --- | --- | --- |
+| Order and dependencies | Severity only; items 1 to 8 within a tier are not sequenced | Explicit dependency graph; one task at a time |
+| Entry criteria | None | Baseline, decisions and prior gate that must hold before starting |
+| Task granularity | Items of S to L effort, many spanning 3 to 10 files | One task = one pull request = one receipt |
+| Acceptance | “Done when” in prose | Named Playwright tests and commands whose output proves it |
+| Stop points | None | A gate closed by L at the end of every package |
+| Handover | None | A handover file at every gate so a human can open a new session |
+| Decisions | Hidden inside items | Numbered decisions with an owner and a default |
+| Fit with repo rules | Not considered | Matches `execution-protocol.md`, `P001` (IAHP), `gates.json` and the register |
+
+### 7.1 How the packages plug into the repo’s existing protocol
+
+The repository already runs a mature agent process, so these packages use it rather than inventing a second one. I read `docs/plans/P001-iterative-agent-handover-protocol.md`, `docs/plans/execution-protocol.md`, `docs/templates/G001-handover-template.md` and `docs/handovers/H013-*.md`; I did not run the scripts they name.
+
+| Element | How it is used here |
+| --- | --- |
+| Package and task IDs | `WP-13` onward (WP-12 closed at receipt `A058`, handover `H013`). Tasks are `WP-13.1`, `WP-13.2`, and so on |
+| One task | One branch `feat/<task-id>-<slug>`, one PR titled with the task ID, merged by **Rebase and merge**, one receipt `A059` onward from `pnpm docs:new A “<Title>”`, DCO sign-off on every commit |
+| Verification | `pnpm verify` and `pnpm receipt:check` before each PR; every user-visible behaviour has a Playwright test; underlying invariants get unit or conformance tests |
+| Findings | New findings are registered in `docs/audits/register.yml` as `20261106-<layer>-<nn>` (for example `20261106-UX-26`). A finding becomes `fixed` only when every acceptance criterion below passes in automated tests; otherwise `partial` |
+| Gates | Each package adds an entry to `docs/plans/gates.json` with `requiredTaskIds` and `requiredPassingTests` (the exact Playwright titles) |
+| Handovers | At each gate L signs off, then a handover is **required** (IAHP rule HO-R1). The outgoing agent runs `pnpm docs:new H “<Title>”` (next ID is expected to be `H014`), fills it by derivation from CI and the register, passes `pnpm handover:check`, merges a docs-only PR and stops |
+| Zero-hardcode | Protocol §1.6: no owner names, domains, vendor keys or sample clients in code; values come from `@living-portfolio/config`, the settings API or data files. New copy goes in `strings/` |
+| Stops | The protocol stops only after WP-1 and WP-2; here the agent **halts at every gate**, because the brief requires a human-resumable handover at the end of each phase |
+
+**Task WP-13.0 does the registration** (new findings, new gates, this plan as a `P`-class document), so the repository itself carries the plan after the first session.
+
+### 7.2 Phase map
+
+| WP | Name | Outcome a human can see | Depends on | Closes |
+| --- | --- | --- | --- | --- |
+| 13 | Onboarding and authentication integrity | A new owner can install, enrol an authenticator, finish setup signed in, and every wizard choice is saved | none | UX-26 to UX-33, UX-09, UX-41 (part), CP-14, CP-15 |
+| 14 | Entry lifecycle integrity | Save, Publish, Unlist, Unpublish and Undo behave correctly; state is visible; shapes appear | WP-13 | UX-01 to UX-04, UX-08, UX-10, UX-11, UX-22, UX-43, UI-01, partly UI-03 |
+| 15 | Foundations | Defined tokens, real primitives, split renderer, bundled client modules, one copy and help catalogue | WP-14 | UI-01 (full), UI-03, UX-13 to UX-15, UX-23 to UX-25, UX-38 |
+| 16 | Admin shell, entries and inbox | Routed admin with rail, Today, entries list and editor routes, Inspector, inbox and answer rules | WP-15 | UX-06, UX-12, UX-37, UX-39, UX-07 (part) |
+| 17 | Settings, maintenance and account | Separate settings pages on one template, answering switch, audit, calibration and structure screens, bookings, ventures, pages, account | WP-16 | UX-07, UX-16, UX-17, UX-33, UX-34, UX-41, UX-42, CP-13 |
+| 18 | Authoring canvas and import | Large immersive editor, media, columns, import stepper with real file parsing | WP-15, WP-16 | UI-02, UX-35, UX-36, UX-18 |
+| 19 | Public frame | Owner bar, new navigation, About, Ask panel, time rail with as-of, footer, robots | WP-16, WP-17 | UX-19, UX-20, UX-40, UX-44, UX-45 |
+| 20 | Shape system, i18n readiness, polish, release | Theme shape presets, locale readiness, accessibility sweep, docs, v0.2.0 | all | UI-04, remaining P2 |
+
+```
+WP-13 → WP-14 → WP-15 → WP-16 → WP-17 → WP-19 → WP-20
+                     └──────────→ WP-18 ───────┘   (WP-18 may run before WP-17 once WP-16 is closed)
+```
+
+If only one human is available, run them in numeric order. The only parallelism the repo’s one-session model allows is WP-18 before WP-17.
+
+### 7.3 Standing instructions for every session
+
+These apply to every package. They restate the repo’s rules only where an agent working from this plan could otherwise miss them.
+
+1. **Entry.** Read the latest handover and `docs/plans/execution-protocol.md` and nothing else; run `pnpm handover:verify <H###>`; stop and report if any halt condition in the handover applies. Do not explore the repo. For WP-13 the “latest handover” is `H013`.
+2. **Zero inference.** Cite exact paths, symbols and line anchors. Line numbers in this report are from the shipped zip and can drift; always re-locate by symbol or element ID and note any discrepancy in the receipt (section 1.0).
+3. **One task at a time**, in the listed order; never reorder without a note and L’s sign-off.
+4. **Verify first.** Each task opens with the repro: write the failing Playwright test that shows the defect, then fix it. Findings tagged **I** (inferred) in this report must be confirmed in a browser before any change; record the result.
+5. **No new inline styles or hard-coded colours, sizes, copy or vendor names** in code written from WP-15 onward; use tokens, primitives and the catalogue. Until WP-15 lands, do not widen existing debt.
+6. **Preserve test hooks.** Keep element `id`s and `data-*` attributes that conformance or e2e tests assert, or update those tests in the same pull request and say so.
+7. **Evidence labelling:** `CI` for log blocks copied verbatim from the named job, `local output` otherwise, “computed from the above” for totals.
+8. **Honesty.** Do not describe a behaviour as fixed unless a test in the receipt exercises it. Tag unfinished items `[partial]`, `[simulated]` or `[not-started]` as the repo does.
+9. **Decisions.** Every decision is closed in §8. If a task meets a question §8 does not cover, choose the option that follows the spec and the principles in §6, record the choice and its reason in the receipt, and carry on; do not stop to ask. Spec first: a task that implements an amendment (A-01 to A-09, §5.4.2) or otherwise changes behaviour the spec describes edits the matching section of docs/spec/ in the same pull request.
+10. **Exit.** At a gate, produce the closing receipt (gate summary and the fresh-clone command for L), wait for L’s sign-off, then write the handover and stop. Do no other work in that session.
+
+**Start prompt (give this to every new session).** Take the template in `docs/templates/G001-handover-template.md`; its start prompt reads: *You are taking over the Living Portfolio implementation. Read `<path of the latest handover>`, then `docs/plans/execution-protocol.md`, and nothing else. Do not explore the repo. Run `pnpm handover:verify <H###>`. If any halt condition in section 8 applies, stop and report.* Each handover below lists the one **Immediate next action 1** the incoming agent should perform.
+
+### 7.4 WP-13 — Onboarding and authentication integrity
+
+**Goal.** A person who has never seen the product can clone it, follow a written checklist, create an account, enrol a real authenticator app, finish setup signed in, and find every choice they made saved afterwards. **Entry criteria.** `H013` verified. `pnpm verify` green at the `H013` evidence SHA. Decision D-02 is closed (§8).
+
+| Task | What to do | Files | Closes | Done when |
+| --- | --- | --- | --- | --- |
+| WP-13.0 | Intake and registration. Run the entry routine. Add the findings in §5.3 and §2 of this report to `docs/audits/register.yml`; add gates WP-13 to WP-20 to `docs/plans/gates.json`; create this plan as a `P` document with `pnpm docs:new P “UX remediation work packages v2”` and paste §7 into it | `docs/audits/register.yml`, `docs/plans/gates.json`, `docs/plans/` | none | `pnpm docs:check` and `pnpm receipt:check A059` pass |
+| WP-13.1 | Real authenticator enrolment. Keep the stored secret as is; derive its base32 form; build an `otpauth://totp/` URI with the issuer taken from the configured site name; render a QR code locally (no external service); show the manual key; add `POST /auth/totp/confirm` that verifies one code before setup is marked complete | `apps/api/src/auth/security.ts` (secret at L161, setup route L439–L456), setup page in `apps/web/src/renderer.ts` (L4320–L4719), new `apps/api/src/auth/totp.ts` | UX-26 | Unit: base32 round trip and URI format. Playwright: setup shows QR and manual key; entering a correct code (computed in the test) completes setup; a wrong code does not |
+| WP-13.2 | Session from setup. After a confirmed code, issue the same `lp_session` cookie and CSRF token that `/login` issues; add `GET /auth/session` returning `{authenticated, username, csrfToken}`; stop showing the bearer token in the wizard | `security.ts` (login cookie at L476), `packages/client` | UX-28, UX-30 (part) | Playwright: after setup the owner is signed in, and the wizard’s later test buttons return something other than 401 |
+| WP-13.3 | Credentials screen. Replace the inline line with a designed step: recovery codes (generated server-side, stored hashed, downloadable once), copy buttons, a plain explanation of what each item is and why it matters, and an “I saved these” gate before continuing. Move the API token to a later Account screen | `security.ts`, setup page | UX-30, UX-29 (part) | Playwright: the gate blocks Continue until ticked; recovery codes download; a recovery code can sign in once |
+| WP-13.4 | Persist wizard choices. Each “Next” saves its step through the settings API after sign-in; revisiting a step restores values; theme cards become real radio inputs; hosting preset, public address, notification channel and target, backup destination and age key are stored | `renderer.ts` setup page, `apps/api/src/routes/settings.ts`, `packages/config` | UX-27 | Playwright: choose each option, reload, values persist; settings API returns them |
+| WP-13.5 | Wizard wording and states. Move all wizard copy to `strings/`; use the hosting cards and field help from §6.8; explain every field (what, when, effect); disable test buttons with the reason when a setting is empty; make the backup test send its fields and turn a 501 into “Not available until a backup folder is set”; remove hard-coded vendor, model and sample text (data file or config); one primary action per step; the backup step runs the first backup and a test restore and the last step deploys the static site and offers the import planner (spec §13.13); the final screen shows one primary button | setup page, `strings/en.ts`, `settings.ts` L253, L302–L322 | UX-29, UX-33, CP-14, CP-15 | Playwright: no step presents two competing primary actions; the drill with no folder shows the new message; a repository scan finds no vendor or sample names in the setup markup |
+| WP-13.6 | Login and sign-out. Explain the 6-digit field and add a recovery-code path; add a Sign out control to every admin page header | login page (L4197–), `renderLayout`, `POST /auth/logout` | UX-31, UX-41 (part) | Playwright: sign in with a recovery code; sign out ends the session and redirects |
+| WP-13.7 | Start-here and deployment truth. Write `docs/START-HERE.md` (prerequisites checklist, ordered steps, expected time, what you will need to hand); correct the port in `docs/self-hosting.md` L52; document `ENABLE_BUNDLED_WEB` in `.env.example` and the guide; add a guard for `/admin*` in standalone `app.ts` that redirects when `GET /auth/session` says unauthenticated | `docs/`, `.env.example`, `apps/web/src/app.ts`, `docker/` | UX-32, UX-05 | A fresh-clone run of the documented steps reaches the setup page; unauthenticated `/admin` in standalone mode redirects to login |
+
+**Gate G13 (L signs off).** (1) All seven tasks merged with receipts. (2) Playwright titles for WP-13.1 to WP-13.7 listed in `gates.json` pass in CI. (3) Fresh-clone check by L: clone, follow `START-HERE.md`, complete setup with a real authenticator app, sign out, sign back in with the code. (4) Register entries for UX-26 to UX-33 are `fixed` or `partial` with reasons.
+
+**Handover H014 contents.** *Phase closed:* WP-13. *Phase next:* WP-14. *Hot files:* `renderer.ts` (`renderAdminWorkspacePage`, entry handlers L3082–L3234 and L3531–L3592), `apps/api/src/routes/entries.ts` (L246–L262, L357–L400), `calibration.ts` (L10–L20), `settings.ts` (L44), `styles.ts`, `tokens/index.ts`. *Immediate next action 1:* open `docs/plans/` plan document, task WP-14.0a, and write the failing Playwright test that the result of Save draft and Publish is visible in the viewport without scrolling. *Pending decisions to carry:* none; every decision is closed in §8. *Pitfalls:* the redaction token is bound to the entry and body hash and must be cleared on every body edit; `renderer.ts` line numbers have shifted after WP-13.
+
+### 7.5 WP-14 — Entry lifecycle integrity
+
+**Goal.** The entry state machine in §2.1.2 works exactly as drawn, state is visible, and the self-tuning layer is off by default. Everything is done in place, without restructuring. **Entry criteria.** `H014` verified; G13 closed.
+
+| Task | What to do | Files | Closes | Done when |
+| --- | --- | --- | --- | --- |
+| WP-14.0a | **Make results visible first.** Stop writing every editor result into the single banner at the top of the page. Show an inline status line beside Save, Publish, Unpublish and Delete; show a toast fixed to the viewport in a polite live region; move focus to the result; refresh the entries list after create, save and delete | `renderer.ts` L2216–L2217 (banner and undo regions), handlers L3082–L3234 and L3531–L3592 | UX-43 | Playwright: after each action the message is inside the viewport without scrolling and is announced; a newly created entry appears in the list |
+| WP-14.0 | Client bundling. Add a small build step (esbuild) that compiles typed modules under `apps/web/src/client/` into script assets served with the CSP nonce the layout already supports; migrate only the entry-handler block first | `apps/web/package.json`, `apps/web/src/client/`, `renderLayout` | prerequisite | A trivial module loads under the existing CSP; `pnpm verify` passes |
+| WP-14.1 | `commitEntry` state machine. Implement the function in §2.1.2: Save never changes visibility; Publish of a saved entry calls `PUT /entries/:id` with token and NDA flag, of a new entry `POST`; Unlist and Unpublish are separate intents; clear the stored token on body edit; check every response; map 409 and 400 to specific messages from the API’s `message` field | new `client/admin/commit-entry.ts`; replaces L3082–L3234, L3531–L3592 | UX-01, UX-02, UX-03, UX-04, CP-12 | Playwright (one scripted journey, each step asserting the visible message): new → save → publish → edit → save stays public → unpublish → undo restores public → unlist; plus a 409 case and a stale-token case |
+| WP-14.2 | State and date correctness. Render the state chip the script already targets; default the date to today on the client; validate it without throwing; add a temporal-confidence control (Exact, Range with a range end, Estimated) and send it instead of the fixed `exact` | markup around L2322–L2330 and L2579, three write paths | UX-10, UX-11, UX-22 | Playwright: chip shows Draft, Public, Unlisted; clearing the date shows an inline error; choosing Estimated or Range (with a range end) is stored |
+| WP-14.3 | Publish dialog. Opening it auto-runs the scan; shows matches (the three-pass drawer as the detail), the NDA step only when needed, the Public or Unlisted choice, and what happens next; one Publish action; success toast with View page and a working Unpublish | redaction drawer markup L2390; `client/admin/publish-dialog.ts` | UX-03 (part), UX-13 (part) | Playwright: publishing needs no manual pre-check; a match blocks until confirmed or masked; focus is trapped and returned |
+| WP-14.4 | Do not lose writing. Local autosave of the draft to IndexedDB, restore prompt on reopen, `beforeunload` guard when dirty, an offline banner | `client/admin/draft-buffer.ts` | 2.1.3 | Playwright: type, reload, text restored; leaving with unsaved text prompts |
+| WP-14.5 | Calibration defaults as spec §11 requires. Suggestion thresholds and routing calibration ship off; topology audit and scoped-constraint mining stay on as proposal-only; replace the single “Freeze Calibration” checkbox with one switch per mechanism, each showing its minimum-sample gate and step limit; raise the gate above the current 5 samples to the spec’s value; never auto-apply a parameter change below the gate; mirror the spec’s `calibration:` configuration block | `apps/api/src/routes/calibration.ts` L10–L20, `settings.ts` L44, `packages/config`, settings markup (L3899) | UX-08 | API conformance test: a fresh instance reports both parameter mechanisms off and applies nothing; the other two report proposals only; Playwright: enabling a mechanism shows its gate |
+| WP-14.6 | Quick visual repairs. Define `--radius-control`, `--radius-chip`, `--radius-card`, `--surface-overlay`, `--surface-sunken`, `--status-success-*`, `--status-warn-*`, `--status-danger-*`; replace uses of undefined names; fix the three `flex-wrap:gap` declarations; add a CI script that fails on any `var(--x)` with no definition | `tokens/index.ts`, `styles.ts`, `renderer.ts` L1510, L2254, L2377, `scripts/` | UI-01 (part), UI-03 (part) | The new script passes; screenshots show rounded controls and an opaque drawer |
+
+**Gate G14.** (1) Tasks merged with receipts. (2) Lifecycle Playwright journey and the cases above pass in CI and are listed in `gates.json`. (3) `pnpm verify` includes the undefined-variable check. (4) L manually publishes, edits, unpublishes and undoes on a fresh clone. (5) UX-01 to UX-04, UX-08, UX-10, UX-11, UX-22 registered `fixed`.
+
+**Handover H015 contents.** *Phase next:* WP-15. *Hot files:* `tokens/index.ts`, `styles.ts`, `components/*`, `renderer.ts` split map in §2.2.5, `apps/web/src/client/`, `scripts/`. *Immediate next action 1:* open task WP-15.0, create the DOM-id snapshot script, run it on `main` and commit its output as the baseline before moving any code. *Pending decisions:* none; every decision is closed in §8. *Pitfalls:* `bundled-web.ts` imports renderer names, so the compatibility barrel must keep them; conformance suites assert specific ids and strings.
+
+### 7.6 WP-15 — Foundations
+
+**Goal.** Replace ad-hoc markup with a real design system, split the 5,119-line renderer without changing behaviour, and give copy and help text one home. After this package every later page is built from primitives and tokens. **Entry criteria.** `H015` verified; G14 closed.
+
+| Task | What to do | Files | Closes | Done when |
+| --- | --- | --- | --- | --- |
+| WP-15.0 | Baseline for safe refactoring. Write a script that renders every page with fixture data and records every element `id`, `data-testid` and `data-*` hook, plus the list of user-visible strings the existing tests assert; commit the baseline; fail CI if an id disappears without an allowlist entry | `scripts/snapshot-dom-ids`, `tests/` | enabler | Script passes on `main`; deleting an id fails CI |
+| WP-15.1 | Complete the token tiers in §2.2.1: status tokens, type scale (12/14/16/18/21/30), spacing for 4 px grid, elevation, drawer width, target sizes, high-contrast theme and `forced-colors` support; apply the migration table rows to shared code | `tokens/*`, `styles/*` | UI-01 (full) | Variable-definition check passes; contrast tests for light, dark, high-contrast |
+| WP-15.2 | Primitives per §2.2.2 and the affordance table in §6.9: `Button`, `IconButton`, `Chip`, `Badge`, `StatusDot`, `Switch`, `Field` (input, textarea, select, checkbox, radio) with sizes, variants, loading and disabled states; add a development-only gallery route used by visual and accessibility tests | `apps/web/src/primitives/*`, gallery route | UI-03, UX-23 | Unit tests for variants; axe finds no serious violations on the gallery; every control meets the target size |
+| WP-15.3 | Components: `Dialog`, `Drawer`, `Toast` and live region, `Banner`, `Disclosure`, `Tabs` (arrow keys, roving tabindex), `Table`, `EmptyState`. Adopt `Drawer` for the redaction review and `Tabs` for the existing inspector so those two findings close before the redesign | `components/*`, `renderer.ts` L2390, L2444 | UX-13, UX-14, UX-15, UX-25 | Playwright: focus trap, Escape, focus return; arrow keys move tabs; toasts are announced |
+| WP-15.4 | Split the renderer mechanically using the move map in §2.2.5, in three pull requests (public pages, admin workspace, settings/setup/import); keep a compatibility barrel for the names `bundled-web.ts` imports; no behavioural change | `apps/web/src/**` | package topology | DOM-id check unchanged; whole existing e2e and conformance suite green; `renderer.ts` under 300 lines |
+| WP-15.5 | Copy and help catalogues. Structure `strings/en.ts` by area; add a typed `strings/help/<module>.ts` schema (what, when, how, impact, options with best-for and trade-off); expose the actionable-error formatter to client modules; apply the rows of §2.3.3 that live in files touched so far | `strings/*`, `client/*` | CP-13 (foundation), CP-01 | Unit tests on the formatter; a test that every message key referenced in markup exists |
+| WP-15.6 | Guard rails in `pnpm verify`: forbid inline `style=` in files created after this task (allowlist for legacy), hex colours outside tokens, undefined CSS variables, and vendor or sample names in markup | `scripts/`, `docs/audits/hardcode-inventory.md` | UI-01, CP-15 | Introducing each violation in a temporary branch fails the check |
+| WP-15.7 | Style the missing states: suggested versus confirmed facet chips, badge versus button, switch, status dots; remove `cursor:pointer` from non-interactive elements | `styles/*` | UX-38, UI-03 | Visual snapshots on the gallery; Playwright checks computed cursor and role |
+
+**Gate G15.** (1) Tasks merged with receipts. (2) DOM-id baseline unchanged; renderer split complete. (3) Gallery passes axe. (4) New CI guards enabled. (5) L reviews the gallery on a fresh clone and confirms badge, chip, button and switch are distinguishable at a glance.
+
+**Handover H016 contents.** *Phase next:* WP-16. *Hot files:* `apps/web/src/primitives/*`, `components/*`, `layouts/` (empty), `pages/` (moved files), `strings/help/`, `scripts/snapshot-dom-ids`. *Immediate next action 1:* open task WP-16.1 and write the failing Playwright test that lists the admin route table in §6.4 and asserts each route redirects to login when signed out. *Pending decisions:* none; every decision is closed in §8. *Pitfalls:* never edit a moved file and relocate it in one PR; the barrel must keep exporting `renderAdmin*` names; legacy files are allowlisted for inline styles and must shrink, not grow.
+
+### 7.7 WP-16 — Admin shell, entries and inbox
+
+**Goal.** `/admin` stops being one page. The owner gets a shell with a navigation rail, a Today page, a real entries list, an editor route per entry, a Structure drawer, and an inbox with rules. **Entry criteria.** `H016` verified; G15 closed.
+
+| Task | What to do | Files | Closes | Done when |
+| --- | --- | --- | --- | --- |
+| WP-16.1 | Admin shell and route registry. Layout with rail (Write, Respond, Govern, Configure), top bar (site status popover with legend, account menu with Sign out), skip link, responsive collapse; every route in §6.4 guarded and deep-linkable, including the spec’s nine; each page gets a title and heading | `layouts/admin-shell.ts`, `apps/web/src/app.ts`, `pages/admin/*` | UX-06, UX-39 | Playwright: all routes redirect when signed out and render the shell when signed in; the legend explains each indicator |
+| WP-16.2 | Today. Needs-attention list (questions due, drafts, build failure, backup overdue), a checklist that replaces the walkthrough card, dismissal stored on the server | `pages/admin/dashboard.ts`, settings API | UX-17 (part), CP-13 | Playwright: items appear from fixtures; dismissal survives reload |
+| WP-16.3 | Entries list. Paginated, filter by state and type, search, state chip, four-step structure meter, row menu (Edit, Add context, Unpublish, Delete with typed confirmation), empty, loading, error and offline states | `pages/admin/entries/list.ts`; add pagination to `GET /entries` if absent | UX-12, 2.1.5 | Playwright per state; no request loads every entry’s details |
+| WP-16.4 | Editor routes. Move the current editor into `/admin/entries/new` and `/admin/entries/:id`; the page loads only its own entry; the unsaved-change guard works across navigation; the “default to first entry” behaviour is removed | `pages/admin/entries/editor.ts` | UX-12, UX-37 | Playwright: opening a URL shows that entry; the Inspector never shows another entry |
+| WP-16.5 | Inspector. Keep the spec’s five sections (Structure, Context, Evidence, Answerability, History) as an accessible tab set (arrow keys) in the right-hand pane, scoped to the open entry, headed by the four-step level bar and a next-step prompt from the gap questions; each tab carries its explainer; suggested items are dashed and labelled; History links to `/admin/entries/:id/history` with restore as a new revision | `patterns/structure-panel.ts` | UX-37, UX-14, CP-13 | Playwright: the Inspector opens from the list’s Add context action and from the editor; History restore creates a revision |
+| WP-16.6 | Inbox and answer rules. Inbox list and detail routes, filters, due indicators, reply flow, inline “Make this a rule?” after a reply; the Answer rules view of `/admin/audit` lists pending, active and discarded rules with source quote and scope, and can revoke | `pages/admin/inbox.ts`, `pages/admin/audit.ts` | UX-07 (part) | Playwright: reply, accept a suggested rule, see it active, revoke it |
+| WP-16.7 | Retire the monolith. Remove the old combined page; keep `/admin/import` and `/admin/settings` working until WP-17 and WP-18 replace them; update `gates.json` titles | `renderer.ts` remnants, `gates.json` | anti-pattern B | `/admin` renders Today only; all earlier gates still pass |
+
+**Gate G16.** (1) Tasks merged with receipts. (2) The Playwright route-table test and the per-state tests are listed in `gates.json` and pass. (3) L walks the owner journey from sign-in: Today → entries → editor → Inspector → inbox → rule, and confirms each page has one primary task.
+
+**Handover H017 contents.** *Phase next:* WP-17. *Hot files:* `layouts/admin-shell.ts`, `pages/admin/*`, `apps/web/src/app.ts`, `apps/api/src/routes/settings.ts`, `strings/help/`. *Immediate next action 1:* open task WP-17.1 and write the failing Playwright test for the Answering settings page, including the automatic-answers confirm dialog. *Pending decisions:* none; every decision is closed in §8. *Pitfalls:* `/admin/import` and `/admin/settings` remain legacy until replaced; do not delete their e2e coverage.
+
+### 7.8 WP-17 — Settings, maintenance and account
+
+**Goal.** Every settings area is its own page on one template, with plain-language explanation. The API capabilities that have no screen today (health, self-tuning, bookings, ventures, account, About pages) all get one. **Entry criteria.** `H017` verified; G16 closed.
+
+| Task | What to do | Files | Closes | Done when |
+| --- | --- | --- | --- | --- |
+| WP-17.1 | `SettingsTemplate` (sub-navigation, header, Explain block, form, state panel, save bar) and the **Routing** page at `/admin/routing`: confidence bars with recommended values and consequence copy, public disclosure, the automatic-answers switch with confirm (and the quick pause from the top-bar status chip), fallback test mode, a configurable reply-time setting | `patterns/settings-section.ts`, `pages/admin/routing.ts`, help catalogue | UX-16, CP-13 | Playwright: lowering a bar shows the consequence and a restore button; pausing needs confirmation and updates the top-bar status |
+| WP-17.2 | **Providers** (live registry, write-only API key fields, Test key, per-provider status and the data classes it may receive) and **Notifications** (channel options with outcomes, Send test while signed in, delivery history) | `settings/providers.ts`, `settings/notifications.ts`, `settings.ts` | UX-09 (complete), CP-13 | Playwright: a bad key shows “Key not valid”; keys are never returned by the API; a test alert reaches a stub channel |
+| WP-17.3 | **Backups and export** (honest availability, destination options, age key explained, run a test with its result, export as a named archive download) and **Visibility** (robots policy generated from settings with `/admin`, `/api` and `/ask/status` disallowed and an AI-crawler switch, RSS and sitemap status, federation manifest, public confidence disclosure) | `settings/backups.ts`, `settings/visibility.ts`, `apps/web/src/app.ts` L65–L72, export route | UX-33, UX-34, UX-42 | Playwright: export downloads a file with a filename; `robots.txt` reflects settings; the drill states why it is unavailable when it is |
+| WP-17.4 | **Account**: change username and password, re-enrol the authenticator, regenerate recovery codes, list, create and revoke API tokens (Developer access), sign out other sessions | `settings/account.ts`, `security.ts` | UX-41 | Playwright for each action; the old password stops working |
+| WP-17.5 | **Audit** (Contradictions: detect, list, resolve; Stale claims), **Calibration** (one switch per mechanism, proposals, history, rollback) and **Structure** (profiles, facet vocabulary, hard constraints) | `pages/admin/audit.ts`, `calibration.ts`, `structure.ts`, `routes/audit.ts`, `routes/calibration.ts` | UX-07 | Playwright: a seeded conflict can be reviewed and resolved; a proposal can be applied then rolled back |
+| WP-17.6 | **Bookings** (list, detail, status) and **Ventures** (create, edit, link entries, feeds `/build`) | `pages/admin/bookings.ts`, `pages/admin/ventures.ts`, `routes/book.ts`, `routes/structure.ts` L175 | UX-07, UX-19 (part) | Playwright: a booking submitted publicly appears in admin; a venture shows on `/build` |
+| WP-17.7 | **Pages and Home settings**: edit the About sections (owner, now, stack) and the Home statement with revisions through a new `pages` resource and migration; `/admin/settings/home` holds the Featured count (default 3) and Recent count (default 10) as configuration; featured toggle on entries and ventures | `routes/pages.ts` (new), `packages/db`, `pages/admin/pages.ts`, `settings/home.ts` | UX-17 | Playwright: editing a section creates a revision; changing a count changes the Home list; a featured entry appears on Home |
+| WP-17.8 | **Theme** at `/admin/theme`: move the token editor, add a basic live preview and contrast check; shape presets arrive in WP-20.1 | `pages/admin/theme.ts`, `packages/core` theme | spec §12.10 | Playwright: a colour change previews before saving; a failing contrast pair is blocked |
+
+**Gate G17.** (1) Tasks merged with receipts. (2) The old `/admin/settings` page is removed and all settings areas pass their Playwright tests. (3) No API capability from the §2.1.4 table remains without a screen, or its absence is recorded as an accepted gap in the register. (4) L opens each settings page and confirms the Explain block states what, when, how and impact.
+
+**Handover H018 contents.** *Phase next:* WP-18. *Hot files:* `settings/*`, `pages/admin/health.ts`, `routes/pages.ts`, `strings/help/*`. *Immediate next action 1:* open task WP-18.1 and write the failing Playwright test for the editor canvas width (at 1440 px the writing column is at least 640 px and capped near 72 characters). *Pending decisions:* none; every decision is closed in §8. *Pitfalls:* provider keys are write-only; never echo them in a response, log or test snapshot.
+
+### 7.9 WP-18 — Authoring canvas and import
+
+**Goal.** Writing is immersive and consistent, content can include images, video and columns without leaving Markdown, and importing existing material is a guided, real-format flow. **Entry criteria.** `H018` verified; G17 closed.
+
+| Task | What to do | Files | Closes | Done when |
+| --- | --- | --- | --- | --- |
+| WP-18.1 | Canvas layout. Writing surface takes the full content width with the text capped near 72 characters; metadata in a collapsible header; modes Write, Split, Preview, Focus; Structure stays a drawer | `patterns/editor-workspace.ts`, `styles/admin.ts` | UI-02 | Playwright: at 1440 px the writing column is at least 640 px; at 1024 px the drawer overlays; at 390 px the toolbar stays reachable above the keyboard |
+| WP-18.2 | Editor engine (D-05). Build the block editor with toolbar, slash menu, shortcuts and a loss-free Source mode. **Fail-safe:** if the Markdown round-trip suite (every seeded entry plus the export fixtures) is not 100% by the end of the task, ship CodeMirror live preview instead and record the decision | `client/admin/editor/*`, `markdown.ts` | 2.1.3 | Round-trip suite passes; Playwright covers each toolbar action and each shortcut |
+| WP-18.3 | Media API. `POST /media` and `GET /media/:id` with auth and CSRF, a storage adapter (volume by default, S3-compatible by configuration), limits and allowed types from configuration, content sniffing, SVG rejected or sanitised, alt text stored, hashed names, a migration | `apps/api/src/routes/media.ts`, `packages/db`, `packages/config` | enabler | Conformance tests: oversize, wrong type, spoofed type, unauthenticated, path traversal |
+| WP-18.4 | Images and video. Paste, drop or pick; alt-text prompt; captions; lazy loading; video upload or consent-gated embed; CSP sources from configuration; public rendering in `markdown.ts` | editor, `markdown.ts`, layout CSP | 4.11.2 request | Playwright: upload, reorder, publish, and the public page renders with alt text; embeds don’t load before consent |
+| WP-18.5 | Columns. Implement the container directive (§6.6) in the parser, renderer and editor; two to four columns collapse to one below a container width; reading order matches source order | `markdown.ts`, editor | 4.11.2 request | Round-trip and export fixtures include columns; Playwright at three widths; screen-reader order test |
+| WP-18.6 | Import stepper. Add, Plan, Review, Done with a persistent summary; Plan options as real radios shown only when an external provider is configured, with the cards in §6.7; Review renamed to Include, Leave out, Change type, Set date with “N of M reviewed”; Done screen with three next steps | `pages/admin/import.ts` | UX-35 | Playwright: no dead cards; success page replaces the in-place banner; one return link |
+| WP-18.7 | Real file import. `POST /import/files` (multipart); Markdown, text, HTML, Word, PDF text and zip; rich paste in the Add step; embedded images go through the media API; per-file result and errors; explain how content was split | `routes/import.ts`, parsers behind an interface | UX-36 | Fixture files of each type import; a corrupt file reports its own error without failing the batch |
+| WP-18.8 | Quick Log as a route. `/admin/quick-log` (alias `/quick-log`, owner only), the spec’s four fields (what happened, what was decided, what was learned, which venture) and one button, mobile-first, app-manifest shortcut | `pages/admin/quick-log.ts` | UX-18 | Playwright on a 390 px viewport: capture in under 30 seconds; works from the owner bar |
+
+**Gate G18.** (1) Tasks merged with receipts. (2) Round-trip suite at 100% or CodeMirror fallback recorded. (3) Media conformance tests pass. (4) L writes an entry with an image and two columns, publishes it, and checks the public page and the Markdown export.
+
+**Handover H019 contents.** *Phase next:* WP-19. *Hot files:* `client/admin/editor/*`, `markdown.ts`, `routes/media.ts`, `routes/import.ts`. *Immediate next action 1:* open task WP-19.1 and write the failing Playwright test that the owner bar appears only when `GET /auth/session` reports a signed-in owner and is absent after **View as visitor**. *Pending decisions:* none; every decision is closed in §8. *Pitfalls:* media files must never be served from a path the admin guard protects; the column directive must degrade to readable text in the exported Markdown.
+
+### 7.10 WP-19 — Public frame
+
+**Goal.** The public site gets the owner’s structure: main navigation, a Home with Featured and Recent lists, About, a left **time rail** and a right **conversation panel** that push the Story aside, an owner bar, and a footer. The separate `/ask` and `/timeline` pages are retired (D-10). **Entry criteria.** `H019` verified; G18 closed.
+
+| Task | What to do | Files | Closes | Done when |
+| --- | --- | --- | --- | --- |
+| WP-19.1 | Owner bar and View as visitor. A script injected only for a signed-in owner; Dashboard, New entry, Edit this page, Inbox count, status, Sign out; the visitor view hides the bar and shows a Back to admin pill; no personalised HTML | `client/public/owner-bar.ts`, public layout | UX-40 | Playwright: bar absent when signed out; present when signed in; absent in visitor view; static HTML identical for both |
+| WP-19.2 | Public shell, About and Home (A-01, A-03, A-04). Header About, Work, Writing, Build, Book call to action, theme and RSS icons; footer with legal, site map, owner sign-in and a language slot; About composed from the pages resource with anchors; `/about`, `/now`, `/uses` redirect to anchors; Home shows the statement, Featured (count from settings, default 3, curated from Work, Writing and Build) and Recent (count from settings, default 10, includes revisions labelled “Revised”) | `layouts/public-shell.ts`, `pages/public/about.ts`, `home.ts` | UX-19, UX-20, UX-17 | Playwright: nav and redirects; Home list lengths follow the settings; no five-tab bar remains |
+| WP-19.3 | Three-region layout (A-02, A-07). Grid of time rail, Story and conversation panel that extrude; collapsed handles; widths from tokens; breakpoint rules and elevation rules from §5.4.5; URL flags `as_of`, `ask=1`, `timeline=1`; landmarks and focus management; reduced motion; the theme Frame slot contract; `/ask` and `/timeline` redirect to Home with the region open; rail and panel code loads on first open | `layouts/public-shell.ts`, `styles/layout.ts`, `components/slots.ts` | §5.4.5 | Playwright at 1440, 1100, 800 and 390 px: the Story is never under 640 px except on sheets; `Esc` closes sheets; a bundle-size test keeps a reading page within about 70 KB gzipped JavaScript |
+| WP-19.4 | Conversation panel. Extract the Ask UI into a shared component used by the panel; scope switch (this entry or everything); date chip; persistence across navigation through `sessionStorage` plus `ask=1`; answers announced in a live region; Book hand-off kept; remove the `/ask` page route but keep `/ask/status/:token` | `components/ask.ts`, `client/public/ask-panel.ts` | §5.4.4 | Playwright: asking on an entry page sends `scope_entry_slug`; navigating keeps the conversation; the panel works on Home with scope “everything” |
+| WP-19.5 | Time travel correctness (UX-44, UX-45). Add one shared `resolveRevisionAsOf(entry, date)` in `packages/core` (newest `written_at` not after the date, then the existing event-validity and hindsight rules); use it in the Work, Writing and Home lists, entry detail, `GET /timeline` and Ask context assembly; add `as_of` to `GET /entries`, `GET /entries/:slug` and pages | `packages/core`, `renderer.ts` L420–L440 and L758–L780, `routes/timeline.ts`, `routes/entries.ts`, `routes/ask.ts` | UX-44, UX-45 | Conformance and Playwright fixture with the owner’s scenario: viewpoints a, b, c and a later revision b′; at 2025-03-30 b appears in the list, the page, the timeline and an Ask citation; at 2025-09-30 b′ does; no draft or private entry is ever returned |
+| WP-19.6 | Time rail. Vertical strata timeline, collapsed and anchored at Now; selecting a date sets `as_of`, re-renders the Story, shows “Viewing as of … Return to now” and passes the date to Ask; keyboard operable; a text-equivalent list view (spec §12.8); remove the `/timeline` page route | `components/strata-timeline.ts`, `client/public/time-rail.ts` | §5.4.4 | Playwright: choose a past month and Work lists only what existed; the list view gives the same dates; Ask answers carry the reconstruction notice |
+| WP-19.7 | Discovery. `robots.txt` from settings, sitemap without `/ask` and `/timeline` and respecting visibility, RSS link in `<head>`, canonical URLs, `noindex` on as-of variants | `apps/web/src/app.ts` L65–L137 | UX-42 | Playwright and unit tests on each output |
+| WP-19.8 | Compare mode. Two Story columns with independent dates (`?as_of=A&compare=B`) at 1440 px and wider, stacked with a switch below; the conversation panel follows the focused column | public shell | owner request | Playwright at both widths; each column resolves its own revisions |
+
+**Gate G19.** (1) Tasks 19.1 to 19.8 merged with receipts. (2) The layout test passes at all four widths and the JavaScript budget test passes. (3) The time-travel fixture passes on every surface. (4) L walks the visitor journey: Home, About, Work, ask a question in the panel, open the rail, move to a past date, see the change in the Story and in the answer, return to now, then switch to the owner bar and back.
+
+**Handover H020 contents.** *Phase next:* WP-20. *Hot files:* `layouts/public-shell.ts`, `client/public/*`, `routes/entries.ts`, `routes/timeline.ts`. *Immediate next action 1:* open task WP-20.1 and write the failing conformance test that every theme preset keeps text at 4.5:1 and component boundaries at 3:1. *Pending decisions:* none; every decision is closed in §8. *Pitfalls:* as-of pages must never leak private entries or draft revisions; do not index as-of variants.
+
+### 7.11 WP-20 — Shape system, locale readiness, polish and release
+
+**Goal.** Finish the visual system, make the interface ready for more than one language, sweep accessibility and copy, complete the documentation, and release. **Entry criteria.** `H020` verified; G19 closed.
+
+| Task | What to do | Files | Closes | Done when |
+| --- | --- | --- | --- | --- |
+| WP-20.1 | Theme shape contract (A-08). Radius presets (sharp, soft, round, pill), border presets (none, hairline, strong), content surface flat or outlined, raised only for overlays, all mapped to tokens; extend the conformance check with contrast rules (text 4.5:1, boundaries and focus 3:1); live preview on `/admin/theme` | `packages/core` theme, `tokens/*`, `pages/admin/theme.ts` | UI-04 | Conformance test over all presets; Playwright: change a preset, the page updates, a failing combination is blocked |
+| WP-20.2 | Interface translation readiness (D-07). Locale configuration; `lang` set from it; UI strings in ICU message format keyed by locale (spec §12.8); logical CSS properties for right-to-left; footer language selector shown only when more than one locale exists; `hreflang`. No content translation | `strings/*`, `renderLayout`, `packages/config`, `styles/*` | spec §12.8 | Tests with a second fixture locale and a right-to-left fixture; the selector is hidden with one locale |
+| WP-20.3 | Accessibility sweep. axe across every route in e2e; keyboard-only journeys for sign-in, write, publish, import, settings, rail and panel; target sizes; single-key shortcuts can be turned off | `tests/e2e/a11y/*` | UX-24, remainder | Zero serious or critical violations; documented exceptions only |
+| WP-20.4 | Copy sweep. Apply every remaining row of §2.3.3 and the glossary in §2.3.1; set the first-person answer label (A-09); add a test that fails if owner-facing markup contains internal terms (tier numbers, level codes, status enums, HTTP codes, finding IDs) | `strings/*` | CP-01 to CP-15 | Terminology test passes |
+| WP-20.5 | Performance. Remove the per-entry repository calls on Home (N+1) and the load-everything admin paths that remain; measure reading-page JavaScript and largest contentful paint against spec §12.5 and record the numbers | `pages/public/home.ts`, `scripts/` | 2.1.5 | Query-count test on Home; budget script output in the receipt |
+| WP-20.6 | Documentation and amendments. Confirm A-01 to A-09 are written into `docs/spec/`; add `docs/architecture.md`, `plugin-development.md`, `security.md`, `upgrading.md`, a reverse-proxy reference config, feature, connector and theme issue templates, and refresh README and `START-HERE.md` | `docs/`, `.github/ISSUE_TEMPLATE/` | spec §19 | `pnpm docs:check` passes; a diff check shows every amendment present |
+| WP-20.7 | Release v0.2.0: changelog, version bump, release workflow, fresh-clone verification by L, closing receipt, final handover | `CHANGELOG`, workflows | release | L signs the gate |
+
+**Gate G20 (release).** Every earlier gate still passes; L completes the full owner journey on a fresh clone (clone, START-HERE, setup, write, import, publish, visit as visitor, ask, time-travel, settings, backup test, sign out). **Handover H021** records v0.2.0 and the maintenance backlog.
+
+---

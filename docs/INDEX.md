@@ -91,6 +91,7 @@
 | `P001` | Iterative Agent Handover Protocol (IAHP) | `active` | [P001-iterative-agent-handover-protocol.md](plans/P001-iterative-agent-handover-protocol.md) | — |
 | `P002` | API Boundary and Web Decoupling Architecture Decision Record | `active` | [P002-api-boundary-and-web-decoupling-adr.md](plans/P002-api-boundary-and-web-decoupling-adr.md) | — |
 | `P003` | Hosting provider evaluation and staging architecture ADR | `active` | [P003-hosting-provider-evaluation-and-staging-architecture-adr.md](plans/P003-hosting-provider-evaluation-and-staging-architecture-adr.md) | — |
+| `P004` | UX remediation work packages | `active` | [P004-ux-remediation-work-packages.md](plans/P004-ux-remediation-work-packages.md) | — |
 
 ## Guides, References & Templates (Class G)
 

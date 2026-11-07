@@ -769,5 +769,13 @@
     "status": "frozen",
     "supersedes": null,
     "sha256": "b2384104a2d0b44c1add6b4fffacf66cca99e2c5abb40c9484e14e4dedd505a9"
+  },
+  {
+    "id": "P004",
+    "title": "UX remediation work packages",
+    "class": "P",
+    "path": "docs/plans/P004-ux-remediation-work-packages.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
