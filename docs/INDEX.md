@@ -72,6 +72,7 @@
 | `A064` | WP-13.4 Persist wizard choices | `active` | [A064-wp-134-persist-wizard-choices.md](execution-reports/A064-wp-134-persist-wizard-choices.md) | — |
 | `A065` | WP-13.5 Wizard wording and states | `active` | [A065-wp-135-wizard-wording-and-states.md](execution-reports/A065-wp-135-wizard-wording-and-states.md) | — |
 | `A066` | WP-13.6 Login and sign-out | `active` | [A066-wp-136-login-and-sign-out.md](execution-reports/A066-wp-136-login-and-sign-out.md) | — |
+| `A067` | WP-13.7 Start-here and deployment truth | `active` | [A067-wp-137-start-here-and-deployment-truth.md](execution-reports/A067-wp-137-start-here-and-deployment-truth.md) | — |
 
 ## Handover Snapshots (Class H)
 
