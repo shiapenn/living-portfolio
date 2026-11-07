@@ -349,7 +349,7 @@ export function createSettingsRoutes(
           error: 'Feature Unavailable',
           code: 'SIMULATED',
           finding: 'M1',
-          message: "Test alerts aren't available in this version yet.",
+          message: "Test alerts aren't available in this version yet. Notification channel delivery adapter is not yet implemented.",
         },
         501
       );
