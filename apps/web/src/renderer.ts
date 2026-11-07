@@ -4258,8 +4258,15 @@ export function renderAdminLoginPage(): string {
         function checkMultipleCodes(val) {
           if (!val) return false;
           const lines = val.trim().split(new RegExp('\\r?\\n')).filter(function(l) { return l.trim().length > 0; });
-          const matches = val.match(new RegExp('[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}', 'g'));
-          return lines.length > 1 || (matches && matches.length > 1);
+          if (lines.length > 1) return true;
+          const stripped = val.replace(new RegExp('[\\s-]+', 'g'), '');
+          if (stripped.length >= 32) return true;
+          const tokens = val.trim().split(new RegExp('\\s+'));
+          if (tokens.length > 1) {
+            const codeTokens = tokens.filter(function(t) { return new RegExp('^[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}$').test(t); });
+            if (codeTokens.length > 1) return true;
+          }
+          return false;
         }
 
         if (codeInput) {
@@ -4282,7 +4289,7 @@ export function renderAdminLoginPage(): string {
             errBox.style.display = 'none';
             if (recoveryMode) {
               codeLabel.textContent = 'Single-Use Recovery Code';
-              codeInput.placeholder = 'xxxx-xxxx';
+              codeInput.placeholder = 'xxxx-xxxx-xxxx-xxxx';
               codeHelp.textContent = 'Enter one of your 8 emergency alphanumeric recovery codes. Each code can only be used once.';
               toggleBtn.textContent = 'Have your authenticator? Use 6-digit TOTP code';
             } else {
@@ -4312,9 +4319,14 @@ export function renderAdminLoginPage(): string {
 
           let normalizedCode = rawCode;
           if (recoveryMode || rawCode.includes('-')) {
-            const noSpaces = rawCode.toLowerCase().replace(new RegExp('\\s+', 'g'), '');
-            const hasEight = new RegExp('^[a-z0-9]{8}$').test(noSpaces);
-            normalizedCode = hasEight ? noSpaces.slice(0, 4) + '-' + noSpaces.slice(4) : noSpaces;
+            const noSpaces = rawCode.toLowerCase().replace(new RegExp('[\\s-]+', 'g'), '');
+            if (new RegExp('^[a-z0-9]{16}$').test(noSpaces)) {
+              normalizedCode = noSpaces.slice(0, 4) + '-' + noSpaces.slice(4, 8) + '-' + noSpaces.slice(8, 12) + '-' + noSpaces.slice(12, 16);
+            } else if (new RegExp('^[a-z0-9]{8}$').test(noSpaces)) {
+              normalizedCode = noSpaces.slice(0, 4) + '-' + noSpaces.slice(4);
+            } else {
+              normalizedCode = rawCode.trim();
+            }
           }
 
           try {

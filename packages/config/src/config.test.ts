@@ -103,4 +103,18 @@ describe('@living-portfolio/config (OSR-02, OSR-03, OSR-09)', () => {
     expect(example).toContain('PUBLIC_SITE_NAME=Portfolio Sandbox');
     expect(example).toContain('SESSION_SECRET=');
   });
+
+  it('resolves DATA_DIR and BACKUP_DIR to absolute repository root paths (WP-13.11)', async () => {
+    const { resolveDataDir, resolveBackupDir, findRepoRoot } = await import('./index.js');
+    const repoRoot = findRepoRoot();
+    expect(repoRoot).toBeDefined();
+
+    // From simulated subfolder (like apps/api)
+    const simulatedSubdir = join(repoRoot, 'apps/api');
+    const dataDir = resolveDataDir(undefined, simulatedSubdir);
+    const backupDir = resolveBackupDir(undefined, undefined, simulatedSubdir);
+
+    expect(dataDir).toBe(join(repoRoot, 'data'));
+    expect(backupDir).toBe(join(repoRoot, 'data/backups'));
+  });
 });
