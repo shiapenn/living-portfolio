@@ -3520,13 +3520,13 @@
     - "12.7"
     - "13.13"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/web/src/web.test.ts
   history:
     - date: 2026-11-06
       status: open
@@ -3534,6 +3534,9 @@
     - date: 2026-11-07
       status: partial
       note: "Partially addressed in WP-13.3 (A063): eliminated competing Proceed to Sign in button after account creation in step 1, standardizing on a single gated Continue button to step 2. Final wizard step primary action consolidation scheduled for WP-13.5."
+    - date: 2026-11-07
+      status: fixed
+      note: "Remediated in WP-13.5 (A065): Enforced strictly one primary action (.btn-primary) per wizard step across all 6 steps. In Step 1, account creation and TOTP confirmation buttons are secondary, leaving the gated Continue button as the single primary action. In Step 6, Launch Portfolio is the single primary button with secondary action for Import Planner. Verified in web.test.ts and tests/e2e/auth.spec.ts."
   verified_by: null
 - id: 20261106-UX-30
   audit: AUD-2026-11-06
@@ -3604,17 +3607,20 @@
     - "12.9"
     - "13.13"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-07
+      status: fixed
+      note: "Remediated in WP-13.5 (A065): Unconfigured test buttons now provide honest disabled state and clear reason. Notification test button is disabled until target is entered with explanatory text. Backup drill without configured destination folder returns 501 with honest message 'Not available until a backup folder is set' and renders actionable notice. Verified in wp13-auth.conformance.test.ts and tests/e2e/auth.spec.ts."
   verified_by: null
 - id: 20261106-UX-34
   audit: AUD-2026-11-06
@@ -4163,17 +4169,20 @@
     - "12.9"
     - "13.13"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/web/src/web.test.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-07
+      status: fixed
+      note: "Remediated in WP-13.5 (A065): Replaced systems jargon with plain-language field help following the explainer pattern in strings/en.ts. Uses §6.8 hosting cards, explains public web address without tunnel jargon, clarifies authenticator seed, backup folder, and age encryption key, and renames zero-trust boundary to privacy boundary. Verified in web.test.ts and tests/e2e/auth.spec.ts."
   verified_by: null
 - id: 20261106-CP-15
   audit: AUD-2026-11-06
@@ -4182,15 +4191,18 @@
     - "12.9"
     - "13.13"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/web/src/web.test.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-07
+      status: fixed
+      note: "Remediated in WP-13.5 (A065): Extracted all vendor names, model identifiers, and worked-example sample content out of setup markup into typed string catalogue in strings/en.ts. Verified via automated zero-hardcode scan in web.test.ts and tests/e2e/auth.spec.ts."
   verified_by: null

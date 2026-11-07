@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createHmac } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { saveSharedTotp } from './helpers.js';
 
 /**
@@ -136,9 +137,14 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.click('#wizard-step-3 button[data-target="4"]');
     await expect(page.locator('#wizard-step-4')).toBeVisible();
 
-    // Step 4: Configure notifications & test alert delivery
+    // Step 4: Configure notifications & test alert delivery (WP-13.5: disabled until target configured)
+    const testAlertBtn = page.locator('#btn-setup-test-alert');
+    await expect(testAlertBtn).toBeDisabled();
+    await expect(page.locator('#setup-alert-disabled-reason')).toBeVisible();
+
     await page.selectOption('#setup-notification-channel', 'email');
     await page.fill('#setup-notification-target', 'owner-alerts@example.org');
+    await expect(testAlertBtn).toBeEnabled();
 
     await page.click('#btn-setup-test-alert');
     const alertResult = page.locator('#setup-alert-result');
@@ -149,11 +155,22 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.click('#wizard-step-4 button[data-target="5"]');
     await expect(page.locator('#wizard-step-5')).toBeVisible();
 
-    // Step 5: Configure backups
+    // Step 5: Configure backups (WP-13.5: drill without folder shows honest disabled message UX-33)
+    await page.click('#btn-setup-test-drill');
+    const drillResult = page.locator('#setup-drill-result');
+    await expect(drillResult).toBeVisible();
+    await expect(drillResult).toContainText('Not available until a backup folder is set');
+
     await page.selectOption('#setup-backup-dest', 's3');
+    await page.fill('#setup-backup-dir', '/var/backups');
     await page.fill('#setup-age-key', 'age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p');
     await page.click('#wizard-step-5 button[data-target="6"]');
     await expect(page.locator('#wizard-step-6')).toBeVisible();
+
+    // Step 6: WP-13.5: single primary button on final screen (UX-29)
+    await expect(page.locator('#wizard-step-6 .btn-primary')).toHaveCount(1);
+    await expect(page.locator('#btn-setup-finish-login')).toHaveClass(/btn-primary/);
+    await expect(page.locator('#btn-setup-launch-import')).toHaveClass(/btn-secondary/);
 
     // Step 6: Choose theme preset with real radio input
     await page.check('input[name="theme-preset"][value="modern-monospace"]');
@@ -429,5 +446,35 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     const errorMsg = page.locator('#login-error');
     await expect(errorMsg).toBeVisible();
     await expect(errorMsg).toContainText('Invalid TOTP or recovery code');
+  });
+
+  test('8. WP-13.5: Wizard wording, states, and zero-vendor markup scan (UX-29, UX-33, CP-14, CP-15)', async () => {
+    // 1. Verify zero-vendor scan on setup markup in renderer.ts
+    const rendererPath = new URL('../../apps/web/src/renderer.ts', import.meta.url);
+    const rendererSource = readFileSync(rendererPath, 'utf8');
+    const setupFnMatch = rendererSource.match(/export function renderAdminSetupPage\(\)[\s\S]*?return renderLayout/);
+    expect(setupFnMatch).toBeTruthy();
+    const setupMarkup = setupFnMatch![0];
+
+    // No hard-coded vendor, model, or sample names in setup markup
+    expect(setupMarkup).not.toContain('OpenAI');
+    expect(setupMarkup).not.toContain('Anthropic');
+    expect(setupMarkup).not.toContain('Ollama');
+    expect(setupMarkup).not.toContain('bge-small-en-v1.5');
+    expect(setupMarkup).not.toContain('gpt-4o-mini');
+    expect(setupMarkup).not.toContain('claude-3-5-sonnet');
+    expect(setupMarkup).not.toContain('llama3.3');
+    expect(setupMarkup).not.toContain('Scaling payment reconciliation');
+    expect(setupMarkup).not.toContain('idempotent bisimulation');
+
+    // 2. Render setup page and verify single primary action (.btn-primary) per step
+    const { renderAdminSetupPage } = await import('../../apps/web/src/renderer.js');
+    const html = renderAdminSetupPage();
+    for (let step = 1; step <= 6; step++) {
+      const stepMatch = html.match(new RegExp(`<div id="wizard-step-${step}"[\\s\\S]*?(?=<div id="wizard-step-${step + 1}"|</div>\\s*<script>)`));
+      expect(stepMatch).toBeTruthy();
+      const primaryMatches = stepMatch![0].match(/class="[^"]*btn-primary[^"]*"/g) || [];
+      expect(primaryMatches.length).toBe(1);
+    }
   });
 });

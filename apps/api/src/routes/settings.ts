@@ -404,7 +404,7 @@ export function createSettingsRoutes(
           error: 'Not Implemented',
           code: 'SIMULATED',
           finding: 'M1',
-          message: 'Encrypted pg_dump + age backup and scratch-container restore verification are not yet implemented.',
+          message: 'Not available until a backup folder is set. Encrypted pg_dump + age backup and scratch-container restore verification are not yet implemented.',
         },
         501
       );
