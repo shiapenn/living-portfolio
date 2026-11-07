@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { existsSync } from 'node:fs';
 import { resolve, join } from 'node:path';
+import { resolveBackupDir, resolveDataDir } from '@living-portfolio/config';
 import {
   type IPortfolioRepository,
   createDatabaseBackup,
@@ -414,7 +415,7 @@ export function createSettingsRoutes(
     }
 
     try {
-      const targetDir = backupDir || resolve(process.cwd(), 'data/backups');
+      const targetDir = resolveBackupDir(body.destinationDir);
       const backupResult = await createDatabaseBackup({
         repo,
         destinationDir: targetDir,

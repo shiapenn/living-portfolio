@@ -167,19 +167,20 @@ describe('WP-13.3 Conformance: Credentials Screen & Recovery Codes', () => {
     expect(setupRes.status).toBe(201);
     const setupData = await setupRes.json();
 
-    // Setup returns 8 recovery codes
+    // Setup returns 8 recovery codes with 64 bits of entropy (WP-13.11)
     expect(Array.isArray(setupData.recoveryCodes)).toBe(true);
     expect(setupData.recoveryCodes.length).toBe(8);
     for (const code of setupData.recoveryCodes) {
       expect(typeof code).toBe('string');
-      expect(code).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}$/);
+      expect(code).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}$/);
     }
 
-    // Server stores only SHA-256 hashes, not plaintext recovery codes
+    // Server stores keyed HMAC with per-code 16-byte salt (saltHex:hashHex), not plaintext or unsalted hash
     const account = (auth as any).account;
     expect(account).toBeTruthy();
     expect(Array.isArray(account.recoveryCodeHashes)).toBe(true);
     expect(account.recoveryCodeHashes.length).toBe(8);
+    expect(account.recoveryCodeHashes[0]).toMatch(/^[a-f0-9]{32}:[a-f0-9]{64}$/);
     expect(account.recoveryCodeHashes).not.toContain(setupData.recoveryCodes[0]);
 
     // Confirm TOTP to mark setup completed
@@ -237,9 +238,9 @@ describe('WP-13.3 Conformance: Credentials Screen & Recovery Codes', () => {
     const multiData = await multiCodeRes.json();
     expect(multiData.message).toBe('Enter one code at a time');
 
-    // Code normalization (spaces, uppercase) succeeds (WP-13.8)
+    // Code normalization (spaces, uppercase) succeeds (WP-13.8 & WP-13.11)
     const rawCode1 = setupData.recoveryCodes[1];
-    const messyCode = `  ${rawCode1.slice(0, 4).toUpperCase()} - ${rawCode1.slice(5).toUpperCase()}  `;
+    const messyCode = `  ${rawCode1.replace(/-/g, ' - ').toUpperCase()}  `;
     const normRes = await app.request('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -280,6 +281,56 @@ describe('WP-13.3 Conformance: Credentials Screen & Recovery Codes', () => {
     expect(reuseRes.status).toBe(401);
     const reuseData = await reuseRes.json();
     expect(reuseData.message).toBe("That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once.");
+  });
+
+  it('WP-13.11: Recovery code attempts share login rate-limiting and trigger 15-minute lockout after 5 failures', async () => {
+    const { app } = createApp();
+
+    const setupRes = await app.request('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'lockout_owner',
+        password: 'ValidPassword12345!',
+      }),
+    });
+    expect(setupRes.status).toBe(201);
+    const setupData = await setupRes.json();
+
+    const validTotp = computeTotpCode(setupData.totpSecret);
+    await app.request('/api/auth/totp/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: validTotp }),
+    });
+
+    // 5 invalid recovery code attempts from the same client IP
+    for (let i = 0; i < 5; i++) {
+      const failRes = await app.request('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '198.51.100.42' },
+        body: JSON.stringify({
+          username: 'lockout_owner',
+          password: 'ValidPassword12345!',
+          recoveryCode: 'dead-beef-cafe-0000',
+        }),
+      });
+      expect(failRes.status).toBe(401);
+    }
+
+    // 6th attempt is throttled with HTTP 429
+    const lockedRes = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '198.51.100.42' },
+      body: JSON.stringify({
+        username: 'lockout_owner',
+        password: 'ValidPassword12345!',
+        recoveryCode: 'dead-beef-cafe-0000',
+      }),
+    });
+    expect(lockedRes.status).toBe(429);
+    const lockedData = await lockedRes.json();
+    expect(lockedData.message).toContain('Try again in 15 minutes.');
   });
 });
 
