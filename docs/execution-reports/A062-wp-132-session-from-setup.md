@@ -15,9 +15,9 @@
 
 - 1. **Session Issuance upon TOTP Confirmation:** Updated `POST /auth/totp/confirm` and `confirmTotpSetup()` in `apps/api/src/auth/security.ts` to instantiate an authenticated `AdminSession`, set the `lp_session` cookie (`HttpOnly; SameSite=Strict; Path=/; Max-Age=43200`), and return session payload containing `authenticated: true`, `username`, and `csrfToken`. [implemented]
 - 2. **Wizard Client Session Storage & CSRF Token:** Enhanced setup wizard confirmation handler in `apps/web/src/renderer.ts` to record `csrfToken` into `sessionStorage` (`lp_csrf_token`), enabling subsequent `apiClient` requests to carry `X-CSRF-Token` headers alongside browser session cookies. [implemented]
-- 3. **Bearer Token Removal from Setup Wizard (D-12, UX-30 part):** Removed API bearer token display from the setup completion banner in `apps/web/src/renderer.ts`, aligning with Decision D-12 that API tokens belong exclusively in Settings › Account › Developer access. [implemented]
+- 3. **Bearer Token Removal from Setup Wizard (D-12):** Removed API bearer token display from the setup completion banner in `apps/web/src/renderer.ts`, aligning with Decision D-12 that API tokens belong exclusively in Settings › Account › Developer access. [implemented]
 - 4. **Client SDK Support:** Added `confirmTotp` method and `AuthConfirmTotpResponse` interface to `@living-portfolio/client`, enabling typed client interactions with the TOTP confirmation route. [implemented]
-- 5. **Register Closure (20261106-UX-28):** Marked `20261106-UX-28` as `fixed` in `docs/audits/register.yml`, and recorded partial progress for `20261106-UX-30`. [implemented]
+- 5. **Register Closure (20261106-UX-28):** Marked `20261106-UX-28` as `fixed` in `docs/audits/register.yml`. [implemented]
 
 ---
 
@@ -61,7 +61,6 @@ Matches `git diff --name-only 50b37aa..8f9ca3d` (10 files):
 
 - `20261106-UX-28`: Transitioned from `open` to `fixed`.
   - Regression test: `apps/api/src/conformance/wp13-auth.conformance.test.ts`.
-- `20261106-UX-30`: Recorded `partial` progress in history (bearer token removed from setup wizard; full credentials redesign scheduled for WP-13.3).
 
 ---
 

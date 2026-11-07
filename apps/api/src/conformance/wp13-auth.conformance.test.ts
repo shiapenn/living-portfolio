@@ -586,7 +586,7 @@ describe('WP-13.9 Conformance: Honest Wizard Controls in Default Install (UX-33,
 
   it('Step 6: Theme choice explains post-setup application', () => {
     const html = renderAdminSetupPage();
-    expect(html).toContain('Applied to your public site after setup. Change it any time in Theme.');
+    expect(html).toContain("Your choice is saved. It isn't applied to your public site yet. You'll be able to apply it in Theme.");
   });
 });
 

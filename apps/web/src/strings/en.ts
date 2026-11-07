@@ -178,7 +178,7 @@ export const WIZARD_STRINGS = {
   step6: {
     title: 'Step 6: Theme & First-Run Walkthrough',
     subtitle: 'Select your typographic theme and review the profile structure model.',
-    themeAppliedNotice: 'Applied to your public site after setup. Change it any time in Theme.',
+    themeAppliedNotice: "Your choice is saved. It isn't applied to your public site yet. You'll be able to apply it in Theme.",
     themePresets: [
       {
         value: 'editorial-classic',
