@@ -2,6 +2,7 @@ import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { Hono, type Context, type Next } from 'hono';
+import { hexToBase32, buildOtpAuthUri, generateQrCodeSvg } from './totp.js';
 
 export interface AdminAccount {
   username: string;
@@ -9,6 +10,7 @@ export interface AdminAccount {
   passwordHash: string;
   totpSecret: string;
   createdAt: string;
+  totpConfirmed?: boolean;
 }
 
 export interface AdminSession {
@@ -140,17 +142,29 @@ export class AuthManager {
     }
   }
 
-  isSetupCompleted(): boolean {
+  hasAccount(): boolean {
     return this.account !== null;
+  }
+
+  isSetupCompleted(): boolean {
+    return this.account !== null && this.account.totpConfirmed !== false;
   }
 
   isConfigured(): boolean {
     return this.isSetupCompleted();
   }
 
-  setupAdminAccount(username: string, password: string, customTotpSecretHex?: string): {
+  setupAdminAccount(
+    username: string,
+    password: string,
+    customTotpSecretHex?: string,
+    siteName?: string,
+    totpConfirmed: boolean = true
+  ): {
     username: string;
     totpSecret: string;
+    totpSecretBase32: string;
+    otpauthUri: string;
     initialBearerToken: string;
     tokenRecord: ApiBearerTokenRecord;
   } {
@@ -159,21 +173,61 @@ export class AuthManager {
     }
     const { salt, hash } = hashPassword(password);
     const totpSecret = customTotpSecretHex || randomBytes(20).toString('hex');
+    const totpSecretBase32 = hexToBase32(totpSecret);
+    const issuer = siteName || process.env.PUBLIC_SITE_NAME || 'The Living Portfolio';
+    const otpauthUri = buildOtpAuthUri({
+      issuer,
+      accountName: username,
+      secretBase32: totpSecretBase32,
+    });
     this.account = {
       username,
       passwordSalt: salt,
       passwordHash: hash,
       totpSecret,
       createdAt: new Date().toISOString(),
+      totpConfirmed,
     };
     this.persistState();
     const { rawToken, record } = this.issueBearerToken('initial-owner-token');
     return {
       username,
       totpSecret,
+      totpSecretBase32,
+      otpauthUri,
       initialBearerToken: rawToken,
       tokenRecord: record,
     };
+  }
+
+  confirmTotpSetup(code: string): { ok: boolean; status: number; error?: string; message?: string } {
+    if (!this.account) {
+      return {
+        ok: false,
+        status: 400,
+        error: 'No account setup in progress',
+        message: 'Initialize account setup before confirming TOTP.',
+      };
+    }
+    if (this.account.totpConfirmed === true) {
+      return {
+        ok: false,
+        status: 409,
+        error: 'Setup already completed',
+        message: 'TOTP authentication has already been confirmed for this account.',
+      };
+    }
+    if (!verifyTotpCode(this.account.totpSecret, code)) {
+      return {
+        ok: false,
+        status: 400,
+        error: 'Invalid TOTP code',
+        message: 'Check the 6-digit code in your authenticator app and retry.',
+      };
+    }
+    this.account.totpConfirmed = true;
+    this.persistState();
+    return { ok: true, status: 200 };
   }
 
   registerRawBearerToken(label: string, rawToken: string): ApiBearerTokenRecord {
@@ -435,9 +489,9 @@ export class AuthManager {
 export function createAuthRoutes(auth: AuthManager) {
   const router = new Hono();
 
-  // First-run admin setup wizard endpoint (C.3)
+  // First-run admin setup wizard endpoint (C.3, WP-13.1)
   router.post('/setup', async (c) => {
-    if (auth.isSetupCompleted()) {
+    if (auth.hasAccount()) {
       return c.json({ error: 'Admin account is already configured' }, 409);
     }
     const body = await c.req.json();
@@ -447,16 +501,33 @@ export function createAuthRoutes(auth: AuthManager) {
       return c.json({ error: 'Username and password (min 12 chars) are required' }, 400);
     }
 
-    const result = auth.setupAdminAccount(username, password, body.totpSecret);
+    const siteName = process.env.PUBLIC_SITE_NAME || 'The Living Portfolio';
+    const result = auth.setupAdminAccount(username, password, body.totpSecret, siteName, false);
+    const qrCodeSvg = await generateQrCodeSvg(result.otpauthUri);
+
     return c.json(
       {
         configured: true,
         username: result.username,
         totpSecret: result.totpSecret,
+        totpSecretBase32: result.totpSecretBase32,
+        otpauthUri: result.otpauthUri,
+        qrCodeSvg,
         bearerToken: result.initialBearerToken,
       },
       201
     );
+  });
+
+  // Verify TOTP enrollment code before setup is marked complete (WP-13.1, UX-26)
+  router.post('/totp/confirm', async (c) => {
+    const body = await c.req.json();
+    const code = String(body.code || '').trim();
+    const res = auth.confirmTotpSetup(code);
+    if (!res.ok) {
+      return c.json({ error: res.error, message: res.message }, res.status as any);
+    }
+    return c.json({ ok: true, message: 'TOTP authentication confirmed. Setup complete.' }, 200);
   });
 
   // Login with password + TOTP and IP throttling (C.3)
