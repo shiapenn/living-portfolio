@@ -2,7 +2,7 @@ import type { ModelProvider } from './types.js';
 import { OpenAICompatibleProvider } from './adapters/openai.js';
 
 export interface ProviderRegistryConfig {
-  PRESET?: 'free-cloud' | 'hobbyist-vps' | 'local-only';
+  PRESET?: 'free-cloud' | 'hobbyist-vps' | 'local-only' | 'hobbyist-docker' | 'private-local' | 'reliable-low-cost' | string;
   GROQ_API_KEY?: string;
   GEMINI_API_KEY?: string;
   OPENAI_API_KEY?: string;
@@ -82,7 +82,7 @@ export function resolveConfiguredProviders(config: ProviderRegistryConfig): Mode
   const providers: ModelProvider[] = [];
   const preset = config.PRESET || 'free-cloud';
 
-  if (preset === 'local-only') {
+  if (preset === 'local-only' || preset === 'private-local') {
     return providers;
   }
 

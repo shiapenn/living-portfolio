@@ -25,7 +25,7 @@ export function mountBundledWeb(
   // Admin UI routes with authentication
   if (auth) {
     app.get('/admin/setup', (c) => {
-      if (auth.isSetupCompleted()) {
+      if (runtimeState?.setupWizardCompleted || (auth.isSetupCompleted() && !auth.isAdminAuthenticated(c).authenticated)) {
         return c.redirect('/admin/login', 302);
       }
       return c.html(renderAdminSetupPage());

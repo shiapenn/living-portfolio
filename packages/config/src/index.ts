@@ -38,9 +38,9 @@ export const CONFIG_SETTINGS_METADATA: readonly SettingMetadata[] = [
   {
     key: 'PRESET',
     category: 'deploy',
-    description: 'Resource and provider preset (free-cloud | hobbyist-vps | local-only)',
+    description: 'Resource and provider preset (free-cloud | hobbyist-vps | local-only | hobbyist-docker | private-local | reliable-low-cost)',
     defaultValue: 'free-cloud',
-    exampleValue: 'free-cloud',
+    exampleValue: 'hobbyist-docker',
     secret: false,
     public: false,
   },
@@ -279,7 +279,9 @@ export const AppConfigSchema = z
   .object({
     PORT: z.coerce.number().int().min(1).max(65535).default(4000),
     DEPLOYMENT_CLASS: z.enum(['development', 'staging', 'production']).default('development'),
-    PRESET: z.enum(['free-cloud', 'hobbyist-vps', 'local-only']).default('free-cloud'),
+    PRESET: z
+      .enum(['free-cloud', 'hobbyist-vps', 'local-only', 'hobbyist-docker', 'private-local', 'reliable-low-cost'])
+      .default('free-cloud'),
     DATABASE_URL: z.string().default(''),
     SITE_ORIGIN: z.string().min(1).default('http://localhost:4000'),
     ADMIN_ORIGIN: z.string().min(1).default('http://localhost:4000'),

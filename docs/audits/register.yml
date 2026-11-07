@@ -3476,17 +3476,20 @@
   spec_sections:
     - "13.13"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-07
+      status: fixed
+      note: "Remediated in WP-13.4 (A064): Converted theme cards to real radio inputs, implemented step-by-step persistence across steps 2-6 via PATCH /api/settings endpoints, restored saved settings upon revisiting and reload, and recorded wizard choices (hosting preset, public domain, notification channel/target, backup destination, age key, theme preset). Verified in wp13-auth.conformance.test.ts and tests/e2e/auth.spec.ts."
   verified_by: null
 - id: 20261106-UX-28
   audit: AUD-2026-11-06

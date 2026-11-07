@@ -122,25 +122,67 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.check('#setup-saved-credentials-gate');
     await expect(continueBtn).toBeEnabled();
 
-    // WP-13.2: Session established from setup allows wizard test buttons to succeed without 401 (UX-28)
-    // Click through to Step 4 (Notifications & Alerts)
+    // WP-13.2 & WP-13.4: Session established from setup allows wizard choices to be saved and test buttons to succeed
     await continueBtn.click();
     await expect(page.locator('#wizard-step-2')).toBeVisible();
 
-    // From step 2 to step 3
+    // Step 2: Choose hosting preset and public address
+    await page.check('input[name="hosting-preset"][value="private-local"]');
+    await page.fill('#setup-origin-url', 'https://custom-origin.example.org');
     await page.click('#wizard-step-2 button[data-target="3"]');
     await expect(page.locator('#wizard-step-3')).toBeVisible();
 
-    // From step 3 to step 4
+    // Step 3 to Step 4
     await page.click('#wizard-step-3 button[data-target="4"]');
     await expect(page.locator('#wizard-step-4')).toBeVisible();
 
-    // Click "Test Delivery Notification"
+    // Step 4: Configure notifications & test alert delivery
+    await page.selectOption('#setup-notification-channel', 'email');
+    await page.fill('#setup-notification-target', 'owner-alerts@example.org');
+
     await page.click('#btn-setup-test-alert');
     const alertResult = page.locator('#setup-alert-result');
     await expect(alertResult).toBeVisible();
     await expect(alertResult).not.toContainText('Unauthorized');
     await expect(alertResult).not.toContainText('401');
+
+    await page.click('#wizard-step-4 button[data-target="5"]');
+    await expect(page.locator('#wizard-step-5')).toBeVisible();
+
+    // Step 5: Configure backups
+    await page.selectOption('#setup-backup-dest', 's3');
+    await page.fill('#setup-age-key', 'age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p');
+    await page.click('#wizard-step-5 button[data-target="6"]');
+    await expect(page.locator('#wizard-step-6')).toBeVisible();
+
+    // Step 6: Choose theme preset with real radio input
+    await page.check('input[name="theme-preset"][value="modern-monospace"]');
+
+    // WP-13.4: Reload page and verify choices persist
+    await page.reload();
+    await expect(page.locator('#wizard-step-2')).toBeVisible();
+    await expect(page.locator('input[name="hosting-preset"][value="private-local"]')).toBeChecked();
+    await expect(page.locator('#setup-origin-url')).toHaveValue('https://custom-origin.example.org');
+
+    // Navigate to step 4 and check values
+    await page.click('#wizard-step-2 button[data-target="3"]');
+    await page.click('#wizard-step-3 button[data-target="4"]');
+    await expect(page.locator('#setup-notification-channel')).toHaveValue('email');
+    await expect(page.locator('#setup-notification-target')).toHaveValue('owner-alerts@example.org');
+
+    // Navigate to step 5 and check values
+    await page.click('#wizard-step-4 button[data-target="5"]');
+    await expect(page.locator('#setup-backup-dest')).toHaveValue('s3');
+    await expect(page.locator('#setup-age-key')).toHaveValue('age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p');
+
+    // Navigate to step 6 and check theme preset
+    await page.click('#wizard-step-5 button[data-target="6"]');
+    await expect(page.locator('input[name="theme-preset"][value="modern-monospace"]')).toBeChecked();
+
+    // Finish wizard
+    await page.click('#btn-setup-finish-login');
+    await page.waitForURL((url) => url.pathname === '/admin');
+    await expect(page.locator('h1')).toContainText('Admin Workspace');
   });
 
   test('2. /admin/setup is locked down once configured', async ({ page, request }) => {
