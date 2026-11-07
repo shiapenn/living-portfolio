@@ -1,3 +1,4 @@
 # Gitleaks ignore list
 # Test age recipient public key in auth.spec.ts (not a private secret)
 9e306f0c60d99726a60f3f8fc85a8aa3d4f206c8:tests/e2e/auth.spec.ts:generic-api-key:154
+6e363744011f133509cc8f735a922fccf79b7293:tests/e2e/auth.spec.ts:generic-api-key:242
