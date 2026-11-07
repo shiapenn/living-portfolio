@@ -327,6 +327,149 @@
       ],
       "closingReceipt": "A059",
       "handover": "H013"
+    },
+    "WP-13": {
+      "name": "Work Package 13 (Gate G13 Onboarding & Authentication Integrity)",
+      "description": "Owner authentication flow, TOTP enrollment with QR code & URI, session issuance from setup, recovery codes credential step, wizard choices persistence & wording, login & sign-out controls, and START-HERE runbook (UX-26..UX-33, UX-09, UX-41 part, CP-14, CP-15).",
+      "requiredTaskIds": [
+        "WP-13.0",
+        "WP-13.1",
+        "WP-13.2",
+        "WP-13.3",
+        "WP-13.4",
+        "WP-13.5",
+        "WP-13.6",
+        "WP-13.7"
+      ],
+      "requiredPassingTests": [
+        "WP-13.1 Conformance: Real Authenticator Enrolment › Setup generates valid base32 TOTP secret and otpauth URI",
+        "WP-13.1 Conformance: Real Authenticator Enrolment › Confirms valid TOTP code via POST /auth/totp/confirm and rejects invalid codes",
+        "WP-13.2 Conformance: Session from Setup › Wizard completion issues lp_session cookie and csrfToken",
+        "WP-13.3 Conformance: Credentials & Recovery Codes › Generates hashed recovery codes and requires confirmation gate",
+        "WP-13.4 Conformance: Persist Wizard Choices › Wizard options persist to settings API across step navigation",
+        "WP-13.5 Conformance: Wizard Wording & Honest States › Setup markup contains no hardcoded vendor or sample names",
+        "WP-13.6 Conformance: Login & Sign-Out › Supports recovery code login and sign-out invalidates session",
+        "WP-13.7 Conformance: Start-Here & Admin Route Guard › Standalone /admin routes redirect unauthenticated sessions to /login"
+      ],
+      "closingReceipt": null,
+      "handover": null
+    },
+    "WP-14": {
+      "name": "Work Package 14 (Gate G14 Entry Lifecycle Integrity)",
+      "description": "Editor result visibility, client bundling, commitEntry state machine, state chip & temporal confidence controls, publish dialog with auto-run scan, local autosave buffer, calibration defaults, and visual repair tokens (UX-01..UX-04, UX-08, UX-10, UX-11, UX-22, UX-43, UI-01 part, UI-03 part).",
+      "requiredTaskIds": [
+        "WP-14.0a",
+        "WP-14.0",
+        "WP-14.1",
+        "WP-14.2",
+        "WP-14.3",
+        "WP-14.4",
+        "WP-14.5",
+        "WP-14.6"
+      ],
+      "requiredPassingTests": [],
+      "closingReceipt": null,
+      "handover": null
+    },
+    "WP-15": {
+      "name": "Work Package 15 (Gate G15 Foundations & Token System)",
+      "description": "DOM-id baseline, complete token tiers, UI primitives gallery, dialog/drawer/toast components, mechanical renderer split, copy and help catalogues, and CI guard rails (UI-01 full, UI-03, UX-13..UX-15, UX-23..UX-25, UX-38, CP-01, CP-13, CP-15).",
+      "requiredTaskIds": [
+        "WP-15.0",
+        "WP-15.1",
+        "WP-15.2",
+        "WP-15.3",
+        "WP-15.4",
+        "WP-15.5",
+        "WP-15.6",
+        "WP-15.7"
+      ],
+      "requiredPassingTests": [],
+      "closingReceipt": null,
+      "handover": null
+    },
+    "WP-16": {
+      "name": "Work Package 16 (Gate G16 Admin Shell, Entries & Inbox)",
+      "description": "Admin routed navigation shell, Today needs-attention view, paginated entries list, per-entry editor routes, 5-tab Inspector pattern, inbox and answer rules, and monolith retirement (UX-06, UX-07 part, UX-12, UX-17 part, UX-37, UX-39).",
+      "requiredTaskIds": [
+        "WP-16.1",
+        "WP-16.2",
+        "WP-16.3",
+        "WP-16.4",
+        "WP-16.5",
+        "WP-16.6",
+        "WP-16.7"
+      ],
+      "requiredPassingTests": [],
+      "closingReceipt": null,
+      "handover": null
+    },
+    "WP-17": {
+      "name": "Work Package 17 (Gate G17 Settings, Maintenance & Account)",
+      "description": "Settings templates & Routing page, Providers registry & Notifications, Backups/export & Visibility, Account management, Audit/Calibration/Structure screens, Bookings & Ventures, Pages & Home settings, and Theme editor (UX-07, UX-09, UX-16, UX-17, UX-19 part, UX-33, UX-34, UX-41, UX-42, CP-13).",
+      "requiredTaskIds": [
+        "WP-17.1",
+        "WP-17.2",
+        "WP-17.3",
+        "WP-17.4",
+        "WP-17.5",
+        "WP-17.6",
+        "WP-17.7",
+        "WP-17.8"
+      ],
+      "requiredPassingTests": [],
+      "closingReceipt": null,
+      "handover": null
+    },
+    "WP-18": {
+      "name": "Work Package 18 (Gate G18 Authoring Canvas & Import)",
+      "description": "Canvas layout, editor engine with lossless round-trip, media API & storage adapters, images & video, container directive columns, import stepper, multi-format file import, and Quick Log mobile route (UI-02, UX-18, UX-35, UX-36).",
+      "requiredTaskIds": [
+        "WP-18.1",
+        "WP-18.2",
+        "WP-18.3",
+        "WP-18.4",
+        "WP-18.5",
+        "WP-18.6",
+        "WP-18.7",
+        "WP-18.8"
+      ],
+      "requiredPassingTests": [],
+      "closingReceipt": null,
+      "handover": null
+    },
+    "WP-19": {
+      "name": "Work Package 19 (Gate G19 Public Frame & Time Travel)",
+      "description": "Owner bar & visitor preview, public shell with About & Home, three-region extruding layout, conversation panel, shared resolveRevisionAsOf time travel correctness, vertical strata time rail, discovery metadata, and compare mode (UX-19, UX-20, UX-40, UX-42, UX-44, UX-45).",
+      "requiredTaskIds": [
+        "WP-19.1",
+        "WP-19.2",
+        "WP-19.3",
+        "WP-19.4",
+        "WP-19.5",
+        "WP-19.6",
+        "WP-19.7",
+        "WP-19.8"
+      ],
+      "requiredPassingTests": [],
+      "closingReceipt": null,
+      "handover": null
+    },
+    "WP-20": {
+      "name": "Work Package 20 (Gate G20 Shape System, Locale Readiness, Polish & v0.2.0 Release)",
+      "description": "Theme shape presets & contrast rules, interface translation readiness, accessibility sweep, copy sweep, query & render performance, docs & amendments certification, and v0.2.0 GA release (UI-04, UX-24, CP-01..CP-15, P2 backlog).",
+      "requiredTaskIds": [
+        "WP-20.1",
+        "WP-20.2",
+        "WP-20.3",
+        "WP-20.4",
+        "WP-20.5",
+        "WP-20.6",
+        "WP-20.7"
+      ],
+      "requiredPassingTests": [],
+      "closingReceipt": null,
+      "handover": null
     }
   }
 }

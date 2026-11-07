@@ -2990,3 +2990,1189 @@
         excerpts with fixed sentence, surfacing provider disclosure lines in API
         responses and web UI (Spec §10.8, §13.5)."
   verified_by: null
+
+# UX Specification Audit Findings (AUD-2026-11-06 / L015)
+- id: 20261106-UX-01
+  audit: AUD-2026-11-06
+  title: 'Publishing an entry that already exists always sends POST /api/entries, returning 409 for existing slug with generic failure message'
+  spec_sections:
+    - "3.11"
+    - "4.4"
+    - "6.2"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-02
+  audit: AUD-2026-11-06
+  title: 'Save draft on an existing entry hard-codes visibility: private, silently unpublishing a live page'
+  spec_sections:
+    - "3.11"
+    - "6.2"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-03
+  audit: AUD-2026-11-06
+  title: 'Visibility dropdown is never read by any handler, making Unlisted unreachable'
+  spec_sections:
+    - "3.11"
+    - "6.2"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-04
+  audit: AUD-2026-11-06
+  title: 'Undo unpublish omits preview token causing API rejection; undo draft save prints confirmation without restoring state'
+  spec_sections:
+    - "3.11"
+    - "12.7"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-05
+  audit: AUD-2026-11-06
+  title: 'In standalone mode /admin* routes have no auth guard and SSR client has no token; browser calls use relative /api URLs'
+  spec_sections:
+    - "4.2"
+    - "4.3"
+    - "13.4"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-06
+  audit: AUD-2026-11-06
+  title: 'No admin shell: admin pages use public layout without admin navigation or sign-out control'
+  spec_sections:
+    - "5.1"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-07
+  audit: AUD-2026-11-06
+  title: 'Eight backend capabilities have no UI screen: calibration, topology conflicts, import connectors, ventures, bookings, evaluation, redaction exclusions, API tokens'
+  spec_sections:
+    - "5.1"
+    - "6.2"
+    - "11"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-08
+  audit: AUD-2026-11-06
+  title: 'Calibration is on by default contradicting spec disablement; UI offers only an opt-out Freeze checkbox'
+  spec_sections:
+    - "11"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-09
+  audit: AUD-2026-11-06
+  title: 'Setup wizard step 3 Model Providers is a read-only table with no API-key field, live validation, or storage choice'
+  spec_sections:
+    - "4.4"
+    - "13.13"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-10
+  audit: AUD-2026-11-06
+  title: 'Editor script updates #chip-current-state but element is missing from markup, hiding Draft/Public/Unlisted state'
+  spec_sections:
+    - "3.11"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-11
+  audit: AUD-2026-11-06
+  title: 'Hardcoded legacy date in editor markup; clearing date field throws uncaught RangeError on publish'
+  spec_sections:
+    - "4.4"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-12
+  audit: AUD-2026-11-06
+  title: 'No per-entry admin URL; opening admin workspace defaults unconditionally to first entry'
+  spec_sections:
+    - "5.1"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-13
+  audit: AUD-2026-11-06
+  title: 'Redaction drawer is a fixed aside lacking role dialog, aria-modal, Escape key handler, and focus trap'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-14
+  audit: AUD-2026-11-06
+  title: 'Inspector tabs lack keyboard arrow navigation and roving tabindex'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-15
+  audit: AUD-2026-11-06
+  title: 'Undo notification is injected into non-live region; focus is not managed after save, publish, or delete'
+  spec_sections:
+    - "12.7"
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-16
+  audit: AUD-2026-11-06
+  title: 'Answering kill switch has inverted aria-pressed semantics and acts instantly with no confirmation dialog'
+  spec_sections:
+    - "5.1"
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-17
+  audit: AUD-2026-11-06
+  title: 'About, Now, and Uses pages cannot be edited in admin; Featured entry list cannot be curated'
+  spec_sections:
+    - "5.1"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-18
+  audit: AUD-2026-11-06
+  title: 'Quick Log authoring mode is buried inside cramped editor instead of dedicated mobile route'
+  spec_sections:
+    - "4.4"
+    - "12.5"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-19
+  audit: AUD-2026-11-06
+  title: 'Book CTA is isolated in footer without prominent entry points; no admin inbox for bookings'
+  spec_sections:
+    - "5.1"
+    - "6.2"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-20
+  audit: AUD-2026-11-06
+  title: 'Home page lists only /work items; freeform writing entries incorrectly link to /work'
+  spec_sections:
+    - "5.1"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-22
+  audit: AUD-2026-11-06
+  title: 'temporal_level always hard-coded to exact without confidence controls for range or estimated dates'
+  spec_sections:
+    - "3.11"
+    - "4.4"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-23
+  audit: AUD-2026-11-06
+  title: 'Interactive controls fail WCAG 2.2 SC 2.5.8 target size minimum of 24x24 px on fine pointers'
+  spec_sections:
+    - "12.5"
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-24
+  audit: AUD-2026-11-06
+  title: 'Single-character keyboard shortcuts in triage lack toggle or remap mechanism (WCAG 2.1 SC 2.1.4)'
+  spec_sections:
+    - "12.6"
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-25
+  audit: AUD-2026-11-06
+  title: 'Destructive Delete button is adjacent to Unpublish with identical visual weight and no typed confirm'
+  spec_sections:
+    - "12.7"
+    - "12.9"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-26
+  audit: AUD-2026-11-06
+  title: 'Owner cannot enrol an authenticator app: secret is 20 raw hex bytes with no otpauth URI, base32 format, or QR code'
+  spec_sections:
+    - "13.4"
+    - "13.13"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-27
+  audit: AUD-2026-11-06
+  title: 'Wizard steps 2 to 6 persist nothing: hosting preset, domain, notifications, backup destination, age key, and theme are dropped'
+  spec_sections:
+    - "13.13"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-28
+  audit: AUD-2026-11-06
+  title: 'Setup completion creates no session, leaving wizard test buttons failing with 401 Unauthorized'
+  spec_sections:
+    - "13.4"
+    - "13.13"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-29
+  audit: AUD-2026-11-06
+  title: 'Competing end-of-step actions with multiple primary buttons across account creation and final wizard step'
+  spec_sections:
+    - "12.7"
+    - "13.13"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-30
+  audit: AUD-2026-11-06
+  title: 'Credentials shown as unformatted single line without copy, download, explanation, or confirmation gate'
+  spec_sections:
+    - "13.4"
+    - "13.13"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-31
+  audit: AUD-2026-11-06
+  title: 'Login interface demands 6-digit TOTP code without explanation or recovery code alternative'
+  spec_sections:
+    - "13.4"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-32
+  audit: AUD-2026-11-06
+  title: 'No start-here onboarding checklist; self-hosting docs cite wrong port and leave ENABLE_BUNDLED_WEB undocumented'
+  spec_sections:
+    - "13.13"
+    - "15"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-33
+  audit: AUD-2026-11-06
+  title: 'Unconfigured capabilities show live buttons that return 501 instead of honest disabled explanation'
+  spec_sections:
+    - "12.9"
+    - "13.13"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-34
+  audit: AUD-2026-11-06
+  title: 'Export is a bare anchor link rendering raw JSON text in browser instead of downloading named archive file'
+  spec_sections:
+    - "6.2"
+    - "13.13"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-35
+  audit: AUD-2026-11-06
+  title: 'Import workflow presents disabled-looking plan cards, lacks success screen, has duplicate back links and jargon'
+  spec_sections:
+    - "4.4"
+    - "13.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-36
+  audit: AUD-2026-11-06
+  title: 'Import accepts only raw Markdown text; cannot import HTML, Word, PDF text, images, or archive bundles'
+  spec_sections:
+    - "4.4"
+    - "13.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-37
+  audit: AUD-2026-11-06
+  title: 'Inspector always reflects first entry in list rather than currently open and edited entry'
+  spec_sections:
+    - "5.1"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-38
+  audit: AUD-2026-11-06
+  title: 'Machine-suggested facets carry chip-suggested class with no CSS rules, rendering suggested vs confirmed distinction invisible'
+  spec_sections:
+    - "12.1"
+    - "12.2"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-39
+  audit: AUD-2026-11-06
+  title: 'Status indicators in admin header look interactive but have no legend, popover, or drill-down links'
+  spec_sections:
+    - "12.6"
+    - "12.9"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-40
+  audit: AUD-2026-11-06
+  title: 'Public pages have no owner bar for signed-in sessions and lack a View as visitor mode'
+  spec_sections:
+    - "5.1"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-41
+  audit: AUD-2026-11-06
+  title: 'No account management screens to change username/password, re-enrol authenticator, manage API tokens, or sign out'
+  spec_sections:
+    - "5.1"
+    - "13.4"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-42
+  audit: AUD-2026-11-06
+  title: 'robots.txt allows all paths including /admin and /api with no crawler policies or owner controls'
+  spec_sections:
+    - "12.6"
+    - "13.13"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-43
+  audit: AUD-2026-11-06
+  title: 'Editor results written to banner at top of page away from action, with no auto-scroll, focus move, or list refresh'
+  spec_sections:
+    - "12.7"
+    - "12.8"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-44
+  audit: AUD-2026-11-06
+  title: 'Time travel drops entries revised after chosen date from list pages and timeline due to current-revision only filtering'
+  spec_sections:
+    - "5.3"
+    - "6.1"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UX-45
+  audit: AUD-2026-11-06
+  title: 'Revision ordering in entry detail ties for revisions sharing valid_from, allowing older revision to win'
+  spec_sections:
+    - "3.11"
+    - "5.3"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UI-01
+  audit: AUD-2026-11-06
+  title: 'Eight CSS variables referenced without definition; 684 inline style attributes; redaction drawer has missing background'
+  spec_sections:
+    - "12.3"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UI-02
+  audit: AUD-2026-11-06
+  title: 'Admin editor workspace cramped to roughly 500 px at desktop widths and broken 2-column layout at tablet widths'
+  spec_sections:
+    - "12.5"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UI-03
+  audit: AUD-2026-11-06
+  title: 'Lack of visual distinction between badge, chip, button, switch, tab, and card controls due to missing radius tokens'
+  spec_sections:
+    - "12.2"
+    - "12.3"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-UI-04
+  audit: AUD-2026-11-06
+  title: 'Theme contract lacks shape and surface properties for configurable border radius, border width, and elevation presets'
+  spec_sections:
+    - "12.3"
+    - "12.10"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-01
+  audit: AUD-2026-11-06
+  title: 'Engineering and test suite jargon leaks into owner UI strings (SIMULATED finding M6, 501, honesty invariant, Tier 1 Floor)'
+  spec_sections:
+    - "12.9"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-02
+  audit: AUD-2026-11-06
+  title: 'Static not-implemented placeholder card on topology conflicts instead of live conflict review copy'
+  spec_sections:
+    - "6.2"
+    - "12.9"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-03
+  audit: AUD-2026-11-06
+  title: 'Inconsistent terminology across public and admin interfaces for entries, drafts, and structure levels'
+  spec_sections:
+    - "12.9"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-04
+  audit: AUD-2026-11-06
+  title: 'Non-actionable error messages in admin UI discarding API error detail and lacking recovery steps'
+  spec_sections:
+    - "12.9"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-05
+  audit: AUD-2026-11-06
+  title: 'Mixed Title Case and sentence case across buttons, form labels, and section headings'
+  spec_sections:
+    - "12.9"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-06
+  audit: AUD-2026-11-06
+  title: 'Non-verb button actions naming system state rather than user outcome'
+  spec_sections:
+    - "12.9"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-07
+  audit: AUD-2026-11-06
+  title: 'Warning messages lack clear operational consequences and one-click restoration actions'
+  spec_sections:
+    - "12.9"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-08
+  audit: AUD-2026-11-06
+  title: 'Inconsistent status badge terminology conflating private, unpublished, and draft states'
+  spec_sections:
+    - "3.11"
+    - "12.9"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-09
+  audit: AUD-2026-11-06
+  title: 'Rebuild site action labelled Publish Now colliding with entry publishing terminology'
+  spec_sections:
+    - "12.9"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-10
+  audit: AUD-2026-11-06
+  title: 'Booking consultation form contains jargon placeholder text assuming architecture specialization'
+  spec_sections:
+    - "6.2"
+    - "12.9"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-11
+  audit: AUD-2026-11-06
+  title: 'First-run authoring walkthrough copy references internal schema terms (roles, facets, inspector, redactions)'
+  spec_sections:
+    - "12.9"
+    - "13.13"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-12
+  audit: AUD-2026-11-06
+  title: 'Editor error handler collapses 409 duplicate slug and 400 validation failures into generic failure string'
+  spec_sections:
+    - "12.9"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-13
+  audit: AUD-2026-11-06
+  title: 'Absence of standardized explanation pattern (what, when, how, impact) across admin modules and settings'
+  spec_sections:
+    - "12.9"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-14
+  audit: AUD-2026-11-06
+  title: 'Setup wizard vocabulary assumes advanced systems expertise (TOTP, tunnel origin, Tier 2, age recipient key)'
+  spec_sections:
+    - "12.9"
+    - "13.13"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
+- id: 20261106-CP-15
+  audit: AUD-2026-11-06
+  title: 'Hard-coded sample content, model names, and vendor keys in markup violating zero-hardcode protocol'
+  spec_sections:
+    - "12.9"
+    - "13.13"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-06
+      status: open
+      note: Raised by UX specification audit AUD-2026-11-06 (L015)
+  verified_by: null
