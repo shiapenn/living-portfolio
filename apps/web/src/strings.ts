@@ -8,6 +8,8 @@
  * 4. Three-part actionable error formatting: what failed, why (if known), and what to do now.
  */
 
+export { WIZARD_STRINGS } from './strings/en.js';
+
 export const STRINGS_EN = {
   ask: {
     state: {

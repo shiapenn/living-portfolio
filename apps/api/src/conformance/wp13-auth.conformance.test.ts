@@ -312,4 +312,47 @@ describe('WP-13.4 Conformance: Persist Wizard Choices via Settings API', () => {
     expect(settings.backups.agePublicKey).toBe('age1testkey1234567890abcdef');
     expect(settings.themePreset).toBe('modern-monospace');
   });
+
+  it('WP-13.5: POST /api/settings/backups/run-drill reports honest disabled message when folder unconfigured (UX-33)', async () => {
+    const { app, auth } = createApp();
+
+    // 1. Setup admin and login
+    const setupRes = await app.request('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'drill_admin',
+        password: 'ValidPassword12345!',
+      }),
+    });
+    const setupData = await setupRes.json();
+    const totpCode = computeTotpCode(setupData.totpSecret);
+    const confirmRes = await app.request('/api/auth/totp/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: totpCode }),
+    });
+    const confirmData = await confirmRes.json();
+    const setCookie = confirmRes.headers.get('set-cookie') || '';
+    const sessionMatch = setCookie.match(/lp_session=([^;]+)/);
+    const sessionId = sessionMatch ? sessionMatch[1] : '';
+    const csrfToken = confirmData.csrfToken;
+
+    // 2. Run drill without destinationDir
+    const drillRes = await app.request('/api/settings/backups/run-drill', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `lp_session=${sessionId}`,
+        'X-CSRF-Token': csrfToken,
+      },
+      body: JSON.stringify({}),
+    });
+
+    expect(drillRes.status).toBe(501);
+    const drillData = await drillRes.json();
+    expect(drillData.code).toBe('SIMULATED');
+    expect(drillData.finding).toBe('M1');
+    expect(drillData.message).toContain('Not available until a backup folder is set');
+  });
 });

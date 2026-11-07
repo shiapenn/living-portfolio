@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { createTestClient } from './test-client.js';
 import {
   createWebApp,
@@ -551,7 +552,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
       expect(html).toContain('OpenAI Compatible');
       expect(html).toContain('Anthropic');
       expect(html).toContain('Ollama');
-      expect(html).toContain('Zero-Trust Boundary:');
+      expect(html).toContain('Privacy Boundary:');
 
       // Step 4: Notifications & Alerts
       expect(html).toContain('id="wizard-step-4"');
@@ -966,6 +967,43 @@ console.log(x);
       });
       expect(rowHtml).toContain('lang="fr"');
       expect(rowHtml).toContain('March 2024');
+    });
+  });
+
+  describe('WP-13.5: Wizard Wording, States & Zero-Vendor Scan (UX-29, UX-33, CP-14, CP-15)', () => {
+    it('1. Setup markup has zero hardcoded vendor, model, or sample worked-example names (CP-15)', () => {
+      const rendererSource = readFileSync(new URL('./renderer.ts', import.meta.url), 'utf8');
+      const setupFnMatch = rendererSource.match(/export function renderAdminSetupPage\(\)[\s\S]*?return renderLayout/);
+      expect(setupFnMatch).toBeTruthy();
+      const setupMarkup = setupFnMatch![0];
+
+      expect(setupMarkup).not.toContain('OpenAI');
+      expect(setupMarkup).not.toContain('Anthropic');
+      expect(setupMarkup).not.toContain('Ollama');
+      expect(setupMarkup).not.toContain('bge-small-en-v1.5');
+      expect(setupMarkup).not.toContain('gpt-4o-mini');
+      expect(setupMarkup).not.toContain('claude-3-5-sonnet');
+      expect(setupMarkup).not.toContain('llama3.3');
+      expect(setupMarkup).not.toContain('Scaling payment reconciliation');
+      expect(setupMarkup).not.toContain('idempotent bisimulation');
+    });
+
+    it('2. Exactly one primary action (.btn-primary) per wizard step (UX-29)', () => {
+      const html = renderAdminSetupPage();
+      for (let step = 1; step <= 6; step++) {
+        const stepMatch = html.match(new RegExp(`<div id="wizard-step-${step}"[\\s\\S]*?(?=<div id="wizard-step-${step + 1}"|</div>\\s*<script>)`));
+        expect(stepMatch).toBeTruthy();
+        const stepHtml = stepMatch![0];
+        const primaryMatches = stepHtml.match(/class="[^"]*btn-primary[^"]*"/g) || [];
+        expect(primaryMatches.length).toBe(1);
+      }
+    });
+
+    it('3. Hosting options reflect §6.8 plain-language descriptions without jargon (CP-14)', () => {
+      const html = renderAdminSetupPage();
+      expect(html).toContain('Everything runs in one Docker stack you control. The simplest setup.');
+      expect(html).toContain('AI runs on your own machine and nothing is sent to outside services.');
+      expect(html).toContain('Needs less hardware and gives better written answers.');
     });
   });
 });
