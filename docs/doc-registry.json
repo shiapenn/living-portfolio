@@ -857,5 +857,13 @@
     "path": "docs/execution-reports/A068-wp-138-recovery-code-sign-in-and-normalisation.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A069",
+    "title": "WP-13.9 Honest wizard controls in default install",
+    "class": "A",
+    "path": "docs/execution-reports/A069-wp-139-honest-wizard-controls-in-default-install.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
