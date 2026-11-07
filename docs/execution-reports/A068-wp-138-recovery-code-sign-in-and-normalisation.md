@@ -102,8 +102,8 @@ Found 0 section(s) marked verbatim.
 
 ## 9. Handover Decision
 
-- Decision: NOT REQUIRED
-- Rule(s): HO-R5
+- Decision: RECOMMENDED
+- Rule(s): HO-R3
 - Receipts since last handover: 10 (A059 through A068); work packages since: 0
-- Clean-boundary preconditions: not at gate boundary; continuing within WP-13
+- Clean-boundary preconditions: continuing within WP-13 (next task WP-13.9).
 - Next action: Proceed with task WP-13.9 (No live wizard control may fail in a default install).

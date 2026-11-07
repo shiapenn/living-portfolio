@@ -86,6 +86,7 @@ export const WIZARD_STRINGS = {
     title: 'Step 3: Model Providers & Privacy Boundary',
     subtitle: 'Configure model providers. The privacy boundary ensures confidential records never reach external services.',
     boundaryNotice: 'Privacy Boundary: When no external provider is configured, Ask gracefully degrades to honest extractive quotes.',
+    keysNotice: 'Keys are added later in Settings > Providers; until then Ask shows direct quotes from entries.',
     providersTable: {
       headers: ['Provider', 'Data Classes Allowed', 'Default Model', 'Status'],
       rows: [
@@ -144,7 +145,7 @@ export const WIZARD_STRINGS = {
       help: 'Topic name for ntfy, destination email address, or webhook endpoint URL.',
     },
     testButton: 'Test Delivery Notification',
-    testDisabledReason: 'Enter a topic name or target address above to test delivery.',
+    testDisabledReason: "Test alerts aren't available in this version yet.",
     backButton: '← Back',
     nextButton: 'Next: Encrypted Backups →',
   },
@@ -154,14 +155,14 @@ export const WIZARD_STRINGS = {
     destination: {
       label: 'Backup Destination',
       options: [
-        { value: 'local', label: 'Local Scratch Storage (/var/backups)' },
+        { value: 'local', label: 'Local Storage (./data/backups)' },
         { value: 's3', label: 'S3 / MinIO Compatible Bucket' },
         { value: 'git', label: 'Private Git Repository Archive' },
       ],
     },
     folder: {
       label: 'Backup Directory / Folder',
-      placeholder: '/var/backups',
+      placeholder: './data/backups',
       help: 'Directory path for storing backup archives.',
     },
     ageKey: {
@@ -177,6 +178,7 @@ export const WIZARD_STRINGS = {
   step6: {
     title: 'Step 6: Theme & First-Run Walkthrough',
     subtitle: 'Select your typographic theme and review the profile structure model.',
+    themeAppliedNotice: 'Applied to your public site after setup. Change it any time in Theme.',
     themePresets: [
       {
         value: 'editorial-classic',

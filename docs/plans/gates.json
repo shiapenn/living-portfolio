@@ -352,7 +352,8 @@
         "WP-13.5 Conformance: Wizard Wording & Honest States › Setup markup contains no hardcoded vendor or sample names",
         "WP-13.6 Conformance: Login & Sign-Out › Supports recovery code login and sign-out invalidates session",
         "WP-13.7 Conformance: Start-Here & Admin Route Guard › Standalone /admin routes redirect unauthenticated sessions to /login",
-        "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 11. WP-13.8: Recovery-code sign-in, pasting multi-line list rejection, normalisation, and single-use burn (UX-31)"
+        "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 7. First-run setup wizard: No wizard step shows an enabled control whose only result is an error",
+        "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 17. WP-13.8: Recovery-code sign-in, pasting multi-line list rejection, normalisation, and single-use burn (UX-31)"
       ],
       "closingReceipt": null,
       "handover": null

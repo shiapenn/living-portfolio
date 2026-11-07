@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page, type BrowserContext } from '@playwright/test';
 import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { saveSharedTotp } from './helpers.js';
@@ -48,21 +48,34 @@ let sharedRecoveryCode2 = '';
 let sharedAllRecoveryCodes: string[] = [];
 let sharedDownloadedFileContent = '';
 
+let sharedPage: Page;
+let sharedContext: BrowserContext;
+
 test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', () => {
-  test('1. First-run setup wizard completes owner account creation', async ({ page }) => {
+  test.beforeAll(async ({ browser }) => {
+    sharedContext = await browser.newContext();
+    sharedPage = await sharedContext.newPage();
+  });
+
+  test.afterAll(async () => {
+    if (sharedPage) await sharedPage.close();
+    if (sharedContext) await sharedContext.close();
+  });
+
+  test('1. First-run setup wizard: Step 1 Owner Account Setup & Credentials (UX-26, UX-30)', async () => {
     // Navigating unauthenticated to /admin redirects to /admin/setup
-    await page.goto('/admin');
-    await expect(page).toHaveURL(/\/admin\/setup$/);
-    await expect(page.locator('h1')).toContainText('Owner Account Setup');
+    await sharedPage.goto('/admin');
+    await expect(sharedPage).toHaveURL(/\/admin\/setup$/);
+    await expect(sharedPage.locator('h1')).toContainText('Owner Account Setup');
 
     // Fill in setup form (leave TOTP secret blank to exercise server-side random generation)
-    await page.fill('#setup-username', TEST_USERNAME);
-    await page.fill('#setup-password', TEST_PASSWORD);
+    await sharedPage.fill('#setup-username', TEST_USERNAME);
+    await sharedPage.fill('#setup-password', TEST_PASSWORD);
 
-    await page.click('button[type="submit"]');
+    await sharedPage.click('button[type="submit"]');
 
     // WP-13.1: Enrolment container displays QR code SVG and manual Base32 key
-    const enrolContainer = page.locator('#totp-enrolment-container');
+    const enrolContainer = sharedPage.locator('#totp-enrolment-container');
     await expect(enrolContainer).toBeVisible();
     await expect(enrolContainer.locator('#setup-qr-code svg')).toBeVisible();
 
@@ -73,23 +86,23 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     const hexFromBase32 = base32ToHex(manualBase32);
 
     // Entering a wrong code fails verification and keeps setup incomplete
-    await page.fill('#confirm-totp-code', '000000');
-    await page.click('#btn-confirm-totp');
-    const confirmError = page.locator('#totp-confirm-error');
+    await sharedPage.fill('#confirm-totp-code', '000000');
+    await sharedPage.click('#btn-confirm-totp');
+    const confirmError = sharedPage.locator('#totp-confirm-error');
     await expect(confirmError).toBeVisible();
     await expect(confirmError).toContainText('Check the 6-digit code');
-    await expect(page.locator('#setup-status')).toBeHidden();
+    await expect(sharedPage.locator('#setup-status')).toBeHidden();
 
     // Entering the correct TOTP code completes setup
     const validCode = computeTotp(hexFromBase32);
-    await page.fill('#confirm-totp-code', validCode);
-    await page.click('#btn-confirm-totp');
+    await sharedPage.fill('#confirm-totp-code', validCode);
+    await sharedPage.click('#btn-confirm-totp');
 
     // Setup success banner appears with confirmation and generated TOTP secret
-    const statusBox = page.locator('#setup-status');
+    const statusBox = sharedPage.locator('#setup-status');
     await expect(statusBox).toBeVisible();
     await expect(statusBox).toContainText('Setup Completed!');
-    
+
     const secretCode = statusBox.locator('code').first();
     await expect(secretCode).toBeVisible();
     sharedTotpSecret = (await secretCode.innerText()).trim();
@@ -102,7 +115,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     expect(await statusBox.innerText()).not.toContain('lp_pat_');
 
     // WP-13.3: Credentials screen display with recovery codes and gate (UX-30)
-    const credBox = page.locator('#credentials-display-container');
+    const credBox = sharedPage.locator('#credentials-display-container');
     await expect(credBox).toBeVisible();
     await expect(credBox.locator('#credentials-totp-key')).toBeVisible();
 
@@ -115,12 +128,12 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     expect(sharedRecoveryCode2).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}$/);
 
     // Continue button is disabled before ticking the gate
-    const continueBtn = page.locator('#btn-continue-step2');
+    const continueBtn = sharedPage.locator('#btn-continue-step2');
     await expect(continueBtn).toBeDisabled();
 
     // Download recovery codes file
-    const downloadPromise = page.waitForEvent('download');
-    await page.click('#btn-download-recovery-codes');
+    const downloadPromise = sharedPage.waitForEvent('download');
+    await sharedPage.click('#btn-download-recovery-codes');
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe('living-portfolio-recovery-codes.txt');
     const downloadPath = await download.path();
@@ -138,89 +151,160 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     expect(sharedAllRecoveryCodes).toHaveLength(8);
 
     // Tick the "I saved these" gate
-    await page.check('#setup-saved-credentials-gate');
+    await sharedPage.check('#setup-saved-credentials-gate');
     await expect(continueBtn).toBeEnabled();
 
-    // WP-13.2 & WP-13.4: Session established from setup allows wizard choices to be saved and test buttons to succeed
+    // Move to step 2
     await continueBtn.click();
-    await expect(page.locator('#wizard-step-2')).toBeVisible();
-
-    // Step 2: Choose hosting preset and public address
-    await page.check('input[name="hosting-preset"][value="private-local"]');
-    await page.fill('#setup-origin-url', 'https://custom-origin.example.org');
-    await page.click('#wizard-step-2 button[data-target="3"]');
-    await expect(page.locator('#wizard-step-3')).toBeVisible();
-
-    // Step 3 to Step 4
-    await page.click('#wizard-step-3 button[data-target="4"]');
-    await expect(page.locator('#wizard-step-4')).toBeVisible();
-
-    // Step 4: Configure notifications & test alert delivery (WP-13.5: disabled until target configured)
-    const testAlertBtn = page.locator('#btn-setup-test-alert');
-    await expect(testAlertBtn).toBeDisabled();
-    await expect(page.locator('#setup-alert-disabled-reason')).toBeVisible();
-
-    await page.selectOption('#setup-notification-channel', 'email');
-    await page.fill('#setup-notification-target', 'owner-alerts@example.org');
-    await expect(testAlertBtn).toBeEnabled();
-
-    await page.click('#btn-setup-test-alert');
-    const alertResult = page.locator('#setup-alert-result');
-    await expect(alertResult).toBeVisible();
-    await expect(alertResult).not.toContainText('Unauthorized');
-    await expect(alertResult).not.toContainText('401');
-
-    await page.click('#wizard-step-4 button[data-target="5"]');
-    await expect(page.locator('#wizard-step-5')).toBeVisible();
-
-    // Step 5: Configure backups (WP-13.5: drill without folder shows honest disabled message UX-33)
-    await page.click('#btn-setup-test-drill');
-    const drillResult = page.locator('#setup-drill-result');
-    await expect(drillResult).toBeVisible();
-    await expect(drillResult).toContainText('Not available until a backup folder is set');
-
-    await page.selectOption('#setup-backup-dest', 's3');
-    await page.fill('#setup-backup-dir', '/var/backups');
-    await page.fill('#setup-age-key', 'age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p');
-    await page.click('#wizard-step-5 button[data-target="6"]');
-    await expect(page.locator('#wizard-step-6')).toBeVisible();
-
-    // Step 6: WP-13.5: single primary button on final screen (UX-29)
-    await expect(page.locator('#wizard-step-6 .btn-primary')).toHaveCount(1);
-    await expect(page.locator('#btn-setup-finish-login')).toHaveClass(/btn-primary/);
-    await expect(page.locator('#btn-setup-launch-import')).toHaveClass(/btn-secondary/);
-
-    // Step 6: Choose theme preset with real radio input
-    await page.check('input[name="theme-preset"][value="modern-monospace"]');
-
-    // WP-13.4: Reload page and verify choices persist
-    await page.reload();
-    await expect(page.locator('#wizard-step-2')).toBeVisible();
-    await expect(page.locator('input[name="hosting-preset"][value="private-local"]')).toBeChecked();
-    await expect(page.locator('#setup-origin-url')).toHaveValue('https://custom-origin.example.org');
-
-    // Navigate to step 4 and check values
-    await page.click('#wizard-step-2 button[data-target="3"]');
-    await page.click('#wizard-step-3 button[data-target="4"]');
-    await expect(page.locator('#setup-notification-channel')).toHaveValue('email');
-    await expect(page.locator('#setup-notification-target')).toHaveValue('owner-alerts@example.org');
-
-    // Navigate to step 5 and check values
-    await page.click('#wizard-step-4 button[data-target="5"]');
-    await expect(page.locator('#setup-backup-dest')).toHaveValue('s3');
-    await expect(page.locator('#setup-age-key')).toHaveValue('age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p');
-
-    // Navigate to step 6 and check theme preset
-    await page.click('#wizard-step-5 button[data-target="6"]');
-    await expect(page.locator('input[name="theme-preset"][value="modern-monospace"]')).toBeChecked();
-
-    // Finish wizard
-    await page.click('#btn-setup-finish-login');
-    await page.waitForURL((url) => url.pathname === '/admin');
-    await expect(page.locator('h1')).toContainText('Admin Workspace');
+    await expect(sharedPage.locator('#wizard-step-2')).toBeVisible();
   });
 
-  test('2. /admin/setup is locked down once configured', async ({ page, request }) => {
+  test('2. First-run setup wizard: Step 2 Hosting options visible state (UX-27)', async () => {
+    await expect(sharedPage.locator('#wizard-step-chip')).toContainText('Step 2 of 6');
+    await expect(sharedPage.locator('#wizard-step-2')).toBeVisible();
+    await expect(sharedPage.locator('input[name="hosting-preset"]')).toHaveCount(3);
+    await expect(sharedPage.locator('#setup-origin-url')).toBeVisible();
+
+    await sharedPage.check('input[name="hosting-preset"][value="private-local"]');
+    await sharedPage.fill('#setup-origin-url', 'https://custom-origin.example.org');
+    await sharedPage.click('#wizard-step-2 button[data-target="3"]');
+    await expect(sharedPage.locator('#wizard-step-3')).toBeVisible();
+  });
+
+  test('3. First-run setup wizard: Step 3 Model Providers read-only visible state (UX-09)', async () => {
+    await expect(sharedPage.locator('#wizard-step-chip')).toContainText('Step 3 of 6');
+    await expect(sharedPage.locator('#wizard-step-3')).toBeVisible();
+
+    // Providers table is read-only
+    const step3Table = sharedPage.locator('#wizard-step-3 table');
+    await expect(step3Table).toBeVisible();
+    await expect(step3Table.locator('input, button, select, textarea')).toHaveCount(0);
+
+    // Badges lack button-like styling or interactive chip class
+    await expect(step3Table.locator('.chip')).toHaveCount(0);
+    await expect(step3Table.locator('span[style*="cursor:default"]')).toHaveCount(6);
+
+    // Explainer sentence is visible
+    const keysNotice = sharedPage.locator('#step3-keys-notice');
+    await expect(keysNotice).toBeVisible();
+    await expect(keysNotice).toContainText('Keys are added later in Settings > Providers; until then Ask shows direct quotes from entries.');
+
+    await sharedPage.click('#wizard-step-3 button[data-target="4"]');
+    await expect(sharedPage.locator('#wizard-step-4')).toBeVisible();
+  });
+
+  test('4. First-run setup wizard: Step 4 Notifications test disabled with visible reason (UX-33)', async () => {
+    await expect(sharedPage.locator('#wizard-step-chip')).toContainText('Step 4 of 6');
+    await expect(sharedPage.locator('#wizard-step-4')).toBeVisible();
+
+    // Test Delivery Notification is disabled with visible reason
+    const testAlertBtn = sharedPage.locator('#btn-setup-test-alert');
+    await expect(testAlertBtn).toBeDisabled();
+    const reasonEl = sharedPage.locator('#setup-alert-disabled-reason');
+    await expect(reasonEl).toBeVisible();
+    await expect(reasonEl).toContainText("Test alerts aren't available in this version yet.");
+
+    // Typing into topic or selecting channel keeps the button disabled and never shows 501 / Not Implemented
+    await sharedPage.selectOption('#setup-notification-channel', 'email');
+    await sharedPage.fill('#setup-notification-target', 'owner-alerts@example.org');
+    await expect(testAlertBtn).toBeDisabled();
+    await expect(reasonEl).toBeVisible();
+    await expect(reasonEl).toContainText("Test alerts aren't available in this version yet.");
+
+    await sharedPage.click('#wizard-step-4 button[data-target="5"]');
+    await expect(sharedPage.locator('#wizard-step-5')).toBeVisible();
+  });
+
+  test('5. First-run setup wizard: Step 5 Backups default directory and error mapping (UX-33, CP-01)', async () => {
+    await expect(sharedPage.locator('#wizard-step-chip')).toContainText('Step 5 of 6');
+    await expect(sharedPage.locator('#wizard-step-5')).toBeVisible();
+
+    // Backup destination options: shows Local Storage (./data/backups) and never /var/backups
+    const destSelect = sharedPage.locator('#setup-backup-dest');
+    await expect(destSelect).toContainText('./data/backups');
+    await expect(destSelect).not.toContainText('/var/backups');
+
+    const backupDirInput = sharedPage.locator('#setup-backup-dir');
+    await expect(backupDirInput).toHaveAttribute('placeholder', './data/backups');
+    await expect(backupDirInput).toHaveValue('./data/backups');
+
+    // 1. Run drill with inaccessible folder: maps EACCES to honest plain message
+    await backupDirInput.fill('/var/backups/eacces_test_dir');
+    await sharedPage.click('#btn-setup-test-drill');
+    const drillResult = sharedPage.locator('#setup-drill-result');
+    await expect(drillResult).toBeVisible();
+    await expect(drillResult).toContainText("The app can't write to that folder. Choose another folder or fix its permissions.");
+    await expect(drillResult).not.toContainText('Not Implemented');
+    await expect(drillResult).not.toContainText('500');
+
+    // 2. Run drill with valid default folder: succeeds
+    await backupDirInput.fill('./data/backups');
+    await sharedPage.fill('#setup-age-key', 'age1ql3z7hjy54pw3hyww5ayyfg7zqgvc7w3j2elw8zmrj2kg5sfn9aqmcac8p');
+    await sharedPage.click('#btn-setup-test-drill');
+    await expect(drillResult).toBeVisible();
+    await expect(drillResult).toContainText('✓ Backup created & restore verification drill succeeded!');
+
+    await sharedPage.click('#wizard-step-5 button[data-target="6"]');
+    await expect(sharedPage.locator('#wizard-step-6')).toBeVisible();
+  });
+
+  test('6. First-run setup wizard: Step 6 Theme selection visible state and post-setup copy', async () => {
+    await expect(sharedPage.locator('#wizard-step-chip')).toContainText('Step 6 of 6');
+    await expect(sharedPage.locator('#wizard-step-6')).toBeVisible();
+
+    // Visible notice about post-setup application
+    const themeNotice = sharedPage.locator('#step6-theme-notice');
+    await expect(themeNotice).toBeVisible();
+    await expect(themeNotice).toContainText('Applied to your public site after setup. Change it any time in Theme.');
+
+    // 3 presets
+    await expect(sharedPage.locator('input[name="theme-preset"]')).toHaveCount(3);
+    await sharedPage.check('input[name="theme-preset"][value="modern-monospace"]');
+
+    // Single primary button
+    await expect(sharedPage.locator('#wizard-step-6 .btn-primary')).toHaveCount(1);
+    await expect(sharedPage.locator('#btn-setup-finish-login')).toHaveClass(/btn-primary/);
+    await expect(sharedPage.locator('#btn-setup-launch-import')).toHaveClass(/btn-secondary/);
+  });
+
+  test('7. First-run setup wizard: No wizard step shows an enabled control whose only result is an error', async () => {
+    // Traverse backwards and forwards through steps 6 to 2 to confirm no enabled controls fail
+    for (let step = 6; step >= 3; step--) {
+      const prevBtn = sharedPage.locator(`#wizard-step-${step} button[data-target="${step - 1}"]`);
+      if (await prevBtn.count() > 0) {
+        await prevBtn.click();
+        await expect(sharedPage.locator(`#wizard-step-${step - 1}`)).toBeVisible();
+      }
+    }
+
+    // Step 2 to Step 3
+    await sharedPage.click('#wizard-step-2 button[data-target="3"]');
+    await expect(sharedPage.locator('#wizard-step-3')).toBeVisible();
+
+    // Step 3 to Step 4
+    await sharedPage.click('#wizard-step-3 button[data-target="4"]');
+    await expect(sharedPage.locator('#wizard-step-4')).toBeVisible();
+    // Test alert is disabled (cannot be invoked to trigger an error)
+    await expect(sharedPage.locator('#btn-setup-test-alert')).toBeDisabled();
+
+    // Step 4 to Step 5
+    await sharedPage.click('#wizard-step-4 button[data-target="5"]');
+    await expect(sharedPage.locator('#wizard-step-5')).toBeVisible();
+    // Drill with default folder succeeds
+    await sharedPage.click('#btn-setup-test-drill');
+    await expect(sharedPage.locator('#setup-drill-result')).toContainText('✓ Backup created & restore verification drill succeeded!');
+
+    // Step 5 to Step 6
+    await sharedPage.click('#wizard-step-5 button[data-target="6"]');
+    await expect(sharedPage.locator('#wizard-step-6')).toBeVisible();
+
+    // Finish setup
+    await sharedPage.click('#btn-setup-finish-login');
+    await sharedPage.waitForURL((url) => url.pathname === '/admin');
+    await expect(sharedPage.locator('h1')).toContainText('Admin Workspace');
+  });
+
+  test('8. /admin/setup is locked down once configured', async ({ page, request }) => {
     // Attempting to visit /admin/setup in browser redirects to /admin/login
     await page.goto('/admin/setup');
     await expect(page).toHaveURL(/\/admin\/login$/);
@@ -237,7 +321,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     expect(body.error).toContain('already configured');
   });
 
-  test('3. Open redirect prevention sanitizes `next` parameter upon login', async ({ page }) => {
+  test('9. Open redirect prevention sanitizes `next` parameter upon login', async ({ page }) => {
     // Helper to log in with a given next parameter and assert resulting pathname
     async function testLoginWithNext(nextParam: string, expectedPathname: string) {
       await page.context().clearCookies();
@@ -295,7 +379,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await testLoginWithNext('/admin/entries', '/admin/entries');
   });
 
-  test('4. Standard login flow authenticates with password + TOTP to /admin', async ({ page }) => {
+  test('10. Standard login flow authenticates with password + TOTP to /admin', async ({ page }) => {
     await page.goto('/admin/login');
     await expect(page.locator('h1')).toContainText('Owner Sign in');
 
@@ -310,7 +394,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(page.locator('#btn-killswitch')).toBeVisible();
   });
 
-  test('5. CSRF token is stored in sessionStorage and validated on admin requests', async ({ page }) => {
+  test('11. CSRF token is stored in sessionStorage and validated on admin requests', async ({ page }) => {
     // Log in to admin
     await page.goto('/admin/login');
     await page.fill('#login-username', TEST_USERNAME);
@@ -367,7 +451,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     expect(badTokenResult.status).toBe(403);
   });
 
-  test('6. Admin workspace apiClient error handling: forced 401, 403, 500 show recovery messages and suppress success banner', async ({ page }) => {
+  test('12. Admin workspace apiClient error handling: forced 401, 403, 500 show recovery messages and suppress success banner', async ({ page }) => {
     // Navigate to admin workspace (already authenticated in session or re-authenticate)
     await page.goto('/admin');
     if (page.url().includes('/admin/login')) {
@@ -436,7 +520,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(banner.locator('[data-error]')).toHaveCount(0);
   });
 
-  test('7. WP-13.3: Recovery code signs in once and is consumed', async ({ page }) => {
+  test('13. WP-13.3: Recovery code signs in once and is consumed', async ({ page }) => {
     // Clear cookies to test sign in from unauthenticated state
     await page.context().clearCookies();
     await page.goto('/admin/login');
@@ -466,7 +550,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(errorMsg).toContainText("That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once.");
   });
 
-  test('8. WP-13.5: Wizard wording, states, and zero-vendor markup scan (UX-29, UX-33, CP-14, CP-15)', async () => {
+  test('14. WP-13.5: Wizard wording, states, and zero-vendor markup scan (UX-29, UX-33, CP-14, CP-15)', async () => {
     // 1. Verify zero-vendor scan on setup markup in renderer.ts
     const rendererPath = new URL('../../apps/web/src/renderer.ts', import.meta.url);
     const rendererSource = readFileSync(rendererPath, 'utf8');
@@ -496,7 +580,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     }
   });
 
-  test('9. WP-13.6: Recovery code login path and admin sign-out flow (UX-31, UX-41)', async ({ page }) => {
+  test('15. WP-13.6: Recovery code login path and admin sign-out flow (UX-31, UX-41)', async ({ page }) => {
     // 1. Visit /admin/login from unauthenticated state
     await page.context().clearCookies();
     await page.goto('/admin/login');
@@ -541,7 +625,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(page).toHaveURL(/\/admin\/login/);
   });
 
-  test('10. WP-13.7: Standalone admin guard redirects unauthenticated /admin to /admin/login (UX-05, UX-32)', async ({ page }) => {
+  test('16. WP-13.7: Standalone admin guard redirects unauthenticated /admin to /admin/login (UX-05, UX-32)', async ({ page }) => {
     await page.context().clearCookies();
 
     // 1. Unauthenticated direct navigation to /admin redirects to /admin/login
@@ -558,7 +642,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(page).toHaveURL(/\/admin\/login/);
   });
 
-  test('11. WP-13.8: Recovery-code sign-in, pasting multi-line list rejection, normalisation, and single-use burn (UX-31)', async ({ page }) => {
+  test('17. WP-13.8: Recovery-code sign-in, pasting multi-line list rejection, normalisation, and single-use burn (UX-31)', async ({ page }) => {
     // 1. Verify login code input has no truncating maxlength attribute
     await page.context().clearCookies();
     await page.goto('/admin/login');

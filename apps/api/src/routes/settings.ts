@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { existsSync } from 'node:fs';
+import { resolve, join } from 'node:path';
 import {
   type IPortfolioRepository,
   createDatabaseBackup,
@@ -342,13 +343,13 @@ export function createSettingsRoutes(
     const body = await c.req.json().catch(() => ({}));
 
     if (!isLive && !body.live) {
-      // SIMULATED(M1): Concrete notification adapter (ntfy/webhook/email) is not yet implemented.
+      // SIMULATED(M1): Concrete notification adapter (ntfy/webhook/email) is not yet implemented (§13.9, WP-17.2).
       return c.json(
         {
-          error: 'Not Implemented',
+          error: 'Feature Unavailable',
           code: 'SIMULATED',
           finding: 'M1',
-          message: 'Notification channel delivery adapter is not yet implemented.',
+          message: "Test alerts aren't available in this version yet.",
         },
         501
       );
@@ -394,7 +395,9 @@ export function createSettingsRoutes(
       // Empty or non-JSON body
     }
 
-    const backupDir = body.destinationDir || process.env.BACKUP_DIR;
+    const backupDir = body.destinationDir !== undefined
+      ? body.destinationDir
+      : (process.env.BACKUP_DIR || (process.env.DATA_DIR ? join(process.env.DATA_DIR, 'backups') : undefined));
     const recipientKey = body.agePublicKey || process.env.AGE_PUBLIC_KEY;
 
     if (!backupDir && !recipientKey) {
@@ -411,9 +414,10 @@ export function createSettingsRoutes(
     }
 
     try {
+      const targetDir = backupDir || resolve(process.cwd(), 'data/backups');
       const backupResult = await createDatabaseBackup({
         repo,
-        destinationDir: backupDir,
+        destinationDir: targetDir,
         agePublicKey: recipientKey,
       });
 
@@ -431,7 +435,29 @@ export function createSettingsRoutes(
         drillResult,
       });
     } catch (err: any) {
-      return c.json({ ok: false, error: err.message }, 500);
+      console.error('[Backup Drill Error]', err);
+      const isWritePermissionError =
+        err?.code === 'EACCES' ||
+        err?.code === 'ENOENT' ||
+        err?.code === 'ENOSPC' ||
+        (typeof err?.message === 'string' && (
+          err.message.includes('EACCES') ||
+          err.message.includes('ENOENT') ||
+          err.message.includes('ENOSPC') ||
+          err.message.toLowerCase().includes('permission denied')
+        ));
+
+      if (isWritePermissionError) {
+        return c.json(
+          {
+            ok: false,
+            error: 'Write Error',
+            message: "The app can't write to that folder. Choose another folder or fix its permissions.",
+          },
+          400
+        );
+      }
+      return c.json({ ok: false, error: err?.message || 'Backup drill failed' }, 500);
     }
   });
 
