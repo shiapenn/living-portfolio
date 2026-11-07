@@ -4237,6 +4237,7 @@ export function renderAdminLoginPage(): string {
           </div>
           <div style="margin-top:8px">
             <button type="button" id="btn-toggle-recovery" style="background:none;border:none;padding:0;font-size:12px;color:var(--accent);text-decoration:underline;cursor:pointer">Lost your authenticator device? Sign in with a recovery code</button>
+            <div id="login-recovery-legacy-notice" style="display:none;margin-top:6px;font-size:12px;color:var(--text-muted)">Legacy 8-character recovery codes from earlier versions continue to be supported.</div>
           </div>
         </div>
         <button type="submit" class="btn" style="width:100%;padding:10px">Sign in</button>
@@ -4287,16 +4288,19 @@ export function renderAdminLoginPage(): string {
           toggleBtn.addEventListener('click', function() {
             recoveryMode = !recoveryMode;
             errBox.style.display = 'none';
+            const legacyNotice = document.getElementById('login-recovery-legacy-notice');
             if (recoveryMode) {
               codeLabel.textContent = 'Single-Use Recovery Code';
               codeInput.placeholder = 'xxxx-xxxx-xxxx-xxxx';
               codeHelp.textContent = 'Enter one of your 8 emergency alphanumeric recovery codes. Each code can only be used once.';
               toggleBtn.textContent = 'Have your authenticator? Use 6-digit TOTP code';
+              if (legacyNotice) legacyNotice.style.display = 'block';
             } else {
               codeLabel.textContent = '6-Digit Authenticator Code';
               codeInput.placeholder = '000000';
               codeHelp.textContent = 'Enter the 6-digit verification code from your authenticator app (Google Authenticator, 1Password, etc.).';
               toggleBtn.textContent = 'Lost your authenticator device? Sign in with a recovery code';
+              if (legacyNotice) legacyNotice.style.display = 'none';
             }
           });
         }
