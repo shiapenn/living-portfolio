@@ -777,5 +777,13 @@
     "path": "docs/plans/P004-ux-remediation-work-packages.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A060",
+    "title": "WP-13.0 Intake and Registration",
+    "class": "A",
+    "path": "docs/execution-reports/A060-wp-130-intake-and-registration.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
