@@ -849,5 +849,13 @@
     "path": "docs/execution-reports/A067-wp-137-start-here-and-deployment-truth.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A068",
+    "title": "WP-13.8 Recovery code sign-in and normalisation",
+    "class": "A",
+    "path": "docs/execution-reports/A068-wp-138-recovery-code-sign-in-and-normalisation.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
