@@ -218,3 +218,98 @@ describe('WP-13.3 Conformance: Credentials Screen & Recovery Codes', () => {
     expect(loginRes2.status).toBe(401);
   });
 });
+
+describe('WP-13.4 Conformance: Persist Wizard Choices via Settings API', () => {
+  it('Persists hosting, notifications, backups, and theme choices via PATCH endpoints and retrieves them via GET /settings', async () => {
+    const { app } = createApp();
+
+    // Complete setup first to get valid session and CSRF token
+    const setupRes = await app.request('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'wizard_persister',
+        password: 'ValidPassword12345!',
+      }),
+    });
+    expect(setupRes.status).toBe(201);
+    const setupData = await setupRes.json();
+
+    const validTotp = computeTotpCode(setupData.totpSecret);
+    const confirmRes = await app.request('/api/auth/totp/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: validTotp }),
+    });
+    expect(confirmRes.status).toBe(200);
+
+    const setCookie = confirmRes.headers.get('set-cookie');
+    const sessionId = setCookie!.match(/lp_session=([a-f0-9]+)/)![1];
+    const confirmData = await confirmRes.json();
+    const csrfToken = confirmData.csrfToken;
+
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      Cookie: `lp_session=${sessionId}`,
+      'X-CSRF-Token': csrfToken,
+    };
+
+    // 1. PATCH /api/settings/hosting
+    const hostingRes = await app.request('/api/settings/hosting', {
+      method: 'PATCH',
+      headers: authHeaders,
+      body: JSON.stringify({
+        preset: 'private-local',
+        publicAddress: 'https://my-domain.example.org',
+      }),
+    });
+    expect(hostingRes.status).toBe(200);
+
+    // 2. PATCH /api/settings/notifications
+    const notifRes = await app.request('/api/settings/notifications', {
+      method: 'PATCH',
+      headers: authHeaders,
+      body: JSON.stringify({
+        channel: 'email',
+        target: 'alerts@domain.example.org',
+      }),
+    });
+    expect(notifRes.status).toBe(200);
+
+    // 3. PATCH /api/settings/backups
+    const backupRes = await app.request('/api/settings/backups', {
+      method: 'PATCH',
+      headers: authHeaders,
+      body: JSON.stringify({
+        destination: 's3',
+        agePublicKey: 'age1testkey1234567890abcdef',
+      }),
+    });
+    expect(backupRes.status).toBe(200);
+
+    // 4. PATCH /api/settings/theme
+    const themeRes = await app.request('/api/settings/theme', {
+      method: 'PATCH',
+      headers: authHeaders,
+      body: JSON.stringify({
+        preset: 'modern-monospace',
+      }),
+    });
+    expect(themeRes.status).toBe(200);
+
+    // 5. GET /api/settings returns all persisted choices
+    const getRes = await app.request('/api/settings', {
+      headers: { Cookie: `lp_session=${sessionId}` },
+    });
+    expect(getRes.status).toBe(200);
+    const settings = await getRes.json();
+
+    expect(settings.hosting.preset).toBe('private-local');
+    expect(settings.hosting.publicAddress).toBe('https://my-domain.example.org');
+    expect(settings.notifications.channel).toBe('email');
+    expect(settings.notifications.target).toBe('alerts@domain.example.org');
+    expect(settings.backups.destination).toBe('s3');
+    expect(settings.backups.agePublicKey).toBe('age1testkey1234567890abcdef');
+    expect(settings.themePreset).toBe('modern-monospace');
+  });
+});

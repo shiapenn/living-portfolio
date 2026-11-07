@@ -28,6 +28,13 @@ export interface RuntimeSettingsState {
   setupWizardCompleted: boolean;
   theme: typeof DEFAULT_STRATA_THEME;
   redactionExclusions?: string[];
+  hostingPreset?: string;
+  publicAddress?: string;
+  notificationChannel?: string;
+  notificationTarget?: string;
+  backupDestination?: string;
+  backupAgePublicKey?: string;
+  selectedThemePreset?: string;
 }
 
 export function createSettingsRoutes(
@@ -65,7 +72,7 @@ export function createSettingsRoutes(
     const setupWizardCompleted = auth ? auth.isConfigured() : state.setupWizardCompleted;
 
     return c.json({
-      preset: 'free-cloud',
+      preset: state.hostingPreset || 'free-cloud',
       runtime: {
         automatedAnsweringEnabled: state.automatedAnsweringEnabled,
         calibrationFrozen: state.calibrationFrozen,
@@ -80,6 +87,8 @@ export function createSettingsRoutes(
         warning: tier1Warning,
       },
       hosting: {
+        preset: state.hostingPreset || 'free-cloud',
+        publicAddress: state.publicAddress || '',
         static: 'direct-upload',
         origin: 'single-host',
         tunnel: 'cloudflared',
@@ -116,15 +125,18 @@ export function createSettingsRoutes(
       // adapters are not implemented yet (findings M1 / M8), so report `not_configured` instead of
       // fabricated "verified" / "passed" values and a made-up last-backup timestamp.
       notifications: {
-        channel: null,
-        topic: null,
-        testStatus: 'not_configured',
+        channel: state.notificationChannel || null,
+        topic: state.notificationTarget || null,
+        target: state.notificationTarget || null,
+        testStatus: state.notificationChannel ? 'configured' : 'not_configured',
       },
       backups: (() => {
         const backupDir = process.env.BACKUP_DIR;
         const status = {
           schedule: backupDir ? '0 2 * * *' : null,
-          destinations: backupDir ? [backupDir] : [],
+          destination: state.backupDestination || (backupDir ? 'local' : null),
+          destinations: state.backupDestination ? [state.backupDestination] : (backupDir ? [backupDir] : []),
+          agePublicKey: state.backupAgePublicKey || null,
           encrypt: 'age',
           retention: { daily: 7, weekly: 4, monthly: 6 },
           lastRestoreTest: 'not_configured',
@@ -140,6 +152,7 @@ export function createSettingsRoutes(
         return status;
       })(),
       theme: state.theme,
+      themePreset: state.selectedThemePreset || 'editorial-classic',
       themeConformance: verifyThemeConformance(state.theme),
       redaction: {
         exclusions: state.redactionExclusions ?? [],
@@ -236,9 +249,56 @@ export function createSettingsRoutes(
     return c.json({ updated: true, constraint: updated });
   });
 
-  // Update theme tokens (§12.3, §12.10)
+  // Update hosting settings (WP-13.4, UX-27)
+  router.patch('/hosting', async (c) => {
+    const body = await c.req.json();
+    if (body.preset !== undefined) state.hostingPreset = String(body.preset);
+    if (body.publicAddress !== undefined) state.publicAddress = String(body.publicAddress);
+    return c.json({
+      updated: true,
+      hosting: {
+        preset: state.hostingPreset || 'free-cloud',
+        publicAddress: state.publicAddress || '',
+      },
+    });
+  });
+
+  // Update notification settings (WP-13.4, UX-27)
+  router.patch('/notifications', async (c) => {
+    const body = await c.req.json();
+    if (body.channel !== undefined) state.notificationChannel = String(body.channel);
+    if (body.target !== undefined) state.notificationTarget = String(body.target);
+    if (body.topic !== undefined) state.notificationTarget = String(body.topic);
+    return c.json({
+      updated: true,
+      notifications: {
+        channel: state.notificationChannel || null,
+        target: state.notificationTarget || null,
+        topic: state.notificationTarget || null,
+      },
+    });
+  });
+
+  // Update backup settings (WP-13.4, UX-27)
+  router.patch('/backups', async (c) => {
+    const body = await c.req.json();
+    if (body.destination !== undefined) state.backupDestination = String(body.destination);
+    if (body.agePublicKey !== undefined) state.backupAgePublicKey = String(body.agePublicKey);
+    return c.json({
+      updated: true,
+      backups: {
+        destination: state.backupDestination || null,
+        agePublicKey: state.backupAgePublicKey || null,
+      },
+    });
+  });
+
+  // Update theme tokens & theme preset (§12.3, §12.10, WP-13.4)
   router.patch('/theme', async (c) => {
     const body = await c.req.json();
+    if (body.preset !== undefined) {
+      state.selectedThemePreset = String(body.preset);
+    }
     if (body.lightTokens) {
       state.theme.lightTokens = { ...state.theme.lightTokens, ...body.lightTokens };
     }
@@ -246,7 +306,34 @@ export function createSettingsRoutes(
       state.theme.darkTokens = { ...state.theme.darkTokens, ...body.darkTokens };
     }
     const conformance = verifyThemeConformance(state.theme);
-    return c.json({ theme: state.theme, conformance });
+    return c.json({ theme: state.theme, themePreset: state.selectedThemePreset || 'editorial-classic', conformance });
+  });
+
+  // General settings patch endpoint (WP-13.4)
+  router.patch('/', async (c) => {
+    const body = await c.req.json();
+    if (body.hosting) {
+      if (body.hosting.preset !== undefined) state.hostingPreset = String(body.hosting.preset);
+      if (body.hosting.publicAddress !== undefined) state.publicAddress = String(body.hosting.publicAddress);
+    }
+    if (body.notifications) {
+      if (body.notifications.channel !== undefined) state.notificationChannel = String(body.notifications.channel);
+      if (body.notifications.target !== undefined) state.notificationTarget = String(body.notifications.target);
+    }
+    if (body.backups) {
+      if (body.backups.destination !== undefined) state.backupDestination = String(body.backups.destination);
+      if (body.backups.agePublicKey !== undefined) state.backupAgePublicKey = String(body.backups.agePublicKey);
+    }
+    if (body.themePreset !== undefined) {
+      state.selectedThemePreset = String(body.themePreset);
+    }
+    return c.json({
+      updated: true,
+      hosting: { preset: state.hostingPreset, publicAddress: state.publicAddress },
+      notifications: { channel: state.notificationChannel, target: state.notificationTarget },
+      backups: { destination: state.backupDestination, agePublicKey: state.backupAgePublicKey },
+      themePreset: state.selectedThemePreset,
+    });
   });
 
   // Test notification channel (§13.9, §14, Fix 21)
