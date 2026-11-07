@@ -4713,12 +4713,15 @@ export function renderAdminSetupPage(): string {
               });
               const data = await res.json();
               if (res.ok) {
+                if (data.csrfToken) {
+                  sessionStorage.setItem('lp_csrf_token', data.csrfToken);
+                }
                 const enrolBox = document.getElementById('totp-enrolment-container');
                 if (enrolBox) enrolBox.style.display = 'none';
                 statusBox.className = 'as-of-banner';
                 const secret = (cachedSetupData && cachedSetupData.totpSecret) || '';
-                const bearer = (cachedSetupData && cachedSetupData.bearerToken) || '';
-                statusBox.innerHTML = '<strong>Setup Completed!</strong> Save your TOTP secret hex: <code>' + secret + '</code>. Your initial API bearer token is: <code>' + bearer + '</code>. <br/><a href="/admin/login" class="btn" style="display:inline-block;margin-top:8px">Proceed to Sign in →</a>';
+                // Per D-12 & WP-13.2: Stop showing the bearer token in the wizard
+                statusBox.innerHTML = '<strong>Setup Completed!</strong> Authenticator enrolled and session established. TOTP secret hex: <code>' + secret + '</code>.<br/><a href="/admin/login" class="btn" style="display:inline-block;margin-top:8px">Proceed to Sign in →</a>';
                 statusBox.style.display = 'block';
                 if (completedActions) completedActions.style.display = 'block';
               } else {

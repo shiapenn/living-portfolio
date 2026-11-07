@@ -92,6 +92,30 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     expect(sharedTotpSecret).toMatch(/^[a-f0-9]{40}$/i);
     expect(sharedTotpSecret.toLowerCase()).toBe(hexFromBase32.toLowerCase());
 
+    // WP-13.2: Verify bearer token is not shown in the wizard (UX-30 part, D-12)
+    expect(await statusBox.innerText()).not.toContain('Your initial API bearer token');
+    expect(await statusBox.innerText()).not.toContain('lp_pat_');
+
+    // WP-13.2: Session established from setup allows wizard test buttons to succeed without 401 (UX-28)
+    // Click through to Step 4 (Notifications & Alerts)
+    await page.click('#btn-continue-step2');
+    await expect(page.locator('#wizard-step-2')).toBeVisible();
+
+    // From step 2 to step 3
+    await page.click('#wizard-step-2 button[data-target="3"]');
+    await expect(page.locator('#wizard-step-3')).toBeVisible();
+
+    // From step 3 to step 4
+    await page.click('#wizard-step-3 button[data-target="4"]');
+    await expect(page.locator('#wizard-step-4')).toBeVisible();
+
+    // Click "Test Delivery Notification"
+    await page.click('#btn-setup-test-alert');
+    const alertResult = page.locator('#setup-alert-result');
+    await expect(alertResult).toBeVisible();
+    await expect(alertResult).not.toContainText('Unauthorized');
+    await expect(alertResult).not.toContainText('401');
+
     await expect(page.locator('a[href="/admin/login"]')).toBeVisible();
   });
 

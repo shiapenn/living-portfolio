@@ -200,7 +200,19 @@ export class AuthManager {
     };
   }
 
-  confirmTotpSetup(code: string): { ok: boolean; status: number; error?: string; message?: string } {
+  createSession(username: string, nowMs = Date.now()): AdminSession {
+    const session: AdminSession = {
+      id: randomBytes(24).toString('hex'),
+      username,
+      csrfToken: randomBytes(24).toString('hex'),
+      createdAtMs: nowMs,
+      expiresAtMs: nowMs + 12 * 3600 * 1000,
+    };
+    this.sessions.set(session.id, session);
+    return session;
+  }
+
+  confirmTotpSetup(code: string): { ok: boolean; status: number; session?: AdminSession; error?: string; message?: string } {
     if (!this.account) {
       return {
         ok: false,
@@ -227,7 +239,8 @@ export class AuthManager {
     }
     this.account.totpConfirmed = true;
     this.persistState();
-    return { ok: true, status: 200 };
+    const session = this.createSession(this.account.username);
+    return { ok: true, status: 200, session };
   }
 
   registerRawBearerToken(label: string, rawToken: string): ApiBearerTokenRecord {
@@ -519,15 +532,29 @@ export function createAuthRoutes(auth: AuthManager) {
     );
   });
 
-  // Verify TOTP enrollment code before setup is marked complete (WP-13.1, UX-26)
+  // Verify TOTP enrollment code before setup is marked complete (WP-13.1, UX-26, WP-13.2)
   router.post('/totp/confirm', async (c) => {
     const body = await c.req.json();
     const code = String(body.code || '').trim();
     const res = auth.confirmTotpSetup(code);
-    if (!res.ok) {
+    if (!res.ok || !res.session) {
       return c.json({ error: res.error, message: res.message }, res.status as any);
     }
-    return c.json({ ok: true, message: 'TOTP authentication confirmed. Setup complete.' }, 200);
+    c.header(
+      'Set-Cookie',
+      `lp_session=${res.session.id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200`
+    );
+    return c.json(
+      {
+        ok: true,
+        message: 'TOTP authentication confirmed. Setup complete.',
+        authenticated: true,
+        username: res.session.username,
+        csrfToken: res.session.csrfToken,
+        expiresAt: new Date(res.session.expiresAtMs).toISOString(),
+      },
+      200
+    );
   });
 
   // Login with password + TOTP and IP throttling (C.3)
