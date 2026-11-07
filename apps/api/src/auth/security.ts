@@ -38,15 +38,22 @@ export interface RedactionPreviewTokenPayload {
   exp: number;
 }
 
-export function generateRecoveryCodes(count = 8): { rawCodes: string[]; hashedCodes: string[] } {
+export function computeRecoveryCodeHash(code: string, salt: string, key = 'lp-recovery-secret'): string {
+  return createHmac('sha256', key).update(`${salt}:${code}`).digest('hex');
+}
+
+export function generateRecoveryCodes(count = 8, key = 'lp-recovery-secret'): { rawCodes: string[]; hashedCodes: string[] } {
   const rawCodes: string[] = [];
   const hashedCodes: string[] = [];
   for (let i = 0; i < count; i++) {
-    const p1 = randomBytes(2).toString('hex');
-    const p2 = randomBytes(2).toString('hex');
-    const code = `${p1}-${p2}`;
+    // 8 random bytes = 16 hex chars = 64 bits of entropy (formatted as xxxx-xxxx-xxxx-xxxx)
+    const buf = randomBytes(8);
+    const hex = buf.toString('hex');
+    const code = `${hex.slice(0, 4)}-${hex.slice(4, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}`;
+    const salt = randomBytes(16).toString('hex');
+    const hash = computeRecoveryCodeHash(code, salt, key);
     rawCodes.push(code);
-    hashedCodes.push(sha256Hex(code));
+    hashedCodes.push(`${salt}:${hash}`);
   }
   return { rawCodes, hashedCodes };
 }
@@ -195,7 +202,7 @@ export class AuthManager {
       accountName: username,
       secretBase32: totpSecretBase32,
     });
-    const { rawCodes, hashedCodes } = generateRecoveryCodes(8);
+    const { rawCodes, hashedCodes } = generateRecoveryCodes(8, this.signingKey);
     this.account = {
       username,
       passwordSalt: salt,
@@ -358,10 +365,15 @@ export class AuthManager {
 
     const rawInput = (code || '').trim();
 
-    // WP-13.8: Check for multiple codes pasted / multi-line list
+    // WP-13.8 & WP-13.11: Check for multiple codes pasted / multi-line list
     const lines = rawInput.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-    const codeMatches = rawInput.match(/[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}/g);
-    if (lines.length > 1 || (codeMatches && codeMatches.length > 1)) {
+    const strippedInput = rawInput.replace(/[\s-]+/g, '');
+    const tokens = rawInput.trim().split(/\s+/);
+    const hasMultipleCodes =
+      lines.length > 1 ||
+      strippedInput.length >= 32 ||
+      (tokens.length > 1 && tokens.filter((t) => /^[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}$/.test(t)).length > 1);
+    if (hasMultipleCodes) {
       return {
         ok: false,
         status: 400,
@@ -373,21 +385,48 @@ export class AuthManager {
     const isRecoveryMode = options?.isRecovery || rawInput.includes('-') || (rawInput.length > 0 && !/^\d{6}$/.test(rawInput));
 
     if (isRecoveryMode) {
-      // Normalize recovery code: lowercase, trim, strip inner whitespace, ensure hyphen
-      const noSpaces = rawInput.toLowerCase().replace(/\s+/g, '');
-      const formattedRecovery = /^[a-z0-9]{8}$/.test(noSpaces)
-        ? `${noSpaces.slice(0, 4)}-${noSpaces.slice(4)}`
-        : noSpaces;
+      // WP-13.11: Normalize recovery code (strip whitespace and hyphens, lowercase)
+      const stripped = rawInput.toLowerCase().replace(/[\s-]+/g, '');
+      const formattedRecovery = /^[a-z0-9]{16}$/.test(stripped)
+        ? `${stripped.slice(0, 4)}-${stripped.slice(4, 8)}-${stripped.slice(8, 12)}-${stripped.slice(12, 16)}`
+        : (/^[a-z0-9]{8}$/.test(stripped)
+          ? `${stripped.slice(0, 4)}-${stripped.slice(4)}`
+          : rawInput.trim().toLowerCase());
 
       let usedRecoveryCode = false;
+      let matchedIndex = -1;
+      const key = this.signingKey || 'lp-recovery-secret';
       if (this.account.recoveryCodeHashes && this.account.recoveryCodeHashes.length > 0) {
-        const codeHash = sha256Hex(formattedRecovery);
-        const matchIndex = this.account.recoveryCodeHashes.indexOf(codeHash);
-        if (matchIndex !== -1) {
-          this.account.recoveryCodeHashes.splice(matchIndex, 1);
-          this.persistState();
-          usedRecoveryCode = true;
+        for (let i = 0; i < this.account.recoveryCodeHashes.length; i++) {
+          const entry = this.account.recoveryCodeHashes[i];
+          if (entry.includes(':')) {
+            const [salt, storedHash] = entry.split(':');
+            const candidateHash = computeRecoveryCodeHash(formattedRecovery, salt, key);
+            const a = Buffer.from(candidateHash, 'hex');
+            const b = Buffer.from(storedHash, 'hex');
+            if (a.length === b.length && timingSafeEqual(a, b)) {
+              if (matchedIndex === -1) {
+                matchedIndex = i;
+              }
+            }
+          } else {
+            // Backwards compatibility with legacy unsalted sha256 hashes
+            const candidateHash = sha256Hex(formattedRecovery);
+            const a = Buffer.from(candidateHash, 'hex');
+            const b = Buffer.from(entry, 'hex');
+            if (a.length === b.length && timingSafeEqual(a, b)) {
+              if (matchedIndex === -1) {
+                matchedIndex = i;
+              }
+            }
+          }
         }
+      }
+
+      if (matchedIndex !== -1 && this.account.recoveryCodeHashes) {
+        this.account.recoveryCodeHashes.splice(matchedIndex, 1);
+        this.persistState();
+        usedRecoveryCode = true;
       }
 
       if (!usedRecoveryCode) {

@@ -124,8 +124,8 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(codeElements).toHaveCount(8);
     sharedRecoveryCode = (await codeElements.first().innerText()).trim();
     sharedRecoveryCode2 = (await codeElements.nth(1).innerText()).trim();
-    expect(sharedRecoveryCode).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}$/);
-    expect(sharedRecoveryCode2).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}$/);
+    expect(sharedRecoveryCode).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}$/);
+    expect(sharedRecoveryCode2).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}$/);
 
     // Continue button is disabled before ticking the gate
     const continueBtn = sharedPage.locator('#btn-continue-step2');
@@ -139,7 +139,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     const downloadPath = await download.path();
     if (downloadPath) {
       sharedDownloadedFileContent = readFileSync(downloadPath, 'utf8');
-      const matched = sharedDownloadedFileContent.match(/[a-f0-9]{4}-[a-f0-9]{4}/g);
+      const matched = sharedDownloadedFileContent.match(/[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}/g);
       if (matched) {
         sharedAllRecoveryCodes = matched;
       }
@@ -598,7 +598,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
 
     const codeLabel = page.locator('#login-code-label');
     await expect(codeLabel).toContainText('Single-Use Recovery Code');
-    await expect(page.locator('#login-totp')).toHaveAttribute('placeholder', 'xxxx-xxxx');
+    await expect(page.locator('#login-totp')).toHaveAttribute('placeholder', 'xxxx-xxxx-xxxx-xxxx');
     await expect(codeHelp).toContainText('Enter one of your 8 emergency alphanumeric recovery codes');
 
     // 3. Sign in with recovery code 2
@@ -680,8 +680,8 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(errorMsg).toContainText('Enter one code at a time');
 
     // 4. One code typed with messy formatting (spaces, uppercase) normalizes and signs in successfully
-    const testCode1 = sharedAllRecoveryCodes[2] || 'a1b2-c3d4';
-    const messyCode = `  ${testCode1.slice(0, 4).toUpperCase()} - ${testCode1.slice(5).toUpperCase()}  `;
+    const testCode1 = sharedAllRecoveryCodes[2] || 'a1b2-c3d4-e5f6-7890';
+    const messyCode = `  ${testCode1.toUpperCase().replace(/-/g, ' - ')}  `;
     await page.fill('#login-totp', messyCode);
     await page.click('button[type="submit"]');
     await page.waitForURL((url) => url.pathname === '/admin');
@@ -692,7 +692,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.waitForURL((url) => url.pathname === '/admin/login');
     await toggleBtn.click();
 
-    const testCode2 = sharedAllRecoveryCodes[3] || 'b2c3-d4e5';
+    const testCode2 = sharedAllRecoveryCodes[3] || 'b2c3-d4e5-f6a7-8901';
     await page.evaluate((text) => {
       const input = document.getElementById('login-totp') as HTMLInputElement;
       input.value = text;

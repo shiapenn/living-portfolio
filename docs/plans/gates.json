@@ -342,7 +342,8 @@
         "WP-13.7",
         "WP-13.8",
         "WP-13.9",
-        "WP-13.10"
+        "WP-13.10",
+        "WP-13.11"
       ],
       "requiredPassingTests": [
         "WP-13.1 Conformance: Real Authenticator Enrolment › Setup generates valid base32 TOTP secret and otpauth URI",
@@ -354,7 +355,8 @@
         "WP-13.6 Conformance: Login & Sign-Out › Supports recovery code login and sign-out invalidates session",
         "WP-13.7 Conformance: Start-Here & Admin Route Guard › Standalone /admin routes redirect unauthenticated sessions to /login",
         "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 7. First-run setup wizard: No wizard step shows an enabled control whose only result is an error",
-        "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 17. WP-13.8: Recovery-code sign-in, pasting multi-line list rejection, normalisation, and single-use burn (UX-31)"
+        "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 17. WP-13.8: Recovery-code sign-in, pasting multi-line list rejection, normalisation, and single-use burn (UX-31)",
+        "WP-13.3 Conformance: Credentials Screen & Recovery Codes › WP-13.11: Recovery code attempts share login rate-limiting and trigger 15-minute lockout after 5 failures"
       ],
       "closingReceipt": null,
       "handover": null

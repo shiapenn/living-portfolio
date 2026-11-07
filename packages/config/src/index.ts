@@ -1,5 +1,5 @@
-import { readFileSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync, existsSync, mkdirSync } from 'node:fs';
+import { resolve, isAbsolute } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
 
@@ -132,6 +132,24 @@ export const CONFIG_SETTINGS_METADATA: readonly SettingMetadata[] = [
     description: 'Path to confidential data exclusion list JSON file (§4.3, UX-03)',
     defaultValue: 'data/redaction-exclusions.json',
     exampleValue: 'data/redaction-exclusions.json',
+    secret: false,
+    public: false,
+  },
+  {
+    key: 'DATA_DIR',
+    category: 'deploy',
+    description: 'Absolute path to application data directory (defaults to <repo_root>/data)',
+    defaultValue: '',
+    exampleValue: './data',
+    secret: false,
+    public: false,
+  },
+  {
+    key: 'BACKUP_DIR',
+    category: 'deploy',
+    description: 'Absolute path to backup destination directory (defaults to <DATA_DIR>/backups)',
+    defaultValue: '',
+    exampleValue: './data/backups',
     secret: false,
     public: false,
   },
@@ -307,6 +325,8 @@ export const AppConfigSchema = z
     NTFY_TOPIC: z.string().default(''),
     AGE_PUBLIC_KEY: z.string().default(''),
     S3_BACKUP_BUCKET: z.string().default(''),
+    DATA_DIR: z.string().default(''),
+    BACKUP_DIR: z.string().default(''),
     G4_SIGNOFF_PATH: z.string().default(''),
     PUBLIC_API_BASE_URL: z.string().min(1).default('/api'),
     PUBLIC_SITE_NAME: z.string().min(1).default('Portfolio Sandbox'),
@@ -370,6 +390,57 @@ export const AppConfigSchema = z
       }
     }
   });
+
+export function findRepoRoot(startDir = process.cwd()): string {
+  let curr = resolve(startDir);
+  for (let i = 0; i < 6; i++) {
+    if (existsSync(resolve(curr, 'pnpm-workspace.yaml'))) {
+      return curr;
+    }
+    const parent = resolve(curr, '..');
+    if (parent === curr) break;
+    curr = parent;
+  }
+  return resolve(startDir);
+}
+
+export function resolveDataDir(customDataDir?: string, startDir = process.cwd()): string {
+  const root = findRepoRoot(startDir);
+  const raw = customDataDir || process.env.DATA_DIR;
+  const resolved = raw && raw.trim() !== ''
+    ? (isAbsolute(raw.trim()) ? raw.trim() : resolve(root, raw.trim()))
+    : resolve(root, 'data');
+  if (!existsSync(resolved)) {
+    try {
+      mkdirSync(resolved, { recursive: true });
+    } catch {
+      // In restricted filesystems caller handles
+    }
+  }
+  return resolved;
+}
+
+export function resolveBackupDir(customBackupDir?: string, customDataDir?: string, startDir = process.cwd()): string {
+  const root = findRepoRoot(startDir);
+  const raw = customBackupDir || process.env.BACKUP_DIR;
+  if (raw && raw.trim() !== '') {
+    const resolved = isAbsolute(raw.trim()) ? raw.trim() : resolve(root, raw.trim());
+    if (!existsSync(resolved)) {
+      try {
+        mkdirSync(resolved, { recursive: true });
+      } catch {}
+    }
+    return resolved;
+  }
+  const dataDir = resolveDataDir(customDataDir, startDir);
+  const backupDir = resolve(dataDir, 'backups');
+  if (!existsSync(backupDir)) {
+    try {
+      mkdirSync(backupDir, { recursive: true });
+    } catch {}
+  }
+  return backupDir;
+}
 
 export function findG4SignoffPath(): string {
   if (process.env.G4_SIGNOFF_PATH) return process.env.G4_SIGNOFF_PATH;
