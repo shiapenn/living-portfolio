@@ -288,6 +288,8 @@ export function renderLayout(
   const headerSlotHtml = options?.headerSlot ? `    ${options.headerSlot}\n` : '';
   const footerSlotHtml = options?.footerSlot ? `    ${options.footerSlot}\n` : '';
 
+  const isAdmin = activePath.startsWith('/admin') && activePath !== '/admin/login' && activePath !== '/admin/setup';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -304,6 +306,7 @@ ${headerSlotHtml}    <nav class="site-nav" aria-label="Primary navigation">
       <a href="/" class="site-brand"${activePath === '/' ? ' aria-current="page"' : ''}>${brandHtml}</a>
       <div class="nav-links">
         ${navHtml}
+        ${isAdmin ? `<button type="button" class="btn btn-secondary" id="btn-admin-logout" style="font-size:12px;padding:4px 10px;margin-left:8px;cursor:pointer">Sign out</button>` : ''}
         <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-pressed="false" style="min-height:44px"><span aria-hidden="true">◐</span> <span class="theme-label">Dark theme</span></button>
       </div>
     </nav>
@@ -326,6 +329,19 @@ ${footerSlotHtml}    <div style="display:flex;justify-content:space-between;alig
   </footer>
   <script${nonceAttr}>
     (function() {
+      const logoutBtn = document.getElementById('btn-admin-logout');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', async function() {
+          try {
+            if (typeof window.apiClient === 'function') {
+              await window.apiClient('/api/auth/logout', { method: 'POST' });
+            }
+          } catch (_) {}
+          try { sessionStorage.removeItem('lp_csrf_token'); } catch (_) {}
+          window.location.href = '/admin/login';
+        });
+      }
+
       const btn = document.getElementById('theme-toggle');
       function getStoredTheme() {
         try {
@@ -4214,8 +4230,14 @@ export function renderAdminLoginPage(): string {
           <input id="login-password" type="password" class="ask-input" style="width:100%;padding:8px" autocomplete="current-password" required />
         </div>
         <div style="margin-bottom:16px">
-          <label for="login-totp" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Authenticator (TOTP) or Recovery Code</label>
-          <input id="login-totp" type="text" maxlength="16" class="ask-input" style="width:100%;padding:8px;font-family:var(--font-code);letter-spacing:2px" placeholder="6-digit TOTP or recovery code" autocomplete="one-time-code" required />
+          <label id="login-code-label" for="login-totp" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">6-Digit Authenticator Code</label>
+          <input id="login-totp" type="text" maxlength="16" class="ask-input" style="width:100%;padding:8px;font-family:var(--font-code);letter-spacing:2px" placeholder="000000" autocomplete="one-time-code" required />
+          <div id="login-code-help" style="font-size:12px;color:var(--text-muted);margin-top:4px">
+            Enter the 6-digit verification code from your authenticator app (Google Authenticator, 1Password, etc.).
+          </div>
+          <div style="margin-top:8px">
+            <button type="button" id="btn-toggle-recovery" style="background:none;border:none;padding:0;font-size:12px;color:var(--accent);text-decoration:underline;cursor:pointer">Lost your authenticator device? Sign in with a recovery code</button>
+          </div>
         </div>
         <button type="submit" class="btn" style="width:100%;padding:10px">Sign in</button>
       </form>
@@ -4227,6 +4249,28 @@ export function renderAdminLoginPage(): string {
       (function() {
         const form = document.getElementById('admin-login-form');
         const errBox = document.getElementById('login-error');
+        const toggleBtn = document.getElementById('btn-toggle-recovery');
+        const codeLabel = document.getElementById('login-code-label');
+        const codeInput = document.getElementById('login-totp');
+        const codeHelp = document.getElementById('login-code-help');
+        let recoveryMode = false;
+
+        if (toggleBtn && codeLabel && codeInput && codeHelp) {
+          toggleBtn.addEventListener('click', function() {
+            recoveryMode = !recoveryMode;
+            if (recoveryMode) {
+              codeLabel.textContent = 'Single-Use Recovery Code';
+              codeInput.placeholder = 'xxxx-xxxx';
+              codeHelp.textContent = 'Enter one of your 8 emergency alphanumeric recovery codes. Each code can only be used once.';
+              toggleBtn.textContent = 'Have your authenticator? Use 6-digit TOTP code';
+            } else {
+              codeLabel.textContent = '6-Digit Authenticator Code';
+              codeInput.placeholder = '000000';
+              codeHelp.textContent = 'Enter the 6-digit verification code from your authenticator app (Google Authenticator, 1Password, etc.).';
+              toggleBtn.textContent = 'Lost your authenticator device? Sign in with a recovery code';
+            }
+          });
+        }
 
         ${ADMIN_API_CLIENT_SCRIPT}
 

@@ -3569,17 +3569,20 @@
   spec_sections:
     - "13.4"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/auth.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-07
+      status: fixed
+      note: Fixed in WP-13.6 (A066). Login page provides clear explainer for 6-digit authenticator code and explicit toggle button to sign in using single-use emergency recovery codes.
   verified_by: null
 - id: 20261106-UX-32
   audit: AUD-2026-11-06
@@ -3768,11 +3771,14 @@
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/auth.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-07
+      status: open
+      note: Partially addressed in WP-13.6 (A066). Added Sign out action to admin workspace navigation header that calls POST /api/auth/logout, clears session, and redirects to login. Account management screens scheduled for WP-17.4.
   verified_by: null
 - id: 20261106-UX-42
   audit: AUD-2026-11-06

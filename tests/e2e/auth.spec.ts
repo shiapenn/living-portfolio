@@ -44,6 +44,7 @@ const TEST_USERNAME = 'admin_tester';
 const TEST_PASSWORD = 'StrongMasterPassword2026!';
 let sharedTotpSecret = '';
 let sharedRecoveryCode = '';
+let sharedRecoveryCode2 = '';
 
 test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', () => {
   test('1. First-run setup wizard completes owner account creation', async ({ page }) => {
@@ -107,7 +108,9 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     const codeElements = credBox.locator('#recovery-codes-grid code');
     await expect(codeElements).toHaveCount(8);
     sharedRecoveryCode = (await codeElements.first().innerText()).trim();
+    sharedRecoveryCode2 = (await codeElements.nth(1).innerText()).trim();
     expect(sharedRecoveryCode).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}$/);
+    expect(sharedRecoveryCode2).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}$/);
 
     // Continue button is disabled before ticking the gate
     const continueBtn = page.locator('#btn-continue-step2');
@@ -476,5 +479,50 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
       const primaryMatches = stepMatch![0].match(/class="[^"]*btn-primary[^"]*"/g) || [];
       expect(primaryMatches.length).toBe(1);
     }
+  });
+
+  test('9. WP-13.6: Recovery code login path and admin sign-out flow (UX-31, UX-41)', async ({ page }) => {
+    // 1. Visit /admin/login from unauthenticated state
+    await page.context().clearCookies();
+    await page.goto('/admin/login');
+    await expect(page.locator('h1')).toContainText('Owner Sign in');
+
+    // Field explainer describes the 6-digit authenticator code (UX-31)
+    const codeHelp = page.locator('#login-code-help');
+    await expect(codeHelp).toBeVisible();
+    await expect(codeHelp).toContainText('Enter the 6-digit verification code from your authenticator app');
+
+    // 2. Toggle to recovery code mode via explicit path
+    const toggleBtn = page.locator('#btn-toggle-recovery');
+    await expect(toggleBtn).toBeVisible();
+    await toggleBtn.click();
+
+    const codeLabel = page.locator('#login-code-label');
+    await expect(codeLabel).toContainText('Single-Use Recovery Code');
+    await expect(page.locator('#login-totp')).toHaveAttribute('placeholder', 'xxxx-xxxx');
+    await expect(codeHelp).toContainText('Enter one of your 8 emergency alphanumeric recovery codes');
+
+    // 3. Sign in with recovery code 2
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.fill('#login-totp', sharedRecoveryCode2);
+    await page.click('button[type="submit"]');
+
+    await page.waitForURL((url) => url.pathname === '/admin');
+    await expect(page.locator('h1')).toContainText('Admin Workspace');
+
+    // 4. Header contains Sign out control (UX-41)
+    const logoutBtn = page.locator('#btn-admin-logout');
+    await expect(logoutBtn).toBeVisible();
+    await expect(logoutBtn).toContainText('Sign out');
+
+    // 5. Sign out ends session and redirects to /admin/login
+    await logoutBtn.click();
+    await page.waitForURL((url) => url.pathname === '/admin/login');
+    await expect(page.locator('h1')).toContainText('Owner Sign in');
+
+    // Attempting to visit /admin now redirects back to /admin/login
+    await page.goto('/admin');
+    await expect(page).toHaveURL(/\/admin\/login/);
   });
 });
