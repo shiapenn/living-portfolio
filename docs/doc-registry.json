@@ -873,5 +873,13 @@
     "path": "docs/execution-reports/A070-wp-1310-honest-step-6-theme-copy.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A071",
+    "title": "WP-13.11 Recovery code entropy and backup path",
+    "class": "A",
+    "path": "docs/execution-reports/A071-wp-1311-recovery-code-entropy-and-backup-path.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
