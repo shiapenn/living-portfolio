@@ -4,7 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { CONFIG_SETTINGS_METADATA, AppConfigSchema } from '@living-portfolio/config';
 import { renderAdminSetupPage } from '@living-portfolio/web';
 import { createApp } from '../app.js';
-import { computeTotpCode } from '../auth/security.js';
+import { computeTotpCode, hashPassword, sha256Hex } from '../auth/security.js';
 
 describe('WP-13.1 Conformance: Real Authenticator Enrolment', () => {
   it('Setup generates valid base32 TOTP secret and otpauth URI', async () => {
@@ -331,6 +331,116 @@ describe('WP-13.3 Conformance: Credentials Screen & Recovery Codes', () => {
     expect(lockedRes.status).toBe(429);
     const lockedData = await lockedRes.json();
     expect(lockedData.message).toContain('Try again in 15 minutes.');
+  });
+
+  it('Downloaded recovery file contains exactly 8 codes of 16 hex characters each, and each signs in exactly once', async () => {
+    const { app } = createApp();
+    const setupRes = await app.request('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'download_owner',
+        password: 'ValidPassword12345!',
+      }),
+    });
+    expect(setupRes.status).toBe(201);
+    const setupData = await setupRes.json();
+    const validTotp = computeTotpCode(setupData.totpSecret);
+    await app.request('/api/auth/totp/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: validTotp }),
+    });
+
+    // Simulate downloaded file content as produced by the UI export
+    const downloadedFileContent = [
+      '# Living Portfolio Emergency Recovery Codes',
+      `# Generated: ${new Date().toISOString()}`,
+      '# Keep these safe. Each code can only be used once.',
+      '',
+      ...setupData.recoveryCodes,
+      '',
+    ].join('\n');
+
+    // Parse the file for 16-hex codes
+    const fileCodes = downloadedFileContent.match(/[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}/g);
+    expect(fileCodes).toBeTruthy();
+    expect(fileCodes).toHaveLength(8);
+
+    // Assert each code is 16 hex characters (plus hyphens = 19 chars) and each signs in exactly once
+    for (const code of fileCodes!) {
+      const hexOnly = code.replace(/-/g, '');
+      expect(hexOnly).toHaveLength(16);
+      expect(hexOnly).toMatch(/^[a-f0-9]{16}$/);
+
+      // Sign in with this code: succeeds exactly once
+      const loginRes1 = await app.request('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: 'download_owner',
+          password: 'ValidPassword12345!',
+          recoveryCode: code,
+        }),
+      });
+      expect(loginRes1.status).toBe(200);
+
+      // Second sign-in with the same code fails (burned)
+      const loginRes2 = await app.request('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: 'download_owner',
+          password: 'ValidPassword12345!',
+          recoveryCode: code,
+        }),
+      });
+      expect(loginRes2.status).toBe(401);
+    }
+  });
+
+  it('Legacy 8-character recovery codes from existing instances continue to authenticate seamlessly', async () => {
+    const { app, auth } = createApp();
+    const legacyCode = 'abcd-1234';
+    const legacyHash = sha256Hex(legacyCode);
+    (auth as any).account = {
+      username: 'legacy_owner',
+      passwordSalt: 'salt123',
+      passwordHash: hashPassword('ValidPassword12345!', 'salt123').hash,
+      totpSecret: 'NBSWY3DPEHPK3PXP',
+      createdAt: new Date().toISOString(),
+      totpConfirmed: true,
+      recoveryCodeHashes: [legacyHash],
+    };
+
+    // Attempt login with legacy 8-character recovery code succeeds
+    const res = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'legacy_owner',
+        password: 'ValidPassword12345!',
+        recoveryCode: legacyCode,
+      }),
+    });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.authenticated).toBe(true);
+
+    // Verify code was burned
+    expect((auth as any).account.recoveryCodeHashes.length).toBe(0);
+
+    // Second attempt fails
+    const res2 = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'legacy_owner',
+        password: 'ValidPassword12345!',
+        recoveryCode: legacyCode,
+      }),
+    });
+    expect(res2.status).toBe(401);
   });
 });
 
