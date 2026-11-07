@@ -760,5 +760,14 @@
     "path": "docs/execution-reports/A059-wp-124-gate-g5-release-certification.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L015",
+    "title": "UX Specification Audit Report",
+    "class": "L",
+    "path": "docs/audits/2026-11-06-ux-specification-audit/report.md",
+    "status": "frozen",
+    "supersedes": null,
+    "sha256": "b2384104a2d0b44c1add6b4fffacf66cca99e2c5abb40c9484e14e4dedd505a9"
   }
 ]
