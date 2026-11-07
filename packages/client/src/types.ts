@@ -72,6 +72,7 @@ export interface AuthSetupResponse {
   totpSecretBase32?: string;
   otpauthUri?: string;
   qrCodeSvg?: string;
+  recoveryCodes?: string[];
   bearerToken: string;
 }
 

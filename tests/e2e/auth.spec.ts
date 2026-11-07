@@ -42,6 +42,7 @@ function base32ToHex(b32: string): string {
 const TEST_USERNAME = 'admin_tester';
 const TEST_PASSWORD = 'StrongMasterPassword2026!';
 let sharedTotpSecret = '';
+let sharedRecoveryCode = '';
 
 test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', () => {
   test('1. First-run setup wizard completes owner account creation', async ({ page }) => {
@@ -96,9 +97,34 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     expect(await statusBox.innerText()).not.toContain('Your initial API bearer token');
     expect(await statusBox.innerText()).not.toContain('lp_pat_');
 
+    // WP-13.3: Credentials screen display with recovery codes and gate (UX-30)
+    const credBox = page.locator('#credentials-display-container');
+    await expect(credBox).toBeVisible();
+    await expect(credBox.locator('#credentials-totp-key')).toBeVisible();
+
+    // 8 recovery codes are rendered
+    const codeElements = credBox.locator('#recovery-codes-grid code');
+    await expect(codeElements).toHaveCount(8);
+    sharedRecoveryCode = (await codeElements.first().innerText()).trim();
+    expect(sharedRecoveryCode).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}$/);
+
+    // Continue button is disabled before ticking the gate
+    const continueBtn = page.locator('#btn-continue-step2');
+    await expect(continueBtn).toBeDisabled();
+
+    // Download recovery codes file
+    const downloadPromise = page.waitForEvent('download');
+    await page.click('#btn-download-recovery-codes');
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe('living-portfolio-recovery-codes.txt');
+
+    // Tick the "I saved these" gate
+    await page.check('#setup-saved-credentials-gate');
+    await expect(continueBtn).toBeEnabled();
+
     // WP-13.2: Session established from setup allows wizard test buttons to succeed without 401 (UX-28)
     // Click through to Step 4 (Notifications & Alerts)
-    await page.click('#btn-continue-step2');
+    await continueBtn.click();
     await expect(page.locator('#wizard-step-2')).toBeVisible();
 
     // From step 2 to step 3
@@ -115,8 +141,6 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(alertResult).toBeVisible();
     await expect(alertResult).not.toContainText('Unauthorized');
     await expect(alertResult).not.toContainText('401');
-
-    await expect(page.locator('a[href="/admin/login"]')).toBeVisible();
   });
 
   test('2. /admin/setup is locked down once configured', async ({ page, request }) => {
@@ -333,5 +357,35 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(banner.locator('.as-of-banner')).toBeVisible();
     await expect(banner).toContainText('Automated answering is now');
     await expect(banner.locator('[data-error]')).toHaveCount(0);
+  });
+
+  test('7. WP-13.3: Recovery code signs in once and is consumed', async ({ page }) => {
+    // Clear cookies to test sign in from unauthenticated state
+    await page.context().clearCookies();
+    await page.goto('/admin/login');
+    await expect(page.locator('h1')).toContainText('Owner Sign in');
+
+    // First login using single-use recovery code
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.fill('#login-totp', sharedRecoveryCode);
+    await page.click('button[type="submit"]');
+
+    await page.waitForURL((url) => url.pathname === '/admin');
+    await expect(page.locator('h1')).toContainText('Admin Workspace');
+
+    // Clear session to test second attempt with the same recovery code
+    await page.context().clearCookies();
+    await page.goto('/admin/login');
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.fill('#login-totp', sharedRecoveryCode);
+    await page.click('button[type="submit"]');
+
+    // Second sign-in fails because the recovery code was burned
+    await expect(page).toHaveURL(/\/admin\/login/);
+    const errorMsg = page.locator('#login-error');
+    await expect(errorMsg).toBeVisible();
+    await expect(errorMsg).toContainText('Invalid TOTP or recovery code');
   });
 });

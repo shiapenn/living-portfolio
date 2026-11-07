@@ -147,3 +147,74 @@ describe('WP-13.2 Conformance: Session from Setup', () => {
     expect(alertRes.status).toBe(501);
   });
 });
+
+describe('WP-13.3 Conformance: Credentials Screen & Recovery Codes', () => {
+  it('Generates 8 single-use recovery codes during setup; allows sign-in once per code', async () => {
+    const { app, auth } = createApp();
+
+    const setupRes = await app.request('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'recovery_owner',
+        password: 'ValidPassword12345!',
+      }),
+    });
+    expect(setupRes.status).toBe(201);
+    const setupData = await setupRes.json();
+
+    // Setup returns 8 recovery codes
+    expect(Array.isArray(setupData.recoveryCodes)).toBe(true);
+    expect(setupData.recoveryCodes.length).toBe(8);
+    for (const code of setupData.recoveryCodes) {
+      expect(typeof code).toBe('string');
+      expect(code).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}$/);
+    }
+
+    // Server stores only SHA-256 hashes, not plaintext recovery codes
+    const account = (auth as any).account;
+    expect(account).toBeTruthy();
+    expect(Array.isArray(account.recoveryCodeHashes)).toBe(true);
+    expect(account.recoveryCodeHashes.length).toBe(8);
+    expect(account.recoveryCodeHashes).not.toContain(setupData.recoveryCodes[0]);
+
+    // Confirm TOTP to mark setup completed
+    const validTotp = computeTotpCode(setupData.totpSecret);
+    const confirmRes = await app.request('/api/auth/totp/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: validTotp }),
+    });
+    expect(confirmRes.status).toBe(200);
+
+    // First login with recovery code #0 succeeds
+    const codeToUse = setupData.recoveryCodes[0];
+    const loginRes1 = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'recovery_owner',
+        password: 'ValidPassword12345!',
+        recoveryCode: codeToUse,
+      }),
+    });
+    expect(loginRes1.status).toBe(200);
+    const loginData1 = await loginRes1.json();
+    expect(loginData1.authenticated).toBe(true);
+
+    // Remaining stored recovery code hashes count is 7
+    expect(account.recoveryCodeHashes.length).toBe(7);
+
+    // Second login with the same recovery code #0 fails (single-use)
+    const loginRes2 = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'recovery_owner',
+        password: 'ValidPassword12345!',
+        recoveryCode: codeToUse,
+      }),
+    });
+    expect(loginRes2.status).toBe(401);
+  });
+});

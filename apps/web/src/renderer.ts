@@ -4214,8 +4214,8 @@ export function renderAdminLoginPage(): string {
           <input id="login-password" type="password" class="ask-input" style="width:100%;padding:8px" autocomplete="current-password" required />
         </div>
         <div style="margin-bottom:16px">
-          <label for="login-totp" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Authenticator (TOTP) Code</label>
-          <input id="login-totp" type="text" pattern="[0-9]{6}" maxlength="6" class="ask-input" style="width:100%;padding:8px;font-family:var(--font-code);letter-spacing:2px" placeholder="123456" autocomplete="one-time-code" required />
+          <label for="login-totp" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Authenticator (TOTP) or Recovery Code</label>
+          <input id="login-totp" type="text" maxlength="16" class="ask-input" style="width:100%;padding:8px;font-family:var(--font-code);letter-spacing:2px" placeholder="6-digit TOTP or recovery code" autocomplete="one-time-code" required />
         </div>
         <button type="submit" class="btn" style="width:100%;padding:10px">Sign in</button>
       </form>
@@ -4383,8 +4383,46 @@ export function renderAdminSetupPage(): string {
           </form>
         </div>
 
-        <div id="account-completed-actions" style="display:none;margin-top:16px">
-          <button type="button" class="btn btn-primary" id="btn-continue-step2" style="width:100%;padding:10px;margin-bottom:8px">Continue to Step 2: Hosting Option &amp; Preset →</button>
+        <div id="credentials-display-container" style="display:none;margin-top:16px;padding:20px;border:1px solid var(--rule);background:var(--surface-subtle);border-radius:6px">
+          <h3 style="font-size:18px;margin:0 0 8px 0">Emergency Recovery Credentials</h3>
+          <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px 0">
+            Keep these emergency credentials in a safe place. If you lose access to your primary authenticator device, each recovery code can be used once to sign in.
+          </p>
+
+          <div style="margin-bottom:16px;padding:12px;background:var(--surface);border:1px solid var(--rule);border-radius:4px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span style="font-size:12px;font-weight:600;text-transform:uppercase;color:var(--text-muted)">Authenticator Key (Base32)</span>
+              <button type="button" class="btn btn-secondary" id="btn-copy-totp-key" style="font-size:12px;padding:4px 8px">Copy Key</button>
+            </div>
+            <code id="credentials-totp-key" style="font-size:14px;font-weight:700;word-break:break-all"></code>
+            <p style="font-size:12px;color:var(--text-muted);margin:4px 0 0 0">
+              Use this key to set up a secondary authenticator app if your main device is replaced.
+            </p>
+          </div>
+
+          <div style="margin-bottom:16px;padding:12px;background:var(--surface);border:1px solid var(--rule);border-radius:4px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-size:12px;font-weight:600;text-transform:uppercase;color:var(--text-muted)">Single-Use Recovery Codes</span>
+              <div style="display:flex;gap:8px">
+                <button type="button" class="btn btn-secondary" id="btn-copy-recovery-codes" style="font-size:12px;padding:4px 8px">Copy All</button>
+                <button type="button" class="btn btn-secondary" id="btn-download-recovery-codes" style="font-size:12px;padding:4px 8px">Download (.txt)</button>
+              </div>
+            </div>
+            <div id="recovery-codes-grid" style="display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;font-family:var(--font-code);font-size:14px;font-weight:600">
+            </div>
+            <p style="font-size:12px;color:var(--text-muted);margin:8px 0 0 0">
+              Each code can only be used once. Once used, the server burns the hash and it cannot be reused.
+            </p>
+          </div>
+
+          <div style="margin:16px 0;padding:12px;background:rgba(234, 179, 8, 0.1);border:1px solid rgba(234, 179, 8, 0.3);border-radius:4px">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer">
+              <input type="checkbox" id="setup-saved-credentials-gate" style="width:16px;height:16px" />
+              <span>I have safely downloaded or copied these recovery codes</span>
+            </label>
+          </div>
+
+          <button type="button" class="btn btn-primary" id="btn-continue-step2" disabled style="width:100%;padding:10px;margin-bottom:8px">Continue to Step 2: Hosting Option &amp; Presets →</button>
         </div>
       </div>
 
@@ -4721,9 +4759,21 @@ export function renderAdminSetupPage(): string {
                 statusBox.className = 'as-of-banner';
                 const secret = (cachedSetupData && cachedSetupData.totpSecret) || '';
                 // Per D-12 & WP-13.2: Stop showing the bearer token in the wizard
-                statusBox.innerHTML = '<strong>Setup Completed!</strong> Authenticator enrolled and session established. TOTP secret hex: <code>' + secret + '</code>.<br/><a href="/admin/login" class="btn" style="display:inline-block;margin-top:8px">Proceed to Sign in →</a>';
+                statusBox.innerHTML = '<strong>Setup Completed!</strong> Authenticator enrolled and session established. TOTP secret hex: <code>' + secret + '</code>.';
                 statusBox.style.display = 'block';
-                if (completedActions) completedActions.style.display = 'block';
+
+                const credBox = document.getElementById('credentials-display-container');
+                if (credBox) {
+                  const keyEl = document.getElementById('credentials-totp-key');
+                  if (keyEl) keyEl.textContent = (cachedSetupData && (cachedSetupData.totpSecretBase32 || cachedSetupData.totpSecret)) || '';
+                  const grid = document.getElementById('recovery-codes-grid');
+                  if (grid && cachedSetupData && cachedSetupData.recoveryCodes) {
+                    grid.innerHTML = cachedSetupData.recoveryCodes.map(function(c) {
+                      return '<div style="padding:4px 8px;background:var(--surface);border:1px solid var(--rule);border-radius:4px;text-align:center"><code>' + c + '</code></div>';
+                    }).join('');
+                  }
+                  credBox.style.display = 'block';
+                }
               } else {
                 if (confirmError) {
                   confirmError.textContent = data.message || data.error || 'Invalid TOTP code. Please check your authenticator app.';
@@ -4735,6 +4785,66 @@ export function renderAdminSetupPage(): string {
                 confirmError.textContent = 'Network error verifying TOTP code.';
                 confirmError.style.display = 'block';
               }
+            }
+          });
+        }
+
+        // Credentials screen interactive handlers (WP-13.3, UX-30)
+        const savedGate = document.getElementById('setup-saved-credentials-gate');
+        if (savedGate && continueBtn) {
+          savedGate.addEventListener('change', function() {
+            if (savedGate.checked) {
+              continueBtn.disabled = false;
+              continueBtn.removeAttribute('disabled');
+            } else {
+              continueBtn.disabled = true;
+              continueBtn.setAttribute('disabled', 'disabled');
+            }
+          });
+        }
+
+        const downloadBtn = document.getElementById('btn-download-recovery-codes');
+        if (downloadBtn) {
+          downloadBtn.addEventListener('click', function() {
+            const codes = (cachedSetupData && cachedSetupData.recoveryCodes) || [];
+            const username = (cachedSetupData && cachedSetupData.username) || 'owner';
+            const text = 'Living Portfolio Emergency Recovery Codes\\n' +
+              'Account: ' + username + '\\n' +
+              'Generated: ' + new Date().toISOString() + '\\n\\n' +
+              'Each code can be used once if you lose access to your authenticator app:\\n\\n' +
+              codes.map(function(c, i) { return (i + 1) + '. ' + c; }).join('\\n') + '\\n';
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'living-portfolio-recovery-codes.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          });
+        }
+
+        const copyCodesBtn = document.getElementById('btn-copy-recovery-codes');
+        if (copyCodesBtn) {
+          copyCodesBtn.addEventListener('click', function() {
+            const codes = (cachedSetupData && cachedSetupData.recoveryCodes) || [];
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(codes.join('\\n'));
+              copyCodesBtn.textContent = 'Copied!';
+              setTimeout(function() { copyCodesBtn.textContent = 'Copy All'; }, 2000);
+            }
+          });
+        }
+
+        const copyKeyBtn = document.getElementById('btn-copy-totp-key');
+        if (copyKeyBtn) {
+          copyKeyBtn.addEventListener('click', function() {
+            const key = (cachedSetupData && (cachedSetupData.totpSecretBase32 || cachedSetupData.totpSecret)) || '';
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(key);
+              copyKeyBtn.textContent = 'Copied!';
+              setTimeout(function() { copyKeyBtn.textContent = 'Copy Key'; }, 2000);
             }
           });
         }
