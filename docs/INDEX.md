@@ -70,6 +70,7 @@
 | `A062` | WP-13.2 Session from setup | `active` | [A062-wp-132-session-from-setup.md](execution-reports/A062-wp-132-session-from-setup.md) | — |
 | `A063` | WP-13.3 Credentials screen | `active` | [A063-wp-133-credentials-screen.md](execution-reports/A063-wp-133-credentials-screen.md) | — |
 | `A064` | WP-13.4 Persist wizard choices | `active` | [A064-wp-134-persist-wizard-choices.md](execution-reports/A064-wp-134-persist-wizard-choices.md) | — |
+| `A065` | WP-13.5 Wizard wording and states | `active` | [A065-wp-135-wizard-wording-and-states.md](execution-reports/A065-wp-135-wizard-wording-and-states.md) | — |
 
 ## Handover Snapshots (Class H)
 

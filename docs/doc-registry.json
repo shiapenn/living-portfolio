@@ -817,5 +817,13 @@
     "path": "docs/execution-reports/A064-wp-134-persist-wizard-choices.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A065",
+    "title": "WP-13.5 Wizard wording and states",
+    "class": "A",
+    "path": "docs/execution-reports/A065-wp-135-wizard-wording-and-states.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
