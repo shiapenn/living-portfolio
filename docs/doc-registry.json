@@ -809,5 +809,13 @@
     "path": "docs/execution-reports/A063-wp-133-credentials-screen.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A064",
+    "title": "WP-13.4 Persist wizard choices",
+    "class": "A",
+    "path": "docs/execution-reports/A064-wp-134-persist-wizard-choices.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

@@ -69,6 +69,7 @@
 | `A061` | WP-13.1 Real Authenticator Enrolment | `active` | [A061-wp-131-real-authenticator-enrolment.md](execution-reports/A061-wp-131-real-authenticator-enrolment.md) | — |
 | `A062` | WP-13.2 Session from setup | `active` | [A062-wp-132-session-from-setup.md](execution-reports/A062-wp-132-session-from-setup.md) | — |
 | `A063` | WP-13.3 Credentials screen | `active` | [A063-wp-133-credentials-screen.md](execution-reports/A063-wp-133-credentials-screen.md) | — |
+| `A064` | WP-13.4 Persist wizard choices | `active` | [A064-wp-134-persist-wizard-choices.md](execution-reports/A064-wp-134-persist-wizard-choices.md) | — |
 
 ## Handover Snapshots (Class H)
 
