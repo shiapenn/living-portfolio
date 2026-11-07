@@ -600,6 +600,9 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(codeLabel).toContainText('Single-Use Recovery Code');
     await expect(page.locator('#login-totp')).toHaveAttribute('placeholder', 'xxxx-xxxx-xxxx-xxxx');
     await expect(codeHelp).toContainText('Enter one of your 8 emergency alphanumeric recovery codes');
+    const legacyNotice = page.locator('#login-recovery-legacy-notice');
+    await expect(legacyNotice).toBeVisible();
+    await expect(legacyNotice).toContainText('Legacy 8-character recovery codes from earlier versions continue to be supported');
 
     // 3. Sign in with recovery code 2
     await page.fill('#login-username', TEST_USERNAME);
