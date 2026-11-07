@@ -334,10 +334,11 @@ export class AuthManager {
   authenticateLogin(
     username: string,
     password: string,
-    totpCode: string,
+    code: string,
     hashedClientIp: string,
-    nowMs = Date.now()
-  ): { ok: true; session: AdminSession } | { ok: false; status: 401 | 429; error: string; message?: string } {
+    nowMs = Date.now(),
+    options?: { isRecovery?: boolean }
+  ): { ok: true; session: AdminSession } | { ok: false; status: 400 | 401 | 429; error: string; message: string } {
     if (!this.checkLoginThrottle(hashedClientIp, nowMs)) {
       return {
         ok: false,
@@ -355,23 +356,61 @@ export class AuthManager {
       return { ok: false, status: 401, error: 'Invalid credentials', message: 'Check your username and password, then retry.' };
     }
 
-    const codeNormalized = (totpCode || '').trim().toLowerCase();
-    const isTotpValid = verifyTotpCode(this.account.totpSecret, totpCode, nowMs);
-    let usedRecoveryCode = false;
+    const rawInput = (code || '').trim();
 
-    if (!isTotpValid && this.account.recoveryCodeHashes && this.account.recoveryCodeHashes.length > 0) {
-      const codeHash = sha256Hex(codeNormalized);
-      const matchIndex = this.account.recoveryCodeHashes.indexOf(codeHash);
-      if (matchIndex !== -1) {
-        this.account.recoveryCodeHashes.splice(matchIndex, 1);
-        this.persistState();
-        usedRecoveryCode = true;
-      }
+    // WP-13.8: Check for multiple codes pasted / multi-line list
+    const lines = rawInput.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const codeMatches = rawInput.match(/[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}/g);
+    if (lines.length > 1 || (codeMatches && codeMatches.length > 1)) {
+      return {
+        ok: false,
+        status: 400,
+        error: 'Multiple recovery codes entered',
+        message: 'Enter one code at a time',
+      };
     }
 
-    if (!isTotpValid && !usedRecoveryCode) {
-      this.recordLoginFailure(hashedClientIp, nowMs);
-      return { ok: false, status: 401, error: 'Invalid TOTP or recovery code', message: 'Check the 6-digit code in your authenticator app or use a valid recovery code, then retry.' };
+    const isRecoveryMode = options?.isRecovery || rawInput.includes('-') || (rawInput.length > 0 && !/^\d{6}$/.test(rawInput));
+
+    if (isRecoveryMode) {
+      // Normalize recovery code: lowercase, trim, strip inner whitespace, ensure hyphen
+      const noSpaces = rawInput.toLowerCase().replace(/\s+/g, '');
+      const formattedRecovery = /^[a-z0-9]{8}$/.test(noSpaces)
+        ? `${noSpaces.slice(0, 4)}-${noSpaces.slice(4)}`
+        : noSpaces;
+
+      let usedRecoveryCode = false;
+      if (this.account.recoveryCodeHashes && this.account.recoveryCodeHashes.length > 0) {
+        const codeHash = sha256Hex(formattedRecovery);
+        const matchIndex = this.account.recoveryCodeHashes.indexOf(codeHash);
+        if (matchIndex !== -1) {
+          this.account.recoveryCodeHashes.splice(matchIndex, 1);
+          this.persistState();
+          usedRecoveryCode = true;
+        }
+      }
+
+      if (!usedRecoveryCode) {
+        this.recordLoginFailure(hashedClientIp, nowMs);
+        return {
+          ok: false,
+          status: 401,
+          error: 'Invalid recovery code',
+          message: "That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once.",
+        };
+      }
+    } else {
+      // TOTP verification
+      const isTotpValid = verifyTotpCode(this.account.totpSecret, rawInput, nowMs);
+      if (!isTotpValid) {
+        this.recordLoginFailure(hashedClientIp, nowMs);
+        return {
+          ok: false,
+          status: 401,
+          error: 'Invalid TOTP code',
+          message: 'Check the 6-digit code in your authenticator app, then retry.',
+        };
+      }
     }
 
     this.clearLoginFailures(hashedClientIp);
@@ -591,20 +630,23 @@ export function createAuthRoutes(auth: AuthManager) {
     );
   });
 
-  // Login with password + TOTP/recovery code and IP throttling (C.3, WP-13.3)
+  // Login with password + TOTP/recovery code and IP throttling (C.3, WP-13.3, WP-13.8)
   router.post('/login', async (c) => {
     const body = await c.req.json();
     const hashedIp = auth.getHashedClientIp(c);
     const code = String(body.totpCode || body.recoveryCode || body.code || '');
+    const isRecovery = Boolean(body.recoveryCode);
     const res = auth.authenticateLogin(
       String(body.username || ''),
       String(body.password || ''),
       code,
-      hashedIp
+      hashedIp,
+      Date.now(),
+      { isRecovery }
     );
 
     if (!res.ok) {
-      return c.json({ error: res.error }, res.status);
+      return c.json({ error: res.error, message: res.message }, res.status as any);
     }
 
     c.header(

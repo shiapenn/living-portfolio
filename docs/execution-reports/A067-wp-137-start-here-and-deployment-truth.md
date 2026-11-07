@@ -104,8 +104,8 @@ Found 0 section(s) marked verbatim.
 
 ## 9. Handover Decision
 
-- Decision: RECOMMENDED
-- Rule(s): HO-R3
-- Receipts since last handover: 9 (A059, A060, A061, A062, A063, A064, A065, A066, A067); work packages since: 0
+- Decision: REQUIRED
+- Rule(s): HO-R1
+- Receipts since last handover: 9 (A059, A060, A061, A062, A063, A064, A065, A066, A067); work packages since: 1 (WP-13)
 - Clean-boundary preconditions: met
-- Next action: Gate G13 closure; work package WP-13 complete; present closing receipt and fresh-clone check to user (L) for sign-off.
+- Next action: Gate G13 closure; work package WP-13 complete; present closing receipt and fresh-clone check to user (L) for sign-off before authoring Handover H014. H014 to be authored only after user sign-off.

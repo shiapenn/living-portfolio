@@ -1089,4 +1089,18 @@ console.log(x);
       expect(text).toContain('Create Owner Account');
     });
   });
+
+  describe('WP-13.8: Recovery-Code Sign-In & Normalisation (UX-31)', () => {
+    it('1. Login code input has no truncating maxlength attribute (UX-31)', () => {
+      const html = renderAdminLoginPage();
+      expect(html).toContain('id="login-totp"');
+      expect(html).not.toMatch(/id="login-totp"[^>]*maxlength/);
+    });
+
+    it('2. Script contains paste rejection for multi-line lists and specific recovery error copy (UX-31)', () => {
+      const html = renderAdminLoginPage();
+      expect(html).toContain('Enter one code at a time');
+      expect(html).toContain("That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once.");
+    });
+  });
 });

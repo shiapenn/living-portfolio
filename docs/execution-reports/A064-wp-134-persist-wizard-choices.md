@@ -70,6 +70,8 @@ Matches `git diff --name-only 6ce8df0..9e306f0` (11 files):
 
 None. All deliverables for WP-13.4 are complete.
 
+> **Process Deviation:** WP-13.4 (evidence SHA `9e306f0`) was committed directly on `main` without an isolated task branch and PR. Recorded per protocol review.
+
 ---
 
 ## 7. Changes to Earlier Reports

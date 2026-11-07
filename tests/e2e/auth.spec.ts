@@ -45,6 +45,8 @@ const TEST_PASSWORD = 'StrongMasterPassword2026!';
 let sharedTotpSecret = '';
 let sharedRecoveryCode = '';
 let sharedRecoveryCode2 = '';
+let sharedAllRecoveryCodes: string[] = [];
+let sharedDownloadedFileContent = '';
 
 test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', () => {
   test('1. First-run setup wizard completes owner account creation', async ({ page }) => {
@@ -121,6 +123,19 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.click('#btn-download-recovery-codes');
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe('living-portfolio-recovery-codes.txt');
+    const downloadPath = await download.path();
+    if (downloadPath) {
+      sharedDownloadedFileContent = readFileSync(downloadPath, 'utf8');
+      const matched = sharedDownloadedFileContent.match(/[a-f0-9]{4}-[a-f0-9]{4}/g);
+      if (matched) {
+        sharedAllRecoveryCodes = matched;
+      }
+    }
+    const displayedTexts = await codeElements.allInnerTexts();
+    if (sharedAllRecoveryCodes.length === 0) {
+      sharedAllRecoveryCodes = displayedTexts.map((c) => c.trim());
+    }
+    expect(sharedAllRecoveryCodes).toHaveLength(8);
 
     // Tick the "I saved these" gate
     await page.check('#setup-saved-credentials-gate');
@@ -448,7 +463,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(page).toHaveURL(/\/admin\/login/);
     const errorMsg = page.locator('#login-error');
     await expect(errorMsg).toBeVisible();
-    await expect(errorMsg).toContainText('Invalid TOTP or recovery code');
+    await expect(errorMsg).toContainText("That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once.");
   });
 
   test('8. WP-13.5: Wizard wording, states, and zero-vendor markup scan (UX-29, UX-33, CP-14, CP-15)', async () => {
@@ -541,5 +556,101 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     // 3. Unauthenticated direct navigation to /admin/import redirects to /admin/login
     await page.goto('/admin/import');
     await expect(page).toHaveURL(/\/admin\/login/);
+  });
+
+  test('11. WP-13.8: Recovery-code sign-in, pasting multi-line list rejection, normalisation, and single-use burn (UX-31)', async ({ page }) => {
+    // 1. Verify login code input has no truncating maxlength attribute
+    await page.context().clearCookies();
+    await page.goto('/admin/login');
+    const codeInput = page.locator('#login-totp');
+    await expect(codeInput).not.toHaveAttribute('maxlength', '16');
+
+    // 2. Toggle to recovery mode
+    const toggleBtn = page.locator('#btn-toggle-recovery');
+    await toggleBtn.click();
+    await expect(page.locator('#login-code-label')).toContainText('Single-Use Recovery Code');
+
+    // 3. Pasting whole multi-line recovery codes list shows "Enter one code at a time"
+    const multiLinePasted = sharedDownloadedFileContent || 'e135-3eda\ncc77-b6f4\n9a12-88ef\n4b5c-6d7e';
+    await page.evaluate((text) => {
+      const input = document.getElementById('login-totp') as HTMLInputElement;
+      const pasteEvent = new ClipboardEvent('paste', {
+        clipboardData: new DataTransfer(),
+        bubbles: true,
+        cancelable: true,
+      });
+      pasteEvent.clipboardData!.setData('text/plain', text);
+      input.dispatchEvent(pasteEvent);
+    }, multiLinePasted);
+
+    const errorMsg = page.locator('#login-error');
+    await expect(errorMsg).toBeVisible();
+    await expect(errorMsg).toContainText('Enter one code at a time');
+
+    // Submitting with multiple codes also triggers "Enter one code at a time"
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.fill('#login-totp', 'e135-3eda cc77-b6f4');
+    await page.click('button[type="submit"]');
+    await expect(errorMsg).toBeVisible();
+    await expect(errorMsg).toContainText('Enter one code at a time');
+
+    // 4. One code typed with messy formatting (spaces, uppercase) normalizes and signs in successfully
+    const testCode1 = sharedAllRecoveryCodes[2] || 'a1b2-c3d4';
+    const messyCode = `  ${testCode1.slice(0, 4).toUpperCase()} - ${testCode1.slice(5).toUpperCase()}  `;
+    await page.fill('#login-totp', messyCode);
+    await page.click('button[type="submit"]');
+    await page.waitForURL((url) => url.pathname === '/admin');
+    await expect(page.locator('h1')).toContainText('Admin Workspace');
+
+    // 5. Sign out and test one code pasted
+    await page.click('#btn-admin-logout');
+    await page.waitForURL((url) => url.pathname === '/admin/login');
+    await toggleBtn.click();
+
+    const testCode2 = sharedAllRecoveryCodes[3] || 'b2c3-d4e5';
+    await page.evaluate((text) => {
+      const input = document.getElementById('login-totp') as HTMLInputElement;
+      input.value = text;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }, testCode2);
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.click('button[type="submit"]');
+    await page.waitForURL((url) => url.pathname === '/admin');
+    await expect(page.locator('h1')).toContainText('Admin Workspace');
+
+    // 6. Sign out and test that the already-used code is rejected with exact recovery error message
+    await page.click('#btn-admin-logout');
+    await page.waitForURL((url) => url.pathname === '/admin/login');
+    await toggleBtn.click();
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.fill('#login-totp', testCode2);
+    await page.click('button[type="submit"]');
+    await expect(errorMsg).toBeVisible();
+    await expect(errorMsg).toContainText("That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once.");
+
+    // 7. Verify all remaining recovery codes in the downloaded file (indices 4..7) sign in exactly once and burn
+    for (let i = 4; i < sharedAllRecoveryCodes.length; i++) {
+      const code = sharedAllRecoveryCodes[i];
+      await page.fill('#login-totp', code);
+      await page.click('button[type="submit"]');
+      await page.waitForURL((url) => url.pathname === '/admin');
+      await expect(page.locator('h1')).toContainText('Admin Workspace');
+
+      // Sign out
+      await page.click('#btn-admin-logout');
+      await page.waitForURL((url) => url.pathname === '/admin/login');
+      await toggleBtn.click();
+
+      // Immediately verify this code cannot be used again
+      await page.fill('#login-username', TEST_USERNAME);
+      await page.fill('#login-password', TEST_PASSWORD);
+      await page.fill('#login-totp', code);
+      await page.click('button[type="submit"]');
+      await expect(errorMsg).toBeVisible();
+      await expect(errorMsg).toContainText("That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once.");
+    }
   });
 });

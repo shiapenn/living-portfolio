@@ -78,6 +78,8 @@ Matches `git diff --name-only 9e306f0..f33cd45` (11 files):
 
 None. All deliverables for WP-13.5 are complete.
 
+> **Process Deviation:** WP-13.5 (evidence SHA `f33cd45`) was committed directly on `main` without an isolated task branch and PR. Recorded per protocol review.
+
 ---
 
 ## 7. Changes to Earlier Reports

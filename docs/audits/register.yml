@@ -3156,7 +3156,7 @@
     - "4.4"
     - "13.13"
   severity: P0
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -3167,6 +3167,9 @@
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-07
+      status: partial
+      note: Step 3 stays read-only in wizard; button-like styling removed from badges and explainer added (keys added later in Settings > Providers; Ask shows direct quotes until then). Full provider registry and key entry scheduled for WP-17.2.
   verified_by: null
 - id: 20261106-UX-10
   audit: AUD-2026-11-06
@@ -3584,8 +3587,11 @@
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
     - date: 2026-11-07
+      status: partial
+      note: Explainer and recovery code toggle added in WP-13.6 (A066). Reopened following walkthrough.
+    - date: 2026-11-07
       status: fixed
-      note: Fixed in WP-13.6 (A066). Login page provides clear explainer for 6-digit authenticator code and explicit toggle button to sign in using single-use emergency recovery codes.
+      note: Fixed in WP-13.8 (A068). Removed truncating maxlength from login code field; added paste handler and submit validation showing 'Enter one code at a time' when multi-line code lists or multiple codes are entered; normalized case and whitespace on client and server; replaced generic error with actionable recovery message ("That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once."); verified every code in downloaded file signs in once and burns.
   verified_by: null
 - id: 20261106-UX-32
   audit: AUD-2026-11-06
@@ -3616,7 +3622,7 @@
     - "12.9"
     - "13.13"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -3628,8 +3634,8 @@
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
     - date: 2026-11-07
-      status: fixed
-      note: "Remediated in WP-13.5 (A065): Unconfigured test buttons now provide honest disabled state and clear reason. Notification test button is disabled until target is entered with explanatory text. Backup drill without configured destination folder returns 501 with honest message 'Not available until a backup folder is set' and renders actionable notice. Verified in wp13-auth.conformance.test.ts and tests/e2e/auth.spec.ts."
+      status: partial
+      note: "Partially addressed in WP-13.5 (A065): disabled unconfigured buttons. Walkthrough identified live delivery test showing 501 and backup drill failing on default /var/backups. Remediation in WP-13.9: disable notification test with clear reason ('Test alerts aren't available in this version yet'), move default backup path under app data directory with configuration support, and map disk errors cleanly without HTTP/raw leaks. Full live capabilities scheduled for WP-17.2."
   verified_by: null
 - id: 20261106-UX-34
   audit: AUD-2026-11-06
