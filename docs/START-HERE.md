@@ -54,6 +54,9 @@ git clone https://github.com/shiapenn/living-portfolio.git
 cd living-portfolio
 pnpm install
 pnpm build
+
+# Ensure a clean data directory for first-run setup
+rm -rf ./data && mkdir -p ./data/backups
 ```
 
 ---
@@ -84,7 +87,7 @@ curl http://localhost:4000/healthz
 # {"status":"ok","version":"0.1.0-alpha.0"}
 ```
 
-#### Option B: Local Node.js Development Mode
+#### Option B: Local Node.js Development Mode (Bundled Web on Port 4000)
 ```bash
 PORT=4000 ENABLE_BUNDLED_WEB=true pnpm --filter @living-portfolio/api dev
 ```

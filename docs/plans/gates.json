@@ -341,7 +341,8 @@
         "WP-13.6",
         "WP-13.7",
         "WP-13.8",
-        "WP-13.9"
+        "WP-13.9",
+        "WP-13.10"
       ],
       "requiredPassingTests": [
         "WP-13.1 Conformance: Real Authenticator Enrolment › Setup generates valid base32 TOTP secret and otpauth URI",
