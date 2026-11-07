@@ -865,5 +865,13 @@
     "path": "docs/execution-reports/A069-wp-139-honest-wizard-controls-in-default-install.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A070",
+    "title": "WP-13.10 Honest Step 6 theme copy",
+    "class": "A",
+    "path": "docs/execution-reports/A070-wp-1310-honest-step-6-theme-copy.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

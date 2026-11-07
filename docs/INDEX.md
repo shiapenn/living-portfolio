@@ -75,6 +75,7 @@
 | `A067` | WP-13.7 Start-here and deployment truth | `active` | [A067-wp-137-start-here-and-deployment-truth.md](execution-reports/A067-wp-137-start-here-and-deployment-truth.md) | — |
 | `A068` | WP-13.8 Recovery code sign-in and normalisation | `active` | [A068-wp-138-recovery-code-sign-in-and-normalisation.md](execution-reports/A068-wp-138-recovery-code-sign-in-and-normalisation.md) | — |
 | `A069` | WP-13.9 Honest wizard controls in default install | `active` | [A069-wp-139-honest-wizard-controls-in-default-install.md](execution-reports/A069-wp-139-honest-wizard-controls-in-default-install.md) | — |
+| `A070` | WP-13.10 Honest Step 6 theme copy | `active` | [A070-wp-1310-honest-step-6-theme-copy.md](execution-reports/A070-wp-1310-honest-step-6-theme-copy.md) | — |
 
 ## Handover Snapshots (Class H)
 
