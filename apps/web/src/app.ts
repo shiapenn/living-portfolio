@@ -28,7 +28,7 @@ import {
 export interface WebAppOptions {
   client?: LivingPortfolioClient | WebDataClient;
   apiBaseUrl?: string;
-  checkSession?: (cookieHeader?: string) => Promise<{ authenticated: boolean; setupRequired?: boolean }>;
+  checkSession?: (cookieHeader?: string) => Promise<{ authenticated: boolean; setupRequired?: boolean; legacyRecoveryUsed?: boolean }>;
 }
 
 /**
@@ -62,6 +62,7 @@ export function createWebApp(options?: WebAppOptions) {
           return {
             authenticated: Boolean(res?.authenticated),
             setupRequired: Boolean(res?.setupRequired),
+            legacyRecoveryUsed: Boolean(res?.legacyRecoveryUsed),
           };
         }
         const apiHost = process.env.API_HOST || '127.0.0.1';
@@ -79,11 +80,12 @@ export function createWebApp(options?: WebAppOptions) {
           return {
             authenticated: Boolean(data?.authenticated),
             setupRequired: Boolean(data?.setupRequired),
+            legacyRecoveryUsed: Boolean(data?.legacyRecoveryUsed),
           };
         }
-        return { authenticated: false, setupRequired: false };
+        return { authenticated: false, setupRequired: false, legacyRecoveryUsed: false };
       } catch {
-        return { authenticated: false, setupRequired: false };
+        return { authenticated: false, setupRequired: false, legacyRecoveryUsed: false };
       }
     });
 
@@ -136,7 +138,10 @@ export function createWebApp(options?: WebAppOptions) {
   app.use('/admin', adminGuard);
   app.use('/admin/*', adminGuard);
 
-  app.get('/admin', async (c) => c.html(await renderAdminWorkspacePage(client)));
+  app.get('/admin', async (c) => {
+    const session = await checkSession(c.req.header('cookie'));
+    return c.html(await renderAdminWorkspacePage(client, { legacyRecoveryUsed: session.legacyRecoveryUsed }));
+  });
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
   app.get('/admin/settings', async (c) => c.html(await renderAdminSettingsPage(client)));
 

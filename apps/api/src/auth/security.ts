@@ -20,6 +20,7 @@ export interface AdminSession {
   csrfToken: string;
   createdAtMs: number;
   expiresAtMs: number;
+  legacyRecoveryUsed?: boolean;
 }
 
 export interface ApiBearerTokenRecord {
@@ -42,18 +43,30 @@ export function computeRecoveryCodeHash(code: string, salt: string, key = 'lp-re
   return createHmac('sha256', key).update(`${salt}:${code}`).digest('hex');
 }
 
-export function generateRecoveryCodes(count = 8, key = 'lp-recovery-secret'): { rawCodes: string[]; hashedCodes: string[] } {
+export function generateRecoveryCodes(
+  count = 8,
+  key = 'lp-recovery-secret',
+  options?: { legacyFormat?: boolean }
+): { rawCodes: string[]; hashedCodes: string[] } {
   const rawCodes: string[] = [];
   const hashedCodes: string[] = [];
   for (let i = 0; i < count; i++) {
-    // 8 random bytes = 16 hex chars = 64 bits of entropy (formatted as xxxx-xxxx-xxxx-xxxx)
-    const buf = randomBytes(8);
-    const hex = buf.toString('hex');
-    const code = `${hex.slice(0, 4)}-${hex.slice(4, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}`;
-    const salt = randomBytes(16).toString('hex');
-    const hash = computeRecoveryCodeHash(code, salt, key);
-    rawCodes.push(code);
-    hashedCodes.push(`${salt}:${hash}`);
+    if (options?.legacyFormat) {
+      // Legacy 32-bit format (8 hex chars, xxxx-xxxx, plain unsalted SHA-256)
+      const hex = randomBytes(4).toString('hex');
+      const code = `${hex.slice(0, 4)}-${hex.slice(4)}`;
+      rawCodes.push(code);
+      hashedCodes.push(sha256Hex(code));
+    } else {
+      // 8 random bytes = 16 hex chars = 64 bits of entropy (formatted as xxxx-xxxx-xxxx-xxxx)
+      const buf = randomBytes(8);
+      const hex = buf.toString('hex');
+      const code = `${hex.slice(0, 4)}-${hex.slice(4, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}`;
+      const salt = randomBytes(16).toString('hex');
+      const hash = computeRecoveryCodeHash(code, salt, key);
+      rawCodes.push(code);
+      hashedCodes.push(`${salt}:${hash}`);
+    }
   }
   return { rawCodes, hashedCodes };
 }
@@ -225,13 +238,18 @@ export class AuthManager {
     };
   }
 
-  createSession(username: string, nowMs = Date.now()): AdminSession {
+  createSession(
+    username: string,
+    nowMs = Date.now(),
+    options?: { legacyRecoveryUsed?: boolean }
+  ): AdminSession {
     const session: AdminSession = {
       id: randomBytes(24).toString('hex'),
       username,
       csrfToken: randomBytes(24).toString('hex'),
       createdAtMs: nowMs,
       expiresAtMs: nowMs + 12 * 3600 * 1000,
+      legacyRecoveryUsed: options?.legacyRecoveryUsed ?? false,
     };
     this.sessions.set(session.id, session);
     return session;
@@ -298,6 +316,16 @@ export class AuthManager {
 
   listBearerTokens(): Omit<ApiBearerTokenRecord, 'tokenHash'>[] {
     return Array.from(this.bearerTokens.values()).map(({ tokenHash, ...rest }) => rest);
+  }
+
+  regenerateRecoveryCodes(options?: { legacyFormat?: boolean }): { rawCodes: string[]; recoveryCodeHashes: string[] } {
+    if (!this.account) {
+      throw new Error('Account not initialized');
+    }
+    const { rawCodes, hashedCodes } = generateRecoveryCodes(8, this.signingKey, options);
+    this.account.recoveryCodeHashes = hashedCodes;
+    this.persistState();
+    return { rawCodes, recoveryCodeHashes: hashedCodes };
   }
 
   verifyBearerToken(rawToken: string): boolean {
@@ -383,6 +411,7 @@ export class AuthManager {
     }
 
     const isRecoveryMode = options?.isRecovery || rawInput.includes('-') || (rawInput.length > 0 && !/^\d{6}$/.test(rawInput));
+    let wasLegacyRecovery = false;
 
     if (isRecoveryMode) {
       // WP-13.11: Normalize recovery code (strip whitespace and hyphens, lowercase)
@@ -417,6 +446,7 @@ export class AuthManager {
             if (a.length === b.length && timingSafeEqual(a, b)) {
               if (matchedIndex === -1) {
                 matchedIndex = i;
+                wasLegacyRecovery = true;
               }
             }
           }
@@ -424,6 +454,10 @@ export class AuthManager {
       }
 
       if (matchedIndex !== -1 && this.account.recoveryCodeHashes) {
+        const matchedEntry = this.account.recoveryCodeHashes[matchedIndex];
+        if (!matchedEntry.includes(':') || /^[a-z0-9]{8}$/.test(stripped)) {
+          wasLegacyRecovery = true;
+        }
         this.account.recoveryCodeHashes.splice(matchedIndex, 1);
         this.persistState();
         usedRecoveryCode = true;
@@ -453,14 +487,7 @@ export class AuthManager {
     }
 
     this.clearLoginFailures(hashedClientIp);
-    const session: AdminSession = {
-      id: randomBytes(24).toString('hex'),
-      username: this.account.username,
-      csrfToken: randomBytes(24).toString('hex'),
-      createdAtMs: nowMs,
-      expiresAtMs: nowMs + 12 * 3600 * 1000,
-    };
-    this.sessions.set(session.id, session);
+    const session = this.createSession(this.account.username, nowMs, { legacyRecoveryUsed: wasLegacyRecovery });
     return { ok: true, session };
   }
 
@@ -697,6 +724,7 @@ export function createAuthRoutes(auth: AuthManager) {
       username: res.session.username,
       csrfToken: res.session.csrfToken,
       expiresAt: new Date(res.session.expiresAtMs).toISOString(),
+      legacyRecoveryUsed: res.session.legacyRecoveryUsed ?? false,
     });
   });
 
@@ -746,11 +774,13 @@ export function createAuthRoutes(auth: AuthManager) {
     const sessionMatch = cookieHeader.match(/(?:^|;\s*)lp_session=([a-f0-9]+)/);
     let csrfToken: string | undefined = undefined;
     let username: string | undefined = undefined;
+    let legacyRecoveryUsed = false;
     if (sessionMatch) {
       const s = (auth as any).sessions?.get(sessionMatch[1]);
       if (s) {
         csrfToken = s.csrfToken;
         username = s.username;
+        legacyRecoveryUsed = Boolean(s.legacyRecoveryUsed);
       }
     }
     return c.json({
@@ -758,7 +788,23 @@ export function createAuthRoutes(auth: AuthManager) {
       username,
       csrfToken,
       setupRequired: !auth.isSetupCompleted(),
+      legacyRecoveryUsed,
     });
+  });
+
+  // Regenerate emergency recovery codes (WP-13.12: invalidates all existing codes, issues fresh 64-bit salted codes)
+  router.post('/recovery-codes/regenerate', auth.requireAdminMiddleware(), async (c) => {
+    try {
+      const body = await c.req.json().catch(() => ({}));
+      const { rawCodes } = auth.regenerateRecoveryCodes({ legacyFormat: Boolean((body as any)?.legacyFormat) });
+      return c.json({
+        regenerated: true,
+        recoveryCodes: rawCodes,
+        message: 'New recovery codes generated. Old recovery codes are permanently invalidated. Save these codes immediately.',
+      });
+    } catch (err: any) {
+      return c.json({ error: err.message || 'Failed to regenerate recovery codes' }, 500);
+    }
   });
 
   return router;

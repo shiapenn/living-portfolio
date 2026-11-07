@@ -426,6 +426,13 @@ describe('WP-13.3 Conformance: Credentials Screen & Recovery Codes', () => {
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.authenticated).toBe(true);
+    expect(data.legacyRecoveryUsed).toBe(true);
+
+    const sessionRes = await app.request('/api/auth/session', {
+      headers: { Cookie: res.headers.get('set-cookie') || '' },
+    });
+    expect(sessionRes.status).toBe(200);
+    expect((await sessionRes.json()).legacyRecoveryUsed).toBe(true);
 
     // Verify code was burned
     expect((auth as any).account.recoveryCodeHashes.length).toBe(0);
@@ -441,6 +448,129 @@ describe('WP-13.3 Conformance: Credentials Screen & Recovery Codes', () => {
       }),
     });
     expect(res2.status).toBe(401);
+  });
+
+  it('WP-13.12: Modern 16-hex recovery code and TOTP sign-in do not flag legacyRecoveryUsed', async () => {
+    const { app, auth } = createApp();
+    const setupRes = await app.request('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'modern_owner',
+        password: 'ValidPassword12345!',
+      }),
+    });
+    const setupData = await setupRes.json();
+    const confirmRes = await app.request('/api/auth/totp/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: computeTotpCode(setupData.totpSecret) }),
+    });
+    const confirmData = await confirmRes.json();
+    expect(confirmData.authenticated).toBe(true);
+    const sessionConfirmRes = await app.request('/api/auth/session', {
+      headers: { Cookie: confirmRes.headers.get('set-cookie') || '' },
+    });
+    expect((await sessionConfirmRes.json()).legacyRecoveryUsed).toBe(false);
+
+    // Login with valid 16-hex modern code
+    const modernCode = setupData.recoveryCodes[0];
+    const loginRes = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'modern_owner',
+        password: 'ValidPassword12345!',
+        recoveryCode: modernCode,
+      }),
+    });
+    expect(loginRes.status).toBe(200);
+    const loginData = await loginRes.json();
+    expect(loginData.authenticated).toBe(true);
+    expect(loginData.legacyRecoveryUsed).toBe(false);
+
+    const sessionRes = await app.request('/api/auth/session', {
+      headers: { Cookie: loginRes.headers.get('set-cookie') || '' },
+    });
+    expect((await sessionRes.json()).legacyRecoveryUsed).toBe(false);
+  });
+
+  it('WP-13.12: POST /api/auth/recovery-codes/regenerate invalidates older recovery codes and issues fresh 64-bit salted codes', async () => {
+    const { app } = createApp();
+
+    // Complete setup to get admin session
+    const setupRes = await app.request('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'regen_owner',
+        password: 'ValidPassword12345!',
+      }),
+    });
+    const setupData = await setupRes.json();
+    const confirmRes = await app.request('/api/auth/totp/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: computeTotpCode(setupData.totpSecret) }),
+    });
+    const confirmCookie = confirmRes.headers.get('set-cookie') || '';
+    const csrfToken = (await confirmRes.json()).csrfToken;
+    const originalOldCode = setupData.recoveryCodes[0];
+
+    // Call regenerate endpoint
+    const regenRes = await app.request('/api/auth/recovery-codes/regenerate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken,
+        Cookie: confirmCookie,
+      },
+    });
+    expect(regenRes.status).toBe(200);
+    const regenData = await regenRes.json();
+    expect(regenData.regenerated).toBe(true);
+    expect(regenData.recoveryCodes.length).toBe(8);
+    for (const code of regenData.recoveryCodes) {
+      expect(code).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}$/);
+    }
+
+    // Verify old recovery code is now invalidated
+    const oldLoginRes = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'regen_owner',
+        password: 'ValidPassword12345!',
+        recoveryCode: originalOldCode,
+      }),
+    });
+    expect(oldLoginRes.status).toBe(401);
+
+    // Verify newly generated code logs in successfully and burns
+    const newCode = regenData.recoveryCodes[0];
+    const newLoginRes1 = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'regen_owner',
+        password: 'ValidPassword12345!',
+        recoveryCode: newCode,
+      }),
+    });
+    expect(newLoginRes1.status).toBe(200);
+    expect((await newLoginRes1.json()).legacyRecoveryUsed).toBe(false);
+
+    // Second attempt with same new code is burned
+    const newLoginRes2 = await app.request('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'regen_owner',
+        password: 'ValidPassword12345!',
+        recoveryCode: newCode,
+      }),
+    });
+    expect(newLoginRes2.status).toBe(401);
   });
 });
 
