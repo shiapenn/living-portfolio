@@ -128,4 +128,5 @@
 | `L013` | Self-Hosting and Branding Configuration Guide | `active` | [self-hosting.md](self-hosting.md) | — |
 | `L014` | The Living Portfolio Open Source Specification | `active` | [The_Living_Portfolio_Open_Source_Spec.md](spec/The_Living_Portfolio_Open_Source_Spec.md) | — |
 | `L015` | UX Specification Audit Report | `frozen` | [report.md](audits/2026-11-06-ux-specification-audit/report.md) | — |
+| `L016` | Start-Here Onboarding Runbook and Deployment Checklist | `active` | [START-HERE.md](START-HERE.md) | — |
 

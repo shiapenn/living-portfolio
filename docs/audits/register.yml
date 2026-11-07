@@ -3077,17 +3077,20 @@
     - "4.3"
     - "13.4"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/web/src/web.test.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-07
+      status: fixed
+      note: Fixed in WP-13.7 (A067). Added adminGuard middleware in standalone apps/web/src/app.ts redirecting unauthenticated requests on /admin* to /admin/login (or /admin/setup if setup required), added session checking to createWebApp, and updated bundled-web adapter to supply in-memory session validation.
   verified_by: null
 - id: 20261106-UX-06
   audit: AUD-2026-11-06
@@ -3591,17 +3594,20 @@
     - "13.13"
     - "15"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-07
+      status: fixed
+      note: Fixed in WP-13.7 (A067). Authored docs/START-HERE.md runbook (< 15 min, prerequisites checklist, 6 ordered steps, what to have to hand), corrected port 3000 to 4000 truth in docs/self-hosting.md and compose stacks, documented ENABLE_BUNDLED_WEB in config schema and .env.example.
   verified_by: null
 - id: 20261106-UX-33
   audit: AUD-2026-11-06

@@ -4,7 +4,7 @@ import { chunkMarkdown } from '@living-portfolio/core';
  * In-memory test client for @living-portfolio/web tests.
  * Implements the client data contract without importing @living-portfolio/db.
  */
-export function createTestClient() {
+export function createTestClient(options?: { authenticated?: boolean; setupRequired?: boolean }) {
   const entries: any[] = [];
   const revisions: Record<string, any[]> = {};
   const currentRevisions: Record<string, any> = {};
@@ -472,6 +472,21 @@ export function createTestClient() {
       currentRevisions[entryId] = rev;
       spans[rev.id] = chunkMarkdown(rev.id, rev.body_md);
       return rev;
+    },
+    auth: {
+      session: async (opts?: { headers?: Record<string, string> }) => {
+        if (options?.authenticated !== undefined) {
+          return {
+            authenticated: options.authenticated,
+            setupRequired: options.setupRequired ?? false,
+          };
+        }
+        const cookie = opts?.headers?.cookie || opts?.headers?.Cookie || '';
+        if (cookie.includes('lp_session=invalid') || cookie.includes('lp_session=unauth')) {
+          return { authenticated: false, setupRequired: false };
+        }
+        return { authenticated: true, setupRequired: options?.setupRequired ?? false };
+      },
     },
   };
 

@@ -42,8 +42,24 @@ export function mountBundledWeb(
     );
   }
 
+  const checkSession = auth
+    ? async (cookieHeader?: string) => {
+        const dummyContext = {
+          req: {
+            method: 'GET',
+            header: (name: string) => (name.toLowerCase() === 'cookie' ? cookieHeader || '' : undefined),
+          },
+        } as any;
+        const check = auth.isAdminAuthenticated(dummyContext);
+        return {
+          authenticated: check.authenticated,
+          setupRequired: runtimeState?.setupWizardCompleted ? false : !auth.isSetupCompleted(),
+        };
+      }
+    : undefined;
+
   // Mount the public web application routes
-  const { app: webApp } = createWebApp({ client: repo as any });
+  const { app: webApp } = createWebApp({ client: repo as any, checkSession });
   app.route('/', webApp);
 
   app.notFound((c) => {

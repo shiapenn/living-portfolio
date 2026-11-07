@@ -525,4 +525,21 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.goto('/admin');
     await expect(page).toHaveURL(/\/admin\/login/);
   });
+
+  test('10. WP-13.7: Standalone admin guard redirects unauthenticated /admin to /admin/login (UX-05, UX-32)', async ({ page }) => {
+    await page.context().clearCookies();
+
+    // 1. Unauthenticated direct navigation to /admin redirects to /admin/login
+    await page.goto('/admin');
+    await expect(page).toHaveURL(/\/admin\/login/);
+    await expect(page.locator('h1')).toContainText('Owner Sign in');
+
+    // 2. Unauthenticated direct navigation to /admin/settings redirects to /admin/login
+    await page.goto('/admin/settings');
+    await expect(page).toHaveURL(/\/admin\/login/);
+
+    // 3. Unauthenticated direct navigation to /admin/import redirects to /admin/login
+    await page.goto('/admin/import');
+    await expect(page).toHaveURL(/\/admin\/login/);
+  });
 });

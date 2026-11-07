@@ -45,11 +45,11 @@ The fastest and most reliable deployment path is via Docker Compose:
 
 4. **Verify container health:**
    ```bash
-   curl http://localhost:3000/healthz
+   curl http://localhost:4000/healthz
    ```
 
 5. **Initial Setup:**
-   Navigate to `http://localhost:3000/admin/setup` in your browser to complete owner account creation and generate the initial recovery token.
+   Navigate to `http://localhost:4000/admin/setup` in your browser to complete owner account creation and generate the initial recovery token.
 
 ---
 
@@ -58,7 +58,8 @@ The fastest and most reliable deployment path is via Docker Compose:
 All runtime settings are validated at boot by [`packages/config/src/index.ts`](../packages/config/src/index.ts). For complete contract definitions, see [`docs/G002-configuration-reference-and-environment-contract.md`](G002-configuration-reference-and-environment-contract.md).
 
 ### 4.1 Deployment Parameters
-- `PORT`: Port the API HTTP server listens on (default: `3000`).
+- `PORT`: Port the API HTTP server listens on (default: `4000`).
+- `ENABLE_BUNDLED_WEB`: Enables single-process bundled web server mode in `apps/api` (default: `true`). When enabled, the public site and admin workspace are served on `PORT` alongside the API routes.
 - `DEPLOYMENT_CLASS`: Operational environment classification (`development` | `staging` | `production`). Production enforces strict TLS origins and disallows default secrets.
 - `DATABASE_URL`: PostgreSQL connection string with pgvector (e.g. `postgresql://postgres:postgres@db:5432/living_portfolio`).
 - `SITE_ORIGIN`: Public domain serving the frontend portfolio (e.g. `https://example.com`).
