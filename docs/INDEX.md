@@ -66,6 +66,7 @@
 | `A058` | WP-12.3: Open-Source Governance & Full Documentation Suite | `active` | [A058-wp-123-open-source-governance-and-documentation-suite.md](execution-reports/A058-wp-123-open-source-governance-and-documentation-suite.md) | — |
 | `A059` | WP-12.4: Gate G5 Release Certification & v0.1.0 GA Tag | `active` | [A059-wp-124-gate-g5-release-certification.md](execution-reports/A059-wp-124-gate-g5-release-certification.md) | — |
 | `A060` | WP-13.0 Intake and Registration | `active` | [A060-wp-130-intake-and-registration.md](execution-reports/A060-wp-130-intake-and-registration.md) | — |
+| `A061` | WP-13.1 Real Authenticator Enrolment | `active` | [A061-wp-131-real-authenticator-enrolment.md](execution-reports/A061-wp-131-real-authenticator-enrolment.md) | — |
 
 ## Handover Snapshots (Class H)
 

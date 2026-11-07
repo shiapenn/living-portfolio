@@ -785,5 +785,13 @@
     "path": "docs/execution-reports/A060-wp-130-intake-and-registration.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A061",
+    "title": "WP-13.1 Real Authenticator Enrolment",
+    "class": "A",
+    "path": "docs/execution-reports/A061-wp-131-real-authenticator-enrolment.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
