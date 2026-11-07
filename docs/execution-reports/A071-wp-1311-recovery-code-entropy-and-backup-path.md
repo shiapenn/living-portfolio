@@ -6,7 +6,7 @@
 | Date | 2026-11-07 |
 | Author | A (Implementer) |
 | Task ID | `WP-13.11` |
-| Evidence SHA | `6126d47` |
+| Evidence SHA | `3728ba8` |
 | CI run | local output |
 
 ---
@@ -45,16 +45,19 @@ Remediate emergency recovery code entropy and backup path resolution issues iden
   - Updated recovery code length assertion to 64 bits (`[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}`)
   - Updated stored hash format assertion to `^[a-f0-9]{32}:[a-f0-9]{64}$`
   - Added test: `WP-13.11: Recovery code attempts share login rate-limiting and trigger 15-minute lockout after 5 failures`
+  - Added test: `Legacy 8-character recovery codes from existing instances continue to authenticate seamlessly`
+  - Added test: `Downloaded recovery file contains exactly 8 codes of 16 hex characters each, and each signs in exactly once`
 - `tests/e2e/auth.spec.ts`:
   - Upgraded Playwright recovery code placeholder check to `xxxx-xxxx-xxxx-xxxx`
   - Upgraded messy formatting test to verify 16-hex code normalization (`XXXX - XXXX - XXXX - XXXX`)
   - Verified 8 recovery codes single-use burn lifecycle
+  - Verified `#login-recovery-legacy-notice` displays legacy support message on login toggle
 
 ---
 
 ## 4. Files Touched
 
-Matches `git diff 8b417d2..6126d47`:
+Matches `git diff 8b417d2..3728ba8`:
 - `.env.example`
 - `apps/api/src/auth/security.ts`
 - `apps/api/src/conformance/wp13-auth.conformance.test.ts`
@@ -64,6 +67,7 @@ Matches `git diff 8b417d2..6126d47`:
 - `docs/audits/register.yml`
 - `docs/doc-registry.json`
 - `docs/execution-reports/A070-wp-1310-honest-step-6-theme-copy.md`
+- `docs/execution-reports/A071-wp-1311-recovery-code-entropy-and-backup-path.md`
 - `docs/plans/P004-ux-remediation-work-packages.md`
 - `docs/plans/gates.json`
 - `packages/config/src/config.test.ts`
@@ -84,10 +88,11 @@ Matches `git diff 8b417d2..6126d47`:
 
 ## 6. Not Done (Tagged)
 
-- Real external delivery notifications deferred to WP-17.2 [deferred:WP-17.2]
-- Provider key management and configuration UI deferred to WP-17.2 [deferred:WP-17.2]
-- Backup encryption drill automation with cloud storage targets deferred to WP-17.2 and WP-17.3 [deferred:WP-17.2,WP-17.3]
-- Theme compilation and live theme switcher deferred to WP-17.8 and WP-20.1 [deferred:WP-17.8,WP-20.1]
+- Fresh data directory installs generate 64-bit recovery codes directly and are not affected by legacy migration. [implemented]
+- Real external delivery notifications deferred to WP-17.2. [not-started]
+- Provider key management and configuration UI deferred to WP-17.2. [not-started]
+- Backup encryption drill automation with cloud storage targets deferred to WP-17.2 and WP-17.3. [not-started]
+- Theme compilation and live theme switcher deferred to WP-17.8 and WP-20.1. [not-started]
 
 ---
 
