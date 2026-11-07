@@ -841,5 +841,13 @@
     "path": "docs/execution-reports/A066-wp-136-login-and-sign-out.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A067",
+    "title": "WP-13.7 Start-here and deployment truth",
+    "class": "A",
+    "path": "docs/execution-reports/A067-wp-137-start-here-and-deployment-truth.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
