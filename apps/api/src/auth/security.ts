@@ -11,6 +11,7 @@ export interface AdminAccount {
   totpSecret: string;
   createdAt: string;
   totpConfirmed?: boolean;
+  recoveryCodeHashes?: string[];
 }
 
 export interface AdminSession {
@@ -35,6 +36,19 @@ export interface RedactionPreviewTokenPayload {
   scanHash: string;
   warningCount: number;
   exp: number;
+}
+
+export function generateRecoveryCodes(count = 8): { rawCodes: string[]; hashedCodes: string[] } {
+  const rawCodes: string[] = [];
+  const hashedCodes: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const p1 = randomBytes(2).toString('hex');
+    const p2 = randomBytes(2).toString('hex');
+    const code = `${p1}-${p2}`;
+    rawCodes.push(code);
+    hashedCodes.push(sha256Hex(code));
+  }
+  return { rawCodes, hashedCodes };
 }
 
 export function sha256Hex(input: string): string {
@@ -165,6 +179,7 @@ export class AuthManager {
     totpSecret: string;
     totpSecretBase32: string;
     otpauthUri: string;
+    recoveryCodes: string[];
     initialBearerToken: string;
     tokenRecord: ApiBearerTokenRecord;
   } {
@@ -180,6 +195,7 @@ export class AuthManager {
       accountName: username,
       secretBase32: totpSecretBase32,
     });
+    const { rawCodes, hashedCodes } = generateRecoveryCodes(8);
     this.account = {
       username,
       passwordSalt: salt,
@@ -187,6 +203,7 @@ export class AuthManager {
       totpSecret,
       createdAt: new Date().toISOString(),
       totpConfirmed,
+      recoveryCodeHashes: hashedCodes,
     };
     this.persistState();
     const { rawToken, record } = this.issueBearerToken('initial-owner-token');
@@ -195,6 +212,7 @@ export class AuthManager {
       totpSecret,
       totpSecretBase32,
       otpauthUri,
+      recoveryCodes: rawCodes,
       initialBearerToken: rawToken,
       tokenRecord: record,
     };
@@ -336,9 +354,24 @@ export class AuthManager {
       this.recordLoginFailure(hashedClientIp, nowMs);
       return { ok: false, status: 401, error: 'Invalid credentials', message: 'Check your username and password, then retry.' };
     }
-    if (!verifyTotpCode(this.account.totpSecret, totpCode, nowMs)) {
+
+    const codeNormalized = (totpCode || '').trim().toLowerCase();
+    const isTotpValid = verifyTotpCode(this.account.totpSecret, totpCode, nowMs);
+    let usedRecoveryCode = false;
+
+    if (!isTotpValid && this.account.recoveryCodeHashes && this.account.recoveryCodeHashes.length > 0) {
+      const codeHash = sha256Hex(codeNormalized);
+      const matchIndex = this.account.recoveryCodeHashes.indexOf(codeHash);
+      if (matchIndex !== -1) {
+        this.account.recoveryCodeHashes.splice(matchIndex, 1);
+        this.persistState();
+        usedRecoveryCode = true;
+      }
+    }
+
+    if (!isTotpValid && !usedRecoveryCode) {
       this.recordLoginFailure(hashedClientIp, nowMs);
-      return { ok: false, status: 401, error: 'Invalid TOTP code', message: 'Check the 6-digit code in your authenticator app and retry.' };
+      return { ok: false, status: 401, error: 'Invalid TOTP or recovery code', message: 'Check the 6-digit code in your authenticator app or use a valid recovery code, then retry.' };
     }
 
     this.clearLoginFailures(hashedClientIp);
@@ -526,6 +559,7 @@ export function createAuthRoutes(auth: AuthManager) {
         totpSecretBase32: result.totpSecretBase32,
         otpauthUri: result.otpauthUri,
         qrCodeSvg,
+        recoveryCodes: result.recoveryCodes,
         bearerToken: result.initialBearerToken,
       },
       201
@@ -557,14 +591,15 @@ export function createAuthRoutes(auth: AuthManager) {
     );
   });
 
-  // Login with password + TOTP and IP throttling (C.3)
+  // Login with password + TOTP/recovery code and IP throttling (C.3, WP-13.3)
   router.post('/login', async (c) => {
     const body = await c.req.json();
     const hashedIp = auth.getHashedClientIp(c);
+    const code = String(body.totpCode || body.recoveryCode || body.code || '');
     const res = auth.authenticateLogin(
       String(body.username || ''),
       String(body.password || ''),
-      String(body.totpCode || ''),
+      code,
       hashedIp
     );
 
