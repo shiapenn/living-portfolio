@@ -801,5 +801,13 @@
     "path": "docs/execution-reports/A062-wp-132-session-from-setup.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A063",
+    "title": "WP-13.3 Credentials screen",
+    "class": "A",
+    "path": "docs/execution-reports/A063-wp-133-credentials-screen.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
