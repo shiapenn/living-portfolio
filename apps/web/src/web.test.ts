@@ -1006,4 +1006,31 @@ console.log(x);
       expect(html).toContain('Needs less hardware and gives better written answers.');
     });
   });
+
+  describe('WP-13.6: Login and Sign-Out (UX-31, UX-41)', () => {
+    it('1. Login screen renders 6-digit TOTP explainer and recovery code toggle (UX-31)', () => {
+      const html = renderAdminLoginPage();
+      expect(html).toContain('id="login-code-label"');
+      expect(html).toContain('6-Digit Authenticator Code');
+      expect(html).toContain('id="login-code-help"');
+      expect(html).toContain('Enter the 6-digit verification code from your authenticator app');
+      expect(html).toContain('id="btn-toggle-recovery"');
+      expect(html).toContain('Lost your authenticator device? Sign in with a recovery code');
+    });
+
+    it('2. Layout includes Sign out button on admin pages but not public or login pages (UX-41)', () => {
+      const adminHtml = renderLayout('Admin', '/admin', '<div>Admin content</div>');
+      expect(adminHtml).toContain('id="btn-admin-logout"');
+      expect(adminHtml).toContain('Sign out');
+
+      const loginHtml = renderLayout('Login', '/admin/login', '<div>Login content</div>');
+      expect(loginHtml).not.toContain('id="btn-admin-logout"');
+
+      const setupHtml = renderLayout('Setup', '/admin/setup', '<div>Setup content</div>');
+      expect(setupHtml).not.toContain('id="btn-admin-logout"');
+
+      const publicHtml = renderLayout('Home', '/', '<div>Home content</div>');
+      expect(publicHtml).not.toContain('id="btn-admin-logout"');
+    });
+  });
 });
