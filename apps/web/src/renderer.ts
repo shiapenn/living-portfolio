@@ -4572,7 +4572,7 @@ export function renderAdminSetupPage(): string {
               ${WIZARD_STRINGS.step3.providersTable.rows.map(row => `
                 <tr style="border-bottom:1px solid var(--rule)">
                   <td style="padding:8px"><strong>${row.name}</strong></td>
-                  <td style="padding:8px">${row.classes.map(c => `<span class="chip">${c}</span>`).join(' ')}</td>
+                  <td style="padding:8px">${row.classes.map(c => `<span style="display:inline-block;padding:2px 6px;border-radius:2px;background:var(--surface-subtle);border:1px solid var(--rule);font-size:11px;color:var(--text-muted);cursor:default">${c}</span>`).join(' ')}</td>
                   <td style="padding:8px"><code>${row.model}</code></td>
                   <td style="padding:8px;color:${row.isLocal ? 'var(--green)' : 'var(--text-muted)'}" ${row.statusId ? `id="${row.statusId}"` : ''}>${row.status}</td>
                 </tr>
@@ -4583,6 +4583,7 @@ export function renderAdminSetupPage(): string {
 
         <div class="as-of-banner" style="margin-bottom:16px">
           <strong>${WIZARD_STRINGS.step3.boundaryNotice}</strong>
+          <p id="step3-keys-notice" style="margin:8px 0 0 0;font-weight:normal">${WIZARD_STRINGS.step3.keysNotice}</p>
         </div>
 
         <div style="display:flex;justify-content:space-between">
@@ -4639,7 +4640,7 @@ export function renderAdminSetupPage(): string {
 
         <div style="margin-bottom:12px">
           <label for="setup-backup-dir" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">${WIZARD_STRINGS.step5.folder.label}</label>
-          <input type="text" id="setup-backup-dir" class="ask-input" style="width:100%;padding:8px" placeholder="${WIZARD_STRINGS.step5.folder.placeholder}" />
+          <input type="text" id="setup-backup-dir" class="ask-input" style="width:100%;padding:8px" value="./data/backups" placeholder="${WIZARD_STRINGS.step5.folder.placeholder}" />
           <div style="font-size:12px;color:var(--text-muted);margin-top:4px">${WIZARD_STRINGS.step5.folder.help}</div>
         </div>
 
@@ -4663,8 +4664,11 @@ export function renderAdminSetupPage(): string {
       <!-- Step 6: Theme Selection & First-Run Walkthrough -->
       <div id="wizard-step-6" class="wizard-step" style="display:none">
         <h2 style="font-size:22px;margin:4px 0 8px 0">${WIZARD_STRINGS.step6.title}</h2>
-        <p style="font-size:14px;color:var(--text-muted);margin:0 0 16px 0">
+        <p style="font-size:14px;color:var(--text-muted);margin:0 0 8px 0">
           ${WIZARD_STRINGS.step6.subtitle}
+        </p>
+        <p id="step6-theme-notice" style="font-size:13px;color:var(--text-muted);margin:0 0 16px 0">
+          ${WIZARD_STRINGS.step6.themeAppliedNotice}
         </p>
 
         <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;margin-bottom:20px">
@@ -5063,16 +5067,15 @@ export function renderAdminSetupPage(): string {
           });
         }
 
-        // Step 4: Notification target change enables/disables test button
+        // Step 4: Notification test disabled in this version (§13.9, UX-33, WP-17.2)
         const notifTargetInput = document.getElementById('setup-notification-target');
         const testAlertBtn = document.getElementById('btn-setup-test-alert');
         const alertDisabledReason = document.getElementById('setup-alert-disabled-reason');
         function updateAlertButton() {
-          if (!notifTargetInput || !testAlertBtn) return;
-          const hasVal = notifTargetInput.value.trim().length > 0;
-          testAlertBtn.disabled = !hasVal;
+          if (!testAlertBtn) return;
+          testAlertBtn.disabled = true;
           if (alertDisabledReason) {
-            alertDisabledReason.style.display = hasVal ? 'none' : 'block';
+            alertDisabledReason.style.display = 'block';
           }
         }
         if (notifTargetInput) {
@@ -5088,11 +5091,11 @@ export function renderAdminSetupPage(): string {
               const res = await apiClient('/api/settings/notifications/test', { method: 'POST' });
               const data = await res.json();
               alertResult.className = 'later-thinking-banner';
-              alertResult.textContent = (data.error || 'Notice') + ': ' + (data.message || 'Notification test result.');
+              alertResult.textContent = data.message || "Test alerts aren't available in this version yet.";
               alertResult.style.display = 'block';
             } catch (err) {
               alertResult.className = 'later-thinking-banner';
-              alertResult.textContent = 'Error testing notification delivery.';
+              alertResult.textContent = "Test alerts aren't available in this version yet.";
               alertResult.style.display = 'block';
             }
           });
@@ -5104,38 +5107,31 @@ export function renderAdminSetupPage(): string {
         if (testDrillBtn && drillResult) {
           testDrillBtn.addEventListener('click', async function() {
             drillResult.style.display = 'none';
-            const destFolder = (document.getElementById('setup-backup-dir') || {}).value || '';
+            const destFolder = (document.getElementById('setup-backup-dir') || {}).value || './data/backups';
             const ageKey = (document.getElementById('setup-age-key') || {}).value || '';
-
-            if (!destFolder.trim() && !ageKey.trim()) {
-              drillResult.className = 'later-thinking-banner';
-              drillResult.textContent = 'Not available until a backup folder is set';
-              drillResult.style.display = 'block';
-              return;
-            }
 
             try {
               const res = await apiClient('/api/settings/backups/run-drill', {
                 method: 'POST',
-                body: JSON.stringify({ destinationDir: destFolder.trim(), agePublicKey: ageKey.trim() })
+                body: JSON.stringify({ destinationDir: destFolder.trim() || undefined, agePublicKey: ageKey.trim() || undefined })
               });
               const data = await res.json();
               if (res.status === 501) {
                 drillResult.className = 'later-thinking-banner';
                 drillResult.textContent = data.message || 'Not available until a backup folder is set';
                 drillResult.style.display = 'block';
-              } else if (res.ok) {
+              } else if (res.ok && data.ok) {
                 drillResult.className = 'chip';
                 drillResult.textContent = '✓ Backup created & restore verification drill succeeded!';
                 drillResult.style.display = 'block';
               } else {
                 drillResult.className = 'later-thinking-banner';
-                drillResult.textContent = (data.error || 'Notice') + ': ' + (data.message || 'Backup drill result.');
+                drillResult.textContent = data.message || data.error || "The app can't write to that folder. Choose another folder or fix its permissions.";
                 drillResult.style.display = 'block';
               }
             } catch (err) {
               drillResult.className = 'later-thinking-banner';
-              drillResult.textContent = 'Error running backup restore drill.';
+              drillResult.textContent = "The app can't write to that folder. Choose another folder or fix its permissions.";
               drillResult.style.display = 'block';
             }
           });

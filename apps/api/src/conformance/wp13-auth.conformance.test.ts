@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { resolve } from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
 import { CONFIG_SETTINGS_METADATA, AppConfigSchema } from '@living-portfolio/config';
+import { renderAdminSetupPage } from '@living-portfolio/web';
 import { createApp } from '../app.js';
 import { computeTotpCode } from '../auth/security.js';
 
@@ -475,3 +476,117 @@ describe('WP-13.4 Conformance: Persist Wizard Choices via Settings API', () => {
     expect(parsed.ENABLE_BUNDLED_WEB).toBe(true);
   });
 });
+
+describe('WP-13.9 Conformance: Honest Wizard Controls in Default Install (UX-33, UX-09, CP-01)', () => {
+  it('Step 3: Providers table is read-only, badges lack button styles, and keys sentence is present', () => {
+    const html = renderAdminSetupPage();
+    expect(html).toContain('Keys are added later in Settings > Providers; until then Ask shows direct quotes from entries.');
+    // Check that provider badges do not have button or interactive chip styling
+    const step3Section = html.slice(html.indexOf('id="wizard-step-3"'), html.indexOf('id="wizard-step-4"'));
+    expect(step3Section).not.toContain('<span class="chip">');
+  });
+
+  it('Step 4: Notifications test button is disabled with visible plain explanation and no HTTP wording', async () => {
+    const html = renderAdminSetupPage();
+    expect(html).toContain('id="btn-setup-test-alert" disabled');
+    expect(html).toContain("Test alerts aren't available in this version yet.");
+
+    // Direct API call also avoids "Not Implemented" and technical jargon
+    const { app } = createApp();
+    const setupRes = await app.request('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'notif_tester',
+        password: 'ValidPassword12345!',
+      }),
+    });
+    const setupData = await setupRes.json();
+    const confirmRes = await app.request('/api/auth/totp/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: computeTotpCode(setupData.totpSecret) }),
+    });
+    const confirmData = await confirmRes.json();
+    const setCookie = confirmRes.headers.get('set-cookie') || '';
+    const sessionId = setCookie.match(/lp_session=([^;]+)/)![1];
+    const csrfToken = confirmData.csrfToken;
+
+    const res = await app.request('/api/settings/notifications/test', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `lp_session=${sessionId}`,
+        'X-CSRF-Token': csrfToken,
+      },
+      body: JSON.stringify({}),
+    });
+    const body = await res.json();
+    expect(body.error).not.toBe('Not Implemented');
+    expect(body.message).toContain("Test alerts aren't available in this version yet.");
+  });
+
+  it('Step 5: Default backup directory is under app data dir, and EACCES/ENOENT/ENOSPC map to plain message', async () => {
+    const html = renderAdminSetupPage();
+    expect(html).toContain('./data/backups');
+    expect(html).not.toContain('/var/backups');
+
+    const { app } = createApp();
+    // Setup and auth
+    const setupRes = await app.request('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: 'backup_drill_tester',
+        password: 'ValidPassword12345!',
+      }),
+    });
+    const setupData = await setupRes.json();
+    const confirmRes = await app.request('/api/auth/totp/confirm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: computeTotpCode(setupData.totpSecret) }),
+    });
+    const confirmData = await confirmRes.json();
+    const setCookie = confirmRes.headers.get('set-cookie') || '';
+    const sessionId = setCookie.match(/lp_session=([^;]+)/)![1];
+    const csrfToken = confirmData.csrfToken;
+
+    // 1. Run drill with inaccessible folder (like /var/backups/nonexistent on mac)
+    const drillRes = await app.request('/api/settings/backups/run-drill', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `lp_session=${sessionId}`,
+        'X-CSRF-Token': csrfToken,
+      },
+      body: JSON.stringify({ destinationDir: '/var/backups/cannot_write_here_test' }),
+    });
+    expect(drillRes.status).toBe(400);
+    const drillData = await drillRes.json();
+    expect(drillData.ok).toBe(false);
+    expect(drillData.message).toBe("The app can't write to that folder. Choose another folder or fix its permissions.");
+    expect(drillData.error).not.toContain('Not Implemented');
+
+    // 2. Run drill with default/safe app data dir
+    const safeDir = resolve(__dirname, '../../../../data/backups-test-wp139');
+    const safeDrillRes = await app.request('/api/settings/backups/run-drill', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: `lp_session=${sessionId}`,
+        'X-CSRF-Token': csrfToken,
+      },
+      body: JSON.stringify({ destinationDir: safeDir }),
+    });
+    expect(safeDrillRes.status).toBe(200);
+    const safeData = await safeDrillRes.json();
+    expect(safeData.ok).toBe(true);
+  });
+
+  it('Step 6: Theme choice explains post-setup application', () => {
+    const html = renderAdminSetupPage();
+    expect(html).toContain('Applied to your public site after setup. Change it any time in Theme.');
+  });
+});
+
