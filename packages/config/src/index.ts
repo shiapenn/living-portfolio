@@ -100,6 +100,15 @@ export const CONFIG_SETTINGS_METADATA: readonly SettingMetadata[] = [
     public: false,
   },
   {
+    key: 'ENABLE_BUNDLED_WEB',
+    category: 'deploy',
+    description: 'Enable single-process bundled web server in API (defaults to false in pure API, true in bundled setups)',
+    defaultValue: true,
+    exampleValue: 'true',
+    secret: false,
+    public: false,
+  },
+  {
     key: 'NTFY_TOPIC',
     category: 'deploy',
     description: 'Notification topic for escalations and operational digests (§13.9)',
@@ -291,6 +300,10 @@ export const AppConfigSchema = z
       .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
       .transform((val) => val === true || val === 'true' || val === '1')
       .default(false),
+    ENABLE_BUNDLED_WEB: z
+      .union([z.boolean(), z.enum(['true', 'false', '1', '0'])])
+      .transform((val) => val === true || val === 'true' || val === '1')
+      .default(true),
     NTFY_TOPIC: z.string().default(''),
     AGE_PUBLIC_KEY: z.string().default(''),
     S3_BACKUP_BUCKET: z.string().default(''),

@@ -28,6 +28,7 @@ import {
 export interface WebAppOptions {
   client?: LivingPortfolioClient | WebDataClient;
   apiBaseUrl?: string;
+  checkSession?: (cookieHeader?: string) => Promise<{ authenticated: boolean; setupRequired?: boolean }>;
 }
 
 /**
@@ -39,7 +40,7 @@ export function createWebApp(options?: WebAppOptions) {
   const cfg = loadConfig();
   const primarySiteOrigin = cfg.SITE_ORIGIN.split(',')[0].trim();
 
-  const defaultPort = process.env.API_PORT || '3000';
+  const defaultPort = process.env.API_PORT || process.env.PORT || '4000';
   const defaultHost = process.env.API_HOST || 'localhost';
   const fallbackBaseUrl = `http://${defaultHost}:${defaultPort}/api/v1`;
 
@@ -49,6 +50,42 @@ export function createWebApp(options?: WebAppOptions) {
       baseUrl: options?.apiBaseUrl ?? process.env.PUBLIC_API_BASE_URL ?? fallbackBaseUrl,
     })
   );
+
+  const checkSession =
+    options?.checkSession ??
+    (async (cookieHeader?: string) => {
+      try {
+        if ((client as any)?.auth?.session && typeof (client as any).auth.session === 'function') {
+          const res = await (client as any).auth.session(
+            cookieHeader ? { headers: { cookie: cookieHeader } } : undefined
+          );
+          return {
+            authenticated: Boolean(res?.authenticated),
+            setupRequired: Boolean(res?.setupRequired),
+          };
+        }
+        const apiHost = process.env.API_HOST || '127.0.0.1';
+        const apiPort = process.env.API_PORT || process.env.PORT || '4000';
+        const rawBase = options?.apiBaseUrl ?? process.env.INTERNAL_API_URL ?? fallbackBaseUrl;
+        const resolvedApiBase = rawBase.startsWith('http') ? rawBase : `http://${apiHost}:${apiPort}${rawBase}`;
+        const res = await fetch(`${resolvedApiBase}/auth/session`, {
+          headers: {
+            Accept: 'application/json',
+            ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+          },
+        });
+        if (res.ok) {
+          const data = (await res.json()) as any;
+          return {
+            authenticated: Boolean(data?.authenticated),
+            setupRequired: Boolean(data?.setupRequired),
+          };
+        }
+        return { authenticated: false, setupRequired: false };
+      } catch {
+        return { authenticated: false, setupRequired: false };
+      }
+    });
 
   // Search engine indexing prevention (§6.4 item 2, OSR-19)
   if (cfg.DEPLOYMENT_CLASS === 'staging') {
@@ -74,8 +111,31 @@ export function createWebApp(options?: WebAppOptions) {
   });
 
   // Admin UI routes
-  app.get('/admin/setup', (c) => c.html(renderAdminSetupPage()));
+  app.get('/admin/setup', async (c) => {
+    const session = await checkSession(c.req.header('cookie'));
+    if (!session.setupRequired && !session.authenticated) {
+      return c.redirect('/admin/login', 302);
+    }
+    return c.html(renderAdminSetupPage());
+  });
   app.get('/admin/login', (c) => c.html(renderAdminLoginPage()));
+
+  // Unauthenticated guard for admin workspace, import, and settings (§13.4, UX-05)
+  const adminGuard = async (c: any, next: any) => {
+    if (c.req.path === '/admin/login' || c.req.path === '/admin/setup') {
+      return next();
+    }
+    const session = await checkSession(c.req.header('cookie'));
+    if (!session.authenticated) {
+      const target = session.setupRequired ? '/admin/setup' : '/admin/login';
+      return c.redirect(target, 302);
+    }
+    return next();
+  };
+
+  app.use('/admin', adminGuard);
+  app.use('/admin/*', adminGuard);
+
   app.get('/admin', async (c) => c.html(await renderAdminWorkspacePage(client)));
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
   app.get('/admin/settings', async (c) => c.html(await renderAdminSettingsPage(client)));

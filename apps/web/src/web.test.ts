@@ -1033,4 +1033,60 @@ console.log(x);
       expect(publicHtml).not.toContain('id="btn-admin-logout"');
     });
   });
+
+  describe('WP-13.7: Standalone Admin Guard & Deployment Truth (UX-05, UX-32)', () => {
+    it('1. Unauthenticated requests to /admin in standalone mode redirect to /admin/login (UX-05)', async () => {
+      const { app } = createWebApp({
+        client: repo as any,
+        checkSession: async () => ({ authenticated: false, setupRequired: false }),
+      });
+
+      const res = await app.fetch(new Request('http://localhost/admin'));
+      expect(res.status).toBe(302);
+      expect(res.headers.get('location')).toBe('/admin/login');
+
+      const settingsRes = await app.fetch(new Request('http://localhost/admin/settings'));
+      expect(settingsRes.status).toBe(302);
+      expect(settingsRes.headers.get('location')).toBe('/admin/login');
+
+      const importRes = await app.fetch(new Request('http://localhost/admin/import'));
+      expect(importRes.status).toBe(302);
+      expect(importRes.headers.get('location')).toBe('/admin/login');
+    });
+
+    it('2. Authenticated requests to /admin in standalone mode render 200 OK (UX-05)', async () => {
+      const { app } = createWebApp({
+        client: repo as any,
+        checkSession: async () => ({ authenticated: true, setupRequired: false }),
+      });
+
+      const res = await app.fetch(new Request('http://localhost/admin'));
+      expect(res.status).toBe(200);
+      const text = await res.text();
+      expect(text).toContain('Admin Workspace');
+    });
+
+    it('3. /admin/setup redirects to /admin/login when setup already completed and unauthenticated (UX-05)', async () => {
+      const { app } = createWebApp({
+        client: repo as any,
+        checkSession: async () => ({ authenticated: false, setupRequired: false }),
+      });
+
+      const res = await app.fetch(new Request('http://localhost/admin/setup'));
+      expect(res.status).toBe(302);
+      expect(res.headers.get('location')).toBe('/admin/login');
+    });
+
+    it('4. /admin/setup renders 200 OK when setup is required (UX-05)', async () => {
+      const { app } = createWebApp({
+        client: repo as any,
+        checkSession: async () => ({ authenticated: false, setupRequired: true }),
+      });
+
+      const res = await app.fetch(new Request('http://localhost/admin/setup'));
+      expect(res.status).toBe(200);
+      const text = await res.text();
+      expect(text).toContain('Create Owner Account');
+    });
+  });
 });

@@ -173,9 +173,10 @@ export class LivingPortfolioClient {
         method: 'POST',
       }),
 
-    session: (): Promise<AuthSessionResponse> =>
+    session: (options?: { headers?: Record<string, string> }): Promise<AuthSessionResponse> =>
       this.request<AuthSessionResponse>('/auth/session', {
         method: 'GET',
+        headers: options?.headers,
       }),
 
     listTokens: (): Promise<{ tokens: ApiBearerTokenRecord[] }> =>

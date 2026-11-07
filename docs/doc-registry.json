@@ -771,6 +771,14 @@
     "sha256": "b2384104a2d0b44c1add6b4fffacf66cca99e2c5abb40c9484e14e4dedd505a9"
   },
   {
+    "id": "L016",
+    "title": "Start-Here Onboarding Runbook and Deployment Checklist",
+    "class": "L",
+    "path": "docs/START-HERE.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
     "id": "P004",
     "title": "UX remediation work packages",
     "class": "P",

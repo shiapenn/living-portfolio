@@ -31,10 +31,11 @@ services:
     restart: unless-stopped
     mem_limit: 512m
     ports:
-      - "${PORT:-3000}:3000"
+      - "${PORT:-4000}:4000"
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/portfolio}
-      PORT: 3000
+      PORT: 4000
+      ENABLE_BUNDLED_WEB: ${ENABLE_BUNDLED_WEB:-true}
     depends_on:
       db:
         condition: service_healthy

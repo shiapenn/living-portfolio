@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import { resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { CONFIG_SETTINGS_METADATA, AppConfigSchema } from '@living-portfolio/config';
 import { createApp } from '../app.js';
 import { computeTotpCode } from '../auth/security.js';
 
@@ -354,5 +357,61 @@ describe('WP-13.4 Conformance: Persist Wizard Choices via Settings API', () => {
     expect(drillData.code).toBe('SIMULATED');
     expect(drillData.finding).toBe('M1');
     expect(drillData.message).toContain('Not available until a backup folder is set');
+  });
+
+  it('WP-13.7: START-HERE.md runbook exists and verifies onboarding prerequisites, checklist, time, and port truth (UX-32)', () => {
+    const startHerePath = resolve(__dirname, '../../../../docs/START-HERE.md');
+    expect(existsSync(startHerePath)).toBe(true);
+    const content = readFileSync(startHerePath, 'utf8');
+
+    // Expected time < 15 min
+    expect(content).toContain('< 15 min');
+
+    // Prerequisites checklist
+    expect(content).toContain('Node.js');
+    expect(content).toContain('pnpm');
+    expect(content).toContain('Authenticator App');
+
+    // What to have to hand
+    expect(content).toContain('What You Will Need to Hand');
+    expect(content).toContain('recovery codes');
+
+    // Ordered steps
+    expect(content).toContain('Step 1: Clone the Repository');
+    expect(content).toContain('Step 2: Configure Environment');
+    expect(content).toContain('Step 3: Launch the Runtime');
+    expect(content).toContain('Step 4: Open the Setup Wizard');
+    expect(content).toContain('Step 5: Complete the 6-Step Setup Wizard');
+    expect(content).toContain('Step 6: Verify Sign-Out and Login');
+
+    // Port truth 4000
+    expect(content).toContain('http://localhost:4000/admin/setup');
+    expect(content).toContain('http://localhost:4000/admin/login');
+  });
+
+  it('WP-13.7: self-hosting documentation and compose stack reflect port 4000 truth and ENABLE_BUNDLED_WEB (UX-32)', () => {
+    const selfHostingPath = resolve(__dirname, '../../../../docs/self-hosting.md');
+    const selfHosting = readFileSync(selfHostingPath, 'utf8');
+    expect(selfHosting).toContain('http://localhost:4000/admin/setup');
+    expect(selfHosting).not.toContain('http://localhost:3000/admin/setup');
+    expect(selfHosting).toContain('ENABLE_BUNDLED_WEB');
+
+    const envExamplePath = resolve(__dirname, '../../../../.env.example');
+    const envExample = readFileSync(envExamplePath, 'utf8');
+    expect(envExample).toContain('ENABLE_BUNDLED_WEB=true');
+
+    const composePath = resolve(__dirname, '../../../../docker/docker-compose.hobbyist.yml');
+    const compose = readFileSync(composePath, 'utf8');
+    expect(compose).toContain('"${PORT:-4000}:4000"');
+    expect(compose).toContain('ENABLE_BUNDLED_WEB: ${ENABLE_BUNDLED_WEB:-true}');
+  });
+
+  it('WP-13.7: @living-portfolio/config schema defines ENABLE_BUNDLED_WEB with default true (UX-05, UX-32)', () => {
+    const meta = CONFIG_SETTINGS_METADATA.find((m) => m.key === 'ENABLE_BUNDLED_WEB');
+    expect(meta).toBeDefined();
+    expect(meta?.defaultValue).toBe(true);
+
+    const parsed = AppConfigSchema.parse({});
+    expect(parsed.ENABLE_BUNDLED_WEB).toBe(true);
   });
 });
