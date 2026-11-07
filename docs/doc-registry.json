@@ -881,5 +881,13 @@
     "path": "docs/execution-reports/A071-wp-1311-recovery-code-entropy-and-backup-path.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A072",
+    "title": "WP-13.12 Legacy recovery notice and regeneration",
+    "class": "A",
+    "path": "docs/execution-reports/A072-wp-1312-legacy-recovery-notice-and-regeneration.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

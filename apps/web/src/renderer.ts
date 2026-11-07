@@ -337,7 +337,10 @@ ${footerSlotHtml}    <div style="display:flex;justify-content:space-between;alig
               await window.apiClient('/api/auth/logout', { method: 'POST' });
             }
           } catch (_) {}
-          try { sessionStorage.removeItem('lp_csrf_token'); } catch (_) {}
+          try {
+            sessionStorage.removeItem('lp_csrf_token');
+            sessionStorage.removeItem('lp_legacy_recovery_used');
+          } catch (_) {}
           window.location.href = '/admin/login';
         });
       }
@@ -2043,9 +2046,11 @@ export interface AdminSettingsState {
 
 export async function renderAdminWorkspacePage(
   repo: WebDataClient,
-  settingsState?: AdminSettingsState
+  settingsOrOptions?: AdminSettingsState | { settingsState?: AdminSettingsState; legacyRecoveryUsed?: boolean }
 ): Promise<string> {
   repo = adaptDataSource(repo);
+  const settingsState = (settingsOrOptions as any)?.settingsState ?? ((settingsOrOptions as any)?.automatedAnsweringEnabled !== undefined ? settingsOrOptions as AdminSettingsState : undefined);
+  const legacyRecoveryUsed = Boolean((settingsOrOptions as any)?.legacyRecoveryUsed);
   const answeringEnabledInitial = settingsState?.automatedAnsweringEnabled ?? true;
   const entries = await repo.listEntries({ visibility: ['public', 'unlisted', 'private'] });
   const escalations = await repo.getEscalations();
@@ -2227,6 +2232,10 @@ export async function renderAdminWorkspacePage(
         <button type="button" class="btn btn-secondary" id="btn-backup-drill">Run Backup &amp; Restore Drill</button>
         <a href="/api/settings/export" target="_blank" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center">Export Markdown + Sidecar</a>
       </div>
+    </div>
+
+    <div id="admin-legacy-recovery-notice" class="admin-notice-banner" role="alert" style="display:${legacyRecoveryUsed ? 'block' : 'none'};padding:12px 16px;border:1px solid var(--accent);border-radius:var(--radius-control);background:var(--surface-raised);margin-bottom:16px;font-size:14px">
+      You signed in with an older recovery code. Replace your recovery codes in Settings &gt; Account as soon as you can.
     </div>
 
     <div id="admin-undo-banner" role="region" aria-label="Undo action" style="display:none;margin-bottom:16px"></div>
@@ -2988,6 +2997,11 @@ export async function renderAdminWorkspacePage(
               banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error saving quick log.</div>';
             }
           });
+        }
+
+        const legacyNotice = document.getElementById('admin-legacy-recovery-notice');
+        if (sessionStorage.getItem('lp_legacy_recovery_used') === 'true' && legacyNotice) {
+          legacyNotice.style.display = 'block';
         }
 
         const dismissWalkthroughBtn = document.getElementById('btn-dismiss-walkthrough');
@@ -4237,7 +4251,6 @@ export function renderAdminLoginPage(): string {
           </div>
           <div style="margin-top:8px">
             <button type="button" id="btn-toggle-recovery" style="background:none;border:none;padding:0;font-size:12px;color:var(--accent);text-decoration:underline;cursor:pointer">Lost your authenticator device? Sign in with a recovery code</button>
-            <div id="login-recovery-legacy-notice" style="display:none;margin-top:6px;font-size:12px;color:var(--text-muted)">Legacy 8-character recovery codes from earlier versions continue to be supported.</div>
           </div>
         </div>
         <button type="submit" class="btn" style="width:100%;padding:10px">Sign in</button>
@@ -4288,19 +4301,16 @@ export function renderAdminLoginPage(): string {
           toggleBtn.addEventListener('click', function() {
             recoveryMode = !recoveryMode;
             errBox.style.display = 'none';
-            const legacyNotice = document.getElementById('login-recovery-legacy-notice');
             if (recoveryMode) {
               codeLabel.textContent = 'Single-Use Recovery Code';
               codeInput.placeholder = 'xxxx-xxxx-xxxx-xxxx';
               codeHelp.textContent = 'Enter one of your 8 emergency alphanumeric recovery codes. Each code can only be used once.';
               toggleBtn.textContent = 'Have your authenticator? Use 6-digit TOTP code';
-              if (legacyNotice) legacyNotice.style.display = 'block';
             } else {
               codeLabel.textContent = '6-Digit Authenticator Code';
               codeInput.placeholder = '000000';
               codeHelp.textContent = 'Enter the 6-digit verification code from your authenticator app (Google Authenticator, 1Password, etc.).';
               toggleBtn.textContent = 'Lost your authenticator device? Sign in with a recovery code';
-              if (legacyNotice) legacyNotice.style.display = 'none';
             }
           });
         }
@@ -4350,6 +4360,7 @@ export function renderAdminLoginPage(): string {
               if (data.csrfToken) {
                 sessionStorage.setItem('lp_csrf_token', data.csrfToken);
               }
+              sessionStorage.setItem('lp_legacy_recovery_used', data.legacyRecoveryUsed ? 'true' : 'false');
               function sanitizeNext(target) {
                 if (!target || typeof target !== 'string') return '/admin';
                 var trimmed = target.trim();

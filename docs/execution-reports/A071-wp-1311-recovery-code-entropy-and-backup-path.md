@@ -6,7 +6,7 @@
 | Date | 2026-11-07 |
 | Author | A (Implementer) |
 | Task ID | `WP-13.11` |
-| Evidence SHA | `3728ba8` |
+| Evidence SHA | `d8f017d` |
 | CI run | local output |
 
 ---

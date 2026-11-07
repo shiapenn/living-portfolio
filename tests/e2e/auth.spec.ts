@@ -600,9 +600,9 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(codeLabel).toContainText('Single-Use Recovery Code');
     await expect(page.locator('#login-totp')).toHaveAttribute('placeholder', 'xxxx-xxxx-xxxx-xxxx');
     await expect(codeHelp).toContainText('Enter one of your 8 emergency alphanumeric recovery codes');
+    // WP-13.12: Legacy recovery code notice is removed from /admin/login to avoid confusing fresh installs
     const legacyNotice = page.locator('#login-recovery-legacy-notice');
-    await expect(legacyNotice).toBeVisible();
-    await expect(legacyNotice).toContainText('Legacy 8-character recovery codes from earlier versions continue to be supported');
+    await expect(legacyNotice).toHaveCount(0);
 
     // 3. Sign in with recovery code 2
     await page.fill('#login-username', TEST_USERNAME);
@@ -612,6 +612,8 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
 
     await page.waitForURL((url) => url.pathname === '/admin');
     await expect(page.locator('h1')).toContainText('Admin Workspace');
+    // Modern 16-hex recovery code sign-in does not show the legacy recovery notice
+    await expect(page.locator('#admin-legacy-recovery-notice')).not.toBeVisible();
 
     // 4. Header contains Sign out control (UX-41)
     const logoutBtn = page.locator('#btn-admin-logout');
@@ -739,5 +741,65 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
       await expect(errorMsg).toBeVisible();
       await expect(errorMsg).toContainText("That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once.");
     }
+  });
+
+  test('18. WP-13.12: Legacy recovery code sign-in shows admin shell notice and burns after one use (UX-46, UX-47)', async ({ page, request }) => {
+    // 1. Sign in with standard credentials to get admin session and regenerate a legacy code for migration testing
+    await page.goto('/admin/login');
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    const validTotp = computeTotp(sharedTotpSecret);
+    await page.fill('#login-totp', validTotp);
+    await page.click('button[type="submit"]');
+    await page.waitForURL((url) => url.pathname === '/admin');
+    await expect(page.locator('#admin-legacy-recovery-notice')).not.toBeVisible();
+
+    // 2. Call POST /api/auth/recovery-codes/regenerate with legacyFormat: true to simulate pre-existing legacy hashes
+    const csrfToken = await page.evaluate(() => sessionStorage.getItem('lp_csrf_token'));
+    const cookies = await page.context().cookies();
+    const sessionCookie = cookies.find((c) => c.name === 'lp_session')?.value || '';
+    const regenRes = await request.post('http://127.0.0.1:3100/api/auth/recovery-codes/regenerate', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cookie': `lp_session=${sessionCookie}`,
+        'x-csrf-token': csrfToken || '',
+      },
+      data: { legacyFormat: true },
+    });
+    expect(regenRes.status()).toBe(200);
+    const regenData = await regenRes.json();
+    expect(regenData.recoveryCodes).toHaveLength(8);
+    const legacyCode = regenData.recoveryCodes[0];
+    expect(legacyCode).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}$/);
+
+    // 3. Sign out
+    await page.click('#btn-admin-logout');
+    await page.waitForURL((url) => url.pathname === '/admin/login');
+
+    // 4. Sign in with legacy-format code
+    const toggleBtn = page.locator('#btn-toggle-recovery');
+    await toggleBtn.click();
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.fill('#login-totp', legacyCode);
+    await page.click('button[type="submit"]');
+
+    // 5. Lands on /admin and shows legacy notice in admin shell
+    await page.waitForURL((url) => url.pathname === '/admin');
+    const adminNotice = page.locator('#admin-legacy-recovery-notice');
+    await expect(adminNotice).toBeVisible();
+    await expect(adminNotice).toContainText('You signed in with an older recovery code. Replace your recovery codes in Settings > Account as soon as you can.');
+
+    // 6. Sign out and verify the legacy recovery code is burned
+    await page.click('#btn-admin-logout');
+    await page.waitForURL((url) => url.pathname === '/admin/login');
+    await toggleBtn.click();
+    await page.fill('#login-username', TEST_USERNAME);
+    await page.fill('#login-password', TEST_PASSWORD);
+    await page.fill('#login-totp', legacyCode);
+    await page.click('button[type="submit"]');
+    const errorMsg = page.locator('#login-error');
+    await expect(errorMsg).toBeVisible();
+    await expect(errorMsg).toContainText("That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once.");
   });
 });

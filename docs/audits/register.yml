@@ -3081,7 +3081,7 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/71"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: apps/web/src/web.test.ts
   history:
@@ -3160,7 +3160,7 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/77"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: null
   history:
@@ -3465,7 +3465,7 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/68"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
   history:
@@ -3486,7 +3486,7 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/78"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
   history:
@@ -3508,7 +3508,7 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/69"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
   history:
@@ -3555,7 +3555,7 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/70"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
   history:
@@ -3579,7 +3579,7 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/76"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: tests/e2e/auth.spec.ts
   history:
@@ -3604,7 +3604,7 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/71"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
   history:
@@ -3626,7 +3626,7 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/77"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
   history:
@@ -3781,7 +3781,7 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/76"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: tests/e2e/auth.spec.ts
   history:
@@ -3879,13 +3879,31 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/79"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
   history:
     - date: 2026-11-07
       status: fixed
       note: "Remediated in WP-13.11 (A071): Upgraded recovery codes to 64 bits of entropy (16 hex chars, xxxx-xxxx-xxxx-xxxx), per-code 16-byte random salt, keyed HMAC-SHA256, constant-time timingSafeEqual comparison across all stored codes, shared rate limiting, and 15-minute lockout. Verified by wp13-auth.conformance.test.ts and tests/e2e/auth.spec.ts."
+  verified_by: null
+- id: 20261106-UX-47
+  audit: AUD-2026-11-06
+  title: 'Owner account recovery codes regeneration UI in Settings > Account'
+  spec_sections:
+    - "13.4"
+    - "13.13"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  history:
+    - date: 2026-11-07
+      status: open
+      note: "Follow-up registered in WP-13.12 (A072): Backend regeneration endpoint POST /api/auth/recovery-codes/regenerate built with 64-bit salted entropy and single-use burn; Settings > Account UI to trigger regeneration and download new codes to be delivered in WP-17.4."
   verified_by: null
 - id: 20261106-UI-01
   audit: AUD-2026-11-06
@@ -3971,7 +3989,7 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/77"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: null
   history:

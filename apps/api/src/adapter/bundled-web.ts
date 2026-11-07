@@ -31,9 +31,17 @@ export function mountBundledWeb(
       return c.html(renderAdminSetupPage());
     });
     app.get('/admin/login', (c) => c.html(renderAdminLoginPage()));
-    app.get('/admin', auth.requireAdminMiddleware(), async (c) =>
-      c.html(await renderAdminWorkspacePage(repo, runtimeState))
-    );
+    app.get('/admin', auth.requireAdminMiddleware(), async (c) => {
+      const cookieHeader = c.req.header('cookie') || '';
+      const sessionMatch = cookieHeader.match(/(?:^|;\s*)lp_session=([a-f0-9]+)/);
+      const session = sessionMatch ? (auth as any).sessions?.get(sessionMatch[1]) : null;
+      return c.html(
+        await renderAdminWorkspacePage(repo, {
+          settingsState: runtimeState,
+          legacyRecoveryUsed: Boolean(session?.legacyRecoveryUsed),
+        })
+      );
+    });
     app.get('/admin/import', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminImportPage(repo))
     );
