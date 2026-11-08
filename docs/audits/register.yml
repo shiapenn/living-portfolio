@@ -3992,7 +3992,7 @@
   spec_sections:
     - "14.0"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -4003,6 +4003,9 @@
     - date: 2026-11-08
       status: open
       note: "Registered in WP-13.14 (corrected in G13): Dependency review via GitHub Dependabot API (gh api repos/shiapenn/living-portfolio/dependabot/alerts) reports 23 active vulnerabilities on main (2 critical, 7 high, 14 moderate) across dependencies, with 4 open Dependabot PRs (#82, #83, #84, #85). Planned as a standalone task before WP-14.0a. No Dependabot PR may be merged in G13."
+    - date: 2026-11-08
+      status: partial
+      note: "Partially addressed in WP-14.pre-a (A075): Triaged all 23 Dependabot alerts (runtime vs dev-only). Upgraded runtime dependencies @hono/node-server to ^2.1.3 (2.1.6, patches CVE-2026-118663) and drizzle-orm to ^0.45.2 (0.45.4, patches CVE-2026-39356). Reconciled Dependabot PRs #82, #83, #84, #85 (superseded #82 and #85; closed #83 and #84 with documented breaking changes in zod 4 and vitest 4). Remaining alerts tracked for follow-up migrations."
   verified_by: null
 - id: 20261106-UX-52
   audit: AUD-2026-11-06
