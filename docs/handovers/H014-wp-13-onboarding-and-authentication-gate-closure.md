@@ -7,7 +7,7 @@
 | Author | A (Implementer) |
 | Supersedes | H013 |
 | Evidence SHA (on `main`) | `5628357c24726731552ab7cbb680bc3a1a448a48` |
-| CI runs for that SHA | 42464818468 / 42464818387 / 42464818382 |
+| CI runs for that SHA | 42464818468 / 42464818387 / 42464818382 (commit 5628357); 42471720311 / 42471720242 / 42471720243 (commit 14b0a01) |
 | Receipts covered | A001 through A074 |
 | Phase closed | WP-13 Gate Closure (certified in docs/plans/gates.json) |
 | Phase next | WP-14 Entry Lifecycle Integrity & Pre-Task Dependency Review |
@@ -28,7 +28,7 @@
 | Topic | Where | How to query |
 | --- | --- | --- |
 | Product spec | `docs/spec/The_Living_Portfolio_Open_Source_Spec.md` | Read by section number only |
-| UX audit findings | `docs/audits/2026-10-20-ux-specification-audit/report.md` | Parts 2, 3, 3b by finding ID |
+| UX audit findings | `docs/audits/2026-11-06-ux-specification-audit/report.md` | Parts 2, 3, 3b by finding ID (AUD-2026-11-06; 2026-10-20 path is earlier audit) |
 | Finding register | `docs/audits/register.yml` | `node scripts/handover-facts` |
 | Work plan and tranches | `docs/plans/P004-ux-remediation-work-packages.md` | §7 Work Packages table |
 | Task protocol | `docs/plans/execution-protocol.md` | Read in full |
@@ -38,7 +38,7 @@
 
 - **Completed:**
   - WP-1 through WP-12: Core controls, persistence, governance, algorithms, UX architecture, and v0.1.0 GA release (receipts A001 to A059, handover H013, evidence `31700e1`).
-  - WP-13: Onboarding and authentication integrity (receipts A060 to A074, evidence `806e6c7`, merge commit `5628357` on `main`):
+  - WP-13: Onboarding and authentication integrity (receipts A060 to A074; task branch head evidence `806e6c7`; WP-13 merge commit `5628357` on `main` with CI runs 42464818468 / 42464818387 / 42464818382; H014 merge commit `14b0a01` on `main` with CI runs 42471720311 / 42471720242 / 42471720243):
     * WP-13.0 (`A060`): Audit findings registration, gates WP-13..WP-20, and plan P004 intake.
     * WP-13.1 (`A061`): Real authenticator enrolment, SVG QR code, and confirmation route (`20261106-UX-26`).
     * WP-13.2 (`A062`): Session issuance and CSRF tokens from setup wizard (`20261106-UX-28`).
@@ -59,34 +59,31 @@
 
 ## 4. Active workspace
 
-- **Git:** `main` at `5628357` (Evidence SHA `5628357c24726731552ab7cbb680bc3a1a448a48`); open PRs: none; working tree: clean; branches holding unmerged work: none.
-- **Next task:** `WP-14.pre`: Dependency vulnerability review and Dependabot triage (UX-51, UX-52). Receipt number to use: `A075`.
+- **Git:** `main` at `5628357` (WP-13 closure Evidence SHA `5628357c24726731552ab7cbb680bc3a1a448a48` with CI runs 42464818468 / 42464818387 / 42464818382; current `main` HEAD is `14b0a01` with CI runs 42471720311 / 42471720242 / 42471720243); open PRs: none; working tree: clean; branches holding unmerged work: none.
+- **Next task:** `WP-14.pre-a`: Dependency vulnerability review and Dependabot triage (UX-51). Receipt number to use: `A075`.
 - **Hot files (at most 7):**
   1. `package.json`: Dependency manifests and workspace package specifications.
   2. `pnpm-lock.yaml`: Dependency lockfile for resolution updates.
-  3. `.github/workflows/`: CI workflows requiring download retry loops (CodeQL bundle, Gitleaks checksum).
-  4. `apps/web/src/renderer.ts`: Admin workspace editor result presentation (WP-14.0a).
-  5. `apps/web/src/strings/en.ts`: User-facing strings and error messages.
+  3. `.github/workflows/ci.yml`: CI workflow requiring CodeQL and Gitleaks download retry loops.
+  4. `.github/workflows/codeql.yml`: CodeQL workflow requiring bundle download retry loop.
+  5. `apps/web/src/renderer.ts`: Admin workspace editor result presentation (WP-14.0a).
   6. `docs/plans/gates.json`: Stage gates manifest certifying WP-13 closure.
   7. `docs/audits/register.yml`: Finding register.
 - **Immediate next actions (ordered, at most 7):**
-  1. Open task `WP-14.pre` on branch `feat/wp-14-pre-dependency-review` from `main` to triage 23 vulnerabilities on main (2 critical, 7 high, 14 moderate), reconcile 4 open Dependabot PRs (#82, #83, #84, #85), and add retry loops for CI downloads (UX-51, UX-52).
-  2. Verify all gates pass locally (`pnpm verify`), open docs/code PR into `main`, wait for green CI checks, merge with a merge commit, and author receipt A075.
-  3. Open task `WP-14.0a` on branch `feat/wp-14-0a-visible-editor-results` from `main` and write the failing Playwright test asserting editor results (Save draft, Publish, Unpublish, Delete) are visible in the viewport without scrolling and announced to assistive tech (UX-43).
-  4. Implement inline editor status line, polite toast notification, and list refresh; verify Playwright test passes.
-  5. Open PR for `WP-14.0a` into `main`, wait for green CI checks, merge with a merge commit, and author receipt A076.
+  1. Open task `WP-14.pre-a` on branch `feat/wp-14-pre-a-dependency-review` from `main` to triage the 23 alerts with `gh api repos/shiapenn/living-portfolio/dependabot/alerts`, separating runtime from dev-only. Reconcile open Dependabot PRs (#82, #83, #84, #85) one at a time, smallest risk first. For major bumps (vitest 3 to 4, zod 4), verify full test suite and E2E green and document breaking changes. Do not merge red PRs; fix on branch or close with reason. Never use rebase or squash. Open PR into `main`, merge with merge commit, author receipt A075 (UX-51).
+  2. Open task `WP-14.pre-b` on branch `feat/wp-14-pre-b-ci-download-resilience` from `main` to add retry with backoff to CodeQL and Gitleaks download steps in `.github/workflows/ci.yml` and `.github/workflows/codeql.yml` (edits authorized for this task only). Do NOT change or bypass checksum checks, and do not edit `scripts/gitleaks-checksums.json`. Open PR into `main`, merge with merge commit, author receipt A076 (UX-52).
+  3. Open task `WP-14.0a` on branch `feat/wp-14-0a-visible-editor-results` from `main` and write failing Playwright test asserting editor results (Save draft, Publish, Unpublish, Delete) are visible in the viewport without scrolling and announced to assistive tech (UX-43).
+  4. Implement inline editor status line, polite toast notification, and list refresh; verify Playwright test passes; open PR into `main`, merge with merge commit, author receipt A077.
 - **Pending decisions:** None.
 
 ## 5. Findings and backlog snapshot
 
 - **Register counts (from `node scripts/handover-facts`):** 108 fixed, 5 partial, 54 open (P0: 6, P1: 31, P2: 17; Total: 167).
-- **Open P0 findings:**
+- **Open P0 findings (6):**
   - `20261106-UX-01`: Publishing an entry that already exists always sends POST /api/entries, returning 409 for existing slug with generic failure message
   - `20261106-UX-02`: Save draft on an existing entry hard-codes visibility: private, silently unpublishing a live page
   - `20261106-UX-03`: Visibility dropdown is never read by any handler, making Unlisted unreachable
   - `20261106-UX-04`: Undo unpublish omits preview token causing API rejection; undo draft save prints confirmation without restoring state
-  - `20261106-UX-09`: Setup wizard step 3 Model Providers is a read-only table with no API-key field, live validation, or storage choice
-  - `20261106-UX-27`: Wizard steps 2 to 6 persist nothing: hosting preset, domain, notifications, backup destination, age key, and theme are dropped
   - `20261106-UX-43`: Editor results written to banner at top of page away from action, with no auto-scroll, focus move, or list refresh
   - `20261106-UX-44`: Time travel drops entries revised after chosen date from list pages and timeline due to current-revision only filtering
 - **Carry forward items:**
@@ -95,7 +92,7 @@
   - `20261106-UX-50`: docs/START-HERE.md keeps unmeasured "< 15 min" figure retained to satisfy conformance check
   - `20261106-UX-51`: Dependency review: 23 vulnerabilities on main (2 critical, 7 high, 14 moderate) and 4 open Dependabot PRs
   - `20261106-UX-52`: CI flakiness from GitHub-hosted downloads: CodeQL bundle 504 and transient Gitleaks checksum mismatch
-  - Partials: `20261106-UX-09` (read-only providers in setup), `20261106-UX-27` (wizard steps persisted except public theme deferred to WP-17.8), `20261106-UX-33` (backup/visibility settings), `20261106-UX-41` (admin shell sign-out added, full account management deferred to WP-17.4)
+  - Partials (5): `20261106-UX-09` (read-only providers in setup; completes in WP-17.2), `20261106-UX-27` (wizard steps persisted except public theme deferred to WP-17.8), `20261106-UX-33` (live wizard controls that fail in a default install), `20261106-UX-41` (admin shell sign-out added, full account management deferred to WP-17.4), `20261106-CP-01` (engineering and test jargon in owner UI strings)
 
 ## 6. Decisions and pitfalls
 
@@ -118,10 +115,10 @@
 
 | Check | Command | Expected baseline (source) |
 | --- | --- | --- |
-| Full gate suite | `pnpm verify` | all gates pass (CI 42464818468) |
-| Unit and conformance tests | `pnpm test` | 360 tests in 41 files pass in apps/api (CI 42464818468) |
-| End-to-end tests | `pnpm test:e2e` | 61 tests pass in Chromium (CI 42464818468) |
-| Receipt check | `pnpm receipt:check A074` | passes |
+| Full gate suite | `pnpm verify` | all gates pass (CI 42464818468 on 5628357; CI 42471720311 on 14b0a01) |
+| Unit and conformance tests | `pnpm test` | 360 tests in 41 files pass in apps/api (CI 42464818468 on 5628357) |
+| End-to-end tests | `pnpm test:e2e` | 61 tests pass in Chromium (CI 42464818468 on 5628357) |
+| Receipt check | `pnpm receipt:check A074` | passes (A074 certified as WP-13 closing receipt in gates.json) |
 | Docs check | `pnpm docs:check` | passes (112 registered documents) |
 | Handover check | `pnpm handover:check H014` | passes |
 | Handover verify | `pnpm handover:verify H014` | passes |
