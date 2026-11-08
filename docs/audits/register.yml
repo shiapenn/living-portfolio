@@ -3618,7 +3618,7 @@
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
+  regression_test: apps/api/src/conformance/start-here.conformance.test.ts
   history:
     - date: 2026-11-06
       status: open
@@ -3629,6 +3629,12 @@
     - date: 2026-11-08
       status: fixed
       note: Work was committed on local main and first pushed on review/wp-13 (no task PR exists; PR #80 is the first review PR). Reset erroneous PR #71 link to null.
+    - date: 2026-11-08
+      status: open
+      note: "First version of START-HERE.md had errors in these points: labeled Option A Recommended without pre-flight docker check; falsely cited SQLite / in-memory development mode without explaining in-memory data loss on restart or Docker migration; cited legacy 8-char recovery code format; mismatched wizard step headings, numbering, and button labels; claimed wizard allowed entering API keys; omitted notes that notification test is disabled and theme choice is unapplied; cited incorrect healthz JSON response; lacked Docker, port conflict, and node/pnpm troubleshooting. Reopened and remediated via 20261106-UX-48 in WP-13.13."
+    - date: 2026-11-08
+      status: fixed
+      note: "Remediated via 20261106-UX-48 / WP-13.13 (A073): full rewrite of docs/START-HERE.md with pre-flight docker check, honest in-memory database warnings, accurate recovery code format, real wizard labels, and comprehensive troubleshooting. Verified by apps/api/src/conformance/start-here.conformance.test.ts."
   verified_by: null
 - id: 20261106-UX-33
   audit: AUD-2026-11-06
@@ -3919,6 +3925,84 @@
     - date: 2026-11-07
       status: open
       note: "Follow-up registered in WP-13.12 (A072): Backend regeneration endpoint POST /api/auth/recovery-codes/regenerate built with 64-bit salted entropy and single-use burn; Settings > Account UI to trigger regeneration and download new codes to be delivered in WP-17.4."
+  verified_by: null
+- id: 20261106-UX-48
+  audit: AUD-2026-11-06
+  title: 'docs/START-HERE.md runbook errors: unverified Recommended label, SQLite/in-memory confusion, 8-hex recovery codes, step mismatch, false API key input claim, and missing troubleshooting'
+  spec_sections:
+    - "13.13"
+    - "15"
+  severity: P1
+  status: fixed
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: apps/api/src/conformance/start-here.conformance.test.ts
+  history:
+    - date: 2026-11-08
+      status: open
+      note: "Raised during Gate G13 verification review (linked to UX-32): Option A labeled 'Recommended' before docker check; Path B falsely claimed SQLite; recovery codes listed as 8-char xxxx-xxxx instead of 16-hex; wizard step headings/buttons mismatched; Step 3 falsely claimed entering API keys; notification test and theme unapplied status omitted; healthz JSON response incorrect; missing troubleshooting."
+    - date: 2026-11-08
+      status: fixed
+      note: "Remediated in WP-13.13 (A073): Rewrote docs/START-HERE.md with docker --version pre-flight check before path selection; established Path B database truth as ephemeral in-memory trial (InMemoryPortfolioRepository, bold data-loss warning, Docker migration path, removed false SQLite claims); updated recovery codes to 16 hex chars (xxxx-xxxx-xxxx-xxxx, 8 codes matching downloaded file); updated wizard step numbering, headings, and buttons to match rendered markup/strings; corrected Step 3 as read-only (removed 'Enter API keys' claim, noted keys are added in Settings > Providers WP-17.2, Ask shows direct quotes until then); added notes that notification test is disabled and theme choice is unapplied; corrected /healthz response JSON to status healthy and version 0.1.0; documented rm -rf ./data as first-install only; removed unverified Under 15 minutes claim; added troubleshooting for docker missing, port 4000 in use, node/pnpm outdated, and backup folder permissions. Verified by automated conformance test and clean trial run."
+  verified_by: null
+- id: 20261106-UX-49
+  audit: AUD-2026-11-06
+  title: 'Setup wizard dead end if browser closed between account creation and TOTP confirmation'
+  spec_sections:
+    - "13.1"
+    - "17"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-08
+      status: open
+      note: "Registered in WP-13.14: In-memory mode vs Postgres behavior when browser closes after account creation (Step 1) but before TOTP confirmation (Step 2). While server runs in memory, `hasAccount()` is true but `totpConfirmed` is false (`isSetupCompleted()` false); visiting /admin/setup shows Step 1 again, but resubmission throws 409 Conflict ('Admin account already configured') while TOTP secret/QR code is unrecoverable. In-memory mode recovers if process is restarted (memory wiped). In Postgres / persistent mode (auth-state.json persisted), restarting the server preserves `totpConfirmed: false`, leaving the owner permanently dead-ended (login redirects to setup, setup rejects account creation) without manual filesystem or DB deletion. Planned under WP-17."
+  verified_by: null
+- id: 20261106-UX-50
+  audit: AUD-2026-11-06
+  title: 'docs/START-HERE.md keeps unmeasured "< 15 min" figure retained to satisfy conformance check'
+  spec_sections:
+    - "13.13"
+    - "20.6"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-08
+      status: open
+      note: "Registered in WP-13.14: docs/START-HERE.md retains an unmeasured '< 15 min' estimate for runbook setup time to satisfy start-here.conformance.test.ts without real clock validation across clean environments. Planned under WP-20.6."
+  verified_by: null
+- id: 20261106-UX-51
+  audit: AUD-2026-11-06
+  title: 'Dependency review: 23 vulnerabilities on main (0 critical, 16 moderate, 7 low) and 4 open Dependabot PRs'
+  spec_sections:
+    - "14.0"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-08
+      status: open
+      note: "Registered in WP-13.14: Dependency review shows GitHub reporting 23 vulnerabilities on main (0 critical, 16 moderate, 7 low) and 4 open Dependabot PRs. Planned as a standalone task before WP-14.0a. No Dependabot PR may be merged in G13."
   verified_by: null
 - id: 20261106-UI-01
   audit: AUD-2026-11-06
