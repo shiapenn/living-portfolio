@@ -98,6 +98,7 @@
 | `H011` | WP-10 Gate closure and WP-11 kickoff | `active` | [H011-wp-10-gate-closure-and-wp-11-kickoff.md](handovers/H011-wp-10-gate-closure-and-wp-11-kickoff.md) | `H010` |
 | `H012` | WP-11 Gate closure and WP-12 kickoff | `superseded` | [H012-wp-11-gate-closure-and-wp-12-kickoff.md](handovers/H012-wp-11-gate-closure-and-wp-12-kickoff.md) | — |
 | `H013` | WP-12 Gate closure and v0.1.0 GA release | `active` | [H013-wp-12-gate-closure-and-v010-ga-release.md](handovers/H013-wp-12-gate-closure-and-v010-ga-release.md) | `H012` |
+| `H014` | WP-13 onboarding and authentication gate closure | `active` | [H014-wp-13-onboarding-and-authentication-gate-closure.md](handovers/H014-wp-13-onboarding-and-authentication-gate-closure.md) | — |
 
 ## Plans & Protocols (Class P)
 
