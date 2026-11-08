@@ -6,7 +6,7 @@
 | Date | 2026-11-08 |
 | Author | A (Implementer) |
 | Task ID | `WP-14.pre-b` |
-| Evidence SHA | HEAD |
+| Evidence SHA | a14fcae |
 | CI run | local verify (`pnpm verify`) green |
 
 ---
@@ -79,6 +79,15 @@ None.
 
 ```
 $ pnpm receipt:check A076
+=== Validating Receipt A076-wp-14pre-b-ci-download-resilience.md ===
+
+✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
+✓ [ANCESTOR-CHECK] Evidence SHA 'a14fcae' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 22a26bb..a14fcae (8 files verified).
+✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A076-wp-14pre-b-ci-download-resilience.md.
+Found 0 section(s) marked verbatim.
+
+🎉 All receipt checks PASSED for A076-wp-14pre-b-ci-download-resilience.md.
 ```
 
 ---
