@@ -39,11 +39,33 @@ jobs:
         if: steps.changes.outputs.docs_only == 'true'
         run: echo "✓ [SARIF-GATE] Docs-only change detected; CodeQL analysis skipped (baseline unchanged)."
 
+      - name: Download CodeQL Bundle with Retry
+        if: steps.changes.outputs.docs_only != 'true'
+        run: |
+          URL="https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.20.0/codeql-bundle-linux64.tar.zst"
+          DEST="${{ runner.temp }}/codeql-bundle-linux64.tar.zst"
+          SUCCESS=0
+          for attempt in 1 2 3 4 5; do
+            echo "Downloading CodeQL bundle (attempt $attempt)..."
+            if curl -fL --retry 3 --retry-delay 2 --retry-connrefused -o "$DEST" "$URL"; then
+              echo "CodeQL bundle downloaded successfully."
+              SUCCESS=1
+              break
+            fi
+            echo "Download failed on attempt $attempt. Backing off..."
+            sleep $((attempt * 3))
+          done
+          if [ "$SUCCESS" -ne 1 ]; then
+            echo "Failed to download CodeQL bundle after 5 attempts."
+            exit 1
+          fi
+
       - name: Initialize CodeQL
         if: steps.changes.outputs.docs_only != 'true'
         uses: github/codeql-action/init@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           languages: javascript-typescript
+          tools: ${{ runner.temp }}/codeql-bundle-linux64.tar.zst
 
       - name: Perform CodeQL Analysis
         if: steps.changes.outputs.docs_only != 'true'

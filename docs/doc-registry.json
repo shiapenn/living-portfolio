@@ -921,5 +921,13 @@
     "path": "docs/execution-reports/A075-wp-14pre-a-dependency-review-and-triage.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A076",
+    "title": "WP-14.pre-b CI download resilience",
+    "class": "A",
+    "path": "docs/execution-reports/A076-wp-14pre-b-ci-download-resilience.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

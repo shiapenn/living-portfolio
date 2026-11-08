@@ -4013,6 +4013,27 @@
   spec_sections:
     - "14.0"
   severity: P2
+  status: fixed
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: 'scripts/verify-action-pins'
+  history:
+    - date: 2026-11-08
+      status: open
+      note: "Registered at Gate G13 closure: Intermittent CI download failures observed on GitHub-hosted runners (CodeQL bundle download HTTP 504 and transient Gitleaks release binary checksum mismatch matching on re-run). Proposed fix for dependency-review slot: add curl retry loop with backoff to download steps without weakening checksum validation. Workflow untouched during G13."
+    - date: 2026-11-08
+      status: fixed
+      note: "Fixed in WP-14.pre-b (A076): Added retry loops (5 attempts) with exponential backoff to CodeQL bundle download in codeql.yml and Gitleaks binary download in secrets.yml. Checksum verification preserved without editing scripts/gitleaks-checksums.json."
+  verified_by: null
+- id: 20261106-UX-53
+  audit: AUD-2026-11-06
+  title: 'Zod 4 migration blocked by z.record signature change and OpenAPI AST reflection drift'
+  spec_sections:
+    - "14.0"
+  severity: P2
   status: open
   owner: A
   links:
@@ -4023,7 +4044,25 @@
   history:
     - date: 2026-11-08
       status: open
-      note: "Registered at Gate G13 closure: Intermittent CI download failures observed on GitHub-hosted runners (CodeQL bundle download HTTP 504 and transient Gitleaks release binary checksum mismatch matching on re-run). Proposed fix for dependency-review slot: add curl retry loop with backoff to download steps without weakening checksum validation. Workflow untouched during G13."
+      note: "Registered in WP-14.pre-b (A076): Zod 4 migration deferred to WP-15. Zod 4 introduces breaking changes: z.record requires two type arguments causing TS2554, and AST changes remove _def.typeName which breaks OpenAPI reflection in packages/core/src/openapi/index.ts and causes contract drift (OSR-12). Dependabot alerts #2, #7, #10, #12, #22 (GHSA-mrhx-c7xc-m3w5 / CVE-2023-54404) left open; repo risk mitigated as no z.array schemas are defined."
+  verified_by: null
+- id: 20261106-UX-54
+  audit: AUD-2026-11-06
+  title: 'Vitest 4, Tinypool, and esbuild dev-only migrations deferred to WP-15'
+  spec_sections:
+    - "14.0"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-08
+      status: open
+      note: "Registered in WP-14.pre-b (A076): Vitest 4 migration deferred to WP-15 due to breaking changes in ambient Node.js globals affecting apps/web. Dependabot alerts #1, #3-#6, #8, #9, #11, #14, #17, #18 (vitest/@vitest/mocker), #19, #20 (tinypool RCE gadgets), and #15 (esbuild via drizzle-kit) left open; all are dev-only test dependencies with Vitest UI/browser disabled and no prototype pollution sources."
   verified_by: null
 - id: 20261106-UI-01
   audit: AUD-2026-11-06
