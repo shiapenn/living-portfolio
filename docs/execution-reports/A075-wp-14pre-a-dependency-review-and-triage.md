@@ -13,16 +13,10 @@
 
 ## 1. Scope
 
-- **`[implemented]` Dependency Review & Triage (23 Dependabot Alerts):** Queried GitHub Dependabot alerts via `gh api repos/shiapenn/living-portfolio/dependabot/alerts` and categorized all 23 active security alerts into runtime vs development-only dependencies across workspace packages.
-- **`[implemented]` Runtime Dependency Upgrades:**
-  * Upgraded `@hono/node-server` from 1.19.17 to `^2.1.3` (installed 2.1.6 in `apps/api` and `apps/web`), patching medium-severity vulnerability CVE-2026-118663 (GHSA-rmxm-3fg6-px4f: path double-decoding bypass). Verified all Hono server routes, static asset serving, and admin session middlewares.
-  * Upgraded `drizzle-orm` from 0.39.3 to `^0.45.2` (installed 0.45.4 in `packages/db`), patching high-severity vulnerability CVE-2026-39356 (GHSA-qxg6-89mg-rqv8: SQL injection in improperly escaped SQL identifiers). Verified Postgres repository, schema, migrations, and dual-write tests.
-- **`[implemented]` Reconcile Open Dependabot PRs:**
-  * PR #82 (`@hono/node-server` 2.1.3): Closed as superseded by task branch `feat/wp-14-pre-a-dependency-review` after verifying all 360 unit tests and 61 E2E tests pass.
-  * PR #85 (`drizzle-orm` 0.45.2): Closed as superseded by task branch `feat/wp-14-pre-a-dependency-review` after verifying database conformance and backup engine pass.
-  * PR #83 (`zod` 4.6.6): Evaluated and closed unmerged due to breaking changes in Zod 4 (`z.record` 2-argument requirement throwing TS2554, and AST redesign removing `_def.typeName` which breaks OpenAPI serialization and violates OSR-12 contract drift check).
-  * PR #84 (`vitest` 4.1.11): Evaluated and closed unmerged due to breaking changes in Vitest 4 (removal of ambient Node.js type definitions from global scope, breaking packages lacking explicit `@types/node` like `apps/web`). Vitest is a dev-only test runner not bundled in runtime.
-- **`[implemented]` Finding Register Update:** Updated finding `20261106-UX-51` in `docs/audits/register.yml` to status `partial`.
+- [implemented] Dependency Review & Triage (23 Dependabot Alerts): Queried GitHub Dependabot alerts via `gh api repos/shiapenn/living-portfolio/dependabot/alerts` and categorized all 23 active security alerts into runtime vs development-only dependencies across workspace packages.
+- [implemented] Runtime Dependency Upgrades: Upgraded `@hono/node-server` from 1.19.17 to `^2.1.3` (installed 2.1.6 in `apps/api` and `apps/web`), patching CVE-2026-118663. Upgraded `drizzle-orm` from 0.39.3 to `^0.45.2` (installed 0.45.4 in `packages/db`), patching CVE-2026-39356. Verified Postgres repository, schema, migrations, dual-write tests, and server routes.
+- [implemented] Reconcile Open Dependabot PRs: PR #82 (@hono/node-server 2.1.3) and PR #85 (drizzle-orm 0.45.2) closed as superseded by task branch feat/wp-14-pre-a-dependency-review. PR #83 (zod 4.6.6) closed unmerged due to breaking changes (TS2554 on z.record, OpenAPI AST breakage violating OSR-12). PR #84 (vitest 4.1.11) closed unmerged due to breaking changes (ambient types drop in apps/web; dev-only runner).
+- [implemented] Finding Register Update: Updated finding `20261106-UX-51` in `docs/audits/register.yml` to status `partial`.
 
 ---
 
@@ -66,15 +60,16 @@ Local verification via `pnpm verify`:
 
 ## 5. Register and Backlog Changes
 
+- Register counts: 108 fixed, 6 partial, 53 open (total 167 findings).
 - Updated finding `20261106-UX-51` in `docs/audits/register.yml` from `open` to `partial` with progress note for WP-14.pre-a.
 
 ---
 
 ## 6. Not Done (Tagged)
 
-- **`[deferred]` Zod 4 migration:** Deferred to dedicated follow-up task due to breaking changes in `z.record` signature and OpenAPI document generation (`zodToOpenApi`).
-- **`[deferred]` Vitest 4 migration:** Deferred to dedicated follow-up task due to breaking changes in ambient type exports affecting packages without explicit `@types/node`.
-- **`[deferred]` WP-14.pre-b CI download resilience:** Next task on branch `feat/wp-14-pre-b-ci-download-resilience` (authorizing workflow edits for retry loops).
+- [not-started] Zod 4 migration: Deferred to dedicated follow-up task due to breaking changes in `z.record` signature and OpenAPI document generation (`zodToOpenApi`).
+- [not-started] Vitest 4 migration: Deferred to dedicated follow-up task due to breaking changes in ambient type exports affecting packages without explicit `@types/node`.
+- [not-started] WP-14.pre-b CI download resilience: Next task on branch `feat/wp-14-pre-b-ci-download-resilience` (authorizing workflow edits for retry loops).
 
 ---
 
@@ -103,8 +98,8 @@ Found 0 section(s) marked verbatim.
 
 ## 9. Handover Decision
 
-- Decision: NOT REQUIRED
-- Rule(s): HO-R5 (internal work package task)
-- Receipts since last handover: 1 (A075); work packages since: 0
+- Decision: RECOMMENDED
+- Rule(s): HO-R3
+- Receipts since last handover: 1
 - Clean-boundary preconditions: met
 - Next action: continue with task WP-14.pre-b
