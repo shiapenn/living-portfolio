@@ -6,7 +6,7 @@
 | Date | 2026-11-08 |
 | Author | A (Implementer) |
 | Task ID | `WP-14.pre-a` |
-| Evidence SHA | `HEAD` |
+| Evidence SHA | 22a26bb |
 | CI run | local verify (`pnpm verify`) green |
 
 ---
@@ -87,7 +87,16 @@ None.
 ## 8. Receipt Gate Self-Validation
 
 ```
-pnpm receipt:check A075
+$ pnpm receipt:check A075
+=== Validating Receipt A075-wp-14pre-a-dependency-review-and-triage.md ===
+
+✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
+✓ [ANCESTOR-CHECK] Evidence SHA '22a26bb' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 806e6c7..22a26bb (13 files verified).
+✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A075-wp-14pre-a-dependency-review-and-triage.md.
+Found 0 section(s) marked verbatim.
+
+🎉 All receipt checks PASSED for A075-wp-14pre-a-dependency-review-and-triage.md.
 ```
 
 ---
