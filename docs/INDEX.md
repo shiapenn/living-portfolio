@@ -80,6 +80,7 @@
 | `A072` | WP-13.12 Legacy recovery notice and regeneration | `active` | [A072-wp-1312-legacy-recovery-notice-and-regeneration.md](execution-reports/A072-wp-1312-legacy-recovery-notice-and-regeneration.md) | — |
 | `A073` | WP-13.13 Honest start-here runbook | `active` | [A073-wp-1313-honest-start-here-runbook.md](execution-reports/A073-wp-1313-honest-start-here-runbook.md) | — |
 | `A074` | WP-13.14 Repair web merge and register findings | `active` | [A074-wp-1314-repair-web-merge-and-register-findings.md](execution-reports/A074-wp-1314-repair-web-merge-and-register-findings.md) | — |
+| `A075` | WP-14.pre-a dependency review and triage | `active` | [A075-wp-14pre-a-dependency-review-and-triage.md](execution-reports/A075-wp-14pre-a-dependency-review-and-triage.md) | — |
 
 ## Handover Snapshots (Class H)
 

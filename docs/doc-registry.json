@@ -913,5 +913,13 @@
     "path": "docs/handovers/H014-wp-13-onboarding-and-authentication-gate-closure.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A075",
+    "title": "WP-14.pre-a dependency review and triage",
+    "class": "A",
+    "path": "docs/execution-reports/A075-wp-14pre-a-dependency-review-and-triage.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
