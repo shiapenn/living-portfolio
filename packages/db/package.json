@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@living-portfolio/core": "workspace:*",
-    "drizzle-orm": "^0.39.3",
+    "drizzle-orm": "^0.45.2",
     "pg": "^8.13.3",
     "pgvector": "^0.2.0"
   },
