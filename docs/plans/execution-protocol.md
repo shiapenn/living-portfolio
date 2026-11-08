@@ -22,7 +22,7 @@ This protocol establishes the binding operational procedure for all implementati
 - **Implementation & Tests:** Every task ships with its own tests. Any capability, behavior, or error state a user sees must be backed by a Playwright end-to-end browser test. Conformance and unit suites cover underlying runtime invariants.
 - **Local Verification:** Before submitting changes, run `pnpm verify` and `pnpm receipt:check` locally to confirm all static, security, secret, and conformance gates pass.
 - **Pull Request:** Open a pull request titled with the Task ID (e.g., `WP-1.2: Enforce apiClient across admin workspace and forbid raw fetch`).
-- **Merge Strategy:** Wait for all required CI status checks to complete green. Merge strictly via **Rebase and merge**. No merge commits or squash merges.
+- **Merge Strategy:** Wait for all required CI status checks to complete green. Merge strictly via **Merge commit** (`git merge --no-ff` or GitHub "Create a merge commit"). Rebase and squash merges are strictly forbidden for branches targeting `review/wp-13` or `main` because execution receipts cite immutable commit SHAs (`Evidence SHA`) that must remain direct topological ancestors of HEAD without being rewritten (owner exception approved).
 - **Main Evidence & Receipts:** After merging to `main`, wait for the push workflow runs on `main` to complete green. Author the task receipt (`docs/execution-reports/A###-<slug>.md` allocated via `pnpm docs:new A "<Title>"`) citing the commit SHA on `main` (`Evidence SHA`) and the corresponding push CI runs. The receipt must contain all nine mandatory sections defined in [IAHP](P001-iterative-agent-handover-protocol.md), including §8 (`receipt:check` self-validation) and §9 (Handover Decision). Submit and land the receipt via a docs-only PR before merging the subsequent task.
 - **Pipelining:** You may start the next task's development branch immediately after pushing, but do not merge it into `main` until the prior task's receipt is fully merged.
 
@@ -63,3 +63,4 @@ This protocol establishes the binding operational procedure for all implementati
 | --- | --- |
 | 2026-10-21 | Initial execution protocol |
 | 2026-10-22 | PROC-1: Adopt Document Identity and IAHP nine-section receipt structure |
+| 2026-11-08 | Amend Merge Strategy: PRs into review/wp-13 and main use merge commits to preserve receipt Evidence SHA ancestry (owner approved exception to rebase) |
