@@ -905,5 +905,13 @@
     "path": "docs/execution-reports/A074-wp-1314-repair-web-merge-and-register-findings.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "H014",
+    "title": "WP-13 onboarding and authentication gate closure",
+    "class": "H",
+    "path": "docs/handovers/H014-wp-13-onboarding-and-authentication-gate-closure.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

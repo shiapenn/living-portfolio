@@ -364,8 +364,8 @@
         "WP-1 Task 1: Admin Setup & Authentication E2E Harness › 18. WP-13.12: Legacy recovery code sign-in shows admin shell notice and burns after one use (UX-46, UX-47)",
         "WP-13.13 Conformance: Honest START-HERE Runbook Verification (§13, UX-32, 20261106-UX-48) › 1. Pre-flight check and path honesty: docker --version precedes path selection, no unverified claims"
       ],
-      "closingReceipt": null,
-      "handover": null
+      "closingReceipt": "A074",
+      "handover": "H014"
     },
     "WP-14": {
       "name": "Work Package 14 (Gate G14 Entry Lifecycle Integrity)",

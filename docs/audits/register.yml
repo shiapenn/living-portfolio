@@ -4004,6 +4004,24 @@
       status: open
       note: "Registered in WP-13.14 (corrected in G13): Dependency review via GitHub Dependabot API (gh api repos/shiapenn/living-portfolio/dependabot/alerts) reports 23 active vulnerabilities on main (2 critical, 7 high, 14 moderate) across dependencies, with 4 open Dependabot PRs (#82, #83, #84, #85). Planned as a standalone task before WP-14.0a. No Dependabot PR may be merged in G13."
   verified_by: null
+- id: 20261106-UX-52
+  audit: AUD-2026-11-06
+  title: 'CI flakiness from GitHub-hosted downloads: CodeQL bundle 504 and transient Gitleaks checksum mismatch'
+  spec_sections:
+    - "14.0"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-08
+      status: open
+      note: "Registered at Gate G13 closure: Intermittent CI download failures observed on GitHub-hosted runners (CodeQL bundle download HTTP 504 and transient Gitleaks release binary checksum mismatch matching on re-run). Proposed fix for dependency-review slot: add curl retry loop with backoff to download steps without weakening checksum validation. Workflow untouched during G13."
+  verified_by: null
 - id: 20261106-UI-01
   audit: AUD-2026-11-06
   title: 'Eight CSS variables referenced without definition; 684 inline style attributes; redaction drawer has missing background'
