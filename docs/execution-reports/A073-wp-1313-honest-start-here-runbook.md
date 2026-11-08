@@ -6,7 +6,7 @@
 | Date | 2026-11-08 |
 | Author | A (Implementer) |
 | Task ID | `WP-13.13` |
-| Evidence SHA | `PENDING_SHA` |
+| Evidence SHA | `9221074` |
 | CI run | local verify (`pnpm verify`) green (CI runs only on PRs/pushes to main) |
 
 ---
@@ -76,7 +76,12 @@ Local verification via `pnpm verify`:
 
 ## 6. Not Done (Tagged)
 
-- None. All WP-13.13 requirements implemented and verified. Gate G13 remains open awaiting owner sign-off. Handover H014 not authored.
+- Fresh data directory installs generate 16-hex recovery codes directly and are not affected by legacy migration. [implemented]
+- Automated conformance tests and clean worktree trial run for START-HERE.md runbook are complete. [implemented]
+- Path A execution in this session was skipped because local machine was tested under no-Docker conditions matching the user walkthrough. [partial]
+- Live public site theming deferred to WP-17.8 and WP-20.1 (`UX-27` part). [not-started]
+- Provider API key entry in Settings > Providers deferred to WP-17.2. [not-started]
+- Handover H014 not authored; awaiting owner sign-off at Gate G13. [not-started]
 
 ---
 
