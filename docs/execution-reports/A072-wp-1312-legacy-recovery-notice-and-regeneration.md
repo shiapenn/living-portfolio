@@ -6,7 +6,7 @@
 | Date | 2026-11-07 |
 | Author | A (Implementer) |
 | Task ID | `WP-13.12` |
-| Evidence SHA | `b775790` |
+| Evidence SHA | `4f10073` |
 | CI run | local verify (`pnpm verify`) green (CI runs only on PRs/pushes to main) |
 
 ---
@@ -64,23 +64,11 @@ Local run of `pnpm verify` (typecheck, tests, OpenAPI drift, audit-check, and gi
 
 ## 5. Register and Backlog Changes
 
-- Populated `links.pr` for all findings fixed in WP-13:
-  - `20261106-UX-26`: PR #68 (`https://github.com/shiapenn/living-portfolio/pull/68`)
-  - `20261106-UX-28`: PR #69 (`https://github.com/shiapenn/living-portfolio/pull/69`)
-  - `20261106-UX-30`: PR #70 (`https://github.com/shiapenn/living-portfolio/pull/70`)
-  - `20261106-UX-29`: `null` (committed directly on main in `f33cd45` per deviation note)
-  - `20261106-CP-14`: `null` (committed directly on main in `f33cd45` per deviation note)
-  - `20261106-CP-15`: `null` (committed directly on main in `f33cd45` per deviation note)
-  - `20261106-UX-32`: PR #71 (`https://github.com/shiapenn/living-portfolio/pull/71`)
-  - `20261106-UX-05`: PR #71 (`https://github.com/shiapenn/living-portfolio/pull/71`)
-  - `20261106-UX-31`: PR #76 (`https://github.com/shiapenn/living-portfolio/pull/76`)
-  - `20261106-UX-46`: PR #79 (`https://github.com/shiapenn/living-portfolio/pull/79`)
-- Also populated `links.pr` for touched partial findings:
-  - `20261106-UX-27`: PR #78 (`https://github.com/shiapenn/living-portfolio/pull/78`)
-  - `20261106-UX-33`: PR #77 (`https://github.com/shiapenn/living-portfolio/pull/77`)
-  - `20261106-UX-09`: PR #77 (`https://github.com/shiapenn/living-portfolio/pull/77`)
-  - `20261106-CP-01`: PR #77 (`https://github.com/shiapenn/living-portfolio/pull/77`)
-  - `20261106-UX-41`: PR #76 (`https://github.com/shiapenn/living-portfolio/pull/76`)
+- Corrected PR links in `docs/audits/register.yml`:
+  - Reset `links.pr` back to `null` for findings `UX-26`, `UX-28`, `UX-30`, `UX-32`, and `UX-05`. PRs #68-#71 were erroneously cited from historical WP-10/WP-11 tasks; implementation for WP-13.1 through WP-13.7 was committed on local main and first pushed as `review/wp-13` (no task PRs exist; review PRs started at #76, with PR #80 merged for WP-13.12).
+  - Findings fixed in task review PRs on `review/wp-13`: `20261106-UX-31` (PR #76, WP-13.8), `20261106-UX-46` (PR #79, WP-13.11).
+  - Findings fixed directly on main: `20261106-UX-29`, `20261106-CP-14`, `20261106-CP-15` (`f33cd45`, `links.pr: null`).
+  - Partial findings addressed in task review PRs: `20261106-UX-27` (PR #78, WP-13.10), `20261106-UX-33` & `20261106-UX-09` & `20261106-CP-01` (PR #77, WP-13.9), `20261106-UX-41` (PR #76, WP-13.6/WP-13.8).
 - Registered new follow-up finding `20261106-UX-47` (P2, status: open) under WP-17.4 for Settings > Account recovery code regeneration UI.
 - Confirmed DR-AUD-001 rule D.4 / AUD-08: `verified_by: null` is mandatory for implementers when claiming `status: fixed`; non-null sign-off is reserved for independent post-audit review.
 - Added `WP-13.12` to `docs/plans/gates.json` under gate `WP-13` and `docs/plans/P004-ux-remediation-work-packages.md`.
@@ -102,6 +90,8 @@ Local run of `pnpm verify` (typecheck, tests, OpenAPI drift, audit-check, and gi
 ## 7. Changes to Earlier Reports
 
 - Corrected Evidence SHA in `docs/execution-reports/A071-wp-1311-recovery-code-entropy-and-backup-path.md` from `3728ba8` to `d8f017d` on `review/wp-13` to resolve the ancestor check after the owner squashed/merged PR #79.
+- Updated Evidence SHA in `docs/execution-reports/A072-wp-1312-legacy-recovery-notice-and-regeneration.md` to `4f10073` on `review/wp-13` after PR #80 merge.
+- Corrected register entries for `UX-26`, `UX-28`, `UX-30`, `UX-32`, and `UX-05` to set `links.pr: null` and noted they originated from local main and were first pushed on `review/wp-13`.
 
 ---
 
@@ -112,7 +102,13 @@ $ pnpm receipt:check A072
 === Validating Receipt A072-wp-1312-legacy-recovery-notice-and-regeneration.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA 'b775790' is an ancestor of HEAD.
+✓ [ANCESTOR-CHECK] Evidence SHA '4f10073' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff d8f017d..4f10073 (12 files verified).
+✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A072-wp-1312-legacy-recovery-notice-and-regeneration.md.
+Found 0 section(s) marked verbatim.
+
+🎉 All receipt checks PASSED for A072-wp-1312-legacy-recovery-notice-and-regeneration.md.
+```
 ✓ [FILES-TOUCHED] Matches git diff review/wp-13..b775790 (12 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A072-wp-1312-legacy-recovery-notice-and-regeneration.md.
 Found 0 section(s) marked verbatim.
