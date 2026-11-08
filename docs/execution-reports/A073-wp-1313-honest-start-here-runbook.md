@@ -6,7 +6,7 @@
 | Date | 2026-11-08 |
 | Author | A (Implementer) |
 | Task ID | `WP-13.13` |
-| Evidence SHA | `9221074` |
+| Evidence SHA | `253c744` |
 | CI run | local verify (`pnpm verify`) green (CI runs only on PRs/pushes to main) |
 
 ---
