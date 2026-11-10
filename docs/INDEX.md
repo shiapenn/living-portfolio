@@ -88,6 +88,7 @@
 | `A080` | WP-14.0 client bundling and entry handler migration | `active` | [A080-wp-140-client-bundling-and-entry-handler-migration.md](execution-reports/A080-wp-140-client-bundling-and-entry-handler-migration.md) | — |
 | `A081` | WP-14.1 commitEntry state machine | `active` | [A081-wp-141-commitentry-state-machine.md](execution-reports/A081-wp-141-commitentry-state-machine.md) | — |
 | `A082` | WP-14.2 state and date correctness | `active` | [A082-wp-142-state-and-date-correctness.md](execution-reports/A082-wp-142-state-and-date-correctness.md) | — |
+| `A083` | WP-14.3 publish dialog | `active` | [A083-wp-143-publish-dialog.md](execution-reports/A083-wp-143-publish-dialog.md) | — |
 
 ## Handover Snapshots (Class H)
 

@@ -2419,7 +2419,8 @@ export async function renderAdminWorkspacePage(
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;gap:8px">
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center" id="editor-action-buttons">
               <button type="button" class="btn btn-secondary" id="btn-save-draft">Save draft</button>
-              <button type="submit" class="btn" id="btn-publish-entry">Publish</button>
+              <button type="button" class="btn btn-primary" id="btn-open-publish-dialog">Publish…</button>
+              <button type="submit" class="btn btn-secondary" id="btn-publish-entry">Publish</button>
               <button type="button" class="btn btn-secondary" id="btn-unlist" style="display:none">Unlist</button>
               <button type="button" class="btn btn-secondary" id="btn-redaction-check">Check for private details</button>
               <button type="button" class="btn btn-secondary" id="btn-unpublish" style="display:none">Unpublish</button>
@@ -2431,6 +2432,65 @@ export async function renderAdminWorkspacePage(
         </form>
 
         <div id="editor-toast" role="status" aria-live="polite" style="position:fixed;bottom:24px;right:24px;z-index:9999;max-width:420px;display:none;padding:12px 16px;background:var(--surface-raised);border:1px solid var(--accent);border-radius:var(--radius-card, 8px);box-shadow:0 4px 16px rgba(0,0,0,0.18);font-size:14px"></div>
+
+        <!-- Publish Pre-Flight Dialog (WP-14.3) -->
+        <dialog id="publish-dialog" class="publish-dialog" role="dialog" aria-modal="true" aria-labelledby="publish-dialog-title" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;background:var(--bg-base);border:1px solid var(--rule);border-radius:var(--radius-card, 8px);box-shadow:0 12px 32px rgba(0,0,0,0.25);z-index:10000;padding:24px;box-sizing:border-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:16px">
+            <h2 id="publish-dialog-title" style="margin:0;font-size:18px">Publish Pre-Flight</h2>
+            <button type="button" class="btn btn-secondary" id="btn-close-publish-dialog" style="padding:4px 8px">✕ Close</button>
+          </div>
+
+          <!-- Pre-flight step 1: Private details scan -->
+          <div style="margin-bottom:16px;padding:12px;border:1px solid var(--rule);border-radius:6px;background:var(--surface-raised)">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">1. Private-Detail Check</div>
+            <div id="publish-scan-status" style="font-size:13px">Checking for private details...</div>
+            <div id="publish-matches-detail" style="display:none;margin-top:8px">
+              <button type="button" class="btn btn-secondary" id="btn-publish-open-drawer" style="font-size:12px;padding:2px 8px">View Detailed Findings →</button>
+            </div>
+          </div>
+
+          <!-- Pre-flight step 2: NDA confirmation (conditional) -->
+          <div id="publish-nda-section" style="display:none;margin-bottom:16px;padding:12px;border:1px solid var(--rule);border-radius:6px;background:var(--surface-raised)">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">2. Confidentiality &amp; NDA Confirmation</div>
+            <label style="font-size:13px;display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+              <input type="checkbox" id="publish-dialog-nda" style="margin-top:2px" />
+              <span>I confirm that publishing this content does not violate any non-disclosure agreement (NDA) or confidentiality obligation.</span>
+            </label>
+          </div>
+
+          <!-- Pre-flight step 3: Who can see it -->
+          <div style="margin-bottom:16px;padding:12px;border:1px solid var(--rule);border-radius:6px;background:var(--surface-raised)">
+            <div style="font-size:13px;font-weight:600;margin-bottom:6px">3. Who Can See It</div>
+            <div style="display:flex;gap:16px;font-size:13px">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input type="radio" name="publish-visibility-choice" value="public" checked /> Public (searchable, in index)
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+                <input type="radio" name="publish-visibility-choice" value="unlisted" /> Unlisted (direct link only)
+              </label>
+            </div>
+          </div>
+
+          <!-- Pre-flight step 4: What happens next -->
+          <div id="publish-what-happens-next" style="margin-bottom:16px;padding:12px;border:1px solid var(--rule);border-radius:6px;background:var(--surface-raised)">
+            <div style="font-size:13px;font-weight:600;margin-bottom:6px">4. What Happens Next</div>
+            <ul style="font-size:12px;color:var(--text-muted);margin:0;padding-left:18px;line-height:1.6">
+              <li>Static rebuild queued for public site</li>
+              <li>Enrichment pipeline queued for structured facets</li>
+              <li>RSS feed and sitemap updated</li>
+              <li>Exact URL: <code id="publish-target-url" style="color:var(--text-base)">/work/...</code></li>
+            </ul>
+          </div>
+
+          <div id="publish-dialog-alert" style="display:none;margin-bottom:12px;color:var(--red-700,#b42318);font-size:13px" role="alert"></div>
+
+          <!-- Pre-flight step 5: Single primary action -->
+          <div style="display:flex;justify-content:flex-end;gap:8px;border-top:1px solid var(--rule);padding-top:12px">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-publish">Cancel</button>
+            <button type="button" class="btn btn-primary" id="btn-confirm-publish">Publish</button>
+          </div>
+        </dialog>
+        <div id="publish-dialog-backdrop" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:9999"></div>
 
         <!-- UI Redaction Preview Drawer -->
         <aside id="redaction-preview-drawer" class="redaction-drawer" style="display:none;position:fixed;top:0;right:0;width:460px;max-width:92vw;height:100vh;background:var(--bg-base);box-shadow:-4px 0 24px rgba(0,0,0,0.18);border-left:1px solid var(--rule);z-index:9999;padding:24px;overflow-y:auto;box-sizing:border-box" role="dialog" aria-labelledby="redaction-drawer-title" aria-modal="true">

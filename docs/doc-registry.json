@@ -977,5 +977,13 @@
     "path": "docs/execution-reports/A082-wp-142-state-and-date-correctness.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A083",
+    "title": "WP-14.3 publish dialog",
+    "class": "A",
+    "path": "docs/execution-reports/A083-wp-143-publish-dialog.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
