@@ -1,0 +1,89 @@
+#!/usr/bin/env node
+/**
+ * CSS Custom Property Definition Verification Gate (Spec §12.3, WP-14.6, UI-01, UI-03)
+ *
+ * Scans declared tokens in `apps/web/src/tokens/` and `apps/web/src/styles.ts`,
+ * scans all `var(--custom-prop)` usages in `apps/web/src/`,
+ * and fails if any referenced CSS variable is undefined.
+ */
+
+import { readFileSync, readdirSync } from 'node:fs';
+import { resolve, join, extname } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const WEB_SRC = resolve(ROOT, 'apps/web/src');
+
+function findFiles(dir, extensions) {
+  const results = [];
+  const entries = readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name === '.turbo') continue;
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results.push(...findFiles(full, extensions));
+    } else if (entry.isFile() && extensions.includes(extname(entry.name))) {
+      results.push(full);
+    }
+  }
+  return results;
+}
+
+// 1. Collect declared CSS variables (--foo:)
+const definedVariables = new Set();
+
+const tokenFiles = [
+  resolve(WEB_SRC, 'tokens/index.ts'),
+  resolve(WEB_SRC, 'styles.ts'),
+];
+
+for (const tf of tokenFiles) {
+  try {
+    const content = readFileSync(tf, 'utf8');
+    const declRegex = /(--[a-zA-Z0-9_-]+)\s*:/g;
+    let match;
+    while ((match = declRegex.exec(content)) !== null) {
+      definedVariables.add(match[1]);
+    }
+  } catch (err) {
+    // ignore missing files
+  }
+}
+
+// 2. Scan all usages of var(--foo) in apps/web/src
+const webFiles = findFiles(WEB_SRC, ['.ts', '.tsx', '.js', '.css', '.html']);
+const missingUsages = [];
+
+for (const file of webFiles) {
+  const content = readFileSync(file, 'utf8');
+  const lines = content.split('\n');
+  const varRegex = /var\(\s*(--[a-zA-Z0-9_-]+)/g;
+
+  lines.forEach((lineText, idx) => {
+    let match;
+    while ((match = varRegex.exec(lineText)) !== null) {
+      const varName = match[1];
+      if (!definedVariables.has(varName)) {
+        missingUsages.push({
+          file: file.replace(ROOT + '/', ''),
+          line: idx + 1,
+          variable: varName,
+        });
+      }
+    }
+  });
+}
+
+console.log('=== CSS Custom Property Verification (WP-14.6, UI-01, UI-03) ===\n');
+console.log(`Discovered ${definedVariables.size} declared CSS tokens across tokens/ and styles.ts.`);
+
+if (missingUsages.length > 0) {
+  console.error(`\n✗ Found ${missingUsages.length} undefined CSS custom property usage(s):`);
+  for (const usage of missingUsages) {
+    console.error(`  - ${usage.variable} in ${usage.file}:${usage.line}`);
+  }
+  console.error('\nFix: define missing semantic/component tokens or replace undefined variable references.\n');
+  process.exit(1);
+}
+
+console.log('✓ All referenced CSS custom properties are properly defined.');
+process.exit(0);

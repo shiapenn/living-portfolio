@@ -1001,5 +1001,13 @@
     "path": "docs/execution-reports/A085-wp-145-calibration-defaults-and-mechanism-gates.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A086",
+    "title": "WP-14.6 quick visual repairs and CSS check",
+    "class": "A",
+    "path": "docs/execution-reports/A086-wp-146-quick-visual-repairs-and-css-check.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
