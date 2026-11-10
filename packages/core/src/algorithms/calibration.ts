@@ -90,6 +90,18 @@ export class CalibrationEngine {
     };
   }
 
+  getMinSampleSize(): number {
+    return this.config.minSampleSize;
+  }
+
+  getMaxStep(): number {
+    return this.config.maxStep;
+  }
+
+  getAutoApplyThreshold(): number {
+    return this.config.autoApplyThreshold;
+  }
+
   /**
    * Filters input logs using the configured sliding window (§11).
    * Discards records older than windowDays and limits to maxWindowSize.

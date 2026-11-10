@@ -129,6 +129,12 @@ export function createApp(
     facet_known_threshold: 0.9,
     setupWizardCompleted: auth.isConfigured(),
     theme: structuredClone(DEFAULT_STRATA_THEME),
+    calibration: {
+      suggestion_thresholds: cfg.calibration?.suggestion_thresholds ?? false,
+      routing_calibration: cfg.calibration?.routing_calibration ?? false,
+      topology_audit: cfg.calibration?.topology_audit ?? true,
+      scoped_constraint_mining: cfg.calibration?.scoped_constraint_mining ?? true,
+    },
   };
 
   // Global middleware: logging, security headers + CSP (S5), origin-restricted CORS (S5), and observability metrics (§13.5, §13.9, OSR-21)

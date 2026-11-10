@@ -2043,6 +2043,12 @@ export interface AdminSettingsState {
   tier2_floor?: number;
   facet_known_threshold?: number;
   theme?: typeof DEFAULT_STRATA_THEME;
+  calibration?: {
+    suggestion_thresholds?: boolean;
+    routing_calibration?: boolean;
+    topology_audit?: boolean;
+    scoped_constraint_mining?: boolean;
+  };
 }
 
 export async function renderAdminWorkspacePage(
@@ -3858,11 +3864,14 @@ export async function renderAdminSettingsPage(
   const tier1Floor = settingsState?.tier1_floor ?? 0.82;
   const tier2Floor = settingsState?.tier2_floor ?? 0.55;
   const facetThreshold = settingsState?.facet_known_threshold ?? 0.90;
-  const calibrationFrozen = settingsState?.calibrationFrozen ?? false;
   const answeringEnabled = settingsState?.automatedAnsweringEnabled ?? true;
   const degradationMode = settingsState?.simulatedDegradationMode ?? 'normal';
   const theme = settingsState?.theme ?? structuredClone(DEFAULT_STRATA_THEME);
   const themeConformance = verifyThemeConformance(theme);
+  const mechSuggestion = settingsState?.calibration?.suggestion_thresholds ?? false;
+  const mechRouting = settingsState?.calibration?.routing_calibration ?? false;
+  const mechTopology = settingsState?.calibration?.topology_audit ?? true;
+  const mechScoped = settingsState?.calibration?.scoped_constraint_mining ?? true;
 
   const content = `
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px">
@@ -3907,9 +3916,56 @@ export async function renderAdminSettingsPage(
           <input type="number" id="setting-facet-threshold" class="ask-input" style="width:100%" step="0.01" min="0.5" max="1.0" value="${facetThreshold}" />
         </div>
 
-        <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px">
-          <input type="checkbox" id="setting-calibration-frozen" ${calibrationFrozen ? 'checked' : ''} />
-          <label for="setting-calibration-frozen" style="font-size:13px">Freeze Calibration</label>
+        <div style="margin-bottom:16px;padding:12px;border:1px solid var(--rule);border-radius:6px;background:var(--surface-raised)">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px">Self-Calibration Mechanisms (Spec §11, UX-08)</div>
+          
+          <div style="margin-bottom:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                <input type="checkbox" id="setting-mech-suggestion-thresholds" ${mechSuggestion ? 'checked' : ''} />
+                <span>Suggestion Thresholds</span>
+              </label>
+              <span id="gate-info-suggestion-thresholds" style="font-size:11px;color:var(--text-muted);background:var(--surface-sunken);padding:2px 6px;border-radius:4px">
+                Gate: min 20 samples · Step limit: ±0.05
+              </span>
+            </div>
+          </div>
+
+          <div style="margin-bottom:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                <input type="checkbox" id="setting-mech-routing-calibration" ${mechRouting ? 'checked' : ''} />
+                <span>Routing Calibration</span>
+              </label>
+              <span id="gate-info-routing-calibration" style="font-size:11px;color:var(--text-muted);background:var(--surface-sunken);padding:2px 6px;border-radius:4px">
+                Gate: min 20 samples · Step limit: ±0.05
+              </span>
+            </div>
+          </div>
+
+          <div style="margin-bottom:10px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                <input type="checkbox" id="setting-mech-topology-audit" ${mechTopology ? 'checked' : ''} />
+                <span>Topology Audit</span>
+              </label>
+              <span id="gate-info-topology-audit" style="font-size:11px;color:var(--text-muted);background:var(--surface-sunken);padding:2px 6px;border-radius:4px">
+                Proposal only (never auto-applies)
+              </span>
+            </div>
+          </div>
+
+          <div style="margin-bottom:4px">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+                <input type="checkbox" id="setting-mech-scoped-constraints" ${mechScoped ? 'checked' : ''} />
+                <span>Scoped-Constraint Mining</span>
+              </label>
+              <span id="gate-info-scoped-constraints" style="font-size:11px;color:var(--text-muted);background:var(--surface-sunken);padding:2px 6px;border-radius:4px">
+                Proposal only (never auto-applies)
+              </span>
+            </div>
+          </div>
         </div>
 
         <div style="margin-bottom:16px;display:flex;align-items:center;gap:8px">
@@ -4048,7 +4104,10 @@ export async function renderAdminSettingsPage(
         const tier1Warning = document.getElementById('tier1-warning');
         const tier2Input = document.getElementById('setting-tier2-floor');
         const facetInput = document.getElementById('setting-facet-threshold');
-        const frozenCheck = document.getElementById('setting-calibration-frozen');
+        const mechSuggestion = document.getElementById('setting-mech-suggestion-thresholds');
+        const mechRouting = document.getElementById('setting-mech-routing-calibration');
+        const mechTopology = document.getElementById('setting-mech-topology-audit');
+        const mechScoped = document.getElementById('setting-mech-scoped-constraints');
         const answeringCheck = document.getElementById('setting-answering-enabled');
         const degradationSelect = document.getElementById('setting-degradation-mode');
 
@@ -4076,8 +4135,13 @@ export async function renderAdminSettingsPage(
                 tier1_floor: parseFloat(tier1Input.value),
                 tier2_floor: parseFloat(tier2Input.value),
                 facet_known_threshold: parseFloat(facetInput.value),
-                calibrationFrozen: frozenCheck.checked,
-                automatedAnsweringEnabled: answeringCheck.checked
+                automatedAnsweringEnabled: answeringCheck ? answeringCheck.checked : true,
+                calibration: {
+                  suggestion_thresholds: mechSuggestion ? mechSuggestion.checked : false,
+                  routing_calibration: mechRouting ? mechRouting.checked : false,
+                  topology_audit: mechTopology ? mechTopology.checked : true,
+                  scoped_constraint_mining: mechScoped ? mechScoped.checked : true,
+                }
               };
               var res = await apiClient('/api/settings/routing', {
                 method: 'PATCH',

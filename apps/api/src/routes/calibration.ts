@@ -12,17 +12,17 @@ export function createCalibrationRoutes(
   const calibEngine =
     engine ??
     new CalibrationEngine({
-      minSampleSize: 5,
+      minSampleSize: 20,
       maxStep: 0.05,
       autoApplyThreshold: 0.02,
       windowDays: 30,
       maxWindowSize: 500,
       calibrationFrozen: runtimeState?.calibrationFrozen ?? false,
       mechanisms: {
-        suggestion_thresholds: false, // Off per §11
-        routing_calibration: false,    // Off per §11
-        topology_audit: true,          // On per §11
-        scoped_constraint_mining: true,// On per §11
+        suggestion_thresholds: runtimeState?.calibration?.suggestion_thresholds ?? false, // Off per §11
+        routing_calibration: runtimeState?.calibration?.routing_calibration ?? false,    // Off per §11
+        topology_audit: runtimeState?.calibration?.topology_audit ?? true,          // On per §11
+        scoped_constraint_mining: runtimeState?.calibration?.scoped_constraint_mining ?? true,// On per §11
       },
     });
 
@@ -43,6 +43,21 @@ export function createCalibrationRoutes(
   // Canonical OpenAPI endpoint: GET /api/v1/calibration (§11)
   router.get('/', async (c) => {
     const isFrozen = runtimeState?.calibrationFrozen ?? calibEngine.isFrozen();
+    if (runtimeState?.calibration) {
+      if (typeof runtimeState.calibration.suggestion_thresholds === 'boolean') {
+        calibEngine.setMechanism('suggestion_thresholds', runtimeState.calibration.suggestion_thresholds);
+      }
+      if (typeof runtimeState.calibration.routing_calibration === 'boolean') {
+        calibEngine.setMechanism('routing_calibration', runtimeState.calibration.routing_calibration);
+      }
+      if (typeof runtimeState.calibration.topology_audit === 'boolean') {
+        calibEngine.setMechanism('topology_audit', runtimeState.calibration.topology_audit);
+      }
+      if (typeof runtimeState.calibration.scoped_constraint_mining === 'boolean') {
+        calibEngine.setMechanism('scoped_constraint_mining', runtimeState.calibration.scoped_constraint_mining);
+      }
+    }
+
     const history = await repo.getCalibrationChanges();
 
     // Compute calibration quality metrics from recent changes/samples
@@ -56,6 +71,9 @@ export function createCalibrationRoutes(
       frozen: isFrozen,
       mechanisms: calibEngine.getMechanisms(),
       window: calibEngine.getWindowConfig(),
+      minSampleSize: calibEngine.getMinSampleSize(),
+      maxStep: calibEngine.getMaxStep(),
+      autoApplyThreshold: calibEngine.getAutoApplyThreshold(),
       parameters: {
         ...calibrationParameters,
         tier1_floor: runtimeState?.tier1_floor ?? calibrationParameters.tier1_floor,
@@ -169,6 +187,20 @@ export function createCalibrationRoutes(
           code: 'STEP_TOO_LARGE',
           maxStep,
           requestedDelta: Number(delta.toFixed(3)),
+        },
+        400
+      );
+    }
+
+    // Guard: Minimum sample size gate (minSampleSize = 20) before applying changes (§11, UX-08)
+    const evidenceCount = typeof body.evidence_count === 'number' ? body.evidence_count : 0;
+    if (!force && evidenceCount < calibEngine.getMinSampleSize()) {
+      return c.json(
+        {
+          error: `Parameter adjustment rejected: evidence count (${evidenceCount}) is below the required minimum sample size gate of ${calibEngine.getMinSampleSize()} (§11, UX-08).`,
+          code: 'INSUFFICIENT_SAMPLE_SIZE',
+          minSampleSize: calibEngine.getMinSampleSize(),
+          evidenceCount,
         },
         400
       );
