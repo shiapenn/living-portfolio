@@ -19,7 +19,8 @@ export interface FormState {
   body: string;
   date: string;
   is_hindsight: boolean;
-  temporal_level: string;
+  temporal_level: 'exact' | 'range' | 'estimated';
+  valid_from_range_end?: string;
   bodyChanged: boolean;
 }
 
@@ -109,6 +110,8 @@ export function readForm(): FormState {
   const profileSelect = document.getElementById('entry-profile') as HTMLSelectElement | null;
   const visibilitySelect = document.getElementById('entry-visibility') as HTMLSelectElement | null;
   const dateInput = document.getElementById('entry-date') as HTMLInputElement | null;
+  const temporalSelect = document.getElementById('entry-temporal-level') as HTMLSelectElement | null;
+  const rangeEndInput = document.getElementById('entry-date-range-end') as HTMLInputElement | null;
   const hindsightInput = document.getElementById('entry-hindsight') as HTMLInputElement | null;
   const bodyTextarea = document.getElementById('entry-body') as HTMLTextAreaElement | null;
 
@@ -117,8 +120,14 @@ export function readForm(): FormState {
   const slug = slugInput?.value || '';
   const profile = profileSelect?.value || 'case-study';
   const body = bodyTextarea?.value || '';
-  const date = dateInput?.value || new Date().toISOString().slice(0, 10);
+  const date = dateInput?.value || '';
   const is_hindsight = hindsightInput?.checked || false;
+  const temporal_level = (temporalSelect?.value as 'exact' | 'range' | 'estimated') || 'exact';
+  const rangeEndVal = rangeEndInput?.value?.trim() || '';
+  const valid_from_range_end =
+    temporal_level === 'range' && rangeEndVal && !isNaN(Date.parse(rangeEndVal))
+      ? new Date(rangeEndVal).toISOString()
+      : undefined;
 
   const currentVisibility = activeEntryState.id && activeEntryState.id === id
     ? activeEntryState.visibility
@@ -135,7 +144,8 @@ export function readForm(): FormState {
     body,
     date,
     is_hindsight,
-    temporal_level: 'exact',
+    temporal_level,
+    valid_from_range_end,
     bodyChanged,
   };
 }
@@ -246,6 +256,20 @@ export async function commitEntry(intent: Intent): Promise<boolean> {
     activeEntryState.previewToken = tokenInput.value;
   }
 
+  const dateInput = document.getElementById('entry-date') as HTMLInputElement | null;
+  const dateStr = dateInput?.value?.trim() || '';
+  const dateError = document.getElementById('entry-date-error');
+  if (!dateStr || isNaN(Date.parse(dateStr))) {
+    if (dateError) {
+      dateError.textContent = 'A valid date is required.';
+      dateError.style.display = 'block';
+    }
+    showEditorFeedback('<div class="later-thinking-banner" role="alert">A valid date is required before saving.</div>', true);
+    return false;
+  } else {
+    if (dateError) dateError.style.display = 'none';
+  }
+
   if (!s.title.trim()) {
     showEditorFeedback('<div class="later-thinking-banner" role="alert">Title is required before saving.</div>', true);
     return false;
@@ -321,7 +345,8 @@ export async function commitEntry(intent: Intent): Promise<boolean> {
           body: JSON.stringify({
             body_md: s.body,
             temporal_level: s.temporal_level,
-            valid_from: new Date(s.date).toISOString(),
+            valid_from: new Date(dateStr).toISOString(),
+            valid_from_range_end: s.valid_from_range_end || null,
             is_hindsight: s.is_hindsight,
           }),
         });
@@ -345,7 +370,8 @@ export async function commitEntry(intent: Intent): Promise<boolean> {
           slug: s.slug,
           profile: s.profile,
           body_md: s.body,
-          valid_from: new Date(s.date).toISOString(),
+          valid_from: new Date(dateStr).toISOString(),
+          valid_from_range_end: s.valid_from_range_end || null,
           is_hindsight: s.is_hindsight,
           temporal_level: s.temporal_level,
           visibility: target,

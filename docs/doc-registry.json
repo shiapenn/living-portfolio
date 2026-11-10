@@ -969,5 +969,13 @@
     "path": "docs/execution-reports/A081-wp-141-commitentry-state-machine.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A082",
+    "title": "WP-14.2 state and date correctness",
+    "class": "A",
+    "path": "docs/execution-reports/A082-wp-142-state-and-date-correctness.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
