@@ -13,6 +13,11 @@ import {
   Intent,
   Visibility,
 } from './commit-entry.js';
+import {
+  initPublishDialogHandlers,
+  openPublishDialog,
+  closePublishDialog,
+} from './publish-dialog.js';
 
 export {
   commitEntry,
@@ -21,6 +26,9 @@ export {
   updateStateChip,
   updateActionButtons,
   setActiveEntryState,
+  initPublishDialogHandlers,
+  openPublishDialog,
+  closePublishDialog,
 };
 
 export function escapeClientHtml(str: string): string {
@@ -343,6 +351,9 @@ export function initAdminEntryHandlers(): void {
       } catch (_) {}
     });
   }
+
+  // Initialize Publish Dialog handlers (WP-14.3)
+  initPublishDialogHandlers();
 }
 
 // Make functions accessible globally
