@@ -11,7 +11,8 @@
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && pnpm build:client",
+    "build:client": "esbuild src/client/admin-entry.ts --bundle --format=esm --target=es2022 --outfile=dist/client/admin-entry.js",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
@@ -24,6 +25,7 @@
     "hono": "^4.13.13"
   },
   "devDependencies": {
+    "esbuild": "^0.25.12",
     "typescript": "^5.7.3",
     "vitest": "^3.0.7"
   }

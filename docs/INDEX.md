@@ -85,6 +85,7 @@
 | `A077` | WP-14.pre dependency review audit corrections | `active` | [A077-wp-14pre-dependency-review-audit-corrections.md](execution-reports/A077-wp-14pre-dependency-review-audit-corrections.md) | — |
 | `A078` | WP-14.0a visible editor results | `active` | [A078-wp-140a-visible-editor-results.md](execution-reports/A078-wp-140a-visible-editor-results.md) | — |
 | `A079` | WP-14.0a feedback corrections and error coverage | `active` | [A079-wp-140a-feedback-corrections-and-error-coverage.md](execution-reports/A079-wp-140a-feedback-corrections-and-error-coverage.md) | — |
+| `A080` | WP-14.0 client bundling and entry handler migration | `active` | [A080-wp-140-client-bundling-and-entry-handler-migration.md](execution-reports/A080-wp-140-client-bundling-and-entry-handler-migration.md) | — |
 
 ## Handover Snapshots (Class H)
 

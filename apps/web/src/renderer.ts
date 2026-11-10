@@ -230,6 +230,7 @@ export interface RenderLayoutOptions {
   headSlot?: string;
   headerSlot?: string;
   footerSlot?: string;
+  clientScript?: string;
 }
 
 export function renderLayout(
@@ -382,7 +383,7 @@ ${footerSlotHtml}    <div style="display:flex;justify-content:space-between;alig
       }
     })();
   </script>
-</body>
+${options?.clientScript ? `  <script type="module" src="${escapeHtml(options.clientScript)}"${nonceAttr}></script>\n` : ''}</body>
 </html>`;
 }
 
@@ -3195,155 +3196,8 @@ export async function renderAdminWorkspacePage(
           });
         }
 
-        if (saveDraftBtn) {
-          saveDraftBtn.addEventListener('click', async function() {
-            const text = document.getElementById('entry-body')?.value || '';
-            const title = document.getElementById('entry-title')?.value || '';
-            let slug = document.getElementById('entry-slug')?.value || '';
-            if (!slug && title) slug = slugify(title);
-
-            if (!text || !text.trim()) {
-              showEditorFeedback('<div class="later-thinking-banner" role="alert">Body content is required before saving.</div>', true);
-              return;
-            }
-            if (!title.trim()) {
-              showEditorFeedback('<div class="later-thinking-banner" role="alert">Title is required before saving.</div>', true);
-              return;
-            }
-
-            const isEdit = entryIdInput && entryIdInput.value;
-            if (isEdit) {
-              const entryId = entryIdInput.value;
-              try {
-                const res = await apiClient('/api/entries/' + entryId, {
-                  method: 'PUT',
-                  body: JSON.stringify({
-                    title: title,
-                    profile: document.getElementById('entry-profile')?.value || 'case-study',
-                    visibility: 'private'
-                  })
-                });
-                if (res.ok) {
-                  // Add new revision
-                  await apiClient('/api/entries/' + entryId + '/revisions', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                      body_md: text,
-                      temporal_level: 'exact',
-                      valid_from: new Date(document.getElementById('entry-date')?.value || Date.now()).toISOString(),
-                      is_hindsight: document.getElementById('entry-hindsight')?.checked || false
-                    })
-                  });
-                  showEditorFeedback('<div class="as-of-banner">Saved draft "' + escapeClientHtml(title) + '" (private).</div>', false);
-                  await refreshEntriesList(entryId);
-                  showUndoBanner('Saved draft "' + escapeClientHtml(title) + '".', async function() {
-                    showEditorFeedback('<div class="later-thinking-banner">Undo: Draft save acknowledged.</div>', false);
-                  });
-                } else {
-                  showEditorFeedback(renderAdminError(res), true);
-                }
-              } catch (err) {
-                showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error saving draft.</div>', true);
-              }
-            } else {
-              try {
-                const payload = {
-                  title: title,
-                  slug: slug,
-                  profile: document.getElementById('entry-profile')?.value || 'case-study',
-                  body_md: text,
-                  valid_from: new Date(document.getElementById('entry-date')?.value || Date.now()).toISOString(),
-                  is_hindsight: document.getElementById('entry-hindsight')?.checked || false,
-                  temporal_level: 'exact',
-                  visibility: 'private',
-                  view: 'article'
-                };
-                const res = await apiClient('/api/entries', {
-                  method: 'POST',
-                  body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                  const data = await res.json();
-                  if (entryIdInput) entryIdInput.value = data.entry.id;
-                  if (modeHeading) modeHeading.textContent = 'Edit Entry: ' + data.entry.title;
-                  if (stateBadge) stateBadge.textContent = 'State: PRIVATE (Draft)';
-                  if (deleteBtn) deleteBtn.style.display = 'inline-block';
-                  showEditorFeedback('<div class="as-of-banner">Created draft "' + escapeClientHtml(payload.title) + '".</div>', false);
-                  await refreshEntriesList(data.entry.id);
-                  showUndoBanner('Created draft "' + escapeClientHtml(payload.title) + '".', async function() {
-                    await apiClient('/api/entries/' + data.entry.id, { method: 'DELETE' });
-                    showEditorFeedback('<div class="later-thinking-banner">Undone: Draft deleted.</div>', false);
-                    await refreshEntriesList();
-                  });
-                } else {
-                  showEditorFeedback(renderAdminError(res), true);
-                }
-              } catch (err) {
-                showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error creating draft.</div>', true);
-              }
-            }
-          });
-        }
-
-        if (unpublishBtn) {
-          unpublishBtn.addEventListener('click', async function() {
-            const entryId = entryIdInput?.value;
-            if (!entryId) return;
-            const title = document.getElementById('entry-title')?.value || '';
-            try {
-              const res = await apiClient('/api/entries/' + entryId, {
-                method: 'PUT',
-                body: JSON.stringify({ visibility: 'private' })
-              });
-              if (res.ok) {
-                unpublishBtn.style.display = 'none';
-                if (stateBadge) stateBadge.textContent = 'State: PRIVATE (Unpublished)';
-                showEditorFeedback('<div class="as-of-banner">Unpublished "' + escapeClientHtml(title) + '". Returned to private draft state.</div>', false);
-                await refreshEntriesList(entryId);
-                showUndoBanner('Unpublished "' + escapeClientHtml(title) + '".', async function() {
-                  await apiClient('/api/entries/' + entryId, {
-                    method: 'PUT',
-                    body: JSON.stringify({ visibility: 'public' })
-                  });
-                  unpublishBtn.style.display = 'inline-block';
-                  if (stateBadge) stateBadge.textContent = 'State: PUBLIC';
-                  showEditorFeedback('<div class="as-of-banner">Undone: Republished "' + escapeClientHtml(title) + '".</div>', false);
-                  await refreshEntriesList(entryId);
-                });
-              } else {
-                showEditorFeedback(renderAdminError(res), true);
-              }
-            } catch (err) {
-              showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error unpublishing entry.</div>', true);
-            }
-          });
-        }
-
-        if (deleteBtn) {
-          deleteBtn.addEventListener('click', async function() {
-            const entryId = entryIdInput?.value;
-            if (!entryId) return;
-            const title = document.getElementById('entry-title')?.value || '';
-            if (!window.confirm('Delete entry "' + title + '" and all its revisions, spans, and claims?')) {
-              return;
-            }
-            try {
-              const res = await apiClient('/api/entries/' + entryId, { method: 'DELETE' });
-              if (res.ok) {
-                const data = await res.json();
-                if (newEntryBtn) newEntryBtn.click();
-                showEditorFeedback('<div class="as-of-banner">Deleted "' + escapeClientHtml(title) + '" (' + (data.report?.deletedRevisions || 1) + ' revisions purged).</div>', false);
-                const itemEl = document.querySelector('.admin-entry-item[data-entry-id="' + entryId + '"]');
-                if (itemEl) itemEl.remove();
-                await refreshEntriesList();
-              } else {
-                showEditorFeedback(renderAdminError(res), true);
-              }
-            } catch (err) {
-              showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error deleting entry.</div>', true);
-            }
-          });
-        }
+        // Entry lifecycle handlers (Save draft, Unpublish, Delete) migrated to client bundle:
+        // apps/web/src/client/admin-entry.ts (WP-14.0)
 
         // Initialize killswitch state from server settings
         apiClient('/api/settings').then(function(res) {
@@ -4000,7 +3854,9 @@ export async function renderAdminWorkspacePage(
     </script>
   `;
 
-  return renderLayout('Admin Workspace', '/admin', content);
+  return renderLayout('Admin Workspace', '/admin', content, {
+    clientScript: '/assets/client/admin-entry.js',
+  });
 }
 
 export async function renderAdminSettingsPage(
