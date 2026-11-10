@@ -2356,14 +2356,27 @@ export async function renderAdminWorkspacePage(
             </div>
             <div>
               <label for="entry-date" style="font-size:13px;font-weight:600;display:block">When it happened</label>
-              <input id="entry-date" type="date" class="ask-input" style="width:100%;padding:6px" value="2026-10-19" />
+              <input id="entry-date" type="date" class="ask-input" style="width:100%;padding:6px" value="" />
+              <div id="entry-date-error" style="color:var(--red-700,#b42318);font-size:12px;display:none;margin-top:2px" role="alert"></div>
             </div>
-            <div style="display:flex;align-items:flex-end;padding-bottom:6px">
-              <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
-                <input id="entry-hindsight" type="checkbox" />
-                Are you writing about something that happened earlier?
-              </label>
+            <div>
+              <label for="entry-temporal-level" style="font-size:13px;font-weight:600;display:block">Temporal confidence</label>
+              <select id="entry-temporal-level" class="ask-input" style="width:100%;padding:6px">
+                <option value="exact">Exact (default)</option>
+                <option value="range">Range</option>
+                <option value="estimated">Estimated</option>
+              </select>
+              <div id="range-end-container" style="display:none;margin-top:6px">
+                <label for="entry-date-range-end" style="font-size:12px;font-weight:600;display:block">Range end</label>
+                <input id="entry-date-range-end" type="date" class="ask-input" style="width:100%;padding:4px 6px;font-size:12px" />
+              </div>
             </div>
+          </div>
+          <div style="margin-bottom:12px">
+            <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input id="entry-hindsight" type="checkbox" />
+              Are you writing about something that happened earlier?
+            </label>
           </div>
 
           <div class="editor-workspace" style="margin-bottom:12px">
@@ -2781,6 +2794,20 @@ export async function renderAdminWorkspacePage(
             const dateInput = document.getElementById('entry-date');
             if (dateInput && currentRev?.valid_from) {
               dateInput.value = currentRev.valid_from.slice(0, 10);
+            }
+            const dateErr = document.getElementById('entry-date-error');
+            if (dateErr) dateErr.style.display = 'none';
+            const temporalSelect = document.getElementById('entry-temporal-level');
+            const rangeEndContainer = document.getElementById('range-end-container');
+            const rangeEndInput = document.getElementById('entry-date-range-end');
+            if (temporalSelect) {
+              temporalSelect.value = currentRev?.temporal_level || 'exact';
+            }
+            if (rangeEndContainer) {
+              rangeEndContainer.style.display = currentRev?.temporal_level === 'range' ? 'block' : 'none';
+            }
+            if (rangeEndInput) {
+              rangeEndInput.value = currentRev?.valid_from_range_end ? currentRev.valid_from_range_end.slice(0, 10) : '';
             }
             const hindsightCheck = document.getElementById('entry-hindsight');
             if (hindsightCheck) hindsightCheck.checked = !!currentRev?.is_hindsight;

@@ -136,7 +136,42 @@ export function initAdminEntryHandlers(): void {
   const titleInput = document.getElementById('entry-title') as HTMLInputElement | null;
   const slugInput = document.getElementById('entry-slug') as HTMLInputElement | null;
   const bodyInput = document.getElementById('entry-body') as HTMLTextAreaElement | null;
+  const dateInput = document.getElementById('entry-date') as HTMLInputElement | null;
+  const dateError = document.getElementById('entry-date-error');
+  const temporalSelect = document.getElementById('entry-temporal-level') as HTMLSelectElement | null;
+  const rangeEndContainer = document.getElementById('range-end-container');
+  const rangeEndInput = document.getElementById('entry-date-range-end') as HTMLInputElement | null;
   const visibilityInput = document.getElementById('entry-visibility') as HTMLSelectElement | null;
+
+  // Default date to today on client (Spec §2.1.3, UX-11)
+  if (dateInput && !dateInput.value) {
+    dateInput.value = new Date().toISOString().slice(0, 10);
+  }
+
+  // Validate date on blur (UX-11)
+  if (dateInput) {
+    dateInput.addEventListener('blur', () => {
+      const val = dateInput.value.trim();
+      if (!val || isNaN(Date.parse(val))) {
+        if (dateError) {
+          dateError.textContent = 'A valid date is required.';
+          dateError.style.display = 'block';
+        }
+      } else {
+        if (dateError) dateError.style.display = 'none';
+      }
+    });
+  }
+
+  // Temporal confidence control (UX-22)
+  if (temporalSelect && rangeEndContainer) {
+    temporalSelect.addEventListener('change', () => {
+      rangeEndContainer.style.display = temporalSelect.value === 'range' ? 'block' : 'none';
+      if (temporalSelect.value !== 'range' && rangeEndInput) {
+        rangeEndInput.value = '';
+      }
+    });
+  }
 
   // Track slug auto-generation
   let slugIsManual = false;
@@ -236,6 +271,11 @@ export function initAdminEntryHandlers(): void {
       if (slugInput) slugInput.value = '';
       if (bodyInput) bodyInput.value = '';
       if (visibilityInput) visibilityInput.value = 'private';
+      if (dateInput) dateInput.value = new Date().toISOString().slice(0, 10);
+      if (dateError) dateError.style.display = 'none';
+      if (temporalSelect) temporalSelect.value = 'exact';
+      if (rangeEndContainer) rangeEndContainer.style.display = 'none';
+      if (rangeEndInput) rangeEndInput.value = '';
       slugIsManual = false;
       setActiveEntryState({
         id: '',
@@ -271,6 +311,19 @@ export function initAdminEntryHandlers(): void {
         if (slugInput) slugInput.value = entry.slug || '';
         if (bodyInput) bodyInput.value = currentRev?.body_md || '';
         if (visibilityInput) visibilityInput.value = entry.visibility;
+        if (dateInput && currentRev?.valid_from) {
+          dateInput.value = currentRev.valid_from.slice(0, 10);
+        }
+        if (dateError) dateError.style.display = 'none';
+        if (temporalSelect) {
+          temporalSelect.value = currentRev?.temporal_level || 'exact';
+        }
+        if (rangeEndContainer) {
+          rangeEndContainer.style.display = currentRev?.temporal_level === 'range' ? 'block' : 'none';
+        }
+        if (rangeEndInput) {
+          rangeEndInput.value = currentRev?.valid_from_range_end ? currentRev.valid_from_range_end.slice(0, 10) : '';
+        }
         slugIsManual = true;
 
         setActiveEntryState({

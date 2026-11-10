@@ -87,6 +87,7 @@
 | `A079` | WP-14.0a feedback corrections and error coverage | `active` | [A079-wp-140a-feedback-corrections-and-error-coverage.md](execution-reports/A079-wp-140a-feedback-corrections-and-error-coverage.md) | — |
 | `A080` | WP-14.0 client bundling and entry handler migration | `active` | [A080-wp-140-client-bundling-and-entry-handler-migration.md](execution-reports/A080-wp-140-client-bundling-and-entry-handler-migration.md) | — |
 | `A081` | WP-14.1 commitEntry state machine | `active` | [A081-wp-141-commitentry-state-machine.md](execution-reports/A081-wp-141-commitentry-state-machine.md) | — |
+| `A082` | WP-14.2 state and date correctness | `active` | [A082-wp-142-state-and-date-correctness.md](execution-reports/A082-wp-142-state-and-date-correctness.md) | — |
 
 ## Handover Snapshots (Class H)
 
