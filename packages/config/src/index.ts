@@ -302,6 +302,30 @@ export const CONFIG_SETTINGS_METADATA: readonly SettingMetadata[] = [
   },
 ] as const;
 
+export const CalibrationConfigSchema = z
+  .object({
+    suggestion_thresholds: z.boolean().default(false),
+    routing_calibration: z.boolean().default(false),
+    topology_audit: z.boolean().default(true),
+    scoped_constraint_mining: z.boolean().optional(),
+    scoped_constraints: z.boolean().optional(),
+  })
+  .transform((c) => ({
+    suggestion_thresholds: c.suggestion_thresholds,
+    routing_calibration: c.routing_calibration,
+    topology_audit: c.topology_audit,
+    scoped_constraint_mining:
+      c.scoped_constraint_mining ?? c.scoped_constraints ?? true,
+  }))
+  .default({
+    suggestion_thresholds: false,
+    routing_calibration: false,
+    topology_audit: true,
+    scoped_constraint_mining: true,
+  });
+
+export type CalibrationConfig = z.infer<typeof CalibrationConfigSchema>;
+
 export const AppConfigSchema = z
   .object({
     PORT: z.coerce.number().int().min(1).max(65535).default(4000),
@@ -309,6 +333,7 @@ export const AppConfigSchema = z
     PRESET: z
       .enum(['free-cloud', 'hobbyist-vps', 'local-only', 'hobbyist-docker', 'private-local', 'reliable-low-cost'])
       .default('free-cloud'),
+    calibration: CalibrationConfigSchema,
     DATABASE_URL: z.string().default(''),
     SITE_ORIGIN: z.string().min(1).default('http://localhost:4000'),
     ADMIN_ORIGIN: z.string().min(1).default('http://localhost:4000'),

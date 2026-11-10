@@ -37,6 +37,12 @@ export interface RuntimeSettingsState {
   backupDestination?: string;
   backupAgePublicKey?: string;
   selectedThemePreset?: string;
+  calibration?: {
+    suggestion_thresholds: boolean;
+    routing_calibration: boolean;
+    topology_audit: boolean;
+    scoped_constraint_mining: boolean;
+  };
 }
 
 export function createSettingsRoutes(
@@ -58,10 +64,25 @@ export function createSettingsRoutes(
     setupWizardCompleted: false,
     theme: structuredClone(DEFAULT_STRATA_THEME),
     redactionExclusions: getDefaultExclusions(),
+    calibration: {
+      suggestion_thresholds: false,
+      routing_calibration: false,
+      topology_audit: true,
+      scoped_constraint_mining: true,
+    },
   };
 
   if (!state.redactionExclusions) {
     state.redactionExclusions = getDefaultExclusions();
+  }
+
+  if (!state.calibration) {
+    state.calibration = {
+      suggestion_thresholds: false,
+      routing_calibration: false,
+      topology_audit: true,
+      scoped_constraint_mining: true,
+    };
   }
 
   // Get current settings
@@ -75,6 +96,7 @@ export function createSettingsRoutes(
 
     return c.json({
       preset: state.hostingPreset || 'free-cloud',
+      calibration: state.calibration,
       runtime: {
         automatedAnsweringEnabled: state.automatedAnsweringEnabled,
         calibrationFrozen: state.calibrationFrozen,
@@ -198,6 +220,12 @@ export function createSettingsRoutes(
     if (typeof body.tier2_floor === 'number') {
       state.tier2_floor = Math.max(0.1, Math.min(1.0, body.tier2_floor));
     }
+    if (body.calibration && typeof body.calibration === 'object') {
+      state.calibration = {
+        ...state.calibration,
+        ...body.calibration,
+      };
+    }
     if (typeof body.facet_known_threshold === 'number') {
       state.facet_known_threshold = Math.max(0.5, Math.min(1.0, body.facet_known_threshold));
     }
@@ -209,6 +237,7 @@ export function createSettingsRoutes(
 
     return c.json({
       updated: true,
+      calibration: state.calibration,
       runtime: {
         automatedAnsweringEnabled: state.automatedAnsweringEnabled,
         calibrationFrozen: state.calibrationFrozen,

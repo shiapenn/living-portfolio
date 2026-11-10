@@ -90,6 +90,7 @@
 | `A082` | WP-14.2 state and date correctness | `active` | [A082-wp-142-state-and-date-correctness.md](execution-reports/A082-wp-142-state-and-date-correctness.md) | — |
 | `A083` | WP-14.3 publish dialog | `active` | [A083-wp-143-publish-dialog.md](execution-reports/A083-wp-143-publish-dialog.md) | — |
 | `A084` | WP-14.4 local autosave and writing buffer | `active` | [A084-wp-144-local-autosave-and-writing-buffer.md](execution-reports/A084-wp-144-local-autosave-and-writing-buffer.md) | — |
+| `A085` | WP-14.5 calibration defaults and mechanism gates | `active` | [A085-wp-145-calibration-defaults-and-mechanism-gates.md](execution-reports/A085-wp-145-calibration-defaults-and-mechanism-gates.md) | — |
 
 ## Handover Snapshots (Class H)
 
