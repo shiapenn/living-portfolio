@@ -84,6 +84,7 @@
 | `A076` | WP-14.pre-b CI download resilience | `active` | [A076-wp-14pre-b-ci-download-resilience.md](execution-reports/A076-wp-14pre-b-ci-download-resilience.md) | — |
 | `A077` | WP-14.pre dependency review audit corrections | `active` | [A077-wp-14pre-dependency-review-audit-corrections.md](execution-reports/A077-wp-14pre-dependency-review-audit-corrections.md) | — |
 | `A078` | WP-14.0a visible editor results | `active` | [A078-wp-140a-visible-editor-results.md](execution-reports/A078-wp-140a-visible-editor-results.md) | — |
+| `A079` | WP-14.0a feedback corrections and error coverage | `active` | [A079-wp-140a-feedback-corrections-and-error-coverage.md](execution-reports/A079-wp-140a-feedback-corrections-and-error-coverage.md) | — |
 
 ## Handover Snapshots (Class H)
 

@@ -119,4 +119,37 @@ test.describe.serial('WP-14.0a: In-viewport editor feedback and live announcemen
     // List refresh: entry removed from list
     await expect(entryListItem).not.toBeVisible();
   });
+
+  test('Error case: attempting to Save draft with an empty title displays in-viewport error and polite announcement', async ({
+    page,
+  }) => {
+    await ensureAdminLoggedIn(page);
+    await page.goto('/admin');
+
+    const saveDraftBtn = page.locator('#btn-save-draft');
+    const editorStatusLine = page.locator('#editor-status-line');
+    const editorToast = page.locator('#editor-toast');
+
+    // Ensure title is empty and body has content
+    await page.fill('#entry-title', '');
+    await page.fill('#entry-body', 'Draft content without a title.');
+
+    await saveDraftBtn.scrollIntoViewIfNeeded();
+    await saveDraftBtn.click();
+
+    // Feedback must be visible in viewport without scrolling
+    await expect(editorStatusLine).toBeVisible({ timeout: 5000 });
+    await expect(editorStatusLine).toBeInViewport();
+    await expect(editorStatusLine).toContainText(/Title is required before saving/i);
+
+    // Feedback announced to assistive technology
+    await expect(editorStatusLine).toHaveAttribute('aria-live', 'polite');
+
+    // Floating toast should also be present and in viewport
+    if (await editorToast.count() > 0) {
+      await expect(editorToast).toBeVisible();
+      await expect(editorToast).toBeInViewport();
+      await expect(editorToast).toHaveAttribute('aria-live', 'polite');
+    }
+  });
 });

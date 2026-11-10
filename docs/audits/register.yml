@@ -4050,10 +4050,10 @@
   history:
     - date: 2026-11-08
       status: open
-      note: "Registered in WP-14.pre-b (A076): Zod 4 migration deferred to WP-15. Zod 4 introduces breaking changes: z.record requires two type arguments causing TS2554, and AST changes remove _def.typeName which breaks OpenAPI reflection in packages/core/src/openapi/index.ts and causes contract drift (OSR-12). Dependabot alerts #2, #7, #10, #12, #22 (GHSA-mrhx-c7xc-m3w5 / CVE-2023-54404) left open; repo risk mitigated as no z.array schemas are defined."
+      note: "Registered in WP-14.pre-b (A076): Zod 4 migration deferred to WP-15. Zod 4 introduces breaking changes: z.record requires two type arguments causing TS2554, and AST changes remove _def.typeName which breaks OpenAPI reflection in packages/core/src/openapi/index.ts and causes contract drift (OSR-12). Dependabot alerts #2, #7, #10, #12, #22 (GHSA-mrhx-c7xc-m3w5 / CVE-2023-54404: 'Zod can exhaust memory while validating oversized constrained collections', vulnerable < 4.6.6, first patched in 4.6.6) left open; repo risk mitigated as no z.array schemas are defined."
     - date: 2026-11-10
       status: open
-      note: "Safeguard added in WP-14 corrections: Zod advisory GHSA-mrhx-c7xc-m3w5 / CVE-2023-54404 verified affecting < 4.6.6 (patched in 4.6.6). Grep audit confirmed zero uses of z.array, z.set, or z.tuple across apps/ and packages/. Added zod-collection-guard.conformance.test.ts to fail if collection schemas are introduced prior to Zod 4 migration."
+      note: "Safeguard added in WP-14 corrections: Zod advisory GHSA-mrhx-c7xc-m3w5 / CVE-2023-54404 ('Zod can exhaust memory while validating oversized constrained collections') verified affecting vulnerable range < 4.6.6 (first patched version 4.6.6). Grep audit confirmed zero uses of z.array, z.set, or z.tuple across apps/ and packages/. Added zod-collection-guard.conformance.test.ts to fail if collection schemas are introduced prior to Zod 4 migration."
   verified_by: null
 - id: 20261106-UX-54
   audit: AUD-2026-11-06
