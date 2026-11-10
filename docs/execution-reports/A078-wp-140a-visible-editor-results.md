@@ -6,7 +6,7 @@
 | Date | 2026-11-10 |
 | Author | A (Implementer) |
 | Task ID | `WP-14.0a` |
-| Evidence SHA | PENDING |
+| Evidence SHA | db0082b |
 | CI run | local verify (`pnpm verify`) green |
 
 ---
@@ -49,6 +49,7 @@ Note: The GitHub Actions Dependency Review workflow (`.github/workflows/deps.yml
 - docs/INDEX.md
 - docs/audits/register.yml
 - docs/doc-registry.json
+- docs/execution-reports/A077-wp-14pre-dependency-review-audit-corrections.md
 - docs/execution-reports/A078-wp-140a-visible-editor-results.md
 - tests/e2e/helpers.ts
 - tests/e2e/wp14-editor-feedback.spec.ts
@@ -77,7 +78,18 @@ Note: The GitHub Actions Dependency Review workflow (`.github/workflows/deps.yml
 
 ## 8. Receipt Gate Self-Validation
 
-PENDING_SELF_VALIDATION
+```
+$ pnpm receipt:check A078
+=== Validating Receipt A078-wp-140a-visible-editor-results.md ===
+
+✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
+✓ [ANCESTOR-CHECK] Evidence SHA 'db0082b' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 377e35e..db0082b (10 files verified).
+✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A078-wp-140a-visible-editor-results.md.
+Found 0 section(s) marked verbatim.
+
+🎉 All receipt checks PASSED for A078-wp-140a-visible-editor-results.md.
+```
 
 ---
 
