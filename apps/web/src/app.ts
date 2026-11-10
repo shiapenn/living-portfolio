@@ -1,5 +1,10 @@
 import { Hono } from 'hono';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+import { readFileSync, existsSync } from 'node:fs';
 import { loadConfig } from '@living-portfolio/config';
+
+const currentDir = dirname(fileURLToPath(import.meta.url));
 import {
   createLivingPortfolioClient,
   type LivingPortfolioClient,
@@ -110,6 +115,28 @@ export function createWebApp(options?: WebAppOptions) {
     return c.text(`User-agent: *\nAllow: /\nSitemap: ${primarySiteOrigin}/sitemap.xml\n`, 200, {
       'Content-Type': 'text/plain; charset=utf-8',
     });
+  });
+
+  // Static client bundled script assets (WP-14.0)
+  app.get('/assets/client/:filename', async (c) => {
+    const filename = c.req.param('filename');
+    const safeFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '');
+    const possiblePaths = [
+      resolve(currentDir, 'client', safeFilename),
+      resolve(currentDir, '../dist/client', safeFilename),
+      resolve(currentDir, '../../dist/client', safeFilename),
+      resolve(currentDir, '../../../dist/client', safeFilename),
+    ];
+    for (const p of possiblePaths) {
+      if (existsSync(p)) {
+        const content = readFileSync(p, 'utf8');
+        return c.body(content, 200, {
+          'Content-Type': 'application/javascript; charset=utf-8',
+          'Cache-Control': 'public, max-age=3600',
+        });
+      }
+    }
+    return c.text('Not Found', 404);
   });
 
   // Admin UI routes
