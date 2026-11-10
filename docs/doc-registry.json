@@ -937,5 +937,13 @@
     "path": "docs/execution-reports/A077-wp-14pre-dependency-review-audit-corrections.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A078",
+    "title": "WP-14.0a visible editor results",
+    "class": "A",
+    "path": "docs/execution-reports/A078-wp-140a-visible-editor-results.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
