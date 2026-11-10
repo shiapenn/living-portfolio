@@ -29,6 +29,8 @@ Local verification via `pnpm verify`:
 - Playwright E2E suite: PASSED (61/61 tests in 12 files).
 - Gitleaks secret scan: PASSED (0 leaks).
 
+Note: The GitHub Actions Dependency Review workflow (`.github/workflows/deps.yml`) is non-gating on this repository (unsupported on this private repository without GitHub Advanced Security; configured with `continue-on-error: true`). No compliance or gate evidence is cited from it.
+
 ---
 
 ## 3. Tests Added and Count Change
@@ -60,7 +62,7 @@ Local verification via `pnpm verify`:
 
 ## 5. Register and Backlog Changes
 
-- Register counts: 108 fixed, 6 partial, 53 open (total 167 findings).
+- Register counts: 108 fixed, 7 partial, 54 open (total 169 findings).
 - Updated finding `20261106-UX-51` in `docs/audits/register.yml` from `open` to `partial` with progress note for WP-14.pre-a.
 
 ---

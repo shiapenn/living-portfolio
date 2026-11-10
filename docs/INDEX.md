@@ -82,6 +82,7 @@
 | `A074` | WP-13.14 Repair web merge and register findings | `active` | [A074-wp-1314-repair-web-merge-and-register-findings.md](execution-reports/A074-wp-1314-repair-web-merge-and-register-findings.md) | — |
 | `A075` | WP-14.pre-a dependency review and triage | `active` | [A075-wp-14pre-a-dependency-review-and-triage.md](execution-reports/A075-wp-14pre-a-dependency-review-and-triage.md) | — |
 | `A076` | WP-14.pre-b CI download resilience | `active` | [A076-wp-14pre-b-ci-download-resilience.md](execution-reports/A076-wp-14pre-b-ci-download-resilience.md) | — |
+| `A077` | WP-14.pre dependency review audit corrections | `active` | [A077-wp-14pre-dependency-review-audit-corrections.md](execution-reports/A077-wp-14pre-dependency-review-audit-corrections.md) | — |
 
 ## Handover Snapshots (Class H)
 
