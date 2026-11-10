@@ -6,6 +6,7 @@
  */
 
 import { clientFetch, escapeClientHtml, refreshEntriesList, showEditorFeedback } from './admin-entry.js';
+import { clearDraftBuffer } from './draft-buffer.js';
 
 export type Intent = 'save' | 'publish' | 'unlist' | 'unpublish';
 export type Visibility = 'private' | 'unlisted' | 'public';
@@ -412,6 +413,8 @@ export async function commitEntry(intent: Intent): Promise<boolean> {
     visibility: target,
     lastCommittedBody: s.body,
   });
+
+  clearDraftBuffer();
 
   const visibilitySelect = document.getElementById('entry-visibility') as HTMLSelectElement | null;
   if (visibilitySelect) visibilitySelect.value = target;

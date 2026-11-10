@@ -89,6 +89,7 @@
 | `A081` | WP-14.1 commitEntry state machine | `active` | [A081-wp-141-commitentry-state-machine.md](execution-reports/A081-wp-141-commitentry-state-machine.md) | — |
 | `A082` | WP-14.2 state and date correctness | `active` | [A082-wp-142-state-and-date-correctness.md](execution-reports/A082-wp-142-state-and-date-correctness.md) | — |
 | `A083` | WP-14.3 publish dialog | `active` | [A083-wp-143-publish-dialog.md](execution-reports/A083-wp-143-publish-dialog.md) | — |
+| `A084` | WP-14.4 local autosave and writing buffer | `active` | [A084-wp-144-local-autosave-and-writing-buffer.md](execution-reports/A084-wp-144-local-autosave-and-writing-buffer.md) | — |
 
 ## Handover Snapshots (Class H)
 

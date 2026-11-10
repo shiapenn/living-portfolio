@@ -18,6 +18,12 @@ import {
   openPublishDialog,
   closePublishDialog,
 } from './publish-dialog.js';
+import {
+  initDraftBuffer,
+  clearDraftBuffer,
+  saveDraftBuffer,
+  restoreDraftBuffer,
+} from './draft-buffer.js';
 
 export {
   commitEntry,
@@ -29,6 +35,10 @@ export {
   initPublishDialogHandlers,
   openPublishDialog,
   closePublishDialog,
+  initDraftBuffer,
+  clearDraftBuffer,
+  saveDraftBuffer,
+  restoreDraftBuffer,
 };
 
 export function escapeClientHtml(str: string): string {
@@ -274,6 +284,7 @@ export function initAdminEntryHandlers(): void {
   // New Entry button
   if (newEntryBtn) {
     newEntryBtn.addEventListener('click', () => {
+      clearDraftBuffer();
       if (entryIdInput) entryIdInput.value = '';
       if (titleInput) titleInput.value = '';
       if (slugInput) slugInput.value = '';
@@ -354,6 +365,9 @@ export function initAdminEntryHandlers(): void {
 
   // Initialize Publish Dialog handlers (WP-14.3)
   initPublishDialogHandlers();
+
+  // Initialize Draft Buffer & Autosave (WP-14.4)
+  initDraftBuffer();
 }
 
 // Make functions accessible globally
