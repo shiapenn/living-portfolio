@@ -57,19 +57,20 @@ Note: The GitHub Actions Dependency Review workflow (`.github/workflows/deps.yml
 
 ## 5. Register and Backlog Changes
 
-- None in this task commit (governance and audit register updates for UI-01 and UI-03 along with UX-01..UX-04, UX-08, UX-10, UX-11, UX-22 are batched for Gate G14 closure).
+- Register counts: 109 fixed, 7 partial, 53 open (total 169 findings, unchanged pending Gate G14 register update).
+- Directly addresses UI-01 (`20261106-UI-01`) and UI-03 (`20261106-UI-03`).
 
 ---
 
 ## 6. Not Done (Tagged)
 
-- None.
+- [not-started] Gate G14: Update `gates.json`, mark UX-01..UX-04, UX-08, UX-10, UX-11, UX-22, UI-01, UI-03 as fixed in `register.yml`, produce closing receipt A087.
 
 ---
 
 ## 7. Changes to Earlier Reports
 
-- None.
+None.
 
 ---
 
@@ -92,8 +93,8 @@ Found 0 section(s) marked verbatim.
 
 ## 9. Handover Decision
 
-- Decision: NOT REQUIRED
-- Rule(s): HO-R5
-- Receipts since last handover: 12 (A075..A086); work packages since: 0
+- Decision: RECOMMENDED
+- Rule(s): HO-R3
+- Receipts since last handover: 12 (A075, A076, A077, A078, A079, A080, A081, A082, A083, A084, A085, A086); work packages since: 0
 - Clean-boundary preconditions: met
 - Next action: proceed to Gate G14 closure
