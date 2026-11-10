@@ -3839,17 +3839,20 @@
     - "12.7"
     - "12.8"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp14-editor-feedback.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-10
+      status: fixed
+      note: Implemented inline status line, polite notification toast, focus move, and list refresh on Save draft, Publish, Unpublish, and Delete (WP-14.0a, A078)
   verified_by: null
 - id: 20261106-UX-44
   audit: AUD-2026-11-06

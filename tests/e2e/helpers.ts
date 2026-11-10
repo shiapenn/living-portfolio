@@ -47,6 +47,10 @@ export async function ensureAdminLoggedIn(page: Page) {
     await page.fill('#setup-password', TEST_PASSWORD);
     await page.fill('#setup-totp-secret', TEST_TOTP_SECRET);
     await page.click('button[type="submit"]');
+    const enrolContainer = page.locator('#totp-enrolment-container');
+    await enrolContainer.waitFor({ state: 'visible', timeout: 5000 });
+    await page.fill('#confirm-totp-code', computeTotp(TEST_TOTP_SECRET));
+    await page.click('#btn-confirm-totp');
     await expect(page.locator('#setup-status')).toBeVisible();
     saveSharedTotp(TEST_TOTP_SECRET);
     await page.goto('/admin/login');

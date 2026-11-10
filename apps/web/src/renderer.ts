@@ -2400,16 +2400,19 @@ export async function renderAdminWorkspacePage(
           </div>
 
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;gap:8px">
-            <div style="display:flex;gap:8px;flex-wrap:wrap" id="editor-action-buttons">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center" id="editor-action-buttons">
               <button type="button" class="btn btn-secondary" id="btn-save-draft">Save draft</button>
               <button type="submit" class="btn" id="btn-publish-entry">Publish</button>
               <button type="button" class="btn btn-secondary" id="btn-redaction-check">Check for private details</button>
               <button type="button" class="btn btn-secondary" id="btn-unpublish" style="display:none">Unpublish</button>
               <button type="button" class="btn btn-secondary" id="btn-delete-entry" style="display:none;color:var(--red-700,#b42318)">Delete</button>
+              <span id="editor-status-line" role="status" aria-live="polite" tabindex="-1" style="font-size:13px;display:none;align-items:center;gap:6px;padding:4px 8px;border-radius:var(--radius-control);outline:none"></span>
             </div>
             <span style="font-size:13px;color:var(--text-muted)">Structure is optional. You can publish now and add more later.</span>
           </div>
         </form>
+
+        <div id="editor-toast" role="status" aria-live="polite" style="position:fixed;bottom:24px;right:24px;z-index:9999;max-width:420px;display:none;padding:12px 16px;background:var(--surface-raised);border:1px solid var(--accent);border-radius:var(--radius-card, 8px);box-shadow:0 4px 16px rgba(0,0,0,0.18);font-size:14px"></div>
 
         <!-- UI Redaction Preview Drawer -->
         <aside id="redaction-preview-drawer" class="redaction-drawer" style="display:none;position:fixed;top:0;right:0;width:460px;max-width:92vw;height:100vh;background:var(--bg-base);box-shadow:-4px 0 24px rgba(0,0,0,0.18);border-left:1px solid var(--rule);z-index:9999;padding:24px;overflow-y:auto;box-sizing:border-box" role="dialog" aria-labelledby="redaction-drawer-title" aria-modal="true">
@@ -2610,6 +2613,64 @@ export async function renderAdminWorkspacePage(
 
         ${ADMIN_API_CLIENT_SCRIPT}
 
+        let toastTimeout = null;
+        function showEditorFeedback(messageHtml, isError) {
+          const statusLine = document.getElementById('editor-status-line');
+          const toast = document.getElementById('editor-toast');
+          const cleanHtml = messageHtml.startsWith('<div') ? messageHtml : ('<span>' + messageHtml + '</span>');
+          if (statusLine) {
+            statusLine.innerHTML = cleanHtml;
+            statusLine.style.display = 'inline-flex';
+            statusLine.style.outline = 'none';
+            statusLine.focus();
+          }
+          if (toast) {
+            toast.innerHTML = cleanHtml;
+            toast.style.display = 'block';
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(function() {
+              toast.style.display = 'none';
+            }, 6000);
+          }
+          if (banner) {
+            banner.innerHTML = messageHtml.startsWith('<div')
+              ? messageHtml
+              : ('<div class="' + (isError ? 'later-thinking-banner' : 'as-of-banner') + '">' + messageHtml + '</div>');
+          }
+        }
+
+        async function refreshEntriesList(selectedId) {
+          try {
+            const res = await apiClient('/api/entries?visibility=all');
+            if (!res.ok) return;
+            const data = await res.json();
+            const entries = data.entries || [];
+            const listEl = document.getElementById('admin-entries-list');
+            if (listEl) {
+              listEl.innerHTML = entries.map(function(e) {
+                return '<li class="admin-entry-item" data-entry-id="' + escapeClientHtml(e.id) + '" style="padding:8px 0;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;gap:8px">' +
+                  '<button type="button" class="admin-entry-select-btn" data-entry-id="' + escapeClientHtml(e.id) + '" style="background:none;border:none;padding:0;font-weight:600;text-align:left;cursor:pointer;color:var(--text);flex:1">' +
+                    escapeClientHtml(e.title) +
+                  '</button>' +
+                  '<span class="chip" data-status="' + escapeClientHtml(e.visibility) + '">' + escapeClientHtml(e.visibility) + '</span>' +
+                  (e.visibility !== 'private' ? '<a href="/work/' + escapeClientHtml(e.slug) + '" target="_blank" style="font-size:12px;color:var(--text-muted);text-decoration:none" title="View live page">↗</a>' : '') +
+                '</li>';
+              }).join('');
+
+              listEl.querySelectorAll('.admin-entry-select-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                  const id = btn.getAttribute('data-entry-id');
+                  if (id) selectEntry(id);
+                });
+              });
+            }
+            const countHeading = document.querySelector('aside[aria-label="Entries list and filters"] h2');
+            if (countHeading) {
+              countHeading.textContent = 'Entries (' + entries.length + ')';
+            }
+          } catch (_) {}
+        }
+
         function renderAdminError(res) {
           if (!res) {
             return '<div class="later-thinking-banner" role="alert" data-error="network">Can&#39;t reach the server. Please check your connection and retry.</div>';
@@ -2628,22 +2689,40 @@ export async function renderAdminWorkspacePage(
 
         function showUndoBanner(message, onUndo) {
           if (undoTimeout) clearTimeout(undoTimeout);
-          if (!undoBanner) return;
-          undoBanner.style.display = 'block';
-          undoBanner.innerHTML = '<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center">' +
+          const undoHtml = '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">' +
             '<span>' + message + '</span>' +
             '<button type="button" class="btn btn-secondary" id="btn-undo-action" style="padding:2px 8px;font-size:12px;margin-left:8px">Undo (30s)</button>' +
-            '</div>';
+          '</div>';
+          showEditorFeedback(undoHtml, false);
+          if (undoBanner) {
+            undoBanner.style.display = 'block';
+            undoBanner.innerHTML = '<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center">' +
+              '<span>' + message + '</span>' +
+              '<button type="button" class="btn btn-secondary" id="btn-undo-action-banner" style="padding:2px 8px;font-size:12px;margin-left:8px">Undo (30s)</button>' +
+              '</div>';
+            const bBtn = document.getElementById('btn-undo-action-banner');
+            if (bBtn) {
+              bBtn.addEventListener('click', async function() {
+                if (undoTimeout) clearTimeout(undoTimeout);
+                undoBanner.style.display = 'none';
+                await onUndo();
+              });
+            }
+          }
           const undoBtn = document.getElementById('btn-undo-action');
           if (undoBtn) {
             undoBtn.addEventListener('click', async function() {
               if (undoTimeout) clearTimeout(undoTimeout);
-              undoBanner.style.display = 'none';
+              if (undoBanner) undoBanner.style.display = 'none';
+              const statusLine = document.getElementById('editor-status-line');
+              if (statusLine) statusLine.style.display = 'none';
+              const toast = document.getElementById('editor-toast');
+              if (toast) toast.style.display = 'none';
               await onUndo();
             });
           }
           undoTimeout = setTimeout(function() {
-            undoBanner.style.display = 'none';
+            if (undoBanner) undoBanner.style.display = 'none';
           }, 30000);
         }
 
@@ -2671,6 +2750,10 @@ export async function renderAdminWorkspacePage(
 
         async function selectEntry(id) {
           try {
+            const statusLine = document.getElementById('editor-status-line');
+            if (statusLine) { statusLine.style.display = 'none'; statusLine.innerHTML = ''; }
+            const toast = document.getElementById('editor-toast');
+            if (toast) { toast.style.display = 'none'; toast.innerHTML = ''; }
             const res = await apiClient('/api/entries/' + id);
             if (!res.ok) {
               const banner = document.getElementById('admin-status-banner');
@@ -3097,6 +3180,10 @@ export async function renderAdminWorkspacePage(
             currentHasWarnings = false;
             if (unpublishBtn) unpublishBtn.style.display = 'none';
             if (deleteBtn) deleteBtn.style.display = 'none';
+            const statusLine = document.getElementById('editor-status-line');
+            if (statusLine) { statusLine.style.display = 'none'; statusLine.innerHTML = ''; }
+            const toast = document.getElementById('editor-toast');
+            if (toast) { toast.style.display = 'none'; toast.innerHTML = ''; }
             if (modeHeading) modeHeading.textContent = 'Author / Paste Entry (L0 Immediate Publish)';
             if (stateBadge) stateBadge.textContent = 'Mode: Paste / Guided / Freeform';
             const redactBoxEl = document.getElementById('redaction-preview-box');
@@ -3116,11 +3203,11 @@ export async function renderAdminWorkspacePage(
             if (!slug && title) slug = slugify(title);
 
             if (!text || !text.trim()) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Body content is required before saving.</div>';
+              showEditorFeedback('<div class="later-thinking-banner" role="alert">Body content is required before saving.</div>', true);
               return;
             }
             if (!title.trim()) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Title is required before saving.</div>';
+              showEditorFeedback('<div class="later-thinking-banner" role="alert">Title is required before saving.</div>', true);
               return;
             }
 
@@ -3147,15 +3234,16 @@ export async function renderAdminWorkspacePage(
                       is_hindsight: document.getElementById('entry-hindsight')?.checked || false
                     })
                   });
-                  banner.innerHTML = '<div class="as-of-banner">Saved draft "' + escapeClientHtml(title) + '" (private).</div>';
+                  showEditorFeedback('<div class="as-of-banner">Saved draft "' + escapeClientHtml(title) + '" (private).</div>', false);
+                  await refreshEntriesList(entryId);
                   showUndoBanner('Saved draft "' + escapeClientHtml(title) + '".', async function() {
-                    banner.innerHTML = '<div class="later-thinking-banner">Undo: Draft save acknowledged.</div>';
+                    showEditorFeedback('<div class="later-thinking-banner">Undo: Draft save acknowledged.</div>', false);
                   });
                 } else {
-                  banner.innerHTML = renderAdminError(res);
+                  showEditorFeedback(renderAdminError(res), true);
                 }
               } catch (err) {
-                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error saving draft.</div>';
+                showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error saving draft.</div>', true);
               }
             } else {
               try {
@@ -3179,16 +3267,19 @@ export async function renderAdminWorkspacePage(
                   if (entryIdInput) entryIdInput.value = data.entry.id;
                   if (modeHeading) modeHeading.textContent = 'Edit Entry: ' + data.entry.title;
                   if (stateBadge) stateBadge.textContent = 'State: PRIVATE (Draft)';
-                  banner.innerHTML = '<div class="as-of-banner">Created draft "' + escapeClientHtml(payload.title) + '".</div>';
+                  if (deleteBtn) deleteBtn.style.display = 'inline-block';
+                  showEditorFeedback('<div class="as-of-banner">Created draft "' + escapeClientHtml(payload.title) + '".</div>', false);
+                  await refreshEntriesList(data.entry.id);
                   showUndoBanner('Created draft "' + escapeClientHtml(payload.title) + '".', async function() {
                     await apiClient('/api/entries/' + data.entry.id, { method: 'DELETE' });
-                    banner.innerHTML = '<div class="later-thinking-banner">Undone: Draft deleted.</div>';
+                    showEditorFeedback('<div class="later-thinking-banner">Undone: Draft deleted.</div>', false);
+                    await refreshEntriesList();
                   });
                 } else {
-                  banner.innerHTML = renderAdminError(res);
+                  showEditorFeedback(renderAdminError(res), true);
                 }
               } catch (err) {
-                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error creating draft.</div>';
+                showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error creating draft.</div>', true);
               }
             }
           });
@@ -3207,7 +3298,8 @@ export async function renderAdminWorkspacePage(
               if (res.ok) {
                 unpublishBtn.style.display = 'none';
                 if (stateBadge) stateBadge.textContent = 'State: PRIVATE (Unpublished)';
-                banner.innerHTML = '<div class="as-of-banner">Unpublished "' + escapeClientHtml(title) + '". Returned to private draft state.</div>';
+                showEditorFeedback('<div class="as-of-banner">Unpublished "' + escapeClientHtml(title) + '". Returned to private draft state.</div>', false);
+                await refreshEntriesList(entryId);
                 showUndoBanner('Unpublished "' + escapeClientHtml(title) + '".', async function() {
                   await apiClient('/api/entries/' + entryId, {
                     method: 'PUT',
@@ -3215,13 +3307,14 @@ export async function renderAdminWorkspacePage(
                   });
                   unpublishBtn.style.display = 'inline-block';
                   if (stateBadge) stateBadge.textContent = 'State: PUBLIC';
-                  banner.innerHTML = '<div class="as-of-banner">Undone: Republished "' + escapeClientHtml(title) + '".</div>';
+                  showEditorFeedback('<div class="as-of-banner">Undone: Republished "' + escapeClientHtml(title) + '".</div>', false);
+                  await refreshEntriesList(entryId);
                 });
               } else {
-                banner.innerHTML = renderAdminError(res);
+                showEditorFeedback(renderAdminError(res), true);
               }
             } catch (err) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error unpublishing entry.</div>';
+              showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error unpublishing entry.</div>', true);
             }
           });
         }
@@ -3238,15 +3331,16 @@ export async function renderAdminWorkspacePage(
               const res = await apiClient('/api/entries/' + entryId, { method: 'DELETE' });
               if (res.ok) {
                 const data = await res.json();
-                banner.innerHTML = '<div class="as-of-banner">Deleted "' + escapeClientHtml(title) + '" (' + (data.report?.deletedRevisions || 1) + ' revisions purged).</div>';
                 if (newEntryBtn) newEntryBtn.click();
+                showEditorFeedback('<div class="as-of-banner">Deleted "' + escapeClientHtml(title) + '" (' + (data.report?.deletedRevisions || 1) + ' revisions purged).</div>', false);
                 const itemEl = document.querySelector('.admin-entry-item[data-entry-id="' + entryId + '"]');
                 if (itemEl) itemEl.remove();
+                await refreshEntriesList();
               } else {
-                banner.innerHTML = renderAdminError(res);
+                showEditorFeedback(renderAdminError(res), true);
               }
             } catch (err) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error deleting entry.</div>';
+              showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error deleting entry.</div>', true);
             }
           });
         }
@@ -3366,7 +3460,7 @@ export async function renderAdminWorkspacePage(
 
         async function runRedactionCheck() {
           const textEl = document.getElementById('entry-body');
-          const text = textEl ? textEl.value : '';
+          const text = textEl ? textEl.value.trim() : '';
           const tokenInput = document.getElementById('entry-preview-token');
           // State 1: checking
           redactBox.innerHTML = '<div class="later-thinking-banner" data-state="checking" role="status">Checking for confidential data...</div>';
@@ -3562,13 +3656,13 @@ export async function renderAdminWorkspacePage(
             e.preventDefault();
             const text = document.getElementById('entry-body').value;
             if (!text || !text.trim()) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Body content is required before publishing.</div>';
+              showEditorFeedback('<div class="later-thinking-banner" role="alert">Body content is required before publishing.</div>', true);
               return;
             }
 
             // Publish gate: signed preview token required
             if (!currentPreviewToken) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert" data-gate="preview-token">Redaction preview check is required before publishing. Please click "Check for private details".</div>';
+              showEditorFeedback('<div class="later-thinking-banner" role="alert" data-gate="preview-token">Redaction preview check is required before publishing. Please click "Check for private details".</div>', true);
               return;
             }
 
@@ -3577,7 +3671,7 @@ export async function renderAdminWorkspacePage(
 
             // Publish gate: NDA confirmation required when warnings exist
             if (currentHasWarnings && !ndaConfirmed) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert" data-gate="nda-confirmed">Confidentiality &amp; NDA confirmation is required before publishing entries with potential secrets or exclusion warnings.</div>';
+              showEditorFeedback('<div class="later-thinking-banner" role="alert" data-gate="nda-confirmed">Confidentiality &amp; NDA confirmation is required before publishing entries with potential secrets or exclusion warnings.</div>', true);
               return;
             }
 
@@ -3594,28 +3688,69 @@ export async function renderAdminWorkspacePage(
               redactionPreviewToken: currentPreviewToken,
               nda_confirmed: ndaConfirmed
             };
-            try {
-              const res = await apiClient('/api/entries', {
-                method: 'POST',
-                body: JSON.stringify(payload)
-              });
-              if (res.ok) {
-                const data = await res.json();
-                currentPreviewToken = '';
-                const tokenInput = document.getElementById('entry-preview-token');
-                if (tokenInput) tokenInput.value = '';
-                if (entryIdInput && data.entry && data.entry.id) {
-                  entryIdInput.value = data.entry.id;
+            const isEdit = entryIdInput && entryIdInput.value;
+            if (isEdit) {
+              const entryId = entryIdInput.value;
+              try {
+                const res = await apiClient('/api/entries/' + entryId, {
+                  method: 'PUT',
+                  body: JSON.stringify({
+                    title: payload.title,
+                    profile: payload.profile,
+                    visibility: 'public',
+                    redactionPreviewToken: currentPreviewToken,
+                    nda_confirmed: ndaConfirmed
+                  })
+                });
+                if (res.ok) {
+                  const data = await res.json();
+                  currentPreviewToken = '';
+                  const tokenInput = document.getElementById('entry-preview-token');
+                  if (tokenInput) tokenInput.value = '';
+                  if (stateBadge) stateBadge.textContent = 'State: PUBLIC';
+                  if (unpublishBtn) unpublishBtn.style.display = 'inline-block';
+                  if (deleteBtn) deleteBtn.style.display = 'inline-block';
+                  const msg = '<div class="as-of-banner">Published "' + escapeClientHtml(payload.title) + '" at L0. <a href="/work/' + escapeClientHtml(payload.slug) + '">View entry →</a>' +
+                    (data.enrichmentQueued ? ' <span class="chip" style="margin-left:8px">Enrichment pipeline queued</span>' : '') +
+                    '</div>';
+                  showEditorFeedback(msg, false);
+                  await refreshEntriesList(entryId);
+                  fetchDeployStatus();
+                } else {
+                  showEditorFeedback(renderAdminError(res), true);
                 }
-                banner.innerHTML = '<div class="as-of-banner">Published "' + escapeClientHtml(payload.title) + '" at L0. <a href="/work/' + escapeClientHtml(payload.slug) + '">View entry →</a>' +
-                  (data.enrichmentQueued ? ' <span class="chip" style="margin-left:8px">Enrichment pipeline queued</span>' : '') +
-                  '</div>';
-                fetchDeployStatus();
-              } else {
-                banner.innerHTML = renderAdminError(res);
+              } catch (err) {
+                showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error connecting to server. Please retry.</div>', true);
               }
-            } catch (err) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error connecting to server. Please retry.</div>';
+            } else {
+              try {
+                const res = await apiClient('/api/entries', {
+                  method: 'POST',
+                  body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                  const data = await res.json();
+                  currentPreviewToken = '';
+                  const tokenInput = document.getElementById('entry-preview-token');
+                  if (tokenInput) tokenInput.value = '';
+                  if (entryIdInput && data.entry && data.entry.id) {
+                    entryIdInput.value = data.entry.id;
+                  }
+                  if (stateBadge) stateBadge.textContent = 'State: PUBLIC';
+                  if (unpublishBtn) unpublishBtn.style.display = 'inline-block';
+                  if (deleteBtn) deleteBtn.style.display = 'inline-block';
+                  const msg = '<div class="as-of-banner">Published "' + escapeClientHtml(payload.title) + '" at L0. <a href="/work/' + escapeClientHtml(payload.slug) + '">View entry →</a>' +
+                    (data.enrichmentQueued ? ' <span class="chip" style="margin-left:8px">Enrichment pipeline queued</span>' : '') +
+                    '</div>';
+                  showEditorFeedback(msg, false);
+                  await refreshEntriesList(data.entry && data.entry.id);
+                  fetchDeployStatus();
+                } else {
+                  showEditorFeedback(renderAdminError(res), true);
+                }
+              } catch (err) {
+                showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error connecting to server. Please retry.</div>', true);
+              }
             }
           });
         }

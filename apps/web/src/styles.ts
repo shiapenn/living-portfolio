@@ -1088,6 +1088,25 @@ button[type="submit"] {
               color var(--duration-fast, 120ms) ease;
 }
 
+#editor-status-line .as-of-banner,
+#editor-status-line .later-thinking-banner {
+  margin: 0;
+  padding: 4px 10px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--radius-control);
+}
+
+#editor-toast .as-of-banner,
+#editor-toast .later-thinking-banner {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

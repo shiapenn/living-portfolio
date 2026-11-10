@@ -98,15 +98,16 @@ export function createEntriesRoutes(
     if (typeof text !== 'string') {
       return c.json({ error: 'Text string required' }, 400);
     }
+    const cleanText = text.trim();
     const effectiveExclusions = Array.isArray(exclusions)
       ? exclusions
       : (settingsState?.redactionExclusions ?? undefined);
-    const multiPass = extractEntitiesMultiPass(text, effectiveExclusions);
+    const multiPass = extractEntitiesMultiPass(cleanText, effectiveExclusions);
     const warnings = multiPass.allWarnings;
     const state = warnings.length === 0 ? 'clean' : 'needs review';
     const { token, payload } = auth.issueRedactionPreviewToken({
       entryId: typeof entryId === 'string' && entryId ? entryId : 'draft',
-      bodyMd: text,
+      bodyMd: cleanText,
       warnings,
     });
     return c.json({
