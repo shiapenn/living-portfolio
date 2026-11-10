@@ -1,7 +1,27 @@
 /**
- * Admin Entry Client Bundle (WP-14.0)
- * Typed, modular client-side handlers for entry authoring, save, publish, unpublish, and delete.
+ * Admin Entry Client Bundle (WP-14.0 & WP-14.1)
+ * Typed, modular client-side handlers for entry authoring, save, publish, unlist, unpublish, and delete.
  */
+
+import {
+  commitEntry,
+  clearPreviewToken,
+  setPreviewToken,
+  updateStateChip,
+  updateActionButtons,
+  setActiveEntryState,
+  Intent,
+  Visibility,
+} from './commit-entry.js';
+
+export {
+  commitEntry,
+  clearPreviewToken,
+  setPreviewToken,
+  updateStateChip,
+  updateActionButtons,
+  setActiveEntryState,
+};
 
 export function escapeClientHtml(str: string): string {
   return (str || '')
@@ -70,20 +90,31 @@ export async function refreshEntriesList(selectedId?: string): Promise<void> {
     const entries = data.entries || [];
     const listEl = document.getElementById('admin-entries-list');
     if (listEl) {
-      listEl.innerHTML = entries.map((e: any) => {
-        const isCurrent = selectedId && (e.id === selectedId || e.slug === selectedId);
-        const selStyle = isCurrent
-          ? 'background:var(--surface-raised,#f8fafc);border-left:3px solid var(--indigo-600,#3b82f6);'
-          : '';
-        const visibilityBadge = e.visibility === 'public'
-          ? '<span class="chip" style="font-size:10px;padding:1px 5px;background:#dcfce7;color:#166534">public</span>'
-          : '<span class="chip" style="font-size:10px;padding:1px 5px;background:#f1f5f9;color:#475569">private</span>';
-        return `
+      listEl.innerHTML = entries
+        .map((e: any) => {
+          const isCurrent = selectedId && (e.id === selectedId || e.slug === selectedId);
+          const selStyle = isCurrent
+            ? 'background:var(--surface-raised,#f8fafc);border-left:3px solid var(--indigo-600,#3b82f6);'
+            : '';
+          let badgeColor = '#475569';
+          let badgeBg = '#f1f5f9';
+          if (e.visibility === 'public') {
+            badgeColor = '#166534';
+            badgeBg = '#dcfce7';
+          } else if (e.visibility === 'unlisted') {
+            badgeColor = '#92400e';
+            badgeBg = '#fef3c7';
+          }
+          const visibilityBadge = `<span class="chip" style="font-size:10px;padding:1px 5px;background:${badgeBg};color:${badgeColor}">${escapeClientHtml(
+            e.visibility
+          )}</span>`;
+          return `
           <li data-entry-id="${escapeClientHtml(e.id)}" style="display:flex;align-items:center;justify-content:space-between;padding:8px 6px;border-bottom:1px solid var(--rule);font-size:13px;cursor:pointer;${selStyle}" class="admin-entry-item" role="button" tabindex="0">
             <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${escapeClientHtml(e.title || 'Untitled')}</span>
             ${visibilityBadge}
           </li>`;
-      }).join('');
+        })
+        .join('');
     }
     const heading = document.getElementById('entries-heading');
     if (heading) {
@@ -93,125 +124,79 @@ export async function refreshEntriesList(selectedId?: string): Promise<void> {
 }
 
 export function initAdminEntryHandlers(): void {
+  const form = document.getElementById('admin-entry-form') as HTMLFormElement | null;
   const saveDraftBtn = document.getElementById('btn-save-draft');
+  const publishBtn = document.getElementById('btn-publish-entry');
+  const unlistBtn = document.getElementById('btn-unlist');
   const unpublishBtn = document.getElementById('btn-unpublish');
   const deleteBtn = document.getElementById('btn-delete-entry');
+  const redactBtn = document.getElementById('btn-redaction-check');
   const newEntryBtn = document.getElementById('btn-new-entry');
   const entryIdInput = document.getElementById('entry-id') as HTMLInputElement | null;
   const titleInput = document.getElementById('entry-title') as HTMLInputElement | null;
   const slugInput = document.getElementById('entry-slug') as HTMLInputElement | null;
   const bodyInput = document.getElementById('entry-body') as HTMLTextAreaElement | null;
-  const stateBadge = document.getElementById('chip-current-state');
-  const modeHeading = document.getElementById('editor-mode-heading');
+  const visibilityInput = document.getElementById('entry-visibility') as HTMLSelectElement | null;
 
-  // Save Draft
-  if (saveDraftBtn) {
-    saveDraftBtn.addEventListener('click', async () => {
-      const text = bodyInput?.value || '';
-      const title = titleInput?.value || '';
-      let slug = slugInput?.value || '';
-      if (!slug && title) slug = slugify(title);
-
-      if (!text.trim()) {
-        showEditorFeedback('<div class="later-thinking-banner" role="alert">Body content is required before saving.</div>', true);
-        return;
-      }
-      if (!title.trim()) {
-        showEditorFeedback('<div class="later-thinking-banner" role="alert">Title is required before saving.</div>', true);
-        return;
-      }
-
-      const isEdit = entryIdInput && entryIdInput.value;
-      if (isEdit) {
-        const entryId = entryIdInput.value;
-        try {
-          const res = await clientFetch(`/api/entries/${entryId}`, {
-            method: 'PUT',
-            body: JSON.stringify({
-              title,
-              profile: (document.getElementById('entry-profile') as HTMLSelectElement)?.value || 'case-study',
-              visibility: 'private',
-            }),
-          });
-          if (res.ok) {
-            await clientFetch(`/api/entries/${entryId}/revisions`, {
-              method: 'POST',
-              body: JSON.stringify({
-                body_md: text,
-                temporal_level: 'exact',
-                valid_from: new Date((document.getElementById('entry-date') as HTMLInputElement)?.value || Date.now()).toISOString(),
-                is_hindsight: (document.getElementById('entry-hindsight') as HTMLInputElement)?.checked || false,
-              }),
-            });
-            showEditorFeedback(`<div class="as-of-banner">Saved draft "${escapeClientHtml(title)}" (private).</div>`, false);
-            await refreshEntriesList(entryId);
-          } else {
-            const errData = await res.json().catch(() => ({}));
-            showEditorFeedback(`<div class="later-thinking-banner" role="alert">${escapeClientHtml(errData.error || errData.message || 'Error saving draft')}</div>`, true);
-          }
-        } catch (_) {
-          showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error saving draft.</div>', true);
-        }
-      } else {
-        try {
-          const payload = {
-            title,
-            slug,
-            profile: (document.getElementById('entry-profile') as HTMLSelectElement)?.value || 'case-study',
-            body_md: text,
-            valid_from: new Date((document.getElementById('entry-date') as HTMLInputElement)?.value || Date.now()).toISOString(),
-            is_hindsight: (document.getElementById('entry-hindsight') as HTMLInputElement)?.checked || false,
-            temporal_level: 'exact',
-            visibility: 'private',
-            view: 'article',
-          };
-          const res = await clientFetch('/api/entries', {
-            method: 'POST',
-            body: JSON.stringify(payload),
-          });
-          if (res.ok) {
-            const data = await res.json();
-            const newId = data.entry?.id;
-            if (entryIdInput && newId) entryIdInput.value = newId;
-            if (modeHeading) modeHeading.textContent = `Edit Entry: ${data.entry?.title || title}`;
-            if (stateBadge) stateBadge.textContent = 'State: PRIVATE (Draft)';
-            if (deleteBtn) deleteBtn.style.display = 'inline-block';
-            showEditorFeedback(`<div class="as-of-banner">Created draft "${escapeClientHtml(title)}".</div>`, false);
-            await refreshEntriesList(newId);
-          } else {
-            const errData = await res.json().catch(() => ({}));
-            showEditorFeedback(`<div class="later-thinking-banner" role="alert">${escapeClientHtml(errData.error || errData.message || 'Error creating draft')}</div>`, true);
-          }
-        } catch (_) {
-          showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error creating draft.</div>', true);
-        }
+  // Track slug auto-generation
+  let slugIsManual = false;
+  if (slugInput) {
+    slugInput.addEventListener('input', () => {
+      slugIsManual = true;
+    });
+  }
+  if (titleInput && slugInput) {
+    titleInput.addEventListener('input', (e: any) => {
+      if ((!entryIdInput || !entryIdInput.value) && !slugIsManual) {
+        slugInput.value = slugify(e.target.value);
       }
     });
   }
 
-  // Unpublish
+  // Clear preview token on body input (Spec §2.1.2)
+  if (bodyInput) {
+    bodyInput.addEventListener('input', () => {
+      clearPreviewToken('invalidated');
+    });
+  }
+
+  // Save Draft (commitEntry('save'))
+  if (saveDraftBtn) {
+    saveDraftBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await commitEntry('save');
+    });
+  }
+
+  // Publish (commitEntry('publish'))
+  if (publishBtn) {
+    publishBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await commitEntry('publish');
+    });
+  }
+
+  // Form submit fallback
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await commitEntry('publish');
+    });
+  }
+
+  // Unlist (commitEntry('unlist'))
+  if (unlistBtn) {
+    unlistBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await commitEntry('unlist');
+    });
+  }
+
+  // Unpublish (commitEntry('unpublish'))
   if (unpublishBtn) {
-    unpublishBtn.addEventListener('click', async () => {
-      const entryId = entryIdInput?.value;
-      if (!entryId) return;
-      const title = titleInput?.value || 'Entry';
-      try {
-        const res = await clientFetch(`/api/entries/${entryId}`, {
-          method: 'PUT',
-          body: JSON.stringify({ visibility: 'private' }),
-        });
-        if (res.ok) {
-          unpublishBtn.style.display = 'none';
-          if (stateBadge) stateBadge.textContent = 'State: PRIVATE (Unpublished)';
-          showEditorFeedback(`<div class="as-of-banner">Unpublished "${escapeClientHtml(title)}". Returned to private draft state.</div>`, false);
-          await refreshEntriesList(entryId);
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          showEditorFeedback(`<div class="later-thinking-banner" role="alert">${escapeClientHtml(errData.error || errData.message || 'Error unpublishing entry')}</div>`, true);
-        }
-      } catch (_) {
-        showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error unpublishing entry.</div>', true);
-      }
+    unpublishBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await commitEntry('unpublish');
     });
   }
 
@@ -230,16 +215,84 @@ export function initAdminEntryHandlers(): void {
           await refreshEntriesList();
         } else {
           const errData = await res.json().catch(() => ({}));
-          showEditorFeedback(`<div class="later-thinking-banner" role="alert">${escapeClientHtml(errData.error || errData.message || 'Error deleting entry')}</div>`, true);
+          showEditorFeedback(
+            `<div class="later-thinking-banner" role="alert">${escapeClientHtml(
+              errData.error || errData.message || 'Error deleting entry'
+            )}</div>`,
+            true
+          );
         }
       } catch (_) {
         showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error deleting entry.</div>', true);
       }
     });
   }
+
+  // New Entry button
+  if (newEntryBtn) {
+    newEntryBtn.addEventListener('click', () => {
+      if (entryIdInput) entryIdInput.value = '';
+      if (titleInput) titleInput.value = '';
+      if (slugInput) slugInput.value = '';
+      if (bodyInput) bodyInput.value = '';
+      if (visibilityInput) visibilityInput.value = 'private';
+      slugIsManual = false;
+      setActiveEntryState({
+        id: '',
+        visibility: 'private',
+        lastCommittedBody: '',
+        previewToken: '',
+        hasWarnings: false,
+      });
+      clearPreviewToken('new');
+      updateStateChip('private');
+      updateActionButtons('', 'private');
+      const modeHeading = document.getElementById('editor-mode-heading');
+      if (modeHeading) modeHeading.textContent = 'New entry';
+    });
+  }
+
+  // Sync state when entries are selected in the list
+  const listEl = document.getElementById('admin-entries-list');
+  if (listEl) {
+    listEl.addEventListener('click', async (e: any) => {
+      const item = e.target.closest('li[data-entry-id]');
+      if (!item) return;
+      const id = item.getAttribute('data-entry-id');
+      if (!id) return;
+      try {
+        const res = await clientFetch(`/api/entries/${id}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const entry = data.entry;
+        const currentRev = data.currentRevision;
+        if (entryIdInput) entryIdInput.value = entry.id;
+        if (titleInput) titleInput.value = entry.title || '';
+        if (slugInput) slugInput.value = entry.slug || '';
+        if (bodyInput) bodyInput.value = currentRev?.body_md || '';
+        if (visibilityInput) visibilityInput.value = entry.visibility;
+        slugIsManual = true;
+
+        setActiveEntryState({
+          id: entry.id,
+          visibility: entry.visibility as Visibility,
+          lastCommittedBody: currentRev?.body_md || '',
+          previewToken: '',
+          hasWarnings: false,
+        });
+
+        clearPreviewToken('select');
+        updateStateChip(entry.visibility as Visibility);
+        updateActionButtons(entry.id, entry.visibility as Visibility);
+
+        const modeHeading = document.getElementById('editor-mode-heading');
+        if (modeHeading) modeHeading.textContent = `Edit Entry: ${entry.title}`;
+      } catch (_) {}
+    });
+  }
 }
 
-// Make functions accessible globally for backward compatibility with inline scripts
+// Make functions accessible globally
 if (typeof window !== 'undefined') {
   (window as any).showEditorFeedback = showEditorFeedback;
   (window as any).refreshEntriesList = refreshEntriesList;

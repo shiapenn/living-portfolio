@@ -961,5 +961,13 @@
     "path": "docs/execution-reports/A080-wp-140-client-bundling-and-entry-handler-migration.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A081",
+    "title": "WP-14.1 commitEntry state machine",
+    "class": "A",
+    "path": "docs/execution-reports/A081-wp-141-commitentry-state-machine.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

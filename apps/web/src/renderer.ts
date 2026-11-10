@@ -2278,7 +2278,10 @@ export async function renderAdminWorkspacePage(
       <!-- Pane 2: Editor (Rich Text / Markdown, Hindsight Question, Redaction Preview, Publish as is) -->
       <section class="admin-pane" aria-label="Entry editor">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:gap;gap:8px">
-          <h2 id="editor-mode-heading" style="font-size:18px;margin:0">New entry</h2>
+          <div style="display:flex;align-items:center;gap:8px">
+            <h2 id="editor-mode-heading" style="font-size:18px;margin:0">New entry</h2>
+            <span id="chip-current-state" class="chip" data-status="private" style="font-size:12px;padding:2px 8px;background:#f1f5f9;color:#475569">State: PRIVATE (Draft)</span>
+          </div>
           <div style="display:flex;gap:6px">
             <button type="button" class="btn btn-secondary active" id="mode-btn-paste" style="font-size:12px;padding:2px 8px">Paste / Freeform</button>
             <button type="button" class="btn btn-secondary" id="mode-btn-guided" style="font-size:12px;padding:2px 8px">Guided Mode</button>
@@ -2404,6 +2407,7 @@ export async function renderAdminWorkspacePage(
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center" id="editor-action-buttons">
               <button type="button" class="btn btn-secondary" id="btn-save-draft">Save draft</button>
               <button type="submit" class="btn" id="btn-publish-entry">Publish</button>
+              <button type="button" class="btn btn-secondary" id="btn-unlist" style="display:none">Unlist</button>
               <button type="button" class="btn btn-secondary" id="btn-redaction-check">Check for private details</button>
               <button type="button" class="btn btn-secondary" id="btn-unpublish" style="display:none">Unpublish</button>
               <button type="button" class="btn btn-secondary" id="btn-delete-entry" style="display:none;color:var(--red-700,#b42318)">Delete</button>
@@ -3501,110 +3505,6 @@ export async function renderAdminWorkspacePage(
               previewPane.style.display = 'none';
               toggleEditorModeBtn.textContent = 'Preview';
               bodyInputEl.focus();
-            }
-          });
-        }
-
-        if (form) {
-          form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const text = document.getElementById('entry-body').value;
-            if (!text || !text.trim()) {
-              showEditorFeedback('<div class="later-thinking-banner" role="alert">Body content is required before publishing.</div>', true);
-              return;
-            }
-
-            // Publish gate: signed preview token required
-            if (!currentPreviewToken) {
-              showEditorFeedback('<div class="later-thinking-banner" role="alert" data-gate="preview-token">Redaction preview check is required before publishing. Please click "Check for private details".</div>', true);
-              return;
-            }
-
-            const ndaCheckbox = document.getElementById('entry-nda-confirmed');
-            const ndaConfirmed = ndaCheckbox ? ndaCheckbox.checked : false;
-
-            // Publish gate: NDA confirmation required when warnings exist
-            if (currentHasWarnings && !ndaConfirmed) {
-              showEditorFeedback('<div class="later-thinking-banner" role="alert" data-gate="nda-confirmed">Confidentiality &amp; NDA confirmation is required before publishing entries with potential secrets or exclusion warnings.</div>', true);
-              return;
-            }
-
-            const payload = {
-              title: document.getElementById('entry-title').value,
-              slug: document.getElementById('entry-slug').value,
-              profile: document.getElementById('entry-profile').value,
-              body_md: text,
-              valid_from: new Date(document.getElementById('entry-date').value).toISOString(),
-              is_hindsight: document.getElementById('entry-hindsight').checked,
-              temporal_level: 'exact',
-              visibility: 'public',
-              view: 'article',
-              redactionPreviewToken: currentPreviewToken,
-              nda_confirmed: ndaConfirmed
-            };
-            const isEdit = entryIdInput && entryIdInput.value;
-            if (isEdit) {
-              const entryId = entryIdInput.value;
-              try {
-                const res = await apiClient('/api/entries/' + entryId, {
-                  method: 'PUT',
-                  body: JSON.stringify({
-                    title: payload.title,
-                    profile: payload.profile,
-                    visibility: 'public',
-                    redactionPreviewToken: currentPreviewToken,
-                    nda_confirmed: ndaConfirmed
-                  })
-                });
-                if (res.ok) {
-                  const data = await res.json();
-                  currentPreviewToken = '';
-                  const tokenInput = document.getElementById('entry-preview-token');
-                  if (tokenInput) tokenInput.value = '';
-                  if (stateBadge) stateBadge.textContent = 'State: PUBLIC';
-                  if (unpublishBtn) unpublishBtn.style.display = 'inline-block';
-                  if (deleteBtn) deleteBtn.style.display = 'inline-block';
-                  const msg = '<div class="as-of-banner">Published "' + escapeClientHtml(payload.title) + '" at L0. <a href="/work/' + escapeClientHtml(payload.slug) + '">View entry →</a>' +
-                    (data.enrichmentQueued ? ' <span class="chip" style="margin-left:8px">Enrichment pipeline queued</span>' : '') +
-                    '</div>';
-                  showEditorFeedback(msg, false);
-                  await refreshEntriesList(entryId);
-                  fetchDeployStatus();
-                } else {
-                  showEditorFeedback(renderAdminError(res), true);
-                }
-              } catch (err) {
-                showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error connecting to server. Please retry.</div>', true);
-              }
-            } else {
-              try {
-                const res = await apiClient('/api/entries', {
-                  method: 'POST',
-                  body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                  const data = await res.json();
-                  currentPreviewToken = '';
-                  const tokenInput = document.getElementById('entry-preview-token');
-                  if (tokenInput) tokenInput.value = '';
-                  if (entryIdInput && data.entry && data.entry.id) {
-                    entryIdInput.value = data.entry.id;
-                  }
-                  if (stateBadge) stateBadge.textContent = 'State: PUBLIC';
-                  if (unpublishBtn) unpublishBtn.style.display = 'inline-block';
-                  if (deleteBtn) deleteBtn.style.display = 'inline-block';
-                  const msg = '<div class="as-of-banner">Published "' + escapeClientHtml(payload.title) + '" at L0. <a href="/work/' + escapeClientHtml(payload.slug) + '">View entry →</a>' +
-                    (data.enrichmentQueued ? ' <span class="chip" style="margin-left:8px">Enrichment pipeline queued</span>' : '') +
-                    '</div>';
-                  showEditorFeedback(msg, false);
-                  await refreshEntriesList(data.entry && data.entry.id);
-                  fetchDeployStatus();
-                } else {
-                  showEditorFeedback(renderAdminError(res), true);
-                }
-              } catch (err) {
-                showEditorFeedback('<div class="later-thinking-banner" role="alert">Network error connecting to server. Please retry.</div>', true);
-              }
             }
           });
         }
