@@ -6,7 +6,7 @@
 | Date | 2026-11-10 |
 | Author | A (Implementer) |
 | Task ID | `WP-14.pre-corrections` |
-| Evidence SHA | HEAD |
+| Evidence SHA | 377e35e |
 | CI run | local verify (`pnpm verify`) green |
 
 ---
@@ -86,8 +86,8 @@ $ pnpm receipt:check A077
 === Validating Receipt A077-wp-14pre-dependency-review-audit-corrections.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA verified as ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff a14fcae..HEAD (7 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA '377e35e' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff a14fcae..377e35e (7 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A077-wp-14pre-dependency-review-audit-corrections.md.
 Found 0 section(s) marked verbatim.
 
