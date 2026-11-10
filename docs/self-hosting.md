@@ -92,14 +92,14 @@ The application follows an **outbound-only architecture**. The origin server sho
 ### Option A: Cloudflare Tunnel (`cloudflared`) — Recommended
 Cloudflare Tunnel provides automated TLS, DDoS mitigation, and zero exposed inbound ports:
 1. Install `cloudflared` on the host or run as a companion container.
-2. Route traffic to the local Docker network (`http://web:3000`).
+2. Route traffic to the local application port (`http://localhost:4000` or Docker network `http://api:4000`).
 3. Set `SITE_ORIGIN` and `ADMIN_ORIGIN` to your Cloudflare domain.
 
 ### Option B: Caddy Reverse Proxy
 Caddy provides automatic HTTPS with Let's Encrypt:
 ```caddy
 example.com {
-    reverse_proxy localhost:3000 {
+    reverse_proxy localhost:4000 {
         header_up X-Forwarded-Proto {scheme}
         header_up X-Forwarded-Host {host}
     }

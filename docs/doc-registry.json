@@ -945,5 +945,13 @@
     "path": "docs/execution-reports/A078-wp-140a-visible-editor-results.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A079",
+    "title": "WP-14.0a feedback corrections and error coverage",
+    "class": "A",
+    "path": "docs/execution-reports/A079-wp-140a-feedback-corrections-and-error-coverage.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

@@ -5229,7 +5229,7 @@ export function renderAdminSetupPage(): string {
           });
         }
 
-        // Step 4: Notification test disabled in this version (§13.9, UX-33, WP-17.2)
+        // Step 4: Notification test disabled in this version (UX-33, WP-17.2)
         const notifTargetInput = document.getElementById('setup-notification-target');
         const testAlertBtn = document.getElementById('btn-setup-test-alert');
         const alertDisabledReason = document.getElementById('setup-alert-disabled-reason');
