@@ -3000,17 +3000,20 @@
     - "4.4"
     - "6.2"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/98"
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp14-commit-entry.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-10
+      status: fixed
+      note: "Fixed in WP-14.1 (A081, PR #98). Implemented commitEntry state machine routing save, publish, unlist, and unpublish; publishing an existing entry uses PUT with auth token, surfacing specific 409 and 400 error messages."
   verified_by: null
 - id: 20261106-UX-02
   audit: AUD-2026-11-06
@@ -3019,17 +3022,20 @@
     - "3.11"
     - "6.2"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/98"
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp14-commit-entry.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-10
+      status: fixed
+      note: "Fixed in WP-14.1 (A081, PR #98). Save draft retains existing entry visibility (public, unlisted, or draft) without silently downgrading to private."
   verified_by: null
 - id: 20261106-UX-03
   audit: AUD-2026-11-06
@@ -3038,17 +3044,20 @@
     - "3.11"
     - "6.2"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/100"
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp14-publish-dialog.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-10
+      status: fixed
+      note: "Fixed in WP-14.1 and WP-14.3 (A081, A083, PR #98, PR #100). Visibility choice wired into commitEntry('unlist') and publish dialog choices, making Unlisted functional and selectable."
   verified_by: null
 - id: 20261106-UX-04
   audit: AUD-2026-11-06
@@ -3057,17 +3066,20 @@
     - "3.11"
     - "12.7"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/101"
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp14-draft-buffer.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-10
+      status: fixed
+      note: "Fixed in WP-14.1 and WP-14.4 (A081, A084, PR #98, PR #101). Undo operations supply preview token; local autosave buffer preserves writing and dirty indicator clears on save."
   verified_by: null
 - id: 20261106-UX-05
   audit: AUD-2026-11-06
@@ -3140,17 +3152,20 @@
   spec_sections:
     - "11"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/102"
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/api/src/conformance/calibration-defaults.conformance.test.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-10
+      status: fixed
+      note: "Fixed in WP-14.5 (A085, PR #102). Configured suggestion thresholds and routing calibration OFF by default per Spec §11; raised minimum sample gate to 20 samples with INSUFFICIENT_SAMPLE_SIZE guard; replaced freeze checkbox with 4 mechanism switches."
   verified_by: null
 - id: 20261106-UX-09
   audit: AUD-2026-11-06
@@ -3181,17 +3196,20 @@
     - "3.11"
     - "12.6"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/99"
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp14-state-date.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-10
+      status: fixed
+      note: "Fixed in WP-14.2 (A082, PR #99). Rendered #chip-current-state in editor header dynamically reflecting Draft, Public, and Unlisted state."
   verified_by: null
 - id: 20261106-UX-11
   audit: AUD-2026-11-06
@@ -3200,17 +3218,20 @@
     - "4.4"
     - "12.6"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/99"
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp14-state-date.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-10
+      status: fixed
+      note: "Fixed in WP-14.2 (A082, PR #99). Defaulted date to today on client; replaced throw with inline error validation on empty date."
   verified_by: null
 - id: 20261106-UX-12
   audit: AUD-2026-11-06
@@ -3388,17 +3409,20 @@
     - "3.11"
     - "4.4"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/99"
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp14-state-date.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-10
+      status: fixed
+      note: "Fixed in WP-14.2 (A082, PR #99). Added temporal confidence selector (Exact, Range with end date, Estimated) to editor metadata panel and wired into persistence."
   verified_by: null
 - id: 20261106-UX-23
   audit: AUD-2026-11-06
@@ -4082,17 +4106,20 @@
   spec_sections:
     - "12.3"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/103"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: null
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-10
+      status: partial
+      note: "Partially addressed in WP-14.6 (A086, PR #103): Defined missing CSS custom property tokens (--surface-overlay, --surface-sunken, --radius-*, --status-*, --role-challenge), eliminated undefined variable usages, restored drawer/dialog background opacity, and added verify-css-variables gate. Inline styles audit completes in WP-15."
   verified_by: null
 - id: 20261106-UI-02
   audit: AUD-2026-11-06
@@ -4119,17 +4146,20 @@
     - "12.2"
     - "12.3"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/103"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: null
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-10
+      status: partial
+      note: "Partially addressed in WP-14.6 (A086, PR #103): Defined missing radius tokens (--radius-control, --radius-chip, --radius-card). Complete UI primitive differentiation lands in WP-15."
   verified_by: null
 - id: 20261106-UI-04
   audit: AUD-2026-11-06

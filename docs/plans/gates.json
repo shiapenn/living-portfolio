@@ -380,8 +380,19 @@
         "WP-14.5",
         "WP-14.6"
       ],
-      "requiredPassingTests": [],
-      "closingReceipt": null,
+      "requiredPassingTests": [
+        "WP-14.0a Editor Results In Viewport (UX-43) › Save draft, Publish, Unpublish, and Delete actions report results inside viewport without scrolling",
+        "commitEntry State Machine E2E (UX-01..04, CP-12) › Save draft does not mutate existing public entry visibility to private",
+        "commitEntry State Machine E2E (UX-01..04, CP-12) › Publishing an existing entry updates via PUT and handles conflicts gracefully",
+        "State and Date Correctness E2E (UX-10, UX-11, UX-22) › displays current entry state chip and temporal confidence selector",
+        "Publish Dialog E2E (UX-03, UX-13) › opens publish dialog, shows pre-flight scan status, and handles publish confirmation",
+        "Draft Writing Buffer E2E (UX-04, UX-43) › preserves unsaved draft writing in local buffer across reload",
+        "Calibration Defaults Conformance (Spec §11, UX-08) › Suggestion thresholds and routing calibration default to false on fresh instance",
+        "Calibration Defaults Conformance (Spec §11, UX-08) › POST /api/calibration/apply rejects changes with < 20 samples with INSUFFICIENT_SAMPLE_SIZE",
+        "WP-14.5 Calibration Defaults E2E (UX-08) › displays 4 mechanism switches with sample gate and step limits",
+        "WP-14.6 CSS Variable Verification Gate (UI-01, UI-03) › verify-css-variables passes with 0 undefined variables"
+      ],
+      "closingReceipt": "A087",
       "handover": null
     },
     "WP-15": {

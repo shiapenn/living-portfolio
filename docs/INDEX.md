@@ -92,6 +92,7 @@
 | `A084` | WP-14.4 local autosave and writing buffer | `active` | [A084-wp-144-local-autosave-and-writing-buffer.md](execution-reports/A084-wp-144-local-autosave-and-writing-buffer.md) | — |
 | `A085` | WP-14.5 calibration defaults and mechanism gates | `active` | [A085-wp-145-calibration-defaults-and-mechanism-gates.md](execution-reports/A085-wp-145-calibration-defaults-and-mechanism-gates.md) | — |
 | `A086` | WP-14.6 quick visual repairs and CSS check | `active` | [A086-wp-146-quick-visual-repairs-and-css-check.md](execution-reports/A086-wp-146-quick-visual-repairs-and-css-check.md) | — |
+| `A087` | WP-14 entry lifecycle integrity gate closure | `active` | [A087-wp-14-entry-lifecycle-integrity-gate-closure.md](execution-reports/A087-wp-14-entry-lifecycle-integrity-gate-closure.md) | — |
 
 ## Handover Snapshots (Class H)
 
