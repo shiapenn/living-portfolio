@@ -1527,7 +1527,7 @@ export async function renderAskPage(
               const msg = (data && (data.answer || data.message)) || 'Type a question to ask. It can be up to 1000 characters.';
               region.innerHTML =
                 '<div class="strata-section" role="alert">' +
-                  '<div style="display:flex;justify-content:space-between;flex-wrap:gap:8px;margin-bottom:12px">' +
+                  '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:12px">' +
                     '<span class="chip" data-status="invalid-query"><strong>Type a question to ask</strong></span>' +
                   '</div>' +
                   '<p style="margin:0 0 12px 0">' + esc(msg) + '</p>' +
@@ -2287,7 +2287,7 @@ export async function renderAdminWorkspacePage(
 
       <!-- Pane 2: Editor (Rich Text / Markdown, Hindsight Question, Redaction Preview, Publish as is) -->
       <section class="admin-pane" aria-label="Entry editor">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:gap;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <div style="display:flex;align-items:center;gap:8px">
             <h2 id="editor-mode-heading" style="font-size:18px;margin:0">New entry</h2>
             <span id="chip-current-state" class="chip" data-status="private" style="font-size:12px;padding:2px 8px;background:#f1f5f9;color:#475569">State: PRIVATE (Draft)</span>
@@ -2419,14 +2419,14 @@ export async function renderAdminWorkspacePage(
 
           <div id="redaction-preview-box" style="margin-bottom:12px"></div>
 
-          <div style="margin-bottom:12px;padding:10px 12px;border:1px solid var(--rule);border-radius:4px;background:var(--bg-subtle)">
+          <div style="margin-bottom:12px;padding:10px 12px;border:1px solid var(--rule);border-radius:4px;background:var(--surface-sunken)">
             <label style="display:flex;align-items:flex-start;gap:8px;font-size:13px;cursor:pointer">
               <input type="checkbox" id="entry-nda-confirmed" name="nda_confirmed" value="true" style="margin-top:2px" />
               <span><strong>Confidentiality &amp; NDA Confirmation:</strong> I confirm this content is not subject to an active Non-Disclosure Agreement (NDA) or client confidentiality restrictions, or that all necessary client approvals and redactions have been completed.</span>
             </label>
           </div>
 
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center" id="editor-action-buttons">
               <button type="button" class="btn btn-secondary" id="btn-save-draft">Save draft</button>
               <button type="button" class="btn btn-primary" id="btn-open-publish-dialog">Publish…</button>
@@ -2444,7 +2444,7 @@ export async function renderAdminWorkspacePage(
         <div id="editor-toast" role="status" aria-live="polite" style="position:fixed;bottom:24px;right:24px;z-index:9999;max-width:420px;display:none;padding:12px 16px;background:var(--surface-raised);border:1px solid var(--accent);border-radius:var(--radius-card, 8px);box-shadow:0 4px 16px rgba(0,0,0,0.18);font-size:14px"></div>
 
         <!-- Publish Pre-Flight Dialog (WP-14.3) -->
-        <dialog id="publish-dialog" class="publish-dialog" role="dialog" aria-modal="true" aria-labelledby="publish-dialog-title" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;background:var(--bg-base);border:1px solid var(--rule);border-radius:var(--radius-card, 8px);box-shadow:0 12px 32px rgba(0,0,0,0.25);z-index:10000;padding:24px;box-sizing:border-box">
+        <dialog id="publish-dialog" class="publish-dialog" role="dialog" aria-modal="true" aria-labelledby="publish-dialog-title" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;background:var(--surface-overlay);border:1px solid var(--rule);border-radius:var(--radius-card, 8px);box-shadow:0 12px 32px rgba(0,0,0,0.25);z-index:10000;padding:24px;box-sizing:border-box">
           <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:16px">
             <h2 id="publish-dialog-title" style="margin:0;font-size:18px">Publish Pre-Flight</h2>
             <button type="button" class="btn btn-secondary" id="btn-close-publish-dialog" style="padding:4px 8px">✕ Close</button>
@@ -2488,7 +2488,7 @@ export async function renderAdminWorkspacePage(
               <li>Static rebuild queued for public site</li>
               <li>Enrichment pipeline queued for structured facets</li>
               <li>RSS feed and sitemap updated</li>
-              <li>Exact URL: <code id="publish-target-url" style="color:var(--text-base)">/work/...</code></li>
+              <li>Exact URL: <code id="publish-target-url" style="color:var(--text)">/work/...</code></li>
             </ul>
           </div>
 
@@ -2503,7 +2503,7 @@ export async function renderAdminWorkspacePage(
         <div id="publish-dialog-backdrop" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.4);z-index:9999"></div>
 
         <!-- UI Redaction Preview Drawer -->
-        <aside id="redaction-preview-drawer" class="redaction-drawer" style="display:none;position:fixed;top:0;right:0;width:460px;max-width:92vw;height:100vh;background:var(--bg-base);box-shadow:-4px 0 24px rgba(0,0,0,0.18);border-left:1px solid var(--rule);z-index:9999;padding:24px;overflow-y:auto;box-sizing:border-box" role="dialog" aria-labelledby="redaction-drawer-title" aria-modal="true">
+        <aside id="redaction-preview-drawer" class="redaction-drawer" style="display:none;position:fixed;top:0;right:0;width:460px;max-width:92vw;height:100vh;background:var(--surface-overlay);box-shadow:-4px 0 24px rgba(0,0,0,0.18);border-left:1px solid var(--rule);z-index:9999;padding:24px;overflow-y:auto;box-sizing:border-box" role="dialog" aria-labelledby="redaction-drawer-title" aria-modal="true">
           <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--rule);padding-bottom:12px;margin-bottom:16px">
             <h2 id="redaction-drawer-title" style="margin:0;font-size:18px">Redaction Review Drawer</h2>
             <button type="button" class="btn btn-secondary" id="btn-close-redaction-drawer" style="padding:4px 8px">✕ Close</button>
@@ -2517,7 +2517,7 @@ export async function renderAdminWorkspacePage(
           </div>
 
           <!-- Pass 1: Credentials & Secret Keys -->
-          <div style="margin-bottom:16px;border:1px solid var(--rule);border-radius:6px;padding:12px;background:var(--bg-subtle)">
+          <div style="margin-bottom:16px;border:1px solid var(--rule);border-radius:6px;padding:12px;background:var(--surface-sunken)">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <strong style="font-size:13px">Pass 1: Credentials &amp; Secrets</strong>
               <span id="drawer-count-pass1" class="chip" style="font-size:11px">0 found</span>
@@ -2526,7 +2526,7 @@ export async function renderAdminWorkspacePage(
           </div>
 
           <!-- Pass 2: NDA & Confidentiality Markers -->
-          <div style="margin-bottom:16px;border:1px solid var(--rule);border-radius:6px;padding:12px;background:var(--bg-subtle)">
+          <div style="margin-bottom:16px;border:1px solid var(--rule);border-radius:6px;padding:12px;background:var(--surface-sunken)">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <strong style="font-size:13px">Pass 2: NDA &amp; Restrictions</strong>
               <span id="drawer-count-pass2" class="chip" style="font-size:11px">0 found</span>
@@ -2535,7 +2535,7 @@ export async function renderAdminWorkspacePage(
           </div>
 
           <!-- Pass 3: Entities & Exclusions -->
-          <div style="margin-bottom:16px;border:1px solid var(--rule);border-radius:6px;padding:12px;background:var(--bg-subtle)">
+          <div style="margin-bottom:16px;border:1px solid var(--rule);border-radius:6px;padding:12px;background:var(--surface-sunken)">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <strong style="font-size:13px">Pass 3: Entities, Project Names &amp; Exclusions</strong>
               <span id="drawer-count-pass3" class="chip" style="font-size:11px">0 found</span>
@@ -2546,7 +2546,7 @@ export async function renderAdminWorkspacePage(
           <!-- Highlight Preview Pane -->
           <div style="margin-top:16px">
             <strong style="font-size:13px;display:block;margin-bottom:6px">Matched Entity Highlighting:</strong>
-            <div id="drawer-highlight-preview" style="font-family:var(--font-code);font-size:12px;padding:12px;background:var(--bg-subtle);border:1px solid var(--rule);border-radius:4px;white-space:pre-wrap;max-height:220px;overflow-y:auto"></div>
+            <div id="drawer-highlight-preview" style="font-family:var(--font-code);font-size:12px;padding:12px;background:var(--surface-sunken);border:1px solid var(--rule);border-radius:4px;white-space:pre-wrap;max-height:220px;overflow-y:auto"></div>
           </div>
         </aside>
       </section>
@@ -4647,7 +4647,7 @@ export function renderAdminSetupPage(): string {
                   <td style="padding:8px"><strong>${row.name}</strong></td>
                   <td style="padding:8px">${row.classes.map(c => `<span style="display:inline-block;padding:2px 6px;border-radius:2px;background:var(--surface-subtle);border:1px solid var(--rule);font-size:11px;color:var(--text-muted);cursor:default">${c}</span>`).join(' ')}</td>
                   <td style="padding:8px"><code>${row.model}</code></td>
-                  <td style="padding:8px;color:${row.isLocal ? 'var(--green)' : 'var(--text-muted)'}" ${row.statusId ? `id="${row.statusId}"` : ''}>${row.status}</td>
+                  <td style="padding:8px;color:${row.isLocal ? 'var(--status-ok)' : 'var(--text-muted)'}" ${row.statusId ? `id="${row.statusId}"` : ''}>${row.status}</td>
                 </tr>
               `).join('')}
             </tbody>

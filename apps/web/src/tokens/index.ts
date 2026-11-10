@@ -89,6 +89,10 @@ export const SEMANTIC_TOKENS_LIGHT = `
   --surface-page: #F3F5F4;
   --surface-raised: #FFFFFF;
   --surface-overlay: #FFFFFF;
+  --surface-sunken: #EAEFEA;
+  --surface-subtle: #F3F5F4;
+  --surface-panel: #EAEFEA;
+  --surface: #FFFFFF;
   --text: #14202A;
   --text-muted: #4B5A66;
   --text-on-accent: #FFFFFF;
@@ -101,6 +105,7 @@ export const SEMANTIC_TOKENS_LIGHT = `
   --role-goal: #2F5FA8;
   --role-approach: #5A5F6B;
   --role-friction: #9A6A00;
+  --role-challenge: var(--role-friction);
   --role-decision: #5B3FA0;
   --role-outcome: #1F7A5A;
   --role-lesson: #A13A6B;
@@ -110,6 +115,15 @@ export const SEMANTIC_TOKENS_LIGHT = `
   --status-warn: #8A5A00;
   --status-error: #B42318;
   --status-ok: #1F7A5A;
+  --status-success-bg: #E8F5E9;
+  --status-success-fg: #1F7A5A;
+  --status-success-border: #6FCBA3;
+  --status-warn-bg: #FFF8E1;
+  --status-warn-fg: #8A5A00;
+  --status-warn-border: #E2B34A;
+  --status-danger-bg: #FFEBEE;
+  --status-danger-fg: #B42318;
+  --status-danger-border: #F97066;
 
   /* Future & Provisional */
   --state-future-text: #4B5A66;
@@ -140,6 +154,10 @@ export const SEMANTIC_TOKENS_DARK = `
   --surface-page: #0F1A22;
   --surface-raised: #16232D;
   --surface-overlay: #16232D;
+  --surface-sunken: #121C24;
+  --surface-subtle: #16232D;
+  --surface-panel: #121C24;
+  --surface: #16232D;
   --text: #E6ECEF;
   --text-muted: #A3B2BD;
   --text-on-accent: #0F1A22;
@@ -152,6 +170,7 @@ export const SEMANTIC_TOKENS_DARK = `
   --role-goal: #8DB4EA;
   --role-approach: #B4B9C4;
   --role-friction: #E2B34A;
+  --role-challenge: var(--role-friction);
   --role-decision: #B9A4EE;
   --role-outcome: #6FCBA3;
   --role-lesson: #EE9CC2;
@@ -161,6 +180,15 @@ export const SEMANTIC_TOKENS_DARK = `
   --status-warn: #F5C451;
   --status-error: #F97066;
   --status-ok: #6FCBA3;
+  --status-success-bg: #142E25;
+  --status-success-fg: #6FCBA3;
+  --status-success-border: #1F7A5A;
+  --status-warn-bg: #2E2510;
+  --status-warn-fg: #F5C451;
+  --status-warn-border: #8A5A00;
+  --status-danger-bg: #2E1515;
+  --status-danger-fg: #F97066;
+  --status-danger-border: #B42318;
 
   /* Future & Provisional */
   --state-future-text: #A3B2BD;
@@ -172,6 +200,9 @@ export const SEMANTIC_TOKENS_DARK = `
 
 export const COMPONENT_TOKENS = `
   /* === Tier 3: Component Tokens === */
+  --radius-chip: var(--radius-2);
+  --radius-control: var(--radius-6);
+  --radius-card: var(--radius-12);
   --button-height-md: var(--size-target-min);
   --button-height-sm: 32px;
   --button-bg: var(--accent);
