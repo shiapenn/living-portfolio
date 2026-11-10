@@ -985,5 +985,13 @@
     "path": "docs/execution-reports/A083-wp-143-publish-dialog.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A084",
+    "title": "WP-14.4 local autosave and writing buffer",
+    "class": "A",
+    "path": "docs/execution-reports/A084-wp-144-local-autosave-and-writing-buffer.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

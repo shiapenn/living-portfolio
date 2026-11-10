@@ -2239,6 +2239,10 @@ export async function renderAdminWorkspacePage(
       You signed in with an older recovery code. Replace your recovery codes in Settings &gt; Account as soon as you can.
     </div>
 
+    <div id="admin-offline-banner" class="later-thinking-banner" role="status" style="display:none;margin-bottom:16px;background:#fef3c7;border:1px solid #f59e0b;color:#92400e">
+      You are currently offline. Changes are saved locally to your browser.
+    </div>
+    <div id="draft-restore-notice" class="as-of-banner" style="display:none;margin-bottom:16px;justify-content:space-between;align-items:center"></div>
     <div id="admin-undo-banner" role="region" aria-label="Undo action" style="display:none;margin-bottom:16px"></div>
     <div id="admin-status-banner" role="status" aria-live="polite" style="margin-bottom:16px"></div>
 
