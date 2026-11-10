@@ -929,5 +929,13 @@
     "path": "docs/execution-reports/A076-wp-14pre-b-ci-download-resilience.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A077",
+    "title": "WP-14.pre dependency review audit corrections",
+    "class": "A",
+    "path": "docs/execution-reports/A077-wp-14pre-dependency-review-audit-corrections.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

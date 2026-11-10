@@ -30,6 +30,8 @@ Local verification via `pnpm verify`:
 - Playwright E2E suite: PASSED (61/61 tests in 12 files).
 - Gitleaks secret scan: PASSED (0 leaks).
 
+Note: The GitHub Actions Dependency Review workflow (`.github/workflows/deps.yml`) is non-gating on this repository (unsupported on this private repository without GitHub Advanced Security; configured with `continue-on-error: true`). No compliance or gate evidence is cited from it.
+
 ---
 
 ## 3. Tests Added and Count Change
@@ -54,7 +56,7 @@ Local verification via `pnpm verify`:
 
 ## 5. Register and Backlog Changes
 
-- Register counts: 109 fixed, 6 partial, 54 open (total 169 findings).
+- Register counts: 108 fixed, 7 partial, 54 open (total 169 findings).
 - Updated finding `20261106-UX-52` from `open` to `fixed`.
 - Registered finding `20261106-UX-53` (`open`, P2, owner A, WP-15) for Zod 4 migration deferred.
 - Registered finding `20261106-UX-54` (`open`, P2, owner A, WP-15) for Vitest 4, Tinypool, and esbuild dev-only migrations deferred.
