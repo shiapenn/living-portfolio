@@ -91,6 +91,7 @@
 | `A083` | WP-14.3 publish dialog | `active` | [A083-wp-143-publish-dialog.md](execution-reports/A083-wp-143-publish-dialog.md) | — |
 | `A084` | WP-14.4 local autosave and writing buffer | `active` | [A084-wp-144-local-autosave-and-writing-buffer.md](execution-reports/A084-wp-144-local-autosave-and-writing-buffer.md) | — |
 | `A085` | WP-14.5 calibration defaults and mechanism gates | `active` | [A085-wp-145-calibration-defaults-and-mechanism-gates.md](execution-reports/A085-wp-145-calibration-defaults-and-mechanism-gates.md) | — |
+| `A086` | WP-14.6 quick visual repairs and CSS check | `active` | [A086-wp-146-quick-visual-repairs-and-css-check.md](execution-reports/A086-wp-146-quick-visual-repairs-and-css-check.md) | — |
 
 ## Handover Snapshots (Class H)
 
