@@ -1049,5 +1049,13 @@
     "path": "docs/handovers/H015-wp-14-entry-lifecycle-integrity-gate-closure.md",
     "status": "active",
     "supersedes": "H014"
+  },
+  {
+    "id": "A091",
+    "title": "WP-14.8 scan token binding and single-use",
+    "class": "A",
+    "path": "docs/execution-reports/A091-wp-148-scan-token-binding-and-single-use.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

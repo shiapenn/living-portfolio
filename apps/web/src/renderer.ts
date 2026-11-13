@@ -3431,13 +3431,15 @@ export async function renderAdminWorkspacePage(
         async function runRedactionCheck() {
           const textEl = document.getElementById('entry-body');
           const text = textEl ? textEl.value.trim() : '';
+          const entryIdEl = document.getElementById('entry-id');
+          const entryIdVal = entryIdEl && entryIdEl.value ? entryIdEl.value : undefined;
           const tokenInput = document.getElementById('entry-preview-token');
           // State 1: checking
           redactBox.innerHTML = '<div class="later-thinking-banner" data-state="checking" role="status">Checking for confidential data...</div>';
           try {
             const res = await apiClient('/api/entries/redaction-preview', {
               method: 'POST',
-              body: JSON.stringify({ text: text })
+              body: JSON.stringify({ text: text, entryId: entryIdVal })
             });
             if (res.ok) {
               const data = await res.json();

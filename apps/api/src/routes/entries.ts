@@ -265,7 +265,7 @@ export function createEntriesRoutes(
       return c.json({ error: `Entry with slug '${data.slug}' already exists` }, 409);
     }
 
-    // Server-side publish gate (UX P0-3, Fix 2 / S2): public entries require a valid signed redactionPreviewToken
+    // Server-side publish gate (UX P0-3, Fix 2 / S2, WP-14.8): public entries require a valid signed redactionPreviewToken
     if (data.visibility === 'public') {
       const effectiveExclusions = settingsState?.redactionExclusions;
       const warnings = scanForConfidentialData(data.body_md.trim(), effectiveExclusions);
@@ -273,6 +273,7 @@ export function createEntriesRoutes(
         entryId: 'draft',
         bodyMd: data.body_md,
         warnings,
+        consume: false,
       });
       if (!tokenCheck.valid) {
         return c.json(
@@ -297,6 +298,13 @@ export function createEntriesRoutes(
           400
         );
       }
+
+      auth.verifyRedactionPreviewToken(body.redactionPreviewToken, {
+        entryId: 'draft',
+        bodyMd: data.body_md,
+        warnings,
+        consume: true,
+      });
     }
 
     const bodyHash = sha256Hex(data.body_md);
@@ -385,6 +393,7 @@ export function createEntriesRoutes(
         entryId: id,
         bodyMd: currentBody,
         warnings,
+        consume: false,
       });
       if (!tokenCheck.valid) {
         return c.json(
@@ -409,6 +418,13 @@ export function createEntriesRoutes(
           400
         );
       }
+
+      auth.verifyRedactionPreviewToken(body.redactionPreviewToken, {
+        entryId: id,
+        bodyMd: currentBody,
+        warnings,
+        consume: true,
+      });
     }
 
     const updatedEntry = await repo.updateEntry(id, {
@@ -480,6 +496,7 @@ export function createEntriesRoutes(
           entryId,
           bodyMd: data.body_md,
           warnings,
+          consume: false,
         });
         if (!tokenCheck.valid) {
           return c.json(
@@ -500,6 +517,12 @@ export function createEntriesRoutes(
             400
           );
         }
+        auth.verifyRedactionPreviewToken(body.redactionPreviewToken, {
+          entryId,
+          bodyMd: data.body_md,
+          warnings,
+          consume: true,
+        });
       }
     }
 

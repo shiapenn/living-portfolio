@@ -4193,6 +4193,12 @@
     - date: 2026-11-13
       status: fixed
       note: "Fixed in WP-14.7 (A089, PR #113, commit 4dc9b32) and confirmed in owner Gate G14 retest on main: Removed duplicate #btn-publish-entry button and silent background scan in ensureRedactionToken() so #btn-open-publish-dialog ('Publish…') is the single publish path; stopped POST /api/entries from minting redactionPreviewToken on draft/unlisted creation; enforced verifyRedactionPreviewToken and nda_confirmed on POST /api/entries, PUT /api/entries/:id, and public POST /api/entries/:id/revisions; and ordered revision creation before PUT on draft-to-public transitions. Verified in apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts and tests/e2e/wp14-7-hotfix.spec.ts."
+    - date: 2026-11-13
+      status: partial
+      note: "Reopened as partial during Task 0 (WP-14.8) before WP-15.0: verifyRedactionPreviewToken allowed cross-entry token use when either payload.entryId or expected.entryId was 'draft', and tokens were statelessly reusable after consumption."
+    - date: 2026-11-13
+      status: fixed
+      note: "Fixed in WP-14.8 (Task 0): Bound redactionPreviewToken payload strictly to exact entryId (no draft wildcard bypass across saved vs new entries), added unique jti nonce and single-use consumption tracking in AuthManager.verifyRedactionPreviewToken, and verified (a) payload fields (jti, entryId, bodyHash, scanHash, warningCount, exp), (b) rejection across body mismatch, different entryId, expiry, and unpublish->edit->publish, and (c) single-use non-reusability after publish in apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts."
   verified_by: null
 - id: 20261106-UX-58
   audit: AUD-2026-11-06

@@ -32,6 +32,7 @@ export interface ApiBearerTokenRecord {
 }
 
 export interface RedactionPreviewTokenPayload {
+  jti: string;
   entryId: string;
   bodyHash: string;
   scanHash: string;
@@ -131,6 +132,7 @@ export class AuthManager {
   private sessions = new Map<string, AdminSession>();
   private bearerTokens = new Map<string, ApiBearerTokenRecord>();
   private loginFailures = new Map<string, { count: number; windowStartMs: number }>();
+  private consumedPreviewTokens = new Set<string>();
 
   constructor(options?: AuthManagerOptions) {
     this.signingKey = options?.signingKey || process.env.SESSION_SECRET || randomBytes(32).toString('hex');
@@ -565,7 +567,7 @@ export class AuthManager {
   }
 
   /**
-   * Issues a signed redaction-preview confirmation token bound to entryId, bodyHash, and scan result, with expiry (C.4).
+   * Issues a signed redaction-preview confirmation token bound to entryId, bodyHash, and scan result, with expiry (C.4, WP-14.8).
    */
   issueRedactionPreviewToken(params: {
     entryId: string;
@@ -573,9 +575,11 @@ export class AuthManager {
     warnings: unknown[];
     ttlMs?: number;
   }): { token: string; payload: RedactionPreviewTokenPayload } {
+    const jti = randomBytes(16).toString('hex');
     const bodyHash = sha256Hex(params.bodyMd);
     const scanHash = sha256Hex(JSON.stringify(params.warnings));
     const payload: RedactionPreviewTokenPayload = {
+      jti,
       entryId: params.entryId,
       bodyHash,
       scanHash,
@@ -588,11 +592,11 @@ export class AuthManager {
   }
 
   /**
-   * Verifies a signed redaction-preview confirmation token against entryId, bodyMd, scan result, and expiry (C.4).
+   * Verifies a signed redaction-preview confirmation token against entryId, bodyMd, scan result, expiry, and single-use consumption (C.4, WP-14.8).
    */
   verifyRedactionPreviewToken(
     token: unknown,
-    expected: { entryId: string; bodyMd: string; warnings: unknown[] }
+    expected: { entryId: string; bodyMd: string; warnings: unknown[]; consume?: boolean }
   ): { valid: boolean; reason?: string } {
     if (typeof token !== 'string' || !token.includes('.')) {
       return { valid: false, reason: 'Signed redaction preview token is required before publishing as public' };
@@ -619,10 +623,7 @@ export class AuthManager {
       return { valid: false, reason: 'Redaction preview token has expired' };
     }
     if (payload.entryId !== expected.entryId) {
-      const isDraftMatch = payload.entryId === 'draft' || expected.entryId === 'draft';
-      if (!isDraftMatch) {
-        return { valid: false, reason: 'Redaction preview token entryId mismatch' };
-      }
+      return { valid: false, reason: 'Redaction preview token entryId mismatch' };
     }
     const expectedBodyHash = sha256Hex(expected.bodyMd);
     const expectedTrimmedHash = sha256Hex(expected.bodyMd.trim());
@@ -632,6 +633,14 @@ export class AuthManager {
     const expectedScanHash = sha256Hex(JSON.stringify(expected.warnings));
     if (payload.scanHash !== expectedScanHash) {
       return { valid: false, reason: 'Redaction preview token scan result mismatch' };
+    }
+
+    const tokenKey = payload.jti || token;
+    if (this.consumedPreviewTokens.has(tokenKey)) {
+      return { valid: false, reason: 'Redaction preview token has already been used and cannot be reused' };
+    }
+    if (expected.consume !== false) {
+      this.consumedPreviewTokens.add(tokenKey);
     }
 
     return { valid: true };
