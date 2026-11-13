@@ -115,7 +115,7 @@
 | `H012` | WP-11 Gate closure and WP-12 kickoff | `superseded` | [H012-wp-11-gate-closure-and-wp-12-kickoff.md](handovers/H012-wp-11-gate-closure-and-wp-12-kickoff.md) | — |
 | `H013` | WP-12 Gate closure and v0.1.0 GA release | `active` | [H013-wp-12-gate-closure-and-v010-ga-release.md](handovers/H013-wp-12-gate-closure-and-v010-ga-release.md) | `H012` |
 | `H014` | WP-13 onboarding and authentication gate closure | `active` | [H014-wp-13-onboarding-and-authentication-gate-closure.md](handovers/H014-wp-13-onboarding-and-authentication-gate-closure.md) | — |
-| `H015` | WP-14 entry lifecycle integrity gate closure | `active` | [H015-wp-14-entry-lifecycle-integrity-gate-closure.md](handovers/H015-wp-14-entry-lifecycle-integrity-gate-closure.md) | — |
+| `H015` | WP-14 entry lifecycle integrity gate closure | `active` | [H015-wp-14-entry-lifecycle-integrity-gate-closure.md](handovers/H015-wp-14-entry-lifecycle-integrity-gate-closure.md) | `H014` |
 
 ## Plans & Protocols (Class P)
 

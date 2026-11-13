@@ -103,45 +103,55 @@ Current test totals:
 ## 5. Register and Backlog Changes
 
 Register counts (from `docs/audits/register.yml` verified by `node scripts/handover-facts`):
-- 120 fixed, 9 partial, 46 open (P0: 1, P1: 25, P2: 20; Total: 175).
+- 118 fixed, 11 partial, 55 open (P0: 1, P1: 31, P2: 23; Total: 184).
 
 Remediated (`fixed`) Findings in WP-14:
 - `20261106-UX-01`: `open -> fixed` (WP-14.1, PR #98)
 - `20261106-UX-02`: `open -> fixed` (WP-14.1, PR #98)
 - `20261106-UX-03`: `open -> fixed` (WP-14.1 & WP-14.3, PR #98, PR #100)
-- `20261106-UX-04`: `open -> fixed -> partial -> fixed (pending owner retest)` (WP-14.7, PR #113, `tests/e2e/wp14-7-hotfix.spec.ts`)
+- `20261106-UX-04`: `open -> fixed -> partial -> fixed` (WP-14.7, PR #113, `tests/e2e/wp14-7-hotfix.spec.ts`, confirmed in owner Gate G14 retest)
 - `20261106-UX-08`: `open -> fixed` (WP-14.5, PR #102)
 - `20261106-UX-10`: `open -> fixed` (WP-14.2, PR #99)
 - `20261106-UX-11`: `open -> fixed` (WP-14.2, PR #99)
 - `20261106-UX-22`: `open -> fixed` (WP-14.2, PR #99)
-- `20261106-UX-43`: `open -> fixed` (WP-14.0a, PR #95 & PR #96)
-- `20261106-UX-57`: `open -> fixed (pending owner retest)` (WP-14.7, PR #113, `apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts` & `tests/e2e/wp14-7-hotfix.spec.ts`)
-- `20261106-UX-58`: `open -> fixed (pending owner retest)` (WP-14.7, PR #113, `tests/e2e/wp14-7-hotfix.spec.ts`)
-- `20261106-UX-59`: `open -> fixed (pending owner retest)` (WP-14.7, PR #113, `apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts` & `tests/e2e/wp14-7-hotfix.spec.ts`)
+- `20261106-UX-57`: `open -> fixed` (WP-14.7, PR #113, `apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts` & `tests/e2e/wp14-7-hotfix.spec.ts`, confirmed in owner Gate G14 retest)
+- `20261106-UX-58`: `open -> fixed` (WP-14.7, PR #113, `tests/e2e/wp14-7-hotfix.spec.ts`, confirmed in owner Gate G14 retest)
+- `20261106-UX-59`: `open -> fixed` (WP-14.7, PR #113, `apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts` & `tests/e2e/wp14-7-hotfix.spec.ts`, confirmed in owner Gate G14 retest)
 
-All 9 `status: partial` Findings (with target WP):
-1. `20261106-UX-09` (P0): Setup wizard step 3 read-only table; live key validation/storage in **WP-17.2**.
-2. `20261106-UX-27` (P0): Wizard steps 2–6 persisted; live public theme application in **WP-17.8** and **WP-20.1**.
-3. `20261106-UX-33` (P1): Live wizard controls that fail in a default install disabled with plain explanation; settings screens in **WP-17.2** and **WP-17.3**.
-4. `20261106-UX-41` (P1): Admin header Sign out added; full account management in **WP-17.4**.
-5. `20261106-CP-01` (P2): Wizard 501 jargon removed; full copy catalogue and sweep in **WP-15.5** and **WP-20.4**.
-6. `20261106-UX-51` (P1): Runtime alerts patched and Dependabot PRs triaged; major `zod` 4 (`UX-53`) and `vitest` 4 (`UX-54`) migrations in **WP-15.0**.
-7. `20261106-UX-52` (P2): Download retry with backoff added; monitor across **WP-15..WP-20**.
-8. `20261106-UI-01` (P1): Missing CSS variables defined and `verify-css-variables` gate added; token tiers and inline style guard in **WP-15.4** and **WP-15.6**.
-9. `20261106-UI-03` (P1): Missing radius tokens defined; shared UI primitives and reference editor page styling in **WP-15.2** and **WP-15.7**.
+All 11 `status: partial` Findings (with target WP):
+1. `20261106-UX-09` (P0): Setup wizard step 3 read-only table (`WP-13.9`); live key validation/storage in **WP-17.2**.
+2. `20261106-UX-27` (P0): Wizard steps 2–6 persisted (`WP-13.4`, `WP-13.10`); live public theme application in **WP-17.8** and **WP-20.1**.
+3. `20261106-UX-29` (P1): Wizard competing primary actions fixed (`WP-13.5`); reused for competing site-wide, entry, and mode action buttons in `/admin` editor workspace, completing in **WP-15.7** (`D-WORKSPACE`, `D-EDITOR`).
+4. `20261106-UX-33` (P1): Live wizard controls that fail in a default install disabled with plain explanation (`WP-13.5`, `WP-13.9`); settings screens in **WP-17.2** and **WP-17.3**.
+5. `20261106-UX-41` (P1): Admin header Sign out added (`WP-13.6`); full account management in **WP-17.4**.
+6. `20261106-UX-43` (P0): Inline `#editor-status-line` and list refresh added (`WP-14.0a`), but top `#admin-status-banner` / `#admin-undo-banner` remains and is still written; completes in **WP-15.3** and **WP-15.7** (`D-FEEDBACK`).
+7. `20261106-CP-01` (P2): Wizard 501 jargon removed (`WP-13.9`); editor/shared catalogue and full copy sweep in **WP-15.5**, **WP-15.7**, and **WP-20.4**.
+8. `20261106-UX-51` (P1): Runtime alerts patched and Dependabot PRs triaged (`WP-14.pre-a`); major `zod` 4 (`UX-53`) and `vitest` 4 (`UX-54`) migrations in **WP-15.0**.
+9. `20261106-UX-52` (P2): Download retry with backoff added (`WP-14.pre-b`); monitor across **WP-14..WP-20**.
+10. `20261106-UI-01` (P1): Missing CSS variables defined and `verify-css-variables` gate added (`WP-14.6`); token tiers and inline style guard in **WP-15.4** and **WP-15.6**.
+11. `20261106-UI-03` (P1): Missing radius tokens defined (`WP-14.6`); shared UI primitives and reference editor page styling in **WP-15.2** and **WP-15.7**.
 
-Carry-Forward Open Findings Registered in WP-14:
+Carry-Forward Open Findings Registered in WP-14 & Gate G14 Sign-Off:
 - `20261106-UX-53` (P2, `open`): Zod 4 migration -> **WP-15.0**.
 - `20261106-UX-54` (P2, `open`): Vitest 4 / Tinypool / esbuild dev-only migrations -> **WP-15.0**.
-- `20261106-UX-55` (P2, `open`): Owner-facing jargon in editor messages (`L0`, `Enrichment pipeline queued`, `N revisions purged`) -> **WP-15.5** & **WP-15.7**.
-- `20261106-UX-56` (P1, `open`): Duplicate editor feedback in inline status line and toast with double live-region announcement -> **WP-15.3** & **WP-15.7**.
-- `20261106-UX-60` (P2, `open`): Toasts disappear after a few seconds without hover/focus pause or dismiss button and repeat the inline status message -> **WP-15.3** & **WP-15.7**.
+- `20261106-UX-55` (P2, `open`): Owner-facing jargon in editor messages (`L0`, `Enrichment pipeline queued`, `N revisions purged`) -> **WP-15.7** & **WP-15.5**.
+- `20261106-UX-56` (P1, `open`): Duplicate editor feedback across `#admin-status-banner`, `#editor-status-line`, and `#editor-toast` with triple `role="status"` live regions -> **WP-15.3** & **WP-15.7** (`D-FEEDBACK`).
+- `20261106-UX-60` (P2, `open`): Toasts (`#editor-toast`) disappear after a few seconds without hover/focus pause or dismiss button and repeat the inline status message -> **WP-15.3** & **WP-15.7** (`D-FEEDBACK`).
+- `20261106-UX-61` (P1, `open`): Admin workspace renders inside public site header navigation and footer including `"unofficial fork"` notice -> **WP-15.7** (`D-WORKSPACE`).
+- `20261106-UX-62` (P1, `open`): Site-wide actions mixed with entry actions on editor screen, duplicate `"Publish"` naming (`Publish Now` vs `Publish…`), and `"Deploy: Building..."` contradicting `"Static rebuild: Idle"` -> **WP-15.7** (`D-WORKSPACE`).
+- `20261106-UX-63` (P1, `open`): Six editor action buttons across two rows; `Unlist` and `Unpublish` both shown on unlisted entry; `Delete` adjacent to `Unpublish`; `"Check for private details"` duplicates dialog scan -> **WP-15.7** (`D-EDITOR`, `D-CONTRACT-6`).
+- `20261106-UX-64` (P1, `open`): Entry visibility controlled by both a `#entry-visibility` dropdown and a separate `#btn-unlist` button -> **WP-15.7** (`D-EDITOR`).
+- `20261106-UX-65` (P1, `open`): NDA confirmation panel (`#entry-nda-confirmed`), inline scan result (`#redaction-preview-box`), and raw `"Signed preview token"` (`#preview-token-badge`) permanently visible in editor and not cleanly cleared across edits and actions -> **WP-15.7** (`D-EDITOR`).
+- `20261106-UX-66` (P2, `open`): Developer copy in editor workspace UI (`min 60vh editor workspace`, `never a percentage score`, `Unlocks: ...`, `501 Not Implemented`, `SIMULATED finding M6`) -> **WP-15.7** & **WP-15.5** (`D-EDITOR`, `D-HELP`, `D-WORKSPACE`).
+- `20261106-UX-67` (P1, `open`): Editor workspace bugs (`"Entries (0)"` with one entry listed, `"Inspector: Inspector: New Draft"` on saved unlisted entry, `"1 words"`, truncated select values `"Case stu"` and `"Exact (de"`) -> **WP-15.7** & **WP-15.5** (`D-EDITOR`, `D-HELP`).
+- `20261106-UX-68` (P2, `open`): First-Run walkthrough shown with existing entry and steps run together on one line; empty Inbox, Conflicts, and three permanent status chips consume editor space -> **WP-15.7** (`D-WORKSPACE`, `D-HELP`).
+- `20261106-UX-69` (P2, `open`): Authoring mode buttons (`Paste / Freeform`, `Guided Mode`, `Quick Log`) look like action buttons with no selected state, and five metadata fields are crammed above the body -> **WP-15.7** (`D-EDITOR`).
 
 ---
 
 ## 6. Not Done (Tagged)
 
-- [not-started] WP-15 Foundations, Monolith Split, Shared Building Blocks & Reference Editor Page (Gate G15): DOM-id baseline & `UX-53`/`UX-54` migrations (`WP-15.0`), mechanical monolith split (`WP-15.1`), shared building blocks (`WP-15.2`, `WP-15.3`), complete token tiers (`WP-15.4`), copy and help catalogues (`WP-15.5`), CI guard rails (`WP-15.6`), and Reference Editor Page (`WP-15.7`).
+- [not-started] WP-15 Foundations, Monolith Split, Shared Building Blocks & Reference Editor Page (Gate G15, ordered per `D-ORDER`): DOM-id baseline & `UX-53`/`UX-54` migrations (`WP-15.0`), mechanical monolith split (`WP-15.1`), shared building blocks (`WP-15.2`, `WP-15.3`), Reference Editor Page built to `D-WORKSPACE`, `D-EDITOR`, `D-FEEDBACK`, and `D-HELP` with interaction contract test (`WP-15.7`), and then complete token tiers (`WP-15.4`), copy and help catalogues (`WP-15.5`), and CI guard rails (`WP-15.6`) applied to that real page.
 
 ---
 
@@ -172,9 +182,9 @@ Found 0 section(s) marked verbatim.
 
 - Decision: REQUIRED
 - Rule(s): HO-R1
-- Receipts since last handover: 2 (A089, A090 since H015; 16 receipts A075..A090 across WP-14); work packages since: 1 (WP-14)
+- Receipts since last handover: 16 (A075..A090 since H014); work packages since: 1 (WP-14)
 - Clean-boundary preconditions: met
-- Next action: Wait for owner Gate G14 review and sign-off before finalizing Handover `H015` in `docs/plans/gates.json` or starting `WP-15.0`
+- Next action: Author Handover `H015` (`docs/handovers/H015-wp-14-entry-lifecycle-integrity-gate-closure.md`) and close gate `WP-14` in `docs/plans/gates.json`
 
 ---
 
@@ -196,42 +206,44 @@ pnpm build
 PORT=4000 ENABLE_BUNDLED_WEB=true pnpm --filter @living-portfolio/api dev
 ```
 
+### Public Route Truth (Confirmed Against `apps/web/src/app.ts` L180–200 and `apps/web/src/renderer.ts` L761–1100):
+- `GET /` and `GET /work`: list `public` entries with structured profiles (`entry.profile !== 'freeform'`, such as the default `case-study`).
+- `GET /writing`: lists **all** `public` entries (both structured profiles and `freeform`).
+- `GET /api/entries` (and `GET /api/v1/entries`): defaults to `visibility: ['public']`, excluding `unlisted` and `private` entries.
+- `GET /work/:slug`: serves any `public` or `unlisted` entry (`200 OK`; returns `404` when `private`).
+- `GET /writing/:slug`: `301`-redirects structured entries (`entry.profile !== 'freeform'`) to `/work/:slug`, and serves `freeform` entries (`entry.profile === 'freeform'`) directly (`200 OK` when `public` or `unlisted`).
+
 ### Owner Walkthrough Checklist:
 
-1. **Setup & Sign-In:**
-   - Open `http://localhost:4000/admin`.
-   - If first-run, complete the 6-step setup wizard; confirm you land on `/admin` signed in with session and CSRF cookies.
-2. **State Chip, Date Default & Temporal Confidence (`UX-10`, `UX-11`, `UX-22`):**
+1. **First-Run Setup Step (Before Login):**
+   - On a fresh unconfigured instance (`setupRequired: true`), open `http://localhost:4000/admin`; confirm it `302`-redirects to `http://localhost:4000/admin/setup`.
+   - Complete the 6-step setup wizard: (Step 1) create the owner username/password, save/download the 8 recovery codes (`xxxx-xxxx-xxxx-xxxx`), tick the confirmation gate (`#gate-saved-credentials`), and click **Continue**; (Step 2) scan the QR code or enter the Base32 secret in an authenticator app and confirm a 6-digit code (`POST /api/auth/totp/confirm`, which issues the `lp_session` cookie and `csrfToken` in `sessionStorage`); (Steps 3–6) review/save choices and click **Launch Portfolio** to land on `http://localhost:4000/admin`.
+2. **Sign-Out & Login Step (`/admin/login`):**
+   - Click **Sign out** (`#btn-admin-logout`) in the header; confirm you are redirected to `http://localhost:4000/admin/login` and visiting `http://localhost:4000/admin` while signed out redirects (`302`) to `/admin/login`.
+   - Sign back in at `http://localhost:4000/admin/login` using your password and a 6-digit authenticator code (or click the recovery-code toggle and enter one 16-hex recovery code), landing on `http://localhost:4000/admin`.
+3. **State Chip, Date Default & Temporal Confidence (`UX-10`, `UX-11`, `UX-22`):**
    - Confirm `#chip-current-state` renders `"Draft"`.
    - Confirm `#entry-date` defaults to today's date (`YYYY-MM-DD`); clear `#entry-date` and click **Save draft** (`#btn-save-draft`) — confirm inline `#entry-date-error` appears without an unhandled `RangeError`. Restore today's date.
    - Confirm `#entry-temporal-level` offers `Exact`, `Range` (revealing `#entry-date-range-end`), and `Estimated`.
-3. **Single `Publish…` Path & Private-Detail Check (`UX-57`):**
+4. **Single `Publish…` Path & Private-Detail Check (`UX-57`):**
    - Confirm the editor action bar has **only one** publish button: **Publish…** (`#btn-open-publish-dialog`), and that the old plain `Publish` button (`#btn-publish-entry`) does **not** exist.
    - Enter title `"WP-14 Walkthrough Entry"`, slug `"wp14-walkthrough-entry"`, and body `"Initial clean draft text."`, then click **Save draft** (`#btn-save-draft`).
    - Confirm the result message appears in `#editor-status-line` inside the viewport without scrolling (`UX-43`), `#chip-current-state` shows `"Draft"`, and the entry appears in `#admin-entries-list`.
-4. **Pre-Flight Dialog Step Numbering (`UX-58`) & Publishing (`UX-01`, `UX-57`):**
+5. **Pre-Flight Dialog Step Numbering (`UX-58`) & Publishing (`UX-01`, `UX-57`):**
    - Click **Publish…** (`#btn-open-publish-dialog`) to open `#publish-confirm-dialog`.
    - With clean text (`0` confidential matches), confirm `#publish-step-2-nda` is hidden and the visible step headings inside `#publish-confirm-dialog` are numbered sequentially **`1. Private-Detail Check`**, **`2. Who Can See It`**, and **`3. What Happens Next`** (no skip from `1` to `3`).
    - Close the dialog (`#btn-cancel-publish`), add a sensitive token to `#entry-body` (e.g., `AKIAIOSFODNN7EXAMPLE`), and click **Publish…** (`#btn-open-publish-dialog`) again:
      - Confirm `#btn-confirm-publish` is disabled until the match is resolved/acknowledged, and when a confidential match reveals `#publish-step-2-nda`, the visible step headings number **`1`**, **`2`**, **`3`**, **`4`**.
    - Remove the sensitive token so `#entry-body` is clean again, click **Publish…** (`#btn-open-publish-dialog`), wait for `"No private details found"`, and click **Publish entry** (`#btn-confirm-publish`).
    - Confirm the existing entry is updated via `PUT` (no duplicate row in `#admin-entries-list`) and `#chip-current-state` updates to `"Public"`.
-5. **Save Draft on a Live Public Entry Stays Public & Undo Restores Earlier Text (`UX-02`, `UX-04`):**
-   - Change `#entry-body` to `"Updated body text after publish."` and click **Save draft** (`#btn-save-draft`).
-   - Confirm `#chip-current-state` remains `"Public"` (does not revert to `Draft`/`private`).
-   - Confirm `#editor-status-line` displays **Undo (30s)** (`#btn-undo-status-line`) with a live 1-second countdown (`30s` -> `29s` -> ...).
-   - Click **Undo** (`#btn-undo-status-line`) in `#editor-status-line`:
-     - Confirm `#entry-body` reverts to `"Initial clean draft text."` and reloading/re-selecting the entry confirms the server revision reverted to `"Initial clean draft text."`.
-6. **Undo from Status Line (and Toast) After Unpublish (`UX-04`):**
-   - Click **Unpublish** (`#btn-unpublish`); confirm `#chip-current-state` changes to `"Draft"` (`private`) and **Undo (30s)** (`#btn-undo-status-line`) appears in `#editor-status-line`.
-   - Click **Undo** (`#btn-undo-status-line`) inside `#editor-status-line`:
-     - Confirm the entry is restored to `"Public"` (`#chip-current-state` shows `"Public"` and `/work/wp14-walkthrough-entry` returns `200`).
-   - *(Optional repeat via Toast):* Click **Unpublish** (`#btn-unpublish`) again and click **Undo** (`#btn-undo-toast`) inside `#editor-toast`; confirm `#chip-current-state` returns to `"Public"`.
-7. **Unlisted Excluded from Public Lists and Reachable by Direct Link (`UX-03`, `UX-59`):**
+6. **Undo from `#editor-status-line` After Changed Save Draft and After Unpublish (`UX-02`, `UX-04`):**
+   - **After Save draft with changed text:** Change `#entry-body` to `"Updated body text after publish."` and click **Save draft** (`#btn-save-draft`). Confirm `#chip-current-state` remains `"Public"` (`UX-02`) and `#editor-status-line` displays **Undo (30s)** (`#btn-undo-status-line`) with a live 1-second countdown (`30s` -> `29s` -> ...). Click **Undo** (`#btn-undo-status-line`): confirm `#entry-body` and the server revision revert to `"Initial clean draft text."`.
+   - **After Unpublish:** Click **Unpublish** (`#btn-unpublish`); confirm `#chip-current-state` changes to `"Draft"` (`private`) and **Undo (30s)** (`#btn-undo-status-line`) appears in `#editor-status-line`. Click **Undo** (`#btn-undo-status-line`): confirm the entry is restored to `"Public"` (`#chip-current-state` shows `"Public"` and `http://localhost:4000/work/wp14-walkthrough-entry` returns `200 OK`).
+7. **Unlisted Excluded from Public Lists (`/`, `/work`, `/writing`, `/api/entries`) and Reachable by Direct Link (`/work/:slug`) (`UX-03`, `UX-59`):**
    - Click **Unlist** (`#btn-unlist`) (or open **Publish…**, select the **Unlisted** radio option `input[name="publish-visibility-choice"][value="unlisted"]`, and confirm).
    - Confirm `#chip-current-state` shows `"Unlisted"`.
-   - Open `http://localhost:4000/` and `http://localhost:4000/work` (and `http://localhost:4000/api/entries`): confirm `"WP-14 Walkthrough Entry"` (`wp14-walkthrough-entry`) does **not** appear in any public list.
-   - Open `http://localhost:4000/work/wp14-walkthrough-entry` directly: confirm it loads (`200 OK`) and renders `"WP-14 Walkthrough Entry"` and its body text.
+   - Open `http://localhost:4000/`, `http://localhost:4000/work`, `http://localhost:4000/writing`, and `http://localhost:4000/api/entries`: confirm `"WP-14 Walkthrough Entry"` (`wp14-walkthrough-entry`) does **not** appear on any public list page or default feed.
+   - Open `http://localhost:4000/work/wp14-walkthrough-entry` directly: confirm it loads (`200 OK`) and renders `"WP-14 Walkthrough Entry"` and its body text (and `http://localhost:4000/writing/wp14-walkthrough-entry` `301`-redirects to `/work/wp14-walkthrough-entry` for structured profiles or renders `200 OK` if `profile === 'freeform'`).
 8. **Import Page Still Creates Drafts:**
    - Navigate to `http://localhost:4000/admin/import`.
    - Enter or keep sample content in the import input (`#import-raw-input`), click **Plan Import** (`#btn-plan-import`), then accept/stage an item (`#btn-triage-accept` / commit import) to create a draft entry.
