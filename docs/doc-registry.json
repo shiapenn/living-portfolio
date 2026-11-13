@@ -1025,5 +1025,13 @@
     "path": "docs/handovers/H015-wp-14-entry-lifecycle-integrity-gate-closure.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A088",
+    "title": "WP-14.pre-c CI cost control",
+    "class": "A",
+    "path": "docs/execution-reports/A088-wp-14pre-c-ci-cost-control.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

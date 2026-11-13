@@ -93,6 +93,7 @@
 | `A085` | WP-14.5 calibration defaults and mechanism gates | `active` | [A085-wp-145-calibration-defaults-and-mechanism-gates.md](execution-reports/A085-wp-145-calibration-defaults-and-mechanism-gates.md) | — |
 | `A086` | WP-14.6 quick visual repairs and CSS check | `active` | [A086-wp-146-quick-visual-repairs-and-css-check.md](execution-reports/A086-wp-146-quick-visual-repairs-and-css-check.md) | — |
 | `A087` | WP-14 entry lifecycle integrity gate closure | `active` | [A087-wp-14-entry-lifecycle-integrity-gate-closure.md](execution-reports/A087-wp-14-entry-lifecycle-integrity-gate-closure.md) | — |
+| `A088` | WP-14.pre-c CI cost control | `active` | [A088-wp-14pre-c-ci-cost-control.md](execution-reports/A088-wp-14pre-c-ci-cost-control.md) | — |
 
 ## Handover Snapshots (Class H)
 
