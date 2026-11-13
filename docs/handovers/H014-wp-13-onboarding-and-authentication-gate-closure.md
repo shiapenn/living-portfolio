@@ -55,7 +55,7 @@
     * WP-13.13 (`A073`): Honest START-HERE runbook with `docker --version` pre-flight check, ephemeral in-memory trial warnings, and troubleshooting (`20261106-UX-32`, `20261106-UX-48`).
     * WP-13.14 (`A074`): Review/wp-13 web merge repair, receipt A073 Evidence SHA ancestry fix, and follow-up finding registrations (`20261106-UX-49`, `20261106-UX-50`, `20261106-UX-51`).
 - **Current phase:** WP-14 Entry Lifecycle Integrity. **Definition of done:** Entry state machine operates per spec §2.1.2, editor result visibility, client bundling, draft autosave buffer, and calibration defaults.
-- **Next phases:** WP-15 Foundations, WP-16 Monolith Split & Workspace Restructure, WP-17 Settings Maintenance & Account.
+- **Next phases:** WP-15 Foundations, Monolith Split, Shared Building Blocks & Reference Editor Page; WP-16 Admin Shell, Entries & Inbox; WP-17 Settings, Maintenance & Account.
 
 ## 4. Active workspace
 

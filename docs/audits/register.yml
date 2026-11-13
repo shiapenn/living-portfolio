@@ -3085,7 +3085,7 @@
       note: "Reopened to partial after owner Gate G14 walkthrough: the 'Undo (30s)' button (#btn-undo-inline) in #editor-status-line is static (renderUndoButtonHtml attaches no click handler), so clicking it does nothing; only #btn-undo-action in the top banner was wired, and Undo after Save draft with changed text did not restore the earlier body text. The E2E test that marked UX-04 fixed clicked #btn-undo-action and did not assert real behaviour on the status-line or toast Undo button or draft-save text restoration. Scheduled for hotfix in WP-14.7."
     - date: 2026-11-10
       status: fixed
-      note: "Fixed in WP-14.7 (A089): Replaced duplicate #btn-undo-action IDs with distinct #btn-undo-status-line (in #editor-status-line), #btn-undo-toast (in #editor-toast), and #btn-undo-action-banner (in #admin-undo-banner) bound via [data-undo-action=\"true\"], added a real 1s countdown interval (30s -> 1s), and wired Undo for both Unpublish (restoring Public state via signed preview token) and Save draft with changed text (restoring previousCommittedBody on server and in #entry-body). Verified in tests/e2e/wp14-7-hotfix.spec.ts."
+      note: "fixed (pending owner retest) — Fixed in WP-14.7 (A089, PR #113): Replaced duplicate #btn-undo-action IDs with distinct #btn-undo-status-line (in #editor-status-line), #btn-undo-toast (in #editor-toast), and #btn-undo-action-banner (in #admin-undo-banner) bound via [data-undo-action=\"true\"], added a real 1s countdown interval (30s -> 1s), and wired Undo for both Unpublish (restoring Public state via signed preview token) and Save draft with changed text (restoring previousCommittedBody on server and in #entry-body). Verified in tests/e2e/wp14-7-hotfix.spec.ts."
   verified_by: null
 - id: 20261106-UX-05
   audit: AUD-2026-11-06
@@ -3998,7 +3998,7 @@
   history:
     - date: 2026-11-08
       status: open
-      note: "Registered in WP-13.14: In-memory mode vs Postgres behavior when browser closes after account creation (Step 1) but before TOTP confirmation (Step 2). While server runs in memory, `hasAccount()` is true but `totpConfirmed` is false (`isSetupCompleted()` false); visiting /admin/setup shows Step 1 again, but resubmission throws 409 Conflict ('Admin account already configured') while TOTP secret/QR code is unrecoverable. In-memory mode recovers if process is restarted (memory wiped). In Postgres / persistent mode (auth-state.json persisted), restarting the server preserves `totpConfirmed: false`, leaving the owner permanently dead-ended (login redirects to setup, setup rejects account creation) without manual filesystem or DB deletion. Planned under WP-17."
+      note: "Registered in WP-13.14: In-memory mode vs Postgres behavior when browser closes after account creation (Step 1) but before TOTP confirmation (Step 2). While server runs in memory, `hasAccount()` is true but `totpConfirmed` is false (`isSetupCompleted()` false); visiting /admin/setup shows Step 1 again, but resubmission throws 409 Conflict ('Admin account already configured') while TOTP secret/QR code is unrecoverable. In-memory mode recovers if process is restarted (memory wiped). In Postgres / persistent mode (auth-state.json persisted), restarting the server preserves `totpConfirmed: false`, leaving the owner permanently dead-ended (login redirects to setup, setup rejects account creation) without manual filesystem or DB deletion. Planned under WP-17.4."
   verified_by: null
 - id: 20261106-UX-50
   audit: AUD-2026-11-06
@@ -4165,7 +4165,7 @@
       note: "Registered after owner Gate G14 walkthrough: Editor action bar renders two Publish buttons side by side (#btn-publish-entry 'Publish' and #btn-open-publish-dialog 'Publish…'), creating competing primary actions (violating D-UI-1) and a potential bypass of the private-detail scan on PUT /api/entries/:id. Treated as P0 until server-side enforcement across every publish path (POST, PUT, Undo) is verified and the duplicate button is removed in WP-14.7."
     - date: 2026-11-10
       status: fixed
-      note: "Fixed in WP-14.7 (A089): Removed duplicate #btn-publish-entry button and silent background scan in ensureRedactionToken() so #btn-open-publish-dialog ('Publish…') is the single publish path; stopped POST /api/entries from minting redactionPreviewToken on draft/unlisted creation; enforced verifyRedactionPreviewToken and nda_confirmed on POST /api/entries, PUT /api/entries/:id, and public POST /api/entries/:id/revisions; and ordered revision creation before PUT on draft-to-public transitions. Verified in apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts and tests/e2e/wp14-7-hotfix.spec.ts."
+      note: "fixed (pending owner retest) — Fixed in WP-14.7 (A089, PR #113): Removed duplicate #btn-publish-entry button and silent background scan in ensureRedactionToken() so #btn-open-publish-dialog ('Publish…') is the single publish path; stopped POST /api/entries from minting redactionPreviewToken on draft/unlisted creation; enforced verifyRedactionPreviewToken and nda_confirmed on POST /api/entries, PUT /api/entries/:id, and public POST /api/entries/:id/revisions; and ordered revision creation before PUT on draft-to-public transitions. Verified in apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts and tests/e2e/wp14-7-hotfix.spec.ts."
   verified_by: null
 - id: 20261106-UX-58
   audit: AUD-2026-11-06
@@ -4186,7 +4186,7 @@
       note: "Registered after owner Gate G14 walkthrough: In #publish-dialog, headings are statically numbered '1. Private details scan', '2. Confidentiality & NDA confirmation' (#publish-nda-section), '3. Visibility', and '4. What happens next'. When 0 confidential matches are found, #publish-nda-section is hidden, so the visible headings read '1', '3', '4' (no '2'). Scheduled for fix in WP-14.7."
     - date: 2026-11-10
       status: fixed
-      note: "Fixed in WP-14.7 (A089): Added updatePublishDialogStepNumbers(ndaVisible) in apps/web/src/client/publish-dialog.ts and dynamic step heading IDs in apps/web/src/renderer.ts so visible headings read 1, 2, 3 when #publish-nda-section is hidden and 1, 2, 3, 4 when #publish-nda-section is shown. Verified in tests/e2e/wp14-7-hotfix.spec.ts."
+      note: "fixed (pending owner retest) — Fixed in WP-14.7 (A089, PR #113): Added updatePublishDialogStepNumbers(ndaVisible) in apps/web/src/client/publish-dialog.ts and dynamic step heading IDs in apps/web/src/renderer.ts so visible headings read 1, 2, 3 when #publish-nda-section is hidden and 1, 2, 3, 4 when #publish-nda-section is shown. Verified in tests/e2e/wp14-7-hotfix.spec.ts."
   verified_by: null
 - id: 20261106-UX-59
   audit: AUD-2026-11-06
@@ -4208,7 +4208,7 @@
       note: "Registered after owner Gate G14 walkthrough: Unlisted is reached through the 'Unlist' button (#btn-unlist) and Publish dialog radio; existing WP-14 tests checked the admin state chip and list item text but did not verify that an unlisted entry stays out of public lists (/, /work, /api/entries default public feed) while remaining reachable by direct link (/work/:slug). Scheduled for verification and test in WP-14.7."
     - date: 2026-11-10
       status: fixed
-      note: "Fixed & verified in WP-14.7 (A089): Added API conformance and Playwright E2E tests proving unlisted entries are excluded from GET /api/entries, /, and /work, and return 200 OK with full title and body at /work/:slug and GET /api/entries/:slug. Verified in apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts and tests/e2e/wp14-7-hotfix.spec.ts."
+      note: "fixed (pending owner retest) — Fixed & verified in WP-14.7 (A089, PR #113): Added API conformance and Playwright E2E tests proving unlisted entries are excluded from GET /api/entries, /, and /work, and return 200 OK with full title and body at /work/:slug and GET /api/entries/:slug. Verified in apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts and tests/e2e/wp14-7-hotfix.spec.ts."
   verified_by: null
 - id: 20261106-UX-60
   audit: AUD-2026-11-06
@@ -4227,7 +4227,7 @@
   history:
     - date: 2026-11-10
       status: open
-      note: "Registered after owner Gate G14 walkthrough: #editor-toast auto-dismisses after 6 seconds with no pause on hover/focus and no dismiss button, and repeats the exact message shown in #editor-status-line. Per UI contract D-UI-2, persistent inline StatusLine beside the action is the primary record (aria-live polite), while Toast is used only when the user has left the place of the action or for Undo, stays at least 10 seconds, pauses on hover and focus, has a dismiss button, and never duplicates the inline text. Planned for WP-15.2 / WP-15.3 (shared building blocks and reference editor page)."
+      note: "Registered after owner Gate G14 walkthrough: #editor-toast auto-dismisses after 6 seconds with no pause on hover/focus and no dismiss button, and repeats the exact message shown in #editor-status-line. Per UI contract D-UI-2, D-UI-5, and D-CONTRACT-4, persistent inline StatusLine beside the action is the primary record (aria-live polite), pages without an inline status region show a persistent dismissible notice (never a timed toast), and Toast is used only when the user has left the place of the action or for Undo, stays at least 10 seconds, pauses on hover and focus, has a dismiss button, and never duplicates the inline text. Planned for WP-15.3 and WP-15.7 (shared building blocks and reference editor page)."
   verified_by: null
 - id: 20261106-UI-01
   audit: AUD-2026-11-06
@@ -4248,7 +4248,7 @@
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
     - date: 2026-11-10
       status: partial
-      note: "Partially addressed in WP-14.6 (A086, PR #103): Defined missing CSS custom property tokens (--surface-overlay, --surface-sunken, --radius-*, --status-*, --role-challenge), eliminated undefined variable usages, restored drawer/dialog background opacity, and added verify-css-variables gate. Inline styles audit completes in WP-15."
+      note: "Partially addressed in WP-14.6 (A086, PR #103): Defined missing CSS custom property tokens (--surface-overlay, --surface-sunken, --radius-*, --status-*, --role-challenge), eliminated undefined variable usages, restored drawer/dialog background opacity, and added verify-css-variables gate. Token tiers and inline styles guard complete in WP-15.4 and WP-15.6."
   verified_by: null
 - id: 20261106-UI-02
   audit: AUD-2026-11-06
@@ -4288,7 +4288,7 @@
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
     - date: 2026-11-10
       status: partial
-      note: "Partially addressed in WP-14.6 (A086, PR #103): Defined missing radius tokens (--radius-control, --radius-chip, --radius-card). Complete UI primitive differentiation lands in WP-15."
+      note: "Partially addressed in WP-14.6 (A086, PR #103): Defined missing radius tokens (--radius-control, --radius-chip, --radius-card). Complete UI primitive differentiation lands in WP-15.2 and WP-15.7."
   verified_by: null
 - id: 20261106-UI-04
   audit: AUD-2026-11-06
