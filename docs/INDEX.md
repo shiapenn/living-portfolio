@@ -96,6 +96,7 @@
 | `A088` | WP-14.pre-c CI cost control | `active` | [A088-wp-14pre-c-ci-cost-control.md](execution-reports/A088-wp-14pre-c-ci-cost-control.md) | — |
 | `A089` | WP-14.7 entry lifecycle hotfix | `active` | [A089-wp-147-entry-lifecycle-hotfix.md](execution-reports/A089-wp-147-entry-lifecycle-hotfix.md) | — |
 | `A090` | WP-14 entry lifecycle integrity gate closure | `active` | [A090-wp-14-entry-lifecycle-integrity-gate-closure.md](execution-reports/A090-wp-14-entry-lifecycle-integrity-gate-closure.md) | — |
+| `A091` | WP-14.8 scan token binding and single-use | `active` | [A091-wp-148-scan-token-binding-and-single-use.md](execution-reports/A091-wp-148-scan-token-binding-and-single-use.md) | — |
 
 ## Handover Snapshots (Class H)
 
