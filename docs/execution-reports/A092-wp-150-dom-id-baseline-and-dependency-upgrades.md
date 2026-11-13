@@ -6,7 +6,7 @@
 | Date | 2026-11-13 |
 | Author | A (Implementer) |
 | Task ID | `WP-15.0` |
-| Evidence SHA | f19db6b |
+| Evidence SHA | 3aff57d |
 | CI run | local verify (`pnpm verify` & `pnpm test:e2e`) green |
 
 ---
@@ -21,7 +21,7 @@
 
 ## 2. CI Evidence
 
-- Failing conformance test committed first in `52dc473` (`test(wp-15.0): add failing conformance tests for DOM-id baseline and zod/vitest upgrades`) before the implementation commit `f19db6b` (`feat(wp-15.0): add DOM-id baseline snapshot and upgrade zod 4 / vitest 4`).
+- Failing conformance test committed first in `52dc473` (`test(wp-15.0): add failing conformance tests for DOM-id baseline and zod/vitest upgrades`) before the implementation commit `f19db6b` (`feat(wp-15.0): add DOM-id baseline snapshot and upgrade zod 4 / vitest 4`) and CodeQL fix `3aff57d` (`fix(wp-15.0): replace HTML tag regexes in snapshot-dom-ids for CodeQL`).
 - Local verification (`pnpm verify` & `pnpm test:e2e` — `local output`):
   - `pnpm verify`: **14/14 gates passed** (`apps/api` 45 files / 371 tests, `apps/web` 54 tests, `pnpm openapi:drift` 0 drift).
   - `pnpm test:e2e`: **81/81 passed** (28.0s).
@@ -48,6 +48,7 @@
 - docs/audits/register.yml
 - docs/doc-registry.json
 - docs/execution-reports/A091-wp-148-scan-token-binding-and-single-use.md
+- docs/execution-reports/A092-wp-150-dom-id-baseline-and-dependency-upgrades.md
 - package.json
 - packages/ai/package.json
 - packages/client/package.json
@@ -90,8 +91,8 @@ $ pnpm receipt:check A092
 === Validating Receipt A092-wp-150-dom-id-baseline-and-dependency-upgrades.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA 'f19db6b' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff deae4e4..f19db6b (22 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA '3aff57d' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff deae4e4..3aff57d (23 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A092-wp-150-dom-id-baseline-and-dependency-upgrades.md.
 Found 0 section(s) marked verbatim.
 
