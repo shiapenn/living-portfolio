@@ -247,6 +247,112 @@ if (!Array.isArray(register)) {
     }
     pass(`[AUD-11..AUD-13] conformance.yml parsed (${conformance.length} spec section rows validated).`);
   }
+
+  // 4b. Verify every 20261106-* finding maps to exactly one WP or lists explicit partial mappings with a reason in P004, gates.json, and register.yml
+  const p004Raw = readFileSync(resolve(ROOT, 'docs/plans/P004-ux-remediation-work-packages.md'), 'utf8');
+  const gatesRaw = JSON.parse(readFileSync(resolve(ROOT, 'docs/plans/gates.json'), 'utf8'));
+
+  function parseFindingTokens(specText) {
+    const entries = [];
+    for (const rawPart of specText.split(',')) {
+      const part = rawPart.trim();
+      if (!part) continue;
+      const isPart = /\bpart\b/i.test(part);
+      const match = part.match(/(?:20261106-)?((?:UX|UI|CP)-\d{2})/);
+      if (match) {
+        entries.push({ shortId: match[1], fullId: `20261106-${match[1]}`, isPart });
+      }
+    }
+    return entries;
+  }
+
+  const p004ByWp = new Map();
+  const phaseMapMatch = p004Raw.match(/### 7\.2 Phase map([\s\S]*?)```/);
+  if (!phaseMapMatch) {
+    fail('[AUD-WP-MAP] Could not locate §7.2 Phase map table in docs/plans/P004-ux-remediation-work-packages.md.');
+  } else {
+    for (const line of phaseMapMatch[1].split('\n')) {
+      const rowMatch = line.match(/^\|\s*(1[3-9]|20)\s*\|[^|]+\|[^|]+\|[^|]+\|\s*([^|]+?)\s*\|/);
+      if (rowMatch) {
+        const wpId = `WP-${rowMatch[1]}`;
+        p004ByWp.set(wpId, parseFindingTokens(rowMatch[2]));
+      }
+    }
+  }
+
+  const gatesByWp = new Map();
+  for (const wpNum of ['13', '14', '15', '16', '17', '18', '19', '20']) {
+    const wpId = `WP-${wpNum}`;
+    const desc = gatesRaw.gates?.[wpId]?.description || '';
+    const trailingParen = desc.match(/\(([^()]+)\)\.\s*$/);
+    if (!trailingParen) {
+      fail(`[AUD-WP-MAP] ${wpId} description in docs/plans/gates.json lacks trailing finding list '(...)'.`);
+    } else {
+      gatesByWp.set(wpId, parseFindingTokens(trailingParen[1]));
+    }
+  }
+
+  // Compare P004 §7.2 and gates.json per WP
+  const p004FindingMap = new Map();
+  const gatesFindingMap = new Map();
+  for (const wpNum of ['13', '14', '15', '16', '17', '18', '19', '20']) {
+    const wpId = `WP-${wpNum}`;
+    const pList = p004ByWp.get(wpId) || [];
+    const gList = gatesByWp.get(wpId) || [];
+    const pSig = pList.map((e) => `${e.shortId}${e.isPart ? '(part)' : ''}`).sort().join(', ');
+    const gSig = gList.map((e) => `${e.shortId}${e.isPart ? '(part)' : ''}`).sort().join(', ');
+    if (pSig !== gSig) {
+      fail(`[AUD-WP-MAP] ${wpId} finding mapping mismatch between P004 §7.2 ([${pSig}]) and gates.json ([${gSig}]).`);
+    }
+    for (const e of pList) {
+      if (!p004FindingMap.has(e.fullId)) p004FindingMap.set(e.fullId, []);
+      p004FindingMap.get(e.fullId).push({ wpId, isPart: e.isPart });
+    }
+    for (const e of gList) {
+      if (!gatesFindingMap.has(e.fullId)) gatesFindingMap.set(e.fullId, []);
+      gatesFindingMap.get(e.fullId).push({ wpId, isPart: e.isPart });
+    }
+  }
+
+  const findings20261106 = register.filter((item) => item.id && item.id.startsWith('20261106-'));
+  let wpMapErrors = 0;
+  for (const item of findings20261106) {
+    const mappings = p004FindingMap.get(item.id) || [];
+    if (mappings.length === 0) {
+      wpMapErrors++;
+      fail(`[AUD-WP-MAP] Finding ${item.id} in register.yml is not mapped to any WP in P004 §7.2 / gates.json.`);
+      continue;
+    }
+    const allHistoryNotes = (item.history || []).map((h) => h.note || '').join(' ');
+    if (mappings.length === 1) {
+      const m = mappings[0];
+      if (m.isPart && item.status !== 'partial') {
+        wpMapErrors++;
+        fail(`[AUD-WP-MAP] Finding ${item.id} is marked (part) in single WP ${m.wpId}, but its register.yml status is '${item.status}' instead of 'partial'.`);
+      }
+    } else {
+      const unparted = mappings.filter((m) => !m.isPart).map((m) => m.wpId);
+      if (unparted.length > 0) {
+        wpMapErrors++;
+        fail(`[AUD-WP-MAP] Finding ${item.id} maps to multiple WPs (${mappings.map((m) => m.wpId).join(', ')}) without explicit '(part)' marker on: ${unparted.join(', ')}.`);
+      }
+      const missingWpRefs = mappings.filter((m) => !allHistoryNotes.includes(m.wpId)).map((m) => m.wpId);
+      const hasReason = /partial|split|completes|addressed/i.test(allHistoryNotes) && allHistoryNotes.length >= 40;
+      if (missingWpRefs.length > 0 || !hasReason) {
+        wpMapErrors++;
+        fail(`[AUD-WP-MAP] Finding ${item.id} has partial mappings across ${mappings.map((m) => m.wpId).join(', ')}, but register.yml history notes do not state a partial reason citing all mapped WPs (missing: ${missingWpRefs.join(', ') || 'reason'}).`);
+      }
+    }
+  }
+  for (const mappedId of p004FindingMap.keys()) {
+    if (!findingMap.has(mappedId)) {
+      wpMapErrors++;
+      fail(`[AUD-WP-MAP] P004 / gates.json references unknown finding '${mappedId}' not in register.yml.`);
+    }
+  }
+  if (wpMapErrors === 0) {
+    pass(`[AUD-WP-MAP] Verified all ${findings20261106.length} 20261106-* findings map to a single WP or list explicit partial mappings with reasons across register.yml, P004, and gates.json.`);
+  }
 }
 
 // 5. Verify SIMULATED(...) markers in API routes return 501 (AUD-17..AUD-19)

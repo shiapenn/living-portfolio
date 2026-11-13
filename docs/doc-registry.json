@@ -1019,14 +1019,6 @@
     "supersedes": null
   },
   {
-    "id": "H015",
-    "title": "WP-14 entry lifecycle integrity gate closure",
-    "class": "H",
-    "path": "docs/handovers/H015-wp-14-entry-lifecycle-integrity-gate-closure.md",
-    "status": "active",
-    "supersedes": null
-  },
-  {
     "id": "A088",
     "title": "WP-14.pre-c CI cost control",
     "class": "A",
@@ -1049,5 +1041,13 @@
     "path": "docs/execution-reports/A090-wp-14-entry-lifecycle-integrity-gate-closure.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "H015",
+    "title": "WP-14 entry lifecycle integrity gate closure",
+    "class": "H",
+    "path": "docs/handovers/H015-wp-14-entry-lifecycle-integrity-gate-closure.md",
+    "status": "active",
+    "supersedes": "H014"
   }
 ]

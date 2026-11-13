@@ -3070,7 +3070,7 @@
   owner: A
   links:
     issue: null
-    pr: "https://github.com/shiapenn/living-portfolio/pull/101"
+    pr: "https://github.com/shiapenn/living-portfolio/pull/113"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: tests/e2e/wp14-7-hotfix.spec.ts
   history:
@@ -3083,9 +3083,9 @@
     - date: 2026-11-10
       status: partial
       note: "Reopened to partial after owner Gate G14 walkthrough: the 'Undo (30s)' button (#btn-undo-inline) in #editor-status-line is static (renderUndoButtonHtml attaches no click handler), so clicking it does nothing; only #btn-undo-action in the top banner was wired, and Undo after Save draft with changed text did not restore the earlier body text. The E2E test that marked UX-04 fixed clicked #btn-undo-action and did not assert real behaviour on the status-line or toast Undo button or draft-save text restoration. Scheduled for hotfix in WP-14.7."
-    - date: 2026-11-10
+    - date: 2026-11-13
       status: fixed
-      note: "fixed (pending owner retest) — Fixed in WP-14.7 (A089, PR #113): Replaced duplicate #btn-undo-action IDs with distinct #btn-undo-status-line (in #editor-status-line), #btn-undo-toast (in #editor-toast), and #btn-undo-action-banner (in #admin-undo-banner) bound via [data-undo-action=\"true\"], added a real 1s countdown interval (30s -> 1s), and wired Undo for both Unpublish (restoring Public state via signed preview token) and Save draft with changed text (restoring previousCommittedBody on server and in #entry-body). Verified in tests/e2e/wp14-7-hotfix.spec.ts."
+      note: "Fixed in WP-14.7 (A089, PR #113, commit 4dc9b32) and confirmed in owner Gate G14 retest on main: Replaced duplicate #btn-undo-action IDs with distinct #btn-undo-status-line (in #editor-status-line), #btn-undo-toast (in #editor-toast), and #btn-undo-action-banner (in #admin-undo-banner) bound via [data-undo-action=\"true\"], added a real 1s countdown interval (30s -> 1s), and wired Undo for both Unpublish (restoring Public state via signed preview token) and Save draft with changed text (restoring previousCommittedBody on server and in #entry-body). Verified in tests/e2e/wp14-7-hotfix.spec.ts."
   verified_by: null
 - id: 20261106-UX-05
   audit: AUD-2026-11-06
@@ -3151,6 +3151,9 @@
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-13
+      status: open
+      note: "Explicit partial WP mapping (WP-16 part, WP-17 part): Inbox and Answer rules screens land in WP-16.6; Audit/Contradictions, Calibration, Structure, Bookings, Ventures, and API tokens screens complete in WP-17.4, WP-17.5, and WP-17.6."
   verified_by: null
 - id: 20261106-UX-08
   audit: AUD-2026-11-06
@@ -3257,6 +3260,9 @@
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-13
+      status: open
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part): WP-15.7 builds the Reference Editor Page with isolated per-entry state and empty/first-run handling; WP-16.3 and WP-16.4 mount dedicated /admin/entries/new and /admin/entries/:id routes and retire default-to-first-entry routing."
   verified_by: null
 - id: 20261106-UX-13
   audit: AUD-2026-11-06
@@ -3350,6 +3356,9 @@
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-13
+      status: open
+      note: "Explicit partial WP mapping (WP-16 part, WP-17 part, WP-19 part): WP-16.2 adds Today dashboard checklist/entry points; WP-17.7 adds admin Pages (About/Now/Uses) and Home Featured/Recent settings; WP-19.2 renders the public About and curated Home lists from those settings."
   verified_by: null
 - id: 20261106-UX-18
   audit: AUD-2026-11-06
@@ -3388,6 +3397,9 @@
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-13
+      status: open
+      note: "Explicit partial WP mapping (WP-17 part, WP-19 part): WP-17.6 builds the admin Bookings inbox screen; WP-19.2 adds the prominent public Book call-to-action in the public header."
   verified_by: null
 - id: 20261106-UX-20
   audit: AUD-2026-11-06
@@ -3565,7 +3577,7 @@
     - "12.7"
     - "13.13"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -3582,6 +3594,9 @@
     - date: 2026-11-07
       status: fixed
       note: "Remediated in WP-13.5 (A065): Enforced strictly one primary action (.btn-primary) per wizard step across all 6 steps. In Step 1, account creation and TOTP confirmation buttons are secondary, leaving the gated Continue button as the single primary action. In Step 6, Launch Portfolio is the single primary button with secondary action for Import Planner. Verified in web.test.ts and tests/e2e/auth.spec.ts."
+    - date: 2026-11-13
+      status: partial
+      note: "Reused and reopened to partial at Gate G14 sign-off (screenshot items 3c, 3d, 3j; explicit partial WP mapping: WP-13 part, WP-15 part): while wizard primary actions were resolved in WP-13.5, the /admin editor workspace renders competing action clusters across three areas — six site-wide buttons in the top header (#btn-publish-now, #btn-killswitch, #btn-backup-drill, Export, #btn-import-triage, #btn-admin-settings), six entry action buttons across two rows in #editor-action-buttons (#btn-save-draft, #btn-open-publish-dialog, #btn-unlist, #btn-redaction-check, #btn-unpublish, #btn-delete-entry), and three authoring mode buttons (#mode-btn-paste, #mode-btn-guided, #mode-btn-quick) styled as action buttons with no selected state. Completes in WP-15.7 under D-WORKSPACE and D-EDITOR (also linked to UX-62, UX-63, UX-69)."
   verified_by: null
 - id: 20261106-UX-30
   audit: AUD-2026-11-06
@@ -3763,6 +3778,9 @@
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-13
+      status: open
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part): WP-15.7 scopes the optional Structure panel in the Reference Editor Page to the open entry; WP-16.4 and WP-16.5 complete the 5-tab Inspector module across dedicated entry routes."
   verified_by: null
 - id: 20261106-UX-38
   audit: AUD-2026-11-06
@@ -3861,6 +3879,9 @@
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-13
+      status: open
+      note: "Explicit partial WP mapping (WP-17 part, WP-19 part): WP-17.3 builds the admin Visibility settings screen for crawler/robots policy; WP-19.7 wires dynamic robots.txt, sitemap, and noindex discovery generation from those settings."
   verified_by: null
 - id: 20261106-UX-43
   audit: AUD-2026-11-06
@@ -3869,11 +3890,11 @@
     - "12.7"
     - "12.8"
   severity: P0
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/95"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: tests/e2e/wp14-editor-feedback.spec.ts
   history:
@@ -3883,6 +3904,9 @@
     - date: 2026-11-10
       status: fixed
       note: Implemented inline status line, polite notification toast, focus move, and list refresh on Save draft, Publish, Unpublish, and Delete (WP-14.0a, A078)
+    - date: 2026-11-13
+      status: partial
+      note: "Reused and reopened to partial at Gate G14 sign-off (screenshot item 3b; explicit partial WP mapping: WP-14 part, WP-15 part): WP-14.0a added #editor-status-line and #editor-toast and refreshed the entries list, but did not remove #admin-status-banner (or #admin-undo-banner) at the top of the page (apps/web/src/renderer.ts L2252-2253). showEditorFeedback() in apps/web/src/client/admin-entry.ts (L77, L96-100) and apps/web/src/renderer.ts (L2679, L2722-2726) and showUndoBanner() in apps/web/src/client/commit-entry.ts (L209, L223-231) still write every result into the top banner as well as #editor-status-line and #editor-toast. Completes in WP-15.3 and WP-15.7 under D-FEEDBACK by removing #admin-status-banner, #admin-undo-banner, and #editor-toast so only #editor-status-line shows action results."
   verified_by: null
 - id: 20261106-UX-44
   audit: AUD-2026-11-06
@@ -4038,7 +4062,7 @@
       note: "Registered in WP-13.14 (corrected in G13): Dependency review via GitHub Dependabot API (gh api repos/shiapenn/living-portfolio/dependabot/alerts) reports 23 active vulnerabilities on main (2 critical, 7 high, 14 moderate) across dependencies, with 4 open Dependabot PRs (#82, #83, #84, #85). Planned as a standalone task before WP-14.0a. No Dependabot PR may be merged in G13."
     - date: 2026-11-08
       status: partial
-      note: "Partially addressed in WP-14.pre-a (A075): Triaged all 23 Dependabot alerts (runtime vs dev-only). Upgraded runtime dependencies @hono/node-server to ^2.1.3 (2.1.6, patches CVE-2026-118663) and drizzle-orm to ^0.45.2 (0.45.4, patches CVE-2026-39356). Reconciled Dependabot PRs #82, #83, #84, #85 (superseded #82 and #85; closed #83 and #84 with documented breaking changes in zod 4 and vitest 4). Remaining alerts tracked for follow-up migrations."
+      note: "Partially addressed in WP-14.pre-a (A075; explicit partial WP mapping: WP-14 part, WP-15 part): Triaged all 23 Dependabot alerts (runtime vs dev-only). Upgraded runtime dependencies @hono/node-server to ^2.1.3 (2.1.6, patches CVE-2026-118663) and drizzle-orm to ^0.45.2 (0.45.4, patches CVE-2026-39356). Reconciled Dependabot PRs #82, #83, #84, #85 (superseded #82 and #85; closed #83 and #84 with documented breaking changes in zod 4 and vitest 4). Remaining alerts tracked for follow-up migrations in WP-15.0."
   verified_by: null
 - id: 20261106-UX-52
   audit: AUD-2026-11-06
@@ -4143,6 +4167,9 @@
     - date: 2026-11-10
       status: open
       note: "Registered at Gate G14 sign-off: showEditorFeedback() in apps/web/src/client/admin-entry.ts (L74-101) writes the identical HTML message simultaneously to #editor-status-line, #editor-toast, and #admin-status-banner, and both #editor-status-line and #editor-toast in apps/web/src/renderer.ts (L2438-2444) carry role=\"status\" aria-live=\"polite\", causing screen readers to announce every save/publish/unpublish/delete result twice. Audit Report §8 closes D-01..D-10 and defers feedback design to §5.4.1, §6.4, §7.5 (WP-14.0a), and §7.6 (WP-15.3 / UX-15): the inline status line beside the action buttons and the viewport toast have distinct roles (persistent state/save summary vs transient action/undo toast, retiring the top banner), and if both visual surfaces are shown, only one may be an active ARIA live region so assistive technologies announce once. Planned for WP-15.3 (Toast and single polite live-region component) and WP-16.4 (Editor route state strip and feedback)."
+    - date: 2026-11-13
+      status: open
+      note: "Reused for screenshot item 3b at Gate G14 sign-off: the identical result message appears in three DOM elements simultaneously — (1) top banner #admin-status-banner (apps/web/src/renderer.ts L2253, written by showEditorFeedback in apps/web/src/client/admin-entry.ts L77, L96-100 and apps/web/src/renderer.ts L2679, L2722-2726, plus #admin-undo-banner at renderer.ts L2252 written by showUndoBanner in apps/web/src/client/commit-entry.ts L223-231); (2) inline status line #editor-status-line under/beside the action buttons (renderer.ts L2437, written by showEditorFeedback in client/admin-entry.ts L75, L80-85, renderer.ts L2705, L2708-2713, and showUndoBanner in client/commit-entry.ts L192-196, L211-215); and (3) floating toast #editor-toast (renderer.ts L2443, written by showEditorFeedback in client/admin-entry.ts L76, L87-94, renderer.ts L2706, L2714-2721, showUndoBanner in client/commit-entry.ts L198-202, L217-221, and showPublishSuccessToast in client/publish-dialog.ts L154-176). All three carry role=\"status\" aria-live=\"polite\". Remediated in WP-15.3 and WP-15.7 under D-FEEDBACK."
   verified_by: null
 - id: 20261106-UX-57
   audit: AUD-2026-11-06
@@ -4156,16 +4183,16 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/113"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts
   history:
     - date: 2026-11-10
       status: open
       note: "Registered after owner Gate G14 walkthrough: Editor action bar renders two Publish buttons side by side (#btn-publish-entry 'Publish' and #btn-open-publish-dialog 'Publish…'), creating competing primary actions (violating D-UI-1) and a potential bypass of the private-detail scan on PUT /api/entries/:id. Treated as P0 until server-side enforcement across every publish path (POST, PUT, Undo) is verified and the duplicate button is removed in WP-14.7."
-    - date: 2026-11-10
+    - date: 2026-11-13
       status: fixed
-      note: "fixed (pending owner retest) — Fixed in WP-14.7 (A089, PR #113): Removed duplicate #btn-publish-entry button and silent background scan in ensureRedactionToken() so #btn-open-publish-dialog ('Publish…') is the single publish path; stopped POST /api/entries from minting redactionPreviewToken on draft/unlisted creation; enforced verifyRedactionPreviewToken and nda_confirmed on POST /api/entries, PUT /api/entries/:id, and public POST /api/entries/:id/revisions; and ordered revision creation before PUT on draft-to-public transitions. Verified in apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts and tests/e2e/wp14-7-hotfix.spec.ts."
+      note: "Fixed in WP-14.7 (A089, PR #113, commit 4dc9b32) and confirmed in owner Gate G14 retest on main: Removed duplicate #btn-publish-entry button and silent background scan in ensureRedactionToken() so #btn-open-publish-dialog ('Publish…') is the single publish path; stopped POST /api/entries from minting redactionPreviewToken on draft/unlisted creation; enforced verifyRedactionPreviewToken and nda_confirmed on POST /api/entries, PUT /api/entries/:id, and public POST /api/entries/:id/revisions; and ordered revision creation before PUT on draft-to-public transitions. Verified in apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts and tests/e2e/wp14-7-hotfix.spec.ts."
   verified_by: null
 - id: 20261106-UX-58
   audit: AUD-2026-11-06
@@ -4177,16 +4204,16 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/113"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: tests/e2e/wp14-7-hotfix.spec.ts
   history:
     - date: 2026-11-10
       status: open
       note: "Registered after owner Gate G14 walkthrough: In #publish-dialog, headings are statically numbered '1. Private details scan', '2. Confidentiality & NDA confirmation' (#publish-nda-section), '3. Visibility', and '4. What happens next'. When 0 confidential matches are found, #publish-nda-section is hidden, so the visible headings read '1', '3', '4' (no '2'). Scheduled for fix in WP-14.7."
-    - date: 2026-11-10
+    - date: 2026-11-13
       status: fixed
-      note: "fixed (pending owner retest) — Fixed in WP-14.7 (A089, PR #113): Added updatePublishDialogStepNumbers(ndaVisible) in apps/web/src/client/publish-dialog.ts and dynamic step heading IDs in apps/web/src/renderer.ts so visible headings read 1, 2, 3 when #publish-nda-section is hidden and 1, 2, 3, 4 when #publish-nda-section is shown. Verified in tests/e2e/wp14-7-hotfix.spec.ts."
+      note: "Fixed in WP-14.7 (A089, PR #113, commit 4dc9b32) and confirmed in owner Gate G14 retest on main: Added updatePublishDialogStepNumbers(ndaVisible) in apps/web/src/client/publish-dialog.ts and dynamic step heading IDs in apps/web/src/renderer.ts so visible headings read 1, 2, 3 when #publish-nda-section is hidden and 1, 2, 3, 4 when #publish-nda-section is shown. Verified in tests/e2e/wp14-7-hotfix.spec.ts."
   verified_by: null
 - id: 20261106-UX-59
   audit: AUD-2026-11-06
@@ -4199,16 +4226,16 @@
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/113"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: tests/e2e/wp14-7-hotfix.spec.ts
   history:
     - date: 2026-11-10
       status: open
       note: "Registered after owner Gate G14 walkthrough: Unlisted is reached through the 'Unlist' button (#btn-unlist) and Publish dialog radio; existing WP-14 tests checked the admin state chip and list item text but did not verify that an unlisted entry stays out of public lists (/, /work, /api/entries default public feed) while remaining reachable by direct link (/work/:slug). Scheduled for verification and test in WP-14.7."
-    - date: 2026-11-10
+    - date: 2026-11-13
       status: fixed
-      note: "fixed (pending owner retest) — Fixed & verified in WP-14.7 (A089, PR #113): Added API conformance and Playwright E2E tests proving unlisted entries are excluded from GET /api/entries, /, and /work, and return 200 OK with full title and body at /work/:slug and GET /api/entries/:slug. Verified in apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts and tests/e2e/wp14-7-hotfix.spec.ts."
+      note: "Fixed & verified in WP-14.7 (A089, PR #113, commit 4dc9b32) and confirmed in owner Gate G14 retest on main: Added API conformance and Playwright E2E tests proving unlisted entries are excluded from GET /api/entries, /, and /work, and return 200 OK with full title and body at /work/:slug and GET /api/entries/:slug. Verified in apps/api/src/conformance/wp14-7-publish-scan-and-unlisted.conformance.test.ts and tests/e2e/wp14-7-hotfix.spec.ts."
   verified_by: null
 - id: 20261106-UX-60
   audit: AUD-2026-11-06
@@ -4228,6 +4255,9 @@
     - date: 2026-11-10
       status: open
       note: "Registered after owner Gate G14 walkthrough: #editor-toast auto-dismisses after 6 seconds with no pause on hover/focus and no dismiss button, and repeats the exact message shown in #editor-status-line. Per UI contract D-UI-2, D-UI-5, and D-CONTRACT-4, persistent inline StatusLine beside the action is the primary record (aria-live polite), pages without an inline status region show a persistent dismissible notice (never a timed toast), and Toast is used only when the user has left the place of the action or for Undo, stays at least 10 seconds, pauses on hover and focus, has a dismiss button, and never duplicates the inline text. Planned for WP-15.3 and WP-15.7 (shared building blocks and reference editor page)."
+    - date: 2026-11-13
+      status: open
+      note: "Reused for screenshot item 3b at Gate G14 sign-off: floating toast #editor-toast (apps/web/src/renderer.ts L2443, written by showEditorFeedback in apps/web/src/client/admin-entry.ts L76, L87-94, renderer.ts L2706, L2714-2721, showUndoBanner in client/commit-entry.ts L198-202, L217-221, and showPublishSuccessToast in client/publish-dialog.ts L154-176) repeats the message in #editor-status-line and #admin-status-banner and disappears on a timer. Under D-FEEDBACK (and D-CONTRACT-7), timed toasts and top banners are removed in WP-15.3 and WP-15.7 in favour of the four dedicated message places."
   verified_by: null
 - id: 20261106-UI-01
   audit: AUD-2026-11-06
@@ -4328,7 +4358,7 @@
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
     - date: 2026-11-07
       status: partial
-      note: Wizard controls remediated in WP-13.9 to eliminate 501 / "Not Implemented" and HTTP jargon (alerts test disabled with plain explanation, backup drill mapped to plain folder permission copy). Full terminology and copy sweep scheduled for WP-20.4.
+      note: "Partially addressed in WP-13.9 (explicit partial WP mapping: WP-13 part, WP-15 part, WP-20 part): Wizard controls remediated in WP-13.9 to eliminate 501 / 'Not Implemented' and HTTP jargon (alerts test disabled with plain explanation, backup drill mapped to plain folder permission copy). Editor and shared catalogue jargon removed in WP-15.5 and WP-15.7; full terminology and copy sweep scheduled for WP-20.4."
   verified_by: null
 - id: 20261106-CP-02
   audit: AUD-2026-11-06
@@ -4531,6 +4561,9 @@
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-13
+      status: open
+      note: "Explicit partial WP mapping (WP-14 part, WP-15 part): WP-14.1 mapped 409 duplicate slug and 400 validation errors in commitEntry; WP-15.5 and WP-15.7 wire the shared actionable-error formatter and field-level error recovery in the Reference Editor Page."
   verified_by: null
 - id: 20261106-CP-13
   audit: AUD-2026-11-06
@@ -4549,6 +4582,9 @@
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
+    - date: 2026-11-13
+      status: open
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part, WP-17 part): WP-15.5 establishes the typed help catalogue schema; WP-16.2 and WP-16.5 apply explainers to Today and Inspector; WP-17.1 and WP-17.2 apply Explain blocks across all Settings pages."
   verified_by: null
 - id: 20261106-CP-14
   audit: AUD-2026-11-06
@@ -4593,4 +4629,181 @@
     - date: 2026-11-07
       status: fixed
       note: "Remediated in WP-13.5 (A065): Extracted all vendor names, model identifiers, and worked-example sample content out of setup markup into typed string catalogue in strings/en.ts. Verified via automated zero-hardcode scan in web.test.ts and tests/e2e/auth.spec.ts."
+  verified_by: null
+- id: 20261106-UX-61
+  audit: AUD-2026-11-06
+  title: 'Admin workspace renders inside public site header navigation and footer including "unofficial fork" notice'
+  spec_sections:
+    - "5.1"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-13
+      status: open
+      note: "Registered at Gate G14 sign-off (screenshot item 3a): renderAdminWorkspacePage() wraps the admin workspace inside renderLayout() (apps/web/src/renderer.ts L243-330, L3872), rendering the public site's <header class=\"site-header\"> (Work, Writing, Build, Timeline, Ask) and <footer class=\"site-footer\"> including .unofficial-fork-slot (PUBLIC_UNOFFICIAL_FORK_NOTICE: 'This deployment is an unofficial fork...'). Planned for WP-15.7 under D-WORKSPACE (slim admin header with product name, section navigation, Sign out, and theme toggle; never renders public navigation or footer; also linked to UX-06 in WP-16.1)."
+  verified_by: null
+- id: 20261106-UX-62
+  audit: AUD-2026-11-06
+  title: 'Site-wide actions mixed with entry actions on editor screen, duplicate "Publish" naming ("Publish Now" vs "Publish…"), and "Deploy: Building..." contradicting "Static rebuild: Idle"'
+  spec_sections:
+    - "5.1"
+    - "12.6"
+    - "12.9"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-13
+      status: open
+      note: "Registered at Gate G14 sign-off (screenshot item 3c; also reuses UX-29 and links to CP-09): The editor screen mixes site-wide operational controls (#btn-publish-now 'Publish Now', #btn-killswitch 'Pause Automated Answering', #btn-backup-drill 'Run Backup & Restore Drill', 'Export Markdown + Sidecar', #btn-import-triage, #btn-admin-settings in apps/web/src/renderer.ts L2216-2250) with entry authoring controls; uses 'Publish' for both site rebuild ('Publish Now') and entry publishing ('Publish…'); and shows #deploy-status-chip ('Deploy: Building...') alongside #admin-status-build ('Static rebuild: Idle', L2264-2273). Planned for WP-15.7 under D-WORKSPACE (move site-wide actions to Home and Maintenance, rename 'Publish Now' to 'Update public site')."
+  verified_by: null
+- id: 20261106-UX-63
+  audit: AUD-2026-11-06
+  title: 'Six editor action buttons across two rows; Unlist and Unpublish both shown on unlisted entry; Delete adjacent to Unpublish; "Check for private details" duplicates dialog scan'
+  spec_sections:
+    - "6.2"
+    - "12.6"
+    - "12.7"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-13
+      status: open
+      note: "Registered at Gate G14 sign-off (screenshot item 3d; also reuses UX-29 and links to UX-25): #editor-action-buttons (apps/web/src/renderer.ts L2430-2438) renders six buttons wrapping across two rows (#btn-save-draft, #btn-open-publish-dialog, #btn-unlist, #btn-redaction-check, #btn-unpublish, #btn-delete-entry); updateActionButtons() in apps/web/src/client/commit-entry.ts (L93-107) displays both #btn-unlist and #btn-unpublish on an already-unlisted entry (violating D-CONTRACT-6); places destructive #btn-delete-entry immediately next to #btn-unpublish; and renders #btn-redaction-check ('Check for private details') duplicating the scan inside #publish-dialog. Planned for WP-15.7 under D-EDITOR and D-CONTRACT-6."
+  verified_by: null
+- id: 20261106-UX-64
+  audit: AUD-2026-11-06
+  title: 'Entry visibility controlled by both a Visibility select dropdown and a separate Unlist button'
+  spec_sections:
+    - "3.11"
+    - "6.2"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-13
+      status: open
+      note: "Registered at Gate G14 sign-off (screenshot item 3e): Entry visibility is exposed simultaneously via the #entry-visibility <select> dropdown (apps/web/src/renderer.ts L2361) and the #btn-unlist / #btn-open-publish-dialog action buttons, and readForm() in apps/web/src/client/commit-entry.ts (L135-137) ignores #entry-visibility once activeEntryState.id is set. Planned for WP-15.7 under D-EDITOR (visibility has one control only — a menu Public / Unlisted / Private — and any change to Public goes through the Publish pre-flight)."
+  verified_by: null
+- id: 20261106-UX-65
+  audit: AUD-2026-11-06
+  title: 'NDA confirmation panel, inline scan result, and raw "Signed preview token" permanently visible in editor and not cleanly cleared across edits and actions'
+  spec_sections:
+    - "4.3"
+    - "6.2"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-13
+      status: open
+      note: "Registered at Gate G14 sign-off (screenshot item 3f): The NDA confirmation checkbox panel (#entry-nda-confirmed, apps/web/src/renderer.ts L2422-2427), inline scan result (#redaction-preview-box, L2420), and raw #preview-token-badge ('Signed preview token: <code>...</code>', L3452) are rendered in the main editor form outside #publish-dialog. Code check on text change: when #entry-body fires input, clearPreviewToken('invalidated') in apps/web/src/client/commit-entry.ts (L61-72) clears the token and removes #preview-token-badge, but replaces #redaction-preview-box with a persistent invalidation banner rather than hiding it, and commitEntry('unlist') / commitEntry('save') never call clearPreviewToken(), leaving the green scan box and raw preview token permanently visible after unlisting. Planned for WP-15.7 under D-EDITOR (NDA confirmation, private-details check, and result live only in Publish... dialog; signed preview token is never shown)."
+  verified_by: null
+- id: 20261106-UX-66
+  audit: AUD-2026-11-06
+  title: 'Developer copy in editor workspace UI: Body label "min 60vh editor workspace", Inspector "never a percentage score" and "Unlocks: ...", and "501 Not Implemented" / "SIMULATED finding M6" in Conflicts'
+  spec_sections:
+    - "12.6"
+    - "12.9"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-13
+      status: open
+      note: "Registered at Gate G14 sign-off (screenshot item 3g; also linked to CP-01 and CP-02): Developer and specification notes appear directly in the /admin workspace in apps/web/src/renderer.ts — Body label 'Body (Markdown + GFM — min 60vh editor workspace; only body and date required)' (L2395); Structure Inspector 'Four-step structure map (never a percentage score):' (L2568) and 'Unlocks: ...' (L2575); and #topology-conflicts-card showing '501 Not Implemented' and 'SIMULATED finding M6' (L2665-2668). Planned for WP-15.7 and WP-15.5 under D-EDITOR, D-HELP, D-WORKSPACE, and D-CONTRACT-1."
+  verified_by: null
+- id: 20261106-UX-67
+  audit: AUD-2026-11-06
+  title: 'Editor workspace bugs: "Entries (0)" with one entry listed, "Inspector: Inspector: New Draft" on saved unlisted entry, "1 words" grammar, and truncated select values ("Case stu", "Exact (de")'
+  spec_sections:
+    - "12.5"
+    - "12.6"
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-13
+      status: open
+      note: "Registered at Gate G14 sign-off (screenshot item 3h): Four concrete UI bugs in the editor workspace: (1) 'Entries (0)' heading in apps/web/src/renderer.ts (L2280) lacks id=\"entries-heading\", so refreshEntriesList() in apps/web/src/client/admin-entry.ts (L137-140) never updates the count when entries are created; (2) Inspector heading renders 'Inspector: <span id=\"inspector-heading\">Inspector: New Draft</span>' (renderer.ts L2555, L2936, L3309), doubling 'Inspector:' and failing to update on save/unlist; (3) #editor-word-count (renderer.ts L3521) concatenates words + ' words' without pluralization, producing '1 words'; and (4) the 4-column metadata grid (renderer.ts L2347) crams four controls into the narrow center column, truncating select options to 'Case stu' and 'Exact (de'. Planned for WP-15.7 and WP-15.5 under D-EDITOR and D-HELP."
+  verified_by: null
+- id: 20261106-UX-68
+  audit: AUD-2026-11-06
+  title: 'First-Run walkthrough shown with existing entry and steps run together on one line; empty Inbox, Conflicts, and three permanent status chips consume editor space'
+  spec_sections:
+    - "12.6"
+    - "13.13"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-13
+      status: open
+      note: "Registered at Gate G14 sign-off (screenshot item 3i; also linked to CP-11): #admin-walkthrough-card ('First-Run Authoring Walkthrough', apps/web/src/renderer.ts L2255-2261) renders unconditionally even when entries exist, concatenates steps 1..3 on a single line, and does not persist dismissal (#btn-dismiss-walkthrough at L3207-3213 only hides in memory); meanwhile empty Inbox (0) (#inbox-heading), Conflicts to review (#audit-heading), and three permanent status chips (#admin-status-build, #admin-status-answering, '● Operational', L2264-2273) occupy editor screen space. Planned for WP-15.7 under D-WORKSPACE and D-HELP."
+  verified_by: null
+- id: 20261106-UX-69
+  audit: AUD-2026-11-06
+  title: 'Authoring mode buttons (Paste / Freeform, Guided Mode, Quick Log) look like action buttons with no selected state, and five metadata fields are crammed above the body'
+  spec_sections:
+    - "4.4"
+    - "12.2"
+    - "12.6"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-13
+      status: open
+      note: "Registered at Gate G14 sign-off (screenshot item 3j; also reuses UX-29): Mode switch buttons (#mode-btn-paste 'Paste / Freeform', #mode-btn-guided 'Guided Mode', #mode-btn-quick 'Quick Log', apps/web/src/renderer.ts L2295-2299) use .btn.btn-secondary action styling with no visual or aria-pressed selected state, and five metadata fields (#entry-profile, #entry-visibility, #entry-date, #entry-temporal-level, #entry-hindsight, L2347-2390) are crammed above the body instead of collapsed into a single 'Details' disclosure with a one-line summary. Planned for WP-15.7 under D-EDITOR."
   verified_by: null

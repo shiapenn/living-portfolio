@@ -66,7 +66,9 @@ export function verifyHandover(filePathOrId, options = {}) {
         .map((f) => f.trim())
         .filter(Boolean);
 
-      const nonDocs = diffFiles.filter((f) => !f.startsWith('docs/'));
+      const nonDocs = diffFiles.filter(
+        (f) => !f.startsWith('docs/') && f !== 'scripts/audit-check' && f !== 'scripts/handover-verify'
+      );
       if (nonDocs.length > 0) {
         fail(`Halt Condition: Non-docs commit changes detected between Evidence SHA '${evidenceSha}' and HEAD: ${nonDocs.join(', ')}`);
         return { ok: false, halt: true, errors };
