@@ -3,11 +3,10 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "monthly"
       time: "04:00"
       timezone: "UTC"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 1
     groups:
       production-dependencies:
         dependency-type: "production"
@@ -19,15 +18,25 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # Deferred until findings 20261106-UX-53 (zod 4) and 20261106-UX-54 (vitest 4) are completed
+      - dependency-name: "zod"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "vitest"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "@vitest/*"
+        update-types:
+          - "version-update:semver-major"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "monthly"
       time: "04:00"
       timezone: "UTC"
-    open-pull-requests-limit: 2
+    open-pull-requests-limit: 1
     groups:
       github-actions:
         patterns:
