@@ -25,9 +25,9 @@ test.describe.serial('WP-14.2: State chip and date correctness (UX-10, UX-11, UX
     await expect(stateChip).toContainText(/draft/i);
 
     // Publish to public
-    await page.click('#btn-redaction-check');
-    await expect(page.locator('#redaction-preview-box')).toBeVisible();
-    await page.click('#btn-publish-entry');
+    await page.click('#btn-open-publish-dialog');
+    await expect(page.locator('#publish-scan-status')).toContainText(/nothing found|0 confidential/i);
+    await page.click('#btn-confirm-publish');
     await expect(stateChip).toContainText(/public/i);
 
     // Unlist

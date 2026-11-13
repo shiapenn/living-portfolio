@@ -30,10 +30,9 @@ test.describe.serial('WP-11.2: Navigation Redesign & System States (20261020-UX-
       await slugInput.fill('nav-test-structured-entry');
       await page.fill('#entry-date', '2026-01-01');
       await page.fill('#entry-body', 'We built a specialized navigation test structure.');
-      await page.click('#btn-redaction-check');
-      await expect(page.locator('#redaction-preview-box')).toBeVisible();
-      await page.check('#entry-nda-confirmed');
-      await page.click('#btn-publish-entry');
+      await page.click('#btn-open-publish-dialog');
+      await expect(page.locator('#publish-scan-status')).toContainText(/nothing found|0 confidential/i);
+      await page.click('#btn-confirm-publish');
       // Wait for banner confirmation
       await expect(page.locator('#admin-status-banner')).toBeVisible();
     }

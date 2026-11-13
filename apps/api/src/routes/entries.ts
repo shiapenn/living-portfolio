@@ -230,6 +230,7 @@ export function createEntriesRoutes(
     return c.json({
       entry,
       revision: currentRevision,
+      currentRevision,
       revisions,
       spans,
       annotations,
@@ -267,7 +268,7 @@ export function createEntriesRoutes(
     // Server-side publish gate (UX P0-3, Fix 2 / S2): public entries require a valid signed redactionPreviewToken
     if (data.visibility === 'public') {
       const effectiveExclusions = settingsState?.redactionExclusions;
-      const warnings = scanForConfidentialData(data.body_md, effectiveExclusions);
+      const warnings = scanForConfidentialData(data.body_md.trim(), effectiveExclusions);
       const tokenCheck = auth.verifyRedactionPreviewToken(body.redactionPreviewToken, {
         entryId: 'draft',
         bodyMd: data.body_md,
@@ -323,12 +324,15 @@ export function createEntriesRoutes(
 
     const chunks = chunkMarkdown(revision.id, data.body_md);
     const savedSpans = await repo.saveSpans(chunks);
-    const redactionWarnings = scanForConfidentialData(data.body_md, settingsState?.redactionExclusions);
-    const { token: redactionPreviewToken } = auth.issueRedactionPreviewToken({
-      entryId: entry.id,
-      bodyMd: data.body_md,
-      warnings: redactionWarnings,
-    });
+    const redactionWarnings = scanForConfidentialData(data.body_md.trim(), settingsState?.redactionExclusions);
+    const redactionPreviewToken =
+      data.visibility === 'public'
+        ? auth.issueRedactionPreviewToken({
+            entryId: entry.id,
+            bodyMd: data.body_md.trim(),
+            warnings: redactionWarnings,
+          }).token
+        : undefined;
 
     let enrichmentQueued = false;
     if (data.visibility === 'public' && worker) {
@@ -376,7 +380,7 @@ export function createEntriesRoutes(
     if (parsed.data.visibility === 'public' && existing.entry.visibility !== 'public') {
       const currentBody = existing.currentRevision.body_md;
       const effectiveExclusions = settingsState?.redactionExclusions;
-      const warnings = scanForConfidentialData(currentBody, effectiveExclusions);
+      const warnings = scanForConfidentialData(currentBody.trim(), effectiveExclusions);
       const tokenCheck = auth.verifyRedactionPreviewToken(body.redactionPreviewToken, {
         entryId: id,
         bodyMd: currentBody,
@@ -467,6 +471,37 @@ export function createEntriesRoutes(
     const data = parsed.data;
     const existing = await repo.getEntry(entryId, ['private', 'unlisted', 'public']);
     if (!existing) return c.json({ error: 'Entry not found' }, 404);
+
+    if (existing.entry.visibility === 'public') {
+      const effectiveExclusions = settingsState?.redactionExclusions;
+      const warnings = scanForConfidentialData(data.body_md.trim(), effectiveExclusions);
+      if (warnings.length > 0 || body.redactionPreviewToken !== undefined) {
+        const tokenCheck = auth.verifyRedactionPreviewToken(body.redactionPreviewToken, {
+          entryId,
+          bodyMd: data.body_md,
+          warnings,
+        });
+        if (!tokenCheck.valid) {
+          return c.json(
+            {
+              error: 'Redaction preview confirmation required before publishing confidential revisions on a public entry',
+              message: 'Check this entry for private details before saving public changes.',
+              reason: tokenCheck.reason || 'Run the redaction check before saving changes to a public entry.',
+            },
+            400
+          );
+        }
+        if (warnings.length > 0 && body.nda_confirmed !== true) {
+          return c.json(
+            {
+              error: 'Confidentiality & NDA confirmation required when potential secrets or exclusions are flagged on a public entry',
+              warningsCount: warnings.length,
+            },
+            400
+          );
+        }
+      }
+    }
 
     const oldRev = existing.currentRevision;
     const oldSpans = oldRev ? await repo.getSpans(oldRev.id) : [];

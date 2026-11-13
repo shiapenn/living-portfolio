@@ -94,6 +94,7 @@
 | `A086` | WP-14.6 quick visual repairs and CSS check | `active` | [A086-wp-146-quick-visual-repairs-and-css-check.md](execution-reports/A086-wp-146-quick-visual-repairs-and-css-check.md) | — |
 | `A087` | WP-14 entry lifecycle integrity gate closure | `active` | [A087-wp-14-entry-lifecycle-integrity-gate-closure.md](execution-reports/A087-wp-14-entry-lifecycle-integrity-gate-closure.md) | — |
 | `A088` | WP-14.pre-c CI cost control | `active` | [A088-wp-14pre-c-ci-cost-control.md](execution-reports/A088-wp-14pre-c-ci-cost-control.md) | — |
+| `A089` | WP-14.7 entry lifecycle hotfix | `active` | [A089-wp-147-entry-lifecycle-hotfix.md](execution-reports/A089-wp-147-entry-lifecycle-hotfix.md) | — |
 
 ## Handover Snapshots (Class H)
 

@@ -71,7 +71,7 @@ export async function clientFetch(url: string, options: RequestInit = {}): Promi
 }
 
 let toastTimeout: any = null;
-export function showEditorFeedback(messageHtml: string, isError = false): void {
+export function showEditorFeedback(messageHtml: string, isError = false, toastDurationMs = 6000): void {
   const statusLine = document.getElementById('editor-status-line');
   const toast = document.getElementById('editor-toast');
   const banner = document.getElementById('admin-status-banner');
@@ -90,7 +90,7 @@ export function showEditorFeedback(messageHtml: string, isError = false): void {
     if (toastTimeout) clearTimeout(toastTimeout);
     toastTimeout = setTimeout(() => {
       toast.style.display = 'none';
-    }, 6000);
+    }, toastDurationMs);
   }
 
   if (banner) {
@@ -144,7 +144,6 @@ export async function refreshEntriesList(selectedId?: string): Promise<void> {
 export function initAdminEntryHandlers(): void {
   const form = document.getElementById('admin-entry-form') as HTMLFormElement | null;
   const saveDraftBtn = document.getElementById('btn-save-draft');
-  const publishBtn = document.getElementById('btn-publish-entry');
   const unlistBtn = document.getElementById('btn-unlist');
   const unpublishBtn = document.getElementById('btn-unpublish');
   const deleteBtn = document.getElementById('btn-delete-entry');
@@ -221,19 +220,11 @@ export function initAdminEntryHandlers(): void {
     });
   }
 
-  // Publish (commitEntry('publish'))
-  if (publishBtn) {
-    publishBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      await commitEntry('publish');
-    });
-  }
-
-  // Form submit fallback
+  // Form submit opens pre-flight publish dialog (single publish path, UX-57)
   if (form) {
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
-      await commitEntry('publish');
+      openPublishDialog();
     });
   }
 
@@ -324,7 +315,7 @@ export function initAdminEntryHandlers(): void {
         if (!res.ok) return;
         const data = await res.json();
         const entry = data.entry;
-        const currentRev = data.currentRevision;
+        const currentRev = data.currentRevision || data.revision;
         if (entryIdInput) entryIdInput.value = entry.id;
         if (titleInput) titleInput.value = entry.title || '';
         if (slugInput) slugInput.value = entry.slug || '';
