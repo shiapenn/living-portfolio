@@ -1017,5 +1017,13 @@
     "path": "docs/execution-reports/A087-wp-14-entry-lifecycle-integrity-gate-closure.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "H015",
+    "title": "WP-14 entry lifecycle integrity gate closure",
+    "class": "H",
+    "path": "docs/handovers/H015-wp-14-entry-lifecycle-integrity-gate-closure.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

@@ -7,7 +7,7 @@
 | Author | A (Implementer) |
 | Task ID | `WP-14.0a` |
 | Evidence SHA | db0082b |
-| CI run | local verify (`pnpm verify`) green |
+| CI run | 42754272314 (PR #95 head `5923bd9`) / 42757704638 (`main` merge commit `a8012dc`) |
 
 ---
 
