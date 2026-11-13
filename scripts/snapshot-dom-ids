@@ -12,10 +12,36 @@ import { pathToFileURL } from 'node:url';
 const ROOT = resolve(import.meta.dirname, '..');
 const DEFAULT_BASELINE_PATH = resolve(ROOT, 'docs/audits/dom-id-baseline.json');
 
+function stripTagBlocks(html, tagName) {
+  const openTag = `<${tagName}`;
+  const closeTag = `</${tagName}`;
+  const lower = html.toLowerCase();
+  let out = '';
+  let pos = 0;
+  while (pos < html.length) {
+    const start = lower.indexOf(openTag, pos);
+    if (start === -1) {
+      out += html.slice(pos);
+      break;
+    }
+    const nextChar = lower[start + openTag.length];
+    if (nextChar && nextChar !== '>' && !/\s/.test(nextChar)) {
+      out += html.slice(pos, start + openTag.length);
+      pos = start + openTag.length;
+      continue;
+    }
+    out += html.slice(pos, start);
+    const closeStart = lower.indexOf(closeTag, start + openTag.length);
+    if (closeStart === -1) break;
+    const closeEnd = html.indexOf('>', closeStart + closeTag.length);
+    if (closeEnd === -1) break;
+    pos = closeEnd + 1;
+  }
+  return out;
+}
+
 function stripScriptsAndStyles(html) {
-  return html
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
+  return stripTagBlocks(stripTagBlocks(html, 'script'), 'style');
 }
 
 export function extractDomHooksFromHtml(html) {
