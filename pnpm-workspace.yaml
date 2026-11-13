@@ -7,3 +7,12 @@ allowBuilds:
 
 onlyBuiltDependencies:
   - esbuild
+
+overrides:
+  zod: "^4.6.7"
+  vitest: "^4.1.12"
+  "@vitest/mocker": "^4.1.12"
+  tinypool: "^2.2.0"
+  esbuild: "^0.25.12"
+  hono: "^4.13.18"
+

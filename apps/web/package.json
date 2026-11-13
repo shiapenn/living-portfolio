@@ -22,11 +22,12 @@
     "@living-portfolio/client": "workspace:*",
     "@living-portfolio/config": "workspace:*",
     "@living-portfolio/core": "workspace:*",
-    "hono": "^4.13.13"
+    "hono": "^4.13.18"
   },
   "devDependencies": {
+    "@types/node": "^22.13.4",
     "esbuild": "^0.25.12",
     "typescript": "^5.7.3",
-    "vitest": "^3.0.7"
+    "vitest": "^4.1.12"
   }
 }

@@ -70,7 +70,7 @@ export const ClaimUpsertSchema = z.object({
   text: z.string().min(1),
   kind: ClaimKindSchema,
   outcome_status: OutcomeStatusSchema.nullable().optional(),
-  scope: z.record(z.any()).nullable().optional(),
+  scope: z.record(z.string(), z.any()).nullable().optional(),
   valid_from: z.string().datetime().nullable().optional(),
   valid_to: z.string().datetime().nullable().optional(),
   temporal_level: TemporalLevelSchema.nullable().optional(),
@@ -84,7 +84,7 @@ export const RelationUpsertSchema = z.object({
   src_claim: z.string().uuid(),
   dst_claim: z.string().uuid(),
   type: RelationTypeSchema,
-  scope: z.record(z.any()).nullable().optional(),
+  scope: z.record(z.string(), z.any()).nullable().optional(),
   status: RelationStatusSchema.default('proposed'),
   valid_from: z.string().datetime().nullable().optional(),
 });
@@ -96,14 +96,14 @@ export const EvidenceUpsertSchema = z.object({
   kind: EvidenceKindSchema,
   url: z.string().url().nullable().optional(),
   media_id: z.string().uuid().nullable().optional(),
-  verification: z.record(z.any()).nullable().optional(),
+  verification: z.record(z.string(), z.any()).nullable().optional(),
   verified_at: z.string().datetime().nullable().optional(),
 });
 
 export const AskQuerySchema = z.object({
   query: z.string().min(1),
   as_of_date: z.string().datetime().nullable().optional(),
-  facets: z.record(z.any()).optional().default({}),
+  facets: z.record(z.string(), z.any()).optional().default({}),
   session_id: z.string().optional(),
   scope_entry_slug: z.string().optional(), // for scoped "Ask about this"
   visitor_contact: z.string().optional(),
@@ -114,7 +114,7 @@ export const BookingCreateSchema = z.object({
   topic: z.string().min(1),
   visitor_name: z.string().optional(),
   visitor_contact: z.string().min(1),
-  facets: z.record(z.any()).optional().default({}),
+  facets: z.record(z.string(), z.any()).optional().default({}),
   preferred_time: z.string().optional(),
   notes: z.string().optional(),
 });

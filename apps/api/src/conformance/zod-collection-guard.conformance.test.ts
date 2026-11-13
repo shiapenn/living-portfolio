@@ -39,8 +39,15 @@ function assertNoZodCollections(schema: any, path: string): void {
   const def = schema._def;
   if (!def) return;
 
-  const typeName = def.typeName;
-  if (typeName === 'ZodArray' || typeName === 'ZodSet' || typeName === 'ZodTuple') {
+  const typeName = def.typeName || def.type;
+  if (
+    typeName === 'ZodArray' ||
+    typeName === 'ZodSet' ||
+    typeName === 'ZodTuple' ||
+    typeName === 'array' ||
+    typeName === 'set' ||
+    typeName === 'tuple'
+  ) {
     throw new Error(
       `Disallowed Zod collection '${typeName}' at ${path}. ` +
       `Unconstrained collections expose CVE-2023-54404 (GHSA-mrhx-c7xc-m3w5) prior to Zod >= 4.6.6 migration.`
@@ -57,7 +64,10 @@ function assertNoZodCollections(schema: any, path: string): void {
   if (def.innerType) {
     assertNoZodCollections(def.innerType, `${path}._inner`);
   }
-  if (def.type) {
+  if (def.element) {
+    assertNoZodCollections(def.element, `${path}._element`);
+  }
+  if (def.type && typeof def.type === 'object') {
     assertNoZodCollections(def.type, `${path}._type`);
   }
   if (def.valueType) {
@@ -65,6 +75,12 @@ function assertNoZodCollections(schema: any, path: string): void {
   }
   if (def.schema) {
     assertNoZodCollections(def.schema, `${path}._schema`);
+  }
+  if (def.in) {
+    assertNoZodCollections(def.in, `${path}._in`);
+  }
+  if (def.out) {
+    assertNoZodCollections(def.out, `${path}._out`);
   }
 }
 
