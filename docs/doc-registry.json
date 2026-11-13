@@ -1081,5 +1081,13 @@
     "path": "docs/execution-reports/A094-wp-152-shared-primitives-and-dev-gallery.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A095",
+    "title": "WP-15.3 shared feedback and container components",
+    "class": "A",
+    "path": "docs/execution-reports/A095-wp-153-shared-feedback-and-container-components.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

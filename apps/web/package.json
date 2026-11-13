@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc && pnpm build:client",
-    "build:client": "esbuild src/client/admin-entry.ts --bundle --format=esm --target=es2022 --outfile=dist/client/admin-entry.js",
+    "build:client": "esbuild src/client/admin-entry.ts src/client/gallery.ts --bundle --format=esm --target=es2022 --outdir=dist/client",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"

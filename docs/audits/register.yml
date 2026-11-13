@@ -3270,36 +3270,42 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3-feedback-and-containers.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
-  verified_by: null
+    - date: 2026-11-13
+      status: partial
+      note: "WP-15.3: Shared Drawer/Dialog component and attachModalController implement role=dialog, aria-modal=true, Escape, focus trap, and focus return; adopted by Reference Editor Page in WP-15.7."
+  verified_by: tests/e2e/wp15-3-feedback-and-containers.spec.ts
 - id: 20261106-UX-14
   audit: AUD-2026-11-06
   title: 'Inspector tabs lack keyboard arrow navigation and roving tabindex'
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3-feedback-and-containers.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
-  verified_by: null
+    - date: 2026-11-13
+      status: partial
+      note: "WP-15.3: Shared Tabs component and initTabs implement ArrowLeft/ArrowRight/Home/End navigation and roving tabindex; adopted by Inspector in WP-16.5."
+  verified_by: tests/e2e/wp15-3-feedback-and-containers.spec.ts
 - id: 20261106-UX-15
   audit: AUD-2026-11-06
   title: 'Undo notification is injected into non-live region; focus is not managed after save, publish, or delete'
@@ -3307,18 +3313,21 @@
     - "12.7"
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3-feedback-and-containers.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
-  verified_by: null
+    - date: 2026-11-13
+      status: partial
+      note: "WP-15.3: Shared StatusLine and updateStatusLine provide polite/assertive live-region announcement with real-countdown Undo; adopted by Reference Editor Page in WP-15.7."
+  verified_by: tests/e2e/wp15-3-feedback-and-containers.spec.ts
 - id: 20261106-UX-16
   audit: AUD-2026-11-06
   title: 'Answering kill switch has inverted aria-pressed semantics and acts instantly with no confirmation dialog'
