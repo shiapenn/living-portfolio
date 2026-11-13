@@ -1033,5 +1033,13 @@
     "path": "docs/execution-reports/A088-wp-14pre-c-ci-cost-control.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A089",
+    "title": "WP-14.7 entry lifecycle hotfix",
+    "class": "A",
+    "path": "docs/execution-reports/A089-wp-147-entry-lifecycle-hotfix.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
