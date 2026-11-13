@@ -61,4 +61,27 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     const axe = await new AxeBuilder({ page }).analyze();
     expect(axe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')).toEqual([]);
   });
+
+  if (process.env.CAPTURE_SCREENSHOTS === '1') {
+    test('captures 36 visual review screenshots (6 states x 3 widths x 2 themes)', async ({ page }) => {
+      await ensureAdminLoggedIn(page);
+      const outDir = process.env.SCREENSHOT_DIR || 'test-results/wp15-7';
+      const states = ['draft', 'unlisted', 'public', 'error', 'empty', 'first-run'] as const;
+      const widths = [320, 768, 1280] as const;
+      const themes = ['light', 'dark'] as const;
+
+      for (const state of states) {
+        for (const width of widths) {
+          await page.setViewportSize({ width, height: 800 });
+          for (const theme of themes) {
+            await page.goto(`/admin/entries/editor?fixture=${state}&theme=${theme}`);
+            await page.screenshot({
+              path: `${outDir}/${state}-${width}px-${theme}.png`,
+              fullPage: true,
+            });
+          }
+        }
+      }
+    });
+  }
 });

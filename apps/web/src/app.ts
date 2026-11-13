@@ -30,6 +30,7 @@ import {
   type WebDataClient,
 } from './renderer.js';
 import { renderPrimitivesGalleryPage } from './primitives/gallery.js';
+import { renderReferenceEditorPage, type ReferenceEditorEntry } from './pages/admin/entries/editor.js';
 
 export interface WebAppOptions {
   client?: LivingPortfolioClient | WebDataClient;
@@ -175,6 +176,72 @@ export function createWebApp(options?: WebAppOptions) {
   if (process.env.NODE_ENV !== 'production') {
     app.get('/admin/dev/primitives', (c) => c.html(renderPrimitivesGalleryPage()));
   }
+
+  const handleReferenceEditor = async (c: any, selectedId?: string) => {
+    const session = await checkSession(c.req.header('cookie'));
+    if (session.setupRequired) return c.redirect('/admin/setup');
+    if (!session.authenticated) return c.redirect('/admin/login');
+    const fixture = c.req.query('fixture');
+    const themeParam = c.req.query('theme') === 'dark' ? 'dark' : c.req.query('theme') === 'light' ? 'light' : undefined;
+    const baseDraft: ReferenceEditorEntry = {
+      id: 'fixture-draft',
+      slug: 'architecture-decision-record',
+      title: 'Architecture decision record',
+      body: 'We chose a single status line under the editor action bar so every result appears in one predictable place.',
+      visibility: 'draft',
+      date: '2026-11-13',
+      temporalConfidence: 'exact',
+      profile: 'decision',
+    };
+    if (fixture === 'first-run' || fixture === 'empty') {
+      return c.html(
+        renderReferenceEditorPage({
+          entries: [],
+          siteName: cfg.PUBLIC_SITE_NAME,
+          showWalkthrough: fixture === 'first-run',
+          initialTheme: themeParam,
+        })
+      );
+    }
+    if (fixture === 'draft' || fixture === 'unlisted' || fixture === 'public' || fixture === 'error') {
+      const vis = fixture === 'unlisted' ? 'unlisted' : fixture === 'public' ? 'public' : 'draft';
+      return c.html(
+        renderReferenceEditorPage({
+          entries: [{ ...baseDraft, visibility: vis }],
+          selectedId: baseDraft.id,
+          siteName: cfg.PUBLIC_SITE_NAME,
+          pageError: fixture === 'error' ? 'Could not save this entry. Check the highlighted fields and try again.' : undefined,
+          titleError: fixture === 'error' ? 'Enter a title before saving.' : undefined,
+          initialTheme: themeParam,
+        })
+      );
+    }
+    const listRes = await (client.entries?.list() || client.listEntries().then((entries) => ({ entries })));
+    const rawEntries = (listRes as any)?.entries ?? [];
+    const mapped: ReferenceEditorEntry[] = rawEntries.map((e: any) => ({
+      id: e.id,
+      slug: e.slug,
+      title: e.title,
+      body: e.body ?? '',
+      visibility: e.visibility === 'public' ? 'public' : e.visibility === 'unlisted' ? 'unlisted' : 'draft',
+      date: e.created_at ?? new Date().toISOString().slice(0, 10),
+      temporalConfidence: e.temporal_confidence ?? 'exact',
+      profile: e.profile ?? 'freeform',
+    }));
+    return c.html(
+      renderReferenceEditorPage({
+        entries: mapped,
+        selectedId: selectedId ?? mapped[0]?.id,
+        siteName: cfg.PUBLIC_SITE_NAME,
+        showWalkthrough: mapped.length === 0,
+        initialTheme: themeParam,
+      })
+    );
+  };
+
+  app.get('/admin/entries/editor', (c) => handleReferenceEditor(c));
+  app.get('/admin/entries/new', (c) => handleReferenceEditor(c));
+  app.get('/admin/entries/:id', (c) => handleReferenceEditor(c, c.req.param('id')));
 
   // Public visitor booking & escalation status routes
   app.get('/book', (c) => c.html(renderBookPage(c.req.query('q'), c.req.query('facets'))));

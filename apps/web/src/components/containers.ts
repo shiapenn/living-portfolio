@@ -23,6 +23,7 @@ export interface DisclosureProps {
   id: string;
   summary: string;
   summaryMeta?: string;
+  summaryMetaId?: string;
   bodyHtml: string;
   open?: boolean;
   className?: string;
@@ -126,10 +127,11 @@ export function renderDrawer(props: DrawerProps): string {
 export function renderDisclosure(props: DisclosureProps): string {
   const classes = ['lp-disclosure', props.className].filter(Boolean).join(' ');
   const openAttr = props.open ? ' open' : '';
+  const metaIdAttr = props.summaryMetaId ? ` id="${escapeHtml(props.summaryMetaId)}"` : '';
   return `<details id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}"${openAttr}>
   <summary class="lp-disclosure-summary">
     <span class="lp-disclosure-label">${escapeHtml(props.summary)}</span>
-    ${props.summaryMeta ? `<span class="lp-disclosure-meta">${escapeHtml(props.summaryMeta)}</span>` : ''}
+    ${props.summaryMeta ? `<span class="lp-disclosure-meta"${metaIdAttr}>${escapeHtml(props.summaryMeta)}</span>` : ''}
   </summary>
   <div class="lp-disclosure-body">${props.bodyHtml}</div>
 </details>`;
