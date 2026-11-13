@@ -8,6 +8,16 @@ import {
   renderSwitch,
   renderField,
 } from './index.js';
+import {
+  renderPageNotice,
+  renderStatusLine,
+  renderDialog,
+  renderDrawer,
+  renderDisclosure,
+  renderTabs,
+  renderTable,
+  renderEmptyState,
+} from '../components/index.js';
 
 /**
  * Renders the development-only primitives gallery for visual and accessibility verification.
@@ -63,7 +73,61 @@ export function renderPrimitivesGalleryPage(): string {
       ${renderField({ kind: 'radio', id: 'gallery-field-radio', name: 'mode', label: 'Decision note', value: 'decision', checked: true })}
     </div>
   </section>
-</section>`;
 
-  return renderLayout('Primitives Gallery', '/admin/dev/primitives', content);
+  <section class="lp-gallery-section" aria-labelledby="gal-feedback">
+    <h2 id="gal-feedback">Feedback &amp; Containers (WP-15.3)</h2>
+    <div class="lp-gallery-stack">
+      ${renderPageNotice({ id: 'gallery-page-notice', tone: 'warn', message: 'Persistent notice: backups are not configured yet.', dismissible: true })}
+      <div class="lp-gallery-row">
+        ${renderButton({ id: 'gallery-trigger-status', label: 'Trigger status', variant: 'secondary' })}
+        ${renderButton({ id: 'gallery-open-dialog', label: 'Open dialog', variant: 'secondary' })}
+        ${renderButton({ id: 'gallery-open-drawer', label: 'Open drawer', variant: 'secondary' })}
+      </div>
+      ${renderStatusLine({ id: 'gallery-status-line', message: '' })}
+      ${renderDisclosure({ id: 'gallery-disclosure', summary: 'Details', summaryMeta: 'Unlisted · 13 Nov 2026 · Exact', bodyHtml: '<p>Slug, visibility, and date settings.</p>' })}
+      ${renderTabs({
+        id: 'gallery-tabs',
+        ariaLabel: 'Gallery sample tabs',
+        tabs: [
+          { id: 'one', label: 'Overview', panelHtml: '<p>Overview panel content.</p>', active: true },
+          { id: 'two', label: 'History', panelHtml: '<p>History panel content.</p>' },
+        ],
+      })}
+      ${renderTable({
+        id: 'gallery-table',
+        caption: 'Sample entries',
+        columns: [
+          { key: 'title', label: 'Title' },
+          { key: 'state', label: 'State' },
+        ],
+        rows: [
+          { title: 'Architecture Decision Record', state: 'Public' },
+          { title: 'Draft Notes', state: 'Draft' },
+        ],
+      })}
+      ${renderEmptyState({
+        id: 'gallery-empty',
+        title: 'No items yet',
+        body: 'Create your first item to populate this list.',
+        actionHtml: renderButton({ id: 'gallery-empty-cta', label: 'Create item', variant: 'primary' }),
+      })}
+    </div>
+  </section>
+</section>
+${renderDialog({
+  id: 'gallery-dialog',
+  title: 'Confirm action',
+  bodyHtml: '<p>Are you sure you want to continue?</p>',
+  footerHtml: `${renderButton({ id: 'gallery-dialog-cancel', label: 'Cancel', variant: 'secondary', dataAttrs: { 'lp-dialog-close': 'true' } })} ${renderButton({ id: 'gallery-dialog-confirm', label: 'Confirm', variant: 'primary' })}`,
+})}
+${renderDrawer({
+  id: 'gallery-drawer',
+  title: 'Structure panel',
+  bodyHtml: '<p>Drawer content stays contained until dismissed.</p>',
+  position: 'right',
+})}`;
+
+  return renderLayout('Primitives Gallery', '/admin/dev/primitives', content, {
+    clientScript: '/assets/client/gallery.js',
+  });
 }

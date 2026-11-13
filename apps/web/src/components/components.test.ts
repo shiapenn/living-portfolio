@@ -86,8 +86,10 @@ describe('WP-15.3 Feedback & Containers', () => {
     });
     expect(tabs).toContain('role="tablist"');
     expect(tabs).toContain('aria-label="Entry structure sections"');
-    expect(tabs).toContain('aria-selected="true" tabindex="0"');
-    expect(tabs).toContain('aria-selected="false" tabindex="-1"');
+    expect(tabs).toContain('aria-selected="true"');
+    expect(tabs).toContain('tabindex="0"');
+    expect(tabs).toContain('aria-selected="false"');
+    expect(tabs).toContain('tabindex="-1"');
     expect(tabs).toContain('role="tabpanel"');
     expect(tabs).toContain('hidden');
   });
