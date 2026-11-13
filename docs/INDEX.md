@@ -98,6 +98,7 @@
 | `A090` | WP-14 entry lifecycle integrity gate closure | `active` | [A090-wp-14-entry-lifecycle-integrity-gate-closure.md](execution-reports/A090-wp-14-entry-lifecycle-integrity-gate-closure.md) | — |
 | `A091` | WP-14.8 scan token binding and single-use | `active` | [A091-wp-148-scan-token-binding-and-single-use.md](execution-reports/A091-wp-148-scan-token-binding-and-single-use.md) | — |
 | `A092` | WP-15.0 DOM-id baseline and dependency upgrades | `active` | [A092-wp-150-dom-id-baseline-and-dependency-upgrades.md](execution-reports/A092-wp-150-dom-id-baseline-and-dependency-upgrades.md) | — |
+| `A093` | WP-15.1 renderer monolith mechanical split | `active` | [A093-wp-151-renderer-monolith-mechanical-split.md](execution-reports/A093-wp-151-renderer-monolith-mechanical-split.md) | — |
 
 ## Handover Snapshots (Class H)
 
