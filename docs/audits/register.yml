@@ -4100,6 +4100,44 @@
       status: open
       note: "Investigation in WP-14 corrections: Tested upgrading drizzle-kit to ^0.31.11. While drizzle-kit 0.31 drops esbuild-register and upgrades its direct esbuild dependency to 0.25.12 (removing esbuild 0.19.12), esbuild 0.18.20 remains pulled in via @esbuild-kit/esm-loader@2.6.5 -> @esbuild-kit/core-utils@3.3.2 (which pins esbuild: ~0.18.20). Upgrading drizzle-kit alone does not resolve Dependabot alert #15. Dev-only migrations remain deferred to WP-15."
   verified_by: null
+- id: 20261106-UX-55
+  audit: AUD-2026-11-06
+  title: 'Owner-facing jargon in editor messages ("L0", "Enrichment pipeline queued", "N revisions purged")'
+  spec_sections:
+    - "12.6"
+    - "12.9"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-10
+      status: open
+      note: "Registered at Gate G14 sign-off: Editor status/toast and workspace copy still expose internal implementation jargon to the owner: (1) 'Published \"...\" at L0. View entry ->' and 'Enrichment pipeline queued' in apps/web/src/client/commit-entry.ts (L430-432) and apps/web/src/renderer.ts (L2489, L3289, L3711), whereas Audit Report §2.3.3 (L558) specifies '\"{title}\" is live. View page ->'; (2) 'Deleted \"...\" (N revisions purged).' observed in WP-14.0a inline delete handler (apps/web/src/renderer.ts at db0082b; simplified in WP-14.0 apps/web/src/client/admin-entry.ts L267 while confirm prompt at L262 still says 'and all its revisions'). Planned for WP-15.5 (Copy and help catalogues, applying §2.3.3 rows across strings/* and client/*) and WP-16.4 (Editor route states and copy)."
+  verified_by: null
+- id: 20261106-UX-56
+  audit: AUD-2026-11-06
+  title: 'Duplicate editor feedback in inline status line and toast with double live-region announcement'
+  spec_sections:
+    - "12.7"
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-10
+      status: open
+      note: "Registered at Gate G14 sign-off: showEditorFeedback() in apps/web/src/client/admin-entry.ts (L74-101) writes the identical HTML message simultaneously to #editor-status-line, #editor-toast, and #admin-status-banner, and both #editor-status-line and #editor-toast in apps/web/src/renderer.ts (L2438-2444) carry role=\"status\" aria-live=\"polite\", causing screen readers to announce every save/publish/unpublish/delete result twice. Audit Report §8 closes D-01..D-10 and defers feedback design to §5.4.1, §6.4, §7.5 (WP-14.0a), and §7.6 (WP-15.3 / UX-15): the inline status line beside the action buttons and the viewport toast have distinct roles (persistent state/save summary vs transient action/undo toast, retiring the top banner), and if both visual surfaces are shown, only one may be an active ARIA live region so assistive technologies announce once. Planned for WP-15.3 (Toast and single polite live-region component) and WP-16.4 (Editor route state strip and feedback)."
+  verified_by: null
 - id: 20261106-UI-01
   audit: AUD-2026-11-06
   title: 'Eight CSS variables referenced without definition; 684 inline style attributes; redaction drawer has missing background'

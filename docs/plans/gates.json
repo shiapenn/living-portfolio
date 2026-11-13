@@ -393,11 +393,11 @@
         "WP-14.6 CSS Variable Verification Gate (UI-01, UI-03) › verify-css-variables passes with 0 undefined variables"
       ],
       "closingReceipt": "A087",
-      "handover": null
+      "handover": "H015"
     },
     "WP-15": {
       "name": "Work Package 15 (Gate G15 Foundations & Token System)",
-      "description": "DOM-id baseline, complete token tiers, UI primitives gallery, dialog/drawer/toast components, mechanical renderer split, copy and help catalogues, and CI guard rails (UI-01 full, UI-03, UX-13..UX-15, UX-23..UX-25, UX-38, CP-01, CP-13, CP-15).",
+      "description": "DOM-id baseline, complete token tiers, UI primitives gallery, dialog/drawer/toast components, mechanical renderer split, copy and help catalogues, and CI guard rails (UI-01 full, UI-03, UX-13..UX-15, UX-23..UX-25, UX-38, UX-55 part, UX-56 part, CP-01, CP-13, CP-15).",
       "requiredTaskIds": [
         "WP-15.0",
         "WP-15.1",
@@ -414,7 +414,7 @@
     },
     "WP-16": {
       "name": "Work Package 16 (Gate G16 Admin Shell, Entries & Inbox)",
-      "description": "Admin routed navigation shell, Today needs-attention view, paginated entries list, per-entry editor routes, 5-tab Inspector pattern, inbox and answer rules, and monolith retirement (UX-06, UX-07 part, UX-12, UX-17 part, UX-37, UX-39).",
+      "description": "Admin routed navigation shell, Today needs-attention view, paginated entries list, per-entry editor routes, 5-tab Inspector pattern, inbox and answer rules, and monolith retirement (UX-06, UX-07 part, UX-12, UX-17 part, UX-37, UX-39, UX-55, UX-56).",
       "requiredTaskIds": [
         "WP-16.1",
         "WP-16.2",
