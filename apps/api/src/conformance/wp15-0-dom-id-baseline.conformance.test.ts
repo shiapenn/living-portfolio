@@ -49,7 +49,7 @@ describe('WP-15.0: DOM-ID Baseline Snapshot & Zod 4 / Vitest 4 Dependency Upgrad
     }
 
     const doc = buildOpenApiDocument();
-    const committedSpec = JSON.parse(readFileSync(resolve(repoRoot, 'docs/api/openapi.json'), 'utf8'));
+    const committedSpec = JSON.parse(readFileSync(resolve(repoRoot, 'docs/spec/openapi.json'), 'utf8'));
     expect(doc).toEqual(committedSpec);
   });
 

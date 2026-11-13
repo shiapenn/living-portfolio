@@ -50,53 +50,64 @@ export interface OpenApiSchemaObject {
  * Converts a Zod schema into an OpenAPI 3.1 compatible JSON Schema definition.
  */
 export function zodToOpenApi(schema: z.ZodTypeAny): OpenApiSchemaObject {
-  const def = (schema as any)._def;
+  const def = (schema as any)?._def;
   if (!def) return {};
 
-  const typeName = def.typeName;
+  const typeName = def.typeName || def.type;
 
   switch (typeName) {
-    case 'ZodString': {
+    case 'ZodString':
+    case 'string': {
       const res: OpenApiSchemaObject = { type: 'string' };
       if (def.checks) {
         for (const check of def.checks) {
-          if (check.kind === 'datetime') res.format = 'date-time';
-          else if (check.kind === 'uuid') res.format = 'uuid';
-          else if (check.kind === 'url') res.format = 'uri';
-          else if (check.kind === 'regex') res.pattern = check.regex.source;
-          else if (check.kind === 'min') res.minimum = check.value;
-          else if (check.kind === 'max') res.maximum = check.value;
+          const c = check?._zod?.def || check?.def || check;
+          if (c.kind === 'datetime' || c.format === 'datetime') res.format = 'date-time';
+          else if (c.kind === 'uuid' || c.format === 'uuid') res.format = 'uuid';
+          else if (c.kind === 'url' || c.format === 'url') res.format = 'uri';
+          else if (c.kind === 'regex' || c.format === 'regex') res.pattern = (c.regex || c.pattern).source;
+          else if (c.kind === 'min' || c.check === 'min_length') res.minimum = c.value ?? c.minimum;
+          else if (c.kind === 'max' || c.check === 'max_length') res.maximum = c.value ?? c.maximum;
         }
       }
       return res;
     }
 
-    case 'ZodNumber': {
+    case 'ZodNumber':
+    case 'number': {
       const res: OpenApiSchemaObject = { type: 'number' };
       if (def.checks) {
         for (const check of def.checks) {
-          if (check.kind === 'min') res.minimum = check.value;
-          else if (check.kind === 'max') res.maximum = check.value;
-          else if (check.kind === 'int') res.type = 'integer';
+          const c = check?._zod?.def || check?.def || check;
+          if (c.kind === 'min' || c.check === 'greater_than') res.minimum = c.value;
+          else if (c.kind === 'max' || c.check === 'less_than') res.maximum = c.value;
+          else if (c.kind === 'int' || c.format === 'safeint' || c.format === 'int32') res.type = 'integer';
         }
       }
       return res;
     }
 
     case 'ZodBoolean':
+    case 'boolean':
       return { type: 'boolean' };
 
     case 'ZodEnum':
-      return { type: 'string', enum: [...def.values] };
-
-    case 'ZodArray':
+    case 'enum':
       return {
-        type: 'array',
-        items: zodToOpenApi(def.type),
+        type: 'string',
+        enum: def.values ? [...def.values] : Object.values(def.entries || {}),
       };
 
-    case 'ZodObject': {
-      const shape = def.shape();
+    case 'ZodArray':
+    case 'array':
+      return {
+        type: 'array',
+        items: zodToOpenApi(def.type || def.element),
+      };
+
+    case 'ZodObject':
+    case 'object': {
+      const shape = typeof def.shape === 'function' ? def.shape() : def.shape;
       const properties: Record<string, OpenApiSchemaObject> = {};
       const required: string[] = [];
 
@@ -106,7 +117,13 @@ export function zodToOpenApi(schema: z.ZodTypeAny): OpenApiSchemaObject {
         let isOptional = false;
         let cur: any = propSchema;
         while (cur && cur._def) {
-          if (cur._def.typeName === 'ZodOptional' || cur._def.typeName === 'ZodDefault') {
+          const curType = cur._def.typeName || cur._def.type;
+          if (
+            curType === 'ZodOptional' ||
+            curType === 'ZodDefault' ||
+            curType === 'optional' ||
+            curType === 'default'
+          ) {
             isOptional = true;
             break;
           }
@@ -128,41 +145,53 @@ export function zodToOpenApi(schema: z.ZodTypeAny): OpenApiSchemaObject {
     }
 
     case 'ZodRecord':
+    case 'record':
       return {
         type: 'object',
         additionalProperties: zodToOpenApi(def.valueType),
       };
 
     case 'ZodOptional':
+    case 'optional':
       return zodToOpenApi(def.innerType);
 
-    case 'ZodNullable': {
+    case 'ZodNullable':
+    case 'nullable': {
       const inner = zodToOpenApi(def.innerType);
       return { ...inner, nullable: true };
     }
 
-    case 'ZodDefault': {
+    case 'ZodDefault':
+    case 'default': {
       const inner = zodToOpenApi(def.innerType);
       try {
-        return { ...inner, default: def.defaultValue() };
+        const defaultVal =
+          typeof def.defaultValue === 'function' ? def.defaultValue() : def.defaultValue;
+        return { ...inner, default: defaultVal };
       } catch {
         return inner;
       }
     }
 
     case 'ZodUnion':
+    case 'union':
       return {
         oneOf: def.options.map((opt: z.ZodTypeAny) => zodToOpenApi(opt)),
       };
 
     case 'ZodLiteral':
+    case 'literal': {
+      const val = def.values ? def.values[0] : def.value;
       return {
-        type: typeof def.value,
-        enum: [def.value],
+        type: typeof val,
+        enum: [val],
       };
+    }
 
     case 'ZodAny':
+    case 'any':
     case 'ZodUnknown':
+    case 'unknown':
       return {};
 
     default:

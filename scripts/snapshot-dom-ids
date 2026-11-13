@@ -1,0 +1,266 @@
+#!/usr/bin/env node
+/**
+ * Living Portfolio DOM-ID, Test-Hook, and Asserted-String Baseline Guard (`scripts/snapshot-dom-ids`)
+ * WP-15.0: Renders every page with fixture data and records every element `id`, `data-testid`,
+ * and `data-*` attribute hook, plus user-visible strings asserted by existing tests.
+ * Fails verification if any baseline id, data-testid, or data-* hook disappears without an allowlist entry.
+ */
+import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { resolve, relative } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const DEFAULT_BASELINE_PATH = resolve(ROOT, 'docs/audits/dom-id-baseline.json');
+
+function stripScriptsAndStyles(html) {
+  return html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '');
+}
+
+export function extractDomHooksFromHtml(html) {
+  const clean = stripScriptsAndStyles(html);
+  const ids = new Set();
+  const dataTestIds = new Set();
+  const dataHooks = new Set();
+
+  const tagRegex = /<[a-zA-Z][a-zA-Z0-9-]*\b([^>]*?)>/g;
+  let tagMatch;
+  while ((tagMatch = tagRegex.exec(clean)) !== null) {
+    const attrs = tagMatch[1];
+
+    const idMatch = attrs.match(/\bid\s*=\s*(?:"([^"]+)"|'([^']+)')/);
+    if (idMatch) {
+      const val = (idMatch[1] || idMatch[2] || '').trim();
+      if (val) ids.add(val);
+    }
+
+    const testIdMatch = attrs.match(/\bdata-testid\s*=\s*(?:"([^"]+)"|'([^']+)')/);
+    if (testIdMatch) {
+      const val = (testIdMatch[1] || testIdMatch[2] || '').trim();
+      if (val) dataTestIds.add(val);
+    }
+
+    const dataAttrRegex = /\b(data-[a-z0-9-]+)(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?/gi;
+    let dMatch;
+    while ((dMatch = dataAttrRegex.exec(attrs)) !== null) {
+      dataHooks.add(dMatch[1].toLowerCase());
+    }
+  }
+
+  return {
+    ids: [...ids].sort(),
+    dataTestIds: [...dataTestIds].sort(),
+    dataHooks: [...dataHooks].sort(),
+  };
+}
+
+function walkTsFiles(dir, out = []) {
+  if (!existsSync(dir)) return out;
+  for (const entry of readdirSync(dir)) {
+    const full = resolve(dir, entry);
+    const st = statSync(full);
+    if (st.isDirectory()) {
+      walkTsFiles(full, out);
+    } else if (entry.endsWith('.ts')) {
+      out.push(full);
+    }
+  }
+  return out;
+}
+
+export function extractAssertedStrings(root = ROOT) {
+  const files = [
+    ...walkTsFiles(resolve(root, 'tests/e2e')),
+    ...walkTsFiles(resolve(root, 'apps/api/src/conformance')),
+  ];
+  const strings = new Set();
+  const patterns = [
+    /\.toContainText\(\s*'([^'\\\n]{3,120})'\s*\)/g,
+    /\.toContainText\(\s*"([^"\\\n]{3,120})"\s*\)/g,
+    /\.getByText\(\s*'([^'\\\n]{3,120})'\s*\)/g,
+    /\.getByText\(\s*"([^"\\\n]{3,120})"\s*\)/g,
+    /\.getByLabel\(\s*'([^'\\\n]{3,120})'\s*\)/g,
+    /\.getByLabel\(\s*"([^"\\\n]{3,120})"\s*\)/g,
+  ];
+
+  for (const file of files) {
+    const src = readFileSync(file, 'utf8');
+    for (const pat of patterns) {
+      pat.lastIndex = 0;
+      let m;
+      while ((m = pat.exec(src)) !== null) {
+        const val = m[1].trim();
+        if (val && !val.startsWith('<') && !val.startsWith('id=')) {
+          strings.add(val);
+        }
+      }
+    }
+  }
+
+  return [...strings].sort();
+}
+
+export async function generateDomIdSnapshot(root = ROOT) {
+  const webDistUrl = pathToFileURL(resolve(root, 'apps/web/dist/index.js')).href;
+  const web = await import(webDistUrl);
+
+  const repo = web.createTestClient({ authenticated: true, setupRequired: false });
+
+  const pageRenders = {
+    home: await web.renderHomePage(repo),
+    work: await web.renderWorkOrWritingPage(repo, 'work'),
+    writing: await web.renderWorkOrWritingPage(repo, 'writing'),
+    'entry-detail-2024': await web.renderEntryDetailPage(repo, 'advisory-locks-revisited'),
+    'entry-detail-2021-superseded': await web.renderEntryDetailPage(repo, 'redis-distributed-locks-2021'),
+    'entry-detail-hindsight': await web.renderEntryDetailPage(repo, 'premature-microservices-retrospective'),
+    build: await web.renderBuildPage(repo),
+    'build-venture': await web.renderBuildVenturePage(repo, 'strata-engine'),
+    timeline: await web.renderTimelinePage(repo),
+    ask: await web.renderAskPage(repo, 'What is the advisory lock latency?'),
+    'static-now': web.renderStaticPage('now'),
+    'static-about': web.renderStaticPage('about'),
+    'static-uses': web.renderStaticPage('uses'),
+    book: web.renderBookPage('Architecture question'),
+    'ask-status': await web.renderAskStatusPage(repo, 'seed-esc-status-token'),
+    'not-found': web.renderNotFoundPage('Page not found', '/missing'),
+    'admin-workspace': await web.renderAdminWorkspacePage(repo, {
+      settingsState: {},
+      legacyRecoveryUsed: true,
+    }),
+    'admin-settings': await web.renderAdminSettingsPage(repo, {}),
+    'admin-login': web.renderAdminLoginPage(),
+    'admin-setup': web.renderAdminSetupPage(),
+    'admin-import': await web.renderAdminImportPage(repo),
+  };
+
+  const pages = {};
+  const allIds = new Set();
+  const allDataTestIds = new Set();
+  const allDataHooks = new Set();
+
+  for (const [pageName, rendered] of Object.entries(pageRenders)) {
+    const html = typeof rendered === 'string' ? rendered : rendered?.html || '';
+    const extracted = extractDomHooksFromHtml(html);
+    pages[pageName] = extracted;
+    for (const id of extracted.ids) allIds.add(id);
+    for (const tid of extracted.dataTestIds) allDataTestIds.add(tid);
+    for (const hook of extracted.dataHooks) allDataHooks.add(hook);
+  }
+
+  return {
+    version: 1,
+    allowlist: {
+      removedIds: [],
+      removedDataTestIds: [],
+      removedDataHooks: [],
+    },
+    allIds: [...allIds].sort(),
+    allDataTestIds: [...allDataTestIds].sort(),
+    allDataHooks: [...allDataHooks].sort(),
+    assertedStrings: extractAssertedStrings(root),
+    pages,
+  };
+}
+
+export async function verifyDomIdBaseline(options = {}) {
+  const root = options.root || ROOT;
+  const baselinePath = options.baselinePath || DEFAULT_BASELINE_PATH;
+  const snapshot = options.snapshotOverride || (await generateDomIdSnapshot(root));
+
+  let baseline = options.baselineOverride;
+  if (!baseline) {
+    if (!existsSync(baselinePath)) {
+      return {
+        ok: false,
+        errors: [`DOM-ID baseline file missing: ${relative(root, baselinePath)}`],
+        snapshot,
+      };
+    }
+    baseline = JSON.parse(readFileSync(baselinePath, 'utf8'));
+  }
+
+  const allowedIds = new Set(baseline.allowlist?.removedIds || []);
+  const allowedTestIds = new Set(baseline.allowlist?.removedDataTestIds || []);
+  const allowedHooks = new Set(baseline.allowlist?.removedDataHooks || []);
+
+  const currentIds = new Set(snapshot.allIds);
+  const currentTestIds = new Set(snapshot.allDataTestIds);
+  const currentHooks = new Set(snapshot.allDataHooks);
+
+  const errors = [];
+
+  for (const expectedId of baseline.allIds || []) {
+    if (!currentIds.has(expectedId) && !allowedIds.has(expectedId)) {
+      errors.push(`Missing rendered DOM id '#${expectedId}' (not in allowlist.removedIds)`);
+    }
+  }
+
+  for (const expectedTestId of baseline.allDataTestIds || []) {
+    if (!currentTestIds.has(expectedTestId) && !allowedTestIds.has(expectedTestId)) {
+      errors.push(`Missing rendered data-testid '${expectedTestId}' (not in allowlist.removedDataTestIds)`);
+    }
+  }
+
+  for (const expectedHook of baseline.allDataHooks || []) {
+    if (!currentHooks.has(expectedHook) && !allowedHooks.has(expectedHook)) {
+      errors.push(`Missing rendered data-* hook '${expectedHook}' (not in allowlist.removedDataHooks)`);
+    }
+  }
+
+  for (const [pageName, baselinePage] of Object.entries(baseline.pages || {})) {
+    const currentPage = snapshot.pages[pageName];
+    if (!currentPage) {
+      errors.push(`Missing rendered page '${pageName}' in DOM-ID snapshot`);
+      continue;
+    }
+    const pageIds = new Set(currentPage.ids);
+    for (const id of baselinePage.ids || []) {
+      if (!pageIds.has(id) && !allowedIds.has(id)) {
+        errors.push(`Page '${pageName}': missing rendered DOM id '#${id}'`);
+      }
+    }
+  }
+
+  return {
+    ok: errors.length === 0,
+    errors,
+    snapshot,
+  };
+}
+
+const isMain =
+  process.argv[1] &&
+  resolve(process.argv[1]) === resolve(import.meta.dirname, 'snapshot-dom-ids');
+
+if (isMain) {
+  const writeMode = process.argv.includes('--write');
+  if (writeMode) {
+    const snapshot = await generateDomIdSnapshot(ROOT);
+    if (existsSync(DEFAULT_BASELINE_PATH)) {
+      try {
+        const existing = JSON.parse(readFileSync(DEFAULT_BASELINE_PATH, 'utf8'));
+        if (existing.allowlist) {
+          snapshot.allowlist = existing.allowlist;
+        }
+      } catch {}
+    }
+    writeFileSync(DEFAULT_BASELINE_PATH, JSON.stringify(snapshot, null, 2) + '\n', 'utf8');
+    console.log(
+      `[snapshot-dom-ids] Wrote baseline to ${relative(ROOT, DEFAULT_BASELINE_PATH)} (${snapshot.allIds.length} ids, ${snapshot.allDataTestIds.length} data-testids, ${snapshot.allDataHooks.length} data-* hooks, ${snapshot.assertedStrings.length} asserted strings).`
+    );
+    process.exit(0);
+  } else {
+    const res = await verifyDomIdBaseline();
+    if (!res.ok) {
+      console.error('[snapshot-dom-ids] DOM-ID baseline verification FAILED:');
+      for (const err of res.errors) {
+        console.error(`  - ${err}`);
+      }
+      process.exit(1);
+    }
+    console.log(
+      `[snapshot-dom-ids] OK: ${res.snapshot.allIds.length} DOM ids, ${res.snapshot.allDataTestIds.length} data-testids, and ${res.snapshot.allDataHooks.length} data-* hooks verified across ${Object.keys(res.snapshot.pages).length} pages.`
+    );
+  }
+}

@@ -10,6 +10,7 @@
     "test:e2e": "playwright test",
     "verify": "node scripts/verify-all",
     "verify:css-variables": "node scripts/verify-css-variables",
+    "dom:snapshot": "node scripts/snapshot-dom-ids",
     "triage": "node scripts/triage",
     "audit:check": "node scripts/audit-check",
     "receipt:check": "node scripts/receipt-check",
