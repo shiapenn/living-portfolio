@@ -82,7 +82,7 @@ describe('WP-15.2 Shared Primitives', () => {
       error: 'Title is required.',
       required: true,
     });
-    expect(input).toContain('<label for="field-title"');
+    expect(input).toContain('<label class="lp-field-label" for="field-title"');
     expect(input).toContain('aria-invalid="true"');
     expect(input).toContain('aria-describedby="field-title-help field-title-error"');
     expect(input).toContain('role="alert"');

@@ -29,6 +29,7 @@ import {
   adaptDataSource,
   type WebDataClient,
 } from './renderer.js';
+import { renderPrimitivesGalleryPage } from './primitives/gallery.js';
 
 export interface WebAppOptions {
   client?: LivingPortfolioClient | WebDataClient;
@@ -171,6 +172,9 @@ export function createWebApp(options?: WebAppOptions) {
   });
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
   app.get('/admin/settings', async (c) => c.html(await renderAdminSettingsPage(client)));
+  if (process.env.NODE_ENV !== 'production') {
+    app.get('/admin/dev/primitives', (c) => c.html(renderPrimitivesGalleryPage()));
+  }
 
   // Public visitor booking & escalation status routes
   app.get('/book', (c) => c.html(renderBookPage(c.req.query('q'), c.req.query('facets'))));

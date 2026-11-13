@@ -3449,18 +3449,21 @@
     - "12.5"
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-2-primitives-gallery.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
-  verified_by: null
+    - date: 2026-11-13
+      status: partial
+      note: "WP-15.2: All shared primitives in apps/web/src/primitives/* enforce >= 40x40 target size via --size-target-min; legacy pages adopt primitives in WP-15.7 and WP-16."
+  verified_by: tests/e2e/wp15-2-primitives-gallery.spec.ts
 - id: 20261106-UX-24
   audit: AUD-2026-11-06
   title: 'Single-character keyboard shortcuts in triage lack toggle or remap mechanism (WCAG 2.1 SC 2.1.4)'
@@ -3789,18 +3792,21 @@
     - "12.1"
     - "12.2"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/web/src/primitives/primitives.test.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
-  verified_by: null
+    - date: 2026-11-13
+      status: fixed
+      note: "WP-15.2: Shared Chip primitive renders distinct lp-chip-suggested (dashed) vs lp-chip-confirmed styles, verified in primitives.test.ts and wp15-2-primitives-gallery.spec.ts."
+  verified_by: apps/web/src/primitives/primitives.test.ts
 - id: 20261106-UX-39
   audit: AUD-2026-11-06
   title: 'Status indicators in admin header look interactive but have no legend, popover, or drill-down links'
