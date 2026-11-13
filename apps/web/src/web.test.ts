@@ -972,7 +972,7 @@ console.log(x);
 
   describe('WP-13.5: Wizard Wording, States & Zero-Vendor Scan (UX-29, UX-33, CP-14, CP-15)', () => {
     it('1. Setup markup has zero hardcoded vendor, model, or sample worked-example names (CP-15)', () => {
-      const rendererSource = readFileSync(new URL('./renderer.ts', import.meta.url), 'utf8');
+      const rendererSource = readFileSync(new URL('./pages/admin/setup.ts', import.meta.url), 'utf8');
       const setupFnMatch = rendererSource.match(/export function renderAdminSetupPage\(\)[\s\S]*?return renderLayout/);
       expect(setupFnMatch).toBeTruthy();
       const setupMarkup = setupFnMatch![0];

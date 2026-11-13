@@ -551,8 +551,8 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
   });
 
   test('14. WP-13.5: Wizard wording, states, and zero-vendor markup scan (UX-29, UX-33, CP-14, CP-15)', async () => {
-    // 1. Verify zero-vendor scan on setup markup in renderer.ts
-    const rendererPath = new URL('../../apps/web/src/renderer.ts', import.meta.url);
+    // 1. Verify zero-vendor scan on setup markup in pages/admin/setup.ts
+    const rendererPath = new URL('../../apps/web/src/pages/admin/setup.ts', import.meta.url);
     const rendererSource = readFileSync(rendererPath, 'utf8');
     const setupFnMatch = rendererSource.match(/export function renderAdminSetupPage\(\)[\s\S]*?return renderLayout/);
     expect(setupFnMatch).toBeTruthy();

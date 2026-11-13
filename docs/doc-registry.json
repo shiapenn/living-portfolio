@@ -1065,5 +1065,13 @@
     "path": "docs/execution-reports/A092-wp-150-dom-id-baseline-and-dependency-upgrades.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A093",
+    "title": "WP-15.1 renderer monolith mechanical split",
+    "class": "A",
+    "path": "docs/execution-reports/A093-wp-151-renderer-monolith-mechanical-split.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
