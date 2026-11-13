@@ -22,7 +22,7 @@
     "@living-portfolio/client": "workspace:*",
     "@living-portfolio/config": "workspace:*",
     "@living-portfolio/core": "workspace:*",
-    "hono": "^4.13.13"
+    "hono": "^4.13.16"
   },
   "devDependencies": {
     "esbuild": "^0.25.12",

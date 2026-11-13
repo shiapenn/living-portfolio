@@ -21,7 +21,7 @@
     "@living-portfolio/db": "workspace:*",
     "@living-portfolio/web": "workspace:*",
     "@living-portfolio/worker": "workspace:*",
-    "hono": "^4.7.2",
+    "hono": "^4.13.16",
     "qrcode": "^1.5.4",
     "zod": "^3.24.2"
   },
