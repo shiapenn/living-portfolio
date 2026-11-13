@@ -1057,5 +1057,13 @@
     "path": "docs/execution-reports/A091-wp-148-scan-token-binding-and-single-use.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A092",
+    "title": "WP-15.0 DOM-id baseline and dependency upgrades",
+    "class": "A",
+    "path": "docs/execution-reports/A092-wp-150-dom-id-baseline-and-dependency-upgrades.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
