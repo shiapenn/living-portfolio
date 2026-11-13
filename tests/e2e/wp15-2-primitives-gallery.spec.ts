@@ -1,14 +1,10 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { resetAppState, setupAndLogin } from './helpers.js';
+import { ensureAdminLoggedIn } from './helpers.js';
 
 test.describe('WP-15.2 Shared Primitives & Gallery', () => {
-  test.beforeEach(async () => {
-    await resetAppState();
-  });
-
   test('dev gallery renders all primitives cleanly with axe, target sizes, roles, and cursor semantics', async ({ page }) => {
-    await setupAndLogin(page);
+    await ensureAdminLoggedIn(page);
     await page.goto('/admin/dev/primitives');
 
     await expect(page.getByRole('heading', { name: 'Primitives Gallery' })).toBeVisible();
