@@ -222,3 +222,5 @@ To verify your credentials and session management:
 - **Port Truth:** The application default port is **`4000`** (not `3000`). If configuring reverse proxies (Caddy, Nginx, Cloudflare Tunnels), forward traffic to port `4000`.
 - **Admin Guarding:** Any direct browser navigation to `/admin`, `/admin/settings`, or `/admin/import` without an active authenticated session automatically redirects to `/admin/login` (or `/admin/setup` if the owner account is not yet initialized).
 - **Bundled Web Mode:** If deploying API and frontend as a single service, ensure `ENABLE_BUNDLED_WEB=true` is present in your environment.
+
+<!-- throwaway-docs-only verification -->

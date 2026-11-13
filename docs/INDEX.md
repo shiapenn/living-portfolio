@@ -154,5 +154,3 @@
 | `L015` | UX Specification Audit Report | `frozen` | [report.md](audits/2026-11-06-ux-specification-audit/report.md) | — |
 | `L016` | Start-Here Onboarding Runbook and Deployment Checklist | `active` | [START-HERE.md](START-HERE.md) | — |
 
-
-<!-- throwaway-docs-only verification -->
