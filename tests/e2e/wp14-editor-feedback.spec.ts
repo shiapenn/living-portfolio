@@ -14,7 +14,8 @@ test.describe.serial('WP-14.0a: In-viewport editor feedback and live announcemen
 
     // Select editor action controls
     const saveDraftBtn = page.locator('#btn-save-draft');
-    const publishBtn = page.locator('#btn-publish-entry');
+    const openDialogBtn = page.locator('#btn-open-publish-dialog');
+    const confirmPublishBtn = page.locator('#btn-confirm-publish');
     const unpublishBtn = page.locator('#btn-unpublish');
     const deleteBtn = page.locator('#btn-delete-entry');
 
@@ -66,13 +67,10 @@ test.describe.serial('WP-14.0a: In-viewport editor feedback and live announcemen
     // -------------------------------------------------------------
     // ACTION 2: Publish
     // -------------------------------------------------------------
-    // Pre-publish check and NDA confirmation
-    await page.click('#btn-redaction-check');
-    await expect(page.locator('#redaction-preview-box')).toBeVisible();
-    await page.check('#entry-nda-confirmed');
-
-    await publishBtn.scrollIntoViewIfNeeded();
-    await publishBtn.click();
+    await openDialogBtn.scrollIntoViewIfNeeded();
+    await openDialogBtn.click();
+    await expect(page.locator('#publish-scan-status')).toContainText(/nothing found|0 confidential/i);
+    await confirmPublishBtn.click();
 
     // Feedback must be visible in viewport without scrolling
     await expect(editorStatusLine).toBeVisible({ timeout: 5000 });

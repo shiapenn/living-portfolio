@@ -20,7 +20,8 @@ test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview
     const redactBox = page.locator('#redaction-preview-box');
     const bodyInput = page.locator('#entry-body');
     const ndaCheckbox = page.locator('#entry-nda-confirmed');
-    const publishBtn = page.locator('#btn-publish-entry');
+    const openDialogBtn = page.locator('#btn-open-publish-dialog');
+    const confirmPublishBtn = page.locator('#btn-confirm-publish');
     const banner = page.locator('#admin-status-banner');
 
     // 1. Clean state: only state permitted to render green (border-color:var(--role-outcome))
@@ -67,15 +68,18 @@ test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview
     await page.fill('#entry-slug', 'excluded-project-notes');
     await page.fill('#entry-date', '2026-01-01');
     await ndaCheckbox.uncheck();
-    await publishBtn.click();
+    await openDialogBtn.click();
+    await expect(page.locator('#publish-dialog')).toBeVisible();
+    await expect(page.locator('#publish-nda-section')).toBeVisible();
+    await confirmPublishBtn.click();
 
-    // Submission blocked by client-side gate
-    await expect(banner.locator('.later-thinking-banner')).toBeVisible();
-    await expect(banner).toContainText('Confidentiality & NDA confirmation is required');
+    // Submission blocked by dialog gate
+    await expect(page.locator('#publish-dialog-alert')).toBeVisible();
+    await expect(page.locator('#publish-dialog-alert')).toContainText('Confidentiality & NDA confirmation is required');
 
     // 6. Check NDA confirmation checkbox and publish
-    await ndaCheckbox.check();
-    await publishBtn.click();
+    await page.check('#publish-dialog-nda');
+    await confirmPublishBtn.click();
 
     // Submission succeeds
     await expect(banner.locator('.as-of-banner')).toBeVisible();
@@ -90,7 +94,6 @@ test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview
     const redactBox = page.locator('#redaction-preview-box');
     const bodyInput = page.locator('#entry-body');
     const tokenInput = page.locator('#entry-preview-token');
-    const publishBtn = page.locator('#btn-publish-entry');
     const banner = page.locator('#admin-status-banner');
 
     // 1. Initial form fill without clicking "Preview Redaction"
@@ -103,7 +106,9 @@ test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview
     await expect(tokenInput).toHaveValue('');
 
     // 2. Publish Gate: publish is blocked without a token
-    await publishBtn.click();
+    await page.evaluate(async () => {
+      await (window as any).commitEntry('publish');
+    });
     await expect(banner.locator('[data-gate="preview-token"]')).toBeVisible();
     await expect(banner).toContainText('Redaction preview check is required before publishing');
     await expect(banner).not.toContainText('Published');
@@ -129,7 +134,9 @@ test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview
     await expect(redactBox).toContainText('Body edited since last check — preview token invalidated');
 
     // 5. Attempting to publish with invalidated token is blocked
-    await publishBtn.click();
+    await page.evaluate(async () => {
+      await (window as any).commitEntry('publish');
+    });
     await expect(banner.locator('[data-gate="preview-token"]')).toBeVisible();
     await expect(banner).toContainText('Redaction preview check is required before publishing');
 
@@ -142,8 +149,10 @@ test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview
     expect(reissuedToken).toBeTruthy();
     expect(reissuedToken.length).toBeGreaterThan(20);
 
-    // 7. Publish succeeds with valid token
-    await publishBtn.click();
+    // 7. Publish succeeds with valid token via single publish dialog path
+    await page.click('#btn-open-publish-dialog');
+    await expect(page.locator('#publish-dialog')).toBeVisible();
+    await page.click('#btn-confirm-publish');
     await expect(banner.locator('.as-of-banner')).toBeVisible();
     await expect(banner).toContainText('Published "Preview Token Lifecycle Entry" at L0');
 

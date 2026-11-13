@@ -29,10 +29,9 @@ test.describe.serial('WP-11.1: Debounced Static Rebuild UI & Ask Flow Repair (20
     await page.fill('#entry-slug', 'distributed-queue-architecture');
     await page.fill('#entry-date', '2026-01-01');
     await page.fill('#entry-body', 'We built a distributed queue with Raft consensus and SQLite.');
-    await page.click('#btn-redaction-check');
-    await expect(page.locator('#redaction-preview-box')).toBeVisible();
-    await page.check('#entry-nda-confirmed');
-    await page.click('#btn-publish-entry');
+    await page.click('#btn-open-publish-dialog');
+    await expect(page.locator('#publish-scan-status')).toContainText(/nothing found|0 confidential/i);
+    await page.click('#btn-confirm-publish');
 
     await expect(banner).toBeVisible();
     await expect(banner).toContainText(/Published "Distributed Queue Architecture"/i);

@@ -61,6 +61,7 @@ test.describe.serial('WP-14.7 Hotfix: Single Publish Path, Dialog Step Numbering
     const listItem = page.locator('#admin-entries-list li[data-entry-id]').filter({ hasText: entryTitle });
     await listItem.click();
     await expect(page.locator('#entry-title')).toHaveValue(entryTitle);
+    await expect(page.locator('#entry-body')).toHaveValue(initialBody);
 
     const openDialogBtn = page.locator('#btn-open-publish-dialog');
     const publishDialog = page.locator('#publish-dialog');

@@ -32,6 +32,7 @@ let activeEntryState: {
   previewToken: string;
   hasWarnings: boolean;
   undoTimeout: any;
+  undoInterval: any;
 } = {
   id: '',
   visibility: 'private',
@@ -39,6 +40,7 @@ let activeEntryState: {
   previewToken: '',
   hasWarnings: false,
   undoTimeout: null,
+  undoInterval: null,
 };
 
 export function getActiveEntryState() {
@@ -152,70 +154,71 @@ export function readForm(): FormState {
 }
 
 export async function ensureRedactionToken(
-  s: FormState,
-  forceScan = false
+  s: FormState
 ): Promise<{ token: string; nda: boolean; cancelled?: boolean }> {
-  // If we already have a valid token and not forcing re-scan, use it
-  if (!forceScan && activeEntryState.previewToken && !s.bodyChanged) {
-    const ndaConfirmed = (document.getElementById('entry-nda-confirmed') as HTMLInputElement | null)?.checked || false;
-    if (activeEntryState.hasWarnings && !ndaConfirmed) {
-      showEditorFeedback(
-        '<div class="later-thinking-banner" role="alert" data-gate="nda-confirmed">Confidentiality &amp; NDA confirmation is required before publishing entries with potential secrets or exclusion warnings.</div>',
-        true
-      );
-      return { token: '', nda: false, cancelled: true };
-    }
-    return { token: activeEntryState.previewToken, nda: ndaConfirmed };
-  }
-
-  // Auto-run redaction scan
-  try {
-    const res = await clientFetch('/api/entries/redaction-preview', {
-      method: 'POST',
-      body: JSON.stringify({
-        text: s.body,
-        entryId: s.id || undefined,
-      }),
-    });
-    if (!res.ok) {
-      showEditorFeedback(
-        '<div class="later-thinking-banner" role="alert" data-gate="preview-token">Redaction preview check is required before publishing. Please click "Check for private details".</div>',
-        true
-      );
-      return { token: '', nda: false, cancelled: true };
-    }
-    const data = await res.json();
-    const token = data.redactionPreviewToken || '';
-    const warnings = data.warnings || [];
-    const hasWarnings = warnings.length > 0;
-    setPreviewToken(token, hasWarnings);
-
-    const ndaConfirmed = (document.getElementById('entry-nda-confirmed') as HTMLInputElement | null)?.checked || false;
-    if (hasWarnings && !ndaConfirmed) {
-      showEditorFeedback(
-        '<div class="later-thinking-banner" role="alert" data-gate="nda-confirmed">Confidentiality &amp; NDA confirmation is required before publishing entries with potential secrets or exclusion warnings.</div>',
-        true
-      );
-      return { token, nda: false, cancelled: true };
-    }
-    return { token, nda: ndaConfirmed };
-  } catch (_) {
+  if (!activeEntryState.previewToken) {
     showEditorFeedback(
-      '<div class="later-thinking-banner" role="alert">Network error during redaction preview check.</div>',
+      '<div class="later-thinking-banner" role="alert" data-gate="preview-token">Redaction preview check is required before publishing. Please click "Check for private details".</div>',
       true
     );
     return { token: '', nda: false, cancelled: true };
   }
+
+  const ndaConfirmed = (document.getElementById('entry-nda-confirmed') as HTMLInputElement | null)?.checked || false;
+  if (activeEntryState.hasWarnings && !ndaConfirmed) {
+    showEditorFeedback(
+      '<div class="later-thinking-banner" role="alert" data-gate="nda-confirmed">Confidentiality &amp; NDA confirmation is required before publishing entries with potential secrets or exclusion warnings.</div>',
+      true
+    );
+    return { token: '', nda: false, cancelled: true };
+  }
+  return { token: activeEntryState.previewToken, nda: ndaConfirmed };
+}
+
+function clearUndoTimers() {
+  if (activeEntryState.undoTimeout) {
+    clearTimeout(activeEntryState.undoTimeout);
+    activeEntryState.undoTimeout = null;
+  }
+  if (activeEntryState.undoInterval) {
+    clearInterval(activeEntryState.undoInterval);
+    activeEntryState.undoInterval = null;
+  }
 }
 
 export function showUndoBanner(message: string, onUndo: () => Promise<void>) {
-  if (activeEntryState.undoTimeout) clearTimeout(activeEntryState.undoTimeout);
-  const undoHtml =
+  clearUndoTimers();
+
+  const statusLineHtml =
+    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:12px">` +
+    `<span>${message}</span>` +
+    `<button type="button" class="btn btn-secondary" id="btn-undo-status-line" data-undo-action="true" style="padding:2px 8px;font-size:12px;margin-left:8px">Undo (30s)</button>` +
+    `</div>`;
+
+  const toastHtml =
     `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">` +
     `<span>${message}</span>` +
-    `<button type="button" class="btn btn-secondary" id="btn-undo-action" style="padding:2px 8px;font-size:12px;margin-left:8px">Undo (30s)</button>` +
+    `<button type="button" class="btn btn-secondary" id="btn-undo-toast" data-undo-action="true" style="padding:2px 8px;font-size:12px;margin-left:8px">Undo (30s)</button>` +
     `</div>`;
-  showEditorFeedback(undoHtml, false);
+
+  const bannerHtml =
+    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:12px">` +
+    `<span>${message}</span>` +
+    `</div>`;
+
+  showEditorFeedback(bannerHtml, false, 30000);
+
+  const statusLine = document.getElementById('editor-status-line');
+  if (statusLine) {
+    statusLine.innerHTML = statusLineHtml;
+    statusLine.style.display = 'inline-flex';
+  }
+
+  const toast = document.getElementById('editor-toast');
+  if (toast) {
+    toast.innerHTML = toastHtml;
+    toast.style.display = 'block';
+  }
 
   const banner = document.getElementById('admin-undo-banner');
   if (banner) {
@@ -223,29 +226,43 @@ export function showUndoBanner(message: string, onUndo: () => Promise<void>) {
     banner.innerHTML =
       `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center">` +
       `<span>${message}</span>` +
-      `<button type="button" class="btn btn-secondary" id="btn-undo-action-banner" style="padding:2px 8px;font-size:12px;margin-left:8px">Undo (30s)</button>` +
+      `<button type="button" class="btn btn-secondary" id="btn-undo-action-banner" data-undo-action="true" style="padding:2px 8px;font-size:12px;margin-left:8px">Undo (30s)</button>` +
       `</div>`;
-    const bBtn = document.getElementById('btn-undo-action-banner');
-    if (bBtn) {
-      bBtn.addEventListener('click', async () => {
-        if (activeEntryState.undoTimeout) clearTimeout(activeEntryState.undoTimeout);
-        banner.style.display = 'none';
-        await onUndo();
-      });
-    }
   }
 
-  const undoBtn = document.getElementById('btn-undo-action');
-  if (undoBtn) {
-    undoBtn.addEventListener('click', async () => {
-      if (activeEntryState.undoTimeout) clearTimeout(activeEntryState.undoTimeout);
+  let undoTriggered = false;
+  const handleUndoClick = async (e: Event) => {
+    e.preventDefault();
+    if (undoTriggered) return;
+    undoTriggered = true;
+    clearUndoTimers();
+    if (banner) banner.style.display = 'none';
+    document.querySelectorAll('[data-undo-action="true"]').forEach((btn) => btn.remove());
+    await onUndo();
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('[data-undo-action="true"]').forEach((btn) => {
+    btn.addEventListener('click', handleUndoClick);
+  });
+
+  let remainingSeconds = 30;
+  activeEntryState.undoInterval = setInterval(() => {
+    remainingSeconds -= 1;
+    if (remainingSeconds <= 0) {
+      clearUndoTimers();
       if (banner) banner.style.display = 'none';
-      await onUndo();
+      document.querySelectorAll('[data-undo-action="true"]').forEach((btn) => btn.remove());
+      return;
+    }
+    document.querySelectorAll<HTMLButtonElement>('[data-undo-action="true"]').forEach((btn) => {
+      btn.textContent = `Undo (${remainingSeconds}s)`;
     });
-  }
+  }, 1000);
 
   activeEntryState.undoTimeout = setTimeout(() => {
+    clearUndoTimers();
     if (banner) banner.style.display = 'none';
+    document.querySelectorAll('[data-undo-action="true"]').forEach((btn) => btn.remove());
   }, 30000);
 }
 
@@ -310,10 +327,37 @@ export async function commitEntry(intent: Intent): Promise<boolean> {
   let entryResultId = id;
   let entryResultSlug = s.slug;
   let enrichmentQueued = false;
+  const previousCommittedBody = activeEntryState.lastCommittedBody;
+  const hadBodyEditToUndo = Boolean(id && s.bodyChanged && previousCommittedBody !== s.body);
 
   if (id) {
-    // Saved entry: PUT /api/entries/:id (UX-01)
     try {
+      // If transitioning a non-public entry and the body changed since last save,
+      // save the revision first so the server validates redactionPreviewToken against the new body.
+      if (s.bodyChanged && current !== 'public') {
+        const revRes = await clientFetch(`/api/entries/${id}/revisions`, {
+          method: 'POST',
+          body: JSON.stringify({
+            body_md: s.body,
+            temporal_level: s.temporal_level,
+            valid_from: new Date(dateStr).toISOString(),
+            valid_from_range_end: s.valid_from_range_end || null,
+            is_hindsight: s.is_hindsight,
+          }),
+        });
+        if (!revRes.ok) {
+          const revErr = await revRes.json().catch(() => ({}));
+          showEditorFeedback(
+            `<div class="later-thinking-banner" role="alert">${escapeClientHtml(
+              revErr.error || revErr.message || 'Error saving entry revision'
+            )}</div>`,
+            true
+          );
+          return false;
+        }
+      }
+
+      // Saved entry: PUT /api/entries/:id (UX-01)
       const putRes = await clientFetch(`/api/entries/${id}`, {
         method: 'PUT',
         body: JSON.stringify({
@@ -339,8 +383,8 @@ export async function commitEntry(intent: Intent): Promise<boolean> {
       if (putData.entry?.slug) entryResultSlug = putData.entry.slug;
       if (putData.enrichmentQueued) enrichmentQueued = true;
 
-      // Save revision if body changed
-      if (s.bodyChanged) {
+      // Save revision if body changed and entry was already public
+      if (s.bodyChanged && current === 'public') {
         const revRes = await clientFetch(`/api/entries/${id}/revisions`, {
           method: 'POST',
           body: JSON.stringify({
@@ -349,11 +393,18 @@ export async function commitEntry(intent: Intent): Promise<boolean> {
             valid_from: new Date(dateStr).toISOString(),
             valid_from_range_end: s.valid_from_range_end || null,
             is_hindsight: s.is_hindsight,
+            redactionPreviewToken: gate?.token,
+            nda_confirmed: gate?.nda,
           }),
         });
         if (!revRes.ok) {
           const revErr = await revRes.json().catch(() => ({}));
-          showEditorFeedback(`<div class="later-thinking-banner" role="alert">${escapeClientHtml(revErr.error || revErr.message || 'Error saving entry revision')}</div>`, true);
+          showEditorFeedback(
+            `<div class="later-thinking-banner" role="alert">${escapeClientHtml(
+              revErr.error || revErr.message || 'Error saving entry revision'
+            )}</div>`,
+            true
+          );
           return false;
         }
       }
@@ -437,18 +488,88 @@ export async function commitEntry(intent: Intent): Promise<boolean> {
       } catch (_) {}
     }
   } else if (intent === 'save') {
-    const msg = id
-      ? `<div class="as-of-banner">Saved changes to "${escapeClientHtml(s.title)}" (${target}).</div>`
-      : `<div class="as-of-banner">Created draft "${escapeClientHtml(s.title)}".</div>`;
-    showEditorFeedback(msg, false);
+    if (hadBodyEditToUndo) {
+      showUndoBanner(
+        `Saved changes to "${escapeClientHtml(s.title)}" (${target}).`,
+        async () => {
+          try {
+            const revRes = await clientFetch(`/api/entries/${entryResultId}/revisions`, {
+              method: 'POST',
+              body: JSON.stringify({
+                body_md: previousCommittedBody,
+                temporal_level: s.temporal_level,
+                valid_from: new Date(dateStr).toISOString(),
+                valid_from_range_end: s.valid_from_range_end || null,
+                is_hindsight: s.is_hindsight,
+              }),
+            });
+            if (!revRes.ok) {
+              const revErr = await revRes.json().catch(() => ({}));
+              showEditorFeedback(
+                `<div class="later-thinking-banner" role="alert">${escapeClientHtml(
+                  revErr.error || revErr.message || 'Error restoring previous version'
+                )}</div>`,
+                true
+              );
+              return;
+            }
+            const bodyTextarea = document.getElementById('entry-body') as HTMLTextAreaElement | null;
+            if (bodyTextarea) {
+              bodyTextarea.value = previousCommittedBody;
+            }
+            setActiveEntryState({
+              lastCommittedBody: previousCommittedBody,
+            });
+            clearDraftBuffer();
+            showEditorFeedback(
+              `<div class="as-of-banner">Restored previous version of "${escapeClientHtml(s.title)}".</div>`,
+              false
+            );
+          } catch (_) {
+            showEditorFeedback(
+              '<div class="later-thinking-banner" role="alert">Network error restoring previous version.</div>',
+              true
+            );
+          }
+        }
+      );
+    } else {
+      const msg = id
+        ? `<div class="as-of-banner">Saved changes to "${escapeClientHtml(s.title)}" (${target}).</div>`
+        : `<div class="as-of-banner">Created draft "${escapeClientHtml(s.title)}".</div>`;
+      showEditorFeedback(msg, false);
+    }
   } else if (intent === 'unlist') {
     const msg = `<div class="as-of-banner">Unlisted "${escapeClientHtml(s.title)}". Available only via direct link.</div>`;
     showEditorFeedback(msg, false);
   } else if (intent === 'unpublish') {
+    const unpublishSnapshotBody = s.body;
+    const unpublishSnapshotNda =
+      (document.getElementById('entry-nda-confirmed') as HTMLInputElement | null)?.checked || false;
     // Show Undo (30s) banner and feedback (UX-04)
     showUndoBanner(`Unpublished "${escapeClientHtml(s.title)}". Returned to private draft state.`, async () => {
-      // Undo re-enters commitEntry, never raw PUT
-      await ensureRedactionToken(s, true);
+      const currentForm = readForm();
+      if (currentForm.body === unpublishSnapshotBody) {
+        try {
+          const scanRes = await clientFetch('/api/entries/redaction-preview', {
+            method: 'POST',
+            body: JSON.stringify({
+              text: unpublishSnapshotBody,
+              entryId: entryResultId || undefined,
+            }),
+          });
+          if (scanRes.ok) {
+            const scanData = await scanRes.json();
+            const token = scanData.redactionPreviewToken || '';
+            const warnings = scanData.warnings || [];
+            setPreviewToken(token, warnings.length > 0);
+            if (warnings.length > 0 && unpublishSnapshotNda) {
+              const ndaInput = document.getElementById('entry-nda-confirmed') as HTMLInputElement | null;
+              if (ndaInput) ndaInput.checked = true;
+            }
+          }
+        } catch (_) {}
+      }
       await commitEntry('publish');
     });
   }

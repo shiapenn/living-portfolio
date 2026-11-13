@@ -21,6 +21,23 @@ let previousActiveElement: HTMLElement | null = null;
 let currentDialogWarnings: any[] = [];
 let currentDialogToken = '';
 
+export function updatePublishDialogStepNumbers(ndaVisible: boolean): void {
+  const scanHeading = document.getElementById('publish-step-heading-scan');
+  const ndaHeading = document.getElementById('publish-step-heading-nda');
+  const visHeading = document.getElementById('publish-step-heading-visibility');
+  const nextHeading = document.getElementById('publish-step-heading-next');
+
+  if (scanHeading) scanHeading.textContent = '1. Private-Detail Check';
+  if (ndaVisible) {
+    if (ndaHeading) ndaHeading.textContent = '2. Confidentiality & NDA Confirmation';
+    if (visHeading) visHeading.textContent = '3. Who Can See It';
+    if (nextHeading) nextHeading.textContent = '4. What Happens Next';
+  } else {
+    if (visHeading) visHeading.textContent = '2. Who Can See It';
+    if (nextHeading) nextHeading.textContent = '3. What Happens Next';
+  }
+}
+
 export function openPublishDialog(): void {
   const dialog = document.getElementById('publish-dialog');
   const backdrop = document.getElementById('publish-dialog-backdrop');
@@ -57,6 +74,11 @@ export function openPublishDialog(): void {
   if (ndaCheckbox) {
     ndaCheckbox.checked = false;
   }
+
+  if (ndaSection) {
+    ndaSection.style.display = 'none';
+  }
+  updatePublishDialogStepNumbers(false);
 
   if (scanStatusEl) {
     scanStatusEl.innerHTML = '<div style="color:var(--text-muted)">Checking for private details...</div>';
@@ -113,12 +135,14 @@ async function runDialogAutoScan(text: string, entryId?: string): Promise<void> 
       }
       if (ndaSection) ndaSection.style.display = 'none';
       if (matchesDetail) matchesDetail.style.display = 'none';
+      updatePublishDialogStepNumbers(false);
     } else {
       if (scanStatusEl) {
         scanStatusEl.innerHTML = `<div class="later-thinking-banner" data-state="needs-review" role="alert" style="margin:0">⚠ Needs Review: Found ${currentDialogWarnings.length} potential private item(s).</div>`;
       }
       if (ndaSection) ndaSection.style.display = 'block';
       if (matchesDetail) matchesDetail.style.display = 'block';
+      updatePublishDialogStepNumbers(true);
     }
   } catch (_) {
     if (scanStatusEl) {
@@ -254,7 +278,7 @@ export function initPublishDialogHandlers(): void {
       closePublishDialog();
 
       const ok = await commitEntry(visibilityChoice === 'unlisted' ? 'unlist' : 'publish');
-      if (ok) {
+      if (ok && visibilityChoice !== 'unlisted') {
         showPublishSuccessToast(s.title, s.slug);
       }
     });

@@ -2430,7 +2430,6 @@ export async function renderAdminWorkspacePage(
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center" id="editor-action-buttons">
               <button type="button" class="btn btn-secondary" id="btn-save-draft">Save draft</button>
               <button type="button" class="btn btn-primary" id="btn-open-publish-dialog">Publish…</button>
-              <button type="submit" class="btn btn-secondary" id="btn-publish-entry">Publish</button>
               <button type="button" class="btn btn-secondary" id="btn-unlist" style="display:none">Unlist</button>
               <button type="button" class="btn btn-secondary" id="btn-redaction-check">Check for private details</button>
               <button type="button" class="btn btn-secondary" id="btn-unpublish" style="display:none">Unpublish</button>
@@ -2452,7 +2451,7 @@ export async function renderAdminWorkspacePage(
 
           <!-- Pre-flight step 1: Private details scan -->
           <div style="margin-bottom:16px;padding:12px;border:1px solid var(--rule);border-radius:6px;background:var(--surface-raised)">
-            <div style="font-size:13px;font-weight:600;margin-bottom:4px">1. Private-Detail Check</div>
+            <div id="publish-step-heading-scan" data-dialog-step-heading="scan" style="font-size:13px;font-weight:600;margin-bottom:4px">1. Private-Detail Check</div>
             <div id="publish-scan-status" style="font-size:13px">Checking for private details...</div>
             <div id="publish-matches-detail" style="display:none;margin-top:8px">
               <button type="button" class="btn btn-secondary" id="btn-publish-open-drawer" style="font-size:12px;padding:2px 8px">View Detailed Findings →</button>
@@ -2461,7 +2460,7 @@ export async function renderAdminWorkspacePage(
 
           <!-- Pre-flight step 2: NDA confirmation (conditional) -->
           <div id="publish-nda-section" style="display:none;margin-bottom:16px;padding:12px;border:1px solid var(--rule);border-radius:6px;background:var(--surface-raised)">
-            <div style="font-size:13px;font-weight:600;margin-bottom:4px">2. Confidentiality &amp; NDA Confirmation</div>
+            <div id="publish-step-heading-nda" data-dialog-step-heading="nda" style="font-size:13px;font-weight:600;margin-bottom:4px">2. Confidentiality &amp; NDA Confirmation</div>
             <label style="font-size:13px;display:flex;align-items:flex-start;gap:8px;cursor:pointer">
               <input type="checkbox" id="publish-dialog-nda" style="margin-top:2px" />
               <span>I confirm that publishing this content does not violate any non-disclosure agreement (NDA) or confidentiality obligation.</span>
@@ -2470,7 +2469,7 @@ export async function renderAdminWorkspacePage(
 
           <!-- Pre-flight step 3: Who can see it -->
           <div style="margin-bottom:16px;padding:12px;border:1px solid var(--rule);border-radius:6px;background:var(--surface-raised)">
-            <div style="font-size:13px;font-weight:600;margin-bottom:6px">3. Who Can See It</div>
+            <div id="publish-step-heading-visibility" data-dialog-step-heading="visibility" style="font-size:13px;font-weight:600;margin-bottom:6px">2. Who Can See It</div>
             <div style="display:flex;gap:16px;font-size:13px">
               <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
                 <input type="radio" name="publish-visibility-choice" value="public" checked /> Public (searchable, in index)
@@ -2483,7 +2482,7 @@ export async function renderAdminWorkspacePage(
 
           <!-- Pre-flight step 4: What happens next -->
           <div id="publish-what-happens-next" style="margin-bottom:16px;padding:12px;border:1px solid var(--rule);border-radius:6px;background:var(--surface-raised)">
-            <div style="font-size:13px;font-weight:600;margin-bottom:6px">4. What Happens Next</div>
+            <div id="publish-step-heading-next" data-dialog-step-heading="next" style="font-size:13px;font-weight:600;margin-bottom:6px">3. What Happens Next</div>
             <ul style="font-size:12px;color:var(--text-muted);margin:0;padding-left:18px;line-height:1.6">
               <li>Static rebuild queued for public site</li>
               <li>Enrichment pipeline queued for structured facets</li>
@@ -2850,7 +2849,7 @@ export async function renderAdminWorkspacePage(
             }
             const data = await res.json();
             const entry = data.entry;
-            const currentRev = data.currentRevision;
+            const currentRev = data.currentRevision || data.revision;
 
             if (entryIdInput) entryIdInput.value = entry.id;
             if (titleInput) titleInput.value = entry.title || '';
@@ -2889,6 +2888,22 @@ export async function renderAdminWorkspacePage(
 
             if (modeHeading) modeHeading.textContent = 'Edit Entry: ' + entry.title;
             if (stateBadge) stateBadge.textContent = 'State: ' + entry.visibility.toUpperCase();
+
+            if (typeof window.setActiveEntryState === 'function') {
+              window.setActiveEntryState({
+                id: entry.id,
+                visibility: entry.visibility,
+                lastCommittedBody: (currentRev && currentRev.body_md) || '',
+                previewToken: '',
+                hasWarnings: false,
+              });
+            }
+            if (typeof window.updateStateChip === 'function') {
+              window.updateStateChip(entry.visibility);
+            }
+            if (typeof window.updateActionButtons === 'function') {
+              window.updateActionButtons(entry.id, entry.visibility);
+            }
 
             if (unpublishBtn) {
               unpublishBtn.style.display = entry.visibility === 'public' || entry.visibility === 'unlisted' ? 'inline-block' : 'none';
@@ -3429,6 +3444,9 @@ export async function renderAdminWorkspacePage(
               currentPreviewToken = data.redactionPreviewToken || '';
               currentHasWarnings = Array.isArray(data.warnings) && data.warnings.length > 0;
               if (tokenInput) tokenInput.value = currentPreviewToken;
+              if (typeof window.setPreviewToken === 'function') {
+                window.setPreviewToken(currentPreviewToken, currentHasWarnings);
+              }
 
               const tokenBadgeHtml = currentPreviewToken
                 ? '<div class="preview-token-badge" id="preview-token-badge" data-token="' + escapeClientHtml(currentPreviewToken) + '" style="font-size:12px;color:var(--text-muted);margin-top:6px">Signed preview token: <code>' + escapeClientHtml(currentPreviewToken.slice(0, 16)) + '...</code></div>'

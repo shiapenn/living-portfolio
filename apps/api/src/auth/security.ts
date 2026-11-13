@@ -625,7 +625,8 @@ export class AuthManager {
       }
     }
     const expectedBodyHash = sha256Hex(expected.bodyMd);
-    if (payload.bodyHash !== expectedBodyHash) {
+    const expectedTrimmedHash = sha256Hex(expected.bodyMd.trim());
+    if (payload.bodyHash !== expectedBodyHash && payload.bodyHash !== expectedTrimmedHash) {
       return { valid: false, reason: 'Redaction preview token bodyHash does not match current revision content' };
     }
     const expectedScanHash = sha256Hex(JSON.stringify(expected.warnings));

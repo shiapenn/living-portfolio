@@ -13,7 +13,8 @@ test.describe.serial('WP-14.1: commitEntry state machine lifecycle and error han
     await page.goto('/admin');
 
     const saveDraftBtn = page.locator('#btn-save-draft');
-    const publishBtn = page.locator('#btn-publish-entry');
+    const openDialogBtn = page.locator('#btn-open-publish-dialog');
+    const confirmPublishBtn = page.locator('#btn-confirm-publish');
     const unpublishBtn = page.locator('#btn-unpublish');
     const unlistBtn = page.locator('#btn-unlist');
     const statusLine = page.locator('#editor-status-line');
@@ -35,12 +36,9 @@ test.describe.serial('WP-14.1: commitEntry state machine lifecycle and error han
     await expect(stateBadge).toContainText(/private|draft/i);
 
     // 3. Publish (saved draft -> public)
-    // Run redaction check first to obtain preview token
-    await page.click('#btn-redaction-check');
-    await expect(page.locator('#redaction-preview-box')).toBeVisible();
-    await page.check('#entry-nda-confirmed');
-
-    await publishBtn.click();
+    await openDialogBtn.click();
+    await expect(page.locator('#publish-scan-status')).toContainText(/nothing found|0 confidential/i);
+    await confirmPublishBtn.click();
     await expect(statusLine).toBeVisible({ timeout: 5000 });
     await expect(statusLine).toContainText(new RegExp(`Published.*${testTitle}`, 'i'));
     await expect(stateBadge).toContainText(/public/i);
@@ -72,7 +70,7 @@ test.describe.serial('WP-14.1: commitEntry state machine lifecycle and error han
     await expect(entryListItem).toContainText('private');
 
     // 7. Undo restores public with token (UX-04)
-    const undoBtn = page.locator('#btn-undo-action, #btn-undo-action-banner').first();
+    const undoBtn = page.locator('#editor-status-line #btn-undo-status-line');
     await expect(undoBtn).toBeVisible();
     await undoBtn.click();
     await expect(statusLine).toBeVisible({ timeout: 5000 });
@@ -131,7 +129,9 @@ test.describe.serial('WP-14.1: commitEntry state machine lifecycle and error han
     await page.locator('#entry-body').fill('Edited text after redaction check, which invalidates the preview token.');
 
     // Publishing now must require re-check or report invalidation
-    await page.click('#btn-publish-entry');
+    await page.evaluate(async () => {
+      await (window as any).commitEntry('publish');
+    });
     const statusLine = page.locator('#editor-status-line');
     await expect(statusLine).toBeVisible();
     await expect(statusLine).toContainText(new RegExp(`(preview token|invalidated|Check for private details|check this entry)`, 'i'));
