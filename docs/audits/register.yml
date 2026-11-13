@@ -3066,7 +3066,7 @@
     - "3.11"
     - "12.7"
   severity: P0
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -3080,6 +3080,9 @@
     - date: 2026-11-10
       status: fixed
       note: "Fixed in WP-14.1 and WP-14.4 (A081, A084, PR #98, PR #101). Undo operations supply preview token; local autosave buffer preserves writing and dirty indicator clears on save."
+    - date: 2026-11-10
+      status: partial
+      note: "Reopened to partial after owner Gate G14 walkthrough: the 'Undo (30s)' button (#btn-undo-inline) in #editor-status-line is static (renderUndoButtonHtml attaches no click handler), so clicking it does nothing; only #btn-undo-action in the top banner was wired, and Undo after Save draft with changed text did not restore the earlier body text. The E2E test that marked UX-04 fixed clicked #btn-undo-action and did not assert real behaviour on the status-line or toast Undo button or draft-save text restoration. Scheduled for hotfix in WP-14.7."
   verified_by: null
 - id: 20261106-UX-05
   audit: AUD-2026-11-06
@@ -4137,6 +4140,82 @@
     - date: 2026-11-10
       status: open
       note: "Registered at Gate G14 sign-off: showEditorFeedback() in apps/web/src/client/admin-entry.ts (L74-101) writes the identical HTML message simultaneously to #editor-status-line, #editor-toast, and #admin-status-banner, and both #editor-status-line and #editor-toast in apps/web/src/renderer.ts (L2438-2444) carry role=\"status\" aria-live=\"polite\", causing screen readers to announce every save/publish/unpublish/delete result twice. Audit Report §8 closes D-01..D-10 and defers feedback design to §5.4.1, §6.4, §7.5 (WP-14.0a), and §7.6 (WP-15.3 / UX-15): the inline status line beside the action buttons and the viewport toast have distinct roles (persistent state/save summary vs transient action/undo toast, retiring the top banner), and if both visual surfaces are shown, only one may be an active ARIA live region so assistive technologies announce once. Planned for WP-15.3 (Toast and single polite live-region component) and WP-16.4 (Editor route state strip and feedback)."
+  verified_by: null
+- id: 20261106-UX-57
+  audit: AUD-2026-11-06
+  title: 'Two Publish buttons side by side ("Publish" and "Publish…"): competing primary actions and potential bypass of private-detail check'
+  spec_sections:
+    - "4.3"
+    - "6.2"
+    - "12.6"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-10
+      status: open
+      note: "Registered after owner Gate G14 walkthrough: Editor action bar renders two Publish buttons side by side (#btn-publish-entry 'Publish' and #btn-open-publish-dialog 'Publish…'), creating competing primary actions (violating D-UI-1) and a potential bypass of the private-detail scan on PUT /api/entries/:id. Treated as P0 until server-side enforcement across every publish path (POST, PUT, Undo) is verified and the duplicate button is removed in WP-14.7."
+  verified_by: null
+- id: 20261106-UX-58
+  audit: AUD-2026-11-06
+  title: 'Pre-flight publish dialog headings read "1", "3", "4" (missing "2" when NDA confirmation section is hidden)'
+  spec_sections:
+    - "12.6"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-10
+      status: open
+      note: "Registered after owner Gate G14 walkthrough: In #publish-dialog, headings are statically numbered '1. Private details scan', '2. Confidentiality & NDA confirmation' (#publish-nda-section), '3. Visibility', and '4. What happens next'. When 0 confidential matches are found, #publish-nda-section is hidden, so the visible headings read '1', '3', '4' (no '2'). Scheduled for fix in WP-14.7."
+  verified_by: null
+- id: 20261106-UX-59
+  audit: AUD-2026-11-06
+  title: 'Unlisted visibility reached via separate Unlist button and dialog radio requires verification that unlisted entries stay out of public lists and open by direct link'
+  spec_sections:
+    - "6.2"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-10
+      status: open
+      note: "Registered after owner Gate G14 walkthrough: Unlisted is reached through the 'Unlist' button (#btn-unlist) and Publish dialog radio; existing WP-14 tests checked the admin state chip and list item text but did not verify that an unlisted entry stays out of public lists (/, /work, /api/entries default public feed) while remaining reachable by direct link (/work/:slug). Scheduled for verification and test in WP-14.7."
+  verified_by: null
+- id: 20261106-UX-60
+  audit: AUD-2026-11-06
+  title: 'Toasts disappear after a few seconds without hover/focus pause or dismiss button and repeat the inline status message'
+  spec_sections:
+    - "12.7"
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-10
+      status: open
+      note: "Registered after owner Gate G14 walkthrough: #editor-toast auto-dismisses after 6 seconds with no pause on hover/focus and no dismiss button, and repeats the exact message shown in #editor-status-line. Per UI contract D-UI-2, persistent inline StatusLine beside the action is the primary record (aria-live polite), while Toast is used only when the user has left the place of the action or for Undo, stays at least 10 seconds, pauses on hover and focus, has a dismiss button, and never duplicates the inline text. Planned for WP-15.2 / WP-15.3 (shared building blocks and reference editor page)."
   verified_by: null
 - id: 20261106-UI-01
   audit: AUD-2026-11-06
