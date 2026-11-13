@@ -6,7 +6,7 @@
 | Date | 2026-11-13 |
 | Author | A (Implementer) |
 | Task ID | `WP-15.2` |
-| Evidence SHA | `45eb545` |
+| Evidence SHA | `904584e` |
 | CI run | `feat/wp-15-2-shared-primitives-gallery` (pending PR CI; local `pnpm verify` 14/14 + `pnpm test:e2e` 82/82 passed) |
 
 ---
@@ -47,6 +47,7 @@ WP-15.2 establishes the shared UI control and form-field primitives under `apps/
 - `docs/audits/register.yml`
 - `docs/doc-registry.json`
 - `docs/execution-reports/A093-wp-151-renderer-monolith-mechanical-split.md`
+- `docs/execution-reports/A094-wp-152-shared-primitives-and-dev-gallery.md`
 - `tests/e2e/wp15-2-primitives-gallery.spec.ts`
 
 ## 5. Register and Backlog Changes
