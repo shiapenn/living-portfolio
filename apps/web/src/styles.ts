@@ -2126,7 +2126,7 @@ input[type="date"].lp-input {
   display: inline-flex;
   align-items: center;
   visibility: hidden;
-  color: var(--accent-primary);
+  color: var(--accent);
 }
 
 .lp-menu-item-vis[aria-checked="true"] {
@@ -2145,8 +2145,8 @@ input[type="date"].lp-input {
   justify-content: center;
   padding: var(--space-2) var(--space-4);
   background: var(--surface-raised);
-  border-bottom: 2px solid var(--tone-warn);
-  font-size: var(--text-body-sm);
+  border-bottom: 2px solid var(--status-warn-border);
+  font-size: var(--type-body-sm-size);
 }
 
 .lp-modal-inline-stage {
