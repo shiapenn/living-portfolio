@@ -7,6 +7,8 @@ export interface PageNoticeProps {
   id?: string;
   tone?: NoticeTone;
   message: string;
+  actionLabel?: string;
+  actionId?: string;
   actionHtml?: string;
   dismissible?: boolean;
   role?: 'status' | 'alert';
@@ -33,7 +35,7 @@ const TONE_ICONS: Record<NoticeTone, IconName> = {
 
 /**
  * Renders a persistent, optionally dismissible page notice directly under the header.
- * Never auto-dismisses (no timed toast per D-CONTRACT-7 / D-FEEDBACK / D-FOUND-6).
+ * Notice actions are link-style text, never a bordered button (D-FOUND-6).
  */
 export function renderPageNotice(props: PageNoticeProps): string {
   const tone = props.tone ?? 'info';
@@ -42,6 +44,10 @@ export function renderPageNotice(props: PageNoticeProps): string {
   const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
   const hiddenAttr = props.hidden ? ' hidden' : '';
   const toneIcon = renderIcon({ name: TONE_ICONS[tone], size: 16, className: 'lp-notice-icon' });
+
+  const actionLink = props.actionLabel
+    ? `<button type="button"${props.actionId ? ` id="${escapeHtml(props.actionId)}"` : ''} class="lp-notice-action-link">${escapeHtml(props.actionLabel)}</button>`
+    : (props.actionHtml ?? '');
 
   const dismissBtn = props.dismissible
     ? renderIconButton({
@@ -60,7 +66,7 @@ export function renderPageNotice(props: PageNoticeProps): string {
     ${toneIcon}
     <div class="lp-notice-content">
       <span class="lp-notice-text">${escapeHtml(props.message)}</span>
-      ${props.actionHtml ?? ''}
+      ${actionLink}
     </div>
   </div>
   ${dismissBtn}
@@ -69,7 +75,7 @@ export function renderPageNotice(props: PageNoticeProps): string {
 
 /**
  * Renders the single action status line directly under the editor action bar,
- * with tone icon and optional real-countdown link-style Undo control (D-FOUND-6).
+ * with tone icon and optional real-countdown link-style Undo sitting directly after its message (D-FOUND-6).
  */
 export function renderStatusLine(props: StatusLineProps): string {
   const tone = props.tone ?? 'info';
@@ -80,12 +86,11 @@ export function renderStatusLine(props: StatusLineProps): string {
 
   let undoBtn = '';
   if (props.undoLabel && props.undoSeconds && props.undoSeconds > 0) {
-    undoBtn = `<button type="button" class="lp-status-undo lp-status-undo-link" data-lp-status-undo="true">${escapeHtml(`${props.undoLabel} (${props.undoSeconds}s)`)}</button>`;
+    undoBtn = ` <button type="button" class="lp-status-undo lp-status-undo-link" data-lp-status-undo="true" data-undo-seconds="${props.undoSeconds}" data-undo-label="${escapeHtml(props.undoLabel)}">${escapeHtml(`${props.undoLabel} (${props.undoSeconds}s)`)}</button>`;
   }
 
   return `<div id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}" role="${role}" aria-live="${role === 'alert' ? 'assertive' : 'polite'}" aria-atomic="true">
   ${toneIcon}
-  <span class="lp-status-line-text">${escapeHtml(message)}</span>
-  ${undoBtn}
+  <span class="lp-status-line-body"><span class="lp-status-line-text">${escapeHtml(message)}</span>${undoBtn}</span>
 </div>`;
 }

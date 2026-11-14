@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
+  LUCIDE_ICON_NAMES,
   renderIcon,
   renderIconSprite,
   renderFoundationsGalleryPage,
@@ -18,31 +19,42 @@ import {
   renderPageNotice,
   renderStatusLine,
 } from '../components/index.js';
+import { createWebApp } from '../app.js';
 
 describe('WP-15.3a Design Foundations (D-FOUND-1..6)', () => {
-  it('registers docs/design/foundations.md with D-FOUND-1 through D-FOUND-6 and Lucide ISC licence', () => {
+  it('registers docs/design/foundations.md with D-FOUND-1 through D-FOUND-6, Lucide ISC licence, and theme toggle rule', () => {
     const docPath = resolve(process.cwd(), '../../docs/design/foundations.md');
     expect(existsSync(docPath)).toBe(true);
     const content = readFileSync(docPath, 'utf8');
-    for (const rule of ['D-FOUND-1', 'D-FOUND-2', 'D-FOUND-3', 'D-FOUND-4', 'D-FOUND-5', 'D-FOUND-6', 'ISC']) {
+    for (const rule of [
+      'D-FOUND-1',
+      'D-FOUND-2',
+      'D-FOUND-3',
+      'D-FOUND-4',
+      'D-FOUND-5',
+      'D-FOUND-6',
+      'ISC',
+      'Switch to dark theme',
+      'Switch to light theme',
+    ]) {
       expect(content).toContain(rule);
     }
   });
 
-  it('renders self-hosted 24px SVG icon sprite and icons at 16, 20, and 24 px only (D-FOUND-1)', () => {
+  it('renders self-hosted 24px SVG icon sprite with full inventory and icons at 16, 20, and 24 px only (D-FOUND-1)', () => {
     const sprite = renderIconSprite();
     expect(sprite).toContain('<svg id="lp-icon-sprite"');
     expect(sprite).toContain('viewBox="0 0 24 24"');
-    expect(sprite).toContain('id="lp-icon-x"');
-    expect(sprite).toContain('id="lp-icon-chevron-down"');
-    expect(sprite).toContain('id="lp-icon-sun-moon"');
+    for (const iconName of LUCIDE_ICON_NAMES) {
+      expect(sprite).toContain(`id="lp-icon-${iconName}"`);
+    }
 
     const icon16 = renderIcon({ name: 'x', size: 16 });
     expect(icon16).toContain('width="16" height="16"');
     expect(icon16).toContain('href="#lp-icon-x"');
   });
 
-  it('enforces ghost/outlined icon buttons with accessible label and tooltip, never filled (D-FOUND-1)', () => {
+  it('enforces ghost/outlined icon buttons with accessible label and tooltip, loading button spinner, and theme toggle icons (D-FOUND-1, D-FOUND-5)', () => {
     const ghost = renderIconButton({
       ariaLabel: 'Dismiss notice',
       icon: 'x',
@@ -55,12 +67,22 @@ describe('WP-15.3a Design Foundations (D-FOUND-1..6)', () => {
     expect(ghost).not.toContain('×');
 
     const outlined = renderIconButton({
-      ariaLabel: 'Switch theme',
-      icon: 'sun-moon',
+      ariaLabel: 'Switch to dark theme',
+      icon: 'moon',
       variant: 'secondary',
       iconSize: 20,
     });
     expect(outlined).toContain('lp-icon-btn-outlined');
+    expect(outlined).toContain('#lp-icon-moon');
+
+    const loadingBtn = renderButton({
+      label: 'Saving…',
+      variant: 'primary',
+      loading: true,
+    });
+    expect(loadingBtn).toContain('aria-busy="true"');
+    expect(loadingBtn).toContain('lp-icon-spin');
+    expect(loadingBtn).toContain('#lp-icon-loader');
   });
 
   it('renders Badge as borderless pill and Chip as interactive pill with border (D-FOUND-2)', () => {
@@ -73,14 +95,16 @@ describe('WP-15.3a Design Foundations (D-FOUND-1..6)', () => {
     expect(chip).toContain('lp-chip');
   });
 
-  it('renders Notice with tone icon + ghost X dismiss, StatusLine with tone icon + link Undo, and Disclosure with rotating chevron (D-FOUND-6)', () => {
+  it('renders Notice with tone icon + link-style action + ghost X dismiss, StatusLine with tone icon + inline Undo, and Disclosure with rotating chevron (D-FOUND-6)', () => {
     const notice = renderPageNotice({
       id: 'n1',
       tone: 'warn',
       message: 'Session expires soon.',
+      actionLabel: 'Extend session',
       dismissible: true,
     });
     expect(notice).toContain('#lp-icon-alert-triangle');
+    expect(notice).toContain('lp-notice-action-link');
     expect(notice).toContain('#lp-icon-x');
     expect(notice).not.toContain('×');
 
@@ -97,7 +121,7 @@ describe('WP-15.3a Design Foundations (D-FOUND-1..6)', () => {
     const disc = renderDisclosure({
       id: 'd1',
       summary: 'Details',
-      summaryMeta: '13 Nov 2026 · Exact',
+      summaryMeta: '14 Nov 2026 · Exact date · Case Study',
       bodyHtml: '<p>Fields</p>',
     });
     expect(disc).toContain('#lp-icon-chevron-down');
@@ -118,12 +142,48 @@ describe('WP-15.3a Design Foundations (D-FOUND-1..6)', () => {
     expect(empty).not.toMatch(/1\.\s*1\./);
   });
 
-  it('renders /admin/dev/foundations specimen and interactive state gallery', () => {
-    const html = renderFoundationsGalleryPage('light');
-    expect(html).toContain('Design Foundations Gallery');
-    expect(html).toContain('id="foundations-specimens"');
-    expect(html).toContain('id="foundations-components"');
-    expect(html).toContain('id="foundations-layout-preview"');
-    expect(html).not.toMatch(/\sstyle="/i);
+  it('renders /admin/dev/foundations with computed contrast ratios (no AA Pass), theme-specific toggle, and all specimens', () => {
+    const lightHtml = renderFoundationsGalleryPage('light');
+    expect(lightHtml).toContain('Design Foundations Gallery');
+    expect(lightHtml).toContain('id="foundations-specimens"');
+    expect(lightHtml).toContain('id="foundations-components"');
+    expect(lightHtml).toContain('id="foundations-layout-preview"');
+    expect(lightHtml).not.toContain('AA Pass');
+    expect(lightHtml).toMatch(/\d+\.\d:1/);
+    expect(lightHtml).toContain('aria-label="Switch to dark theme"');
+    expect(lightHtml).toContain('#lp-icon-moon');
+    expect(lightHtml).not.toMatch(/\sstyle="/i);
+
+    const darkHtml = renderFoundationsGalleryPage('dark');
+    expect(darkHtml).not.toContain('AA Pass');
+    expect(darkHtml).toContain('aria-label="Switch to light theme"');
+    expect(darkHtml).toContain('#lp-icon-sun');
+  });
+
+  it('enforces admin session authentication on /admin/dev/foundations and excludes the route in production', async () => {
+    const unauthApp = createWebApp({
+      checkSession: async () => ({ authenticated: false, setupRequired: false }),
+    }).app;
+    const unauthRes = await unauthApp.request('/admin/dev/foundations');
+    expect(unauthRes.status).toBe(302);
+    expect(unauthRes.headers.get('location')).toBe('/admin/login');
+
+    const authApp = createWebApp({
+      checkSession: async () => ({ authenticated: true, setupRequired: false }),
+    }).app;
+    const authRes = await authApp.request('/admin/dev/foundations');
+    expect(authRes.status).toBe(200);
+
+    const prevEnv = process.env.NODE_ENV;
+    try {
+      process.env.NODE_ENV = 'production';
+      const prodApp = createWebApp({
+        checkSession: async () => ({ authenticated: true, setupRequired: false }),
+      }).app;
+      const prodRes = await prodApp.request('/admin/dev/foundations');
+      expect(prodRes.status).toBe(404);
+    } finally {
+      process.env.NODE_ENV = prevEnv;
+    }
   });
 });

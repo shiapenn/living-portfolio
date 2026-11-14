@@ -1,4 +1,4 @@
-export { renderIcon, renderIconSprite } from './icons.js';
+export { renderIcon, renderIconSprite, LUCIDE_ICON_NAMES } from './icons.js';
 export type { IconName, IconProps, IconSize } from './icons.js';
 export { renderButton, renderIconButton } from './button.js';
 export type { ButtonProps, ButtonSize, ButtonVariant, IconButtonProps } from './button.js';

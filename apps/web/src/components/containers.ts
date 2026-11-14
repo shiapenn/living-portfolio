@@ -162,21 +162,22 @@ export function renderDisclosure(props: DisclosureProps): string {
 }
 
 /**
- * Renders a Menu popover with a trigger button and menu items (D-FOUND-1, D-FOUND-2).
+ * Renders a Menu popover with a trigger button, standard items, and a separated danger item last (D-FOUND-1, D-FOUND-2).
  */
 export function renderMenu(props: MenuProps): string {
   const menuId = `${props.id}-popover`;
   const open = Boolean(props.open);
   const chevron = renderIcon({ name: 'chevron-down', size: 16, className: 'lp-disclosure-chevron' });
   const itemsHtml = props.items
-    .map(
-      (item) =>
-        `<button type="button" role="menuitem" id="${escapeHtml(item.id)}" class="lp-btn ${item.danger ? 'lp-btn-danger' : 'lp-btn-quiet'} lp-btn-sm">${escapeHtml(item.label)}</button>`
-    )
+    .map((item, idx) => {
+      const separator = item.danger ? '<hr class="lp-menu-separator" role="separator" />' : '';
+      const cls = item.danger ? 'lp-btn lp-btn-danger lp-btn-sm lp-menu-item lp-menu-item-danger' : 'lp-btn lp-btn-quiet lp-btn-sm lp-menu-item';
+      return `${separator}<button type="button" role="menuitem" id="${escapeHtml(item.id)}" class="${cls}" tabindex="${idx === 0 ? '0' : '-1'}">${escapeHtml(item.label)}</button>`;
+    })
     .join('');
   return `<div id="${escapeHtml(props.id)}" class="lp-menu-wrap ${escapeHtml(props.className ?? '')}">
-  <button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}" aria-controls="${escapeHtml(menuId)}">${escapeHtml(props.triggerLabel)} ${chevron}</button>
-  <div id="${escapeHtml(menuId)}" role="menu" class="lp-popover-menu"${open ? '' : ' hidden'}>${itemsHtml}</div>
+  <button type="button" id="${escapeHtml(props.id)}-trigger" class="lp-btn lp-btn-secondary lp-btn-sm" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}" aria-controls="${escapeHtml(menuId)}">${escapeHtml(props.triggerLabel)} ${chevron}</button>
+  <div id="${escapeHtml(menuId)}" role="menu" aria-label="${escapeHtml(props.triggerLabel)}" class="lp-popover-menu"${open ? '' : ' hidden'}>${itemsHtml}</div>
 </div>`;
 }
 

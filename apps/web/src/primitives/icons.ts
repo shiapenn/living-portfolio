@@ -8,6 +8,8 @@ export type IconName =
   | 'x'
   | 'chevron-down'
   | 'chevron-right'
+  | 'sun'
+  | 'moon'
   | 'sun-moon'
   | 'menu'
   | 'info'
@@ -18,7 +20,8 @@ export type IconName =
   | 'copy'
   | 'plus'
   | 'file-text'
-  | 'layers';
+  | 'layers'
+  | 'loader';
 
 export type IconSize = 16 | 20 | 24;
 
@@ -32,6 +35,8 @@ const LUCIDE_SYMBOLS: Record<IconName, string> = {
   x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
   'chevron-down': '<path d="m6 9 6 6 6-6"/>',
   'chevron-right': '<path d="m9 18 6-6-6-6"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+  moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
   'sun-moon':
     '<path d="M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/>',
   menu: '<line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/>',
@@ -49,7 +54,28 @@ const LUCIDE_SYMBOLS: Record<IconName, string> = {
     '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>',
   layers:
     '<path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+  loader:
+    '<path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/>',
 };
+
+export const LUCIDE_ICON_NAMES: IconName[] = [
+  'x',
+  'chevron-down',
+  'chevron-right',
+  'moon',
+  'sun',
+  'menu',
+  'info',
+  'check-circle',
+  'alert-triangle',
+  'alert-circle',
+  'more-horizontal',
+  'copy',
+  'plus',
+  'file-text',
+  'layers',
+  'loader',
+];
 
 export function renderIconSprite(): string {
   const symbols = (Object.entries(LUCIDE_SYMBOLS) as Array<[IconName, string]>)
