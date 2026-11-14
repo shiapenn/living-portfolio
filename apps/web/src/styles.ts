@@ -1267,6 +1267,12 @@ button[type="submit"] {
   animation: lp-spin 900ms linear infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .lp-icon-spin {
+    animation: none;
+  }
+}
+
 .lp-icon-btn {
   display: inline-flex;
   align-items: center;

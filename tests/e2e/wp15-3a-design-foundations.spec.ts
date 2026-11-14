@@ -88,9 +88,12 @@ test.describe('WP-15.3a Design Foundations Conformance (D-FOUND-1..6)', () => {
     const iconAudit = await page.evaluate(() => {
       const icons = Array.from(document.querySelectorAll<SVGElement>('svg.lp-icon'));
       const validSizes = icons.every((svg) => {
-        const w = Math.round(svg.getBoundingClientRect().width || parseFloat(svg.getAttribute('width') || '0'));
-        const h = Math.round(svg.getBoundingClientRect().height || parseFloat(svg.getAttribute('height') || '0'));
-        return [16, 20, 24].includes(w) && w === h;
+        const attrW = Math.round(parseFloat(svg.getAttribute('width') || '0'));
+        const attrH = Math.round(parseFloat(svg.getAttribute('height') || '0'));
+        const cs = getComputedStyle(svg);
+        const cssW = Math.round(parseFloat(cs.width || String(attrW)));
+        const cssH = Math.round(parseFloat(cs.height || String(attrH)));
+        return [16, 20, 24].includes(attrW) && attrW === attrH && cssW === attrW && cssH === attrH;
       });
       const iconBtns = Array.from(document.querySelectorAll<HTMLElement>('.lp-icon-btn'));
       const allNamed = iconBtns.every(
