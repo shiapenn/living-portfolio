@@ -14,9 +14,9 @@
 ## 1. Scope
 
 WP-15.pre-d reduces GitHub Actions minutes by running `.github/workflows/codeql.yml` on a weekly schedule (`cron: "30 3 * * 1"`) and manual dispatch (`workflow_dispatch`) only, rather than on every `push` and `pull_request`:
-- Confirmed via `gh api repos/shiapenn/living-portfolio/code-scanning/alerts` (`HTTP 403: Code scanning is not enabled for this repository`) and CodeQL run `43589907422` logs (`upload: never`, `Upload SARIF to GitHub Code Scanning` skipped, warning: `Code scanning is not enabled for this repository`) that SARIF results are not uploaded or stored in GitHub Code Scanning on this private repository (GitHub Code Scanning on private repos requires paid GitHub Advanced Security / Code Security).
+- [implemented] Confirmed via `gh api repos/shiapenn/living-portfolio/code-scanning/alerts` (`HTTP 403: Code scanning is not enabled for this repository`) and CodeQL run `43589907422` logs (`upload: never`, `Upload SARIF to GitHub Code Scanning` skipped, warning: `Code scanning is not enabled for this repository`) that SARIF results are not uploaded or stored in GitHub Code Scanning on this private repository (GitHub Code Scanning on private repos requires paid GitHub Advanced Security / Code Security).
 - [implemented] Updated `.github/workflows/codeql.yml` to trigger on `schedule` and `workflow_dispatch` only, removing `push`, `pull_request`, and the redundant `detect-changes` job.
-- Preserved `.github/workflows/secrets.yml` (Gitleaks on every push/PR), `scripts/gitleaks-checksums.json`, all check scripts, and all required audit/doc gates.
+- [implemented] Preserved `.github/workflows/secrets.yml` (Gitleaks on every push/PR), `scripts/gitleaks-checksums.json`, all check scripts, and all required audit/doc gates.
 
 **Protected-file authorisation (quoted):**
 > "PR #129 (CodeQL weekly schedule): triage gate [9/14] asks for human confirmation because .github/workflows/codeql.yml is protected. I authorised this edit for WP-15.pre-d in my earlier message."
