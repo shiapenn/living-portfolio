@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderReferenceEditorPage } from './editor.js';
 import { EDITOR_STRINGS, formatCount } from '../../../strings/admin/editor.js';
+import { createWebApp } from '../../../app.js';
 
 describe('WP-15.7 Reference Editor Page', () => {
   it('renders without inline styles, text glyph icons, public nav/footer, or internal jargon', () => {
@@ -71,5 +72,53 @@ describe('WP-15.7 Reference Editor Page', () => {
     expect(formatCount(3, 'entry', 'entries')).toBe('3 entries');
     expect(EDITOR_STRINGS.actions.saveDraft).toBe('Save draft');
     expect(EDITOR_STRINGS.feedback.errorTitleRequired).toBe('Enter a title to save this entry.');
+  });
+
+  it('requires admin session and excludes reference editor routes and fixture/theme params in production', async () => {
+    const routes = [
+      '/admin/entries/editor',
+      '/admin/entries/editor?fixture=draft&theme=dark',
+      '/admin/entries/new?theme=light',
+      '/admin/entries/entry-1?fixture=public&theme=dark',
+    ];
+
+    const unauthApp = createWebApp({
+      checkSession: async () => ({ authenticated: false, setupRequired: false }),
+    }).app;
+    for (const route of routes) {
+      const res = await unauthApp.request(route);
+      expect(res.status, `unauth ${route}`).toBe(302);
+      expect(res.headers.get('location')).toBe('/admin/login');
+    }
+
+    const authApp = createWebApp({
+      checkSession: async () => ({ authenticated: true, setupRequired: false }),
+      client: {
+        entries: { list: async () => ({ entries: [] }) },
+        listEntries: async () => [],
+      } as any,
+    }).app;
+    for (const route of routes) {
+      const res = await authApp.request(route);
+      expect(res.status, `auth non-prod ${route}`).toBe(200);
+    }
+
+    const prevEnv = process.env.NODE_ENV;
+    try {
+      process.env.NODE_ENV = 'production';
+      const prodApp = createWebApp({
+        checkSession: async () => ({ authenticated: true, setupRequired: false }),
+        client: {
+          entries: { list: async () => ({ entries: [] }) },
+          listEntries: async () => [],
+        } as any,
+      }).app;
+      for (const route of routes) {
+        const res = await prodApp.request(route);
+        expect(res.status, `prod ${route}`).toBe(404);
+      }
+    } finally {
+      process.env.NODE_ENV = prevEnv;
+    }
   });
 });

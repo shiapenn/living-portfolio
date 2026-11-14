@@ -9,6 +9,21 @@ async function captureStep(page: Page, outDir: string, name: string): Promise<vo
 }
 
 test.describe('WP-15.7 Reference Editor Page', () => {
+  test('requires admin session on /admin/entries/editor, /admin/entries/new, /admin/entries/:id and fixture/theme params', async ({ browser }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    for (const url of [
+      '/admin/entries/editor',
+      '/admin/entries/editor?fixture=draft&theme=dark',
+      '/admin/entries/new?theme=light',
+      '/admin/entries/fixture-draft?fixture=public&theme=dark',
+    ]) {
+      await page.goto(url);
+      await expect(page).toHaveURL(/\/admin\/(login|setup)/);
+    }
+    await context.close();
+  });
+
   test('UX-87: left-edge and width alignment across all 6 states (first-run, empty, draft, error, unlisted, public)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 900 });

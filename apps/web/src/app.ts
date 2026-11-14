@@ -180,14 +180,13 @@ export function createWebApp(options?: WebAppOptions) {
       const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';
       return c.html(renderFoundationsGalleryPage(theme));
     });
-  }
 
-  const handleReferenceEditor = async (c: any, selectedId?: string) => {
-    const session = await checkSession(c.req.header('cookie'));
-    if (session.setupRequired) return c.redirect('/admin/setup');
-    if (!session.authenticated) return c.redirect('/admin/login');
-    const fixture = c.req.query('fixture');
-    const themeParam = c.req.query('theme') === 'dark' ? 'dark' : c.req.query('theme') === 'light' ? 'light' : undefined;
+    const handleReferenceEditor = async (c: any, selectedId?: string) => {
+      const session = await checkSession(c.req.header('cookie'));
+      if (session.setupRequired) return c.redirect('/admin/setup');
+      if (!session.authenticated) return c.redirect('/admin/login');
+      const fixture = c.req.query('fixture');
+      const themeParam = c.req.query('theme') === 'dark' ? 'dark' : c.req.query('theme') === 'light' ? 'light' : undefined;
     const baseDraft: ReferenceEditorEntry = {
       id: 'fixture-draft',
       slug: 'deterministic-sqlite-migrations',
@@ -316,9 +315,10 @@ export function createWebApp(options?: WebAppOptions) {
     );
   };
 
-  app.get('/admin/entries/editor', (c) => handleReferenceEditor(c));
-  app.get('/admin/entries/new', (c) => handleReferenceEditor(c));
-  app.get('/admin/entries/:id', (c) => handleReferenceEditor(c, c.req.param('id')));
+    app.get('/admin/entries/editor', (c) => handleReferenceEditor(c));
+    app.get('/admin/entries/new', (c) => handleReferenceEditor(c));
+    app.get('/admin/entries/:id', (c) => handleReferenceEditor(c, c.req.param('id')));
+  }
 
   // Public visitor booking & escalation status routes
   app.get('/book', (c) => c.html(renderBookPage(c.req.query('q'), c.req.query('facets'))));
