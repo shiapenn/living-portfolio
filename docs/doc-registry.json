@@ -1116,9 +1116,17 @@
   },
   {
     "id": "A098",
+    "title": "WP-15.pre-e Triage Allowlist",
+    "class": "A",
+    "path": "docs/execution-reports/A098-wp-15pre-e-triage-allowlist.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "A099",
     "title": "WP-15.pre-d CodeQL Weekly Schedule and Manual Dispatch",
     "class": "A",
-    "path": "docs/execution-reports/A098-wp-15-pre-d-codeql-schedule.md",
+    "path": "docs/execution-reports/A099-wp-15-pre-d-codeql-schedule.md",
     "status": "active",
     "supersedes": null
   }
