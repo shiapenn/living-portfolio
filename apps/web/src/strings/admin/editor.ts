@@ -4,9 +4,9 @@
  * Copy never points "above" or "below" (D-FOUND-6).
  */
 
-export function formatCount(count: number, singular: string, plural: string): string {
-  return `${count} ${count === 1 ? singular : plural}`;
-}
+import { formatCount } from '../formatters.js';
+
+export { formatCount };
 
 export const EDITOR_STRINGS = {
   pageTitle: 'Entries',

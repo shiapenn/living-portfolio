@@ -1,6 +1,24 @@
 /**
- * Setup Wizard String Catalogue & Explainer Pattern (§6.8, §6.10, §12.9, Finding 20261106-CP-14, CP-15)
+ * Setup Wizard & Area-Structured String Catalogue (§6.8, §6.10, §12.9, D-CONTRACT-1, D-HELP).
  */
+
+import { EDITOR_STRINGS } from './admin/editor.js';
+import { EDITOR_HELP } from './help/editor.js';
+import {
+  formatActionableError,
+  formatCount,
+  formatPlural,
+  formatTitleWithCount,
+} from './formatters.js';
+
+export {
+  EDITOR_STRINGS,
+  EDITOR_HELP,
+  formatActionableError,
+  formatCount,
+  formatPlural,
+  formatTitleWithCount,
+};
 
 export const WIZARD_STRINGS = {
   header: {
@@ -211,5 +229,15 @@ export const WIZARD_STRINGS = {
     finishButton: 'Go to your dashboard →',
     importButton: 'Import writing you already have →',
     backButton: '← Back to Backups',
+  },
+} as const;
+
+export const STRINGS = {
+  admin: {
+    editor: EDITOR_STRINGS,
+    setup: WIZARD_STRINGS,
+  },
+  help: {
+    editor: EDITOR_HELP,
   },
 } as const;

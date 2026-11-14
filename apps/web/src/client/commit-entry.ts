@@ -478,9 +478,9 @@ export async function commitEntry(intent: Intent): Promise<boolean> {
   if (intent === 'publish') {
     clearPreviewToken('published');
     const enrichSpan = enrichmentQueued
-      ? ' <span class="chip" style="margin-left:8px">Enrichment pipeline queued</span>'
+      ? ' <span class="chip">Summary analysis queued</span>'
       : '';
-    const msg = `<div class="as-of-banner">Published "${escapeClientHtml(s.title)}" at L0. <a href="/work/${escapeClientHtml(entryResultSlug)}">View entry →</a>${enrichSpan}</div>`;
+    const msg = `<div class="as-of-banner">Published "${escapeClientHtml(s.title)}". <a href="/work/${escapeClientHtml(entryResultSlug)}">View entry →</a>${enrichSpan}</div>`;
     showEditorFeedback(msg, false);
     if (typeof (window as any).fetchDeployStatus === 'function') {
       try {
