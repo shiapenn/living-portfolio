@@ -5,7 +5,7 @@ import { PortfolioWorker } from '@living-portfolio/worker';
 import { chunkMarkdown } from '@living-portfolio/core';
 import { createApp } from '../app.js';
 import { mountBundledWeb } from '../adapter/bundled-web.js';
-import { renderAskPage, renderAdminWorkspacePage } from '@living-portfolio/web';
+import { renderAskPage, renderAdminEntriesPage } from '@living-portfolio/web';
 
 describe('WP-11.1 Conformance: Debounced Static Rebuild UI & Ask Flow Repair (20261020-UX-05 & 20261020-UX-10)', () => {
   const adminToken = 'test-admin-token-suite-001';
@@ -104,15 +104,13 @@ describe('WP-11.1 Conformance: Debounced Static Rebuild UI & Ask Flow Repair (20
     expect(statusRes.status).toBe(200);
   });
 
-  it('[UX-05] Admin workspace renders deploy status chip and publish now trigger', async () => {
+  it('[UX-05 / D-WORKSPACE] Admin editor removes legacy Publish Now and Enrichment pipeline controls', async () => {
     const repo = new InMemoryPortfolioRepository();
-    const html = await renderAdminWorkspacePage(repo as any);
+    const html = await renderAdminEntriesPage(repo as any);
 
-    expect(html).toContain('id="deploy-status-chip"');
-    expect(html).toContain('id="btn-publish-now"');
-    expect(html).toContain('Publish Now');
-    expect(html).toContain('id="btn-trigger-enrichment"');
-    expect(html).toContain('fetchDeployStatus');
+    expect(html).toContain('id="ref-main"');
+    expect(html).not.toContain('Publish Now');
+    expect(html).not.toContain('id="btn-trigger-enrichment"');
   });
 
   it('[UX-10] Ask flow returns needs_context state for indeterminate advisory queries', async () => {

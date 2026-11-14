@@ -3,7 +3,7 @@ import { adaptDataSource, type WebDataClient } from "../../lib/data-source.js";
 import { escapeHtml } from "../../lib/html.js";
 import { renderLayout } from "../../layouts/public-shell.js";
 import { ALPHA_WARNING_TEXT } from "../../renderer.js";
-import { ADMIN_API_CLIENT_SCRIPT, type AdminSettingsState } from "./workspace.js";
+import { ADMIN_API_CLIENT_SCRIPT, type AdminSettingsState } from "../../lib/admin-api-client.js";
 
 export async function renderAdminSettingsPage(
   repo: WebDataClient,
@@ -33,6 +33,10 @@ export async function renderAdminSettingsPage(
       <div>
         <a href="/admin" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center">← Back to Workspace</a>
       </div>
+    </div>
+
+    <div class="later-thinking-banner" data-banner="alpha-warning" role="note" style="margin-bottom:16px">
+      <strong>${escapeHtml(ALPHA_WARNING_TEXT)}</strong>
     </div>
 
     <div id="settings-status-banner" role="status" aria-live="polite" style="margin-bottom:16px"></div>

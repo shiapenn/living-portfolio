@@ -10,11 +10,11 @@ import {
   type LivingPortfolioClient,
 } from '@living-portfolio/client';
 import {
+  renderAdminEntriesPage,
   renderAdminImportPage,
   renderAdminLoginPage,
   renderAdminSettingsPage,
   renderAdminSetupPage,
-  renderAdminWorkspacePage,
   renderAskPage,
   renderAskStatusPage,
   renderBookPage,
@@ -170,7 +170,14 @@ export function createWebApp(options?: WebAppOptions) {
 
   app.get('/admin', async (c) => {
     const session = await checkSession(c.req.header('cookie'));
-    return c.html(await renderAdminWorkspacePage(client, { legacyRecoveryUsed: session.legacyRecoveryUsed }));
+    return c.html(
+      await renderAdminEntriesPage(client, {
+        selectedId: c.req.query('entry') || undefined,
+        isNew: c.req.query('new') === '1',
+        siteName: cfg.PUBLIC_SITE_NAME,
+        legacyRecoveryUsed: session.legacyRecoveryUsed,
+      })
+    );
   });
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
   app.get('/admin/settings', async (c) => c.html(await renderAdminSettingsPage(client)));

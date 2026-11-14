@@ -2,86 +2,41 @@ import { test, expect } from '@playwright/test';
 import { ensureAdminLoggedIn } from './helpers.js';
 
 test.describe('WP-11.4: Full Markdown Engine, Design Tokens & Responsive Multi-Pane Layout', () => {
-  test('1. Admin Shell adapts across desktop (3-pane), tablet (2-pane), and mobile (stacked) breakpoints (20261020-UI-06, 20261020-UI-07)', async ({
+  test('1. Admin Shell adapts across desktop (2-pane) and mobile (compact header) breakpoints (20261020-UI-06, 20261020-UI-07, WP-15.4)', async ({
     page,
   }) => {
     await ensureAdminLoggedIn(page);
     await page.goto('/admin');
-    await expect(page.locator('.admin-shell')).toBeVisible();
+    await expect(page.locator('#ref-main')).toBeVisible();
 
     // Desktop viewport (1280px)
     await page.setViewportSize({ width: 1280, height: 900 });
-    const desktopColumns = await page.evaluate(() => {
-      const el = document.querySelector('.admin-shell');
-      return el ? window.getComputedStyle(el).gridTemplateColumns.split(' ').length : 0;
-    });
-    expect(desktopColumns).toBe(3);
-
-    // Tablet viewport (820px)
-    await page.setViewportSize({ width: 820, height: 900 });
-    const tabletColumns = await page.evaluate(() => {
-      const el = document.querySelector('.admin-shell');
-      return el ? window.getComputedStyle(el).gridTemplateColumns.split(' ').length : 0;
-    });
-    expect(tabletColumns).toBe(2);
+    await expect(page.locator('#ref-entry-list')).toBeVisible();
+    await expect(page.locator('#ref-mobile-menu-btn')).toBeHidden();
 
     // Mobile viewport (480px)
     await page.setViewportSize({ width: 480, height: 900 });
-    const mobileColumns = await page.evaluate(() => {
-      const el = document.querySelector('.admin-shell');
-      return el ? window.getComputedStyle(el).gridTemplateColumns.split(' ').length : 0;
-    });
-    expect(mobileColumns).toBe(1);
+    await expect(page.locator('#ref-mobile-menu-btn')).toBeVisible();
   });
 
-  test('2. Editor workspace provides toolbar actions, live word count, and source/preview toggle (F4, 20261020-UI-01)', async ({
+  test('2. Reference editor provides title, body writing surface, and save action (F4, 20261020-UI-01, WP-15.4)', async ({
     page,
   }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin');
+    await page.goto('/admin?new=1');
 
-    const textarea = page.locator('#entry-body');
-    const wordCount = page.locator('#editor-word-count');
-    const previewToggle = page.locator('#btn-toggle-editor-mode');
-    const previewPane = page.locator('#entry-body-preview');
-    const warning = page.locator('#editor-word-warning');
+    const titleInput = page.locator('#ref-field-title');
+    const textarea = page.locator('#ref-field-body');
+    const saveBtn = page.locator('#ref-btn-save');
 
+    await expect(titleInput).toBeVisible();
     await expect(textarea).toBeVisible();
-    await expect(wordCount).toBeVisible();
+    await expect(saveBtn).toBeVisible();
 
-    // 1. Live word counter updates
-    await textarea.fill('Testing multi-tier design tokens and CommonMark parsing');
-    await expect(wordCount).toContainText('7 words (soft cap: 3,000)');
-    await expect(warning).toBeHidden();
-
-    // 2. Toolbar action: insert H2
-    const h2Btn = page.locator('.editor-toolbar button[data-action="h2"]');
-    await expect(h2Btn).toBeVisible();
-    await h2Btn.click();
-    const bodyVal = await textarea.inputValue();
-    expect(bodyVal).toContain('## Heading 2');
-
-    // 3. Toggle preview mode
-    await expect(previewPane).toBeHidden();
-    await previewToggle.click();
-    await expect(previewPane).toBeVisible();
-    await expect(textarea).toBeHidden();
-    await expect(previewToggle).toHaveText('Edit source');
-
-    // Preview rendered heading
-    await expect(previewPane.locator('h2')).toContainText('Heading 2');
-
-    // Switch back to edit mode
-    await previewToggle.click();
-    await expect(textarea).toBeVisible();
-    await expect(previewPane).toBeHidden();
-    await expect(previewToggle).toHaveText('Preview');
-
-    // 4. Soft 3,000-word cap non-blocking warning
-    const longText = Array(3005).fill('word').join(' ');
-    await textarea.fill(longText);
-    await expect(warning).toBeVisible();
-    await expect(warning).toContainText('Entry exceeds 3,000 words');
+    await titleInput.fill('Markdown Layout Verification');
+    await textarea.fill('## Heading 2\n\nTesting multi-tier design tokens and CommonMark parsing.');
+    await saveBtn.click();
+    await expect(page.locator('#ref-status-line')).toContainText(/draft saved/i);
   });
 
   test('3. Public pages render CommonMark/GFM with heading demotion, code blocks, and tables (F4, 20261020-UI-01)', async ({

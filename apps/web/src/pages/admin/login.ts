@@ -1,5 +1,5 @@
 import { renderLayout } from "../../layouts/public-shell.js";
-import { ADMIN_API_CLIENT_SCRIPT } from "./workspace.js";
+import { ADMIN_API_CLIENT_SCRIPT } from "../../lib/admin-api-client.js";
 
 export function renderAdminLoginPage(): string {
   const content = `

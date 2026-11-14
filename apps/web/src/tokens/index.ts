@@ -365,4 +365,50 @@ ${FONTS_CSS}
   --border-control: #14202A;
   --text-muted: #14202A;
 }
+
+:root[data-theme="dark"][data-contrast="more"] {
+  --rule: #9AA8B6;
+  --border-control: #D0DBE5;
+  --text-muted: #E6EDF3;
+}
+
+@media (prefers-contrast: more) {
+  :root[data-theme="dark"] {
+    --rule: #9AA8B6;
+    --border-control: #D0DBE5;
+    --text-muted: #E6EDF3;
+  }
+}
+
+/* Forced Colors Mode (WP-15.4, Spec §12.3) */
+@media (forced-colors: active) {
+  :root {
+    --rule: CanvasText;
+    --border-control: ButtonBorder;
+    --border-focus: Highlight;
+    --text-muted: CanvasText;
+  }
+
+  .lp-btn,
+  .lp-icon-btn,
+  .lp-badge,
+  .lp-chip,
+  .lp-notice,
+  .lp-dialog,
+  .lp-drawer,
+  .lp-popover-menu,
+  .lp-empty-state {
+    border: 1px solid ButtonBorder;
+  }
+
+  .lp-btn:focus-visible,
+  .lp-icon-btn:focus-visible,
+  .lp-input:focus-visible,
+  .lp-select:focus-visible,
+  .lp-textarea:focus-visible,
+  a:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
 `;

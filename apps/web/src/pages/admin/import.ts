@@ -3,7 +3,7 @@ import { adaptDataSource, type WebDataClient } from "../../lib/data-source.js";
 import { escapeHtml } from "../../lib/html.js";
 import { renderLayout } from "../../layouts/public-shell.js";
 import { ALPHA_WARNING_TEXT } from "../../renderer.js";
-import { ADMIN_API_CLIENT_SCRIPT } from "./workspace.js";
+import { ADMIN_API_CLIENT_SCRIPT } from "../../lib/admin-api-client.js";
 
 export async function renderAdminImportPage(repo: WebDataClient): Promise<string> {
   repo = adaptDataSource(repo);

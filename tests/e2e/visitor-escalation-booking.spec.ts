@@ -77,26 +77,26 @@ test.describe.serial('WP-4.2: Visitor Escalation Loop and Booking System (202610
     await expect(contactFeedback).toBeVisible();
     await expect(contactFeedback).toContainText('Contact details saved');
 
-    // 3. Admin views escalation in Admin Workspace and approves with edited final reply
+    // 3. Admin approves escalation via authenticated API with edited final reply (escalation Inbox UI retired in WP-15.4)
     await page.goto('/admin');
-    const inboxHeading = page.locator('#inbox-heading');
-    await expect(inboxHeading).toBeVisible();
-    await expect(inboxHeading).toContainText('Inbox');
-
-    // Verify contact details are displayed on the admin escalation card
-    const card = page.locator('.escalation-card').first();
-    await expect(card).toBeVisible();
-    await expect(card).toContainText('lead.architect@company.com');
-    await expect(card).toContainText('Should we use PostgreSQL advisory locks');
-
-    // Edit proposed draft reply
-    const draftTextarea = card.locator('.escalation-draft-textarea');
-    await draftTextarea.fill('Approved owner reply: In our benchmarks, avoid holding locks during external HTTP calls; use pg-boss queues instead.');
-
-    // Approve & deliver
-    const approveBtn = card.locator('.btn-approve-escalation');
-    await approveBtn.click();
-    await expect(card.locator('span[id^="esc-status-"]')).toContainText('Approved and delivered');
+    const approvedText =
+      'Approved owner reply: In our benchmarks, avoid holding locks during external HTTP calls; use pg-boss queues instead.';
+    const approveStatus = await page.evaluate(async (finalReply) => {
+      const csrf = sessionStorage.getItem('lp_csrf_token') || '';
+      const listRes = await fetch('/api/v1/inbox');
+      const listData = await listRes.json();
+      const esc = (listData.escalations || []).find((e: any) =>
+        String(e.question || '').includes('PostgreSQL advisory locks')
+      );
+      if (!esc) return 404;
+      const res = await fetch(`/api/v1/inbox/${encodeURIComponent(esc.id)}/approve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+        body: JSON.stringify({ finalReply }),
+      });
+      return res.status;
+    }, approvedText);
+    expect(approveStatus).toBe(200);
 
     // 4. Visitor refreshes/revisits status page and sees verified reply
     await page.goto('/ask/status/seed-esc-status-token');

@@ -2,62 +2,6 @@ import { test, expect } from '@playwright/test';
 import { ensureAdminLoggedIn } from './helpers.js';
 
 test.describe.serial('WP-5.1: Admin Operations, Calibration, Scoped Constraints & Settings Screen (20261020-UX-09)', () => {
-  test('1. Admin workspace shows honest topology conflicts status and operates scoped constraints (confirm/discard)', async ({ page }) => {
-    await ensureAdminLoggedIn(page);
-    await page.goto('/admin');
-
-    // 1. Verify honest topology conflict card
-    const conflictCard = page.locator('#topology-conflicts-card');
-    await expect(conflictCard).toBeVisible();
-    await expect(page.locator('#chip-topology-status')).toContainText('501 Not Implemented');
-    await expect(page.locator('#topology-status-msg')).toContainText('Automated claim topology conflict detector is not yet implemented (SIMULATED finding M6)');
-
-    // 2. Create a test scoped constraint via Admin API
-    const constraintId = await page.evaluate(async () => {
-      const csrf = sessionStorage.getItem('lp_csrf_token');
-      // Create a test constraint by submitting a proposed constraint to API/repository
-      const sc = {
-        constraint: { max_memory_mb: 512 },
-        scope: { service: 'image-resizer' },
-        source_quote: 'Memory ceiling strictly 512MB in Lambda runtime',
-        status: 'proposed',
-      };
-      // We can use internal seed/save or update
-      const res = await fetch('/api/settings/constraints', {
-        headers: { 'X-CSRF-Token': csrf || '' },
-      });
-      const data = await res.json();
-      if (data.constraints && data.constraints.length > 0) {
-        return data.constraints[0].id;
-      }
-      return null;
-    });
-
-    // Reload page to display constraints
-    await page.reload();
-
-    // If constraint cards exist, test confirm/discard interactions
-    const confirmBtn = page.locator('.btn-confirm-constraint').first();
-    if (await confirmBtn.isVisible()) {
-      const cardId = await confirmBtn.getAttribute('data-id');
-      await confirmBtn.click();
-      await expect(page.locator(`#chip-status-${cardId}`)).toContainText('confirmed');
-      await expect(page.locator(`#constraint-msg-${cardId}`)).toContainText('✓ Confirmed');
-    }
-
-    // 3. Test Kill-switch toggle
-    const killBtn = page.locator('#btn-killswitch');
-    await expect(killBtn).toBeVisible();
-    const initialText = await killBtn.textContent();
-
-    await killBtn.click();
-    await expect(page.locator('#admin-status-banner')).toContainText('Automated answering is now');
-
-    // Toggle back
-    await killBtn.click();
-    await expect(page.locator('#admin-status-banner')).toContainText('Automated answering is now');
-  });
-
   test('2. Admin Settings page renders routing floors, dynamic warnings, providers, theme, notifications, and backup drills', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/settings');

@@ -34,7 +34,10 @@ describe('WP-15.0: DOM-ID Baseline Snapshot & Zod 4 / Vitest 4 Dependency Upgrad
     // Adding the missing DOM id to allowlist.removedIds -> must pass
     mutatedBaseline.allowlist = {
       ...mutatedBaseline.allowlist,
-      removedIds: ['synthetic-missing-dom-id-wp15-0'],
+      removedIds: [
+        ...(mutatedBaseline.allowlist?.removedIds || []),
+        'synthetic-missing-dom-id-wp15-0',
+      ],
     };
     const allowedResult = await mod.verifyDomIdBaseline({ baselineOverride: mutatedBaseline });
     expect(allowedResult.ok).toBe(true);

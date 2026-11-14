@@ -28,7 +28,7 @@ describe('WP-15.1: Mechanical Monolith Split of apps/web/src/renderer.ts', () =>
       'apps/web/src/pages/public/static.ts',
       'apps/web/src/pages/public/book.ts',
       'apps/web/src/pages/public/ask-status.ts',
-      'apps/web/src/pages/admin/workspace.ts',
+      'apps/web/src/pages/admin/entries/editor.ts',
       'apps/web/src/pages/admin/settings.ts',
       'apps/web/src/pages/admin/login.ts',
       'apps/web/src/pages/admin/setup.ts',

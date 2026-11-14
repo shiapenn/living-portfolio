@@ -2,74 +2,29 @@ import { test, expect } from '@playwright/test';
 import { ensureAdminLoggedIn } from './helpers.js';
 
 test.describe.serial('WP-4.1: Structure Review Loop, Import Triage, and Visitor Ask States', () => {
-  test('1. Inspector 5 tabs, walkthrough, and guided/quick authoring modes in Admin Workspace (20261020-UX-06, UX-07)', async ({ page }) => {
+  test('1. Structure Drawer 3-tab inspector in Reference Editor (20261020-UX-06, UX-07, WP-15.4)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
 
-    // Verify first-run authoring walkthrough banner
-    const walkthroughCard = page.locator('#admin-walkthrough-card');
-    await expect(walkthroughCard).toBeVisible();
-    await expect(walkthroughCard).toContainText('First-Run Authoring Walkthrough');
-    await page.click('#btn-dismiss-walkthrough');
-    await expect(walkthroughCard).toBeHidden();
+    // Open Structure drawer from editor action bar
+    await page.click('#ref-btn-structure');
+    const drawer = page.locator('#ref-structure-drawer');
+    await expect(drawer).toBeVisible();
 
-    // Verify 5 Inspector tabs exist with accessible tablist role
-    const tablist = page.locator('.inspector-tabs[role="tablist"]');
+    // Verify 3 Structure tabs exist with accessible tablist role
+    const tablist = drawer.locator('.lp-tablist[role="tablist"]');
     await expect(tablist).toBeVisible();
-    await expect(page.locator('#tab-btn-structure')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('#panel-structure')).toBeVisible();
+    await expect(page.locator('#ref-structure-tabs-tab-summary')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#ref-structure-tabs-panel-summary')).toBeVisible();
 
     // Switch to Context tab
-    await page.click('#tab-btn-context');
-    await expect(page.locator('#tab-btn-context')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('#panel-context')).toBeVisible();
-    await expect(page.locator('#btn-add-facet')).toBeVisible();
+    await page.click('#ref-structure-tabs-tab-context');
+    await expect(page.locator('#ref-structure-tabs-tab-context')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#ref-structure-tabs-panel-context')).toBeVisible();
 
     // Switch to Evidence tab
-    await page.click('#tab-btn-evidence');
-    await expect(page.locator('#tab-btn-evidence')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('#panel-evidence')).toBeVisible();
-    await expect(page.locator('#panel-evidence')).toContainText('Evidence verification confirms artifact authenticity but does not prove the narrative.');
-
-    // Switch to Answerability tab
-    await page.click('#tab-btn-answerability');
-    await expect(page.locator('#tab-btn-answerability')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('#panel-answerability')).toBeVisible();
-
-    // Switch to History tab
-    await page.click('#tab-btn-history');
-    await expect(page.locator('#tab-btn-history')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('#panel-history')).toBeVisible();
-
-    // Return to Structure tab
-    await page.click('#tab-btn-structure');
-    await expect(page.locator('#panel-structure')).toBeVisible();
-
-    // Test Guided Mode in Editor
-    await page.click('#mode-btn-guided');
-    const guidedPanel = page.locator('#editor-guided-panel');
-    await expect(guidedPanel).toBeVisible();
-    await page.fill('#guided-problem', 'High lock contention under peak load');
-    await page.fill('#guided-approach', 'Adopted Postgres 15 advisory locks');
-    await page.check('#guided-nothing-wrong');
-    await expect(page.locator('#guided-lesson')).toHaveValue('Smooth execution with no notable regressions.');
-
-    await page.click('#btn-guided-compile');
-    const bodyValue = await page.inputValue('#entry-body');
-    expect(bodyValue).toContain('## Problem');
-    expect(bodyValue).toContain('High lock contention under peak load');
-    expect(bodyValue).toContain('## Lesson');
-
-    // Test Quick Log mode in Editor
-    await page.click('#mode-btn-quick');
-    const quickPanel = page.locator('#editor-quick-panel');
-    await expect(quickPanel).toBeVisible();
-    await page.fill('#quick-log-text', 'Quick Log Test: Deployed micro-patch to worker queue with shadow metrics active.');
-    await page.click('#btn-submit-quick-log');
-
-    // Verify quick log confirmation banner
-    const banner = page.locator('#admin-status-banner');
-    await expect(banner).toBeVisible();
-    await expect(banner).toContainText('Quick log saved as');
+    await page.click('#ref-structure-tabs-tab-evidence');
+    await expect(page.locator('#ref-structure-tabs-tab-evidence')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#ref-structure-tabs-panel-evidence')).toBeVisible();
   });
 
   test('2. Import Planner and J K A R D S triage keyboard workflow (20261020-UX-07)', async ({ page }) => {
