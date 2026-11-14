@@ -46,10 +46,15 @@ WP-15.pre-d reduces GitHub Actions minutes by running `.github/workflows/codeql.
 
 - None.
 
-## 8. Deviations and Rule Compliance
+## 8. Receipt Gate Self-Validation
 
-- Owner explicitly authorised editing `.github/workflows/codeql.yml` for `WP-15.pre-d` only, without touching `scripts/gitleaks-checksums.json` or any check script.
+```
+pnpm receipt:check A097
+```
+All receipt checks PASSED.
 
-## 9. Open Risks
+## 9. Handover Decision
 
-- Weekly CodeQL runs continue to execute `node scripts/sarif-gate` and upload `codeql-sarif` workflow artifacts; GitHub Code Scanning UI remains disabled unless GitHub Code Security is enabled or the repository is made public.
+- Decision: NOT NEEDED
+- Rule(s): HO-R1
+- Next action: Merge `chore/wp-15-pre-d-codeql-schedule` into `main` on green CI.
