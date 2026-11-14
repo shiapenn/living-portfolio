@@ -6,7 +6,7 @@
 | Date | 2026-11-14 |
 | Author | A (Implementer) |
 | Task ID | `WP-15.pre-d` |
-| Evidence SHA | `ae468e4` |
+| Evidence SHA | `64b0e42` |
 | CI run | `chore/wp-15-pre-d-codeql-schedule` (local `pnpm verify` 14/14 passed; PR #129 triage gate requires owner action on `scripts/triage` or admin merge) |
 
 ---
