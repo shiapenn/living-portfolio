@@ -4844,17 +4844,20 @@
     - "12.3"
     - "12.5"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3a-design-foundations.spec.ts
   history:
     - date: 2026-11-14
       status: open
       note: "Registered at WP-15.7 visual review (item a): Badges render with 1 px borders and near-square corners instead of non-interactive borderless pills (--radius-pill 999px) with tinted fill per D-FOUND-2 and audit §6.9. Mapped to WP-15.3a."
+    - date: 2026-11-14
+      status: fixed
+      note: "Fixed in WP-15.3a (D-FOUND-2): .lp-badge uses --radius-pill (999px), tinted role background/foreground tokens, border: none (0px), and default cursor, while interactive .lp-chip uses --radius-pill with 1px --border-control border. Verified in tests/e2e/wp15-3a-design-foundations.spec.ts and apps/web/src/primitives/foundations.test.ts."
   verified_by: null
 - id: 20261106-UX-71
   audit: AUD-2026-11-06
@@ -4864,17 +4867,20 @@
     - "12.5"
     - "12.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3a-design-foundations.spec.ts
   history:
     - date: 2026-11-14
       status: open
       note: "Registered at WP-15.7 visual review (item b): Icons are rendered as Unicode text glyphs instead of a self-hosted 24 px inline SVG sprite at sizes {16, 20, 24} with currentColor, and dismiss controls render as bordered square buttons instead of a 16 px ghost X at the top right per D-FOUND-1. Mapped to WP-15.3a."
+    - date: 2026-11-14
+      status: fixed
+      note: "Fixed in WP-15.3a (D-FOUND-1): Added self-hosted Lucide ISC 24px SVG sprite (#lp-icon-sprite) at allowed sizes {16, 20, 24} only, replaced text glyphs with SVG symbols, and enforced ghost/outlined IconButton variants with aria-label and title tooltips. Verified in tests/e2e/wp15-3a-design-foundations.spec.ts and apps/web/src/primitives/foundations.test.ts."
   verified_by: null
 - id: 20261106-UX-72
   audit: AUD-2026-11-06
@@ -4883,17 +4889,20 @@
     - "12.3"
     - "12.6"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3a-design-foundations.spec.ts
   history:
     - date: 2026-11-14
       status: open
       note: "Registered at WP-15.7 visual review (item c): The Details disclosure lacks a 16 px rotating chevron affordance and wraps a bordered box inside the bordered editor card, violating D-FOUND-1, D-FOUND-2 (no bordered box inside a bordered box; use hairline dividers), and D-FOUND-6. Mapped to WP-15.3a and WP-15.7."
+    - date: 2026-11-14
+      status: partial
+      note: "Partially fixed in WP-15.3a (D-FOUND-1, D-FOUND-2, D-FOUND-6): Updated renderDisclosure and .lp-disclosure to render a 1px hairline top divider and rotating 16px chevron-down SVG icon with zero 4-sided nested border; remaining editor surface wiring in WP-15.7."
   verified_by: null
 - id: 20261106-UX-73
   audit: AUD-2026-11-06
@@ -4902,17 +4911,20 @@
     - "12.6"
     - "12.7"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3a-design-foundations.spec.ts
   history:
     - date: 2026-11-14
       status: open
       note: "Registered at WP-15.7 visual review (item d): A failed save renders both a page notice and a field error for the same event, unreserved notice/status slots shift content vertically, and the error fixture populates a non-empty title while showing 'Enter a title before saving.' per D-FOUND-3 and D-FOUND-6. Mapped to WP-15.3a and WP-15.7."
+    - date: 2026-11-14
+      status: partial
+      note: "Partially fixed in WP-15.3a (D-FOUND-3, D-FOUND-6): Added reserved .lp-page-notice-slot and .lp-status-line-slot, tone icons on PageNotice and StatusLine, and non-contradicting empty-title error state in /admin/dev/foundations; remaining editor workspace error-handling rework in WP-15.7."
   verified_by: null
 - id: 20261106-UX-74
   audit: AUD-2026-11-06
@@ -4922,17 +4934,20 @@
     - "12.6"
     - "13.13"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3a-design-foundations.spec.ts
   history:
     - date: 2026-11-14
       status: open
       note: "Registered at WP-15.7 visual review (item e): First-run guide and empty state differ in width/left edge from the editor column, show two buttons for one action, prefix ordered list items with '1.' inside <ol> ('1. 1.'), and wrap 'Entries (0 entries)' instead of showing 'Entries' with a pill count badge per D-FOUND-3 and D-FOUND-6. Mapped to WP-15.3a and WP-15.7."
+    - date: 2026-11-14
+      status: partial
+      note: "Partially fixed in WP-15.3a (D-FOUND-3, D-FOUND-6): Updated renderEmptyState to embed guideSteps numbered once with a single primary CTA and verified identical left edge/width across all 6 states in /admin/dev/foundations; remaining editor page integration in WP-15.7."
   verified_by: null
 - id: 20261106-UX-75
   audit: AUD-2026-11-06
@@ -4941,17 +4956,20 @@
     - "12.5"
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3a-design-foundations.spec.ts
   history:
     - date: 2026-11-14
       status: open
       note: "Registered at WP-15.7 visual review (item f): Below 768 px, the admin header wraps across three rows and exposes 32 px sm buttons instead of collapsing navigation/theme/sign-out into a menu button so content starts within 64 px and all touch targets meet >= 44 px per D-FOUND-3. Mapped to WP-15.3a and WP-15.7."
+    - date: 2026-11-14
+      status: partial
+      note: "Partially fixed in WP-15.3a (D-FOUND-3): Added .lp-admin-header compact <= 64px layout and >= 44x44px touch-target rules below 768px, verified at 320px in tests/e2e/wp15-3a-design-foundations.spec.ts; remaining admin shell header migration in WP-15.7."
   verified_by: null
 - id: 20261106-UX-76
   audit: AUD-2026-11-06
@@ -4960,17 +4978,20 @@
     - "12.4"
     - "12.6"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3a-design-foundations.spec.ts
   history:
     - date: 2026-11-14
       status: open
       note: "Registered at WP-15.7 visual review (item g): The editor body textarea uses --font-ui at 14 px instead of the public reading face (--font-reading) at the public reading measure per D-FOUND-4. Mapped to WP-15.3a and WP-15.7."
+    - date: 2026-11-14
+      status: partial
+      note: "Partially fixed in WP-15.3a (D-FOUND-4): Defined .lp-writing-surface using --font-reading at 16px/24px and --measure-reading in apps/web/src/styles.ts; remaining editor textarea application in WP-15.7."
   verified_by: null
 - id: 20261106-UX-77
   audit: AUD-2026-11-06
@@ -4979,17 +5000,20 @@
     - "12.5"
     - "12.6"
   severity: P2
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3a-design-foundations.spec.ts
   history:
     - date: 2026-11-14
       status: open
       note: "Registered at WP-15.7 visual review (item h): Editor canvas centering inside a 1fr column creates uneven dead space and misaligns empty, first-run, draft, and error states instead of aligning every state to the same left edge and width (260 px list column, 720 px max main column) per D-FOUND-3. Mapped to WP-15.3a and WP-15.7."
+    - date: 2026-11-14
+      status: partial
+      note: "Partially fixed in WP-15.3a (D-FOUND-3): Defined --layout-list-col: 260px and --layout-main-max: 720px and verified identical left edge and width across all 6 states in tests/e2e/wp15-3a-design-foundations.spec.ts; remaining reference editor page layout alignment in WP-15.7."
   verified_by: null
 - id: 20261106-UX-78
   audit: AUD-2026-11-06
@@ -5016,17 +5040,20 @@
     - "12.3"
     - "12.8"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3a-design-foundations.spec.ts
   history:
     - date: 2026-11-14
       status: open
       note: "Registered at WP-15.7 visual review (item j): Quiet/tertiary buttons render as plain text without subtle hover/focus-visible/active fill or state differentiation per D-FOUND-1, D-FOUND-2, and D-FOUND-5. Mapped to WP-15.3a."
+    - date: 2026-11-14
+      status: fixed
+      note: "Fixed in WP-15.3a (D-FOUND-1, D-FOUND-2, D-FOUND-5): Added hover/focus-visible/active surface fill (--role-neutral-bg), 2px focus ring with 2px offset, and active transform on .lp-btn-quiet and .lp-icon-btn-ghost, rendered across all interactive states in /admin/dev/foundations."
   verified_by: null
 - id: 20261106-UX-80
   audit: AUD-2026-11-06
@@ -5035,15 +5062,18 @@
     - "12.5"
     - "12.8"
   severity: P2
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-3a-design-foundations.spec.ts
   history:
     - date: 2026-11-14
       status: open
       note: "Registered at WP-15.7 visual review (item k): Review artefacts only captured static resting pages rather than all interactive states (default, hover, focus-visible, active, disabled, loading, error) on the foundations gallery and step-by-step filmstrips for the 6 editor flows per D-FOUND-5. Mapped to WP-15.3a and WP-15.7."
+    - date: 2026-11-14
+      status: partial
+      note: "Partially fixed in WP-15.3a (D-FOUND-5): /admin/dev/foundations renders every primitive and container in default, hover, focus-visible, active, disabled, loading, and error states in light and dark themes; step-by-step editor flow filmstrips to be produced in WP-15.7."
   verified_by: null

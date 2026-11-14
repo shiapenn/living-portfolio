@@ -1,5 +1,5 @@
 import { escapeHtml } from '../lib/html.js';
-import { renderIconButton } from '../primitives/index.js';
+import { renderIcon, renderIconButton } from '../primitives/index.js';
 
 export interface DialogProps {
   id: string;
@@ -24,6 +24,20 @@ export interface DisclosureProps {
   summary: string;
   summaryMeta?: string;
   bodyHtml: string;
+  open?: boolean;
+  className?: string;
+}
+
+export interface MenuItem {
+  id: string;
+  label: string;
+  danger?: boolean;
+}
+
+export interface MenuProps {
+  id: string;
+  triggerLabel: string;
+  items: MenuItem[];
   open?: boolean;
   className?: string;
 }
@@ -56,11 +70,17 @@ export interface TableProps {
   className?: string;
 }
 
+export interface EmptyStateGuideStep {
+  title: string;
+  body: string;
+}
+
 export interface EmptyStateProps {
   id?: string;
   title: string;
   body: string;
   actionHtml?: string;
+  guideSteps?: EmptyStateGuideStep[];
   className?: string;
 }
 
@@ -73,7 +93,8 @@ export function renderDialog(props: DialogProps): string {
   const classes = ['lp-modal-backdrop', props.className].filter(Boolean).join(' ');
   const closeBtn = renderIconButton({
     ariaLabel: `Close ${props.title}`,
-    icon: '×',
+    icon: 'x',
+    iconSize: 16,
     variant: 'quiet',
     size: 'sm',
     dataAttrs: { 'lp-dialog-close': 'true' },
@@ -103,7 +124,8 @@ export function renderDrawer(props: DrawerProps): string {
     .join(' ');
   const closeBtn = renderIconButton({
     ariaLabel: `Close ${props.title}`,
-    icon: '×',
+    icon: 'x',
+    iconSize: 16,
     variant: 'quiet',
     size: 'sm',
     dataAttrs: { 'lp-dialog-close': 'true' },
@@ -121,18 +143,41 @@ export function renderDrawer(props: DrawerProps): string {
 }
 
 /**
- * Renders a native <details> Disclosure with optional one-line summary metadata.
+ * Renders a native <details> Disclosure with rotating 16px chevron and hairline divider (D-FOUND-1, D-FOUND-6).
  */
 export function renderDisclosure(props: DisclosureProps): string {
   const classes = ['lp-disclosure', props.className].filter(Boolean).join(' ');
   const openAttr = props.open ? ' open' : '';
+  const chevron = renderIcon({ name: 'chevron-down', size: 16, className: 'lp-disclosure-chevron' });
   return `<details id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}"${openAttr}>
   <summary class="lp-disclosure-summary">
     <span class="lp-disclosure-label">${escapeHtml(props.summary)}</span>
-    ${props.summaryMeta ? `<span class="lp-disclosure-meta">${escapeHtml(props.summaryMeta)}</span>` : ''}
+    <span class="lp-disclosure-summary-end">
+      ${props.summaryMeta ? `<span class="lp-disclosure-meta">${escapeHtml(props.summaryMeta)}</span>` : ''}
+      ${chevron}
+    </span>
   </summary>
   <div class="lp-disclosure-body">${props.bodyHtml}</div>
 </details>`;
+}
+
+/**
+ * Renders a Menu popover with a trigger button and menu items (D-FOUND-1, D-FOUND-2).
+ */
+export function renderMenu(props: MenuProps): string {
+  const menuId = `${props.id}-popover`;
+  const open = Boolean(props.open);
+  const chevron = renderIcon({ name: 'chevron-down', size: 16, className: 'lp-disclosure-chevron' });
+  const itemsHtml = props.items
+    .map(
+      (item) =>
+        `<button type="button" role="menuitem" id="${escapeHtml(item.id)}" class="lp-btn ${item.danger ? 'lp-btn-danger' : 'lp-btn-quiet'} lp-btn-sm">${escapeHtml(item.label)}</button>`
+    )
+    .join('');
+  return `<div id="${escapeHtml(props.id)}" class="lp-menu-wrap ${escapeHtml(props.className ?? '')}">
+  <button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}" aria-controls="${escapeHtml(menuId)}">${escapeHtml(props.triggerLabel)} ${chevron}</button>
+  <div id="${escapeHtml(menuId)}" role="menu" class="lp-popover-menu"${open ? '' : ' hidden'}>${itemsHtml}</div>
+</div>`;
 }
 
 /**
@@ -195,14 +240,25 @@ export function renderTable(props: TableProps): string {
 }
 
 /**
- * Renders a centred EmptyState block with optional primary action.
+ * Renders an EmptyState block with a single primary action and optional embedded first-run guide (D-FOUND-6).
  */
 export function renderEmptyState(props: EmptyStateProps): string {
   const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
   const classes = ['lp-empty-state', props.className].filter(Boolean).join(' ');
+  const guideHtml =
+    props.guideSteps && props.guideSteps.length > 0
+      ? `<div class="lp-empty-guide"><ol class="lp-empty-guide-steps">${props.guideSteps
+          .map((step) => {
+            const cleanTitle = step.title.replace(/^\d+\.\s*/, '');
+            return `<li><strong>${escapeHtml(cleanTitle)}</strong> — ${escapeHtml(step.body)}</li>`;
+          })
+          .join('')}</ol></div>`
+      : '';
+
   return `<div class="${escapeHtml(classes)}"${idAttr}>
   <h3 class="lp-empty-title">${escapeHtml(props.title)}</h3>
   <p class="lp-empty-body">${escapeHtml(props.body)}</p>
+  ${guideHtml}
   ${props.actionHtml ? `<div class="lp-empty-action">${props.actionHtml}</div>` : ''}
 </div>`;
 }

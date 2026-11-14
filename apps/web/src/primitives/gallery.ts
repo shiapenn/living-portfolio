@@ -1,5 +1,6 @@
 import { renderLayout } from '../layouts/public-shell.js';
 import {
+  renderIconSprite,
   renderButton,
   renderIconButton,
   renderChip,
@@ -23,7 +24,7 @@ import {
  * Renders the development-only primitives gallery for visual and accessibility verification.
  */
 export function renderPrimitivesGalleryPage(): string {
-  const content = `<section class="lp-gallery">
+  const content = `${renderIconSprite()}<section class="lp-gallery">
   <header class="lp-gallery-header">
     <h1>Primitives Gallery</h1>
     <p class="lp-gallery-subtitle">Shared UI building blocks for visual and accessibility verification.</p>

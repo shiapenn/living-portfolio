@@ -1089,5 +1089,13 @@
     "path": "docs/execution-reports/A095-wp-153-shared-feedback-and-container-components.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L017",
+    "title": "Design Foundations Specification",
+    "class": "L",
+    "path": "docs/design/foundations.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
