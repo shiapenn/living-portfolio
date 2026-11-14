@@ -98,6 +98,9 @@ jobs:
       - name: Run Hard-Code Inventory Scanner (OSR-01)
         run: node scripts/hardcode-check
 
+      - name: Run UI Contract & Size-Budget Guard Check (WP-15.6, D-CONTRACT-5)
+        run: node scripts/verify-ui-guards
+
       - name: Verify every pinned action SHA resolves upstream (CI fix 3a)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

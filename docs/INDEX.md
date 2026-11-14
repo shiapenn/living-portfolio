@@ -107,6 +107,7 @@
 | `A099` | WP-15.pre-d CodeQL Weekly Schedule and Manual Dispatch | `active` | [A099-wp-15-pre-d-codeql-schedule.md](execution-reports/A099-wp-15-pre-d-codeql-schedule.md) | — |
 | `A100` | WP-15.4 Token Tiers and Editor Wiring | `active` | [A100-wp-154-token-tiers-and-editor-wiring.md](execution-reports/A100-wp-154-token-tiers-and-editor-wiring.md) | — |
 | `A101` | wp-155-copy-and-help-catalogues | `active` | [A101-wp-155-copy-and-help-catalogues.md](execution-reports/A101-wp-155-copy-and-help-catalogues.md) | — |
+| `A102` | wp-156-ui-contract-and-budget-guards | `active` | [A102-wp-156-ui-contract-and-budget-guards.md](execution-reports/A102-wp-156-ui-contract-and-budget-guards.md) | — |
 
 ## Handover Snapshots (Class H)
 

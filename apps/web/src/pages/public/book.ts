@@ -42,7 +42,7 @@ export function renderBookPage(queryParam?: string, facetsParam?: string): strin
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:12px">
           <div>
             <label for="book-name" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Your Name / Organization</label>
-            <input id="book-name" name="visitor_name" type="text" class="ask-input" style="width:100%" placeholder="e.g. Jane Doe or Engineering Lead" />
+            <input id="book-name" name="visitor_name" type="text" class="ask-input" style="width:100%" placeholder="e.g. Your Name or Engineering Lead" />
           </div>
           <div>
             <label for="book-contact" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Contact Email or Handle <span style="color:var(--status-warn,#d97706)">*</span></label>

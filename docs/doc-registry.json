@@ -1145,5 +1145,13 @@
     "path": "docs/execution-reports/A101-wp-155-copy-and-help-catalogues.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A102",
+    "title": "wp-156-ui-contract-and-budget-guards",
+    "class": "A",
+    "path": "docs/execution-reports/A102-wp-156-ui-contract-and-budget-guards.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
