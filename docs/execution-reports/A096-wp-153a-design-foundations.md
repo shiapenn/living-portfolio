@@ -6,7 +6,7 @@
 | Date | 2026-11-14 |
 | Author | A (Implementer) |
 | Task ID | `WP-15.3a` |
-| Evidence SHA | `4f285d9` |
+| Evidence SHA | `b479b8b` |
 | CI run | `feat/wp-15-3a-design-foundations` (pending PR CI; local `pnpm verify` 14/14 + `pnpm test:e2e` 84/84 passed) |
 
 ---
