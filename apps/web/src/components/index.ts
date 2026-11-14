@@ -11,9 +11,10 @@ export {
   renderDisclosure,
   renderMenu,
   renderTabs,
-  renderTable,
   renderEmptyState,
 } from './containers.js';
+export { renderTable } from './table.js';
+export type { TableColumn, TableProps } from './table.js';
 export type {
   DialogProps,
   DisclosureProps,
@@ -24,6 +25,4 @@ export type {
   MenuProps,
   TabItem,
   TabsProps,
-  TableColumn,
-  TableProps,
 } from './containers.js';

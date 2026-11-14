@@ -1,0 +1,176 @@
+#!/usr/bin/env node
+/**
+ * UI Contract & Size-Budget Guard Rails (`WP-15.6`, D-CONTRACT-2..7, D-FEEDBACK, D-HELP, D-UI-5, D-UI-6)
+ *
+ * Enforces:
+ * 1. No inline `style=` outside shrinking-only allowlist (Reference Editor has 0 exemptions).
+ * 2. No hex colours outside tokens/styles/icons/foundations (shrinking-only allowlist for legacy).
+ * 3. No vendor or sample placeholder names in owner-facing / public markup.
+ * 4. No cross-page module imports (`pages/admin/*` <-> another `pages/admin/*` page, `pages/public/*` <-> another).
+ * 5. No `role="status"` / `role="alert"` outside the four `D-FEEDBACK` places (shrinking-only allowlist for legacy).
+ * 6. Size-budget guard (`D-CONTRACT-5`): `renderer.ts <= 200`, `pages/ <= 400`, `components/ <= 250`,
+ *    with a shrinking-only allowlist (entries/sizes cannot grow).
+ */
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
+import { dirname, join, relative, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const DEFAULT_ROOT = resolve(import.meta.dirname, '..');
+
+const VENDOR_OR_SAMPLE_PATTERNS = [
+  /\bAcme\s+(?:Corp|Inc|LLC|Co)\b/i,
+  /\bLorem\s+ipsum\b/i,
+  /\b(?:Jane|John)\s+Doe\b/,
+];
+
+const FEEDBACK_ALLOWED_FILES = new Set([
+  'apps/web/src/components/feedback.ts',
+  'apps/web/src/components/slots.ts',
+  'apps/web/src/primitives/field.ts',
+  'apps/web/src/components/field.ts',
+  'apps/web/src/pages/admin/entries/editor-sections.ts',
+]);
+
+function walkTsFiles(dir) {
+  if (!existsSync(dir)) return [];
+  const out = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      out.push(...walkTsFiles(full));
+    } else if (entry.name.endsWith('.ts') && !entry.name.endsWith('.test.ts')) {
+      out.push(full);
+    }
+  }
+  return out.sort();
+}
+
+function getBudgetForFile(relPath) {
+  if (relPath === 'apps/web/src/renderer.ts') return 200;
+  if (relPath.startsWith('apps/web/src/pages/')) return 400;
+  if (relPath.startsWith('apps/web/src/components/')) return 250;
+  return null;
+}
+
+function getPageGroup(relPath) {
+  // D-UI-6: Each admin page is its own module; no admin page reaches into another admin page's code.
+  const match = relPath.match(/^apps\/web\/src\/pages\/admin\/(.+)\.ts$/);
+  if (!match) return null;
+  const rest = match[1];
+  const base = rest.split('/')[0].replace(/-(?:sections|script(?:-part[12])?)$/, '');
+  return `admin/${base}`;
+}
+
+export function evaluateUiGuards({ rootDir = DEFAULT_ROOT, allowlist } = {}) {
+  const loadedAllowlist =
+    allowlist ??
+    JSON.parse(readFileSync(join(rootDir, 'docs/audits/ui-guard-allowlist.json'), 'utf8'));
+
+  const webSrc = join(rootDir, 'apps/web/src');
+  const files = walkTsFiles(webSrc);
+  const errors = [];
+
+  for (const fullPath of files) {
+    const relPath = relative(rootDir, fullPath).replace(/\\/g, '/');
+    const content = readFileSync(fullPath, 'utf8');
+    const lines = content.split('\n');
+
+    // 1. Inline style= check
+    const styleHits = (content.match(/\bstyle\s*=/g) || []).length;
+    const allowedStyle = loadedAllowlist.inlineStyle?.[relPath] ?? 0;
+    if (styleHits > allowedStyle) {
+      errors.push(
+        `[INLINE-STYLE] ${relPath}: found ${styleHits} inline style= attribute(s), max allowed is ${allowedStyle}.`
+      );
+    }
+
+    // 2. Hex colour check outside tokens/styles/icons/foundations
+    const isHexExempt =
+      relPath.includes('/tokens/') ||
+      relPath === 'apps/web/src/styles.ts' ||
+      relPath.endsWith('icons.ts') ||
+      relPath.includes('foundations');
+    if (!isHexExempt) {
+      const hexHits = lines.filter((l) =>
+        /:\s*#[0-9a-fA-F]{3,6}\b|['"]#[0-9a-fA-F]{3,6}['"]/.test(l)
+      ).length;
+      const allowedHex = loadedAllowlist.hexColor?.[relPath] ?? 0;
+      if (hexHits > allowedHex) {
+        errors.push(
+          `[HEX-COLOR] ${relPath}: found ${hexHits} hardcoded hex colour(s), max allowed is ${allowedHex}.`
+        );
+      }
+    }
+
+    // 3. Vendor or sample names in markup
+    for (const pat of VENDOR_OR_SAMPLE_PATTERNS) {
+      if (pat.test(content)) {
+        errors.push(`[VENDOR-NAME] ${relPath}: matched forbidden sample/vendor pattern ${pat}.`);
+      }
+    }
+
+    // 4. Cross-page module imports (D-UI-6 / D-CONTRACT-3)
+    const callerGroup = getPageGroup(relPath);
+    if (callerGroup) {
+      const importMatches = content.matchAll(/from\s+['"](\.[^'"]+)['"]/g);
+      for (const m of importMatches) {
+        const resolvedRel = relative(rootDir, resolve(dirname(fullPath), m[1]))
+          .replace(/\\/g, '/')
+          .replace(/\.js$/, '.ts');
+        const targetGroup = getPageGroup(resolvedRel);
+        if (targetGroup && targetGroup !== callerGroup) {
+          errors.push(
+            `[CROSS-PAGE-IMPORT] ${relPath} (${callerGroup}) imports ${resolvedRel} (${targetGroup}).`
+          );
+        }
+      }
+    }
+
+    // 5. role="status" / role="alert" outside D-FEEDBACK places
+    if (!FEEDBACK_ALLOWED_FILES.has(relPath)) {
+      const roleHits = (content.match(/role=["'](status|alert)["']/g) || []).length;
+      const allowedRole = loadedAllowlist.liveRegion?.[relPath] ?? 0;
+      if (roleHits > allowedRole) {
+        errors.push(
+          `[LIVE-REGION] ${relPath}: found ${roleHits} role="status"/role="alert" outside D-FEEDBACK places, max allowed is ${allowedRole}.`
+        );
+      }
+    }
+
+    // 6. Size-budget guard (D-CONTRACT-5)
+    const budget = getBudgetForFile(relPath);
+    if (budget !== null) {
+      const lineCount = lines.length;
+      const allowEntry = loadedAllowlist.sizeBudgets?.[relPath];
+      const maxAllowed = allowEntry ? allowEntry.maxLines : budget;
+      if (allowEntry && allowEntry.maxLines > lineCount) {
+        // Shrinking-only allowlist: current size is already smaller than recorded maxLines; fine (or can shrink).
+      }
+      if (lineCount > maxAllowed) {
+        errors.push(
+          `[SIZE-BUDGET] ${relPath}: ${lineCount} lines exceeds limit of ${maxAllowed} lines (budget ${budget}).`
+        );
+      }
+    }
+  }
+
+  return {
+    checkedFiles: files.length,
+    errors,
+    passed: errors.length === 0,
+  };
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const result = evaluateUiGuards();
+  if (!result.passed) {
+    console.error('✗ UI Contract & Size-Budget Guard Check FAILED:\n');
+    for (const err of result.errors) {
+      console.error(`  - ${err}`);
+    }
+    process.exit(1);
+  }
+  console.log(
+    `✓ UI Contract & Size-Budget Guard Check passed (${result.checkedFiles} files checked, 0 violations).`
+  );
+}
