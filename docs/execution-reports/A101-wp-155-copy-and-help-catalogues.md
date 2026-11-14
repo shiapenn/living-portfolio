@@ -6,7 +6,7 @@
 | Date | 2026-11-14 |
 | Author | A (Implementer) |
 | Task ID | `WP-15.5` |
-| Evidence SHA | `c9872e5` |
+| Evidence SHA | `32fcf09` |
 | CI run | Pending push to `feat/wp-15-5-copy-help-catalogues` |
 
 ---
@@ -32,7 +32,7 @@
 ## 3. Tests Added and Count Change
 
 - Added `apps/web/src/strings/strings.test.ts` (**+5 unit tests**): count/plural/title helpers, actionable error formatter (offline, 401, 403, 404, >=500, fallback, zero `HTTP` leakage), area-structured `STRINGS` & `EDITOR_HELP` schema validation, zero internal jargon in catalogues and rendered Reference Editor markup, and `editor-page.ts` usage check.
-- Existing tests changed or removed: **None** (0 existing tests modified or removed).
+- Updated `tests/e2e/auth.spec.ts` (test 12): updated 403/500 `#ref-status-line` assertions from legacy `"Security check failed (CSRF token invalid or missing)"` / `"Server error (HTTP 500)"` to `formatActionableError` plain-language messages (`"You don't have permission to perform this action"` / `"Wait a moment and try again."`), per `D-HELP` rule forbidding `HTTP` codes/internal tokens in UI.
 
 ---
 
@@ -59,6 +59,8 @@
 - `docs/INDEX.md`
 - `docs/doc-registry.json`
 - `docs/execution-reports/A100-wp-154-token-tiers-and-editor-wiring.md`
+- `docs/execution-reports/A101-wp-155-copy-and-help-catalogues.md`
+- `tests/e2e/auth.spec.ts`
 
 ---
 
