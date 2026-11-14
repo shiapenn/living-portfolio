@@ -4,7 +4,7 @@ import {
   renderHomePage,
   renderEntryDetailPage,
   renderStrataTimelineSection,
-  renderAdminWorkspacePage,
+  renderAdminSettingsPage,
   STRATA_DESIGN_SYSTEM_CSS,
 } from '@living-portfolio/web';
 import { chunkMarkdown } from '@living-portfolio/core';
@@ -193,7 +193,7 @@ Use Redis distributed locks when you already run Redis at scale, but always pair
     });
 
     it('static alpha warning banner uses role="note" instead of role="alert"', async () => {
-      const adminHtml = await renderAdminWorkspacePage(repo as any);
+      const adminHtml = await renderAdminSettingsPage(repo as any);
       expect(adminHtml).toContain('data-banner="alpha-warning" role="note"');
       expect(adminHtml).not.toContain('data-banner="alpha-warning" role="alert"');
     });

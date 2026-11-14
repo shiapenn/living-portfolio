@@ -35,8 +35,10 @@ export interface ReferenceEditorEntry {
 export interface ReferenceEditorOptions {
   entries: ReferenceEditorEntry[];
   selectedId?: string;
+  isNew?: boolean;
   siteName?: string;
   showWalkthrough?: boolean;
+  legacyRecoveryUsed?: boolean;
   pageError?: string;
   titleError?: string;
   statusMessage?: string;
@@ -78,9 +80,9 @@ function renderSlimAdminHeader(theme: 'light' | 'dark'): string {
   const toggleLabel = theme === 'dark' ? EDITOR_STRINGS.nav.toLight : EDITOR_STRINGS.nav.toDark;
 
   return `<header class="lp-admin-header" role="banner">
-  <a href="/admin/entries/editor" class="lp-admin-header-brand">${escapeHtml(EDITOR_STRINGS.brand)}</a>
+  <a href="/admin" class="lp-admin-header-brand">${escapeHtml(EDITOR_STRINGS.brand)}</a>
   <nav class="lp-admin-header-nav" aria-label="${escapeHtml(EDITOR_STRINGS.nav.label)}">
-    <a href="/admin/entries/editor" class="lp-admin-header-link" aria-current="page">${escapeHtml(EDITOR_STRINGS.nav.entries)}</a>
+    <a href="/admin" class="lp-admin-header-link" aria-current="page">${escapeHtml(EDITOR_STRINGS.nav.entries)}</a>
     <a href="/admin/import" class="lp-admin-header-link">${escapeHtml(EDITOR_STRINGS.nav.import)}</a>
     <a href="/admin/settings" class="lp-admin-header-link">${escapeHtml(EDITOR_STRINGS.nav.settings)}</a>
     <a href="/home" class="lp-admin-header-link">${escapeHtml(EDITOR_STRINGS.nav.publicSite)}</a>
@@ -112,7 +114,7 @@ function renderSlimAdminHeader(theme: 'light' | 'dark'): string {
         dataAttrs: { 'aria-controls': 'ref-mobile-nav-menu' },
       })}
       <div id="ref-mobile-nav-menu" class="lp-popover-menu lp-menu-popover-float" role="menu" aria-label="${escapeHtml(EDITOR_STRINGS.nav.label)}" hidden>
-        <a href="/admin/entries/editor" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" aria-current="page">${escapeHtml(EDITOR_STRINGS.nav.entries)}</a>
+        <a href="/admin" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" aria-current="page">${escapeHtml(EDITOR_STRINGS.nav.entries)}</a>
         <a href="/admin/import" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">${escapeHtml(EDITOR_STRINGS.nav.import)}</a>
         <a href="/admin/settings" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">${escapeHtml(EDITOR_STRINGS.nav.settings)}</a>
         <a href="/home" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">${escapeHtml(EDITOR_STRINGS.nav.publicSite)}</a>
@@ -124,23 +126,30 @@ function renderSlimAdminHeader(theme: 'light' | 'dark'): string {
 </header>`;
 }
 
+function renderVisibilityMenuItem(
+  vis: ReferenceEntryVisibility,
+  current: ReferenceEntryVisibility,
+  label: string
+): string {
+  const checked = vis === current;
+  return `<button type="button" role="menuitemradio" aria-checked="${checked ? 'true' : 'false'}" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item lp-menu-item-vis" data-vis="${vis}"><span class="lp-menu-check">${renderIcon({ name: 'check-circle', size: 16 })}</span><span>${escapeHtml(label)}</span></button>`;
+}
+
 function renderActionBar(entry: ReferenceEditorEntry): string {
   const isDraft = entry.visibility === 'draft';
-  const isPublic = entry.visibility === 'public';
   const saveLabel = isDraft ? EDITOR_STRINGS.actions.saveDraft : EDITOR_STRINGS.actions.saveChanges;
-  const publishLabel = entry.visibility === 'unlisted' ? EDITOR_STRINGS.actions.makePublic : EDITOR_STRINGS.actions.publish;
   const chevron = renderIcon({ name: 'chevron-down', size: 16, className: 'lp-disclosure-chevron' });
 
   return `<div class="lp-editor-action-bar">
   <div class="lp-editor-primary-actions">
-    <span class="lp-tooltip-wrap" id="ref-save-wrap">${renderButton({ id: 'ref-btn-save', label: saveLabel, variant: 'primary', size: 'sm' })}<span class="lp-tooltip-bubble" role="tooltip" id="ref-save-tooltip" hidden>${escapeHtml(EDITOR_STRINGS.actions.noUnsavedChanges)}</span></span>
-    ${renderButton({ id: 'ref-btn-publish', label: publishLabel, variant: 'secondary', size: 'sm', className: isPublic ? 'lp-is-hidden' : '' })}
-    <div id="ref-visibility-menu-wrap" class="lp-menu-wrap${isPublic ? '' : ' lp-is-hidden'}">
+    ${renderButton({ id: 'ref-btn-save', label: saveLabel, variant: 'primary', size: 'sm' })}
+    ${renderButton({ id: 'ref-btn-publish', label: EDITOR_STRINGS.actions.publish, variant: 'secondary', size: 'sm', className: isDraft ? '' : 'lp-is-hidden' })}
+    <div id="ref-visibility-menu-wrap" class="lp-menu-wrap${isDraft ? ' lp-is-hidden' : ''}">
       <button type="button" id="ref-visibility-menu-btn" class="lp-btn lp-btn-secondary lp-btn-sm" aria-haspopup="menu" aria-expanded="false" aria-controls="ref-visibility-menu">${escapeHtml(EDITOR_STRINGS.actions.visibility)} ${chevron}</button>
       <div id="ref-visibility-menu" class="lp-popover-menu lp-menu-popover-float" role="menu" aria-label="${escapeHtml(EDITOR_STRINGS.actions.visibility)}" hidden>
-        <button type="button" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" data-vis="public">${escapeHtml(EDITOR_STRINGS.visibilityMenu.public)}</button>
-        <button type="button" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" data-vis="unlisted">${escapeHtml(EDITOR_STRINGS.visibilityMenu.unlisted)}</button>
-        <button type="button" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" data-vis="draft">${escapeHtml(EDITOR_STRINGS.visibilityMenu.draft)}</button>
+        ${renderVisibilityMenuItem('public', entry.visibility, EDITOR_STRINGS.visibilityMenu.public)}
+        ${renderVisibilityMenuItem('unlisted', entry.visibility, EDITOR_STRINGS.visibilityMenu.unlisted)}
+        ${renderVisibilityMenuItem('draft', entry.visibility, EDITOR_STRINGS.visibilityMenu.draft)}
       </div>
     </div>
   </div>
@@ -157,8 +166,7 @@ function renderActionBar(entry: ReferenceEditorEntry): string {
         size: 'sm',
       })}
       <div id="ref-more-menu" class="lp-popover-menu lp-menu-popover-float" role="menu" aria-label="${escapeHtml(EDITOR_STRINGS.actions.more)}" hidden>
-        <button type="button" role="menuitem" id="ref-more-unpublish" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" tabindex="0">${escapeHtml(EDITOR_STRINGS.actions.makePrivate)}</button>
-        <button type="button" role="menuitem" id="ref-more-history" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" tabindex="-1">${escapeHtml(EDITOR_STRINGS.actions.history)}</button>
+        <button type="button" role="menuitem" id="ref-more-history" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" tabindex="0">${escapeHtml(EDITOR_STRINGS.actions.history)}</button>
         <hr class="lp-menu-separator" role="separator" />
         <button type="button" role="menuitem" id="ref-more-delete" class="lp-btn lp-btn-danger lp-btn-sm lp-menu-item lp-menu-item-danger" tabindex="-1">${escapeHtml(EDITOR_STRINGS.actions.deleteEntry)}</button>
       </div>
@@ -191,7 +199,7 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
 
   const headingText = selected.title.trim() || EDITOR_STRINGS.sidebar.untitled;
 
-  return `<div id="ref-editor-form" class="lp-editor-canvas" data-entry-id="${escapeHtml(selected.id)}" data-visibility="${escapeHtml(selected.visibility)}">
+  return `<div id="ref-editor-form" class="lp-editor-canvas" data-entry-id="${escapeHtml(selected.id)}" data-visibility="${escapeHtml(selected.visibility)}" data-is-new="${options.isNew ? 'true' : 'false'}">
   <div class="lp-dialog-header">
     <h1 id="ref-editor-heading" class="lp-type-title lp-editor-heading">${escapeHtml(headingText)}</h1>
     ${renderBadge({
@@ -238,7 +246,7 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
       const active = selected && e.id === selected.id;
       const rowTitle = e.title.trim() || EDITOR_STRINGS.sidebar.untitled;
       return `<li>
-  <a href="/admin/entries/${escapeHtml(e.id)}" class="lp-entry-row${active ? ' lp-entry-row-active' : ''}" data-entry-row="${escapeHtml(e.id)}"${active ? ' aria-current="page"' : ''}>
+  <a href="/admin?entry=${escapeHtml(e.id)}" class="lp-entry-row${active ? ' lp-entry-row-active' : ''}" data-entry-row="${escapeHtml(e.id)}"${active ? ' aria-current="page"' : ''}>
     <span class="lp-entry-list-title">${escapeHtml(rowTitle)}</span>
     ${renderBadge({ label: formatVisibilityLabel(e.visibility), tone: visibilityTone(e.visibility) })}
   </a>
@@ -310,6 +318,17 @@ ${renderTabs({
   const themeAttr = options.initialTheme ? ` data-theme="${escapeHtml(options.initialTheme)}"` : '';
   const nonceAttr = options.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : '';
 
+  const legacyMessage = options.legacyRecoveryUsed
+    ? 'You signed in with an older recovery code. Replace your recovery codes in Settings > Account as soon as you can.'
+    : '';
+  const noticeMessage = options.pageError || legacyMessage;
+  const noticeTone = options.pageError ? 'danger' : 'warn';
+
+  const stagingBanner =
+    process.env.DEPLOYMENT_CLASS === 'staging'
+      ? `<div class="lp-staging-banner" data-banner="staging-synthetic-only" role="note"><strong>Staging: synthetic data only.</strong></div>`
+      : '';
+
   return `<!DOCTYPE html>
 <html lang="en"${themeAttr}>
 <head>
@@ -320,16 +339,17 @@ ${renderTabs({
 </head>
 <body class="lp-admin-body">
   ${renderIconSprite()}
+  ${stagingBanner}
   <a href="#ref-main" class="skip-link">Skip to editor</a>
   ${renderSlimAdminHeader(theme)}
   <div class="lp-admin-notice-slot">
     <div class="lp-page-notice-slot">
       ${renderPageNotice({
-        id: 'ref-page-notice',
-        tone: options.pageError ? 'danger' : 'info',
-        message: options.pageError ?? '',
+        id: options.legacyRecoveryUsed && !options.pageError ? 'admin-legacy-recovery-notice' : 'ref-page-notice',
+        tone: noticeTone,
+        message: noticeMessage,
         dismissible: true,
-        hidden: !options.pageError,
+        hidden: !noticeMessage,
       })}
     </div>
   </div>
@@ -340,7 +360,7 @@ ${renderTabs({
           <span class="lp-type-body-sm">${escapeHtml(EDITOR_STRINGS.sidebar.heading)}</span>
           ${renderBadge({ id: 'ref-entries-count', label: String(entries.length), tone: 'neutral' })}
         </div>
-        ${renderButton({ id: 'ref-btn-new-entry', label: EDITOR_STRINGS.sidebar.newEntry, variant: 'secondary', size: 'sm' })}
+        ${entries.length > 0 ? renderButton({ id: 'ref-btn-new-entry', label: EDITOR_STRINGS.sidebar.newEntry, variant: 'secondary', size: 'sm' }) : ''}
       </div>
       <ul id="ref-entry-list" class="lp-entry-list">${sidebarItems}</ul>
     </aside>
@@ -375,4 +395,63 @@ ${renderTabs({
   <script type="module" src="/assets/client/editor-page.js"${nonceAttr}></script>
 </body>
 </html>`;
+}
+
+export async function renderAdminEntriesPage(
+  clientOrRepo: any,
+  options: {
+    selectedId?: string;
+    isNew?: boolean;
+    siteName?: string;
+    legacyRecoveryUsed?: boolean;
+    initialTheme?: 'light' | 'dark';
+    nonce?: string;
+  } = {}
+): Promise<string> {
+  const listRes = clientOrRepo?.entries?.list
+    ? await clientOrRepo.entries.list()
+    : { entries: (await clientOrRepo?.listEntries?.()) ?? [] };
+  const rawEntries: any[] = listRes?.entries ?? [];
+  const mapped: ReferenceEditorEntry[] = rawEntries.map((e: any) => ({
+    id: e.id,
+    slug: e.slug,
+    title: e.title ?? '',
+    body: e.body ?? '',
+    visibility: e.visibility === 'public' ? 'public' : e.visibility === 'unlisted' ? 'unlisted' : 'draft',
+    date: e.created_at ?? new Date().toISOString().slice(0, 10),
+    temporalConfidence: e.temporal_confidence ?? e.temporal_level ?? 'exact',
+    profile: e.profile ?? 'freeform',
+  }));
+
+  if (options.isNew) {
+    const newEntry: ReferenceEditorEntry = {
+      id: 'new',
+      slug: '',
+      title: '',
+      body: '',
+      visibility: 'draft',
+      date: new Date().toISOString().slice(0, 10),
+      temporalConfidence: 'exact',
+      profile: 'freeform',
+    };
+    return renderReferenceEditorPage({
+      entries: [newEntry, ...mapped],
+      selectedId: 'new',
+      isNew: true,
+      siteName: options.siteName,
+      legacyRecoveryUsed: options.legacyRecoveryUsed,
+      initialTheme: options.initialTheme,
+      nonce: options.nonce,
+    });
+  }
+
+  return renderReferenceEditorPage({
+    entries: mapped,
+    selectedId: options.selectedId ?? mapped[0]?.id,
+    siteName: options.siteName,
+    legacyRecoveryUsed: options.legacyRecoveryUsed,
+    showWalkthrough: mapped.length === 0,
+    initialTheme: options.initialTheme,
+    nonce: options.nonce,
+  });
 }

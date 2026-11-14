@@ -4,11 +4,11 @@ import { createTestClient } from './test-client.js';
 import {
   createWebApp,
   parseAsOfDate,
+  renderAdminEntriesPage,
   renderAdminImportPage,
   renderAdminLoginPage,
   renderAdminSettingsPage,
   renderAdminSetupPage,
-  renderAdminWorkspacePage,
   renderAskPage,
   renderAskStatusPage,
   renderBookPage,
@@ -89,7 +89,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     expect(html2022).not.toContain('Why Our 2022 Microservice Split Was Premature');
   });
 
-  it('renders Work, Build Ventures, Ask, and 3-Pane Admin Workspace (§5.1, §12.6)', async () => {
+  it('renders Work, Build Ventures, Ask, and Reference Admin Entries Editor (§5.1, §12.6, WP-15.4)', async () => {
     const workHtml = await renderWorkOrWritingPage(repo, 'work');
     expect(workHtml).toContain('>Work</h1>');
 
@@ -100,62 +100,37 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     const askHtml = await renderAskPage('What did you use to replace Redis?');
     expect(askHtml).toContain('aria-live="polite"');
 
-    const adminHtml = await renderAdminWorkspacePage(repo);
-    expect(adminHtml).toContain('Admin Workspace');
-    expect(adminHtml).toContain('data-level="L0"');
-    expect(adminHtml).toContain('Text');
-    expect(adminHtml).toContain('data-level="L3"');
-    expect(adminHtml).toContain('Claims');
-    expect(adminHtml).toContain('chip-suggested');
+    const adminHtml = await renderAdminEntriesPage(repo, { isNew: true });
+    expect(adminHtml).toContain('id="ref-entry-list"');
+    expect(adminHtml).toContain('id="ref-main"');
+    expect(adminHtml).toContain('id="ref-field-title"');
+    expect(adminHtml).toContain('id="ref-field-body"');
+    expect(adminHtml).toContain('id="ref-btn-save"');
+    expect(adminHtml).toContain('id="ref-btn-structure"');
   });
 
-  it('renders Structure Inspector with 5 tabs, ARIA attributes, and interactive controls (20261020-UX-06)', async () => {
-    const adminHtml = await renderAdminWorkspacePage(repo);
-    // Tablist & tabs
+  it('renders Structure Drawer with 3 tabs, ARIA attributes, and interactive controls (20261020-UX-06, WP-15.4)', async () => {
+    const adminHtml = await renderAdminEntriesPage(repo, { isNew: true });
+    // Drawer & tablist
+    expect(adminHtml).toContain('id="ref-structure-drawer"');
     expect(adminHtml).toContain('role="tablist"');
-    expect(adminHtml).toContain('id="tab-btn-structure"');
-    expect(adminHtml).toContain('id="tab-btn-context"');
-    expect(adminHtml).toContain('id="tab-btn-evidence"');
-    expect(adminHtml).toContain('id="tab-btn-answerability"');
-    expect(adminHtml).toContain('id="tab-btn-history"');
+    expect(adminHtml).toContain('id="ref-structure-tabs-tab-summary"');
+    expect(adminHtml).toContain('id="ref-structure-tabs-tab-context"');
+    expect(adminHtml).toContain('id="ref-structure-tabs-tab-evidence"');
 
     // Panels
-    expect(adminHtml).toContain('id="panel-structure"');
-    expect(adminHtml).toContain('id="panel-context"');
-    expect(adminHtml).toContain('id="panel-evidence"');
-    expect(adminHtml).toContain('id="panel-answerability"');
-    expect(adminHtml).toContain('id="panel-history"');
-
-    // Context & Evidence interactive forms
-    expect(adminHtml).toContain('id="btn-add-facet"');
-    expect(adminHtml).toContain('id="btn-attach-evidence"');
-    expect(adminHtml).toContain('Evidence verification confirms artifact authenticity but does not prove the narrative.');
+    expect(adminHtml).toContain('id="ref-structure-tabs-panel-summary"');
+    expect(adminHtml).toContain('id="ref-structure-tabs-panel-context"');
+    expect(adminHtml).toContain('id="ref-structure-tabs-panel-evidence"');
   });
 
-  it('renders Editor Modes with Guided Mode prompts and Quick Log capture (20261020-UX-07)', async () => {
-    const adminHtml = await renderAdminWorkspacePage(repo);
-    // Mode switcher buttons
-    expect(adminHtml).toContain('id="mode-btn-paste"');
-    expect(adminHtml).toContain('id="mode-btn-guided"');
-    expect(adminHtml).toContain('id="mode-btn-quick"');
-
-    // Guided mode panel
-    expect(adminHtml).toContain('id="editor-guided-panel"');
-    expect(adminHtml).toContain('id="guided-problem"');
-    expect(adminHtml).toContain('id="guided-approach"');
-    expect(adminHtml).toContain('id="guided-outcome"');
-    expect(adminHtml).toContain('id="guided-lesson"');
-    expect(adminHtml).toContain('id="guided-nothing-wrong"');
-    expect(adminHtml).toContain('id="btn-guided-compile"');
-
-    // Quick log panel
-    expect(adminHtml).toContain('id="editor-quick-panel"');
-    expect(adminHtml).toContain('id="quick-log-text"');
-    expect(adminHtml).toContain('id="btn-submit-quick-log"');
-
-    // First-run walkthrough card
-    expect(adminHtml).toContain('id="admin-walkthrough-card"');
-    expect(adminHtml).toContain('First-Run Authoring Walkthrough');
+  it('renders unified Reference Editor with entry fields, Structure guidance, and action controls (20261020-UX-07, WP-15.4)', async () => {
+    const adminHtml = await renderAdminEntriesPage(repo, { isNew: true });
+    expect(adminHtml).toContain('id="ref-btn-new-entry"');
+    expect(adminHtml).toContain('id="ref-field-title"');
+    expect(adminHtml).toContain('id="ref-field-body"');
+    expect(adminHtml).toContain('id="ref-btn-save"');
+    expect(adminHtml).toContain('State the goal, the decision and the outcome so visitors can follow your reasoning.');
   });
 
   it('renders Import & Triage page with 3-step planner and J K A R D S keyboard controls (20261020-UX-07)', async () => {
@@ -286,26 +261,6 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     const rejectedHtml = await renderAskStatusPage(repo, 'valid-test-token-3');
     expect(rejectedHtml).toContain('Declined');
     expect(rejectedHtml).toContain('Outside portfolio scope and confidentiality guidelines.');
-  });
-
-  it('renders interactive escalation review card in admin workspace (20261020-UX-08)', async () => {
-    const saved = await repo.saveEscalation({
-      question: 'Do you offer fractional CTO services?',
-      draft: 'Yes, on select infrastructure projects.',
-      query_class: 'advisory',
-      status: 'pending',
-      visitor_contact: 'client@startup.example',
-      due_at: new Date(Date.now() + 86400000).toISOString(),
-    });
-
-    const adminHtml = await renderAdminWorkspacePage(repo);
-    expect(adminHtml).toContain('Inbox (');
-    expect(adminHtml).toContain(saved.id);
-    expect(adminHtml).toContain('Do you offer fractional CTO services?');
-    expect(adminHtml).toContain('escalation-draft-textarea');
-    expect(adminHtml).toContain('btn-approve-escalation');
-    expect(adminHtml).toContain('btn-reject-escalation');
-    expect(adminHtml).toContain('client@startup.example');
   });
 
   describe('Time-Travel Correctness & Navigation Links (20261020-UX-12 / WP-4.3)', () => {
@@ -442,46 +397,6 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
   });
 
   describe('WP-5.1: Admin Operations, Calibration, Scoped Constraints & Settings Screen (20261020-UX-09)', () => {
-    it('1. Admin workspace renders honest topology conflict status instead of fabricated text', async () => {
-      const html = await renderAdminWorkspacePage(repo);
-
-      // Must display honest 501 / SIMULATED M6 status
-      expect(html).toContain('id="topology-conflicts-card"');
-      expect(html).toContain('501 Not Implemented');
-      expect(html).toContain('Automated claim topology conflict detector is not yet implemented (SIMULATED finding M6)');
-
-      // Must NOT render fabricated fake conflicts
-      expect(html).not.toContain('Detected Claim Conflict:');
-      expect(html).not.toContain('Use Redis Redlock leases for distributed job coordination.');
-    });
-
-    it('2. Kill-switch initializes server-side and client-side reflecting real server state', async () => {
-      // With answering enabled (default)
-      const htmlEnabled = await renderAdminWorkspacePage(repo, { automatedAnsweringEnabled: true });
-      expect(htmlEnabled).toContain('id="btn-killswitch" aria-pressed="true">Pause Automated Answering</button>');
-      expect(htmlEnabled).toContain('let answeringEnabled = true;');
-
-      // With answering paused/disabled
-      const htmlDisabled = await renderAdminWorkspacePage(repo, { automatedAnsweringEnabled: false });
-      expect(htmlDisabled).toContain('id="btn-killswitch" aria-pressed="false">Resume Automated Answering</button>');
-      expect(htmlDisabled).toContain('let answeringEnabled = false;');
-    });
-
-    it('3. Scoped constraints list provides interactive confirm and discard controls', async () => {
-      await repo.saveScopedConstraint({
-        constraint: { max_qps: 100 },
-        scope: { domain: 'database' },
-        source_quote: 'Postgres connection pool max 100 under peak load',
-        status: 'proposed',
-      });
-
-      const html = await renderAdminWorkspacePage(repo);
-      expect(html).toContain('class="scoped-constraint-card"');
-      expect(html).toContain('Postgres connection pool max 100 under peak load');
-      expect(html).toContain('class="btn btn-secondary btn-confirm-constraint"');
-      expect(html).toContain('class="btn btn-secondary btn-discard-constraint"');
-    });
-
     it('4. Admin settings screen renders all operational sections with honest unconfigured statuses', async () => {
       const html = await renderAdminSettingsPage(repo, {
         tier1_floor: 0.82,
@@ -592,34 +507,16 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
   });
 
   describe('WP-5.3: Sub-Route Mounting in createApp & Multi-Pass Redaction Drawer (Fix F1, 20261020-UX-03)', () => {
-    it('1. renderAdminWorkspacePage renders multi-pass redaction review drawer and action controls (§4.3, 20261020-UX-03)', async () => {
+    it('1. renderAdminEntriesPage renders pre-publish redaction check dialog and action controls (§4.3, 20261020-UX-03, WP-15.4)', async () => {
       const repo = createTestClient();
-      const html = await renderAdminWorkspacePage(repo);
+      const html = await renderAdminEntriesPage(repo, { isNew: true });
 
-      // Redaction review drawer container and aria attributes
-      expect(html).toContain('id="redaction-preview-drawer"');
+      // Publish dialog with pre-publish redaction scan status & confirm controls
+      expect(html).toContain('id="ref-publish-dialog"');
       expect(html).toContain('role="dialog"');
-      expect(html).toContain('id="redaction-drawer-title"');
-      expect(html).toContain('Redaction Review Drawer');
-      expect(html).toContain('id="btn-close-redaction-drawer"');
-
-      // Drawer actions and pass sections
-      expect(html).toContain('id="btn-drawer-redact-all"');
-      expect(html).toContain('Redact All Findings');
-      expect(html).toContain('id="drawer-count-pass1"');
-      expect(html).toContain('id="drawer-items-pass1"');
-      expect(html).toContain('Pass 1: Credentials &amp; Secrets');
-
-      expect(html).toContain('id="drawer-count-pass2"');
-      expect(html).toContain('id="drawer-items-pass2"');
-      expect(html).toContain('Pass 2: NDA &amp; Restrictions');
-
-      expect(html).toContain('id="drawer-count-pass3"');
-      expect(html).toContain('id="drawer-items-pass3"');
-      expect(html).toContain('Pass 3: Entities, Project Names &amp; Exclusions');
-
-      expect(html).toContain('id="drawer-highlight-preview"');
-      expect(html).toContain('setupRedactionDrawer');
+      expect(html).toContain('id="ref-publish-dialog-title"');
+      expect(html).toContain('id="ref-publish-dialog-status"');
+      expect(html).toContain('id="ref-publish-confirm"');
     });
   });
 
@@ -804,18 +701,14 @@ console.log(x);
       expect(entryRow).toContain('A multi-tier design token architecture for living-portfolio.');
     });
 
-    it('4. Admin workspace renders editor workspace with 60vh min-height, formatting toolbar, and header status area (20261020-UI-01, 20261020-UI-06)', async () => {
-      const html = await renderAdminWorkspacePage(repo);
-      expect(html).toContain('class="admin-header-status"');
-      expect(html).toContain('class="editor-workspace"');
-      expect(html).toContain('class="editor-toolbar"');
-      expect(html).toContain('data-action="h2"');
-      expect(html).toContain('data-action="bold"');
-      expect(html).toContain('data-action="code"');
-      expect(html).toContain('id="editor-word-count"');
-      expect(html).toContain('soft cap: 3,000');
-      expect(html).toContain('id="btn-toggle-editor-mode"');
-      expect(html).toContain('id="entry-body-preview"');
+    it('4. Admin entries page renders editor workspace with status line and editor controls (20261020-UI-01, 20261020-UI-06, WP-15.4)', async () => {
+      const html = await renderAdminEntriesPage(repo, { isNew: true });
+      expect(html).toContain('id="ref-main"');
+      expect(html).toContain('id="ref-status-line"');
+      expect(html).toContain('id="ref-field-title"');
+      expect(html).toContain('id="ref-field-body"');
+      expect(html).toContain('id="ref-btn-save"');
+      expect(html).toContain('id="ref-btn-structure"');
     });
 
     it('5. Slot layout composers fulfill core slot contracts and renderLayout supports nonces (20261020-UI-10)', () => {
@@ -1063,7 +956,8 @@ console.log(x);
       const res = await app.fetch(new Request('http://localhost/admin'));
       expect(res.status).toBe(200);
       const text = await res.text();
-      expect(text).toContain('Admin Workspace');
+      expect(text).toContain('id="ref-main"');
+      expect(text).toContain('Entries');
     });
 
     it('3. /admin/setup redirects to /admin/login when setup already completed and unauthenticated (UX-05)', async () => {

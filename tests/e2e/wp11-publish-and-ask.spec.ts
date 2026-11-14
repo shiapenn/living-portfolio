@@ -2,55 +2,6 @@ import { test, expect } from '@playwright/test';
 import { ensureAdminLoggedIn } from './helpers.js';
 
 test.describe.serial('WP-11.1: Debounced Static Rebuild UI & Ask Flow Repair (20261020-UX-05 & 20261020-UX-10)', () => {
-  test('1. Admin workspace displays deploy status chip and operates manual rebuild trigger (20261020-UX-05)', async ({
-    page,
-  }) => {
-    await ensureAdminLoggedIn(page);
-    await page.goto('/admin');
-
-    // 1. Verify deploy status chip in header actions
-    const deployChip = page.locator('#deploy-status-chip');
-    await expect(deployChip).toBeVisible();
-    await expect(deployChip).toContainText(/Deploy: (Ready|Queued|Building)/i);
-
-    // 2. Verify Publish Now button is present and clickable
-    const publishNowBtn = page.locator('#btn-publish-now');
-    await expect(publishNowBtn).toBeVisible();
-    await expect(publishNowBtn).toBeEnabled();
-
-    // 3. Click Publish Now button and verify success toast / banner
-    await publishNowBtn.click();
-    const banner = page.locator('#admin-status-banner');
-    await expect(banner).toBeVisible();
-    await expect(banner).toContainText(/Static site rebuild triggered successfully/i);
-
-    // 4. Publish an entry and verify enrichment pipeline queueing
-    await page.fill('#entry-title', 'Distributed Queue Architecture');
-    await page.fill('#entry-slug', 'distributed-queue-architecture');
-    await page.fill('#entry-date', '2026-01-01');
-    await page.fill('#entry-body', 'We built a distributed queue with Raft consensus and SQLite.');
-    await page.click('#btn-open-publish-dialog');
-    await expect(page.locator('#publish-scan-status')).toContainText(/nothing found|0 confidential/i);
-    await page.click('#btn-confirm-publish');
-
-    await expect(banner).toBeVisible();
-    await expect(banner).toContainText(/Published "Distributed Queue Architecture"/i);
-    await expect(banner).toContainText(/Enrichment pipeline queued/i);
-
-    // 5. Navigate to Structure tab and trigger manual enrichment
-    const structureTabBtn = page.locator('#tab-btn-structure');
-    if (await structureTabBtn.isVisible()) {
-      await structureTabBtn.click();
-      const triggerEnrichBtn = page.locator('#btn-trigger-enrichment');
-      await expect(triggerEnrichBtn).toBeVisible();
-      await triggerEnrichBtn.click();
-
-      const enrichStatusChip = page.locator('#enrichment-status-chip');
-      await expect(enrichStatusChip).toBeVisible();
-      await expect(enrichStatusChip).toContainText(/Enrichment: queued/i);
-    }
-  });
-
   test('2. Public Ask page renders dynamic question examples and entry scope notice (20261020-UX-10)', async ({
     page,
   }) => {

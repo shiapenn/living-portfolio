@@ -2122,6 +2122,33 @@ input[type="date"].lp-input {
   justify-content: flex-start;
 }
 
+.lp-menu-item-vis .lp-menu-check {
+  display: inline-flex;
+  align-items: center;
+  visibility: hidden;
+  color: var(--accent);
+}
+
+.lp-menu-item-vis[aria-checked="true"] {
+  font-weight: 600;
+}
+
+.lp-menu-item-vis[aria-checked="true"] .lp-menu-check {
+  visibility: visible;
+}
+
+.lp-staging-banner {
+  position:sticky;
+  top: 0;
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  background: var(--surface-raised);
+  border-bottom: 2px solid var(--status-warn-border);
+  font-size: var(--type-body-sm-size);
+}
+
 .lp-modal-inline-stage {
   position: relative;
   inset: auto;

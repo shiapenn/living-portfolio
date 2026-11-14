@@ -3,7 +3,7 @@ import { InMemoryPortfolioRepository } from '@living-portfolio/db';
 import {
   renderHomePage,
   renderWorkOrWritingPage,
-  renderAdminWorkspacePage,
+  renderAdminEntriesPage,
   renderLayout,
   renderMarkdown,
   renderInlineMarkdown,
@@ -134,23 +134,12 @@ Safe text before
       expect(sanitized).not.toContain('javascript:attack()');
     });
 
-    it('admin workspace provides enhanced editor workspace with min 60vh height, formatting toolbar, and word counter', async () => {
-      const html = await renderAdminWorkspacePage(repo);
+    it('admin editor provides auto-growing writing surface and design token editor height', async () => {
+      const html = await renderAdminEntriesPage(repo);
 
-      expect(html).toContain('class="editor-workspace"');
-      expect(html).toContain('class="editor-toolbar"');
-      expect(html).toContain('data-action="h2"');
-      expect(html).toContain('data-action="h3"');
-      expect(html).toContain('data-action="bold"');
-      expect(html).toContain('data-action="italic"');
-      expect(html).toContain('data-action="list"');
-      expect(html).toContain('data-action="code"');
-      expect(html).toContain('data-action="quote"');
-      expect(html).toContain('data-action="link"');
-      expect(html).toContain('id="btn-toggle-editor-mode"');
-      expect(html).toContain('id="entry-body-preview"');
-      expect(html).toContain('id="editor-word-count"');
-      expect(html).toContain('soft cap: 3,000');
+      expect(html).toContain('id="ref-field-body"');
+      expect(html).toContain('lp-writing-surface-field');
+      expect(html).toContain('data-lp-autogrow');
       expect(STRATA_DESIGN_SYSTEM_CSS).toContain('--editor-min-height: 60vh');
     });
   });
@@ -258,13 +247,13 @@ Safe text before
   });
 
   describe('20261020-UI-06, 20261020-UI-07, 20261020-UI-10: Multi-Pane Layout, Breakpoints & Slot Contracts', () => {
-    it('admin workspace renders header status area and responsive multi-pane layout', async () => {
-      const adminHtml = await renderAdminWorkspacePage(repo);
+    it('admin editor renders slim admin header and responsive editor shell layout', async () => {
+      const adminHtml = await renderAdminEntriesPage(repo);
 
-      expect(adminHtml).toContain('class="admin-header-status"');
-      expect(adminHtml).toContain('id="admin-status-build"');
-      expect(adminHtml).toContain('id="admin-status-answering"');
-      expect(adminHtml).toContain('class="admin-shell"');
+      expect(adminHtml).toContain('class="lp-admin-header"');
+      expect(adminHtml).toContain('class="lp-editor-shell"');
+      expect(adminHtml).toContain('class="lp-editor-sidebar"');
+      expect(adminHtml).toContain('id="ref-editor-main"');
     });
 
     it('responsive layout media queries handle mobile, tablet (2 panes), and desktop (3 panes)', () => {

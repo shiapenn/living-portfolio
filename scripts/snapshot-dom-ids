@@ -150,8 +150,7 @@ export async function generateDomIdSnapshot(root = ROOT) {
     book: web.renderBookPage('Architecture question'),
     'ask-status': await web.renderAskStatusPage(repo, 'seed-esc-status-token'),
     'not-found': web.renderNotFoundPage('Page not found', '/missing'),
-    'admin-workspace': await web.renderAdminWorkspacePage(repo, {
-      settingsState: {},
+    'admin-workspace': await web.renderAdminEntriesPage(repo, {
       legacyRecoveryUsed: true,
     }),
     'admin-settings': await web.renderAdminSettingsPage(repo, {}),

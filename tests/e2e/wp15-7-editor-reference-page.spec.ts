@@ -70,36 +70,45 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     }
   });
 
-  test('D-EDITOR: interaction contract (visible action set per entry state: first-run, empty, draft, error, unlisted, public)', async ({ page }) => {
+  test('D-EDITOR / D-EDITOR-2: interaction contract (visible action set per entry state: first-run, empty, draft, error, unlisted, public)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 900 });
     for (const state of ['first-run', 'empty', 'draft', 'error', 'unlisted', 'public'] as const) {
       await page.goto(`/admin/entries/editor?fixture=${state}&theme=light`);
       if (state === 'first-run' || state === 'empty') {
         await expect(page.locator('#ref-empty-start-btn')).toBeVisible();
+        await expect(page.locator('#ref-btn-new-entry')).toHaveCount(0);
         await expect(page.locator('#ref-btn-save')).toHaveCount(0);
       } else if (state === 'draft' || state === 'error') {
+        await expect(page.locator('#ref-btn-new-entry')).toBeVisible();
         await expect(page.locator('#ref-btn-save')).toBeVisible();
         await expect(page.locator('#ref-btn-save')).toHaveText('Save draft');
+        await expect(page.locator('#ref-btn-save')).not.toHaveAttribute('aria-disabled', 'true');
         await expect(page.locator('#ref-btn-publish')).toBeVisible();
         await expect(page.locator('#ref-btn-publish')).toHaveText('Publish…');
         await expect(page.locator('#ref-visibility-menu-wrap')).toHaveClass(/lp-is-hidden/);
         await expect(page.locator('#ref-more-menu-btn')).toBeVisible();
+        await expect(page.locator('#ref-more-menu [role="menuitem"]')).toHaveCount(2);
         await expect(page.locator('#ref-btn-structure')).toBeVisible();
       } else if (state === 'unlisted') {
         await expect(page.locator('#ref-btn-save')).toBeVisible();
         await expect(page.locator('#ref-btn-save')).toHaveText('Save changes');
-        await expect(page.locator('#ref-btn-publish')).toBeVisible();
-        await expect(page.locator('#ref-btn-publish')).toHaveText('Make public…');
-        await expect(page.locator('#ref-visibility-menu-wrap')).toHaveClass(/lp-is-hidden/);
+        await expect(page.locator('#ref-btn-save')).not.toHaveAttribute('aria-disabled', 'true');
+        await expect(page.locator('#ref-btn-publish')).toHaveClass(/lp-is-hidden/);
+        await expect(page.locator('#ref-visibility-menu-btn')).toBeVisible();
+        await expect(page.locator('#ref-visibility-menu [data-vis="unlisted"]')).toHaveAttribute('aria-checked', 'true');
         await expect(page.locator('#ref-more-menu-btn')).toBeVisible();
+        await expect(page.locator('#ref-more-menu [role="menuitem"]')).toHaveCount(2);
         await expect(page.locator('#ref-btn-structure')).toBeVisible();
       } else if (state === 'public') {
         await expect(page.locator('#ref-btn-save')).toBeVisible();
         await expect(page.locator('#ref-btn-save')).toHaveText('Save changes');
+        await expect(page.locator('#ref-btn-save')).not.toHaveAttribute('aria-disabled', 'true');
         await expect(page.locator('#ref-btn-publish')).toHaveClass(/lp-is-hidden/);
         await expect(page.locator('#ref-visibility-menu-btn')).toBeVisible();
+        await expect(page.locator('#ref-visibility-menu [data-vis="public"]')).toHaveAttribute('aria-checked', 'true');
         await expect(page.locator('#ref-more-menu-btn')).toBeVisible();
+        await expect(page.locator('#ref-more-menu [role="menuitem"]')).toHaveCount(2);
         await expect(page.locator('#ref-btn-structure')).toBeVisible();
       }
     }
@@ -124,10 +133,9 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/admin/entries/editor?fixture=draft&theme=light');
 
-    await expect(page.locator('#ref-btn-save')).toHaveAttribute('aria-disabled', 'true');
-    await page.locator('#ref-btn-save').focus();
-    await expect(page.locator('#ref-save-tooltip')).toBeVisible();
-    await expect(page.locator('#ref-save-tooltip')).toHaveText('No unsaved changes.');
+    await expect(page.locator('#ref-btn-save')).not.toHaveAttribute('aria-disabled', 'true');
+    await page.locator('#ref-btn-save').click();
+    await expect(page.locator('#ref-status-line')).toContainText('No changes to save.');
 
     await expect(page.locator('#ref-details-disclosure')).not.toHaveAttribute('open', '');
     await expect(page.locator('#ref-details-summary-meta')).not.toContainText(/Draft|Unlisted|Public/);
@@ -251,9 +259,9 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     await expect(page.locator('#ref-state-badge')).toHaveText('Public');
     await expect(page.locator('#ref-status-line')).toContainText('Entry is now public.');
 
-    // Flow 3: Unpublish -> visible Undo countdown -> Undo restored
-    await page.locator('#ref-more-menu-btn').click();
-    await page.locator('#ref-more-unpublish').click();
+    // Flow 3: Unpublish via Visibility menu -> visible Undo countdown -> Undo restored
+    await page.locator('#ref-visibility-menu-btn').click();
+    await page.locator('#ref-visibility-menu [data-vis="draft"]').click();
     await expect(page.locator('#ref-state-badge')).toHaveText('Draft');
     await expect(page.locator('#ref-status-line')).toContainText('Entry is now private.');
     await expect(page.locator('#ref-status-line .lp-status-undo-link')).toContainText('Undo (8s)');
@@ -262,12 +270,16 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     await expect(page.locator('#ref-state-badge')).toHaveText('Public');
     await expect(page.locator('#ref-status-line')).toContainText('Restored.');
 
-    // Flow 4: Visibility via menu (Public -> Unlisted)
+    // Flow 4: Visibility via menu (Public -> Unlisted, and Unlisted -> Public opens Publish dialog)
     await page.goto('/admin/entries/editor?fixture=public&theme=light');
     await page.locator('#ref-visibility-menu-btn').click();
     await page.locator('#ref-visibility-menu [data-vis="unlisted"]').click();
     await expect(page.locator('#ref-state-badge')).toHaveText('Unlisted');
     await expect(page.locator('#ref-status-line')).toContainText('Entry is now unlisted.');
+    await page.locator('#ref-visibility-menu-btn').click();
+    await page.locator('#ref-visibility-menu [data-vis="public"]').click();
+    await expect(page.locator('#ref-publish-dialog')).toBeVisible();
+    await page.locator('#ref-publish-cancel').click();
 
     // Flow 5: Error on save with empty title (no page notice)
     await page.fill('#ref-field-title', '');
@@ -319,9 +331,9 @@ test.describe('WP-15.7 Reference Editor Page', () => {
           await page.locator('#ref-publish-confirm').click();
           await captureStep(page, outDir, `flow2-3-published-${tag}`);
 
-          // Flow 3: Unpublish -> Undo countdown visible -> Undo restored
-          await page.locator('#ref-more-menu-btn').click();
-          await page.locator('#ref-more-unpublish').click();
+          // Flow 3: Unpublish via Visibility menu -> Undo countdown visible -> Undo restored
+          await page.locator('#ref-visibility-menu-btn').click();
+          await page.locator('#ref-visibility-menu [data-vis="draft"]').click();
           await expect(page.locator('#ref-status-line .lp-status-undo-link')).toContainText('Undo (');
           await captureStep(page, outDir, `flow3-1-unpublish-countdown-${tag}`);
           await page.locator('#ref-status-line .lp-status-undo-link').click();
@@ -348,11 +360,11 @@ test.describe('WP-15.7 Reference Editor Page', () => {
           await page.locator('#ref-delete-confirm').click();
           await captureStep(page, outDir, `flow6-3-deleted-undo-${tag}`);
 
-          // Additional states: disabled primary reason tooltip, Details expanded, Select open/focused in Details, Structure drawer open, hover & focus-visible on primary button
+          // Additional states: no-changes status message, Details expanded, Select open/focused in Details, Structure drawer open, hover & focus-visible on primary button
           await page.goto(`/admin/entries/editor?fixture=draft&theme=${theme}`);
-          await page.locator('#ref-btn-save').focus();
-          await expect(page.locator('#ref-save-tooltip')).toBeVisible();
-          await captureStep(page, outDir, `state-primary-disabled-reason-${tag}`);
+          await page.locator('#ref-btn-save').click();
+          await expect(page.locator('#ref-status-line')).toContainText('No changes to save.');
+          await captureStep(page, outDir, `state-save-no-changes-${tag}`);
           await page.locator('#ref-details-disclosure summary').click();
           await captureStep(page, outDir, `state-details-open-${tag}`);
           await page.locator('#ref-field-profile').focus();

@@ -2,11 +2,11 @@ import type { Hono } from 'hono';
 import type { IPortfolioRepository } from '@living-portfolio/db';
 import {
   createWebApp,
+  renderAdminEntriesPage,
   renderAdminImportPage,
   renderAdminLoginPage,
   renderAdminSettingsPage,
   renderAdminSetupPage,
-  renderAdminWorkspacePage,
   renderNotFoundPage,
 } from '@living-portfolio/web';
 import type { AuthManager } from '../auth/security.js';
@@ -36,8 +36,9 @@ export function mountBundledWeb(
       const sessionMatch = cookieHeader.match(/(?:^|;\s*)lp_session=([a-f0-9]+)/);
       const session = sessionMatch ? (auth as any).sessions?.get(sessionMatch[1]) : null;
       return c.html(
-        await renderAdminWorkspacePage(repo, {
-          settingsState: runtimeState,
+        await renderAdminEntriesPage(repo, {
+          selectedId: c.req.query('entry') || undefined,
+          isNew: c.req.query('new') === '1',
           legacyRecoveryUsed: Boolean(session?.legacyRecoveryUsed),
         })
       );

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { InMemoryPortfolioRepository } from '@living-portfolio/db';
 import {
-  renderAdminWorkspacePage,
+  renderAdminEntriesPage,
   renderAdminLoginPage,
   renderAdminSetupPage,
   renderAdminSettingsPage,
@@ -62,15 +62,19 @@ describe('Admin apiClient Conformance & Raw Fetch Prohibition (WP-1 Task 2, find
     const repo = new InMemoryPortfolioRepository();
 
     const pages = [
-      { name: '/admin (workspace)', html: await renderAdminWorkspacePage(repo) },
-      { name: '/admin/login', html: renderAdminLoginPage() },
-      { name: '/admin/setup', html: renderAdminSetupPage() },
-      { name: '/admin/settings', html: await renderAdminSettingsPage(repo) },
+      { name: '/admin (entries)', html: await renderAdminEntriesPage(repo), externalModule: true },
+      { name: '/admin/login', html: renderAdminLoginPage(), externalModule: false },
+      { name: '/admin/setup', html: renderAdminSetupPage(), externalModule: false },
+      { name: '/admin/settings', html: await renderAdminSettingsPage(repo), externalModule: false },
     ];
 
     for (const page of pages) {
       const scripts = extractInlineScripts(page.html);
-      expect(scripts.length).toBeGreaterThan(0);
+      if (page.externalModule) {
+        expect(page.html).toContain('/assets/client/editor-page.js');
+      } else {
+        expect(scripts.length).toBeGreaterThan(0);
+      }
 
       for (let i = 0; i < scripts.length; i++) {
         // Assert every script passes raw fetch validation
@@ -111,9 +115,9 @@ describe('Admin apiClient Conformance & Raw Fetch Prohibition (WP-1 Task 2, find
     expect(ADMIN_API_CLIENT_SCRIPT).toContain("'Content-Type': 'application/json'");
   });
 
-  it('renders distinct recovery messages for 401, 403, and 500 error responses in admin workspace', async () => {
+  it('renders distinct recovery messages for 401, 403, and 500 error responses in admin pages', async () => {
     const repo = new InMemoryPortfolioRepository();
-    const html = await renderAdminWorkspacePage(repo);
+    const html = await renderAdminSettingsPage(repo);
 
     // 401 Session expired recovery message with sign-in link
     expect(html).toContain('Your session has expired');

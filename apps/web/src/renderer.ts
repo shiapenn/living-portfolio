@@ -26,9 +26,14 @@ export { renderBookPage } from "./pages/public/book.js";
 export { renderAskStatusPage } from "./pages/public/ask-status.js";
 export {
   ADMIN_API_CLIENT_SCRIPT,
-  renderAdminWorkspacePage,
   type AdminSettingsState,
-} from "./pages/admin/workspace.js";
+} from "./lib/admin-api-client.js";
+export {
+  renderAdminEntriesPage,
+  renderReferenceEditorPage,
+  type ReferenceEditorEntry,
+  type ReferenceEditorOptions,
+} from "./pages/admin/entries/editor.js";
 export { renderAdminSettingsPage } from "./pages/admin/settings.js";
 export { renderAdminLoginPage } from "./pages/admin/login.js";
 export { renderAdminSetupPage } from "./pages/admin/setup.js";

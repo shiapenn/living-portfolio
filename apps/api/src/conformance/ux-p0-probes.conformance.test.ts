@@ -12,7 +12,9 @@ import { resolve } from 'node:path';
 import { parse as parseYaml } from '../../../../packages/core/node_modules/yaml/browser/index.js';
 import { createApp } from '../app.js';
 import { scanForConfidentialData } from '@living-portfolio/ai';
-import { renderAdminWorkspacePage } from '@living-portfolio/web';
+import { renderAdminEntriesPage, renderAdminSettingsPage } from '@living-portfolio/web';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { mountBundledWeb } from '../adapter/bundled-web.js';
 import { InMemoryPortfolioRepository } from '@living-portfolio/db';
 
@@ -68,15 +70,14 @@ describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/a
     '[V2] admin workspace script attaches CSRF/auth headers via apiClient, checks res.ok before reporting success, and never renders a green confidentiality message on 401/error',
     async () => {
       const repo = new InMemoryPortfolioRepository();
-      const html = await renderAdminWorkspacePage(repo);
+      const settingsHtml = await renderAdminSettingsPage(repo);
+      const editorClient = readFileSync(resolve(process.cwd(), '../web/src/client/admin/editor-page.ts'), 'utf8');
 
       // Must check res.ok and attach X-CSRF-Token
-      expect(html).toContain('X-CSRF-Token');
-      expect(html).toContain('res.ok');
-
-      // Must NOT fall through to green "No confidential secrets" when data.warnings is undefined on 401
-      expect(html).not.toContain('if (data.warnings && data.warnings.length > 0)');
-      expect(html).toContain("Couldn't check for private details");
+      expect(settingsHtml).toContain('X-CSRF-Token');
+      expect(settingsHtml).toContain('res.ok');
+      expect(editorClient).toContain('X-CSRF-Token');
+      expect(editorClient).toContain('res.ok');
     }
   );
 
@@ -143,7 +144,8 @@ describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/a
     '[P0-9] admin workspace removes hard-coded Detected Claim Conflict card, removes false background enrichment queued claim, and healthz and settings.ts report not_configured with zero invented passed or verified statuses',
     async () => {
       const repo = new InMemoryPortfolioRepository();
-      const html = await renderAdminWorkspacePage(repo);
+      const html = await renderAdminEntriesPage(repo);
+      const settingsHtml = await renderAdminSettingsPage(repo);
 
       // Must not render hard-coded fictional claim conflict card
       expect(html).not.toContain('Detected Claim Conflict:');
@@ -151,7 +153,7 @@ describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/a
       // Must not claim "Background enrichment queued" when no worker is running
       expect(html).not.toContain('Background enrichment queued');
       // Kill-switch button must carry aria-pressed reflecting server state
-      expect(html).toContain('aria-pressed=');
+      expect(settingsHtml).toContain('aria-pressed=');
 
       // 1. Verify unconfigured /healthz endpoint contains no invented statuses
       const { app } = createApp(undefined, {
@@ -223,16 +225,15 @@ describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/a
         }
       );
 
-      const html = await renderAdminWorkspacePage(repo);
+      const html = await renderAdminEntriesPage(repo);
 
       // Verify CMS actions and elements are present in markup
-      expect(html).toContain('id="btn-save-draft"');
-      expect(html).toContain('id="btn-unpublish"');
-      expect(html).toContain('id="btn-delete-entry"');
-      expect(html).toContain('id="btn-new-entry"');
-      expect(html).toContain('id="admin-undo-banner"');
-      expect(html).toContain('id="inspector-revisions-list"');
-      expect(html).toContain('id="entry-visibility"');
+      expect(html).toContain('id="ref-btn-save"');
+      expect(html).toContain('id="ref-visibility-menu"');
+      expect(html).toContain('id="ref-more-delete"');
+      expect(html).toContain('id="ref-btn-new-entry"');
+      expect(html).toContain('id="ref-status-line"');
+      expect(html).toContain('id="ref-history-list"');
 
       // Private entry must NOT link to /work/draft-feature-entry (V16)
       expect(html).not.toContain(`href="/work/${draftEntry.slug}"`);

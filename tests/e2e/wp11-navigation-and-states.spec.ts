@@ -23,19 +23,19 @@ test.describe.serial('WP-11.2: Navigation Redesign & System States (20261020-UX-
       });
     });
 
-    // Create a structured entry if not already present
-    const slugInput = page.locator('#entry-slug');
-    if (await slugInput.isVisible()) {
-      await page.fill('#entry-title', 'Nav Test Architecture Project');
-      await slugInput.fill('nav-test-structured-entry');
-      await page.fill('#entry-date', '2026-01-01');
-      await page.fill('#entry-body', 'We built a specialized navigation test structure.');
-      await page.click('#btn-open-publish-dialog');
-      await expect(page.locator('#publish-scan-status')).toContainText(/nothing found|0 confidential/i);
-      await page.click('#btn-confirm-publish');
-      // Wait for banner confirmation
-      await expect(page.locator('#admin-status-banner')).toBeVisible();
-    }
+    // Create a structured entry if not already present via Reference Editor UI
+    await page.goto('/admin?new=1');
+    await page.fill('#ref-field-title', 'Nav Test Architecture Project');
+    await page.locator('#ref-details-disclosure summary').click();
+    await page.selectOption('#ref-field-profile', 'case-study');
+    await page.fill('#ref-field-slug', 'nav-test-structured-entry');
+    await page.fill('#ref-field-date', '2026-01-01');
+    await page.fill('#ref-field-body', 'We built a specialized navigation test structure.');
+    await page.click('#ref-btn-publish');
+    await expect(page.locator('#ref-publish-dialog')).toBeVisible();
+    await expect(page.locator('#ref-publish-dialog-status')).toContainText(/no private details/i);
+    await page.click('#ref-publish-confirm');
+    await expect(page.locator('#ref-status-line')).toContainText(/now public/i);
     await page.close();
   });
 

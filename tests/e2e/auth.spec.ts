@@ -301,7 +301,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     // Finish setup
     await sharedPage.click('#btn-setup-finish-login');
     await sharedPage.waitForURL((url) => url.pathname === '/admin');
-    await expect(sharedPage.locator('h1')).toContainText('Admin Workspace');
+    await expect(sharedPage.locator('#ref-main')).toBeVisible();
   });
 
   test('8. /admin/setup is locked down once configured', async ({ page, request }) => {
@@ -390,8 +390,8 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.click('button[type="submit"]');
 
     await page.waitForURL((url) => url.pathname === '/admin');
-    await expect(page.locator('h1')).toContainText('Admin Workspace');
-    await expect(page.locator('#btn-killswitch')).toBeVisible();
+    await expect(page.locator('#ref-main')).toBeVisible();
+    await expect(page.locator('#ref-btn-signout')).toBeVisible();
   });
 
   test('11. CSRF token is stored in sessionStorage and validated on admin requests', async ({ page }) => {
@@ -462,62 +462,59 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
       await page.waitForURL((url) => url.pathname === '/admin');
     }
 
-    const banner = page.locator('#admin-status-banner');
-    const killBtn = page.locator('#btn-killswitch');
-    await expect(killBtn).toBeVisible();
+    const statusLine = page.locator('#ref-status-line');
+    const titleInput = page.locator('#ref-field-title');
+    const saveBtn = page.locator('#ref-btn-save');
+    await expect(saveBtn).toBeVisible();
+
+    // Mark entry dirty so clicking Save triggers a network call
+    await titleInput.fill('Error Recovery Probe Entry');
 
     // 1. Forced 401: session expired recovery message shown, success message suppressed
-    await page.route('**/api/settings/routing', (route) =>
+    await page.route(/\/api\/entries/, (route) =>
       route.fulfill({
         status: 401,
         contentType: 'application/json',
         body: JSON.stringify({ error: 'Session expired or unauthenticated' }),
       })
     );
-    await killBtn.click();
-    await expect(banner).toBeVisible();
-    await expect(banner.locator('[data-error="401"]')).toBeVisible();
-    await expect(banner).toContainText('Your session has expired');
-    await expect(banner.locator('a[href="/admin/login"]')).toBeVisible();
-    await expect(banner).not.toContainText('Automated answering is now');
+    await saveBtn.click();
+    await expect(statusLine).toContainText('Your session has expired');
+    await expect(statusLine).not.toContainText('Saved');
 
-    await page.unroute('**/api/settings/routing');
+    await page.unroute(/\/api\/entries/);
 
     // 2. Forced 403: CSRF security check failure recovery message shown, success message suppressed
-    await page.route('**/api/settings/routing', (route) =>
+    await page.route(/\/api\/entries/, (route) =>
       route.fulfill({
         status: 403,
         contentType: 'application/json',
         body: JSON.stringify({ error: 'CSRF token invalid or missing' }),
       })
     );
-    await killBtn.click();
-    await expect(banner.locator('[data-error="403"]')).toBeVisible();
-    await expect(banner).toContainText('Security check failed (CSRF token invalid or missing)');
-    await expect(banner).not.toContainText('Automated answering is now');
+    await saveBtn.click();
+    await expect(statusLine).toContainText('Security check failed (CSRF token invalid or missing)');
+    await expect(statusLine).not.toContainText('Saved');
 
-    await page.unroute('**/api/settings/routing');
+    await page.unroute(/\/api\/entries/);
 
     // 3. Forced 500: server error recovery message shown, success message suppressed
-    await page.route('**/api/settings/routing', (route) =>
+    await page.route(/\/api\/entries/, (route) =>
       route.fulfill({
         status: 500,
         contentType: 'application/json',
         body: JSON.stringify({ error: 'Internal Server Error' }),
       })
     );
-    await killBtn.click();
-    await expect(banner.locator('[data-error="500"]')).toBeVisible();
-    await expect(banner).toContainText('Server error (HTTP 500)');
-    await expect(banner).not.toContainText('Automated answering is now');
+    await saveBtn.click();
+    await expect(statusLine).toContainText('Server error (HTTP 500)');
+    await expect(statusLine).not.toContainText('Saved');
 
-    await page.unroute('**/api/settings/routing');
+    await page.unroute(/\/api\/entries/);
 
-    // 4. Successful unintercepted request: success banner renders only when res.ok is true
-    await killBtn.click();
-    await expect(banner.locator('.as-of-banner')).toBeVisible();
-    await expect(banner).toContainText('Automated answering is now');
-    await expect(banner.locator('[data-error]')).toHaveCount(0);
+    // 4. Successful unintercepted request: success status renders only when res.ok is true
+    await saveBtn.click();
+    await expect(statusLine).toContainText(/saved/i);
   });
 
   test('13. WP-13.3: Recovery code signs in once and is consumed', async ({ page }) => {
@@ -533,7 +530,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.click('button[type="submit"]');
 
     await page.waitForURL((url) => url.pathname === '/admin');
-    await expect(page.locator('h1')).toContainText('Admin Workspace');
+    await expect(page.locator('#ref-main')).toBeVisible();
 
     // Clear session to test second attempt with the same recovery code
     await page.context().clearCookies();
@@ -611,12 +608,12 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.click('button[type="submit"]');
 
     await page.waitForURL((url) => url.pathname === '/admin');
-    await expect(page.locator('h1')).toContainText('Admin Workspace');
+    await expect(page.locator('#ref-main')).toBeVisible();
     // Modern 16-hex recovery code sign-in does not show the legacy recovery notice
     await expect(page.locator('#admin-legacy-recovery-notice')).not.toBeVisible();
 
     // 4. Header contains Sign out control (UX-41)
-    const logoutBtn = page.locator('#btn-admin-logout');
+    const logoutBtn = page.locator('#ref-btn-signout');
     await expect(logoutBtn).toBeVisible();
     await expect(logoutBtn).toContainText('Sign out');
 
@@ -690,10 +687,10 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.fill('#login-totp', messyCode);
     await page.click('button[type="submit"]');
     await page.waitForURL((url) => url.pathname === '/admin');
-    await expect(page.locator('h1')).toContainText('Admin Workspace');
+    await expect(page.locator('#ref-main')).toBeVisible();
 
     // 5. Sign out and test one code pasted
-    await page.click('#btn-admin-logout');
+    await page.click('#ref-btn-signout');
     await page.waitForURL((url) => url.pathname === '/admin/login');
     await toggleBtn.click();
 
@@ -707,10 +704,10 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.fill('#login-password', TEST_PASSWORD);
     await page.click('button[type="submit"]');
     await page.waitForURL((url) => url.pathname === '/admin');
-    await expect(page.locator('h1')).toContainText('Admin Workspace');
+    await expect(page.locator('#ref-main')).toBeVisible();
 
     // 6. Sign out and test that the already-used code is rejected with exact recovery error message
-    await page.click('#btn-admin-logout');
+    await page.click('#ref-btn-signout');
     await page.waitForURL((url) => url.pathname === '/admin/login');
     await toggleBtn.click();
     await page.fill('#login-username', TEST_USERNAME);
@@ -726,10 +723,10 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
       await page.fill('#login-totp', code);
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => url.pathname === '/admin');
-      await expect(page.locator('h1')).toContainText('Admin Workspace');
+      await expect(page.locator('#ref-main')).toBeVisible();
 
       // Sign out
-      await page.click('#btn-admin-logout');
+      await page.click('#ref-btn-signout');
       await page.waitForURL((url) => url.pathname === '/admin/login');
       await toggleBtn.click();
 
@@ -773,7 +770,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     expect(legacyCode).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}$/);
 
     // 3. Sign out
-    await page.click('#btn-admin-logout');
+    await page.click('#ref-btn-signout');
     await page.waitForURL((url) => url.pathname === '/admin/login');
 
     // 4. Sign in with legacy-format code
@@ -791,7 +788,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(adminNotice).toContainText('You signed in with an older recovery code. Replace your recovery codes in Settings > Account as soon as you can.');
 
     // 6. Sign out and verify the legacy recovery code is burned
-    await page.click('#btn-admin-logout');
+    await page.click('#ref-btn-signout');
     await page.waitForURL((url) => url.pathname === '/admin/login');
     await toggleBtn.click();
     await page.fill('#login-username', TEST_USERNAME);

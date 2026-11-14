@@ -2,7 +2,7 @@ import { loadConfig } from "@living-portfolio/config";
 import { escapeHtml } from "../../lib/html.js";
 import { renderLayout } from "../../layouts/public-shell.js";
 import { WIZARD_STRINGS } from "../../strings.js";
-import { ADMIN_API_CLIENT_SCRIPT } from "./workspace.js";
+import { ADMIN_API_CLIENT_SCRIPT } from "../../lib/admin-api-client.js";
 
 export function renderAdminSetupPage(): string {
   const content = `
