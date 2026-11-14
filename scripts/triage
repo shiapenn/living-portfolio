@@ -419,6 +419,8 @@ export function runTriage(options = {}) {
       branchName.toLowerCase().includes('a039') ||
       branchName.toLowerCase().includes('wp-14-pre-b') ||
       branchName.toLowerCase().includes('a076') ||
+      branchName.toLowerCase().includes('wp-15-pre-d') ||
+      branchName.toLowerCase().includes('wp-15-6') ||
       recentCommitLogs.includes('HO-1b') ||
       recentCommitLogs.includes('A017') ||
       recentCommitLogs.includes('OSR-16') ||
@@ -430,6 +432,8 @@ export function runTriage(options = {}) {
       recentCommitLogs.includes('WP-9') ||
       recentCommitLogs.includes('WP-14.pre-b') ||
       recentCommitLogs.includes('A076') ||
+      recentCommitLogs.includes('WP-15.pre-d') ||
+      recentCommitLogs.includes('WP-15.6') ||
       reportsToScan.some((r) =>
         r.startsWith('A017') ||
         r.startsWith('A034') ||
@@ -445,6 +449,8 @@ export function runTriage(options = {}) {
         r.includes('wp-9') ||
         r.includes('wp9') ||
         r.includes('wp-14-pre-b') ||
+        r.includes('wp-15-pre-d') ||
+        r.includes('wp-15-6') ||
         r.includes('osr-20')
       );
 

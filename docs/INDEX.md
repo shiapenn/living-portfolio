@@ -103,6 +103,7 @@
 | `A095` | WP-15.3 shared feedback and container components | `active` | [A095-wp-153-shared-feedback-and-container-components.md](execution-reports/A095-wp-153-shared-feedback-and-container-components.md) | — |
 | `A096` | WP-15.3a Design Foundations | `active` | [A096-wp-153a-design-foundations.md](execution-reports/A096-wp-153a-design-foundations.md) | — |
 | `A097` | WP-15.7 Reference Editor Page | `active` | [A097-wp-157-reference-editor-page.md](execution-reports/A097-wp-157-reference-editor-page.md) | — |
+| `A098` | WP-15.pre-e Triage Allowlist | `active` | [A098-wp-15pre-e-triage-allowlist.md](execution-reports/A098-wp-15pre-e-triage-allowlist.md) | — |
 
 ## Handover Snapshots (Class H)
 
