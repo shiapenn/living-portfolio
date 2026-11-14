@@ -133,14 +133,8 @@ function renderActionBar(entry: ReferenceEditorEntry): string {
 
   return `<div class="lp-editor-action-bar">
   <div class="lp-editor-primary-actions">
-    ${renderButton({ id: 'ref-btn-save', label: saveLabel, variant: 'primary', size: 'sm' })}
-    ${renderButton({
-      id: 'ref-btn-publish',
-      label: publishLabel,
-      variant: 'secondary',
-      size: 'sm',
-      className: isPublic ? 'lp-is-hidden' : '',
-    })}
+    <span class="lp-tooltip-wrap" id="ref-save-wrap">${renderButton({ id: 'ref-btn-save', label: saveLabel, variant: 'primary', size: 'sm' })}<span class="lp-tooltip-bubble" role="tooltip" id="ref-save-tooltip" hidden>${escapeHtml(EDITOR_STRINGS.actions.noUnsavedChanges)}</span></span>
+    ${renderButton({ id: 'ref-btn-publish', label: publishLabel, variant: 'secondary', size: 'sm', className: isPublic ? 'lp-is-hidden' : '' })}
     <div id="ref-visibility-menu-wrap" class="lp-menu-wrap${isPublic ? '' : ' lp-is-hidden'}">
       <button type="button" id="ref-visibility-menu-btn" class="lp-btn lp-btn-secondary lp-btn-sm" aria-haspopup="menu" aria-expanded="false" aria-controls="ref-visibility-menu">${escapeHtml(EDITOR_STRINGS.actions.visibility)} ${chevron}</button>
       <div id="ref-visibility-menu" class="lp-popover-menu lp-menu-popover-float" role="menu" aria-label="${escapeHtml(EDITOR_STRINGS.actions.visibility)}" hidden>
@@ -206,26 +200,8 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
       tone: visibilityTone(selected.visibility),
     })}
   </div>
-  ${renderField({
-    kind: 'input',
-    id: 'ref-field-title',
-    name: 'title',
-    label: EDITOR_STRINGS.fields.titleLabel,
-    value: selected.title,
-    placeholder: EDITOR_STRINGS.fields.titlePlaceholder,
-    error: options.titleError,
-    required: true,
-  })}
-  ${renderField({
-    kind: 'textarea',
-    id: 'ref-field-body',
-    name: 'body',
-    label: EDITOR_STRINGS.fields.bodyLabel,
-    value: selected.body,
-    placeholder: EDITOR_STRINGS.fields.bodyPlaceholder,
-    rows: 6,
-    className: 'lp-writing-surface-field',
-  })}
+  ${renderField({ kind: 'input', id: 'ref-field-title', name: 'title', label: EDITOR_STRINGS.fields.titleLabel, value: selected.title, placeholder: EDITOR_STRINGS.fields.titlePlaceholder, error: options.titleError, required: true })}
+  ${renderField({ kind: 'textarea', id: 'ref-field-body', name: 'body', label: EDITOR_STRINGS.fields.bodyLabel, value: selected.body, placeholder: EDITOR_STRINGS.fields.bodyPlaceholder, rows: 6, className: 'lp-writing-surface-field' })}
   <div id="ref-details-wrap">
     ${renderDisclosure({
       id: 'ref-details-disclosure',
@@ -295,11 +271,7 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
         id: 'ref-empty-state',
         title: EDITOR_STRINGS.emptyState.title,
         body: EDITOR_STRINGS.emptyState.body,
-        actionHtml: renderButton({
-          id: 'ref-empty-start-btn',
-          label: EDITOR_STRINGS.emptyState.action,
-          variant: 'primary',
-        }),
+        actionHtml: renderButton({ id: 'ref-empty-start-btn', label: EDITOR_STRINGS.emptyState.action, variant: 'primary' }),
       });
 
   const mainContent = selected ? renderEditorCanvas(selected, options) : emptyMainHtml;

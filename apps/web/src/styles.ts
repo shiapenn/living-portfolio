@@ -2141,6 +2141,10 @@ input[type="date"].lp-input {
 
 .lp-tooltip-bubble {
   display: none;
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  z-index: 20;
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-control);
   background: var(--text);
@@ -2152,9 +2156,9 @@ input[type="date"].lp-input {
   white-space: nowrap;
 }
 
-.lp-tooltip-wrap:hover .lp-tooltip-bubble,
-.lp-tooltip-wrap:focus-within .lp-tooltip-bubble,
-.lp-tooltip-wrap.is-tooltip-open .lp-tooltip-bubble {
+.lp-tooltip-wrap:hover .lp-tooltip-bubble:not([hidden]),
+.lp-tooltip-wrap:focus-within .lp-tooltip-bubble:not([hidden]),
+.lp-tooltip-wrap.is-tooltip-open .lp-tooltip-bubble:not([hidden]) {
   display: inline-flex;
 }
 

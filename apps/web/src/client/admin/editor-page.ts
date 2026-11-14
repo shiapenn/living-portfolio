@@ -198,6 +198,7 @@ function bootEditorPage(): void {
   const formEl = document.getElementById('ref-editor-form');
   const statusLineEl = document.getElementById('ref-status-line');
   const saveBtn = document.getElementById('ref-btn-save');
+  const saveTooltip = document.getElementById('ref-save-tooltip');
   const publishBtn = document.getElementById('ref-btn-publish');
   const visMenuWrap = document.getElementById('ref-visibility-menu-wrap');
   const titleInput = document.getElementById('ref-field-title') as HTMLInputElement | null;
@@ -247,15 +248,36 @@ function bootEditorPage(): void {
     }
   };
 
+  const setSaveEnabled = (enabled: boolean) => {
+    if (!saveBtn) return;
+    if (enabled) {
+      saveBtn.removeAttribute('aria-disabled');
+      saveBtn.removeAttribute('aria-describedby');
+      saveTooltip?.setAttribute('hidden', '');
+    } else {
+      saveBtn.setAttribute('aria-disabled', 'true');
+      saveBtn.setAttribute('aria-describedby', 'ref-save-tooltip');
+      saveTooltip?.removeAttribute('hidden');
+    }
+  };
+  if (titleInput && titleInput.value.trim().length > 0) {
+    setSaveEnabled(false);
+  }
+
   titleInput?.addEventListener('input', () => {
+    setSaveEnabled(true);
     const val = titleInput.value.trim();
     if (headingEl) headingEl.textContent = val || EDITOR_STRINGS.sidebar.untitled;
     if (activeRowTitle) activeRowTitle.textContent = val || EDITOR_STRINGS.sidebar.untitled;
     if (val) setFieldError(titleInput, null);
   });
+  bodyInput?.addEventListener('input', () => setSaveEnabled(true));
+  document.getElementById('ref-field-slug')?.addEventListener('input', () => setSaveEnabled(true));
+  document.getElementById('ref-field-visibility')?.addEventListener('change', () => setSaveEnabled(true));
 
   // Details summary meta live sync
   const updateDetailsSummary = () => {
+    setSaveEnabled(true);
     const metaEl = document.getElementById('ref-details-summary-meta');
     const dateEl = document.getElementById('ref-field-date') as HTMLInputElement | null;
     const temporalEl = document.getElementById('ref-field-temporal') as HTMLSelectElement | null;
@@ -276,7 +298,7 @@ function bootEditorPage(): void {
   // Save action
   let previousBody = bodyInput?.value ?? '';
   saveBtn?.addEventListener('click', () => {
-    if (!statusLineEl) return;
+    if (!statusLineEl || saveBtn.getAttribute('aria-disabled') === 'true') return;
     const title = titleInput?.value.trim() ?? '';
     if (!title) {
       setFieldError(titleInput, EDITOR_STRINGS.fields.titleError);
@@ -291,6 +313,7 @@ function bootEditorPage(): void {
     const vis = (formEl?.getAttribute('data-visibility') as Visibility) ?? 'draft';
     const snapshot = previousBody;
     previousBody = bodyInput?.value ?? '';
+    setSaveEnabled(false);
     historyEntries.unshift({
       time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
       title,
@@ -317,34 +340,55 @@ function bootEditorPage(): void {
   const publishDlgEl = document.getElementById('ref-publish-dialog');
   const publishCtrl = publishDlgEl ? attachModalController(publishDlgEl) : null;
 
+  let checkTimer = 0;
   const openPublishPreFlight = (triggerEl?: HTMLElement | null) => {
     if (!publishCtrl || !publishDlgEl) return;
     const statusEl = document.getElementById('ref-publish-dialog-status');
     const ndaStep = document.getElementById('ref-publish-nda-step');
     const ndaCheck = document.getElementById('ref-publish-nda-check') as HTMLInputElement | null;
     const nextHeading = document.getElementById('ref-publish-next-heading');
+    const confirmBtn = document.getElementById('ref-publish-confirm');
     const bodyText = bodyInput?.value ?? '';
     const hasSensitive = /confidential|secret|nda|password|api[_ -]?key/i.test(bodyText);
 
+    if (checkTimer) window.clearTimeout(checkTimer);
     if (ndaCheck) ndaCheck.checked = false;
-    if (statusEl) {
-      statusEl.textContent = hasSensitive ? EDITOR_STRINGS.publishDialog.matched : EDITOR_STRINGS.publishDialog.clean;
-    }
-    if (ndaStep && nextHeading) {
-      if (hasSensitive) {
-        ndaStep.removeAttribute('hidden');
-        nextHeading.textContent = `3. ${EDITOR_STRINGS.publishDialog.nextTitle}`;
-      } else {
-        ndaStep.setAttribute('hidden', '');
-        nextHeading.textContent = `2. ${EDITOR_STRINGS.publishDialog.nextTitle}`;
-      }
+    ndaStep?.setAttribute('hidden', '');
+    if (nextHeading) nextHeading.textContent = `2. ${EDITOR_STRINGS.publishDialog.nextTitle}`;
+    if (statusEl) statusEl.textContent = EDITOR_STRINGS.publishDialog.checking;
+    if (confirmBtn) {
+      confirmBtn.setAttribute('data-loading', 'true');
+      confirmBtn.setAttribute('aria-disabled', 'true');
+      confirmBtn.innerHTML = `<svg class="lp-icon lp-icon-spin" width="16" height="16" aria-hidden="true"><use href="#lp-icon-loader-circle"></use></svg><span>${EDITOR_STRINGS.publishDialog.confirm}</span>`;
     }
     publishCtrl.open(triggerEl);
+
+    checkTimer = window.setTimeout(() => {
+      if (statusEl) {
+        statusEl.textContent = hasSensitive ? EDITOR_STRINGS.publishDialog.matched : EDITOR_STRINGS.publishDialog.clean;
+      }
+      if (ndaStep && nextHeading) {
+        if (hasSensitive) {
+          ndaStep.removeAttribute('hidden');
+          nextHeading.textContent = `3. ${EDITOR_STRINGS.publishDialog.nextTitle}`;
+        } else {
+          ndaStep.setAttribute('hidden', '');
+          nextHeading.textContent = `2. ${EDITOR_STRINGS.publishDialog.nextTitle}`;
+        }
+      }
+      if (confirmBtn) {
+        confirmBtn.removeAttribute('data-loading');
+        confirmBtn.removeAttribute('aria-disabled');
+        confirmBtn.textContent = EDITOR_STRINGS.publishDialog.confirm;
+      }
+    }, 220);
   };
 
   publishBtn?.addEventListener('click', () => openPublishPreFlight(publishBtn));
 
   document.getElementById('ref-publish-confirm')?.addEventListener('click', () => {
+    const confirmBtn = document.getElementById('ref-publish-confirm');
+    if (confirmBtn?.getAttribute('aria-disabled') === 'true') return;
     const ndaStep = document.getElementById('ref-publish-nda-step');
     const ndaCheck = document.getElementById('ref-publish-nda-check') as HTMLInputElement | null;
     if (ndaStep && !ndaStep.hasAttribute('hidden') && !ndaCheck?.checked) {

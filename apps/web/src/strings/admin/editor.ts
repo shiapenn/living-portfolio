@@ -77,6 +77,7 @@ export const EDITOR_STRINGS = {
     saveDraft: 'Save draft',
     saveChanges: 'Save changes',
     saving: 'Saving…',
+    noUnsavedChanges: 'No unsaved changes.',
     publish: 'Publish…',
     makePublic: 'Make public…',
     visibility: 'Visibility',
