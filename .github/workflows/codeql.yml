@@ -1,47 +1,21 @@
 name: CodeQL Static Analysis
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   schedule:
     - cron: "30 3 * * 1"
+  workflow_dispatch:
 
 permissions:
   contents: read
   security-events: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.event_name != 'schedule' && github.ref != 'refs/heads/main') }}
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  detect-changes:
-    name: Detect Changed Scope
-    if: github.event_name != 'schedule'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      docs_only: ${{ steps.changes.outputs.docs_only }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
-
-      - name: Detect docs-only changes
-        id: changes
-        env:
-          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
-          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        run: |
-          node scripts/changed-scope --base "$BASE_SHA" --head "$HEAD_SHA"
-
   analyze:
     name: CodeQL (JavaScript / TypeScript)
-    needs: [detect-changes]
-    if: ${{ !failure() && !cancelled() && (github.event_name == 'schedule' || needs.detect-changes.outputs.docs_only != 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
