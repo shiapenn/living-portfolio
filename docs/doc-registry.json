@@ -1105,5 +1105,13 @@
     "path": "docs/execution-reports/A096-wp-153a-design-foundations.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A097",
+    "title": "WP-15.pre-d CodeQL Weekly Schedule and Manual Dispatch",
+    "class": "A",
+    "path": "docs/execution-reports/A097-wp-15-pre-d-codeql-schedule.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

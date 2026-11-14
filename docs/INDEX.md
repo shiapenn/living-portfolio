@@ -102,6 +102,7 @@
 | `A094` | WP-15.2 shared primitives and dev gallery | `active` | [A094-wp-152-shared-primitives-and-dev-gallery.md](execution-reports/A094-wp-152-shared-primitives-and-dev-gallery.md) | — |
 | `A095` | WP-15.3 shared feedback and container components | `active` | [A095-wp-153-shared-feedback-and-container-components.md](execution-reports/A095-wp-153-shared-feedback-and-container-components.md) | — |
 | `A096` | WP-15.3a Design Foundations | `active` | [A096-wp-153a-design-foundations.md](execution-reports/A096-wp-153a-design-foundations.md) | — |
+| `A097` | WP-15.pre-d CodeQL Weekly Schedule and Manual Dispatch | `active` | [A097-wp-15-pre-d-codeql-schedule.md](execution-reports/A097-wp-15-pre-d-codeql-schedule.md) | — |
 
 ## Handover Snapshots (Class H)
 
