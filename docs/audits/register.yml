@@ -4837,3 +4837,213 @@
       status: open
       note: "Registered at Gate G14 sign-off (screenshot item 3j; also reuses UX-29): Mode switch buttons (#mode-btn-paste 'Paste / Freeform', #mode-btn-guided 'Guided Mode', #mode-btn-quick 'Quick Log', apps/web/src/renderer.ts L2295-2299) use .btn.btn-secondary action styling with no visual or aria-pressed selected state, and five metadata fields (#entry-profile, #entry-visibility, #entry-date, #entry-temporal-level, #entry-hindsight, L2347-2390) are crammed above the body instead of collapsed into a single 'Details' disclosure with a one-line summary. Planned for WP-15.7 under D-EDITOR."
   verified_by: null
+- id: 20261106-UX-70
+  audit: AUD-2026-11-06
+  title: 'Badges are bordered and near-square instead of borderless pills with tinted fill'
+  spec_sections:
+    - "12.3"
+    - "12.5"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-14
+      status: open
+      note: "Registered at WP-15.7 visual review (item a): Badges render with 1 px borders and near-square corners instead of non-interactive borderless pills (--radius-pill 999px) with tinted fill per D-FOUND-2 and audit §6.9. Mapped to WP-15.3a."
+  verified_by: null
+- id: 20261106-UX-71
+  audit: AUD-2026-11-06
+  title: 'Icons use text glyphs (×, ▾, ◐) without an SVG sprite specification, and notice dismiss reads as a bordered button'
+  spec_sections:
+    - "12.3"
+    - "12.5"
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-14
+      status: open
+      note: "Registered at WP-15.7 visual review (item b): Icons are rendered as Unicode text glyphs instead of a self-hosted 24 px inline SVG sprite at sizes {16, 20, 24} with currentColor, and dismiss controls render as bordered square buttons instead of a 16 px ghost X at the top right per D-FOUND-1. Mapped to WP-15.3a."
+  verified_by: null
+- id: 20261106-UX-72
+  audit: AUD-2026-11-06
+  title: 'Details disclosure row lacks a rotating chevron affordance and renders as a bordered box inside a bordered card'
+  spec_sections:
+    - "12.3"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-14
+      status: open
+      note: "Registered at WP-15.7 visual review (item c): The Details disclosure lacks a 16 px rotating chevron affordance and wraps a bordered box inside the bordered editor card, violating D-FOUND-1, D-FOUND-2 (no bordered box inside a bordered box; use hairline dividers), and D-FOUND-6. Mapped to WP-15.3a and WP-15.7."
+  verified_by: null
+- id: 20261106-UX-73
+  audit: AUD-2026-11-06
+  title: 'Error state displays both a page notice and a field error for one event, shifts layout, and uses a self-contradicting fixture'
+  spec_sections:
+    - "12.6"
+    - "12.7"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-14
+      status: open
+      note: "Registered at WP-15.7 visual review (item d): A failed save renders both a page notice and a field error for the same event, unreserved notice/status slots shift content vertically, and the error fixture populates a non-empty title while showing 'Enter a title before saving.' per D-FOUND-3 and D-FOUND-6. Mapped to WP-15.3a and WP-15.7."
+  verified_by: null
+- id: 20261106-UX-74
+  audit: AUD-2026-11-06
+  title: 'First-run and empty states misalign with editor column, duplicate primary CTA and step numbers ("1. 1."), and wrap sidebar count heading'
+  spec_sections:
+    - "12.5"
+    - "12.6"
+    - "13.13"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-14
+      status: open
+      note: "Registered at WP-15.7 visual review (item e): First-run guide and empty state differ in width/left edge from the editor column, show two buttons for one action, prefix ordered list items with '1.' inside <ol> ('1. 1.'), and wrap 'Entries (0 entries)' instead of showing 'Entries' with a pill count badge per D-FOUND-3 and D-FOUND-6. Mapped to WP-15.3a and WP-15.7."
+  verified_by: null
+- id: 20261106-UX-75
+  audit: AUD-2026-11-06
+  title: 'At 320 px the admin header wraps to three rows with 32 px targets instead of brand + menu button with >= 44 px touch targets'
+  spec_sections:
+    - "12.5"
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-14
+      status: open
+      note: "Registered at WP-15.7 visual review (item f): Below 768 px, the admin header wraps across three rows and exposes 32 px sm buttons instead of collapsing navigation/theme/sign-out into a menu button so content starts within 64 px and all touch targets meet >= 44 px per D-FOUND-3. Mapped to WP-15.3a and WP-15.7."
+  verified_by: null
+- id: 20261106-UX-76
+  audit: AUD-2026-11-06
+  title: 'Editor writing surface uses the UI sans font instead of the public reading face at the public reading measure'
+  spec_sections:
+    - "12.4"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-14
+      status: open
+      note: "Registered at WP-15.7 visual review (item g): The editor body textarea uses --font-ui at 14 px instead of the public reading face (--font-reading) at the public reading measure per D-FOUND-4. Mapped to WP-15.3a and WP-15.7."
+  verified_by: null
+- id: 20261106-UX-77
+  audit: AUD-2026-11-06
+  title: 'Admin grid main column lacks consistent 260 px list + 720 px max main alignment across states'
+  spec_sections:
+    - "12.5"
+    - "12.6"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-14
+      status: open
+      note: "Registered at WP-15.7 visual review (item h): Editor canvas centering inside a 1fr column creates uneven dead space and misaligns empty, first-run, draft, and error states instead of aligning every state to the same left edge and width (260 px list column, 720 px max main column) per D-FOUND-3. Mapped to WP-15.3a and WP-15.7."
+  verified_by: null
+- id: 20261106-UX-78
+  audit: AUD-2026-11-06
+  title: 'Entry visibility state is repeated three times on screen (sidebar badge, editor badge, Details summary)'
+  spec_sections:
+    - "12.6"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-14
+      status: open
+      note: "Registered at WP-15.7 visual review (item i): Entry visibility state is repeated in the sidebar row, editor canvas header, and Details summary line; per D-FOUND-6, state is shown once in the editor header and omitted from the Details summary. Mapped to WP-15.7."
+  verified_by: null
+- id: 20261106-UX-79
+  audit: AUD-2026-11-06
+  title: 'Quiet/ghost buttons lack hover, focus-visible, and active surface affordances'
+  spec_sections:
+    - "12.3"
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-14
+      status: open
+      note: "Registered at WP-15.7 visual review (item j): Quiet/tertiary buttons render as plain text without subtle hover/focus-visible/active fill or state differentiation per D-FOUND-1, D-FOUND-2, and D-FOUND-5. Mapped to WP-15.3a."
+  verified_by: null
+- id: 20261106-UX-80
+  audit: AUD-2026-11-06
+  title: 'Visual review artefacts capture resting states only, omitting interactive states and multi-step user flows'
+  spec_sections:
+    - "12.5"
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-14
+      status: open
+      note: "Registered at WP-15.7 visual review (item k): Review artefacts only captured static resting pages rather than all interactive states (default, hover, focus-visible, active, disabled, loading, error) on the foundations gallery and step-by-step filmstrips for the 6 editor flows per D-FOUND-5. Mapped to WP-15.3a and WP-15.7."
+  verified_by: null
