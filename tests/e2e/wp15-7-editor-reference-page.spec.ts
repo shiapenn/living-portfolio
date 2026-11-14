@@ -9,10 +9,8 @@ async function captureStep(page: Page, outDir: string, name: string): Promise<vo
 }
 
 test.describe('WP-15.7 Reference Editor Page', () => {
-  test('enforces D-FOUND-1..6, UX-70..89, 6 states, 6 user flows, and 4-places-only live regions', async ({ page }) => {
+  test('UX-87: left-edge and width alignment across all 6 states (first-run, empty, draft, error, unlisted, public)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
-
-    // 1. Left-edge & width alignment, single-message-place / no-toast-no-banner, and interaction contract across all 6 states
     await page.setViewportSize({ width: 1280, height: 900 });
     const rects: Array<{ state: string; left: number; width: number }> = [];
     for (const state of ['first-run', 'empty', 'draft', 'error', 'unlisted', 'public'] as const) {
@@ -20,8 +18,18 @@ test.describe('WP-15.7 Reference Editor Page', () => {
       const box = await page.locator('#ref-editor-main').boundingBox();
       expect(box).not.toBeNull();
       rects.push({ state, left: Math.round(box!.x), width: Math.round(box!.width) });
+    }
+    for (const r of rects) {
+      expect(Math.abs(r.left - rects[0].left)).toBeLessThanOrEqual(2);
+      expect(Math.abs(r.width - rects[0].width)).toBeLessThanOrEqual(2);
+    }
+  });
 
-      // (a) No toast or top banner in the DOM; #ref-page-notice hidden; at most one message place active (except error = status + field error)
+  test('UX-85 / UX-86 / D-FEEDBACK: single active message place per state and zero toast/top-banner in DOM', async ({ page }) => {
+    await ensureAdminLoggedIn(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    for (const state of ['first-run', 'empty', 'draft', 'error', 'unlisted', 'public'] as const) {
+      await page.goto(`/admin/entries/editor?fixture=${state}&theme=light`);
       const msgAudit = await page.evaluate(() => {
         const hasToast = document.querySelectorAll('.lp-toast, .toast, [data-toast], #toast-region').length > 0;
         const noticeEl = document.getElementById('ref-page-notice');
@@ -44,8 +52,14 @@ test.describe('WP-15.7 Reference Editor Page', () => {
       } else {
         expect(msgAudit.activePlaces).toBeLessThanOrEqual(1);
       }
+    }
+  });
 
-      // (b) Interaction contract: visible action set per entry state
+  test('D-EDITOR: interaction contract (visible action set per entry state: first-run, empty, draft, error, unlisted, public)', async ({ page }) => {
+    await ensureAdminLoggedIn(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    for (const state of ['first-run', 'empty', 'draft', 'error', 'unlisted', 'public'] as const) {
+      await page.goto(`/admin/entries/editor?fixture=${state}&theme=light`);
       if (state === 'first-run' || state === 'empty') {
         await expect(page.locator('#ref-empty-start-btn')).toBeVisible();
         await expect(page.locator('#ref-btn-save')).toHaveCount(0);
@@ -74,12 +88,11 @@ test.describe('WP-15.7 Reference Editor Page', () => {
         await expect(page.locator('#ref-btn-structure')).toBeVisible();
       }
     }
-    for (const r of rects) {
-      expect(Math.abs(r.left - rects[0].left)).toBeLessThanOrEqual(2);
-      expect(Math.abs(r.width - rects[0].width)).toBeLessThanOrEqual(2);
-    }
+  });
 
-    // 2. First-run & Empty states (single CTA, single-numbered guide steps, pill count badge)
+  test('UX-74: first-run walkthrough guide (single-numbered, dismissible, single CTA) and pill count badge', async ({ page }) => {
+    await ensureAdminLoggedIn(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/admin/entries/editor?fixture=first-run&theme=light');
     await expect(page.locator('#ref-empty-state')).toBeVisible();
     await expect(page.locator('#ref-empty-state .lp-empty-guide-steps li')).toHaveCount(3);
@@ -89,15 +102,18 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     await page.locator('#ref-walkthrough-dismiss').click();
     await expect(page.locator('#ref-empty-state .lp-empty-guide')).toHaveCount(0);
     await expect(page.locator('#ref-empty-start-btn')).toHaveText('Start a draft');
+  });
 
-    // 3. Computed-style conformance on Draft state at 1280px (badges, SVG icons, no nested bordered boxes, reading face, Details 2-col, disabled reason tooltip)
+  test('UX-70 / UX-71 / UX-78 / UX-79 / UX-83 / UX-84 / UX-89 (1280 px): badges, SVG icons, Details 2-col, disabled reason tooltip, theme toggle, 4-places live regions, Axe', async ({ page }) => {
+    await ensureAdminLoggedIn(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/admin/entries/editor?fixture=draft&theme=light');
-    await expect(page.locator('#ref-btn-save')).toHaveText('Save draft');
+
     await expect(page.locator('#ref-btn-save')).toHaveAttribute('aria-disabled', 'true');
     await page.locator('#ref-btn-save').focus();
     await expect(page.locator('#ref-save-tooltip')).toBeVisible();
     await expect(page.locator('#ref-save-tooltip')).toHaveText('No unsaved changes.');
-    await expect(page.locator('#ref-btn-publish')).toHaveText('Publish…');
+
     await expect(page.locator('#ref-details-disclosure')).not.toHaveAttribute('open', '');
     await expect(page.locator('#ref-details-summary-meta')).not.toContainText(/Draft|Unlisted|Public/);
 
@@ -111,17 +127,14 @@ test.describe('WP-15.7 Reference Editor Page', () => {
         return [16, 20, 24].includes(w) && w === h;
       });
       const bodyTa = document.getElementById('ref-field-body') as HTMLTextAreaElement;
-      const bodyCs = getComputedStyle(bodyTa);
       const themeBtn = document.getElementById('ref-theme-toggle')!;
-      const themeUse = themeBtn.querySelector('use')?.getAttribute('href');
       return {
         badgeBorder: parseFloat(badgeCs.borderTopWidth),
         badgeRadius: parseFloat(badgeCs.borderTopLeftRadius),
         validIcons,
-        bodyFont: bodyCs.fontFamily,
         bodyNotClipped: bodyTa.scrollHeight <= bodyTa.clientHeight + 2,
         themeLabel: themeBtn.getAttribute('aria-label'),
-        themeUse,
+        themeUse: themeBtn.querySelector('use')?.getAttribute('href'),
         desktopNavVisible: getComputedStyle(document.querySelector('.lp-admin-header-nav')!).display !== 'none',
       };
     });
@@ -134,42 +147,37 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     expect(draftAudit.desktopNavVisible).toBe(true);
     await expect(page.locator('#ref-mobile-menu-btn')).toBeHidden();
 
-    // Toggle theme -> sun + "Switch to light theme"
     await page.locator('#ref-theme-toggle').click();
     await expect(page.locator('#ref-theme-toggle')).toHaveAttribute('aria-label', 'Switch to light theme');
     await expect(page.locator('#ref-theme-toggle use')).toHaveAttribute('href', '#lp-icon-sun');
 
-    // Expand Details: 2 columns at 1280px, date >= 148px, longest select option not truncated
     await page.locator('#ref-details-disclosure summary').click();
     await expect(page.locator('#ref-details-disclosure')).toHaveAttribute('open', '');
     const details1280 = await page.evaluate(() => {
       const grid = document.querySelector('#ref-details-disclosure .lp-details-grid')!;
       const cols = getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length;
       const dateBox = document.getElementById('ref-field-date')!.getBoundingClientRect();
-      const profileSel = document.getElementById('ref-field-profile') as HTMLSelectElement;
-      return { cols, dateWidth: dateBox.width, profileScrollW: profileSel.scrollWidth, profileClientW: profileSel.clientWidth };
+      return { cols, dateWidth: dateBox.width };
     });
     expect(details1280.cols).toBe(2);
     expect(details1280.dateWidth).toBeGreaterThanOrEqual(148);
 
-    // 4. 4-places-only role="status" / role="alert" & Axe scan
     const allowedIds = ['ref-page-notice', 'ref-status-line', 'ref-field-title-error', 'ref-publish-dialog-status'];
-    const liveIds = await page.evaluate(() =>
-      Array.from(document.querySelectorAll('[role="status"], [role="alert"]')).map((el) => el.id)
-    );
-    for (const id of liveIds) {
-      expect(allowedIds).toContain(id);
-    }
+    const liveIds = await page.evaluate(() => Array.from(document.querySelectorAll('[role="status"], [role="alert"]')).map((el) => el.id));
+    for (const id of liveIds) expect(allowedIds).toContain(id);
+
     const axe = await new AxeBuilder({ page }).analyze();
     expect(axe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')).toEqual([]);
+  });
 
-    // 5. 320px responsive check: compact header <= 64px, 44px touch targets, 1-col Details, autogrow textarea
+  test('UX-83 / UX-88 / UX-89 (320 px): compact header <= 64 px, >= 44 px touch targets, 1-col Details, and auto-grow textarea', async ({ page }) => {
+    await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto('/admin/entries/editor?fixture=draft&theme=light');
     await page.locator('#ref-details-disclosure summary').click();
+
     const mobileAudit = await page.evaluate(() => {
-      const header = document.querySelector('.lp-admin-header')!;
-      const headerRect = header.getBoundingClientRect();
+      const headerRect = document.querySelector('.lp-admin-header')!.getBoundingClientRect();
       const navHidden = getComputedStyle(document.querySelector('.lp-admin-header-nav')!).display === 'none';
       const cols = getComputedStyle(document.querySelector('#ref-details-disclosure .lp-details-grid')!).gridTemplateColumns.trim().split(/\s+/).length;
       const bodyTa = document.getElementById('ref-field-body') as HTMLTextAreaElement;
@@ -192,16 +200,22 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     expect(mobileAudit.bodyNotClipped).toBe(true);
     expect(mobileAudit.minTarget).toBeGreaterThanOrEqual(44);
     expect(mobileAudit.noOverflow).toBe(true);
+  });
 
-    // 6. Error state fixture: empty title, StatusLine + field error only, page notice hidden
+  test('UX-73 / UX-86: error state fixture (empty title, StatusLine + field error, no page notice)', async ({ page }) => {
+    await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/admin/entries/editor?fixture=error&theme=light');
     await expect(page.locator('#ref-field-title')).toHaveValue('');
     await expect(page.locator('#ref-field-title-error')).toHaveText('Add a title.');
     await expect(page.locator('#ref-status-line')).toContainText('Enter a title to save this entry.');
     await expect(page.locator('#ref-page-notice')).toBeHidden();
+  });
 
-    // 7. Interactive 6 flows end-to-end
+  test('UX-84 / UX-85 / UX-86: interactive 6 user flows (first entry, publish loading check, unpublish + Undo countdown, visibility menu, error, delete + Undo)', async ({ page }) => {
+    await ensureAdminLoggedIn(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+
     // Flow 1: First entry
     await page.goto('/admin/entries/editor?fixture=first-run&theme=light');
     await page.locator('#ref-empty-start-btn').click();

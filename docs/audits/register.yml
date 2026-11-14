@@ -4844,7 +4844,7 @@
     - "12.3"
     - "12.5"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -4859,8 +4859,8 @@
       status: partial
       note: "fixed (gallery); confirm in editor at 15.7 — .lp-badge uses --radius-pill (999px), tinted role background/foreground tokens, border: none (0px), and default cursor, while interactive .lp-chip uses --radius-pill with 1px --border-control border. Verified in tests/e2e/wp15-3a-design-foundations.spec.ts and apps/web/src/primitives/foundations.test.ts."
     - date: 2026-11-14
-      status: fixed
-      note: "Confirmed in Reference Editor Page and Checkpoint 2 filmstrip; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts ('enforces D-FOUND-1..6, UX-70..89, 6 states, 6 user flows, and 4-places-only live regions')."
+      status: partial
+      note: "fixed (pending owner review) — Confirmed in Reference Editor Page and Checkpoint 2 filmstrip; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts ('enforces D-FOUND-1..6, UX-70..89, 6 states, 6 user flows, and 4-places-only live regions')."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-71
   audit: AUD-2026-11-06
@@ -4870,7 +4870,7 @@
     - "12.5"
     - "12.8"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -4885,8 +4885,8 @@
       status: partial
       note: "fixed (gallery); confirm in editor at 15.7 — Added self-hosted Lucide ISC 24px SVG sprite (#lp-icon-sprite) at allowed sizes {16, 20, 24} only, replaced text glyphs with SVG symbols, and enforced ghost/outlined IconButton variants with aria-label and hover/focus tooltips. Verified in tests/e2e/wp15-3a-design-foundations.spec.ts and apps/web/src/primitives/foundations.test.ts."
     - date: 2026-11-14
-      status: fixed
-      note: "Confirmed in Reference Editor Page and Checkpoint 2 filmstrip; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts and apps/web/src/pages/admin/entries/editor.test.ts."
+      status: partial
+      note: "fixed (pending owner review) — Confirmed in Reference Editor Page and Checkpoint 2 filmstrip; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts and apps/web/src/pages/admin/entries/editor.test.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-72
   audit: AUD-2026-11-06
@@ -5046,7 +5046,7 @@
     - "12.3"
     - "12.8"
   severity: P2
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -5061,8 +5061,8 @@
       status: partial
       note: "fixed (gallery); confirm in editor at 15.7 — Added hover/focus-visible/active surface fill (--role-neutral-bg), 2px focus ring with 2px offset, and active transform on .lp-btn-quiet and .lp-icon-btn-ghost, rendered across all interactive states in /admin/dev/foundations."
     - date: 2026-11-14
-      status: fixed
-      note: "Confirmed in Reference Editor Page and Checkpoint 2 filmstrip; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts and tests/e2e/wp15-3a-design-foundations.spec.ts."
+      status: partial
+      note: "fixed (pending owner review) — Confirmed in Reference Editor Page and Checkpoint 2 filmstrip; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts and tests/e2e/wp15-3a-design-foundations.spec.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-80
   audit: AUD-2026-11-06
@@ -5093,7 +5093,7 @@
     - "12.3"
     - "12.4"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -5105,8 +5105,8 @@
       status: open
       note: "Registered at Checkpoint 1 review (item 1): Compute and display the actual contrast ratio (e.g. '7.2:1') for every colour-role pair and for control-boundary and focus-ring probes in both light and dark themes, remove hard-coded 'AA Pass' labels, and fail tests if text < 4.5:1 or UI boundary/focus < 3:1. Mapped to WP-15.3a."
     - date: 2026-11-14
-      status: fixed
-      note: "Fixed in WP-15.3a and verified in tests/e2e/wp15-3a-design-foundations.spec.ts ('enforces all Checkpoint 1 foundations rules: contrast ratios, specimens, Details grid, loading/disabled states, link-style notices, icon alignment, 6-state grid, auto-grow textarea, responsive header, and auth guard') and apps/web/src/primitives/foundations.test.ts ('renders /admin/dev/foundations with computed contrast ratios (no AA Pass), theme-specific toggle, and all specimens')."
+      status: partial
+      note: "fixed (pending owner review) — Fixed in WP-15.3a and verified in tests/e2e/wp15-3a-design-foundations.spec.ts ('enforces all Checkpoint 1 foundations rules: contrast ratios, specimens, Details grid, loading/disabled states, link-style notices, icon alignment, 6-state grid, auto-grow textarea, responsive header, and auth guard') and apps/web/src/primitives/foundations.test.ts ('renders /admin/dev/foundations with computed contrast ratios (no AA Pass), theme-specific toggle, and all specimens')."
   verified_by: tests/e2e/wp15-3a-design-foundations.spec.ts
 - id: 20261106-UX-82
   audit: AUD-2026-11-06
@@ -5115,7 +5115,7 @@
     - "12.3"
     - "12.8"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -5127,8 +5127,8 @@
       status: open
       note: "Registered at Checkpoint 1 review (item 2): Add gallery specimens for open Dialog (title, body, primary/secondary actions, focus trap, Esc to close, 16 px radius, elevation), open Menu (items, separated danger item last, keyboard navigation), Select, Checkbox, Radio, tooltip (hover and focus), Disclosure closed and open, 12 px container radius, 16 px overlay radius, elevation levels, border/surface tokens, spacing scale as visible bars, full icon sprite inventory with names, and captions on every icon-button state. Mapped to WP-15.3a."
     - date: 2026-11-14
-      status: fixed
-      note: "Fixed in WP-15.3a and verified in tests/e2e/wp15-3a-design-foundations.spec.ts and apps/web/src/primitives/foundations.test.ts ('renders /admin/dev/foundations with computed contrast ratios (no AA Pass), theme-specific toggle, and all specimens')."
+      status: partial
+      note: "fixed (pending owner review) — Fixed in WP-15.3a and verified in tests/e2e/wp15-3a-design-foundations.spec.ts and apps/web/src/primitives/foundations.test.ts ('renders /admin/dev/foundations with computed contrast ratios (no AA Pass), theme-specific toggle, and all specimens')."
   verified_by: tests/e2e/wp15-3a-design-foundations.spec.ts
 - id: 20261106-UX-83
   audit: AUD-2026-11-06
@@ -5136,7 +5136,7 @@
   spec_sections:
     - "12.6"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -5148,8 +5148,8 @@
       status: open
       note: "Registered at Checkpoint 1 review (item 3): Details disclosure must render the real fields (slug, role profile, visibility, date, temporal confidence) with one-line summary and rotating chevron (never repeating entry state per UX-78), 1 column below 768 px and 2 columns at/above 768 px, date field never narrower than its content, and select values never truncated. Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
-      status: fixed
-      note: "Fixed in WP-15.3a gallery and WP-15.7 Reference Editor Page; verified in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
+      status: partial
+      note: "fixed (pending owner review) — Fixed in WP-15.3a gallery and WP-15.7 Reference Editor Page; verified in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-84
   audit: AUD-2026-11-06
@@ -5158,7 +5158,7 @@
     - "12.3"
     - "12.8"
   severity: P2
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -5170,8 +5170,8 @@
       status: open
       note: "Registered at Checkpoint 1 review (item 4, D-FOUND-5 addition): Loading button keeps full text contrast and shows a spinner with label unchanged or 'Saving...'; a disabled control shows its reason on hover and focus (tooltip) or is not rendered. Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
-      status: fixed
-      note: "Fixed in WP-15.3a gallery and WP-15.7 Reference Editor Page (#ref-btn-save disabled reason tooltip on hover/focus and #ref-publish-confirm loading spinner); verified in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
+      status: partial
+      note: "fixed (pending owner review) — Fixed in WP-15.3a gallery and WP-15.7 Reference Editor Page (#ref-btn-save disabled reason tooltip on hover/focus and #ref-publish-confirm loading spinner); verified in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-85
   audit: AUD-2026-11-06
@@ -5180,7 +5180,7 @@
     - "12.6"
     - "12.7"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -5192,8 +5192,8 @@
       status: open
       note: "Registered at Checkpoint 1 review (item 5, D-FOUND-6 amendment): Notice and StatusLine actions must be link-style text (never a bordered button inside a bordered element; DOM-walk test extended to notices), Notice spans main column width, and tone icon and first line of text are vertically centred on one alignment rule. Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
-      status: fixed
-      note: "Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts, apps/web/src/primitives/foundations.test.ts, and tests/e2e/wp15-7-editor-reference-page.spec.ts."
+      status: partial
+      note: "fixed (pending owner review) — Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts, apps/web/src/primitives/foundations.test.ts, and tests/e2e/wp15-7-editor-reference-page.spec.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-86
   audit: AUD-2026-11-06
@@ -5202,7 +5202,7 @@
     - "12.6"
     - "12.7"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -5214,8 +5214,8 @@
       status: open
       note: "Registered at Checkpoint 1 review (item 6): Only one message is active at a time in any specimen (success and error specimens separate), copy never says 'above' or 'below' (use 'Enter a title to save this entry.' plus field error), and Undo sits directly after its message at every width (including 320 px) with a real countdown. Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
-      status: fixed
-      note: "Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts, apps/web/src/pages/admin/entries/editor.test.ts, and tests/e2e/wp15-7-editor-reference-page.spec.ts."
+      status: partial
+      note: "fixed (pending owner review) — Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts, apps/web/src/pages/admin/entries/editor.test.ts, and tests/e2e/wp15-7-editor-reference-page.spec.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-87
   audit: AUD-2026-11-06
@@ -5224,7 +5224,7 @@
     - "12.5"
     - "12.6"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -5236,8 +5236,8 @@
       status: open
       note: "Registered at Checkpoint 1 review (item 7): Grid specimen must be built from real EntryRow, EmptyState, and editor components with list rows rendered so a count of 1 or 2 shows 1 or 2 rows, and each editor state includes real body, Details, and action bar, verified by the left-edge and width assertion. Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
-      status: fixed
-      note: "Fixed in WP-15.3a gallery and WP-15.7 Reference Editor Page; verified by left-edge and width assertions across all 6 states in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
+      status: partial
+      note: "fixed (pending owner review) — Fixed in WP-15.3a gallery and WP-15.7 Reference Editor Page; verified by left-edge and width assertions across all 6 states in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-88
   audit: AUD-2026-11-06
@@ -5245,7 +5245,7 @@
   spec_sections:
     - "12.6"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -5257,8 +5257,8 @@
       status: open
       note: "Registered at Checkpoint 1 review (item 8): Textarea grows with its content (min 6 rows) and never clips text (scrollHeight <= clientHeight), including at 320 px. Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
-      status: fixed
-      note: "Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
+      status: partial
+      note: "fixed (pending owner review) — Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-89
   audit: AUD-2026-11-06
@@ -5268,7 +5268,7 @@
     - "12.5"
     - "12.8"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -5280,8 +5280,8 @@
       status: open
       note: "Registered at Checkpoint 1 review (item 9): Compact header (brand, theme button, menu button) applies below 768 px only; at >= 768 px the header shows admin navigation. Theme toggle icon shows the mode you will switch to (moon in light mode with aria-label 'Switch to dark theme', sun in dark mode with aria-label 'Switch to light theme', never a half-circle). Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
-      status: fixed
-      note: "Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts, tests/e2e/wp15-7-editor-reference-page.spec.ts, and apps/web/src/pages/admin/entries/editor.test.ts."
+      status: partial
+      note: "fixed (pending owner review) — Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts, tests/e2e/wp15-7-editor-reference-page.spec.ts, and apps/web/src/pages/admin/entries/editor.test.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-90
   audit: AUD-2026-11-06
@@ -5290,7 +5290,7 @@
     - "13.3"
     - "18.1"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
@@ -5302,6 +5302,6 @@
       status: open
       note: "Registered at Checkpoint 1 review (item 10): /admin/dev/foundations requires the admin session and is not built or routed in production (env flag or build exclusion). Mapped to WP-15.3a."
     - date: 2026-11-14
-      status: fixed
-      note: "Fixed in WP-15.3a; verified in apps/web/src/primitives/foundations.test.ts ('enforces admin session authentication on /admin/dev/foundations and excludes the route in production') and tests/e2e/wp15-3a-design-foundations.spec.ts."
+      status: partial
+      note: "fixed (pending owner review) — Fixed in WP-15.3a; verified in apps/web/src/primitives/foundations.test.ts ('enforces admin session authentication on /admin/dev/foundations and excludes the route in production') and tests/e2e/wp15-3a-design-foundations.spec.ts."
   verified_by: apps/web/src/primitives/foundations.test.ts
