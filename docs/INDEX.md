@@ -101,7 +101,8 @@
 | `A093` | WP-15.1 renderer monolith mechanical split | `active` | [A093-wp-151-renderer-monolith-mechanical-split.md](execution-reports/A093-wp-151-renderer-monolith-mechanical-split.md) | — |
 | `A094` | WP-15.2 shared primitives and dev gallery | `active` | [A094-wp-152-shared-primitives-and-dev-gallery.md](execution-reports/A094-wp-152-shared-primitives-and-dev-gallery.md) | — |
 | `A095` | WP-15.3 shared feedback and container components | `active` | [A095-wp-153-shared-feedback-and-container-components.md](execution-reports/A095-wp-153-shared-feedback-and-container-components.md) | — |
-| `A096` | WP-15.7 Reference Editor Page | `active` | [A096-wp-157-reference-editor-page.md](execution-reports/A096-wp-157-reference-editor-page.md) | — |
+| `A096` | WP-15.3a Design Foundations | `active` | [A096-wp-153a-design-foundations.md](execution-reports/A096-wp-153a-design-foundations.md) | — |
+| `A097` | WP-15.7 Reference Editor Page | `active` | [A097-wp-157-reference-editor-page.md](execution-reports/A097-wp-157-reference-editor-page.md) | — |
 
 ## Handover Snapshots (Class H)
 
@@ -161,4 +162,5 @@
 | `L014` | The Living Portfolio Open Source Specification | `active` | [The_Living_Portfolio_Open_Source_Spec.md](spec/The_Living_Portfolio_Open_Source_Spec.md) | — |
 | `L015` | UX Specification Audit Report | `frozen` | [report.md](audits/2026-11-06-ux-specification-audit/report.md) | — |
 | `L016` | Start-Here Onboarding Runbook and Deployment Checklist | `active` | [START-HERE.md](START-HERE.md) | — |
+| `L017` | Design Foundations Specification | `active` | [foundations.md](design/foundations.md) | — |
 

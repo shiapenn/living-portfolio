@@ -30,6 +30,7 @@ import {
   type WebDataClient,
 } from './renderer.js';
 import { renderPrimitivesGalleryPage } from './primitives/gallery.js';
+import { renderFoundationsGalleryPage } from './primitives/foundations-gallery.js';
 import { renderReferenceEditorPage, type ReferenceEditorEntry } from './pages/admin/entries/editor.js';
 
 export interface WebAppOptions {
@@ -175,6 +176,10 @@ export function createWebApp(options?: WebAppOptions) {
   app.get('/admin/settings', async (c) => c.html(await renderAdminSettingsPage(client)));
   if (process.env.NODE_ENV !== 'production') {
     app.get('/admin/dev/primitives', (c) => c.html(renderPrimitivesGalleryPage()));
+    app.get('/admin/dev/foundations', (c) => {
+      const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';
+      return c.html(renderFoundationsGalleryPage(theme));
+    });
   }
 
   const handleReferenceEditor = async (c: any, selectedId?: string) => {
@@ -185,11 +190,21 @@ export function createWebApp(options?: WebAppOptions) {
     const themeParam = c.req.query('theme') === 'dark' ? 'dark' : c.req.query('theme') === 'light' ? 'light' : undefined;
     const baseDraft: ReferenceEditorEntry = {
       id: 'fixture-draft',
-      slug: 'architecture-decision-record',
-      title: 'Architecture decision record',
-      body: 'We chose a single status line under the editor action bar so every result appears in one predictable place.',
+      slug: 'deterministic-sqlite-migrations',
+      title: 'Deterministic SQLite migrations',
+      body: 'We replaced ad-hoc schema patches with a linear migration journal verified in CI.',
       visibility: 'draft',
-      date: '2026-11-13',
+      date: '2026-11-14',
+      temporalConfidence: 'exact',
+      profile: 'case-study',
+    };
+    const secondDraft: ReferenceEditorEntry = {
+      id: 'fixture-second',
+      slug: 'zero-downtime-queue-consumer',
+      title: 'Zero-downtime queue consumer',
+      body: 'Draining in-flight leases cleanly before rotating worker processes.',
+      visibility: 'draft',
+      date: '2026-11-12',
       temporalConfidence: 'exact',
       profile: 'decision',
     };
@@ -203,15 +218,77 @@ export function createWebApp(options?: WebAppOptions) {
         })
       );
     }
-    if (fixture === 'draft' || fixture === 'unlisted' || fixture === 'public' || fixture === 'error') {
-      const vis = fixture === 'unlisted' ? 'unlisted' : fixture === 'public' ? 'public' : 'draft';
+    if (fixture === 'new-draft') {
       return c.html(
         renderReferenceEditorPage({
-          entries: [{ ...baseDraft, visibility: vis }],
+          entries: [{ ...baseDraft, id: 'fixture-new', slug: 'new-entry', title: '', body: '' }],
+          selectedId: 'fixture-new',
+          siteName: cfg.PUBLIC_SITE_NAME,
+          initialTheme: themeParam,
+        })
+      );
+    }
+    if (fixture === 'draft') {
+      return c.html(
+        renderReferenceEditorPage({
+          entries: [baseDraft],
           selectedId: baseDraft.id,
           siteName: cfg.PUBLIC_SITE_NAME,
-          pageError: fixture === 'error' ? 'Could not save this entry. Check the highlighted fields and try again.' : undefined,
-          titleError: fixture === 'error' ? 'Enter a title before saving.' : undefined,
+          statusMessage: 'Draft saved just now.',
+          statusTone: 'info',
+          initialTheme: themeParam,
+        })
+      );
+    }
+    if (fixture === 'error') {
+      return c.html(
+        renderReferenceEditorPage({
+          entries: [{ ...baseDraft, title: '' }],
+          selectedId: baseDraft.id,
+          siteName: cfg.PUBLIC_SITE_NAME,
+          titleError: 'Add a title.',
+          statusMessage: 'Enter a title to save this entry.',
+          statusTone: 'danger',
+          initialTheme: themeParam,
+        })
+      );
+    }
+    if (fixture === 'unlisted') {
+      const unlistedEntry: ReferenceEditorEntry = {
+        ...baseDraft,
+        id: 'fixture-unlisted',
+        slug: 'zero-downtime-queue-consumer',
+        title: 'Zero-downtime queue consumer',
+        body: 'Draining in-flight leases cleanly before rotating worker processes.',
+        visibility: 'unlisted',
+      };
+      return c.html(
+        renderReferenceEditorPage({
+          entries: [unlistedEntry, secondDraft],
+          selectedId: unlistedEntry.id,
+          siteName: cfg.PUBLIC_SITE_NAME,
+          statusMessage: 'Entry is now unlisted.',
+          statusTone: 'ok',
+          initialTheme: themeParam,
+        })
+      );
+    }
+    if (fixture === 'public') {
+      const publicEntry: ReferenceEditorEntry = {
+        ...baseDraft,
+        id: 'fixture-public',
+        slug: 'designing-resilient-webhook-retries',
+        title: 'Designing resilient webhook retries',
+        body: 'Idempotency keys and dead-letter replay controls kept delivery above 99.98%.',
+        visibility: 'public',
+      };
+      return c.html(
+        renderReferenceEditorPage({
+          entries: [publicEntry, { ...secondDraft, visibility: 'unlisted' }],
+          selectedId: publicEntry.id,
+          siteName: cfg.PUBLIC_SITE_NAME,
+          statusMessage: 'Entry is now public.',
+          statusTone: 'ok',
           initialTheme: themeParam,
         })
       );

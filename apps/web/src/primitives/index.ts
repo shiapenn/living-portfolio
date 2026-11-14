@@ -1,3 +1,5 @@
+export { renderIcon, renderIconSprite, LUCIDE_ICON_NAMES } from './icons.js';
+export type { IconName, IconProps, IconSize } from './icons.js';
 export { renderButton, renderIconButton } from './button.js';
 export type { ButtonProps, ButtonSize, ButtonVariant, IconButtonProps } from './button.js';
 export { renderChip, renderBadge, renderStatusDot } from './chip.js';
@@ -6,3 +8,4 @@ export { renderSwitch } from './switch.js';
 export type { SwitchProps } from './switch.js';
 export { renderField } from './field.js';
 export type { FieldProps, SelectOption } from './field.js';
+export { renderFoundationsGalleryPage } from './foundations-gallery.js';

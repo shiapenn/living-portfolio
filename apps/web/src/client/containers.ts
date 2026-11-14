@@ -144,6 +144,13 @@ export interface StatusLineUpdate {
 
 const activeTimers = new WeakMap<HTMLElement, number>();
 
+const TONE_ICONS: Record<'info' | 'ok' | 'warn' | 'danger', string> = {
+  info: 'info',
+  ok: 'check-circle',
+  warn: 'alert-triangle',
+  danger: 'alert-circle',
+};
+
 /**
  * Updates a StatusLine live region cleanly once and optionally runs a real-countdown Undo timer.
  */
@@ -160,16 +167,38 @@ export function updateStatusLine(statusEl: HTMLElement, update: StatusLineUpdate
   statusEl.setAttribute('aria-live', tone === 'danger' ? 'assertive' : 'polite');
   statusEl.innerHTML = '';
 
+  if (update.message) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'lp-icon lp-icon-16 lp-status-icon');
+    svg.setAttribute('width', '16');
+    svg.setAttribute('height', '16');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+    use.setAttribute('href', `#lp-icon-${TONE_ICONS[tone]}`);
+    svg.appendChild(use);
+    statusEl.appendChild(svg);
+  }
+
+  const bodySpan = document.createElement('span');
+  bodySpan.className = 'lp-status-line-body';
   const textSpan = document.createElement('span');
   textSpan.className = 'lp-status-line-text';
   textSpan.textContent = update.message;
-  statusEl.appendChild(textSpan);
+  bodySpan.appendChild(textSpan);
 
   if (update.undoLabel && update.undoSeconds && update.undoSeconds > 0 && update.onUndo) {
     let remaining = update.undoSeconds;
+    bodySpan.appendChild(document.createTextNode(' '));
     const undoBtn = document.createElement('button');
     undoBtn.type = 'button';
-    undoBtn.className = 'lp-btn lp-btn-quiet lp-btn-sm lp-status-undo';
+    undoBtn.className = 'lp-status-undo lp-status-undo-link';
     undoBtn.textContent = `${update.undoLabel} (${remaining}s)`;
     undoBtn.addEventListener('click', () => {
       const t = activeTimers.get(statusEl);
@@ -180,7 +209,7 @@ export function updateStatusLine(statusEl: HTMLElement, update: StatusLineUpdate
       undoBtn.remove();
       update.onUndo?.();
     });
-    statusEl.appendChild(undoBtn);
+    bodySpan.appendChild(undoBtn);
 
     const timer = window.setInterval(() => {
       remaining -= 1;
@@ -194,4 +223,5 @@ export function updateStatusLine(statusEl: HTMLElement, update: StatusLineUpdate
     }, 1000);
     activeTimers.set(statusEl, timer);
   }
+  statusEl.appendChild(bodySpan);
 }

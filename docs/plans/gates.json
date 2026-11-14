@@ -404,12 +404,13 @@
     },
     "WP-15": {
       "name": "Work Package 15 (Gate G15 Foundations, Monolith Split, Shared Building Blocks & Reference Editor Page)",
-      "description": "DOM-id baseline & deferred zod/vitest migrations (WP-15.0), mechanical monolith split (WP-15.1), shared building blocks in one place (WP-15.2 controls/fields, WP-15.3 four D-FEEDBACK message places, Dialog, Drawer, Tabs), Reference Editor Page built to D-WORKSPACE, D-EDITOR, D-FEEDBACK, and D-HELP with interaction contract test across draft, unlisted, public, error, empty, and first-run states (WP-15.7), and then token tiers (WP-15.4), copy and help catalogues (WP-15.5), and CI guard rails (WP-15.6) applied to that real page (UI-01 part, UI-03 part, UX-12 part, UX-13, UX-14, UX-15, UX-23, UX-25, UX-29 part, UX-37 part, UX-38, UX-43 part, UX-51 part, UX-53, UX-54, UX-55, UX-56, UX-60, UX-61, UX-62, UX-63, UX-64, UX-65, UX-66, UX-67, UX-68, UX-69, CP-01 part, CP-12 part, CP-13 part).",
+      "description": "DOM-id baseline & deferred zod/vitest migrations (WP-15.0), mechanical monolith split (WP-15.1), shared building blocks in one place (WP-15.2 controls/fields, WP-15.3 four D-FEEDBACK message places, Dialog, Drawer, Tabs), Design Foundations (WP-15.3a: D-FOUND-1..6, tokens, SVG icon sprite, foundations gallery), Reference Editor Page built to D-WORKSPACE, D-EDITOR, D-FEEDBACK, and D-HELP (WP-15.7: rework after 15.3a), and then token tiers (WP-15.4), copy and help catalogues (WP-15.5), and CI guard rails (WP-15.6) applied to that real page (UI-01 part, UI-03 part, UX-12 part, UX-13, UX-14, UX-15, UX-23, UX-25, UX-29 part, UX-37 part, UX-38, UX-43 part, UX-51 part, UX-53, UX-54, UX-55, UX-56, UX-60, UX-61, UX-62, UX-63, UX-64, UX-65, UX-66, UX-67, UX-68, UX-69, UX-70, UX-71, UX-72, UX-73, UX-74, UX-75, UX-76, UX-77, UX-78, UX-79, UX-80, UX-81, UX-82, UX-83, UX-84, UX-85, UX-86, UX-87, UX-88, UX-89, UX-90, CP-01 part, CP-12 part, CP-13 part).",
       "requiredTaskIds": [
         "WP-15.0",
         "WP-15.1",
         "WP-15.2",
         "WP-15.3",
+        "WP-15.3a",
         "WP-15.7",
         "WP-15.4",
         "WP-15.5",
