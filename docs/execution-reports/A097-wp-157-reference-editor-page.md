@@ -6,7 +6,7 @@
 | Date | 2026-11-14 |
 | Author | A (Implementer) |
 | Task ID | `WP-15.7` |
-| Evidence SHA | `7fda204` |
+| Evidence SHA | `3605acd` |
 | CI run | `feat/wp-15-7-editor-reference-page` (pending PR CI; local `pnpm verify` 14/14 + `pnpm test:e2e` 85/85 passed) |
 
 ---
@@ -21,13 +21,13 @@ WP-15.7 reworks the Reference Editor Page (`/admin/entries/editor`, `/admin/entr
 
 ## 2. CI Evidence
 
-- `pnpm --filter @living-portfolio/web test`: 77/77 passed (`editor.test.ts`: 3/3, `foundations.test.ts`: 8/8, `components.test.ts`: 6/6, `primitives.test.ts`: 6/6, `web.test.ts`: 54/54).
+- `pnpm --filter @living-portfolio/web test`: 78/78 passed (`editor.test.ts`: 4/4, `foundations.test.ts`: 8/8, `components.test.ts`: 6/6, `primitives.test.ts`: 6/6, `web.test.ts`: 54/54).
 - `pnpm verify`: 14/14 gates passed.
-- `pnpm test:e2e`: 84/84 Playwright E2E tests passed (including `wp15-7-editor-reference-page.spec.ts`).
+- `pnpm exec playwright test tests/e2e/wp15-7-editor-reference-page.spec.ts`: 9/9 passed (including admin session & non-production route gating).
 
 ## 3. Tests Added and Count Change
 
-- Count change: `apps/web` `77` tests (+3 from `74` in `A096`, `editor.test.ts`: 3/3); E2E `84` tests (`wp15-7-editor-reference-page.spec.ts` covers all 6 states, 6 interactive flows, computed styles, 4-places-only live regions, axe, and Checkpoint 2 filmstrip capture).
+- Count change: `apps/web` `78` tests (+4 from `74` in `A096`, `editor.test.ts`: 4/4); E2E `wp15-7-editor-reference-page.spec.ts` `9` tests (covers admin session auth, all 6 states, 6 interactive flows, computed styles, 4-places-only live regions, axe, and Checkpoint 2 filmstrip capture).
 
 ## 4. Files Touched
 
