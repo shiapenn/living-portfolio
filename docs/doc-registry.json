@@ -1105,5 +1105,13 @@
     "path": "docs/execution-reports/A096-wp-153a-design-foundations.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A097",
+    "title": "WP-15.7 Reference Editor Page",
+    "class": "A",
+    "path": "docs/execution-reports/A097-wp-157-reference-editor-page.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
