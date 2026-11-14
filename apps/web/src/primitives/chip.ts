@@ -1,13 +1,15 @@
 import { escapeHtml } from '../lib/html.js';
 
 export type ChipState = 'confirmed' | 'suggested';
-export type StatusTone = 'neutral' | 'ok' | 'warn' | 'danger';
+export type StatusTone = 'neutral' | 'ok' | 'warn' | 'danger' | 'info' | 'action';
 
 export interface ChipProps {
   label: string;
   state?: ChipState;
   interactive?: boolean;
   selected?: boolean;
+  disabled?: boolean;
+  title?: string;
   id?: string;
   className?: string;
   dataAttrs?: Record<string, string>;
@@ -51,7 +53,9 @@ export function renderChip(props: ChipProps): string {
   const data = formatDataAttrs(props.dataAttrs);
   if (props.interactive) {
     const pressed = props.selected !== undefined ? ` aria-pressed="${props.selected ? 'true' : 'false'}"` : '';
-    return `<button type="button" class="${escapeHtml(classes)}"${idAttr}${pressed}${data}>${escapeHtml(props.label)}</button>`;
+    const disabledAttr = props.disabled ? ' disabled' : '';
+    const titleAttr = props.title ? ` title="${escapeHtml(props.title)}"` : '';
+    return `<button type="button" class="${escapeHtml(classes)}"${idAttr}${pressed}${disabledAttr}${titleAttr}${data}>${escapeHtml(props.label)}</button>`;
   }
   return `<span class="${escapeHtml(classes)}"${idAttr}${data}>${escapeHtml(props.label)}</span>`;
 }

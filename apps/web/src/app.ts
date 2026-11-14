@@ -30,6 +30,7 @@ import {
   type WebDataClient,
 } from './renderer.js';
 import { renderPrimitivesGalleryPage } from './primitives/gallery.js';
+import { renderFoundationsGalleryPage } from './primitives/foundations-gallery.js';
 
 export interface WebAppOptions {
   client?: LivingPortfolioClient | WebDataClient;
@@ -174,6 +175,10 @@ export function createWebApp(options?: WebAppOptions) {
   app.get('/admin/settings', async (c) => c.html(await renderAdminSettingsPage(client)));
   if (process.env.NODE_ENV !== 'production') {
     app.get('/admin/dev/primitives', (c) => c.html(renderPrimitivesGalleryPage()));
+    app.get('/admin/dev/foundations', (c) => {
+      const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';
+      return c.html(renderFoundationsGalleryPage(theme));
+    });
   }
 
   // Public visitor booking & escalation status routes

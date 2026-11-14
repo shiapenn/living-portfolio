@@ -53,8 +53,8 @@ export function renderField(props: FieldProps): string {
 
   let controlHtml = '';
   if (props.kind === 'textarea') {
-    const rows = props.rows ?? 4;
-    controlHtml = `<textarea id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-input lp-textarea" rows="${rows}"${placeholderAttr}${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}>${escapeHtml(props.value ?? '')}</textarea>`;
+    const rows = Math.max(6, props.rows ?? 6);
+    controlHtml = `<textarea id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-input lp-textarea" rows="${rows}" data-lp-autogrow="true"${placeholderAttr}${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}>${escapeHtml(props.value ?? '')}</textarea>`;
   } else if (props.kind === 'select') {
     const opts = (props.options ?? [])
       .map((opt) => {

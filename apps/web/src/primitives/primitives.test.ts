@@ -36,7 +36,7 @@ describe('WP-15.2 Shared Primitives', () => {
       variant: 'quiet',
     });
     expect(btn).toContain('<button');
-    expect(btn).toContain('class="lp-icon-btn lp-btn-quiet"');
+    expect(btn).toContain('class="lp-icon-btn lp-btn-quiet lp-icon-btn-ghost"');
     expect(btn).toContain('aria-label="Close dialog"');
     expect(btn).toContain('type="button"');
   });
