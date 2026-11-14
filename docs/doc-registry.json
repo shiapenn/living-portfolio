@@ -1137,5 +1137,13 @@
     "path": "docs/execution-reports/A100-wp-154-token-tiers-and-editor-wiring.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A101",
+    "title": "wp-155-copy-and-help-catalogues",
+    "class": "A",
+    "path": "docs/execution-reports/A101-wp-155-copy-and-help-catalogues.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
