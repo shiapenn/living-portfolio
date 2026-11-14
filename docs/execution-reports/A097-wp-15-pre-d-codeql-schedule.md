@@ -32,6 +32,7 @@ WP-15.pre-d reduces GitHub Actions minutes by running `.github/workflows/codeql.
 - `.github/workflows/codeql.yml`
 - `docs/INDEX.md`
 - `docs/doc-registry.json`
+- `docs/execution-reports/A096-wp-153a-design-foundations.md`
 
 ## 5. Register and Backlog Changes
 
