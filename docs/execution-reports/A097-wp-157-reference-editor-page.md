@@ -6,7 +6,7 @@
 | Date | 2026-11-14 |
 | Author | A (Implementer) |
 | Task ID | `WP-15.7` |
-| Evidence SHA | `a964f47` |
+| Evidence SHA | `7fda204` |
 | CI run | `feat/wp-15-7-editor-reference-page` (pending PR CI; local `pnpm verify` 14/14 + `pnpm test:e2e` 85/85 passed) |
 
 ---
@@ -45,6 +45,8 @@ WP-15.7 reworks the Reference Editor Page (`/admin/entries/editor`, `/admin/entr
 - `docs/doc-registry.json`
 - `docs/execution-reports/A096-wp-153a-design-foundations.md`
 - `docs/execution-reports/A097-wp-157-reference-editor-page.md`
+- `docs/plans/P004-ux-remediation-work-packages.md`
+- `tests/e2e/wp15-3a-design-foundations.spec.ts`
 - `tests/e2e/wp15-7-editor-reference-page.spec.ts`
 
 ## 5. Register and Backlog Changes
