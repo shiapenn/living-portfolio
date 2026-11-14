@@ -1129,5 +1129,13 @@
     "path": "docs/execution-reports/A099-wp-15-pre-d-codeql-schedule.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A100",
+    "title": "WP-15.4 Token Tiers and Editor Wiring",
+    "class": "A",
+    "path": "docs/execution-reports/A100-wp-154-token-tiers-and-editor-wiring.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
