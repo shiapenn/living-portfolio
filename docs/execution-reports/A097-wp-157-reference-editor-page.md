@@ -6,17 +6,17 @@
 | Date | 2026-11-14 |
 | Author | A (Implementer) |
 | Task ID | `WP-15.7` |
-| Evidence SHA | `b440288` |
-| CI run | `feat/wp-15-7-editor-reference-page` (pending PR CI; local `pnpm verify` 14/14 + `pnpm test:e2e` 84/84 passed) |
+| Evidence SHA | `a964f47` |
+| CI run | `feat/wp-15-7-editor-reference-page` (pending PR CI; local `pnpm verify` 14/14 + `pnpm test:e2e` 85/85 passed) |
 
 ---
 
 ## 1. Scope
 
 WP-15.7 reworks the Reference Editor Page (`/admin/entries/editor`, `/admin/entries/new`, and `/admin/entries/:id`) on top of the `WP-15.3a` Design Foundations (`D-FOUND-1`..`D-FOUND-6`, `D-WORKSPACE`, `D-EDITOR`, `D-FEEDBACK`, `D-HELP`, `UX-70`..`UX-89`):
-- [implemented] `apps/web/src/pages/admin/entries/editor.ts` (327 lines): slim admin header with desktop section navigation at `>= 768 px`, compact `<= 64 px` header below `768 px`, target-mode `moon`/`sun` theme toggle (`"Switch to dark theme"` / `"Switch to light theme"`), self-hosted SVG sprite (`#lp-icon-sprite`, zero text glyphs), `260 px` sidebar with pill count badge + `720 px` max main column, borderless pill badges, auto-growing writing surface in reading face, hairline `"Details"` disclosure with 1-col/2-col field layout and summary omitting entry state (`UX-78`), state-driven action bar, link-style `StatusLine` Undo, embedded first-run guide in `EmptyState` (`UX-74`), and zero inline `style=` attributes.
-- [implemented] `apps/web/src/client/admin/editor-page.ts` (331 lines): client controller for auto-growing textarea, target-mode theme toggle, menu keyboard navigation, 6 entry flows (first entry, publish with auto-scan & dynamic step numbering, live 8s Undo countdown, visibility via menu, empty-title inline + StatusLine error without page notice, delete from `More` menu with confirm dialog & Undo).
-- [implemented] `apps/web/src/strings/admin/editor.ts` (128 lines): plain owner-facing strings catalogue and `formatCount` plural helper with zero internal jargon or directional copy (`"above"`/`"below"`).
+- [implemented] `apps/web/src/pages/admin/entries/editor.ts` (378 lines): slim admin header with desktop section navigation at `>= 768 px`, compact `<= 64 px` header below `768 px`, target-mode `moon`/`sun` theme toggle (`"Switch to dark theme"` / `"Switch to light theme"`), self-hosted SVG sprite (`#lp-icon-sprite`, zero text glyphs), `260 px` sidebar with pill count badge + `720 px` max main column, borderless pill badges, auto-growing writing surface in reading face, hairline `"Details"` disclosure with 1-col/2-col field layout and summary omitting entry state (`UX-78`), state-driven action bar with disabled reason tooltip, link-style `StatusLine` Undo, embedded first-run guide in `EmptyState` (`UX-74`), and zero inline `style=` attributes.
+- [implemented] `apps/web/src/client/admin/editor-page.ts` (530 lines): client controller for auto-growing textarea, target-mode theme toggle, menu keyboard navigation, 6 entry flows (first entry, publish with loading auto-scan & dynamic step numbering, live 8s Undo countdown, visibility via menu, empty-title inline + StatusLine error without page notice, delete from `More` menu with confirm dialog & Undo).
+- [implemented] `apps/web/src/strings/admin/editor.ts` (140 lines): plain owner-facing strings catalogue and `formatCount` plural helper with zero internal jargon or directional copy (`"above"`/`"below"`).
 - [implemented] Playwright E2E conformance & Checkpoint 2 filmstrip (`tests/e2e/wp15-7-editor-reference-page.spec.ts`) covering all 6 states, computed-style assertions, 4-places-only `role="status"`/`role="alert"`, axe scan, and step-by-step filmstrip flows at `1280` and `320` px in `light` and `dark` themes.
 
 ## 2. CI Evidence
@@ -41,6 +41,7 @@ WP-15.7 reworks the Reference Editor Page (`/admin/entries/editor`, `/admin/entr
 - `apps/web/src/strings/admin/editor.ts`
 - `apps/web/src/styles.ts`
 - `docs/INDEX.md`
+- `docs/audits/register.yml`
 - `docs/doc-registry.json`
 - `docs/execution-reports/A096-wp-153a-design-foundations.md`
 - `docs/execution-reports/A097-wp-157-reference-editor-page.md`
