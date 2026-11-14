@@ -1113,5 +1113,13 @@
     "path": "docs/execution-reports/A097-wp-157-reference-editor-page.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A098",
+    "title": "WP-15.pre-e Triage Allowlist",
+    "class": "A",
+    "path": "docs/execution-reports/A098-wp-15pre-e-triage-allowlist.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
