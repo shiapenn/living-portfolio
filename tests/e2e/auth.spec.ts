@@ -493,7 +493,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
       })
     );
     await saveBtn.click();
-    await expect(statusLine).toContainText('Security check failed (CSRF token invalid or missing)');
+    await expect(statusLine).toContainText("You don't have permission to perform this action");
     await expect(statusLine).not.toContainText('Saved');
 
     await page.unroute(/\/api\/entries/);
@@ -507,7 +507,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
       })
     );
     await saveBtn.click();
-    await expect(statusLine).toContainText('Server error (HTTP 500)');
+    await expect(statusLine).toContainText('Wait a moment and try again.');
     await expect(statusLine).not.toContainText('Saved');
 
     await page.unroute(/\/api\/entries/);
