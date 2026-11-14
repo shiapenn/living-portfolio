@@ -55,6 +55,8 @@ All receipt checks PASSED.
 
 ## 9. Handover Decision
 
-- Decision: NOT NEEDED
+- Decision: NOT REQUIRED
 - Rule(s): HO-R1
+- Receipts since last handover: 7 (A091, A092, A093, A094, A095, A096, A097); work packages since: 0
+- Clean-boundary preconditions: met
 - Next action: Merge `chore/wp-15-pre-d-codeql-schedule` into `main` on green CI.
