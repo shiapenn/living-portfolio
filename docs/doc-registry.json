@@ -1108,9 +1108,17 @@
   },
   {
     "id": "A097",
+    "title": "WP-15.7 Reference Editor Page",
+    "class": "A",
+    "path": "docs/execution-reports/A097-wp-157-reference-editor-page.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "A098",
     "title": "WP-15.pre-d CodeQL Weekly Schedule and Manual Dispatch",
     "class": "A",
-    "path": "docs/execution-reports/A097-wp-15-pre-d-codeql-schedule.md",
+    "path": "docs/execution-reports/A098-wp-15-pre-d-codeql-schedule.md",
     "status": "active",
     "supersedes": null
   }

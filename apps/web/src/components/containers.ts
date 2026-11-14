@@ -23,6 +23,7 @@ export interface DisclosureProps {
   id: string;
   summary: string;
   summaryMeta?: string;
+  summaryMetaId?: string;
   bodyHtml: string;
   open?: boolean;
   className?: string;
@@ -81,6 +82,9 @@ export interface EmptyStateProps {
   body: string;
   actionHtml?: string;
   guideSteps?: EmptyStateGuideStep[];
+  /** Optional ghost dismiss control placed at the top right of the container (D-FOUND-1). */
+  dismissHtml?: string;
+  hidden?: boolean;
   className?: string;
 }
 
@@ -148,12 +152,13 @@ export function renderDrawer(props: DrawerProps): string {
 export function renderDisclosure(props: DisclosureProps): string {
   const classes = ['lp-disclosure', props.className].filter(Boolean).join(' ');
   const openAttr = props.open ? ' open' : '';
+  const metaIdAttr = props.summaryMetaId ? ` id="${escapeHtml(props.summaryMetaId)}"` : '';
   const chevron = renderIcon({ name: 'chevron-down', size: 16, className: 'lp-disclosure-chevron' });
   return `<details id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}"${openAttr}>
   <summary class="lp-disclosure-summary">
     <span class="lp-disclosure-label">${escapeHtml(props.summary)}</span>
     <span class="lp-disclosure-summary-end">
-      ${props.summaryMeta ? `<span class="lp-disclosure-meta">${escapeHtml(props.summaryMeta)}</span>` : ''}
+      ${props.summaryMeta ? `<span class="lp-disclosure-meta"${metaIdAttr}>${escapeHtml(props.summaryMeta)}</span>` : ''}
       ${chevron}
     </span>
   </summary>
@@ -256,7 +261,9 @@ export function renderEmptyState(props: EmptyStateProps): string {
           .join('')}</ol></div>`
       : '';
 
-  return `<div class="${escapeHtml(classes)}"${idAttr}>
+  const hiddenAttr = props.hidden ? ' hidden' : '';
+  return `<div class="${escapeHtml(classes)}"${idAttr}${hiddenAttr}>
+  ${props.dismissHtml ? `<div class="lp-empty-dismiss">${props.dismissHtml}</div>` : ''}
   <h3 class="lp-empty-title">${escapeHtml(props.title)}</h3>
   <p class="lp-empty-body">${escapeHtml(props.body)}</p>
   ${guideHtml}
