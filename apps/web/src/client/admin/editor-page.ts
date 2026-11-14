@@ -5,6 +5,7 @@ import {
   updateStatusLine,
 } from '../containers.js';
 import { EDITOR_STRINGS } from '../../strings/admin/editor.js';
+import { formatActionableError } from '../../strings/formatters.js';
 
 type Visibility = 'draft' | 'unlisted' | 'public';
 
@@ -348,18 +349,12 @@ function bootEditorPage(): void {
     };
   };
 
-  const formatApiError = (status: number, data: any): string => {
-    if (status === 401) {
-      return 'Your session has expired. Sign in again at /admin/login.';
-    }
-    if (status === 403) {
-      return 'Security check failed (CSRF token invalid or missing). Reload and sign in again.';
-    }
-    if (status >= 500) {
-      return `Server error (HTTP ${status}). Please try again.`;
-    }
-    return data?.error || data?.message || EDITOR_STRINGS.feedback.saveFailed;
-  };
+  const formatApiError = (status: number, data: any): string =>
+    formatActionableError({
+      status,
+      message: data?.error || data?.message,
+      action: 'save this entry',
+    });
 
   const persistEntry = async (vis: Visibility): Promise<{ ok: boolean; error?: string }> => {
     const payload = buildPayload(vis);
