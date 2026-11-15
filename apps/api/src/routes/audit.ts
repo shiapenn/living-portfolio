@@ -13,6 +13,19 @@ export function createAuditRoutes(repo: IPortfolioRepository, answerCache?: Answ
     return c.json({ constraints });
   });
 
+  router.post('/scoped-constraints', async (c) => {
+    const body = await c.req.json();
+    const constraint = body?.constraint && typeof body.constraint === 'object' ? body.constraint : { guidance: String(body?.source_quote || '') };
+    const saved = await repo.saveScopedConstraint({
+      constraint,
+      scope: body?.scope && typeof body.scope === 'object' ? body.scope : {},
+      source_escalation: typeof body?.source_escalation === 'string' ? body.source_escalation : undefined,
+      source_quote: String(body?.source_quote || 'Owner rule'),
+      status: 'proposed',
+    });
+    return c.json({ constraint: saved }, 201);
+  });
+
   router.patch('/scoped-constraints/:id', async (c) => {
     const id = c.req.param('id');
     const { status } = await c.req.json();

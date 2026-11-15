@@ -13,6 +13,8 @@ import {
   renderAdminEntriesPage,
   renderDedicatedEditorPage,
   renderEntryHistoryPage,
+  renderAdminInboxPage,
+  renderAdminAuditRulesPage,
   renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
@@ -206,16 +208,22 @@ export function createWebApp(options?: WebAppOptions) {
     const html = await renderEntryHistoryPage(client, c.req.param('id'), { siteName: cfg.PUBLIC_SITE_NAME });
     return html ? c.html(html) : c.html(renderNotFoundPage(), 404);
   });
+  app.get('/admin/inbox', async (c) =>
+    c.html(await renderAdminInboxPage(client, { status: c.req.query('status'), siteName: cfg.PUBLIC_SITE_NAME }))
+  );
+  app.get('/admin/inbox/:id', async (c) =>
+    c.html(await renderAdminInboxPage(client, { selectedId: c.req.param('id'), siteName: cfg.PUBLIC_SITE_NAME }))
+  );
+  app.get('/admin/audit', async (c) =>
+    c.html(await renderAdminAuditRulesPage(client, { status: c.req.query('status'), siteName: cfg.PUBLIC_SITE_NAME }))
+  );
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
   app.get('/admin/settings', async (c) => c.html(await renderAdminSettingsPage(client)));
   const adminSectionRoutes = [
     '/admin/quick-log',
     '/quick-log',
     '/admin/pages',
-    '/admin/inbox',
-    '/admin/inbox/:id',
     '/admin/bookings',
-    '/admin/audit',
     '/admin/calibration',
     '/admin/structure',
     '/admin/routing',
