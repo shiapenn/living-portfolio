@@ -180,9 +180,11 @@ function bootEditorPage(): void {
     sidebarToggle.setAttribute('aria-expanded', collapsed ? 'true' : 'false');
   });
 
-  // Structure & History drawers
+  // Structure & History drawers & right-hand Inspector tabs
   const structureTabs = document.getElementById('ref-structure-tabs');
   if (structureTabs) initTabs(structureTabs);
+  const inspectorTabs = document.getElementById('ref-inspector-tabs');
+  if (inspectorTabs) initTabs(inspectorTabs);
 
   const structureDrawerEl = document.getElementById('ref-structure-drawer');
   const structureBtn = document.getElementById('ref-btn-structure');
