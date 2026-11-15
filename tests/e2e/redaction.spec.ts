@@ -4,7 +4,7 @@ import { ensureAdminLoggedIn } from './helpers.js';
 test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview Token E2E Suite (WP-15.4)', () => {
   test('1. Pre-publish redaction check, exclusion matching, error state, and NDA confirmation gate (UX-03)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
 
     // Configure test exclusions dynamically via admin settings endpoint
     await page.evaluate(async () => {

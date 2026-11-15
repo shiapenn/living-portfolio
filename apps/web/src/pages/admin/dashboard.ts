@@ -14,6 +14,7 @@ export interface DashboardOptions {
   draftCount?: number;
   buildFailed?: boolean;
   backupOverdue?: boolean;
+  legacyRecoveryUsed?: boolean;
 }
 
 interface AttentionItem {
@@ -169,5 +170,6 @@ ${items
     nonce: options.nonce,
     siteName: options.siteName,
     answeringEnabled: options.answeringEnabled,
+    legacyRecoveryUsed: options.legacyRecoveryUsed,
   });
 }

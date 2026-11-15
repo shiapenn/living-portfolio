@@ -6,7 +6,7 @@ test.describe.serial('WP-14.2: State badge and date correctness (UX-10, UX-11, U
 
   test('1. State badge displays Draft, Public, and Unlisted across lifecycle actions (UX-10)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
 
     const stateBadge = page.locator('#ref-state-badge');
     await expect(stateBadge).toBeVisible();
@@ -45,7 +45,7 @@ test.describe.serial('WP-14.2: State badge and date correctness (UX-10, UX-11, U
     const pageErrors: Error[] = [];
     page.on('pageerror', (err) => pageErrors.push(err));
 
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
     await page.locator('#ref-details-disclosure summary').click();
 
     const dateInput = page.locator('#ref-field-date');

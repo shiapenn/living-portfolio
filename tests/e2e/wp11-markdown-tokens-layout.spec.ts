@@ -6,7 +6,7 @@ test.describe('WP-11.4: Full Markdown Engine, Design Tokens & Responsive Multi-P
     page,
   }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin');
+    await page.goto('/admin/entries/new');
     await expect(page.locator('#ref-main')).toBeVisible();
 
     // Desktop viewport (1280px)
@@ -23,7 +23,7 @@ test.describe('WP-11.4: Full Markdown Engine, Design Tokens & Responsive Multi-P
     page,
   }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
 
     const titleInput = page.locator('#ref-field-title');
     const textarea = page.locator('#ref-field-body');

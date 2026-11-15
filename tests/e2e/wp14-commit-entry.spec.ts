@@ -10,7 +10,7 @@ test.describe.serial('WP-14.1: Entry lifecycle and state machine on Reference Ed
     page,
   }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
 
     const saveBtn = page.locator('#ref-btn-save');
     const openDialogBtn = page.locator('#ref-btn-publish');

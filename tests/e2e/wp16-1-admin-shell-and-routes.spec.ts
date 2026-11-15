@@ -96,7 +96,7 @@ test.describe('WP-16.1 Admin Shell & Route Registry', () => {
 
   test('every §6.4 admin route renders 200 with title, h1, skip link, and zero public nav/footer when signed in', async ({ page }) => {
     await ensureAdminLoggedIn(page);
-    const shellRoutes = ADMIN_ROUTES.filter((r) => r !== '/admin' && !r.startsWith('/admin/entries/'));
+    const shellRoutes = ADMIN_ROUTES.filter((r) => !r.startsWith('/admin/entries/'));
     for (const route of shellRoutes) {
       const res = await page.goto(route);
       expect(res?.status()).toBe(200);

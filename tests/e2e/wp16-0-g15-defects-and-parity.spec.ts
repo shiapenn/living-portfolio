@@ -5,7 +5,7 @@ import { ensureAdminLoggedIn } from './helpers.js';
 test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
   test('UX-96: draft buffer autosave, reload restore prompt, Discard, beforeunload guard, and offline banner on real /admin', async ({ page }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
 
     const titleVal = `Buffered Draft ${Date.now()}`;
     const bodyVal = 'Unsaved writing that must survive a full page reload.';
@@ -46,7 +46,7 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
 
   test('UX-97: More and Visibility menus use shared Menu keyboard navigation (Enter focuses first item, ArrowDown moves, Escape returns focus)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
     await page.fill('#ref-field-title', `Menu Nav Entry ${Date.now()}`);
     await page.fill('#ref-field-body', 'Body for menu keyboard navigation check.');
     await page.locator('#ref-btn-save').click();
@@ -77,7 +77,7 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
 
   test('UX-98 & UX-99: Publish dialog hides saved status line (single active message place) and lists matched private details with jump link', async ({ page }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
     const secretToken = ['sk', 'live', 'testsecret9876543210'].join('-');
     await page.fill('#ref-field-title', `Publish Scan Entry ${Date.now()}`);
     await page.fill('#ref-field-body', `Before secret. Using ${secretToken} in this draft.`);
@@ -129,7 +129,7 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     }
 
     // UX-103: zero duplicate banner landmark when overlays (Publish dialog / Structure drawer) are open
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
     await page.fill('#ref-field-title', `Landmark Check ${Date.now()}`);
     await page.fill('#ref-field-body', 'Clean body for landmark check.');
     await page.locator('#ref-btn-publish').click();
@@ -152,7 +152,7 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     await ensureAdminLoggedIn(page);
 
     // Create a pending escalation via /api/ask (or verify/seed one)
-    await page.goto('/admin');
+    await page.goto('/admin/entries/new');
 
     // UX-104: Kill switch visible on /admin and toggles automated answering across reload
     const killBtn = page.locator('#btn-killswitch');

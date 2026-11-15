@@ -10,7 +10,7 @@ test.describe.serial('WP-14.0a: In-viewport editor feedback and live announcemen
     page,
   }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
 
     const saveDraftBtn = page.locator('#ref-btn-save');
     const openDialogBtn = page.locator('#ref-btn-publish');
@@ -41,12 +41,12 @@ test.describe.serial('WP-14.0a: In-viewport editor feedback and live announcemen
     await expect(statusLine).toContainText(/now public/i);
     await expect(statusLine).toBeInViewport();
 
-    // Delete via More menu -> confirm dialog (redirects to /admin on success)
+    // Delete via More menu -> confirm dialog (redirects to /admin/entries on success)
     await page.click('#ref-more-menu-btn');
     await page.click('#ref-more-delete');
     await expect(page.locator('#ref-delete-dialog')).toBeVisible();
     await page.click('#ref-delete-confirm');
-    await page.waitForURL((url) => url.pathname === '/admin' && !url.searchParams.has('entry'));
-    await expect(page.locator('#ref-entry-list')).not.toContainText(testTitle);
+    await page.waitForURL((url) => url.pathname === '/admin/entries');
+    await expect(page.locator('main')).not.toContainText(testTitle);
   });
 });

@@ -4,6 +4,7 @@ import { ensureAdminLoggedIn } from './helpers.js';
 test.describe.serial('WP-4.1: Structure Review Loop, Import Triage, and Visitor Ask States', () => {
   test('1. Structure Drawer 3-tab inspector in Reference Editor (20261020-UX-06, UX-07, WP-15.4)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
+    await page.goto('/admin/entries/new');
 
     // Open Structure drawer from editor action bar
     await page.click('#ref-btn-structure');
@@ -29,6 +30,7 @@ test.describe.serial('WP-4.1: Structure Review Loop, Import Triage, and Visitor 
 
   test('2. Import Planner and J K A R D S triage keyboard workflow (20261020-UX-07)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
+    await page.goto('/admin/entries/new');
     await page.goto('/admin/import');
     await expect(page.locator('h1')).toContainText('Import & Triage');
 
