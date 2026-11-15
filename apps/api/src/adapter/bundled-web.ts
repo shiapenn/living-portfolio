@@ -3,6 +3,7 @@ import type { IPortfolioRepository } from '@living-portfolio/db';
 import {
   createWebApp,
   renderAdminEntriesPage,
+  renderAdminDashboardPage,
   renderAdminImportPage,
   renderAdminLoginPage,
   renderAdminSectionPage,
@@ -42,6 +43,17 @@ export function mountBundledWeb(
           isNew: c.req.query('new') === '1',
           legacyRecoveryUsed: Boolean(session?.legacyRecoveryUsed),
           answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+        })
+      );
+    });
+    app.get('/admin/today', auth.requireAdminMiddleware(), async (c) => {
+      const inboxItems = typeof (repo as any).listInboxItems === 'function' ? await (repo as any).listInboxItems() : [];
+      const pendingInboxCount = Array.isArray(inboxItems) ? inboxItems.filter((i: any) => i.status === 'pending').length : 0;
+      return c.html(
+        await renderAdminDashboardPage(repo, {
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+          checklistDismissed: Boolean(runtimeState?.dashboardChecklistDismissed),
+          pendingInboxCount,
         })
       );
     });

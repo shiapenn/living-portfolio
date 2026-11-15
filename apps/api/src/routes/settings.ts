@@ -28,6 +28,7 @@ export interface RuntimeSettingsState {
   tier2_floor: number;
   facet_known_threshold: number;
   setupWizardCompleted: boolean;
+  dashboardChecklistDismissed?: boolean;
   theme: typeof DEFAULT_STRATA_THEME;
   redactionExclusions?: string[];
   hostingPreset?: string;
@@ -102,6 +103,7 @@ export function createSettingsRoutes(
         calibrationFrozen: state.calibrationFrozen,
         simulatedDegradationMode: state.simulatedDegradationMode,
         setupWizardCompleted,
+        dashboardChecklistDismissed: Boolean(state.dashboardChecklistDismissed),
       },
       routing: {
         tier1_floor: state.tier1_floor,
@@ -579,6 +581,17 @@ export function createSettingsRoutes(
   router.post('/evaluation/run', async (c) => {
     const report = await runEvaluation();
     return c.json(report, 200);
+  });
+
+  router.patch('/dashboard', async (c) => {
+    const body = await c.req.json().catch(() => ({}));
+    if (typeof body.checklistDismissed === 'boolean') {
+      state.dashboardChecklistDismissed = body.checklistDismissed;
+    }
+    return c.json({
+      ok: true,
+      dashboardChecklistDismissed: Boolean(state.dashboardChecklistDismissed),
+    });
   });
 
   return router;

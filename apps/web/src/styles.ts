@@ -2946,4 +2946,103 @@ a.lp-admin-header-brand {
     transform: translateX(0);
   }
 }
+
+/* --- WP-16.2 Today Dashboard --- */
+.lp-dashboard-stack {
+  max-width: 840px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.lp-dashboard-header h1 {
+  margin: 0 0 var(--space-1);
+}
+
+.lp-dashboard-header p {
+  margin: 0;
+}
+
+.lp-dashboard-explain,
+.lp-dashboard-card {
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-container);
+  padding: var(--space-4);
+}
+
+.lp-dashboard-explain-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.lp-dashboard-explain-grid dt {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.lp-dashboard-explain-grid dd {
+  margin: 0;
+  font-size: 13px;
+}
+
+.lp-dashboard-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.lp-dashboard-card-title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--type-body-size, 16px);
+  font-weight: 600;
+}
+
+.lp-dashboard-card-header .lp-dashboard-card-title {
+  margin: 0;
+}
+
+.lp-dashboard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.lp-dashboard-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--surface-subtle);
+}
+
+.lp-dashboard-item-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.lp-dashboard-checklist {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
 `;
