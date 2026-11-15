@@ -123,6 +123,7 @@
 | `A115` | WP-16.pre-f CI cost optimization | `active` | [A115-wp-16pre-f-ci-cost-optimization.md](execution-reports/A115-wp-16pre-f-ci-cost-optimization.md) | — |
 | `A116` | WP-16.pre-g Close Dependabot alert 5 | `active` | [A116-wp-16pre-g-close-dependabot-alert-5.md](execution-reports/A116-wp-16pre-g-close-dependabot-alert-5.md) | — |
 | `A117` | P0 Editor body loading fix (UX-106) | `active` | [A117-p0-editor-body-loading-fix-ux-106.md](execution-reports/A117-p0-editor-body-loading-fix-ux-106.md) | — |
+| `A118` | wp16r r0 dmin spec and census | `active` | [A118-wp16r-r0-dmin-spec-and-census.md](execution-reports/A118-wp16r-r0-dmin-spec-and-census.md) | — |
 
 ## Handover Snapshots (Class H)
 
