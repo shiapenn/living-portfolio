@@ -1313,5 +1313,13 @@
     "path": "docs/execution-reports/A118-wp16r-r0-dmin-spec-and-census.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A119",
+    "title": "wp16r r1 tokens and primitives",
+    "class": "A",
+    "path": "docs/execution-reports/A119-wp16r-r1-tokens-and-primitives.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
