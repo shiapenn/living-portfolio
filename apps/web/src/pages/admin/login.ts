@@ -1,4 +1,4 @@
-import { renderLayout } from "../../layouts/public-shell.js";
+import { renderAuthShell } from "../../layouts/admin-shell.js";
 import { ADMIN_API_CLIENT_SCRIPT } from "../../lib/admin-api-client.js";
 
 export function renderAdminLoginPage(): string {
@@ -211,5 +211,5 @@ export function renderAdminLoginPage(): string {
       })();
     </script>
   `;
-  return renderLayout('Sign in', '/admin/login', content);
+  return renderAuthShell('Sign in', content);
 }

@@ -1,7 +1,7 @@
 import { loadConfig } from "@living-portfolio/config";
 import { adaptDataSource, type WebDataClient } from "../../lib/data-source.js";
 import { escapeHtml } from "../../lib/html.js";
-import { renderLayout } from "../../layouts/public-shell.js";
+import { renderAdminShell } from "../../layouts/admin-shell.js";
 import { ALPHA_WARNING_TEXT } from "../../renderer.js";
 import { IMPORT_SCRIPT } from './import-script.js';
 
@@ -23,7 +23,6 @@ export async function renderAdminImportPage(repo: WebDataClient): Promise<string
           Connect or paste existing material, plan processing budget, and triage with confidence sorting and keyboard controls.
         </p>
       </div>
-      <a href="/admin" class="btn btn-secondary" style="text-decoration:none">← Back to Workspace</a>
     </div>
 
     ${stagingNoticeHtml}<!-- Triage Stepper -->
@@ -117,5 +116,5 @@ export async function renderAdminImportPage(repo: WebDataClient): Promise<string
 
 ${IMPORT_SCRIPT}
   `;
-  return renderLayout('Import & Triage', '/admin/import', content);
+  return renderAdminShell('Import & Triage', '/admin/import', content);
 }

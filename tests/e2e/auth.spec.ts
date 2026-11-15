@@ -551,7 +551,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     // 1. Verify zero-vendor scan on setup markup in pages/admin/setup.ts
     const rendererPath = new URL('../../apps/web/src/pages/admin/setup.ts', import.meta.url);
     const rendererSource = readFileSync(rendererPath, 'utf8');
-    const setupFnMatch = rendererSource.match(/export function renderAdminSetupPage\(\)[\s\S]*?return renderLayout/);
+    const setupFnMatch = rendererSource.match(/export function renderAdminSetupPage\(\)[\s\S]*?return render(?:Layout|AuthShell)/);
     expect(setupFnMatch).toBeTruthy();
     const setupMarkup = setupFnMatch![0];
 

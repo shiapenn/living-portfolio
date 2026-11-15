@@ -13,6 +13,8 @@ export {
   type AsOfDateInfo,
 } from "./lib/html.js";
 export { renderLayout, type RenderLayoutOptions } from "./layouts/public-shell.js";
+export { renderAdminShell, renderAuthShell, type AdminShellOptions } from "./layouts/admin-shell.js";
+export { renderAdminSectionPage } from "./pages/admin/section-page.js";
 export { renderStrataTimelineSection } from "./components/strata-timeline.js";
 export { renderHomePage } from "./pages/public/home.js";
 export { renderEntryDetailPage } from "./pages/public/entry.js";

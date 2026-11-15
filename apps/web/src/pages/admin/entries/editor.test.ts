@@ -113,9 +113,15 @@ describe('WP-15.7 Reference Editor Page', () => {
           listEntries: async () => [],
         } as any,
       }).app;
-      for (const route of routes) {
+      const editorRes = await prodApp.request('/admin/entries/editor?fixture=draft&theme=dark');
+      expect(editorRes.status, 'prod /admin/entries/editor').toBe(404);
+
+      for (const route of ['/admin/entries/new?theme=light', '/admin/entries/entry-1?fixture=public&theme=dark']) {
         const res = await prodApp.request(route);
-        expect(res.status, `prod ${route}`).toBe(404);
+        expect(res.status, `prod §6.4 route ${route}`).toBe(200);
+        const body = await res.text();
+        expect(body, `prod ${route} ignores ?theme=dark`).not.toContain('<html lang="en" data-theme="dark">');
+        expect(body, `prod ${route} does not render reference editor fixture`).not.toContain('id="ed-save-draft"');
       }
     } finally {
       process.env.NODE_ENV = prevEnv;

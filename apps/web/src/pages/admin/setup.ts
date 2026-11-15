@@ -1,6 +1,6 @@
 import { loadConfig } from "@living-portfolio/config";
 import { escapeHtml } from "../../lib/html.js";
-import { renderLayout } from "../../layouts/public-shell.js";
+import { renderAuthShell } from "../../layouts/admin-shell.js";
 import { WIZARD_STRINGS } from "../../strings.js";
 import { SETUP_SCRIPT_PART_1 } from './setup-script-part1.js';
 import { SETUP_SCRIPT_PART_2 } from './setup-script-part2.js';
@@ -10,7 +10,7 @@ export function renderAdminSetupPage(): string {
     <div class="admin-setup-container" style="max-width:680px;margin:32px auto;padding:24px;border:1px solid var(--rule);background:var(--surface-page)">
       <div class="wizard-header" style="margin-bottom:20px;border-bottom:1px solid var(--rule);padding-bottom:16px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span class="chip" id="wizard-step-chip">Step 1 of 6 · First-Run Wizard</span>
+          <span class="chip" id="wizard-step-chip">Step 1 of 6: Account</span>
           <span style="font-size:12px;color:var(--text-muted)">The Living Portfolio</span>
         </div>
         <div class="wizard-progress-bar" style="height:4px;background:var(--surface-panel);border-radius:2px;overflow:hidden">
@@ -307,5 +307,5 @@ export function renderAdminSetupPage(): string {
 ${SETUP_SCRIPT_PART_1}
 ${SETUP_SCRIPT_PART_2}
   `;
-  return renderLayout('First-Run Setup', '/admin/setup', content);
+  return renderAuthShell('First-Run Setup', content);
 }

@@ -2045,6 +2045,9 @@ input[type="date"].lp-input {
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lp-admin-header-nav {
@@ -2722,5 +2725,225 @@ a.lp-admin-header-brand {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
+}
+
+/* --- WP-16.1 Admin Shell & Auth Shell --- */
+.lp-auth-shell-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4) var(--space-8);
+}
+
+.lp-admin-header-start {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.lp-admin-shell-body {
+  display: flex;
+  min-height: calc(100vh - 57px);
+  position: relative;
+}
+
+.lp-admin-rail {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--surface-raised);
+  border-right: 1px solid var(--border-subtle);
+  padding: var(--space-4) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.lp-admin-rail-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.lp-admin-rail-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.lp-admin-rail-heading {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  padding: 0 var(--space-2);
+  margin: 0 0 var(--space-1);
+}
+
+.lp-admin-rail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lp-admin-rail-link {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 6px var(--space-2);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.lp-admin-rail-link:hover {
+  background: var(--surface-subtle);
+}
+
+.lp-admin-rail-link-active {
+  background: var(--surface-subtle);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.lp-admin-rail-footer {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.lp-admin-rail-toggle {
+  display: none;
+}
+
+.lp-admin-shell-main {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-6) var(--space-4) var(--space-8);
+}
+
+.lp-status-popover-wrap {
+  position: relative;
+}
+
+.lp-status-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + var(--space-2));
+  width: min(300px, calc(100vw - 24px));
+  background: var(--surface-overlay);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-container);
+  box-shadow: var(--shadow-overlay);
+  padding: var(--space-3);
+  z-index: 60;
+}
+
+.lp-status-popover[hidden] {
+  display: none;
+}
+
+.lp-status-popover-title {
+  margin: 0 0 var(--space-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lp-status-legend-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.lp-status-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 13px;
+}
+
+.lp-status-legend-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.lp-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.lp-status-dot-ok {
+  background: var(--status-ok);
+}
+
+.lp-status-dot-warn {
+  background: var(--status-warn);
+}
+
+.lp-admin-section-card {
+  max-width: 720px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-container);
+  padding: var(--space-6);
+}
+
+.lp-admin-section-title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-reading);
+}
+
+.lp-admin-section-desc {
+  margin: 0 0 var(--space-4);
+  color: var(--text-muted);
+}
+
+.lp-admin-section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.lp-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 767px) {
+  .wizard-step-labels {
+    display: none !important;
+  }
+
+  .lp-admin-rail-toggle {
+    display: inline-flex;
+  }
+
+  .lp-admin-rail {
+    position: fixed;
+    top: 57px;
+    left: 0;
+    bottom: 0;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.18s ease;
+    box-shadow: var(--shadow-overlay);
+  }
+
+  .lp-admin-rail.is-open {
+    transform: translateX(0);
+  }
 }
 `;

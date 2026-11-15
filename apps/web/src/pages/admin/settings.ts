@@ -1,7 +1,7 @@
 import { DEFAULT_STRATA_THEME, verifyThemeConformance } from "@living-portfolio/core";
 import { adaptDataSource, type WebDataClient } from "../../lib/data-source.js";
 import { escapeHtml } from "../../lib/html.js";
-import { renderLayout } from "../../layouts/public-shell.js";
+import { renderAdminShell } from "../../layouts/admin-shell.js";
 import { ALPHA_WARNING_TEXT } from "../../renderer.js";
 import { type AdminSettingsState } from '../../lib/admin-api-client.js';
 import { SETTINGS_SCRIPT } from './settings-script.js';
@@ -31,9 +31,6 @@ export async function renderAdminSettingsPage(
           Configure routing floors, provider registry, degradation ladders, theme tokens, notification channels, and backup restore drills.
         </p>
       </div>
-      <div>
-        <a href="/admin" class="btn btn-secondary" style="text-decoration:none;display:inline-flex;align-items:center">← Back to Workspace</a>
-      </div>
     </div>
 
     <div class="later-thinking-banner" data-banner="alpha-warning" role="note" style="margin-bottom:16px">
@@ -42,7 +39,7 @@ export async function renderAdminSettingsPage(
 
     <div id="settings-status-banner" role="status" aria-live="polite" style="margin-bottom:16px"></div>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%, 340px),1fr));gap:24px">
       <!-- Section 1: Routing Floors & Calibration -->
       <section class="admin-pane" aria-labelledby="routing-heading">
         <h2 id="routing-heading" style="font-size:18px;margin:0 0 12px 0">Routing Floors &amp; Calibration</h2>
@@ -136,6 +133,7 @@ export async function renderAdminSettingsPage(
         <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
           Active Provider Chain &amp; Zero-Retention Disclosures:
         </div>
+        <div class="lp-table-scroll">
         <table style="width:100%;font-size:12px;border-collapse:collapse;margin-bottom:16px">
           <thead>
             <tr style="border-bottom:1px solid var(--rule);text-align:left">
@@ -162,6 +160,7 @@ export async function renderAdminSettingsPage(
             </tr>
           </tbody>
         </table>
+        </div>
 
         <div style="margin-bottom:16px">
           <label for="setting-degradation-mode" style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">
@@ -230,6 +229,7 @@ export async function renderAdminSettingsPage(
           <span style="font-size:13px">Backup Subsystem:</span>
           <span class="chip" id="chip-backup-status">not_configured</span>
         </div>
+        <div class="lp-table-scroll">
         <table style="width:100%;font-size:12px;border-collapse:collapse;margin-bottom:16px">
           <tbody>
             <tr style="border-bottom:1px solid var(--rule)">
@@ -246,6 +246,7 @@ export async function renderAdminSettingsPage(
             </tr>
           </tbody>
         </table>
+        </div>
         <button type="button" class="btn btn-secondary" id="btn-run-backup-drill">Run Encrypted Backup Drill</button>
         <div id="backup-drill-result" style="margin-top:8px;font-size:12px"></div>
       </section>
@@ -254,5 +255,5 @@ export async function renderAdminSettingsPage(
 ${SETTINGS_SCRIPT}
   `;
 
-  return renderLayout('Settings & Calibration', '/admin/settings', content);
+  return renderAdminShell('Settings & Calibration', '/admin/settings', content);
 }

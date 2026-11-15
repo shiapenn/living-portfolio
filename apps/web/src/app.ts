@@ -13,6 +13,7 @@ import {
   renderAdminEntriesPage,
   renderAdminImportPage,
   renderAdminLoginPage,
+  renderAdminSectionPage,
   renderAdminSettingsPage,
   renderAdminSetupPage,
   renderAskPage,
@@ -167,6 +168,7 @@ export function createWebApp(options?: WebAppOptions) {
 
   app.use('/admin', adminGuard);
   app.use('/admin/*', adminGuard);
+  app.use('/quick-log', adminGuard);
 
   app.get('/admin', async (c) => {
     const session = await checkSession(c.req.header('cookie'));
@@ -181,6 +183,35 @@ export function createWebApp(options?: WebAppOptions) {
   });
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
   app.get('/admin/settings', async (c) => c.html(await renderAdminSettingsPage(client)));
+  const adminSectionRoutes = [
+    '/admin/entries',
+    '/admin/entries/new',
+    '/admin/entries/:id',
+    '/admin/entries/:id/history',
+    '/admin/quick-log',
+    '/quick-log',
+    '/admin/pages',
+    '/admin/inbox',
+    '/admin/inbox/:id',
+    '/admin/bookings',
+    '/admin/audit',
+    '/admin/calibration',
+    '/admin/structure',
+    '/admin/routing',
+    '/admin/theme',
+    '/admin/settings/:section',
+  ];
+  for (const routePath of adminSectionRoutes) {
+    app.get(routePath, async (c, next) => {
+      if (routePath === '/admin/entries/:id' && c.req.param('id') === 'editor') {
+        if (process.env.NODE_ENV === 'production') {
+          return c.notFound();
+        }
+        return next();
+      }
+      return c.html(renderAdminSectionPage(c.req.path));
+    });
+  }
   if (process.env.NODE_ENV !== 'production') {
     app.get('/admin/dev/primitives', (c) => c.html(renderPrimitivesGalleryPage()));
     app.get('/admin/dev/foundations', (c) => {

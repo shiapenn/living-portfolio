@@ -8,7 +8,7 @@ test.describe.serial('WP-5.1: Admin Operations, Calibration, Scoped Constraints 
 
     // 1. Verify page title and header
     await expect(page.locator('h1')).toContainText('Admin Operations & System Calibration');
-    await expect(page.locator('a.btn[href="/admin"]')).toBeVisible();
+    await expect(page.locator('#lp-admin-rail a[href="/admin"]')).toBeVisible();
 
     // 2. Dynamic warning on Tier 1 Floor < 0.82
     const tier1Input = page.locator('#setting-tier1-floor');

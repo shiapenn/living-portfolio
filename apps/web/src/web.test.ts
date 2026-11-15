@@ -407,10 +407,10 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
         simulatedDegradationMode: 'normal',
       });
 
-      // Navigation back to workspace
+      // Navigation back to workspace via admin shell rail (no duplicated Back to Workspace button)
       expect(html).toContain('Admin Operations &amp; System Calibration');
       expect(html).toContain('href="/admin"');
-      expect(html).toContain('← Back to Workspace');
+      expect(html).not.toContain('← Back to Workspace');
 
       // Routing & calibration inputs
       expect(html).toContain('id="setting-tier1-floor"');
@@ -442,7 +442,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
       const html = renderAdminSetupPage();
 
       // Stepper header and progress bar
-      expect(html).toContain('Step 1 of 6 · First-Run Wizard');
+      expect(html).toContain('Step 1 of 6: Account');
       expect(html).toContain('id="wizard-progress-fill"');
       expect(html).toContain('id="step-lbl-1"');
       expect(html).toContain('id="step-lbl-6"');
@@ -866,7 +866,7 @@ console.log(x);
   describe('WP-13.5: Wizard Wording, States & Zero-Vendor Scan (UX-29, UX-33, CP-14, CP-15)', () => {
     it('1. Setup markup has zero hardcoded vendor, model, or sample worked-example names (CP-15)', () => {
       const rendererSource = readFileSync(new URL('./pages/admin/setup.ts', import.meta.url), 'utf8');
-      const setupFnMatch = rendererSource.match(/export function renderAdminSetupPage\(\)[\s\S]*?return renderLayout/);
+      const setupFnMatch = rendererSource.match(/export function renderAdminSetupPage\(\)[\s\S]*?return render(?:Layout|AuthShell)/);
       expect(setupFnMatch).toBeTruthy();
       const setupMarkup = setupFnMatch![0];
 
