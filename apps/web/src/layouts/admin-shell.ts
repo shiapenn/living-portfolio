@@ -25,7 +25,8 @@ const RAIL_GROUPS: RailGroup[] = [
   {
     heading: 'Write',
     links: [
-      { href: '/admin', label: 'Today' },
+      { href: '/admin/today', label: 'Today' },
+      { href: '/admin', label: 'Workspace' },
       { href: '/admin/entries', label: 'Entries' },
       { href: '/admin/import', label: 'Import' },
       { href: '/admin/quick-log', label: 'Quick Log' },
