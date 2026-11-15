@@ -46,53 +46,53 @@ export const PRIMITIVE_TOKENS = `
   --red-700: #B42318;
   --red-400: #F97066;
 
-  /* Spacing Scale (4px base — D-FOUND-3: 4, 8, 12, 16, 24, 32, 48, 64) */
+  /* Spacing Scale (D-MIN 7: 4, 8, 16, 24, 40, 64) */
   --space-1: 4px;
   --space-2: 8px;
-  --space-3: 12px;
+  --space-3: 8px;
   --space-4: 16px;
   --space-6: 24px;
-  --space-8: 32px;
-  --space-12: 48px;
+  --space-8: 24px;
+  --space-12: 40px;
   --space-16: 64px;
-  --space-18: 72px;
+  --space-18: 64px;
   --space-inline: 8px;
   --space-field: 16px;
-  --space-section: 32px;
+  --space-section: 40px;
   --gutter: 16px;
 
-  /* D-FOUND-4 Type Scale Roles */
+  /* D-MIN 8 Type Scale Roles (12, 14, 16, 24) */
   --type-caption-size: 12px;
   --type-caption-line: 16px;
   --type-body-sm-size: 14px;
   --type-body-sm-line: 20px;
   --type-body-size: 16px;
   --type-body-line: 24px;
-  --type-title-size: 20px;
-  --type-title-line: 28px;
-  --type-page-title-size: 28px;
-  --type-page-title-line: 36px;
+  --type-title-size: 16px;
+  --type-title-line: 24px;
+  --type-page-title-size: 24px;
+  --type-page-title-line: 32px;
 
-  /* Typographic Scale (1.2 ratio scale: 14/16/18/21/25/30/36/44) */
+  /* Typographic Scale mapped to D-MIN {12, 14, 16, 24} */
   --font-size-1: 14px;
-  --font-size-2: 16px;
-  --font-size-3: 18px;
-  --font-size-4: 21px;
-  --font-size-5: 25px;
-  --font-size-6: 30px;
-  --font-size-7: 36px;
-  --font-size-8: 44px;
+  --font-size-2: 14px;
+  --font-size-3: 16px;
+  --font-size-4: 16px;
+  --font-size-5: 24px;
+  --font-size-6: 24px;
+  --font-size-7: 24px;
+  --font-size-8: 24px;
 
-  /* Radii scale (D-FOUND-2: four radius tokens) */
-  --radius-2: 2px;
-  --radius-6: 6px;
+  /* Radii scale (D-MIN 2: 4px controls/containers, 8px overlays) */
+  --radius-2: 4px;
+  --radius-6: 4px;
   --radius-8: 8px;
-  --radius-12: 12px;
-  --radius-16: 16px;
-  --radius-control: 8px;
-  --radius-container: 12px;
-  --radius-overlay: 16px;
-  --radius-pill: 999px;
+  --radius-12: 4px;
+  --radius-16: 8px;
+  --radius-control: 4px;
+  --radius-container: 4px;
+  --radius-overlay: 8px;
+  --radius-pill: 4px;
 
   /* Motion tokens (D-FOUND-5: 150-200ms) */
   --duration-fast: 150ms;
@@ -185,12 +185,12 @@ export const SEMANTIC_TOKENS_LIGHT = `
   --layout-max: 1180px; /* Aliased for backwards compatibility */
   --measure-reading: 68ch;
   --rail-width: 320px;
-  --size-target-min: 44px;
+  --size-target-min: 36px;
 
   /* Typography semantic mappings */
-  --text-body-size: var(--font-size-3);
+  --text-body-size: 16px;
   --text-body-leading: 1.65;
-  --text-ui-size: var(--font-size-2);
+  --text-ui-size: 14px;
 `;
 
 export const SEMANTIC_TOKENS_DARK = `
@@ -264,15 +264,16 @@ export const SEMANTIC_TOKENS_DARK = `
 `;
 
 export const COMPONENT_TOKENS = `
-  /* === Tier 3: Component Tokens (D-FOUND-2, D-FOUND-3) === */
-  --radius-chip: var(--radius-pill);
-  --radius-control: 8px;
-  --radius-container: 12px;
-  --radius-overlay: 16px;
-  --radius-pill: 999px;
-  --radius-card: var(--radius-container);
-  --button-height-md: var(--size-target-min);
-  --button-height-sm: 32px;
+  /* === Tier 3: Component Tokens (D-MIN 2, D-MIN 3) === */
+  --radius-chip: 4px;
+  --radius-control: 4px;
+  --radius-container: 4px;
+  --radius-overlay: 8px;
+  --radius-pill: 4px;
+  --radius-card: 4px;
+  --control-height: 36px;
+  --button-height-md: 36px;
+  --button-height-sm: 36px;
   --button-bg: var(--accent);
   --button-fg: var(--text-on-accent);
   --button-radius: var(--radius-control);
