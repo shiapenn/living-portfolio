@@ -16,25 +16,25 @@
 Executed `WP-16.R R3` (Minimal Visual Reset — remove non-journey elements, fix layout defects, and zero D-MIN style census budgets):
 
 ### Elements Removed (with reasons)
-- `#today-explanation` (What/When/How/Impact explainer) on Today (`apps/web/src/pages/admin/dashboard.ts`): removed per D-MIN #11 (no explainer cards).
-- Per-row `Actions` button/menu (`.lp-row-menu-btn`, `[role="menu"]`) on Entries list (`apps/web/src/pages/admin/entries/list.ts`, `list-script.ts`): removed per R3; clicking the entry row opens `/admin/entries/:id`.
-- `L0` / `.lp-structure-meter` dot meter in entry rows (`apps/web/src/pages/admin/entries/list.ts`, `list-script.ts`): removed per R3 / D-MIN #1.
-- Non-existent admin nav items and dead routes (`/admin/analytics`, `/admin/routing`, `/admin/safety`, `/admin/settings/account`, etc.) in `RAIL_GROUPS` (`apps/web/src/layouts/admin-shell.ts`): removed per D-MIN #12 and D-CONTRACT-6.
-- Automated answering card and Pending escalations card (`renderWorkspaceSafetyControls`) on the editor page (`apps/web/src/pages/admin/entries/editor.ts`, `apps/web/src/client/admin/editor-page.ts`): removed from the editor per D-MIN #12 (editor holds only list, editor, and optional structure panel).
-- Raw `JSON.stringify(...)` scope/constraint output on Answer rules (`apps/web/src/pages/admin/audit.ts`): removed per D-MIN #8 (never show raw JSON) and replaced with plain-sentence formatting.
-- Standalone `#theme-toggle` in the top header bar (`apps/web/src/layouts/admin-shell.ts`): removed from top bar and relocated into `#lp-account-menu` per D-MIN #3.
+- [implemented] `#today-explanation` (What/When/How/Impact explainer) on Today (`apps/web/src/pages/admin/dashboard.ts`): removed per D-MIN #11 (no explainer cards).
+- [implemented] Per-row `Actions` button/menu (`.lp-row-menu-btn`, `[role="menu"]`) on Entries list (`apps/web/src/pages/admin/entries/list.ts`, `list-script.ts`): removed per R3; clicking the entry row opens `/admin/entries/:id`.
+- [implemented] `L0` / `.lp-structure-meter` dot meter in entry rows (`apps/web/src/pages/admin/entries/list.ts`, `list-script.ts`): removed per R3 / D-MIN #1.
+- [implemented] Non-existent admin nav items and dead routes (`/admin/analytics`, `/admin/routing`, `/admin/safety`, `/admin/settings/account`, etc.) in `RAIL_GROUPS` (`apps/web/src/layouts/admin-shell.ts`): removed per D-MIN #12 and D-CONTRACT-6.
+- [implemented] Automated answering card and Pending escalations card (`renderWorkspaceSafetyControls`) on the editor page (`apps/web/src/pages/admin/entries/editor.ts`, `apps/web/src/client/admin/editor-page.ts`): removed from the editor per D-MIN #12 (editor holds only list, editor, and optional structure panel).
+- [implemented] Raw `JSON.stringify(...)` scope/constraint output on Answer rules (`apps/web/src/pages/admin/audit.ts`): removed per D-MIN #8 (never show raw JSON) and replaced with plain-sentence formatting.
+- [implemented] Standalone `#theme-toggle` in the top header bar (`apps/web/src/layouts/admin-shell.ts`): removed from top bar and relocated into `#lp-account-menu` per D-MIN #3.
 
 ### Elements Added / Relocated (with reasons)
-- `#btn-killswitch` + `#ref-killswitch-badge` on Today (`apps/web/src/pages/admin/dashboard.ts`): relocated from editor page so automated-answering control remains accessible per UX-104 (reusing existing Inbox for escalations per UX-105).
-- `#theme-toggle` inside `#lp-account-menu` (`apps/web/src/layouts/admin-shell.ts`): relocated from top header bar per D-MIN #3.
+- [implemented] `#btn-killswitch` + `#ref-killswitch-badge` on Today (`apps/web/src/pages/admin/dashboard.ts`): relocated from editor page so automated-answering control remains accessible per UX-104 (reusing existing Inbox for escalations per UX-105).
+- [implemented] `#theme-toggle` inside `#lp-account-menu` (`apps/web/src/layouts/admin-shell.ts`): relocated from top header bar per D-MIN #3.
 
 ### Defects Fixed
-- Fixed `#entries-empty-state` showing above non-empty lists by adding `[hidden] { display: none !important; }` in `apps/web/src/styles.ts`.
-- Fixed monospace font in `#inbox-reply-text` and replaced JS textarea height inline style with CSS `field-sizing: content` in `.lp-textarea` (`apps/web/src/styles.ts`).
-- Separated Send reply and Decline reason/button on `/admin/inbox/:id` using `.lp-stack-md` + `.lp-inbox-decline-row` (`apps/web/src/pages/admin/inbox.ts`, `styles.ts`).
-- Moved `data-banner="alpha-warning"` below `.lp-section-grid` on Settings and aligned admin headings to D-MIN sans sizes `24px`/`16px` (`apps/web/src/pages/admin/settings.ts`, `styles.ts`).
-- Eliminated the last inline style (`progressFill.style.width` -> `data-step="1..6"`) in `setup-script-part1.ts` and all remaining `13px` / non-scale `--space-3` / `--space-8` values in admin CSS (`apps/web/src/styles.ts`).
-- Shrank `docs/audits/style-census-budget.json` to `0` across all 6 metrics (`invalidRadii: 0`, `invalidControlHeights: 0`, `invalidFontSizes: 0`, `invalidSpacing: 0`, `inlineStyles: 0`, `multiSignatureRoles: 0`).
+- [implemented] Fixed `#entries-empty-state` showing above non-empty lists by adding `[hidden] { display: none !important; }` in `apps/web/src/styles.ts`.
+- [implemented] Fixed monospace font in `#inbox-reply-text` and replaced JS textarea height inline style with CSS `field-sizing: content` in `.lp-textarea` (`apps/web/src/styles.ts`).
+- [implemented] Separated Send reply and Decline reason/button on `/admin/inbox/:id` using `.lp-stack-md` + `.lp-inbox-decline-row` (`apps/web/src/pages/admin/inbox.ts`, `styles.ts`).
+- [implemented] Moved `data-banner="alpha-warning"` below `.lp-section-grid` on Settings and aligned admin headings to D-MIN sans sizes `24px`/`16px` (`apps/web/src/pages/admin/settings.ts`, `styles.ts`).
+- [implemented] Eliminated the last inline style (`progressFill.style.width` -> `data-step="1..6"`) in `setup-script-part1.ts` and all remaining `13px` / non-scale `--space-3` / `--space-8` values in admin CSS (`apps/web/src/styles.ts`).
+- [implemented] Shrank `docs/audits/style-census-budget.json` to `0` across all 6 metrics (`invalidRadii: 0`, `invalidControlHeights: 0`, `invalidFontSizes: 0`, `invalidSpacing: 0`, `inlineStyles: 0`, `multiSignatureRoles: 0`).
 
 ## 2. CI Evidence
 
