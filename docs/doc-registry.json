@@ -1257,5 +1257,13 @@
     "path": "docs/execution-reports/A112-wp-166-inbox-and-audit-rules.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A113",
+    "title": "WP-16.7 Retire monolith and route /admin to Today",
+    "class": "A",
+    "path": "docs/execution-reports/A113-wp-167-retire-monolith.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
