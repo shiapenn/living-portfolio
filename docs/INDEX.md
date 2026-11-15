@@ -115,6 +115,7 @@
 | `A107` | WP-16.1 Admin shell, auth shell, route registry, and settings 320px fix | `active` | [A107-wp-161-admin-shell-and-route-registry.md](execution-reports/A107-wp-161-admin-shell-and-route-registry.md) | — |
 | `A108` | WP-16.2 Today dashboard module (D-UI-1..D-UI-6) | `active` | [A108-wp-162-today-dashboard.md](execution-reports/A108-wp-162-today-dashboard.md) | — |
 | `A109` | WP-16.3 Entries list page module (D-UI-1..D-UI-6) | `active` | [A109-wp-163-entries-list.md](execution-reports/A109-wp-163-entries-list.md) | — |
+| `A110` | WP-16.4 Dedicated editor routes, mobile collapse, and unsaved label | `active` | [A110-wp-164-dedicated-editor-routes.md](execution-reports/A110-wp-164-dedicated-editor-routes.md) | — |
 
 ## Handover Snapshots (Class H)
 
