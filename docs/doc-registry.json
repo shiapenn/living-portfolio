@@ -1289,5 +1289,13 @@
     "path": "docs/execution-reports/A115-wp-16pre-f-ci-cost-optimization.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A116",
+    "title": "WP-16.pre-g Close Dependabot alert 5",
+    "class": "A",
+    "path": "docs/execution-reports/A116-wp-16pre-g-close-dependabot-alert-5.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
