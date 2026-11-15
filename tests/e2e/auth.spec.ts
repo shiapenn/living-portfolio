@@ -182,7 +182,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
 
     // Badges lack button-like styling or interactive chip class
     await expect(step3Table.locator('.chip')).toHaveCount(0);
-    await expect(step3Table.locator('span[style*="cursor:default"]')).toHaveCount(6);
+    await expect(step3Table.locator('.lp-chip')).toHaveCount(6);
 
     // Explainer sentence is visible
     const keysNotice = sharedPage.locator('#step3-keys-notice');
@@ -262,9 +262,9 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await sharedPage.check('input[name="theme-preset"][value="modern-monospace"]');
 
     // Single primary button
-    await expect(sharedPage.locator('#wizard-step-6 .btn-primary')).toHaveCount(1);
-    await expect(sharedPage.locator('#btn-setup-finish-login')).toHaveClass(/btn-primary/);
-    await expect(sharedPage.locator('#btn-setup-launch-import')).toHaveClass(/btn-secondary/);
+    await expect(sharedPage.locator('#wizard-step-6 .lp-btn-primary')).toHaveCount(1);
+    await expect(sharedPage.locator('#btn-setup-finish-login')).toHaveClass(/lp-btn-primary/);
+    await expect(sharedPage.locator('#btn-setup-launch-import')).toHaveClass(/lp-btn-secondary/);
   });
 
   test('7. First-run setup wizard: No wizard step shows an enabled control whose only result is an error', async () => {

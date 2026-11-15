@@ -12,11 +12,11 @@ test.describe('WP-11.4: Full Markdown Engine, Design Tokens & Responsive Multi-P
     // Desktop viewport (1280px)
     await page.setViewportSize({ width: 1280, height: 900 });
     await expect(page.locator('#ref-entry-list')).toBeVisible();
-    await expect(page.locator('#ref-mobile-menu-btn')).toBeHidden();
+    await expect(page.locator('#lp-rail-toggle')).toBeHidden();
 
     // Mobile viewport (480px)
     await page.setViewportSize({ width: 480, height: 900 });
-    await expect(page.locator('#ref-mobile-menu-btn')).toBeVisible();
+    await expect(page.locator('#lp-rail-toggle')).toBeVisible();
   });
 
   test('2. Reference editor provides title, body writing surface, and save action (F4, 20261020-UI-01, WP-15.4)', async ({

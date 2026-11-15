@@ -105,7 +105,7 @@ function renderShellThemeAndMenuScript(nonceAttr: string, includeAdminMenus: boo
   (function() {
     const html = document.documentElement;
     const saved = (function(){ try { return localStorage.getItem('strata-theme'); } catch { return null; } })();
-    const initial = saved === 'dark' ? 'dark' : 'light';
+    const initial = saved === 'dark' || (!saved && html.getAttribute('data-theme') === 'dark') ? 'dark' : 'light';
     html.setAttribute('data-theme', initial);
     const themeBtn = document.getElementById('theme-toggle');
     const syncThemeBtn = (t) => {

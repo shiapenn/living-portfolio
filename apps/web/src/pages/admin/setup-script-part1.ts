@@ -55,9 +55,9 @@ export const SETUP_SCRIPT_PART_1 = `
               const sessData = await sessRes.json();
               if (sessData.authenticated) {
                 const f = document.getElementById('admin-setup-form');
-                if (f) f.style.display = 'none';
+                if (f) f.classList.add('lp-is-hidden');
                 const s = document.getElementById('setup-status');
-                if (s) s.style.display = 'none';
+                if (s) s.classList.add('lp-is-hidden');
                 if (currentActiveStep === 1) {
                   goToStep(2);
                 }
@@ -104,13 +104,11 @@ export const SETUP_SCRIPT_PART_1 = `
               if (tr) {
                 tr.checked = true;
                 document.querySelectorAll('.theme-card').forEach(function(card) {
-                  card.style.border = '1px solid var(--rule)';
-                  card.style.background = 'transparent';
+                  card.classList.remove('is-selected');
                 });
                 const parentLabel = tr.closest('.theme-card');
                 if (parentLabel) {
-                  parentLabel.style.border = '2px solid var(--accent)';
-                  parentLabel.style.background = 'var(--surface-subtle)';
+                  parentLabel.classList.add('is-selected');
                 }
               }
             }
@@ -123,19 +121,11 @@ export const SETUP_SCRIPT_PART_1 = `
             const stepEl = document.getElementById('wizard-step-' + i);
             const lblEl = document.getElementById('step-lbl-' + i);
             if (stepEl) {
-              stepEl.style.display = i === stepNum ? 'block' : 'none';
+              stepEl.classList.toggle('lp-is-hidden', i !== stepNum);
             }
             if (lblEl) {
-              if (i === stepNum) {
-                lblEl.style.fontWeight = '700';
-                lblEl.style.color = 'var(--text)';
-              } else if (i < stepNum) {
-                lblEl.style.fontWeight = '500';
-                lblEl.style.color = 'var(--accent)';
-              } else {
-                lblEl.style.fontWeight = 'normal';
-                lblEl.style.color = 'var(--text-muted)';
-              }
+              lblEl.classList.toggle('is-active', i === stepNum);
+              lblEl.classList.toggle('is-done', i < stepNum);
             }
           }
           if (progressFill) {
@@ -159,13 +149,11 @@ export const SETUP_SCRIPT_PART_1 = `
         document.querySelectorAll('input[name="theme-preset"]').forEach(function(radio) {
           radio.addEventListener('change', function() {
             document.querySelectorAll('.theme-card').forEach(function(card) {
-              card.style.border = '1px solid var(--rule)';
-              card.style.background = 'transparent';
+              card.classList.remove('is-selected');
             });
             const parentLabel = radio.closest('.theme-card');
             if (parentLabel) {
-              parentLabel.style.border = '2px solid var(--accent)';
-              parentLabel.style.background = 'var(--surface-subtle)';
+              parentLabel.classList.add('is-selected');
             }
             saveStep(6);
           });
@@ -205,7 +193,7 @@ export const SETUP_SCRIPT_PART_1 = `
 
         form.addEventListener('submit', async function(e) {
           e.preventDefault();
-          statusBox.style.display = 'none';
+          statusBox.classList.add('lp-is-hidden');
           const username = document.getElementById('setup-username').value;
           const password = document.getElementById('setup-password').value;
           const totpSecret = document.getElementById('setup-totp-secret').value || undefined;
@@ -218,4 +206,4 @@ export const SETUP_SCRIPT_PART_1 = `
             const data = await res.json();
             if (res.ok) {
               cachedSetupData = data;
-              form.style.display = 'none';`;
+              form.classList.add('lp-is-hidden');`;

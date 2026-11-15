@@ -95,31 +95,6 @@ function bootEditorPage(): void {
     document.querySelectorAll<HTMLTextAreaElement>('textarea[data-lp-autogrow]').forEach(autoGrowTextarea);
   });
 
-  // Theme toggle (target-mode icon & label: moon in light -> Switch to dark theme; sun in dark -> Switch to light theme)
-  const themeBtn = document.getElementById('ref-theme-toggle');
-  const applyThemeToggleUi = (theme: 'light' | 'dark') => {
-    if (!themeBtn) return;
-    const nextLabel = theme === 'dark' ? EDITOR_STRINGS.nav.toLight : EDITOR_STRINGS.nav.toDark;
-    const nextIcon = theme === 'dark' ? 'sun' : 'moon';
-    themeBtn.setAttribute('aria-label', nextLabel);
-    themeBtn.setAttribute('title', nextLabel);
-    themeBtn.setAttribute('data-tooltip', nextLabel);
-    const useEl = themeBtn.querySelector('use');
-    if (useEl) useEl.setAttribute('href', `#lp-icon-${nextIcon}`);
-  };
-
-  themeBtn?.addEventListener('click', () => {
-    const html = document.documentElement;
-    const next: 'light' | 'dark' = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    applyThemeToggleUi(next);
-    try {
-      localStorage.setItem('strata-theme', next);
-    } catch {
-      // Ignore storage errors
-    }
-  });
-
   // Sign out
   const handleSignOut = async () => {
     try {
@@ -197,7 +172,6 @@ function bootEditorPage(): void {
   const historyCtrl = historyDrawerEl ? attachModalController(historyDrawerEl) : null;
 
   // Popover menus (shared Menu controller, UX-97)
-  attachMenuController('ref-mobile-menu-btn', 'ref-mobile-nav-menu');
   const closeVisMenu = attachMenuController('ref-visibility-menu-btn', 'ref-visibility-menu');
   const closeMoreMenu = attachMenuController('ref-more-menu-btn', 'ref-more-menu');
 

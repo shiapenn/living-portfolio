@@ -56,14 +56,15 @@ export const ENTRIES_LIST_SCRIPT = `<script>
     regionEl.innerHTML = entries.map((e) => {
       const steps = levelIndex(e.structureLevel);
       const visLabel = e.visibility === 'private' ? 'Draft' : e.visibility === 'unlisted' ? 'Unlisted' : 'Public';
+      const visState = e.visibility === 'private' ? 'draft' : e.visibility === 'unlisted' ? 'unlisted' : 'public';
       const meter = [1, 2, 3, 4].map((n) => '<span class="lp-structure-step' + (n <= steps ? ' is-filled' : '') + '"></span>').join('');
       const unpubBtn = e.visibility === 'private' ? '' : '<button type="button" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" data-action="unpublish" data-id="' + escapeHtml(e.id) + '">Unpublish</button>';
       return '<li class="lp-entries-row" data-entry-row="' + escapeHtml(e.id) + '">' +
         '<div class="lp-entries-row-main">' +
           '<a href="/admin/entries/' + encodeURIComponent(e.id) + '" class="lp-entries-row-title">' + escapeHtml(e.title || 'Untitled') + '</a>' +
           '<div class="lp-entries-row-meta">' +
-            '<span class="chip chip-status">' + escapeHtml(visLabel) + '</span>' +
-            '<span class="chip chip-facet">' + escapeHtml(e.profile || 'work') + '</span>' +
+            '<span class="lp-state-label lp-state-' + visState + '"><span class="lp-state-dot" aria-hidden="true"></span>' + escapeHtml(visLabel) + '</span>' +
+            '<span class="lp-chip">' + escapeHtml(e.profile || 'work') + '</span>' +
             '<span class="lp-structure-meter" aria-label="Structure ' + escapeHtml(e.structureLevel || 'L0') + '">' + meter + '<span class="lp-structure-label">' + escapeHtml(e.structureLevel || 'L0') + '</span></span>' +
           '</div>' +
         '</div>' +
