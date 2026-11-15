@@ -2484,11 +2484,29 @@ a.lp-admin-header-brand {
   gap: var(--space-4);
 }
 
+@media (max-width: 767px) {
+  .lp-editor-main {
+    order: 1;
+  }
+
+  .lp-editor-sidebar {
+    order: 2;
+  }
+
+  .lp-entry-list[data-collapsed="true"] {
+    display: none;
+  }
+}
+
 @media (min-width: 768px) {
   .lp-editor-shell {
     grid-template-columns: 260px minmax(0, 720px);
     gap: var(--space-6);
     align-items: start;
+  }
+
+  .lp-sidebar-toggle {
+    display: none;
   }
 }
 

@@ -5421,18 +5421,21 @@
     - "5.3"
     - "12.3"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp16-4-dedicated-editor-routes.spec.ts
   history:
     - date: 2026-11-15
       status: open
       note: "Registered at Gate G15 contact-sheet review: at 320 px the Entries list sits above the editor in normal flow (editor starts ~340 px down with one entry). Planned for WP-16.4: below 768 px the list becomes a collapsed 'Entries (n)' selector or drawer and the editor comes first; test with 20 entries at 320 px that the editor title is visible within 400 px of the top."
-  verified_by: null
+    - date: 2026-11-15
+      status: fixed
+      note: "WP-16.4: below 768px editor main renders first (order: 1) and sidebar entry list collapses behind #ref-sidebar-toggle ('Entries (n)')."
+  verified_by: tests/e2e/wp16-4-dedicated-editor-routes.spec.ts
 - id: 20261106-UX-93
   audit: AUD-2026-11-06
   title: 'Unsaved new entry placeholder renders as "Untitled entry · Draft" and raises entry count to 1 before saving'
@@ -5440,18 +5443,21 @@
     - "5.3"
     - "6.4"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp16-4-dedicated-editor-routes.spec.ts
   history:
     - date: 2026-11-15
       status: open
       note: "Registered at Gate G15 contact-sheet review: opening 'New entry' immediately lists 'Untitled entry · Draft' and raises the count to 1 before anything is saved. Planned for WP-16.4: label the placeholder clearly (e.g., 'New, unsaved') and do not count it; test abandon, reload, and save."
-  verified_by: null
+    - date: 2026-11-15
+      status: fixed
+      note: "WP-16.4: unsaved placeholder renders as 'New, unsaved' with 'Unsaved' badge and is excluded from #ref-entries-count."
+  verified_by: tests/e2e/wp16-4-dedicated-editor-routes.spec.ts
 - id: 20261106-UX-94
   audit: AUD-2026-11-06
   title: 'At 320 px legacy pages wrap the public header to 3 rows and setup wizard step labels collide or clip'

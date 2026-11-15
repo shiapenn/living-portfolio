@@ -40,6 +40,7 @@ export interface ReferenceEditorOptions {
   entries: ReferenceEditorEntry[];
   selectedId?: string;
   isNew?: boolean;
+  dedicatedRoute?: boolean;
   siteName?: string;
   showWalkthrough?: boolean;
   legacyRecoveryUsed?: boolean;
@@ -192,18 +193,32 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
   const siteName = options.siteName || 'Living Portfolio';
   const theme = options.initialTheme === 'dark' ? 'dark' : 'light';
   const entries = options.entries;
+  const savedCount = entries.filter((e) => e.id !== 'new').length;
   const selected =
     entries.find((e) => e.id === options.selectedId) ??
-    (entries.length > 0 ? entries[0] : undefined);
+    (!options.dedicatedRoute && entries.length > 0 ? entries[0] : undefined);
 
   const sidebarItems = entries
     .map((e) => {
       const active = selected && e.id === selected.id;
-      const rowTitle = e.title.trim() || EDITOR_STRINGS.sidebar.untitled;
+      const isPlaceholder = e.id === 'new';
+      const rowTitle = isPlaceholder
+        ? EDITOR_STRINGS.sidebar.newUnsaved
+        : e.title.trim() || EDITOR_STRINGS.sidebar.untitled;
+      const rowHref = options.dedicatedRoute
+        ? isPlaceholder
+          ? '/admin/entries/new'
+          : `/admin/entries/${encodeURIComponent(e.id)}`
+        : isPlaceholder
+          ? '/admin?new=1'
+          : `/admin?entry=${escapeHtml(e.id)}`;
+      const rowBadge = isPlaceholder
+        ? renderBadge({ label: EDITOR_STRINGS.sidebar.unsavedBadge, tone: 'warn' })
+        : renderBadge({ label: formatVisibilityLabel(e.visibility), tone: visibilityTone(e.visibility) });
       return `<li>
-  <a href="/admin?entry=${escapeHtml(e.id)}" class="lp-entry-row${active ? ' lp-entry-row-active' : ''}" data-entry-row="${escapeHtml(e.id)}"${active ? ' aria-current="page"' : ''}>
+  <a href="${rowHref}" class="lp-entry-row${active ? ' lp-entry-row-active' : ''}" data-entry-row="${escapeHtml(e.id)}"${active ? ' aria-current="page"' : ''}>
     <span class="lp-entry-list-title">${escapeHtml(rowTitle)}</span>
-    ${renderBadge({ label: formatVisibilityLabel(e.visibility), tone: visibilityTone(e.visibility) })}
+    ${rowBadge}
   </a>
 </li>`;
     })
@@ -285,11 +300,12 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
       <div class="lp-preview-list-header">
         <div class="lp-sidebar-title-group">
           <span class="lp-type-body-sm">${escapeHtml(EDITOR_STRINGS.sidebar.heading)}</span>
-          ${renderBadge({ id: 'ref-entries-count', label: String(entries.length), tone: 'neutral' })}
+          ${renderBadge({ id: 'ref-entries-count', label: String(savedCount), tone: 'neutral' })}
         </div>
         ${entries.length > 0 ? renderButton({ id: 'ref-btn-new-entry', label: EDITOR_STRINGS.sidebar.newEntry, variant: 'secondary', size: 'sm' }) : ''}
       </div>
-      <ul id="ref-entry-list" class="lp-entry-list">${sidebarItems}</ul>
+      <button type="button" id="ref-sidebar-toggle" class="lp-btn lp-btn-secondary lp-btn-sm lp-sidebar-toggle" aria-expanded="false" aria-controls="ref-entry-list">${escapeHtml(EDITOR_STRINGS.sidebar.toggleEntries)} (${savedCount})</button>
+      <ul id="ref-entry-list" class="lp-entry-list" data-collapsed="true">${sidebarItems}</ul>
     </aside>
     <section id="ref-editor-main" class="lp-editor-main" aria-label="Entry editor">
       ${mainContent}
@@ -305,11 +321,25 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
 </html>`;
 }
 
+function mapRawEditorEntry(e: any, rev?: any): ReferenceEditorEntry {
+  return {
+    id: e.id,
+    slug: e.slug,
+    title: e.title ?? '',
+    body: e.body ?? rev?.body_md ?? '',
+    visibility: e.visibility === 'public' ? 'public' : e.visibility === 'unlisted' ? 'unlisted' : 'draft',
+    date: e.created_at ?? rev?.valid_from ?? new Date().toISOString().slice(0, 10),
+    temporalConfidence: e.temporal_confidence ?? rev?.temporal_level ?? 'exact',
+    profile: e.profile ?? 'freeform',
+  };
+}
+
 export async function renderAdminEntriesPage(
   clientOrRepo: any,
   options: {
     selectedId?: string;
     isNew?: boolean;
+    dedicatedRoute?: boolean;
     siteName?: string;
     legacyRecoveryUsed?: boolean;
     answeringEnabled?: boolean;
@@ -328,68 +358,38 @@ export async function renderAdminEntriesPage(
       const s = await clientOrRepo.settings.get();
       if (typeof s?.automatedAnsweringEnabled === 'boolean') answeringEnabled = s.automatedAnsweringEnabled;
     }
-  } catch {
-    // Keep default when settings endpoint is unavailable
-  }
+  } catch { /* fallback */ }
   try {
     const rawEsc = clientOrRepo?.inbox?.list
       ? (await clientOrRepo.inbox.list('pending'))?.escalations
       : await clientOrRepo?.getEscalations?.('pending');
     if (Array.isArray(rawEsc)) {
-      escalations = rawEsc.map((e: any) => ({
-        id: String(e.id),
-        question: String(e.question ?? ''),
-        draft: typeof e.draft === 'string' ? e.draft : '',
-      }));
+      escalations = rawEsc.map((e: any) => ({ id: String(e.id), question: String(e.question ?? ''), draft: typeof e.draft === 'string' ? e.draft : '' }));
     }
-  } catch {
-    // Keep empty list when inbox is unavailable
-  }
-  const rawEntries: any[] = listRes?.entries ?? [];
-  const mapped: ReferenceEditorEntry[] = rawEntries.map((e: any) => ({
-    id: e.id,
-    slug: e.slug,
-    title: e.title ?? '',
-    body: e.body ?? '',
-    visibility: e.visibility === 'public' ? 'public' : e.visibility === 'unlisted' ? 'unlisted' : 'draft',
-    date: e.created_at ?? new Date().toISOString().slice(0, 10),
-    temporalConfidence: e.temporal_confidence ?? e.temporal_level ?? 'exact',
-    profile: e.profile ?? 'freeform',
-  }));
+  } catch { /* fallback */ }
+  const mapped: ReferenceEditorEntry[] = (listRes?.entries ?? []).map((e: any) => mapRawEditorEntry(e));
 
   if (options.isNew) {
-    const newEntry: ReferenceEditorEntry = {
-      id: 'new',
-      slug: '',
-      title: '',
-      body: '',
-      visibility: 'draft',
-      date: new Date().toISOString().slice(0, 10),
-      temporalConfidence: 'exact',
-      profile: 'freeform',
-    };
-    return renderReferenceEditorPage({
-      entries: [newEntry, ...mapped],
-      selectedId: 'new',
-      isNew: true,
-      siteName: options.siteName,
-      legacyRecoveryUsed: options.legacyRecoveryUsed,
-      initialTheme: options.initialTheme,
-      nonce: options.nonce,
-      answeringEnabled,
-      escalations,
-    });
+    const newEntry: ReferenceEditorEntry = { id: 'new', slug: '', title: '', body: '', visibility: 'draft', date: new Date().toISOString().slice(0, 10), temporalConfidence: 'exact', profile: 'freeform' };
+    return renderReferenceEditorPage({ entries: [newEntry, ...mapped], selectedId: 'new', isNew: true, dedicatedRoute: options.dedicatedRoute, siteName: options.siteName, legacyRecoveryUsed: options.legacyRecoveryUsed, initialTheme: options.initialTheme, nonce: options.nonce, answeringEnabled, escalations });
   }
 
-  return renderReferenceEditorPage({
-    entries: mapped,
-    selectedId: options.selectedId ?? mapped[0]?.id,
-    siteName: options.siteName,
-    legacyRecoveryUsed: options.legacyRecoveryUsed,
-    showWalkthrough: mapped.length === 0,
-    initialTheme: options.initialTheme,
-    nonce: options.nonce,
-    answeringEnabled,
-    escalations,
-  });
+  return renderReferenceEditorPage({ entries: mapped, selectedId: options.dedicatedRoute ? options.selectedId : (options.selectedId ?? mapped[0]?.id), dedicatedRoute: options.dedicatedRoute, siteName: options.siteName, legacyRecoveryUsed: options.legacyRecoveryUsed, showWalkthrough: mapped.length === 0, initialTheme: options.initialTheme, nonce: options.nonce, answeringEnabled, escalations });
+}
+
+export async function renderDedicatedEditorPage(
+  clientOrRepo: any,
+  options: { selectedId?: string; isNew?: boolean; siteName?: string; answeringEnabled?: boolean; initialTheme?: 'light' | 'dark'; nonce?: string } = {}
+): Promise<string | null> {
+  if (options.isNew) return renderAdminEntriesPage(clientOrRepo, { ...options, isNew: true, dedicatedRoute: true });
+  if (!options.selectedId) return null;
+  let found: any = null;
+  try {
+    const res = clientOrRepo?.entries?.get
+      ? await clientOrRepo.entries.get(options.selectedId)
+      : await clientOrRepo?.getEntry?.(options.selectedId, ['private', 'unlisted', 'public']);
+    if (res && (res.entry || res.id)) found = res;
+  } catch { return null; }
+  if (!found) return null;
+  return renderAdminEntriesPage(clientOrRepo, { ...options, selectedId: options.selectedId, dedicatedRoute: true });
 }

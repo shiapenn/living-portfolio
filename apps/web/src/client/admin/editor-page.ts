@@ -153,15 +153,32 @@ function bootEditorPage(): void {
 
   // Start new draft from EmptyState or Sidebar New entry
   const startNewDraft = () => {
+    if (isDirty && !window.confirm('You have unsaved draft writing. Are you sure you want to leave?')) {
+      return;
+    }
     if (isFixtureMode) {
       const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
       window.location.href = `/admin/entries/editor?fixture=new-draft&theme=${currentTheme}`;
+      return;
+    }
+    if (window.location.pathname.startsWith('/admin/entries') && window.location.pathname !== '/admin/entries/editor') {
+      window.location.href = '/admin/entries/new';
       return;
     }
     window.location.href = '/admin?new=1';
   };
   document.getElementById('ref-empty-start-btn')?.addEventListener('click', startNewDraft);
   document.getElementById('ref-btn-new-entry')?.addEventListener('click', startNewDraft);
+
+  // Mobile sidebar Entries (n) collapse toggle (UX-92)
+  const sidebarToggle = document.getElementById('ref-sidebar-toggle');
+  const entryListEl = document.getElementById('ref-entry-list');
+  sidebarToggle?.addEventListener('click', () => {
+    if (!entryListEl) return;
+    const collapsed = entryListEl.getAttribute('data-collapsed') === 'true';
+    entryListEl.setAttribute('data-collapsed', collapsed ? 'false' : 'true');
+    sidebarToggle.setAttribute('aria-expanded', collapsed ? 'true' : 'false');
+  });
 
   // Structure & History drawers
   const structureTabs = document.getElementById('ref-structure-tabs');
@@ -352,6 +369,17 @@ function bootEditorPage(): void {
     }
   });
 
+  document.addEventListener('click', (event) => {
+    if (!isDirty) return;
+    const target = (event.target as Element | null)?.closest('a[href]') as HTMLAnchorElement | null;
+    if (!target || target.target === '_blank' || target.hasAttribute('download')) return;
+    const href = target.getAttribute('href') || '';
+    if (!href || href.startsWith('#')) return;
+    if (!window.confirm('You have unsaved draft writing. Are you sure you want to leave?')) {
+      event.preventDefault();
+    }
+  });
+
   const offlineBanner = document.getElementById('admin-offline-banner');
   const syncOfflineBanner = () => {
     if (!offlineBanner) return;
@@ -434,7 +462,11 @@ function bootEditorPage(): void {
       isNewEntry = false;
       formEl?.setAttribute('data-entry-id', activeEntryId);
       formEl?.setAttribute('data-is-new', 'false');
-      window.history.replaceState(null, '', `/admin?entry=${encodeURIComponent(activeEntryId)}`);
+      const nextPath =
+        window.location.pathname.startsWith('/admin/entries') && window.location.pathname !== '/admin/entries/editor'
+          ? `/admin/entries/${encodeURIComponent(activeEntryId)}`
+          : `/admin?entry=${encodeURIComponent(activeEntryId)}`;
+      window.history.replaceState(null, '', nextPath);
       return { ok: true };
     }
     const res = await apiRequest(`/api/entries/${encodeURIComponent(activeEntryId)}`, {
@@ -704,7 +736,11 @@ function bootEditorPage(): void {
         isNewEntry = false;
         formEl?.setAttribute('data-entry-id', activeEntryId);
         formEl?.setAttribute('data-is-new', 'false');
-        window.history.replaceState(null, '', `/admin?entry=${encodeURIComponent(activeEntryId)}`);
+        const nextPath =
+        window.location.pathname.startsWith('/admin/entries') && window.location.pathname !== '/admin/entries/editor'
+          ? `/admin/entries/${encodeURIComponent(activeEntryId)}`
+          : `/admin?entry=${encodeURIComponent(activeEntryId)}`;
+      window.history.replaceState(null, '', nextPath);
       } else {
         const res = await apiRequest(`/api/entries/${encodeURIComponent(activeEntryId)}`, {
           method: 'PUT',

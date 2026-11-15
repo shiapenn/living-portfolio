@@ -3,6 +3,7 @@ import type { IPortfolioRepository } from '@living-portfolio/db';
 import {
   createWebApp,
   renderAdminEntriesPage,
+  renderDedicatedEditorPage,
   renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
@@ -65,6 +66,27 @@ export function mountBundledWeb(
         })
       )
     );
+    app.get('/admin/entries/new', auth.requireAdminMiddleware(), async (c) => {
+      const html = await renderDedicatedEditorPage(repo, {
+        isNew: true,
+        answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+      });
+      return html ? c.html(html) : c.html(renderNotFoundPage(), 404);
+    });
+    app.get('/admin/entries/:id', auth.requireAdminMiddleware(), async (c, next) => {
+      const id = c.req.param('id');
+      if (id === 'editor') {
+        if (process.env.NODE_ENV === 'production') {
+          return c.notFound();
+        }
+        return next();
+      }
+      const html = await renderDedicatedEditorPage(repo, {
+        selectedId: id,
+        answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+      });
+      return html ? c.html(html) : c.html(renderNotFoundPage(), 404);
+    });
     app.get('/admin/import', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminImportPage(repo))
     );
@@ -72,8 +94,6 @@ export function mountBundledWeb(
       c.html(await renderAdminSettingsPage(repo, runtimeState))
     );
     const adminSectionRoutes = [
-      '/admin/entries/new',
-      '/admin/entries/:id',
       '/admin/entries/:id/history',
       '/admin/quick-log',
       '/quick-log',
@@ -89,15 +109,9 @@ export function mountBundledWeb(
       '/admin/settings/:section',
     ];
     for (const routePath of adminSectionRoutes) {
-      app.get(routePath, auth.requireAdminMiddleware(), async (c, next) => {
-        if (routePath === '/admin/entries/:id' && c.req.param('id') === 'editor') {
-          if (process.env.NODE_ENV === 'production') {
-            return c.notFound();
-          }
-          return next();
-        }
-        return c.html(renderAdminSectionPage(c.req.path));
-      });
+      app.get(routePath, auth.requireAdminMiddleware(), async (c) =>
+        c.html(renderAdminSectionPage(c.req.path))
+      );
     }
   }
 
