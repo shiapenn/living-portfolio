@@ -1321,5 +1321,13 @@
     "path": "docs/execution-reports/A119-wp16r-r1-tokens-and-primitives.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A120",
+    "title": "wp16r-r2-migrate-admin-pages",
+    "class": "A",
+    "path": "docs/execution-reports/A120-wp16r-r2-migrate-admin-pages.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
