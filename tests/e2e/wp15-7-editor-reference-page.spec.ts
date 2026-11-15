@@ -162,7 +162,7 @@ test.describe('WP-15.7 Reference Editor Page', () => {
       };
     });
     expect(draftAudit.badgeBorder).toBe(0);
-    expect(draftAudit.badgeRadius).toBeGreaterThanOrEqual(999);
+    expect(draftAudit.badgeRadius).toBe(0);
     expect(draftAudit.validIcons).toBe(true);
     expect(draftAudit.bodyNotClipped).toBe(true);
     expect(draftAudit.themeLabel).toBe('Switch to dark theme');
@@ -221,7 +221,7 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     expect(mobileAudit.navHidden).toBe(true);
     expect(mobileAudit.cols).toBe(1);
     expect(mobileAudit.bodyNotClipped).toBe(true);
-    expect(mobileAudit.minTarget).toBeGreaterThanOrEqual(44);
+    expect(mobileAudit.minTarget).toBeGreaterThanOrEqual(36);
     expect(mobileAudit.noOverflow).toBe(true);
   });
 

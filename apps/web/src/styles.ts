@@ -1147,6 +1147,7 @@ button[type="submit"] {
 }
 
 .lp-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1154,13 +1155,14 @@ button[type="submit"] {
   font-family: var(--font-ui);
   font-size: var(--type-body-sm-size, 14px);
   line-height: var(--type-body-sm-line, 20px);
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
-  border-radius: var(--radius-control);
+  border-radius: 4px;
   border: 1px solid var(--border-control);
-  padding: var(--space-2) var(--space-4);
-  min-height: var(--button-height-md, var(--size-target-min, 44px));
-  min-width: var(--size-target-min, 44px);
+  padding: 0 var(--space-4);
+  height: 36px;
+  min-height: 36px;
+  min-width: 36px;
   cursor: pointer;
   text-decoration: none;
   transition: opacity var(--duration-base, 160ms) ease, transform var(--duration-base, 160ms) ease;
@@ -1187,8 +1189,9 @@ button[type="submit"] {
 }
 
 .lp-btn-sm {
-  min-height: var(--button-height-sm, 32px);
-  padding: var(--space-1) var(--space-3);
+  height: 36px;
+  min-height: 36px;
+  padding: 0 var(--space-4);
   font-size: var(--type-body-sm-size, 14px);
 }
 
@@ -1274,26 +1277,29 @@ button[type="submit"] {
 }
 
 .lp-icon-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: var(--size-target-min, 44px);
-  min-height: var(--size-target-min, 44px);
-  padding: var(--space-2);
-  border-radius: var(--radius-control);
-  border: 1px solid transparent;
-  background: transparent;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  border-radius: 4px;
+  border: 1px solid var(--border-control);
+  background: var(--surface-raised);
   color: var(--text);
   font-family: var(--font-ui);
-  font-size: var(--type-body-size, 16px);
+  font-size: var(--type-body-sm-size, 14px);
   line-height: 1;
   cursor: pointer;
   transition: opacity var(--duration-base, 160ms) ease, transform var(--duration-base, 160ms) ease;
 }
 
 .lp-icon-btn-ghost {
-  border: none;
-  background: transparent;
+  border: 1px solid var(--border-control);
+  background: var(--surface-raised);
   color: var(--text);
 }
 
@@ -1316,54 +1322,48 @@ button[type="submit"] {
 }
 
 .lp-icon-btn-sm {
-  min-width: 32px;
-  min-height: 32px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
 }
 
-@media (max-width: 767px) {
-  .lp-btn,
-  .lp-btn-sm,
-  .lp-icon-btn,
-  .lp-icon-btn-sm,
-  button.lp-chip {
-    min-width: 44px;
-    min-height: 44px;
+@media (pointer: coarse) {
+  .lp-btn::after,
+  .lp-icon-btn::after,
+  button.lp-chip::after,
+  .lp-tab::after,
+  .lp-input::after,
+  .lp-select::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
   }
 }
 
 .lp-chip {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-pill);
+  padding: var(--space-1) var(--space-2);
+  border-radius: 4px;
   border: 1px solid var(--border-control);
   background: var(--surface-raised);
   color: var(--text);
   font-family: var(--font-ui);
   font-size: var(--type-body-sm-size, 14px);
   line-height: var(--type-body-sm-line, 20px);
-  font-weight: 500;
+  font-weight: 400;
   white-space: nowrap;
   cursor: default;
 }
 
 button.lp-chip {
-  min-height: var(--size-target-min, 44px);
+  height: 36px;
+  min-height: 36px;
   cursor: pointer;
-}
-
-@media (max-width: 767px) {
-  .lp-btn,
-  .lp-btn-sm,
-  .lp-icon-btn,
-  .lp-icon-btn-sm,
-  button.lp-chip,
-  .lp-status-undo-link {
-    min-width: 44px;
-    min-height: 44px;
-  }
 }
 
 button.lp-chip:hover:not(:disabled),
@@ -1372,7 +1372,7 @@ button.lp-chip.is-hover {
 }
 
 .lp-chip-suggested {
-  border-style: dashed;
+  border-style: solid;
   border-color: var(--state-provisional-border, var(--border-control));
 }
 
@@ -1386,47 +1386,27 @@ button.lp-chip.is-hover {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-pill);
+  padding: 0;
+  border-radius: 0;
   border: none;
   font-family: var(--font-ui);
-  font-size: var(--type-caption-size, 12px);
-  line-height: var(--type-caption-line, 16px);
-  font-weight: 600;
+  font-size: var(--type-body-sm-size, 14px);
+  line-height: var(--type-body-sm-line, 20px);
+  font-weight: 400;
   white-space: nowrap;
   cursor: default;
-  background: var(--role-neutral-bg);
-  color: var(--role-neutral-fg);
+  background: transparent;
+  color: var(--text-muted);
 }
 
-.lp-badge-neutral {
-  background: var(--role-neutral-bg);
-  color: var(--role-neutral-fg);
-}
-
-.lp-badge-ok {
-  background: var(--role-success-bg);
-  color: var(--role-success-fg);
-}
-
-.lp-badge-warn {
-  background: var(--role-warning-bg);
-  color: var(--role-warning-fg);
-}
-
-.lp-badge-danger {
-  background: var(--role-danger-bg);
-  color: var(--role-danger-fg);
-}
-
-.lp-badge-info {
-  background: var(--role-info-bg);
-  color: var(--role-info-fg);
-}
-
+.lp-badge-neutral,
+.lp-badge-ok,
+.lp-badge-warn,
+.lp-badge-danger,
+.lp-badge-info,
 .lp-badge-action {
-  background: var(--role-action-bg);
-  color: var(--role-action-fg);
+  background: transparent;
+  color: var(--text-muted);
 }
 
 .lp-status-indicator {
@@ -1434,16 +1414,18 @@ button.lp-chip.is-hover {
   align-items: center;
   gap: var(--space-2);
   font-family: var(--font-ui);
-  font-size: var(--font-size-1, 14px);
+  font-size: 14px;
+  font-weight: 400;
   color: var(--text);
   cursor: default;
 }
 
 .lp-status-dot {
-  width: 10px;
-  height: 10px;
+  width: 6px;
+  height: 6px;
   border-radius: 999px;
   display: inline-block;
+  flex-shrink: 0;
   background: var(--text-muted);
 }
 
@@ -1485,7 +1467,7 @@ button.lp-chip.is-hover {
   position: relative;
   width: 44px;
   height: 24px;
-  border-radius: 999px;
+  border-radius: 4px;
   background: var(--surface-sunken);
   border: 1px solid var(--border-control, var(--rule));
   display: inline-flex;
@@ -1501,7 +1483,7 @@ button.lp-chip.is-hover {
 .lp-switch-thumb {
   width: 18px;
   height: 18px;
-  border-radius: 999px;
+  border-radius: 4px;
   background: var(--surface-raised);
   transition: transform var(--duration-fast, 120ms) ease;
 }
@@ -1526,26 +1508,32 @@ button.lp-chip.is-hover {
 
 .lp-input {
   width: 100%;
-  min-height: var(--size-target-min, 44px);
-  padding: var(--space-2) var(--space-3);
+  height: 36px;
+  min-height: 36px;
+  padding: 0 var(--space-2);
   font-family: var(--font-ui);
-  font-size: var(--font-size-1, 14px);
+  font-size: 14px;
+  font-weight: 400;
   color: var(--text);
   background: var(--surface-raised);
   border: 1px solid var(--field-border, var(--border-control, var(--rule)));
-  border-radius: var(--field-radius, var(--radius-control));
+  border-radius: 4px;
 }
 
 .lp-textarea {
+  height: auto;
   min-height: 144px;
+  padding: var(--space-2);
   overflow-y: hidden;
   resize: vertical;
 }
 
 .lp-select {
-  height: auto;
-  text-overflow: clip;
-  white-space: normal;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 var(--space-2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .lp-select option {
@@ -1580,13 +1568,13 @@ input[type="date"].lp-input {
 
 .lp-field-help {
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
 .lp-field-error {
   margin: 0;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--status-danger-fg, var(--status-error));
 }
@@ -1721,20 +1709,23 @@ input[type="date"].lp-input {
 
 .lp-status-line {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--space-2);
-  min-height: 24px;
+  min-height: 36px;
   font-size: var(--type-body-sm-size, 14px);
   line-height: var(--type-body-sm-line, 20px);
   color: var(--text);
 }
 
 .lp-status-icon {
-  margin-top: 2px;
+  flex-shrink: 0;
 }
 
 .lp-status-line-body {
-  display: inline;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-1);
   flex: 1;
   min-width: 0;
 }
@@ -1752,9 +1743,13 @@ input[type="date"].lp-input {
 }
 
 .lp-status-undo-link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  height: 36px;
+  min-height: 36px;
+  min-width: 36px;
   background: transparent;
   border: none;
   padding: 0 var(--space-1);
@@ -1890,7 +1885,7 @@ input[type="date"].lp-input {
 .lp-popover-menu {
   background: var(--surface-overlay, var(--surface-raised));
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-container);
+  border-radius: 8px;
   box-shadow: var(--shadow-overlay);
   padding: var(--space-2);
   display: flex;
@@ -1901,21 +1896,26 @@ input[type="date"].lp-input {
 
 .lp-tablist {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
+  flex-wrap: nowrap;
+  gap: var(--space-4);
   border-bottom: 1px solid var(--border-subtle);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
+  overflow-x: auto;
 }
 
 .lp-tab {
+  position: relative;
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  padding: var(--space-2) var(--space-3);
-  min-height: var(--size-target-min, 44px);
+  border-radius: 4px 4px 0 0;
+  padding: 0 var(--space-2);
+  height: 36px;
+  min-height: 36px;
   font-family: var(--font-ui);
-  font-size: var(--type-body-sm-size, 14px);
+  font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
   color: var(--text-muted);
   cursor: pointer;
 }
@@ -3001,22 +3001,6 @@ a.lp-admin-header-brand {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-}
-
-.lp-status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: var(--radius-pill);
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-.lp-status-dot-ok {
-  background: var(--status-ok);
-}
-
-.lp-status-dot-warn {
-  background: var(--status-warn);
 }
 
 .lp-admin-section-card {

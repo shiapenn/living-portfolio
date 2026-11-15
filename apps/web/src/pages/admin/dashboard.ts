@@ -1,5 +1,6 @@
 import { renderAdminShell } from '../../layouts/admin-shell.js';
-import { renderButton, renderChip, renderPageNotice } from '../../components/index.js';
+import { renderButton, renderStatusDot } from '../../primitives/index.js';
+import { renderPageNotice } from '../../components/index.js';
 import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { escapeHtml } from '../../lib/html.js';
@@ -87,7 +88,7 @@ ${items
   .map(
     (item) => `<li id="${escapeHtml(item.id)}" class="lp-dashboard-item">
   <div class="lp-dashboard-item-meta">
-    ${renderChip({ label: item.badge, kind: 'status' })}
+    ${renderStatusDot({ label: item.badge, tone: 'warn' })}
     <span>${escapeHtml(item.summary)}</span>
   </div>
   <a href="${escapeHtml(item.actionHref)}" class="lp-btn lp-btn-secondary lp-btn-sm">${escapeHtml(item.actionLabel)}</a>

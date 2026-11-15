@@ -25,10 +25,11 @@ test.describe('WP-15.3a Design Foundations Conformance (D-FOUND-1..6)', () => {
       const badges = Array.from(document.querySelectorAll<HTMLElement>('.lp-badge'));
       const chips = Array.from(document.querySelectorAll<HTMLElement>('button.lp-chip'));
       return {
-        controls8: checkRadius('.lp-btn, .lp-icon-btn, .lp-input', '8px'),
-        containers12: checkRadius('.lp-card, .lp-notice, .lp-empty-state, #specimen-radius-container', '12px'),
-        overlays16: checkRadius('.lp-dialog-panel, .lp-drawer-panel, #specimen-radius-overlay', '16px'),
-        pills999: checkRadius('.lp-badge, .lp-chip, .lp-status-dot', '999px'),
+        controls4: checkRadius('.lp-btn, .lp-icon-btn, .lp-input', '4px'),
+        containers4: checkRadius('.lp-card, .lp-notice, .lp-empty-state, #specimen-radius-container', '4px'),
+        overlays8: checkRadius('.lp-dialog-panel, .lp-drawer-panel, #specimen-radius-overlay', '8px'),
+        chips4: checkRadius('.lp-chip', '4px'),
+        dots999: checkRadius('.lp-status-dot', '999px'),
         badgesBorderless: badges.every((b) => parseFloat(getComputedStyle(b).borderTopWidth) === 0),
         badgesNonPointer: badges.every((b) => getComputedStyle(b).cursor !== 'pointer'),
         chipsBordered: chips.every((c) => parseFloat(getComputedStyle(c).borderTopWidth) === 1),
@@ -37,10 +38,11 @@ test.describe('WP-15.3a Design Foundations Conformance (D-FOUND-1..6)', () => {
       };
     });
     expect(shapeAudit).toEqual({
-      controls8: true,
-      containers12: true,
-      overlays16: true,
-      pills999: true,
+      controls4: true,
+      containers4: true,
+      overlays8: true,
+      chips4: true,
+      dots999: true,
       badgesBorderless: true,
       badgesNonPointer: true,
       chipsBordered: true,
@@ -115,11 +117,10 @@ test.describe('WP-15.3a Design Foundations Conformance (D-FOUND-1..6)', () => {
     await page.goto('/admin/dev/foundations?theme=light');
 
     const result = await page.evaluate(() => {
-      const isControlInCard = (el: HTMLElement, root: HTMLElement) =>
-        !root.classList.contains('lp-notice') &&
+      const isControlInCard = (el: HTMLElement) =>
         el.matches('button, input, select, textarea, .lp-chip, .lp-badge, .lp-switch-track, .lp-status-dot');
-      const hasFourSidedBorder = (el: HTMLElement, root: HTMLElement) => {
-        if (isControlInCard(el, root)) return false;
+      const hasFourSidedBorder = (el: HTMLElement) => {
+        if (isControlInCard(el)) return false;
         const cs = getComputedStyle(el);
         return (
           parseFloat(cs.borderTopWidth) > 0 &&
@@ -135,9 +136,9 @@ test.describe('WP-15.3a Design Foundations Conformance (D-FOUND-1..6)', () => {
       );
       const violations: string[] = [];
       for (const root of roots) {
-        if (!hasFourSidedBorder(root, root)) continue;
+        if (!hasFourSidedBorder(root)) continue;
         for (const d of Array.from(root.querySelectorAll<HTMLElement>('*'))) {
-          if (hasFourSidedBorder(d, root)) violations.push(`${root.className} > ${d.tagName}.${d.className}`);
+          if (hasFourSidedBorder(d)) violations.push(`${root.className} > ${d.tagName}.${d.className}`);
         }
       }
       const checkIconAlign = (containerSel: string, iconSel: string, textSel: string) => {
@@ -360,7 +361,7 @@ test.describe('WP-15.3a Design Foundations Conformance (D-FOUND-1..6)', () => {
       ).filter((el) => el.offsetParent !== null);
       const undersized = targets
         .map((el) => ({ id: el.id || el.className, h: Math.round(el.getBoundingClientRect().height), w: Math.round(el.getBoundingClientRect().width) }))
-        .filter((t) => t.h < 44 || t.w < 44);
+        .filter((t) => t.h < 36 || t.w < 36);
       return {
         mainTop,
         navHidden,

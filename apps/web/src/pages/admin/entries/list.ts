@@ -1,11 +1,6 @@
 import { renderAdminShell } from '../../../layouts/admin-shell.js';
-import {
-  renderButton,
-  renderChip,
-  renderDialog,
-  renderEmptyState,
-  renderPageNotice,
-} from '../../../components/index.js';
+import { renderButton, renderStatusDot } from '../../../primitives/index.js';
+import { renderDialog, renderEmptyState, renderPageNotice } from '../../../components/index.js';
 import { adaptDataSource, type WebDataClient } from '../../../lib/data-source.js';
 import { escapeHtml } from '../../../lib/html.js';
 import { ENTRIES_LIST_STRINGS } from '../../../strings/admin/entries-list.js';
@@ -60,8 +55,8 @@ export async function renderAdminEntriesListPage(
   <div class="lp-entries-row-main">
     <a href="/admin/entries/${encodeURIComponent(entry.id)}" class="lp-entries-row-title">${escapeHtml(entry.title || 'Untitled')}</a>
     <div class="lp-entries-row-meta">
-      ${renderChip({ label: visibilityLabel(entry.visibility), kind: 'status' })}
-      ${renderChip({ label: entry.profile || 'work', kind: 'facet' })}
+      ${renderStatusDot({ label: visibilityLabel(entry.visibility), tone: entry.visibility === 'public' ? 'ok' : entry.visibility === 'unlisted' ? 'warn' : 'neutral' })}
+      <span class="lp-entry-profile">${escapeHtml(entry.profile || 'work')}</span>
       <span class="lp-structure-meter" aria-label="Structure ${escapeHtml(lvl)}">${meter}<span class="lp-structure-label">${escapeHtml(lvl)}</span></span>
     </div>
   </div>

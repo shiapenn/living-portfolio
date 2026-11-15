@@ -2,11 +2,11 @@
   "version": 1,
   "note": "Shrinking-only D-MIN style census budgets (WP-16.R). Counts may only decrease.",
   "budgets": {
-    "invalidRadii": 482,
-    "invalidControlHeights": 438,
-    "invalidFontSizes": 432,
-    "invalidSpacing": 3064,
+    "invalidRadii": 8,
+    "invalidControlHeights": 70,
+    "invalidFontSizes": 340,
+    "invalidSpacing": 1400,
     "inlineStyles": 540,
-    "multiSignatureRoles": 4
+    "multiSignatureRoles": 3
   }
 }

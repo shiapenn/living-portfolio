@@ -14,7 +14,7 @@ test.describe('WP-15.2 Shared Primitives & Gallery', () => {
     const seriousLight = lightAxe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
     expect(seriousLight).toEqual([]);
 
-    // Target size check: every visible button/switch/interactive chip >= 40px height (or >= 44px for standard)
+    // Target size check: every visible button/switch/interactive chip >= 36px height (D-MIN 3)
     const interactiveSelectors = [
       '#gallery-btn-primary',
       '#gallery-btn-secondary',
@@ -29,7 +29,7 @@ test.describe('WP-15.2 Shared Primitives & Gallery', () => {
       await expect(el).toBeVisible();
       const box = await el.boundingBox();
       expect(box).not.toBeNull();
-      expect(box!.height).toBeGreaterThanOrEqual(40);
+      expect(box!.height).toBeGreaterThanOrEqual(36);
       const cursor = await el.evaluate((node) => getComputedStyle(node).cursor);
       expect(cursor).toBe('pointer');
     }

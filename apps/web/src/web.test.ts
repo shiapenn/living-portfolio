@@ -611,16 +611,14 @@ console.log(x);
       expect(rendered).not.toContain('href="javascript:steal()"');
     });
 
-    it('2. Multi-tier design tokens define primitives, semantics, scale, and layout-max (20261020-UI-02)', () => {
-      // Scale 14/16/18/21/25/30/36/44
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-1: 14px;');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-2: 16px;');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-3: 18px;');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-4: 21px;');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-5: 25px;');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-6: 30px;');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-7: 36px;');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-8: 44px;');
+    it('2. Multi-tier design tokens define D-MIN primitives, semantics, scale, and layout-max (20261020-UI-02, D-MIN)', () => {
+      // D-MIN 8 Scale {12, 14, 16, 24}
+      expect(PRIMITIVE_TOKENS).toContain('--type-caption-size: 12px;');
+      expect(PRIMITIVE_TOKENS).toContain('--type-body-sm-size: 14px;');
+      expect(PRIMITIVE_TOKENS).toContain('--type-body-size: 16px;');
+      expect(PRIMITIVE_TOKENS).toContain('--type-page-title-size: 24px;');
+      expect(PRIMITIVE_TOKENS).toContain('--radius-control: 4px;');
+      expect(PRIMITIVE_TOKENS).toContain('--radius-overlay: 8px;');
 
       // Breakpoints
       expect(PRIMITIVE_TOKENS).toContain('--bp-sm: 480px;');
@@ -646,40 +644,41 @@ console.log(x);
       expect(COMPONENT_TOKENS).toContain('--editor-min-height: 60vh;');
     });
 
-    it('3. Component layer: Field, Button, Chip, and EntryRow abstractions (20261020-UI-04)', () => {
+    it('3. Component layer: Field, Button, Chip, and EntryRow abstractions (20261020-UI-04, D-MIN)', () => {
       // Field abstraction
       const fieldHtml = renderField({
+        kind: 'input',
         id: 'user-email',
+        name: 'email',
+        inputType: 'email',
         label: 'Email address',
-        hint: 'We will send your escalation receipt here',
+        help: 'We will send your escalation receipt here',
         error: 'Please enter a valid email address',
         required: true,
-        controlHtml: '<input type="email" id="user-email" class="ask-input" />',
       });
       expect(fieldHtml).toContain('for="user-email"');
-      expect(fieldHtml).toContain('id="user-email-hint"');
+      expect(fieldHtml).toContain('id="user-email-help"');
       expect(fieldHtml).toContain('id="user-email-error"');
       expect(fieldHtml).toContain('role="alert"');
       expect(fieldHtml).toContain('Email address');
 
       // Button abstraction
       const btnPrimary = renderButton({ label: 'Save Draft', variant: 'primary' });
-      expect(btnPrimary).toContain('class="btn btn-primary btn-md"');
+      expect(btnPrimary).toContain('class="lp-btn lp-btn-primary lp-btn-md"');
 
-      const btnLink = renderButton({ label: 'View Profile', href: '/about', variant: 'secondary' });
-      expect(btnLink).toContain('<a href="/about"');
-      expect(btnLink).toContain('class="btn btn-secondary btn-md"');
+      const btnSecondary = renderButton({ label: 'View Profile', variant: 'secondary' });
+      expect(btnSecondary).toContain('class="lp-btn lp-btn-secondary lp-btn-md"');
 
       const btnLoading = renderButton({ label: 'Publishing...', loading: true, disabled: true });
       expect(btnLoading).toContain('aria-busy="true"');
       expect(btnLoading).toContain('disabled');
 
       // Chip abstraction
-      const chipFilter = renderChip({ label: 'Worked', kind: 'filter', selected: true });
-      expect(chipFilter).toContain('chip chip-filter active');
+      const chipFilter = renderChip({ label: 'Worked', interactive: true, selected: true });
+      expect(chipFilter).toContain('lp-chip lp-chip-confirmed lp-chip-selected');
 
-      const chipProvisional = renderChip({ label: 'Suggested Role', provisional: true });
-      expect(chipProvisional).toContain('chip-provisional chip-suggested');
+      const chipProvisional = renderChip({ label: 'Suggested Role', state: 'suggested' });
+      expect(chipProvisional).toContain('lp-chip-suggested');
 
       // Unified EntryRow
       const entryRow = renderEntryRow({

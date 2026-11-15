@@ -146,15 +146,13 @@ Safe text before
 
   describe('20261020-UI-02 & 20261020-UI-03: Multi-Tier Design Tokens & Typography Craft', () => {
     it('defines 3-tier token hierarchy with complete primitives, semantics, and component tokens', () => {
-      // Tier 1: Primitives
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-1: 14px');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-2: 16px');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-3: 18px');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-4: 21px');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-5: 25px');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-6: 30px');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-7: 36px');
-      expect(PRIMITIVE_TOKENS).toContain('--font-size-8: 44px');
+      // Tier 1: Primitives (D-MIN 8: {12, 14, 16, 24})
+      expect(PRIMITIVE_TOKENS).toContain('--type-caption-size: 12px');
+      expect(PRIMITIVE_TOKENS).toContain('--type-body-sm-size: 14px');
+      expect(PRIMITIVE_TOKENS).toContain('--type-body-size: 16px');
+      expect(PRIMITIVE_TOKENS).toContain('--type-page-title-size: 24px');
+      expect(PRIMITIVE_TOKENS).toContain('--radius-control: 4px');
+      expect(PRIMITIVE_TOKENS).toContain('--radius-overlay: 8px');
 
       // Breakpoints
       expect(PRIMITIVE_TOKENS).toContain('--bp-sm: 480px');
@@ -194,16 +192,17 @@ Safe text before
   describe('20261020-UI-04: Component Layer (Field, Button, Chip, EntryRow)', () => {
     it('Field abstraction associates label, hint, and error with appropriate accessibility attributes', () => {
       const field = renderField({
+        kind: 'input',
         id: 'spec-input',
+        name: 'spec',
         label: 'Specification Version',
-        hint: 'Enter semver identifier e.g. 0.1.0',
+        help: 'Enter semver identifier e.g. 0.1.0',
         error: 'Invalid version format',
         required: true,
-        controlHtml: '<input type="text" id="spec-input" class="ask-input" />',
       });
 
       expect(field).toContain('for="spec-input"');
-      expect(field).toContain('id="spec-input-hint"');
+      expect(field).toContain('id="spec-input-help"');
       expect(field).toContain('id="spec-input-error"');
       expect(field).toContain('role="alert"');
       expect(field).toContain('aria-hidden="true"');
@@ -212,24 +211,24 @@ Safe text before
 
     it('Button abstraction supports variants, sizes, loading, and disabled states', () => {
       const primaryBtn = renderButton({ label: 'Submit', variant: 'primary', size: 'md' });
-      expect(primaryBtn).toContain('class="btn btn-primary btn-md"');
+      expect(primaryBtn).toContain('class="lp-btn lp-btn-primary lp-btn-md"');
 
       const quietBtn = renderButton({ label: 'Dismiss', variant: 'quiet', size: 'sm' });
-      expect(quietBtn).toContain('class="btn btn-quiet btn-sm"');
+      expect(quietBtn).toContain('class="lp-btn lp-btn-quiet lp-btn-sm"');
 
       const loadingBtn = renderButton({ label: 'Processing...', loading: true, disabled: true });
       expect(loadingBtn).toContain('aria-busy="true"');
       expect(loadingBtn).toContain('disabled');
     });
 
-    it('Chip abstraction distinguishes facet, filter, status, and provisional dashed styles', () => {
-      const facetChip = renderChip({ label: 'TypeScript', kind: 'facet' });
-      expect(facetChip).toContain('class="chip chip-facet"');
+    it('Chip abstraction distinguishes confirmed, suggested, and interactive filter styles', () => {
+      const facetChip = renderChip({ label: 'TypeScript', state: 'confirmed' });
+      expect(facetChip).toContain('class="lp-chip lp-chip-confirmed"');
 
-      const suggestedChip = renderChip({ label: 'Machine Suggested', kind: 'facet', provisional: true });
-      expect(suggestedChip).toContain('chip-provisional chip-suggested');
+      const suggestedChip = renderChip({ label: 'Machine Suggested', state: 'suggested' });
+      expect(suggestedChip).toContain('lp-chip-suggested');
 
-      const filterBtn = renderChip({ label: 'Active Filter', kind: 'filter', selected: true, onclick: "filter('all')" });
+      const filterBtn = renderChip({ label: 'Active Filter', interactive: true, selected: true });
       expect(filterBtn).toContain('<button type="button"');
       expect(filterBtn).toContain('aria-pressed="true"');
     });

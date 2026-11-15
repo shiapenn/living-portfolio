@@ -1,6 +1,24 @@
-export * from './field.js';
-export * from './button.js';
-export * from './chip.js';
+export {
+  renderButton,
+  renderIconButton,
+  renderChip,
+  renderBadge,
+  renderStatusDot,
+  renderField,
+} from '../primitives/index.js';
+export type {
+  ButtonProps,
+  ButtonSize,
+  ButtonVariant,
+  IconButtonProps,
+  BadgeProps,
+  ChipProps,
+  ChipState,
+  StatusDotProps,
+  StatusTone,
+  FieldProps,
+  SelectOption,
+} from '../primitives/index.js';
 export * from './entry-card.js';
 export * from './slots.js';
 export { renderPageNotice, renderStatusLine } from './feedback.js';
