@@ -52,9 +52,8 @@ function maskSensitiveSnippet(raw: string): string {
   return `${s.slice(0, 4)}…${s.slice(-2)}`;
 }
 
-function autoGrowTextarea(ta: HTMLTextAreaElement): void {
-  ta.style.height = 'auto';
-  ta.style.height = `${Math.max(ta.scrollHeight, 144)}px`;
+function autoGrowTextarea(_ta: HTMLTextAreaElement): void {
+  // Auto-sizing handled by CSS field-sizing: content without inline styles
 }
 
 function setFieldError(input: HTMLElement | null, message: string | null): void {
@@ -879,64 +878,6 @@ function bootEditorPage(): void {
     }
   });
 
-  // Automated-answering kill switch (UX-104)
-  const killBtn = document.getElementById('btn-killswitch');
-  const killBadge = document.getElementById('ref-killswitch-badge');
-  killBtn?.addEventListener('click', async () => {
-    const currentlyEnabled = killBtn.getAttribute('aria-pressed') === 'true';
-    const nextEnabled = !currentlyEnabled;
-    if (!isFixtureMode) {
-      const res = await apiRequest('/api/settings/routing', {
-        method: 'PATCH',
-        body: JSON.stringify({ automatedAnsweringEnabled: nextEnabled }),
-      });
-      if (!res.ok) return;
-    }
-    killBtn.setAttribute('aria-pressed', nextEnabled ? 'true' : 'false');
-    killBtn.textContent = nextEnabled
-      ? EDITOR_STRINGS.safety.killSwitchPauseBtn
-      : EDITOR_STRINGS.safety.killSwitchResumeBtn;
-    if (killBadge) {
-      killBadge.textContent = nextEnabled
-        ? EDITOR_STRINGS.safety.killSwitchActive
-        : EDITOR_STRINGS.safety.killSwitchPaused;
-      killBadge.className = nextEnabled ? 'lp-badge lp-badge-ok' : 'lp-badge lp-badge-warn';
-    }
-  });
-
-  // Escalation quick review card (UX-105)
-  const escCard = document.getElementById('ref-escalations-card');
-  const escList = document.getElementById('ref-escalations-list');
-  const escEmpty = document.getElementById('ref-escalations-empty');
-  const escCountBadge = document.getElementById('ref-escalations-count');
-  escCard?.addEventListener('click', async (event) => {
-    const target = event.target as HTMLElement | null;
-    const approveBtn = target?.closest<HTMLElement>('[data-esc-approve]');
-    const rejectBtn = target?.closest<HTMLElement>('[data-esc-reject]');
-    const escId = approveBtn?.getAttribute('data-esc-approve') ?? rejectBtn?.getAttribute('data-esc-reject');
-    if (!escId) return;
-    const itemEl = escCard.querySelector<HTMLElement>(`[data-escalation-id="${escId}"]`);
-    if (!isFixtureMode) {
-      const endpoint = approveBtn
-        ? `/api/inbox/${encodeURIComponent(escId)}/approve`
-        : `/api/inbox/${encodeURIComponent(escId)}/reject`;
-      const payload = approveBtn
-        ? { finalReply: itemEl?.querySelector('.lp-escalation-question')?.textContent ?? 'Approved by owner' }
-        : { reason: 'Declined by owner from workspace' };
-      const res = await apiRequest(endpoint, { method: 'PATCH', body: JSON.stringify(payload) });
-      if (!res.ok) return;
-    }
-    itemEl?.remove();
-    const remaining = escList?.querySelectorAll('[data-escalation-id]').length ?? 0;
-    if (escCountBadge) {
-      escCountBadge.textContent = String(remaining);
-      escCountBadge.className = remaining > 0 ? 'lp-badge lp-badge-warn' : 'lp-badge lp-badge-neutral';
-    }
-    if (remaining === 0) {
-      escList?.setAttribute('hidden', '');
-      escEmpty?.removeAttribute('hidden');
-    }
-  });
 }
 
 if (document.readyState === 'loading') {

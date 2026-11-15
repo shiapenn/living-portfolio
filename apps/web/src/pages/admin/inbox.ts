@@ -76,9 +76,11 @@ export async function renderAdminInboxPage(
           <label for="inbox-reply-text" class="lp-field-label">${escapeHtml(INBOX_STRINGS.inbox.replyLabel)}</label>
           <textarea id="inbox-reply-text" class="lp-textarea" rows="4" placeholder="${escapeHtml(INBOX_STRINGS.inbox.replyPlaceholder)}">${escapeHtml(String(selectedItem.final || selectedItem.draft || ''))}</textarea>
         </div>
-        <div class="lp-history-row-header">
-          <button type="button" id="inbox-btn-reply" class="lp-btn lp-btn-primary lp-btn-sm">${escapeHtml(INBOX_STRINGS.inbox.sendReply)}</button>
-          <div class="lp-history-meta">
+        <div class="lp-stack-md">
+          <div class="lp-row-wrap">
+            <button type="button" id="inbox-btn-reply" class="lp-btn lp-btn-primary lp-btn-sm">${escapeHtml(INBOX_STRINGS.inbox.sendReply)}</button>
+          </div>
+          <div class="lp-inbox-decline-row">
             <input id="inbox-decline-reason" type="text" class="lp-input" placeholder="${escapeHtml(INBOX_STRINGS.inbox.declinePlaceholder)}" aria-label="${escapeHtml(INBOX_STRINGS.inbox.declineLabel)}" />
             <button type="button" id="inbox-btn-decline" class="lp-btn lp-btn-secondary lp-btn-sm">${escapeHtml(INBOX_STRINGS.inbox.declineButton)}</button>
           </div>

@@ -23,7 +23,8 @@ describe('WP-16.2 Admin Today Dashboard', () => {
     expect(html).toContain('3 unpublished drafts in workspace');
     expect(html).toContain('id="att-backup"');
     expect(html).toContain('id="today-checklist-card"');
-    expect(html).toContain('id="today-explanation"');
+    expect(html).not.toContain('id="today-explanation"');
+    expect(html).toContain('id="btn-killswitch"');
     expect(html).not.toMatch(/\bstyle\s*=/);
   });
 

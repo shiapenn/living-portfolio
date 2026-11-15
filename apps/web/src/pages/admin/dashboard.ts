@@ -1,10 +1,11 @@
 import { renderAdminShell } from '../../layouts/admin-shell.js';
-import { renderButton, renderStatusDot } from '../../primitives/index.js';
+import { renderBadge, renderButton, renderStatusDot } from '../../primitives/index.js';
 import { renderPageNotice } from '../../components/index.js';
 import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { escapeHtml } from '../../lib/html.js';
 import { DASHBOARD_STRINGS } from '../../strings/admin/dashboard.js';
+import { EDITOR_STRINGS } from '../../strings/admin/editor.js';
 
 export interface DashboardOptions {
   nonce?: string;
@@ -122,20 +123,32 @@ ${items
   </ol>
 </section>`;
 
-  const exp = DASHBOARD_STRINGS.explanation;
+  const answeringOn = options.answeringEnabled ?? true;
+  const killLabel = answeringOn
+    ? EDITOR_STRINGS.safety.killSwitchPauseBtn
+    : EDITOR_STRINGS.safety.killSwitchResumeBtn;
+  const killStateLabel = answeringOn
+    ? EDITOR_STRINGS.safety.killSwitchActive
+    : EDITOR_STRINGS.safety.killSwitchPaused;
+
   const content = `<div class="lp-dashboard-stack">
   <header class="lp-dashboard-header">
     <h1 class="lp-type-title">${escapeHtml(DASHBOARD_STRINGS.heading)}</h1>
     <p class="lp-field-help">${escapeHtml(DASHBOARD_STRINGS.lead)}</p>
   </header>
 
-  <section id="today-explanation" class="lp-dashboard-explain" aria-label="How Today works">
-    <dl class="lp-dashboard-explain-grid">
-      <div><dt>What</dt><dd>${escapeHtml(exp.what)}</dd></div>
-      <div><dt>When</dt><dd>${escapeHtml(exp.when)}</dd></div>
-      <div><dt>How</dt><dd>${escapeHtml(exp.how)}</dd></div>
-      <div><dt>Impact</dt><dd>${escapeHtml(exp.impact)}</dd></div>
-    </dl>
+  <section class="lp-dashboard-card" aria-label="${escapeHtml(EDITOR_STRINGS.safety.killSwitchTitle)}">
+    <div class="lp-killswitch-row">
+      <div class="lp-killswitch-copy">
+        <span class="lp-type-body-sm">${escapeHtml(EDITOR_STRINGS.safety.killSwitchTitle)}</span>
+        ${renderBadge({
+          id: 'ref-killswitch-badge',
+          label: killStateLabel,
+          tone: answeringOn ? 'ok' : 'warn',
+        })}
+      </div>
+      <button type="button" id="btn-killswitch" class="lp-btn lp-btn-secondary lp-btn-sm" aria-pressed="${answeringOn ? 'true' : 'false'}">${escapeHtml(killLabel)}</button>
+    </div>
   </section>
 
   ${checklistHtml}
@@ -161,6 +174,29 @@ ${items
         card.setAttribute('hidden', '');
       } catch (_err) {
         dismissBtn.disabled = false;
+      }
+    });
+  }
+  const killBtn = document.getElementById('btn-killswitch');
+  const killBadge = document.getElementById('ref-killswitch-badge');
+  if (killBtn) {
+    killBtn.addEventListener('click', async function() {
+      const currentlyEnabled = killBtn.getAttribute('aria-pressed') === 'true';
+      const nextEnabled = !currentlyEnabled;
+      const res = await apiClient('/api/settings/routing', {
+        method: 'PATCH',
+        body: JSON.stringify({ automatedAnsweringEnabled: nextEnabled }),
+      });
+      if (!res || !res.ok) return;
+      killBtn.setAttribute('aria-pressed', nextEnabled ? 'true' : 'false');
+      killBtn.textContent = nextEnabled
+        ? ${JSON.stringify(EDITOR_STRINGS.safety.killSwitchPauseBtn)}
+        : ${JSON.stringify(EDITOR_STRINGS.safety.killSwitchResumeBtn)};
+      if (killBadge) {
+        killBadge.textContent = nextEnabled
+          ? ${JSON.stringify(EDITOR_STRINGS.safety.killSwitchActive)}
+          : ${JSON.stringify(EDITOR_STRINGS.safety.killSwitchPaused)};
+        killBadge.className = nextEnabled ? 'lp-badge lp-badge-ok' : 'lp-badge lp-badge-warn';
       }
     });
   }

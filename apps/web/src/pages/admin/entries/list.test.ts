@@ -17,12 +17,13 @@ const emptyClient = {
 } as any;
 
 describe('WP-16.3 Admin Entries List Page', () => {
-  it('renders rows with state chips, 4-step structure meter, pagination, and zero inline styles', async () => {
+  it('renders rows with state chips, pagination, and zero inline styles (D-MIN: no meter or row menu)', async () => {
     const html = await renderAdminEntriesListPage(mockClient, { page: 1, limit: 1 });
     expect(html).toContain('data-entry-row="e1"');
     expect(html).not.toContain('data-entry-row="e2"');
     expect(html).toContain('Page 1 of 2 (2 total)');
-    expect(html).toContain('class="lp-structure-meter"');
+    expect(html).not.toContain('class="lp-structure-meter"');
+    expect(html).not.toContain('class="lp-row-menu-btn"');
     expect(html).toContain('id="entries-delete-dialog"');
     expect(html).not.toMatch(/\bstyle\s*=/);
   });

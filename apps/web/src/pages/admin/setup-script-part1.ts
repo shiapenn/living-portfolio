@@ -129,7 +129,7 @@ export const SETUP_SCRIPT_PART_1 = `
             }
           }
           if (progressFill) {
-            progressFill.style.width = Math.round((stepNum / 6) * 100) + '%';
+            progressFill.setAttribute('data-step', String(stepNum));
           }
           if (chip) {
             chip.textContent = 'Step ' + stepNum + ' of 6 · First-Run Wizard';

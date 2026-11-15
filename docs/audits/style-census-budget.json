@@ -4,9 +4,9 @@
   "budgets": {
     "invalidRadii": 0,
     "invalidControlHeights": 0,
-    "invalidFontSizes": 64,
-    "invalidSpacing": 100,
-    "inlineStyles": 8,
+    "invalidFontSizes": 0,
+    "invalidSpacing": 0,
+    "inlineStyles": 0,
     "multiSignatureRoles": 0
   }
 }

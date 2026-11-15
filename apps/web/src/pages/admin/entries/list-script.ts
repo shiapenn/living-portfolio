@@ -54,79 +54,31 @@ export const ENTRIES_LIST_SCRIPT = `<script>
     }
     if (emptyEl) emptyEl.setAttribute('hidden', '');
     regionEl.innerHTML = entries.map((e) => {
-      const steps = levelIndex(e.structureLevel);
       const visLabel = e.visibility === 'private' ? 'Draft' : e.visibility === 'unlisted' ? 'Unlisted' : 'Public';
       const visState = e.visibility === 'private' ? 'draft' : e.visibility === 'unlisted' ? 'unlisted' : 'public';
-      const meter = [1, 2, 3, 4].map((n) => '<span class="lp-structure-step' + (n <= steps ? ' is-filled' : '') + '"></span>').join('');
-      const unpubBtn = e.visibility === 'private' ? '' : '<button type="button" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" data-action="unpublish" data-id="' + escapeHtml(e.id) + '">Unpublish</button>';
       return '<li class="lp-entries-row" data-entry-row="' + escapeHtml(e.id) + '">' +
         '<div class="lp-entries-row-main">' +
           '<a href="/admin/entries/' + encodeURIComponent(e.id) + '" class="lp-entries-row-title">' + escapeHtml(e.title || 'Untitled') + '</a>' +
           '<div class="lp-entries-row-meta">' +
             '<span class="lp-state-label lp-state-' + visState + '"><span class="lp-state-dot" aria-hidden="true"></span>' + escapeHtml(visLabel) + '</span>' +
             '<span class="lp-chip">' + escapeHtml(e.profile || 'work') + '</span>' +
-            '<span class="lp-structure-meter" aria-label="Structure ' + escapeHtml(e.structureLevel || 'L0') + '">' + meter + '<span class="lp-structure-label">' + escapeHtml(e.structureLevel || 'L0') + '</span></span>' +
-          '</div>' +
-        '</div>' +
-        '<div class="lp-menu-wrap">' +
-          '<button type="button" class="lp-btn lp-btn-secondary lp-btn-sm lp-row-menu-btn" aria-haspopup="menu" aria-expanded="false">Actions</button>' +
-          '<div class="lp-popover-menu lp-menu-popover-float" role="menu" hidden>' +
-            '<a href="/admin/entries/' + encodeURIComponent(e.id) + '" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">Edit</a>' +
-            '<a href="/admin/entries/' + encodeURIComponent(e.id) + '?tab=context" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">Add context</a>' +
-            unpubBtn +
-            '<button type="button" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" data-action="delete" data-id="' + escapeHtml(e.id) + '">Delete</button>' +
           '</div>' +
         '</div>' +
       '</li>';
     }).join('');
-    bindRowMenus();
+    bindRowClicks();
   };
 
-  const closeAllMenus = () => {
-    document.querySelectorAll('#entries-list-region [role="menu"]').forEach((m) => m.setAttribute('hidden', ''));
-    document.querySelectorAll('#entries-list-region .lp-row-menu-btn').forEach((b) => b.setAttribute('aria-expanded', 'false'));
-  };
-
-  const bindRowMenus = () => {
-    document.querySelectorAll('#entries-list-region .lp-row-menu-btn').forEach((btn) => {
-      btn.addEventListener('click', (ev) => {
-        ev.stopPropagation();
-        const menu = btn.nextElementSibling;
-        if (!menu) return;
-        const wasOpen = !menu.hasAttribute('hidden');
-        closeAllMenus();
-        if (!wasOpen) {
-          menu.removeAttribute('hidden');
-          btn.setAttribute('aria-expanded', 'true');
-        }
-      });
-    });
-    document.querySelectorAll('#entries-list-region [data-action="unpublish"]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        closeAllMenus();
-        const id = btn.getAttribute('data-id');
-        if (!id) return;
-        await apiClient('/api/entries/' + encodeURIComponent(id), {
-          method: 'PATCH',
-          body: JSON.stringify({ visibility: 'private' }),
-        });
-        loadEntries(currentPage);
-      });
-    });
-    document.querySelectorAll('#entries-list-region [data-action="delete"]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        closeAllMenus();
-        pendingDeleteId = btn.getAttribute('data-id') || '';
-        if (delInput) delInput.value = '';
-        if (delConfirmBtn) delConfirmBtn.disabled = true;
-        if (delDialog) delDialog.removeAttribute('hidden');
-        if (delInput) delInput.focus();
+  const bindRowClicks = () => {
+    document.querySelectorAll('#entries-list-region .lp-entries-row').forEach((row) => {
+      row.addEventListener('click', (ev) => {
+        if (ev.target && ev.target.closest && ev.target.closest('a, button')) return;
+        const id = row.getAttribute('data-entry-row');
+        if (id) window.location.href = '/admin/entries/' + encodeURIComponent(id);
       });
     });
   };
-
-  document.addEventListener('click', closeAllMenus);
-  bindRowMenus();
+  bindRowClicks();
 
   const loadEntries = async (pageNum) => {
     currentPage = pageNum || 1;

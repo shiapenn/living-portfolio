@@ -5752,7 +5752,7 @@
     - "6.4"
     - "10.0"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -5763,7 +5763,10 @@
     - date: 2026-11-15
       status: open
       note: "Registered in WP-16.R R0 from WP-16 contact-sheet review: admin pages use inconsistent shells, duplicate primitives, inline styles, non-36px control heights, pill/mixed radii, extra font sizes/families, and page-height-dependent sidebar spacing."
-  verified_by: null
+    - date: 2026-11-15
+      status: fixed
+      note: "Fixed in WP-16.R R1-R3: D-MIN tokens/primitives implemented, all admin pages migrated to unified sidebar/auth shells, and style census budgets reached 0 across all 6 metrics."
+  verified_by: tests/e2e/wp16-r-style-census.spec.ts
 - id: 20261106-UX-108
   audit: AUD-2026-11-06
   title: 'Non-journey elements and layout defects on admin pages (Today explainer, row Actions buttons, L0/dot meter, dead nav links, duplicate Structure tabs, false empty-list card, editor safety cards, raw JSON on Answer rules, monospace reply, Inbox decline layout, theme toggle placement, Settings serif heading & alpha banner)'
@@ -5771,7 +5774,7 @@
     - "6.4"
     - "10.0"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -5782,4 +5785,7 @@
     - date: 2026-11-15
       status: open
       note: "Registered in WP-16.R R0 from WP-16 contact-sheet review: non-journey elements and layout defects identified for removal/remediation in WP-16.R R3."
-  verified_by: null
+    - date: 2026-11-15
+      status: fixed
+      note: "Fixed in WP-16.R R3: removed non-journey elements, moved kill switch to Today and escalations to Inbox, moved theme toggle into Account menu, fixed raw JSON, monospace reply, decline layout, and Settings alpha banner/heading."
+  verified_by: tests/e2e/wp16-r-style-census.spec.ts
