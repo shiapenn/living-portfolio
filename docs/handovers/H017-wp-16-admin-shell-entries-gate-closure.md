@@ -20,7 +20,7 @@
 
 - **Objective:** The Living Portfolio is an open-source, self-hosted dynamic professional identity system providing proof-first claims, query-guided interactive answers, NDA-safe confidential redacting, and multi-tier AI responses without vendor or domain lock-in.
 - **Non-negotiables:** Zero-hardcoded (no owner names, vendors, or sample clients in code; all values sourced from `@living-portfolio/config` or runtime data); decoupled (web and API separated by the versioned HTTP API `/api/v1`); self-hostable (every gate is a repo script runnable on any runner); honesty invariant (the UI never claims a status it has not measured); every receipt statement carries a status tag (`[implemented]`, `[partial]`, `[simulated]`, `[not-started]`).
-- **Toolchain:** Node 22.x, pnpm 12.14.0, Vitest 3.0.7, Playwright 1.64.1, Turbo 2.4.4, TypeScript 5.7.3.
+- **Toolchain:** Node 22.x, pnpm 12.14.0, Vitest 4.1.12, Playwright 1.64.1, Turbo 2.4.4, TypeScript 5.7.3.
 - **Authority:** A implements; L reviews and closes gates; owner decides governance. Work Package 16 (Gate G16) is closed on automated evidence at `A114` and certified in `docs/plans/gates.json`; hands-on owner acceptance is deferred to Milestone Gate `GFE` (`docs/plans/front-end-acceptance.md`).
 
 ## 2. Source-of-truth map
