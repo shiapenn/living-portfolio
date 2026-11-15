@@ -1305,5 +1305,13 @@
     "path": "docs/execution-reports/A117-p0-editor-body-loading-fix-ux-106.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A118",
+    "title": "wp16r r0 dmin spec and census",
+    "class": "A",
+    "path": "docs/execution-reports/A118-wp16r-r0-dmin-spec-and-census.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
