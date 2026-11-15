@@ -109,6 +109,7 @@
 | `A101` | wp-155-copy-and-help-catalogues | `active` | [A101-wp-155-copy-and-help-catalogues.md](execution-reports/A101-wp-155-copy-and-help-catalogues.md) | — |
 | `A102` | wp-156-ui-contract-and-budget-guards | `active` | [A102-wp-156-ui-contract-and-budget-guards.md](execution-reports/A102-wp-156-ui-contract-and-budget-guards.md) | — |
 | `A103` | g15-register-new-findings | `active` | [A103-g15-register-new-findings.md](execution-reports/A103-g15-register-new-findings.md) | — |
+| `A104` | g15-status-normalisation | `active` | [A104-g15-status-normalisation.md](execution-reports/A104-g15-status-normalisation.md) | — |
 
 ## Handover Snapshots (Class H)
 

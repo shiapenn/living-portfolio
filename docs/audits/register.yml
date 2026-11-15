@@ -3249,13 +3249,13 @@
     - "5.1"
     - "12.6"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/web/src/pages/admin/entries/editor.test.ts
   history:
     - date: 2026-11-06
       status: open
@@ -3263,7 +3263,10 @@
     - date: 2026-11-13
       status: open
       note: "Explicit partial WP mapping (WP-15 part, WP-16 part): WP-15.7 builds the Reference Editor Page with isolated per-entry state and empty/first-run handling; WP-16.3 and WP-16.4 mount dedicated /admin/entries/new and /admin/entries/:id routes and retire default-to-first-entry routing."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Status normalised at Gate G15: /admin/entries/:id and /admin/entries/new routes exist for Reference Editor (apps/web/src/pages/admin/entries/editor.test.ts); dedicated Entries list + per-entry route wiring remains for WP-16.3 and WP-16.4."
+  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-13
   audit: AUD-2026-11-06
   title: 'Redaction drawer is a fixed aside lacking role dialog, aria-modal, Escape key handler, and focus trap'
@@ -3499,18 +3502,21 @@
     - "12.7"
     - "12.9"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part): Status normalised at Gate G15: Delete entry moved into More menu with confirmation dialog in Reference Editor (tests/e2e/wp15-7-editor-reference-page.spec.ts); typed confirmation on Entries list row menu remains for WP-16.3."
+  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-26
   audit: AUD-2026-11-06
   title: 'Owner cannot enrol an authenticator app: secret is 20 raw hex bytes with no otpauth URI, base32 format, or QR code'
@@ -3779,13 +3785,13 @@
     - "5.1"
     - "12.6"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-06
       status: open
@@ -3793,7 +3799,10 @@
     - date: 2026-11-13
       status: open
       note: "Explicit partial WP mapping (WP-15 part, WP-16 part): WP-15.7 scopes the optional Structure panel in the Reference Editor Page to the open entry; WP-16.4 and WP-16.5 complete the 5-tab Inspector module across dedicated entry routes."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Status normalised at Gate G15: Structure drawer scopes to active entry in Reference Editor; full 5-tab Inspector module remains for WP-16.5 (and WP-16.4 route scoping)."
+  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-38
   audit: AUD-2026-11-06
   title: 'Machine-suggested facets carry chip-suggested class with no CSS rules, rendering suggested vs confirmed distinction invisible'
@@ -4064,13 +4073,13 @@
   spec_sections:
     - "14.0"
   severity: P1
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: 'apps/api/src/conformance/wp15-0-dom-id-baseline.conformance.test.ts'
+  regression_test: apps/api/src/conformance/wp15-0-dom-id-baseline.conformance.test.ts
   history:
     - date: 2026-11-08
       status: open
@@ -4081,7 +4090,10 @@
     - date: 2026-11-13
       status: fixed
       note: "Fixed in WP-15.0 (A092): Completed remaining Zod 4 (>=4.6.7), Vitest 4 (>=4.1.12), Tinypool (>=2.2.0), esbuild (>=0.25.12), and Hono (>=4.13.18) migrations via package.json and pnpm-workspace.yaml overrides. `pnpm audit --json` reports 0 vulnerabilities (0 critical, 0 high, 0 moderate, 0 low)."
-  verified_by: 'apps/api/src/conformance/wp15-0-dom-id-baseline.conformance.test.ts'
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part): Status normalised at Gate G15: Dependabot alerts #1-#4, #6-#28 (27/28) are closed, but Alert #5 (vitest >=2.1.0 <4.1.11, medium, manifest: package.json) remains open. Remaining root package.json alert closure mapped to WP-16."
+  verified_by: apps/api/src/conformance/wp15-0-dom-id-baseline.conformance.test.ts
 - id: 20261106-UX-52
   audit: AUD-2026-11-06
   title: 'CI flakiness from GitHub-hosted downloads: CodeQL bundle 504 and transient Gitleaks checksum mismatch'
@@ -4136,13 +4148,13 @@
   spec_sections:
     - "14.0"
   severity: P2
-  status: fixed
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: 'apps/api/src/conformance/wp15-0-dom-id-baseline.conformance.test.ts'
+  regression_test: apps/api/src/conformance/wp15-0-dom-id-baseline.conformance.test.ts
   history:
     - date: 2026-11-08
       status: open
@@ -4153,7 +4165,10 @@
     - date: 2026-11-13
       status: fixed
       note: "Fixed in WP-15.0 (A092): Upgraded vitest to ^4.1.12 across workspace packages, added @types/node and tsconfig test exclusion in apps/web, and applied pnpm-workspace.yaml overrides for tinypool (>=2.2.0), @vitest/mocker (>=4.1.12), and esbuild (>=0.25.12). `pnpm audit --json` reports 0 vulnerabilities."
-  verified_by: 'apps/api/src/conformance/wp15-0-dom-id-baseline.conformance.test.ts'
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part): Status normalised at Gate G15: Dependabot alerts #1-#4, #6-#28 (27/28) are closed, but Alert #5 (vitest >=2.1.0 <4.1.11, medium, manifest: package.json) remains open. Remaining root package.json alert closure mapped to WP-16."
+  verified_by: apps/api/src/conformance/wp15-0-dom-id-baseline.conformance.test.ts
 - id: 20261106-UX-55
   audit: AUD-2026-11-06
   title: 'Owner-facing jargon in editor messages ("L0", "Enrichment pipeline queued", "N revisions purged")'
@@ -4161,18 +4176,21 @@
     - "12.6"
     - "12.9"
   severity: P2
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/web/src/strings/strings.test.ts
   history:
     - date: 2026-11-10
       status: open
       note: "Registered at Gate G14 sign-off: Editor status/toast and workspace copy still expose internal implementation jargon to the owner: (1) 'Published \"...\" at L0. View entry ->' and 'Enrichment pipeline queued' in apps/web/src/client/commit-entry.ts (L430-432) and apps/web/src/renderer.ts (L2489, L3289, L3711), whereas Audit Report §2.3.3 (L558) specifies '\"{title}\" is live. View page ->'; (2) 'Deleted \"...\" (N revisions purged).' observed in WP-14.0a inline delete handler (apps/web/src/renderer.ts at db0082b; simplified in WP-14.0 apps/web/src/client/admin-entry.ts L267 while confirm prompt at L262 still says 'and all its revisions'). Planned for WP-15.5 (Copy and help catalogues, applying §2.3.3 rows across strings/* and client/*) and WP-16.4 (Editor route states and copy)."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part, WP-17 part): Status normalised at Gate G15: Reference Editor strings & help catalogues have zero internal jargon (apps/web/src/strings/strings.test.ts); legacy /admin/import and /admin/settings jargon cleanup remains for WP-16 and WP-17."
+  verified_by: apps/web/src/strings/strings.test.ts
 - id: 20261106-UX-56
   audit: AUD-2026-11-06
   title: 'Duplicate editor feedback in inline status line and toast with double live-region announcement'
@@ -4180,13 +4198,13 @@
     - "12.7"
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-10
       status: open
@@ -4194,7 +4212,10 @@
     - date: 2026-11-13
       status: open
       note: "Reused for screenshot item 3b at Gate G14 sign-off: the identical result message appears in three DOM elements simultaneously — (1) top banner #admin-status-banner (apps/web/src/renderer.ts L2253, written by showEditorFeedback in apps/web/src/client/admin-entry.ts L77, L96-100 and apps/web/src/renderer.ts L2679, L2722-2726, plus #admin-undo-banner at renderer.ts L2252 written by showUndoBanner in apps/web/src/client/commit-entry.ts L223-231); (2) inline status line #editor-status-line under/beside the action buttons (renderer.ts L2437, written by showEditorFeedback in client/admin-entry.ts L75, L80-85, renderer.ts L2705, L2708-2713, and showUndoBanner in client/commit-entry.ts L192-196, L211-215); and (3) floating toast #editor-toast (renderer.ts L2443, written by showEditorFeedback in client/admin-entry.ts L76, L87-94, renderer.ts L2706, L2714-2721, showUndoBanner in client/commit-entry.ts L198-202, L217-221, and showPublishSuccessToast in client/publish-dialog.ts L154-176). All three carry role=\"status\" aria-live=\"polite\". Remediated in WP-15.3 and WP-15.7 under D-FEEDBACK."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part, WP-17 part): Status normalised at Gate G15: Reference Editor enforces single D-FEEDBACK StatusLine without toast (tests/e2e/wp15-7-editor-reference-page.spec.ts); legacy admin pages remain for WP-16 and WP-17."
+  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-57
   audit: AUD-2026-11-06
   title: 'Two Publish buttons side by side ("Publish" and "Publish…"): competing primary actions and potential bypass of private-detail check'
@@ -4274,13 +4295,13 @@
     - "12.7"
     - "12.8"
   severity: P2
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-10
       status: open
@@ -4288,7 +4309,10 @@
     - date: 2026-11-13
       status: open
       note: "Reused for screenshot item 3b at Gate G14 sign-off: floating toast #editor-toast (apps/web/src/renderer.ts L2443, written by showEditorFeedback in apps/web/src/client/admin-entry.ts L76, L87-94, renderer.ts L2706, L2714-2721, showUndoBanner in client/commit-entry.ts L198-202, L217-221, and showPublishSuccessToast in client/publish-dialog.ts L154-176) repeats the message in #editor-status-line and #admin-status-banner and disappears on a timer. Under D-FEEDBACK (and D-CONTRACT-7), timed toasts and top banners are removed in WP-15.3 and WP-15.7 in favour of the four dedicated message places."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part, WP-17 part): Status normalised at Gate G15: timed toasts removed from Reference Editor (tests/e2e/wp15-7-editor-reference-page.spec.ts); legacy admin pages remain for WP-16 and WP-17."
+  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UI-01
   audit: AUD-2026-11-06
   title: 'Eight CSS variables referenced without definition; 684 inline style attributes; redaction drawer has missing background'
@@ -4580,13 +4604,13 @@
   spec_sections:
     - "12.9"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/web/src/strings/strings.test.ts
   history:
     - date: 2026-11-06
       status: open
@@ -4594,20 +4618,23 @@
     - date: 2026-11-13
       status: open
       note: "Explicit partial WP mapping (WP-14 part, WP-15 part): WP-14.1 mapped 409 duplicate slug and 400 validation errors in commitEntry; WP-15.5 and WP-15.7 wire the shared actionable-error formatter and field-level error recovery in the Reference Editor Page."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Status normalised at Gate G15: formatActionableError handles 401/403/404/409/5xx in Reference Editor (apps/web/src/strings/strings.test.ts, tests/e2e/auth.spec.ts); legacy pages remain for WP-16 and WP-17."
+  verified_by: tests/e2e/auth.spec.ts
 - id: 20261106-CP-13
   audit: AUD-2026-11-06
   title: 'Absence of standardized explanation pattern (what, when, how, impact) across admin modules and settings'
   spec_sections:
     - "12.9"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/web/src/strings/strings.test.ts
   history:
     - date: 2026-11-06
       status: open
@@ -4615,7 +4642,10 @@
     - date: 2026-11-13
       status: open
       note: "Explicit partial WP mapping (WP-15 part, WP-16 part, WP-17 part): WP-15.5 establishes the typed help catalogue schema; WP-16.2 and WP-16.5 apply explainers to Today and Inspector; WP-17.1 and WP-17.2 apply Explain blocks across all Settings pages."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Status normalised at Gate G15: typed EDITOR_HELP schema implemented for Reference Editor (apps/web/src/strings/strings.test.ts); Today, Inspector, and Settings Explain blocks remain for WP-16 and WP-17."
+  verified_by: apps/web/src/strings/strings.test.ts
 - id: 20261106-CP-14
   audit: AUD-2026-11-06
   title: 'Setup wizard vocabulary assumes advanced systems expertise (TOTP, tunnel origin, Tier 2, age recipient key)'
@@ -4690,18 +4720,21 @@
     - "12.6"
     - "12.9"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-13
       status: open
       note: "Registered at Gate G14 sign-off (screenshot item 3c; also reuses UX-29 and links to CP-09): The editor screen mixes site-wide operational controls (#btn-publish-now 'Publish Now', #btn-killswitch 'Pause Automated Answering', #btn-backup-drill 'Run Backup & Restore Drill', 'Export Markdown + Sidecar', #btn-import-triage, #btn-admin-settings in apps/web/src/renderer.ts L2216-2250) with entry authoring controls; uses 'Publish' for both site rebuild ('Publish Now') and entry publishing ('Publish…'); and shows #deploy-status-chip ('Deploy: Building...') alongside #admin-status-build ('Static rebuild: Idle', L2264-2273). Planned for WP-15.7 under D-WORKSPACE (move site-wide actions to Home and Maintenance, rename 'Publish Now' to 'Update public site')."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part): Status normalised at Gate G15: Reference Editor separates entry actions from site-wide controls (tests/e2e/wp15-7-editor-reference-page.spec.ts); site status & deploy/health views remain for WP-16.1 and WP-16.2."
+  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-63
   audit: AUD-2026-11-06
   title: 'Six editor action buttons across two rows; Unlist and Unpublish both shown on unlisted entry; Delete adjacent to Unpublish; "Check for private details" duplicates dialog scan'
@@ -4710,18 +4743,21 @@
     - "12.6"
     - "12.7"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-13
       status: open
       note: "Registered at Gate G14 sign-off (screenshot item 3d; also reuses UX-29 and links to UX-25): #editor-action-buttons (apps/web/src/renderer.ts L2430-2438) renders six buttons wrapping across two rows (#btn-save-draft, #btn-open-publish-dialog, #btn-unlist, #btn-redaction-check, #btn-unpublish, #btn-delete-entry); updateActionButtons() in apps/web/src/client/commit-entry.ts (L93-107) displays both #btn-unlist and #btn-unpublish on an already-unlisted entry (violating D-CONTRACT-6); places destructive #btn-delete-entry immediately next to #btn-unpublish; and renders #btn-redaction-check ('Check for private details') duplicating the scan inside #publish-dialog. Planned for WP-15.7 under D-EDITOR and D-CONTRACT-6."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part): Status normalised at Gate G15: D-EDITOR-2 single action bar implemented in Reference Editor (tests/e2e/wp15-7-editor-reference-page.spec.ts); Entries list row actions remain for WP-16.3."
+  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-64
   audit: AUD-2026-11-06
   title: 'Entry visibility controlled by both a Visibility select dropdown and a separate Unlist button'
@@ -4730,18 +4766,21 @@
     - "6.2"
     - "12.6"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-13
       status: open
       note: "Registered at Gate G14 sign-off (screenshot item 3e): Entry visibility is exposed simultaneously via the #entry-visibility <select> dropdown (apps/web/src/renderer.ts L2361) and the #btn-unlist / #btn-open-publish-dialog action buttons, and readForm() in apps/web/src/client/commit-entry.ts (L135-137) ignores #entry-visibility once activeEntryState.id is set. Planned for WP-15.7 under D-EDITOR (visibility has one control only — a menu Public / Unlisted / Private — and any change to Public goes through the Publish pre-flight)."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part): Status normalised at Gate G15: single Visibility menu control implemented in Reference Editor (tests/e2e/wp15-7-editor-reference-page.spec.ts); Entries list visibility actions remain for WP-16.3."
+  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-65
   audit: AUD-2026-11-06
   title: 'NDA confirmation panel, inline scan result, and raw "Signed preview token" permanently visible in editor and not cleanly cleared across edits and actions'
@@ -4750,18 +4789,21 @@
     - "6.2"
     - "12.6"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-13
       status: open
       note: "Registered at Gate G14 sign-off (screenshot item 3f): The NDA confirmation checkbox panel (#entry-nda-confirmed, apps/web/src/renderer.ts L2422-2427), inline scan result (#redaction-preview-box, L2420), and raw #preview-token-badge ('Signed preview token: <code>...</code>', L3452) are rendered in the main editor form outside #publish-dialog. Code check on text change: when #entry-body fires input, clearPreviewToken('invalidated') in apps/web/src/client/commit-entry.ts (L61-72) clears the token and removes #preview-token-badge, but replaces #redaction-preview-box with a persistent invalidation banner rather than hiding it, and commitEntry('unlist') / commitEntry('save') never call clearPreviewToken(), leaving the green scan box and raw preview token permanently visible after unlisting. Planned for WP-15.7 under D-EDITOR (NDA confirmation, private-details check, and result live only in Publish... dialog; signed preview token is never shown)."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part): Status normalised at Gate G15: NDA & redaction check moved inside Publish dialog in Reference Editor (tests/e2e/wp15-7-editor-reference-page.spec.ts); matched-item details in dialog remain for WP-16.0."
+  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-66
   audit: AUD-2026-11-06
   title: 'Developer copy in editor workspace UI: Body label "min 60vh editor workspace", Inspector "never a percentage score" and "Unlocks: ...", and "501 Not Implemented" / "SIMULATED finding M6" in Conflicts'
@@ -4769,18 +4811,21 @@
     - "12.6"
     - "12.9"
   severity: P2
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/web/src/strings/strings.test.ts
   history:
     - date: 2026-11-13
       status: open
       note: "Registered at Gate G14 sign-off (screenshot item 3g; also linked to CP-01 and CP-02): Developer and specification notes appear directly in the /admin workspace in apps/web/src/renderer.ts — Body label 'Body (Markdown + GFM — min 60vh editor workspace; only body and date required)' (L2395); Structure Inspector 'Four-step structure map (never a percentage score):' (L2568) and 'Unlocks: ...' (L2575); and #topology-conflicts-card showing '501 Not Implemented' and 'SIMULATED finding M6' (L2665-2668). Planned for WP-15.7 and WP-15.5 under D-EDITOR, D-HELP, D-WORKSPACE, and D-CONTRACT-1."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-17 part): Status normalised at Gate G15: Reference Editor copy stripped of developer/spec jargon (apps/web/src/strings/strings.test.ts); Settings/Audit jargon cleanup remains for WP-17.1 and WP-17.5."
+  verified_by: apps/web/src/pages/admin/entries/editor.test.ts
 - id: 20261106-UX-67
   audit: AUD-2026-11-06
   title: 'Editor workspace bugs: "Entries (0)" with one entry listed, "Inspector: Inspector: New Draft" on saved unlisted entry, "1 words" grammar, and truncated select values ("Case stu", "Exact (de")'
@@ -4789,18 +4834,21 @@
     - "12.6"
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-13
       status: open
       note: "Registered at Gate G14 sign-off (screenshot item 3h): Four concrete UI bugs in the editor workspace: (1) 'Entries (0)' heading in apps/web/src/renderer.ts (L2280) lacks id=\"entries-heading\", so refreshEntriesList() in apps/web/src/client/admin-entry.ts (L137-140) never updates the count when entries are created; (2) Inspector heading renders 'Inspector: <span id=\"inspector-heading\">Inspector: New Draft</span>' (renderer.ts L2555, L2936, L3309), doubling 'Inspector:' and failing to update on save/unlist; (3) #editor-word-count (renderer.ts L3521) concatenates words + ' words' without pluralization, producing '1 words'; and (4) the 4-column metadata grid (renderer.ts L2347) crams four controls into the narrow center column, truncating select options to 'Case stu' and 'Exact (de'. Planned for WP-15.7 and WP-15.5 under D-EDITOR and D-HELP."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part): Status normalised at Gate G15: count badge, singular/plural grammar, and non-truncated Details selects fixed in Reference Editor (tests/e2e/wp15-7-editor-reference-page.spec.ts); 5-tab Inspector remains for WP-16.5."
+  verified_by: apps/web/src/strings/strings.test.ts
 - id: 20261106-UX-68
   audit: AUD-2026-11-06
   title: 'First-Run walkthrough shown with existing entry and steps run together on one line; empty Inbox, Conflicts, and three permanent status chips consume editor space'
@@ -4808,18 +4856,21 @@
     - "12.6"
     - "13.13"
   severity: P2
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-13
       status: open
       note: "Registered at Gate G14 sign-off (screenshot item 3i; also linked to CP-11): #admin-walkthrough-card ('First-Run Authoring Walkthrough', apps/web/src/renderer.ts L2255-2261) renders unconditionally even when entries exist, concatenates steps 1..3 on a single line, and does not persist dismissal (#btn-dismiss-walkthrough at L3207-3213 only hides in memory); meanwhile empty Inbox (0) (#inbox-heading), Conflicts to review (#audit-heading), and three permanent status chips (#admin-status-build, #admin-status-answering, '● Operational', L2264-2273) occupy editor screen space. Planned for WP-15.7 under D-WORKSPACE and D-HELP."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-16 part, WP-17 part): Status normalised at Gate G15: EmptyState single-numbered guide & clean editor canvas implemented in Reference Editor (tests/e2e/wp15-7-editor-reference-page.spec.ts); Today checklist, Inbox, and Audit/Conflicts modules remain for WP-16.2, WP-16.6, and WP-17.5."
+  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-69
   audit: AUD-2026-11-06
   title: 'Authoring mode buttons (Paste / Freeform, Guided Mode, Quick Log) look like action buttons with no selected state, and five metadata fields are crammed above the body'
@@ -4828,18 +4879,21 @@
     - "12.2"
     - "12.6"
   severity: P2
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-13
       status: open
       note: "Registered at Gate G14 sign-off (screenshot item 3j; also reuses UX-29): Mode switch buttons (#mode-btn-paste 'Paste / Freeform', #mode-btn-guided 'Guided Mode', #mode-btn-quick 'Quick Log', apps/web/src/renderer.ts L2295-2299) use .btn.btn-secondary action styling with no visual or aria-pressed selected state, and five metadata fields (#entry-profile, #entry-visibility, #entry-date, #entry-temporal-level, #entry-hindsight, L2347-2390) are crammed above the body instead of collapsed into a single 'Details' disclosure with a one-line summary. Planned for WP-15.7 under D-EDITOR."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Explicit partial WP mapping (WP-15 part, WP-18 part): Status normalised at Gate G15: collapsible Details disclosure and clean writing surface implemented in Reference Editor (tests/e2e/wp15-7-editor-reference-page.spec.ts); authoring mode tabs / Guided & Quick Log modes remain for WP-18."
+  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-70
   audit: AUD-2026-11-06
   title: 'Badges are bordered and near-square instead of borderless pills with tinted fill'
@@ -4863,7 +4917,7 @@
       note: "fixed (gallery); confirm in editor at 15.7 — .lp-badge uses --radius-pill (999px), tinted role background/foreground tokens, border: none (0px), and default cursor, while interactive .lp-chip uses --radius-pill with 1px --border-control border. Verified in tests/e2e/wp15-3a-design-foundations.spec.ts and apps/web/src/primitives/foundations.test.ts."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Confirmed in Reference Editor Page and Checkpoint 2 filmstrip; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts ('enforces D-FOUND-1..6, UX-70..89, 6 states, 6 user flows, and 4-places-only live regions')."
+      note: "Confirmed in Reference Editor Page and Checkpoint 2 filmstrip; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts ('enforces D-FOUND-1..6, UX-70..89, 6 states, 6 user flows, and 4-places-only live regions')."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-71
   audit: AUD-2026-11-06
@@ -4889,7 +4943,7 @@
       note: "fixed (gallery); confirm in editor at 15.7 — Added self-hosted Lucide ISC 24px SVG sprite (#lp-icon-sprite) at allowed sizes {16, 20, 24} only, replaced text glyphs with SVG symbols, and enforced ghost/outlined IconButton variants with aria-label and hover/focus tooltips. Verified in tests/e2e/wp15-3a-design-foundations.spec.ts and apps/web/src/primitives/foundations.test.ts."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Confirmed in Reference Editor Page and Checkpoint 2 filmstrip; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts and apps/web/src/pages/admin/entries/editor.test.ts."
+      note: "Confirmed in Reference Editor Page and Checkpoint 2 filmstrip; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts and apps/web/src/pages/admin/entries/editor.test.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-72
   audit: AUD-2026-11-06
@@ -5030,18 +5084,21 @@
   spec_sections:
     - "12.6"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-14
       status: open
       note: "Registered at WP-15.7 visual review (item i): Entry visibility state is repeated in the sidebar row, editor canvas header, and Details summary line; per D-FOUND-6, state is shown once in the editor header and omitted from the Details summary. Mapped to WP-15.7."
-  verified_by: null
+    - date: 2026-11-15
+      status: fixed
+      note: "Status normalised at Gate G15: Reference Editor displays entry visibility state once in #ref-state-badge and omits it from Details summary; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts (\"UX-70 / UX-71 / UX-78 / UX-79 / UX-83 / UX-84 / UX-89 (1280 px): ...\")."
+  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-79
   audit: AUD-2026-11-06
   title: 'Quiet/ghost buttons lack hover, focus-visible, and active surface affordances'
@@ -5065,7 +5122,7 @@
       note: "fixed (gallery); confirm in editor at 15.7 — Added hover/focus-visible/active surface fill (--role-neutral-bg), 2px focus ring with 2px offset, and active transform on .lp-btn-quiet and .lp-icon-btn-ghost, rendered across all interactive states in /admin/dev/foundations."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Confirmed in Reference Editor Page and Checkpoint 2 filmstrip; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts and tests/e2e/wp15-3a-design-foundations.spec.ts."
+      note: "Confirmed in Reference Editor Page and Checkpoint 2 filmstrip; verified by tests/e2e/wp15-7-editor-reference-page.spec.ts and tests/e2e/wp15-3a-design-foundations.spec.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-80
   audit: AUD-2026-11-06
@@ -5074,13 +5131,13 @@
     - "12.5"
     - "12.8"
   severity: P2
-  status: partial
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: tests/e2e/wp15-3a-design-foundations.spec.ts
+  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
   history:
     - date: 2026-11-14
       status: open
@@ -5088,7 +5145,10 @@
     - date: 2026-11-14
       status: partial
       note: "Partially fixed in WP-15.3a (D-FOUND-5): /admin/dev/foundations renders every primitive and container in default, hover, focus-visible, active, disabled, loading, and error states in light and dark themes; step-by-step editor flow filmstrips to be produced in WP-15.7."
-  verified_by: null
+    - date: 2026-11-15
+      status: fixed
+      note: "Status normalised at Gate G15: Checkpoint 1 interactive states verified by tests/e2e/wp15-3a-design-foundations.spec.ts (\"captures amended Checkpoint 1 gallery screenshots at 1280 and 320 px in light and dark\") and Checkpoint 2 step-by-step editor flow filmstrips verified by tests/e2e/wp15-7-editor-reference-page.spec.ts (\"captures Checkpoint 2 filmstrip flows and interactive states at 1280 and 320 px (light and dark)\")."
+  verified_by: tests/e2e/wp15-3a-design-foundations.spec.ts
 - id: 20261106-UX-81
   audit: AUD-2026-11-06
   title: 'Foundations gallery displays hard-coded "AA Pass" labels instead of computed contrast ratios for colour roles, control boundaries, and focus rings'
@@ -5096,7 +5156,7 @@
     - "12.3"
     - "12.4"
   severity: P1
-  status: partial
+  status: fixed
   owner: A
   links:
     issue: null
@@ -5109,8 +5169,11 @@
       note: "Registered at Checkpoint 1 review (item 1): Compute and display the actual contrast ratio (e.g. '7.2:1') for every colour-role pair and for control-boundary and focus-ring probes in both light and dark themes, remove hard-coded 'AA Pass' labels, and fail tests if text < 4.5:1 or UI boundary/focus < 3:1. Mapped to WP-15.3a."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Fixed in WP-15.3a and verified in tests/e2e/wp15-3a-design-foundations.spec.ts ('enforces all Checkpoint 1 foundations rules: contrast ratios, specimens, Details grid, loading/disabled states, link-style notices, icon alignment, 6-state grid, auto-grow textarea, responsive header, and auth guard') and apps/web/src/primitives/foundations.test.ts ('renders /admin/dev/foundations with computed contrast ratios (no AA Pass), theme-specific toggle, and all specimens')."
-  verified_by: tests/e2e/wp15-3a-design-foundations.spec.ts
+      note: "Fixed in WP-15.3a and verified in tests/e2e/wp15-3a-design-foundations.spec.ts ('enforces all Checkpoint 1 foundations rules: contrast ratios, specimens, Details grid, loading/disabled states, link-style notices, icon alignment, 6-state grid, auto-grow textarea, responsive header, and auth guard') and apps/web/src/primitives/foundations.test.ts ('renders /admin/dev/foundations with computed contrast ratios (no AA Pass), theme-specific toggle, and all specimens')."
+    - date: 2026-11-15
+      status: fixed
+      note: "Status normalised at Gate G15: all foundations gallery surfaces covered by tests/e2e/wp15-3a-design-foundations.spec.ts (\"UX-81 / UX-89: numeric contrast ratios...\")."
+  verified_by: apps/web/src/primitives/foundations.test.ts
 - id: 20261106-UX-82
   audit: AUD-2026-11-06
   title: 'Foundations gallery omits open Dialog, open Menu, Select/Checkbox/Radio, tooltip, closed/open Disclosure, token specimens, spacing bars, full icon sprite inventory, and icon-button state captions'
@@ -5118,7 +5181,7 @@
     - "12.3"
     - "12.8"
   severity: P1
-  status: partial
+  status: fixed
   owner: A
   links:
     issue: null
@@ -5131,15 +5194,18 @@
       note: "Registered at Checkpoint 1 review (item 2): Add gallery specimens for open Dialog (title, body, primary/secondary actions, focus trap, Esc to close, 16 px radius, elevation), open Menu (items, separated danger item last, keyboard navigation), Select, Checkbox, Radio, tooltip (hover and focus), Disclosure closed and open, 12 px container radius, 16 px overlay radius, elevation levels, border/surface tokens, spacing scale as visible bars, full icon sprite inventory with names, and captions on every icon-button state. Mapped to WP-15.3a."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Fixed in WP-15.3a and verified in tests/e2e/wp15-3a-design-foundations.spec.ts and apps/web/src/primitives/foundations.test.ts ('renders /admin/dev/foundations with computed contrast ratios (no AA Pass), theme-specific toggle, and all specimens')."
-  verified_by: tests/e2e/wp15-3a-design-foundations.spec.ts
+      note: "Fixed in WP-15.3a and verified in tests/e2e/wp15-3a-design-foundations.spec.ts and apps/web/src/primitives/foundations.test.ts ('renders /admin/dev/foundations with computed contrast ratios (no AA Pass), theme-specific toggle, and all specimens')."
+    - date: 2026-11-15
+      status: fixed
+      note: "Status normalised at Gate G15: all foundations gallery surfaces covered by tests/e2e/wp15-3a-design-foundations.spec.ts (\"UX-82: open Menu keyboard navigation and open Dialog focus trap + Esc close\")."
+  verified_by: apps/web/src/primitives/foundations.test.ts
 - id: 20261106-UX-83
   audit: AUD-2026-11-06
   title: 'Details disclosure lacks real metadata fields, responsive 1-column/2-column layout rule, non-clipped date width, and non-truncated select options'
   spec_sections:
     - "12.6"
   severity: P1
-  status: partial
+  status: fixed
   owner: A
   links:
     issue: null
@@ -5152,8 +5218,11 @@
       note: "Registered at Checkpoint 1 review (item 3): Details disclosure must render the real fields (slug, role profile, visibility, date, temporal confidence) with one-line summary and rotating chevron (never repeating entry state per UX-78), 1 column below 768 px and 2 columns at/above 768 px, date field never narrower than its content, and select values never truncated. Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Fixed in WP-15.3a gallery and WP-15.7 Reference Editor Page; verified in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
-  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
+      note: "Fixed in WP-15.3a gallery and WP-15.7 Reference Editor Page; verified in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
+    - date: 2026-11-15
+      status: fixed
+      note: "Status normalised at Gate G15: Details disclosure layout/fields covered by tests/e2e/wp15-7-editor-reference-page.spec.ts (\"UX-70 / UX-71 / UX-78 / UX-79 / UX-83 / UX-84 / UX-89 (1280 px): ...\")."
+  verified_by: tests/e2e/wp15-3a-design-foundations.spec.ts
 - id: 20261106-UX-84
   audit: AUD-2026-11-06
   title: 'Loading buttons lose text contrast or omit a spinner, and disabled controls omit a hover/focus reason tooltip'
@@ -5174,7 +5243,7 @@
       note: "Registered at Checkpoint 1 review (item 4, D-FOUND-5 addition): Loading button keeps full text contrast and shows a spinner with label unchanged or 'Saving...'; a disabled control shows its reason on hover and focus (tooltip) or is not rendered. Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Fixed in WP-15.3a gallery and WP-15.7 Reference Editor Page (#ref-btn-save disabled reason tooltip on hover/focus and #ref-publish-confirm loading spinner); verified in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
+      note: "Fixed in WP-15.3a gallery and WP-15.7 Reference Editor Page (#ref-btn-save disabled reason tooltip on hover/focus and #ref-publish-confirm loading spinner); verified in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-85
   audit: AUD-2026-11-06
@@ -5196,7 +5265,7 @@
       note: "Registered at Checkpoint 1 review (item 5, D-FOUND-6 amendment): Notice and StatusLine actions must be link-style text (never a bordered button inside a bordered element; DOM-walk test extended to notices), Notice spans main column width, and tone icon and first line of text are vertically centred on one alignment rule. Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts, apps/web/src/primitives/foundations.test.ts, and tests/e2e/wp15-7-editor-reference-page.spec.ts."
+      note: "Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts, apps/web/src/primitives/foundations.test.ts, and tests/e2e/wp15-7-editor-reference-page.spec.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-86
   audit: AUD-2026-11-06
@@ -5218,7 +5287,7 @@
       note: "Registered at Checkpoint 1 review (item 6): Only one message is active at a time in any specimen (success and error specimens separate), copy never says 'above' or 'below' (use 'Enter a title to save this entry.' plus field error), and Undo sits directly after its message at every width (including 320 px) with a real countdown. Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts, apps/web/src/pages/admin/entries/editor.test.ts, and tests/e2e/wp15-7-editor-reference-page.spec.ts."
+      note: "Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts, apps/web/src/pages/admin/entries/editor.test.ts, and tests/e2e/wp15-7-editor-reference-page.spec.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-87
   audit: AUD-2026-11-06
@@ -5227,7 +5296,7 @@
     - "12.5"
     - "12.6"
   severity: P1
-  status: partial
+  status: fixed
   owner: A
   links:
     issue: null
@@ -5240,15 +5309,18 @@
       note: "Registered at Checkpoint 1 review (item 7): Grid specimen must be built from real EntryRow, EmptyState, and editor components with list rows rendered so a count of 1 or 2 shows 1 or 2 rows, and each editor state includes real body, Details, and action bar, verified by the left-edge and width assertion. Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Fixed in WP-15.3a gallery and WP-15.7 Reference Editor Page; verified by left-edge and width assertions across all 6 states in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
-  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
+      note: "Fixed in WP-15.3a gallery and WP-15.7 Reference Editor Page; verified by left-edge and width assertions across all 6 states in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
+    - date: 2026-11-15
+      status: fixed
+      note: "Status normalised at Gate G15: 6-state grid alignment covered by tests/e2e/wp15-7-editor-reference-page.spec.ts (\"UX-87: left-edge and width alignment across all 6 states...\")."
+  verified_by: tests/e2e/wp15-3a-design-foundations.spec.ts
 - id: 20261106-UX-88
   audit: AUD-2026-11-06
   title: 'Writing surface textarea has fixed height instead of growing with content (min 6 rows) without clipping text at 1280 or 320 px'
   spec_sections:
     - "12.6"
   severity: P1
-  status: partial
+  status: fixed
   owner: A
   links:
     issue: null
@@ -5261,8 +5333,11 @@
       note: "Registered at Checkpoint 1 review (item 8): Textarea grows with its content (min 6 rows) and never clips text (scrollHeight <= clientHeight), including at 320 px. Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
-  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
+      note: "Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts and tests/e2e/wp15-7-editor-reference-page.spec.ts."
+    - date: 2026-11-15
+      status: fixed
+      note: "Status normalised at Gate G15: auto-grow writing surface covered by tests/e2e/wp15-7-editor-reference-page.spec.ts (\"UX-83 / UX-88 / UX-89 (320 px): ...\")."
+  verified_by: tests/e2e/wp15-3a-design-foundations.spec.ts
 - id: 20261106-UX-89
   audit: AUD-2026-11-06
   title: 'Admin header hides section navigation at >= 768 px, or theme toggle lacks target-mode sun/moon icon and specific aria-label'
@@ -5284,7 +5359,7 @@
       note: "Registered at Checkpoint 1 review (item 9): Compact header (brand, theme button, menu button) applies below 768 px only; at >= 768 px the header shows admin navigation. Theme toggle icon shows the mode you will switch to (moon in light mode with aria-label 'Switch to dark theme', sun in dark mode with aria-label 'Switch to light theme', never a half-circle). Mapped to WP-15.3a and WP-15.7."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts, tests/e2e/wp15-7-editor-reference-page.spec.ts, and apps/web/src/pages/admin/entries/editor.test.ts."
+      note: "Fixed in WP-15.3a and WP-15.7; verified in tests/e2e/wp15-3a-design-foundations.spec.ts, tests/e2e/wp15-7-editor-reference-page.spec.ts, and apps/web/src/pages/admin/entries/editor.test.ts."
   verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
 - id: 20261106-UX-90
   audit: AUD-2026-11-06
@@ -5293,7 +5368,7 @@
     - "13.3"
     - "18.1"
   severity: P1
-  status: partial
+  status: fixed
   owner: A
   links:
     issue: null
@@ -5306,8 +5381,11 @@
       note: "Registered at Checkpoint 1 review (item 10): /admin/dev/foundations requires the admin session and is not built or routed in production (env flag or build exclusion). Mapped to WP-15.3a."
     - date: 2026-11-14
       status: partial
-      note: "fixed (pending owner review) — Fixed in WP-15.3a; verified in apps/web/src/primitives/foundations.test.ts ('enforces admin session authentication on /admin/dev/foundations and excludes the route in production') and tests/e2e/wp15-3a-design-foundations.spec.ts."
-  verified_by: apps/web/src/primitives/foundations.test.ts
+      note: "Fixed in WP-15.3a; verified in apps/web/src/primitives/foundations.test.ts ('enforces admin session authentication on /admin/dev/foundations and excludes the route in production') and tests/e2e/wp15-3a-design-foundations.spec.ts."
+    - date: 2026-11-15
+      status: fixed
+      note: "Status normalised at Gate G15: session auth and production exclusion on /admin/dev/foundations covered by apps/web/src/primitives/foundations.test.ts (\"enforces admin session authentication on /admin/dev/foundations and excludes the route in production\")."
+  verified_by: tests/e2e/wp15-3a-design-foundations.spec.ts
 - id: 20261106-UX-91
   audit: AUD-2026-11-06
   title: 'Admin shell seam: setup, login, import, and settings still render the public site header, text theme button, and (import) public footer'
