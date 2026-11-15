@@ -122,6 +122,7 @@
 | `A114` | WP-16 Gate G16 closure and sweep verification | `active` | [A114-wp-16-gate-g16-closure.md](execution-reports/A114-wp-16-gate-g16-closure.md) | — |
 | `A115` | WP-16.pre-f CI cost optimization | `active` | [A115-wp-16pre-f-ci-cost-optimization.md](execution-reports/A115-wp-16pre-f-ci-cost-optimization.md) | — |
 | `A116` | WP-16.pre-g Close Dependabot alert 5 | `active` | [A116-wp-16pre-g-close-dependabot-alert-5.md](execution-reports/A116-wp-16pre-g-close-dependabot-alert-5.md) | — |
+| `A117` | P0 Editor body loading fix (UX-106) | `active` | [A117-p0-editor-body-loading-fix-ux-106.md](execution-reports/A117-p0-editor-body-loading-fix-ux-106.md) | — |
 
 ## Handover Snapshots (Class H)
 
