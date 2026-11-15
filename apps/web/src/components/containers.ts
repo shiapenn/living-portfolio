@@ -65,6 +65,7 @@ export interface EmptyStateGuideStep {
 export interface EmptyStateProps {
   id?: string;
   title: string;
+  headingTag?: 'h1' | 'h2' | 'h3';
   body: string;
   actionHtml?: string;
   guideSteps?: EmptyStateGuideStep[];
@@ -92,12 +93,12 @@ export function renderDialog(props: DialogProps): string {
 
   return `<div id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}" role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}"${hiddenAttr}>
   <div class="lp-dialog-panel">
-    <header class="lp-dialog-header">
+    <div class="lp-dialog-header">
       <h2 id="${escapeHtml(titleId)}" class="lp-dialog-title">${escapeHtml(props.title)}</h2>
       ${closeBtn}
-    </header>
+    </div>
     <div class="lp-dialog-body">${props.bodyHtml}</div>
-    ${props.footerHtml ? `<footer class="lp-dialog-footer">${props.footerHtml}</footer>` : ''}
+    ${props.footerHtml ? `<div class="lp-dialog-footer">${props.footerHtml}</div>` : ''}
   </div>
 </div>`;
 }
@@ -123,10 +124,10 @@ export function renderDrawer(props: DrawerProps): string {
 
   return `<div id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}" role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}"${hiddenAttr}>
   <div class="lp-drawer-panel">
-    <header class="lp-dialog-header">
+    <div class="lp-dialog-header">
       <h2 id="${escapeHtml(titleId)}" class="lp-dialog-title">${escapeHtml(props.title)}</h2>
       ${closeBtn}
-    </header>
+    </div>
     <div class="lp-drawer-body">${props.bodyHtml}</div>
   </div>
 </div>`;
@@ -222,9 +223,10 @@ export function renderEmptyState(props: EmptyStateProps): string {
       : '';
 
   const hiddenAttr = props.hidden ? ' hidden' : '';
+  const headingTag = props.headingTag ?? 'h3';
   return `<div class="${escapeHtml(classes)}"${idAttr}${hiddenAttr}>
   ${props.dismissHtml ? `<div class="lp-empty-dismiss">${props.dismissHtml}</div>` : ''}
-  <h3 class="lp-empty-title">${escapeHtml(props.title)}</h3>
+  <${headingTag} class="lp-empty-title">${escapeHtml(props.title)}</${headingTag}>
   <p class="lp-empty-body">${escapeHtml(props.body)}</p>
   ${guideHtml}
   ${props.actionHtml ? `<div class="lp-empty-action">${props.actionHtml}</div>` : ''}

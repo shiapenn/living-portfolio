@@ -1,4 +1,5 @@
 import {
+  attachMenuController,
   attachModalController,
   initDismissibleNotices,
   initTabs,
@@ -42,67 +43,13 @@ function slugifyTitle(text: string): string {
     .replace(/^-+|-+$/g, '') || 'untitled-entry';
 }
 
-function setupMenu(buttonId: string, menuId: string): () => void {
-  const btn = document.getElementById(buttonId);
-  const menu = document.getElementById(menuId);
-  if (!btn || !menu) return () => {};
+const DRAFT_BUFFER_KEY = 'lp_draft_buffer_active';
 
-  const getItems = () =>
-    Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"], [role="menuitemradio"]'));
-
-  const close = () => {
-    menu.setAttribute('hidden', '');
-    btn.setAttribute('aria-expanded', 'false');
-  };
-
-  btn.addEventListener('click', (event) => {
-    event.stopPropagation();
-    const isOpen = !menu.hasAttribute('hidden');
-    if (isOpen) {
-      close();
-    } else {
-      menu.removeAttribute('hidden');
-      btn.setAttribute('aria-expanded', 'true');
-    }
-  });
-
-  menu.addEventListener('keydown', (event) => {
-    const items = getItems();
-    if (items.length === 0) return;
-    const idx = items.indexOf(document.activeElement as HTMLElement);
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      items[(idx + 1) % items.length]?.focus();
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      items[(idx - 1 + items.length) % items.length]?.focus();
-    } else if (event.key === 'Home') {
-      event.preventDefault();
-      items[0]?.focus();
-    } else if (event.key === 'End') {
-      event.preventDefault();
-      items[items.length - 1]?.focus();
-    } else if (event.key === 'Escape') {
-      event.preventDefault();
-      close();
-      btn.focus();
-    }
-  });
-
-  document.addEventListener('click', (event) => {
-    if (!menu.contains(event.target as Node) && event.target !== btn && !btn.contains(event.target as Node)) {
-      close();
-    }
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !menu.hasAttribute('hidden')) {
-      close();
-      btn.focus();
-    }
-  });
-
-  return close;
+function maskSensitiveSnippet(raw: string): string {
+  const s = (raw || '').trim();
+  if (s.length <= 4) return '****';
+  if (s.length <= 8) return `${s.slice(0, 2)}****`;
+  return `${s.slice(0, 4)}…${s.slice(-2)}`;
 }
 
 function autoGrowTextarea(ta: HTMLTextAreaElement): void {
@@ -230,10 +177,10 @@ function bootEditorPage(): void {
   const historyDrawerEl = document.getElementById('ref-history-drawer');
   const historyCtrl = historyDrawerEl ? attachModalController(historyDrawerEl) : null;
 
-  // Popover menus
-  setupMenu('ref-mobile-menu-btn', 'ref-mobile-nav-menu');
-  const closeVisMenu = setupMenu('ref-visibility-menu-btn', 'ref-visibility-menu');
-  const closeMoreMenu = setupMenu('ref-more-menu-btn', 'ref-more-menu');
+  // Popover menus (shared Menu controller, UX-97)
+  attachMenuController('ref-mobile-menu-btn', 'ref-mobile-nav-menu');
+  const closeVisMenu = attachMenuController('ref-visibility-menu-btn', 'ref-visibility-menu');
+  const closeMoreMenu = attachMenuController('ref-more-menu-btn', 'ref-more-menu');
 
   const formEl = document.getElementById('ref-editor-form');
   const statusLineEl = document.getElementById('ref-status-line');
@@ -293,10 +240,127 @@ function bootEditorPage(): void {
   };
 
   // D-EDITOR-2(c): Save is never disabled for a hidden reason; track dirty state instead
-  let isDirty = isNewEntry || (titleInput ? titleInput.value.trim().length === 0 : false);
-  const markDirty = () => {
-    isDirty = true;
+  const initialSnapshot = {
+    title: titleInput?.value ?? '',
+    body: bodyInput?.value ?? '',
+    slug: slugInput?.value ?? '',
+    date: dateInput?.value ?? '',
+    temporal: temporalInput?.value ?? 'exact',
+    profile: profileInput?.value ?? 'freeform',
   };
+  let isDirty = isNewEntry || (titleInput ? titleInput.value.trim().length === 0 : false);
+  let draftBufferTimer: number | undefined;
+
+  const syncDirtyFlag = (dirty: boolean) => {
+    isDirty = dirty;
+    (window as any).__lp_is_dirty = dirty;
+  };
+
+  const writeDraftBuffer = () => {
+    if (!formEl) return;
+    const titleVal = titleInput?.value ?? '';
+    const bodyVal = bodyInput?.value ?? '';
+    if (!titleVal.trim() && !bodyVal.trim()) return;
+    try {
+      localStorage.setItem(
+        DRAFT_BUFFER_KEY,
+        JSON.stringify({
+          entryId: activeEntryId || 'new',
+          title: titleVal,
+          body: bodyVal,
+          slug: slugInput?.value ?? '',
+          date: dateInput?.value ?? '',
+          temporal: temporalInput?.value ?? 'exact',
+          profile: profileInput?.value ?? 'freeform',
+          timestamp: Date.now(),
+        })
+      );
+    } catch {
+      // Ignore storage errors
+    }
+  };
+
+  const clearDraftBuffer = () => {
+    if (draftBufferTimer !== undefined) {
+      window.clearTimeout(draftBufferTimer);
+      draftBufferTimer = undefined;
+    }
+    try {
+      localStorage.removeItem(DRAFT_BUFFER_KEY);
+    } catch {
+      // Ignore storage errors
+    }
+    document.getElementById('draft-restore-notice')?.setAttribute('hidden', '');
+  };
+
+  const markDirty = () => {
+    syncDirtyFlag(true);
+    if (draftBufferTimer !== undefined) window.clearTimeout(draftBufferTimer);
+    draftBufferTimer = window.setTimeout(writeDraftBuffer, 200);
+  };
+
+  // Restore draft buffer on boot if matching current entry (UX-96)
+  if (!isFixtureMode && formEl) {
+    try {
+      const raw = localStorage.getItem(DRAFT_BUFFER_KEY);
+      if (raw) {
+        const data = JSON.parse(raw);
+        const currentId = activeEntryId || 'new';
+        if (data && data.entryId === currentId && (data.title || data.body)) {
+          if (titleInput && typeof data.title === 'string') {
+            titleInput.value = data.title;
+            if (headingEl) headingEl.textContent = data.title.trim() || EDITOR_STRINGS.sidebar.untitled;
+          }
+          if (bodyInput && typeof data.body === 'string') {
+            bodyInput.value = data.body;
+            autoGrowTextarea(bodyInput);
+          }
+          if (slugInput && typeof data.slug === 'string') slugInput.value = data.slug;
+          if (dateInput && typeof data.date === 'string') dateInput.value = data.date;
+          if (temporalInput && typeof data.temporal === 'string') temporalInput.value = data.temporal;
+          if (profileInput && typeof data.profile === 'string') profileInput.value = data.profile;
+          syncDirtyFlag(true);
+          document.getElementById('draft-restore-notice')?.removeAttribute('hidden');
+        }
+      }
+    } catch {
+      // Ignore malformed buffer
+    }
+  }
+
+  document.getElementById('btn-discard-draft-buffer')?.addEventListener('click', () => {
+    clearDraftBuffer();
+    if (titleInput) {
+      titleInput.value = initialSnapshot.title;
+      if (headingEl) headingEl.textContent = initialSnapshot.title.trim() || EDITOR_STRINGS.sidebar.untitled;
+    }
+    if (bodyInput) {
+      bodyInput.value = initialSnapshot.body;
+      autoGrowTextarea(bodyInput);
+    }
+    if (slugInput) slugInput.value = initialSnapshot.slug;
+    if (dateInput) dateInput.value = initialSnapshot.date;
+    if (temporalInput) temporalInput.value = initialSnapshot.temporal;
+    if (profileInput) profileInput.value = initialSnapshot.profile;
+    syncDirtyFlag(false);
+  });
+
+  window.addEventListener('beforeunload', (event) => {
+    if (isDirty) {
+      event.preventDefault();
+      event.returnValue = 'You have unsaved draft writing. Are you sure you want to leave?';
+    }
+  });
+
+  const offlineBanner = document.getElementById('admin-offline-banner');
+  const syncOfflineBanner = () => {
+    if (!offlineBanner) return;
+    if (navigator.onLine) offlineBanner.setAttribute('hidden', '');
+    else offlineBanner.removeAttribute('hidden');
+  };
+  window.addEventListener('offline', () => offlineBanner?.removeAttribute('hidden'));
+  window.addEventListener('online', () => offlineBanner?.setAttribute('hidden', ''));
+  syncOfflineBanner();
 
   titleInput?.addEventListener('input', () => {
     markDirty();
@@ -434,7 +498,8 @@ function bootEditorPage(): void {
     }
 
     previousBody = bodyInput?.value ?? '';
-    isDirty = false;
+    syncDirtyFlag(false);
+    clearDraftBuffer();
     historyEntries.unshift({
       time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
       title,
@@ -460,14 +525,79 @@ function bootEditorPage(): void {
     });
   });
 
+  // Hide status line while a modal dialog is open so only one message place is active (UX-98)
+  let statusHiddenByModal = false;
+  const hideStatusLineForModal = () => {
+    if (statusLineEl && !statusLineEl.hasAttribute('hidden') && statusLineEl.textContent?.trim()) {
+      statusLineEl.setAttribute('hidden', '');
+      statusHiddenByModal = true;
+    }
+  };
+  const restoreStatusLineAfterModal = () => {
+    if (statusHiddenByModal && statusLineEl && statusLineEl.textContent?.trim()) {
+      statusLineEl.removeAttribute('hidden');
+    }
+    statusHiddenByModal = false;
+  };
+
   // Publish pre-flight dialog
   const publishDlgEl = document.getElementById('ref-publish-dialog');
-  const publishCtrl = publishDlgEl ? attachModalController(publishDlgEl) : null;
+  const publishCtrl = publishDlgEl
+    ? attachModalController(publishDlgEl, {
+        onOpen: hideStatusLineForModal,
+        onClose: restoreStatusLineAfterModal,
+      })
+    : null;
+
+  interface MatchWarning {
+    type?: string;
+    match?: string;
+    index?: number;
+  }
+
+  const renderPublishMatches = (warnings: MatchWarning[], bodyText: string) => {
+    const matchesList = document.getElementById('ref-publish-matches');
+    if (!matchesList) return;
+    matchesList.innerHTML = '';
+    if (!warnings || warnings.length === 0) {
+      matchesList.setAttribute('hidden', '');
+      return;
+    }
+    matchesList.removeAttribute('hidden');
+    warnings.forEach((w) => {
+      const li = document.createElement('li');
+      li.className = 'lp-publish-match-item';
+      const typeLabel = w.type || 'sensitive';
+      const snippet = maskSensitiveSnippet(w.match || '');
+      const pos = typeof w.index === 'number' ? w.index : 0;
+      const meta = document.createElement('span');
+      meta.className = 'lp-publish-match-meta';
+      meta.textContent = `${typeLabel} · ${snippet} · pos ${pos}`;
+      const jumpBtn = document.createElement('button');
+      jumpBtn.type = 'button';
+      jumpBtn.className = 'lp-publish-match-link';
+      jumpBtn.textContent = EDITOR_STRINGS.publishDialog.jumpToMatch;
+      jumpBtn.addEventListener('click', () => {
+        publishCtrl?.close();
+        if (bodyInput) {
+          bodyInput.focus();
+          const len = (w.match || '').length;
+          if (typeof bodyInput.setSelectionRange === 'function' && pos <= bodyText.length) {
+            bodyInput.setSelectionRange(pos, Math.min(bodyText.length, pos + len));
+          }
+        }
+      });
+      li.appendChild(meta);
+      li.appendChild(jumpBtn);
+      matchesList.appendChild(li);
+    });
+  };
 
   let checkTimer = 0;
   const openPublishPreFlight = async (triggerEl?: HTMLElement | null) => {
     if (!publishCtrl || !publishDlgEl) return;
     const statusEl = document.getElementById('ref-publish-dialog-status');
+    const matchesList = document.getElementById('ref-publish-matches');
     const ndaStep = document.getElementById('ref-publish-nda-step');
     const ndaCheck = document.getElementById('ref-publish-nda-check') as HTMLInputElement | null;
     const nextHeading = document.getElementById('ref-publish-next-heading');
@@ -476,6 +606,10 @@ function bootEditorPage(): void {
 
     if (checkTimer) window.clearTimeout(checkTimer);
     if (ndaCheck) ndaCheck.checked = false;
+    if (matchesList) {
+      matchesList.innerHTML = '';
+      matchesList.setAttribute('hidden', '');
+    }
     ndaStep?.setAttribute('hidden', '');
     if (nextHeading) nextHeading.textContent = `2. ${EDITOR_STRINGS.publishDialog.nextTitle}`;
     if (statusEl) statusEl.textContent = EDITOR_STRINGS.publishDialog.checking;
@@ -486,10 +620,11 @@ function bootEditorPage(): void {
     }
     publishCtrl.open(triggerEl);
 
-    const finishScanUi = (hasSensitive: boolean) => {
+    const finishScanUi = (hasSensitive: boolean, warnings: MatchWarning[] = []) => {
       if (statusEl) {
         statusEl.textContent = hasSensitive ? EDITOR_STRINGS.publishDialog.matched : EDITOR_STRINGS.publishDialog.clean;
       }
+      renderPublishMatches(hasSensitive ? warnings : [], bodyText);
       if (ndaStep && nextHeading) {
         if (hasSensitive) {
           ndaStep.removeAttribute('hidden');
@@ -507,8 +642,9 @@ function bootEditorPage(): void {
     };
 
     if (isFixtureMode) {
-      const hasSensitive = /confidential|secret|nda|password|api[_ -]?key/i.test(bodyText);
-      checkTimer = window.setTimeout(() => finishScanUi(hasSensitive), 220);
+      const m = /confidential|secret|nda|password|api[_ -]?key/i.exec(bodyText);
+      const fixtureWarnings: MatchWarning[] = m ? [{ type: 'secret', match: m[0], index: m.index }] : [];
+      checkTimer = window.setTimeout(() => finishScanUi(Boolean(m), fixtureWarnings), 220);
       return;
     }
 
@@ -516,11 +652,12 @@ function bootEditorPage(): void {
       const saved = await persistEntry('draft');
       if (saved.ok) {
         previousBody = bodyInput?.value ?? '';
-        isDirty = false;
+        syncDirtyFlag(false);
+        clearDraftBuffer();
       }
     }
     const scanEntryId = (isNewEntry || !activeEntryId || activeEntryId === 'new') ? 'draft' : activeEntryId;
-    const scanRes = await apiRequest<{ redactionPreviewToken?: string; warnings?: unknown[]; clean?: boolean }>(
+    const scanRes = await apiRequest<{ redactionPreviewToken?: string; warnings?: MatchWarning[]; clean?: boolean }>(
       '/api/entries/redaction-preview',
       {
         method: 'POST',
@@ -528,8 +665,9 @@ function bootEditorPage(): void {
       }
     );
     previewToken = scanRes.data?.redactionPreviewToken ?? '';
-    const hasSensitive = Boolean((scanRes.data?.warnings?.length ?? 0) > 0 || scanRes.data?.clean === false);
-    finishScanUi(hasSensitive);
+    const warnings = Array.isArray(scanRes.data?.warnings) ? scanRes.data.warnings : [];
+    const hasSensitive = Boolean(warnings.length > 0 || scanRes.data?.clean === false);
+    finishScanUi(hasSensitive, warnings);
   };
 
   publishBtn?.addEventListener('click', () => openPublishPreFlight(publishBtn));
@@ -578,9 +716,11 @@ function bootEditorPage(): void {
           return;
         }
       }
-      isDirty = false;
+      syncDirtyFlag(false);
+      clearDraftBuffer();
     }
 
+    statusHiddenByModal = false;
     publishCtrl?.close();
     applyVisibility('public');
     if (statusLineEl) {
@@ -679,7 +819,12 @@ function bootEditorPage(): void {
   });
 
   const deleteDlgEl = document.getElementById('ref-delete-dialog');
-  const deleteCtrl = deleteDlgEl ? attachModalController(deleteDlgEl) : null;
+  const deleteCtrl = deleteDlgEl
+    ? attachModalController(deleteDlgEl, {
+        onOpen: hideStatusLineForModal,
+        onClose: restoreStatusLineAfterModal,
+      })
+    : null;
   document.getElementById('ref-more-delete')?.addEventListener('click', () => {
     closeMoreMenu();
     deleteCtrl?.open(document.getElementById('ref-more-menu-btn'));
@@ -716,6 +861,65 @@ function bootEditorPage(): void {
           });
         },
       });
+    }
+  });
+
+  // Automated-answering kill switch (UX-104)
+  const killBtn = document.getElementById('btn-killswitch');
+  const killBadge = document.getElementById('ref-killswitch-badge');
+  killBtn?.addEventListener('click', async () => {
+    const currentlyEnabled = killBtn.getAttribute('aria-pressed') === 'true';
+    const nextEnabled = !currentlyEnabled;
+    if (!isFixtureMode) {
+      const res = await apiRequest('/api/settings/routing', {
+        method: 'PATCH',
+        body: JSON.stringify({ automatedAnsweringEnabled: nextEnabled }),
+      });
+      if (!res.ok) return;
+    }
+    killBtn.setAttribute('aria-pressed', nextEnabled ? 'true' : 'false');
+    killBtn.textContent = nextEnabled
+      ? EDITOR_STRINGS.safety.killSwitchPauseBtn
+      : EDITOR_STRINGS.safety.killSwitchResumeBtn;
+    if (killBadge) {
+      killBadge.textContent = nextEnabled
+        ? EDITOR_STRINGS.safety.killSwitchActive
+        : EDITOR_STRINGS.safety.killSwitchPaused;
+      killBadge.className = nextEnabled ? 'lp-badge lp-badge-ok' : 'lp-badge lp-badge-warn';
+    }
+  });
+
+  // Escalation quick review card (UX-105)
+  const escCard = document.getElementById('ref-escalations-card');
+  const escList = document.getElementById('ref-escalations-list');
+  const escEmpty = document.getElementById('ref-escalations-empty');
+  const escCountBadge = document.getElementById('ref-escalations-count');
+  escCard?.addEventListener('click', async (event) => {
+    const target = event.target as HTMLElement | null;
+    const approveBtn = target?.closest<HTMLElement>('[data-esc-approve]');
+    const rejectBtn = target?.closest<HTMLElement>('[data-esc-reject]');
+    const escId = approveBtn?.getAttribute('data-esc-approve') ?? rejectBtn?.getAttribute('data-esc-reject');
+    if (!escId) return;
+    const itemEl = escCard.querySelector<HTMLElement>(`[data-escalation-id="${escId}"]`);
+    if (!isFixtureMode) {
+      const endpoint = approveBtn
+        ? `/api/inbox/${encodeURIComponent(escId)}/approve`
+        : `/api/inbox/${encodeURIComponent(escId)}/reject`;
+      const payload = approveBtn
+        ? { finalReply: itemEl?.querySelector('.lp-escalation-question')?.textContent ?? 'Approved by owner' }
+        : { reason: 'Declined by owner from workspace' };
+      const res = await apiRequest(endpoint, { method: 'PATCH', body: JSON.stringify(payload) });
+      if (!res.ok) return;
+    }
+    itemEl?.remove();
+    const remaining = escList?.querySelectorAll('[data-escalation-id]').length ?? 0;
+    if (escCountBadge) {
+      escCountBadge.textContent = String(remaining);
+      escCountBadge.className = remaining > 0 ? 'lp-badge lp-badge-warn' : 'lp-badge lp-badge-neutral';
+    }
+    if (remaining === 0) {
+      escList?.setAttribute('hidden', '');
+      escEmpty?.removeAttribute('hidden');
     }
   });
 }

@@ -1,5 +1,6 @@
 import { escapeHtml } from '../../../lib/html.js';
 import {
+  renderBadge,
   renderButton,
   renderField,
   renderIconButton,
@@ -62,11 +63,83 @@ export function renderSlimAdminHeader(theme: 'light' | 'dark'): string {
 </header>`;
 }
 
+export function renderDraftAndOfflineBanners(): string {
+  return `<div id="admin-offline-banner" class="lp-notice lp-notice-warn" hidden>
+  <div class="lp-notice-main">
+    <div class="lp-notice-content">
+      <span class="lp-notice-text">${escapeHtml(EDITOR_STRINGS.safety.offlineBanner)}</span>
+    </div>
+  </div>
+</div>
+<div id="draft-restore-notice" class="lp-notice lp-notice-info" hidden>
+  <div class="lp-notice-main">
+    <div class="lp-notice-content">
+      <span class="lp-notice-text">${escapeHtml(EDITOR_STRINGS.safety.draftRestored)}</span>
+      <button type="button" id="btn-discard-draft-buffer" class="lp-notice-action-link">${escapeHtml(EDITOR_STRINGS.safety.draftDiscard)}</button>
+    </div>
+  </div>
+</div>`;
+}
+
+export interface WorkspaceEscalationItem {
+  id: string;
+  question: string;
+  draft?: string;
+}
+
+export function renderWorkspaceSafetyControls(options: {
+  answeringEnabled: boolean;
+  escalations: WorkspaceEscalationItem[];
+}): string {
+  const enabled = options.answeringEnabled;
+  const killLabel = enabled
+    ? EDITOR_STRINGS.safety.killSwitchPauseBtn
+    : EDITOR_STRINGS.safety.killSwitchResumeBtn;
+  const killStateLabel = enabled
+    ? EDITOR_STRINGS.safety.killSwitchActive
+    : EDITOR_STRINGS.safety.killSwitchPaused;
+  const escCount = options.escalations.length;
+  const escItemsHtml = options.escalations
+    .map(
+      (esc) => `<li class="lp-escalation-item" data-escalation-id="${escapeHtml(esc.id)}">
+  <p class="lp-escalation-question">${escapeHtml(esc.question)}</p>
+  <div class="lp-escalation-actions">
+    <button type="button" class="lp-btn lp-btn-primary lp-btn-sm" data-esc-approve="${escapeHtml(esc.id)}">${escapeHtml(EDITOR_STRINGS.safety.approveBtn)}</button>
+    <button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" data-esc-reject="${escapeHtml(esc.id)}">${escapeHtml(EDITOR_STRINGS.safety.rejectBtn)}</button>
+  </div>
+</li>`
+    )
+    .join('');
+
+  return `<section class="lp-workspace-safety-bar" aria-label="Workspace safety controls">
+  <div class="lp-killswitch-row">
+    <div class="lp-killswitch-copy">
+      <span class="lp-type-body-sm">${escapeHtml(EDITOR_STRINGS.safety.killSwitchTitle)}</span>
+      ${renderBadge({
+        id: 'ref-killswitch-badge',
+        label: killStateLabel,
+        tone: enabled ? 'ok' : 'warn',
+      })}
+    </div>
+    <button type="button" id="btn-killswitch" class="lp-btn lp-btn-secondary lp-btn-sm" aria-pressed="${enabled ? 'true' : 'false'}">${escapeHtml(killLabel)}</button>
+  </div>
+  <div id="ref-escalations-card" class="lp-escalations-card">
+    <div class="lp-escalations-header">
+      <h2 class="lp-escalations-title">${escapeHtml(EDITOR_STRINGS.safety.escalationsTitle)}</h2>
+      ${renderBadge({ id: 'ref-escalations-count', label: String(escCount), tone: escCount > 0 ? 'warn' : 'neutral' })}
+    </div>
+    <p id="ref-escalations-empty" class="lp-field-help"${escCount > 0 ? ' hidden' : ''}>${escapeHtml(EDITOR_STRINGS.safety.escalationsEmpty)}</p>
+    <ul id="ref-escalations-list" class="lp-escalation-list"${escCount === 0 ? ' hidden' : ''}>${escItemsHtml}</ul>
+  </div>
+</section>`;
+}
+
 export function renderEditorDialogsAndDrawers(): string {
   const publishDialogBody = `<div class="lp-publish-steps">
   <section class="lp-publish-step">
     <h3>1. ${escapeHtml(EDITOR_STRINGS.publishDialog.checkTitle)}</h3>
     <p id="ref-publish-dialog-status" role="status" aria-live="polite">${escapeHtml(EDITOR_STRINGS.publishDialog.clean)}</p>
+    <ul id="ref-publish-matches" class="lp-publish-matches" hidden></ul>
   </section>
   <section id="ref-publish-nda-step" class="lp-publish-step" hidden>
     <h3>2. ${escapeHtml(EDITOR_STRINGS.publishDialog.ndaTitle)}</h3>
