@@ -111,6 +111,7 @@
 | `A103` | g15-register-new-findings | `active` | [A103-g15-register-new-findings.md](execution-reports/A103-g15-register-new-findings.md) | — |
 | `A104` | g15-status-normalisation | `active` | [A104-g15-status-normalisation.md](execution-reports/A104-g15-status-normalisation.md) | — |
 | `A105` | G15 parity acceptance and closure | `active` | [A105-g15-parity-acceptance-and-closure.md](execution-reports/A105-g15-parity-acceptance-and-closure.md) | — |
+| `A106` | WP-16.0 G15 defects and capability parity fixes | `active` | [A106-wp-160-g15-defects-and-capability-parity-fixes.md](execution-reports/A106-wp-160-g15-defects-and-capability-parity-fixes.md) | — |
 
 ## Handover Snapshots (Class H)
 
