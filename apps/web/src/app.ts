@@ -11,6 +11,7 @@ import {
 } from '@living-portfolio/client';
 import {
   renderAdminEntriesPage,
+  renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
   renderAdminLoginPage,
@@ -183,10 +184,10 @@ export function createWebApp(options?: WebAppOptions) {
     );
   });
   app.get('/admin/today', async (c) => c.html(await renderAdminDashboardPage(client, { siteName: cfg.PUBLIC_SITE_NAME })));
+  app.get('/admin/entries', async (c) => c.html(await renderAdminEntriesListPage(client, { siteName: cfg.PUBLIC_SITE_NAME })));
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
   app.get('/admin/settings', async (c) => c.html(await renderAdminSettingsPage(client)));
   const adminSectionRoutes = [
-    '/admin/entries',
     '/admin/entries/new',
     '/admin/entries/:id',
     '/admin/entries/:id/history',

@@ -3045,4 +3045,134 @@ a.lp-admin-header-brand {
   flex-direction: column;
   gap: var(--space-2);
 }
+
+/* --- WP-16.3 Entries List Page --- */
+.lp-entries-stack {
+  max-width: 920px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.lp-entries-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.lp-entries-header h1,
+.lp-entries-header p {
+  margin: 0;
+}
+
+.lp-entries-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: flex-end;
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-container);
+  padding: var(--space-3);
+}
+
+.lp-entries-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 130px;
+}
+
+.lp-entries-search-group {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.lp-entries-search-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.lp-entries-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.lp-entries-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+}
+
+.lp-entries-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.lp-entries-row-title {
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.lp-entries-row-title:hover {
+  text-decoration: underline;
+}
+
+.lp-entries-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.lp-structure-meter {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.lp-structure-step {
+  width: 10px;
+  height: 6px;
+  border-radius: var(--radius-2);
+  background: var(--border-subtle);
+  display: inline-block;
+}
+
+.lp-structure-step.is-filled {
+  background: var(--accent);
+}
+
+.lp-structure-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.lp-entries-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
 `;

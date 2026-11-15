@@ -3,6 +3,7 @@ import type { IPortfolioRepository } from '@living-portfolio/db';
 import {
   createWebApp,
   renderAdminEntriesPage,
+  renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
   renderAdminLoginPage,
@@ -57,6 +58,13 @@ export function mountBundledWeb(
         })
       );
     });
+    app.get('/admin/entries', auth.requireAdminMiddleware(), async (c) =>
+      c.html(
+        await renderAdminEntriesListPage(repo, {
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+        })
+      )
+    );
     app.get('/admin/import', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminImportPage(repo))
     );
@@ -64,7 +72,6 @@ export function mountBundledWeb(
       c.html(await renderAdminSettingsPage(repo, runtimeState))
     );
     const adminSectionRoutes = [
-      '/admin/entries',
       '/admin/entries/new',
       '/admin/entries/:id',
       '/admin/entries/:id/history',
