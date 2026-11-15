@@ -5,6 +5,7 @@ import {
   renderAdminEntriesPage,
   renderAdminImportPage,
   renderAdminLoginPage,
+  renderAdminSectionPage,
   renderAdminSettingsPage,
   renderAdminSetupPage,
   renderNotFoundPage,
@@ -50,6 +51,35 @@ export function mountBundledWeb(
     app.get('/admin/settings', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminSettingsPage(repo, runtimeState))
     );
+    const adminSectionRoutes = [
+      '/admin/entries',
+      '/admin/entries/new',
+      '/admin/entries/:id',
+      '/admin/entries/:id/history',
+      '/admin/quick-log',
+      '/quick-log',
+      '/admin/pages',
+      '/admin/inbox',
+      '/admin/inbox/:id',
+      '/admin/bookings',
+      '/admin/audit',
+      '/admin/calibration',
+      '/admin/structure',
+      '/admin/routing',
+      '/admin/theme',
+      '/admin/settings/:section',
+    ];
+    for (const routePath of adminSectionRoutes) {
+      app.get(routePath, auth.requireAdminMiddleware(), async (c, next) => {
+        if (routePath === '/admin/entries/:id' && c.req.param('id') === 'editor') {
+          if (process.env.NODE_ENV === 'production') {
+            return c.notFound();
+          }
+          return next();
+        }
+        return c.html(renderAdminSectionPage(c.req.path));
+      });
+    }
   }
 
   const checkSession = auth

@@ -3120,18 +3120,21 @@
     - "5.1"
     - "12.6"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp16-1-admin-shell-and-routes.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
-  verified_by: null
+    - date: 2026-11-15
+      status: fixed
+      note: "WP-16.1: introduced renderAdminShell with sidebar groups (Write, Respond, Govern, Configure), top bar, status popover, account menu with sign-out, and renderAuthShell for /admin/setup and /admin/login."
+  verified_by: tests/e2e/wp16-1-admin-shell-and-routes.spec.ts
 - id: 20261106-UX-07
   audit: AUD-2026-11-06
   title: 'Eight backend capabilities have no UI screen: calibration, topology conflicts, import connectors, ventures, bookings, evaluation, redaction exclusions, API tokens'
@@ -3832,18 +3835,21 @@
     - "12.6"
     - "12.9"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp16-1-admin-shell-and-routes.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
-  verified_by: null
+    - date: 2026-11-15
+      status: fixed
+      note: "WP-16.1: added interactive #lp-status-popover-btn and #lp-status-popover legend with drill-down links in renderAdminShell."
+  verified_by: tests/e2e/wp16-1-admin-shell-and-routes.spec.ts
 - id: 20261106-UX-40
   audit: AUD-2026-11-06
   title: 'Public pages have no owner bar for signed-in sessions and lack a View as visitor mode'
@@ -5393,18 +5399,21 @@
     - "5.1"
     - "12.6"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp16-1-admin-shell-and-routes.spec.ts
   history:
     - date: 2026-11-15
       status: open
       note: "Registered at Gate G15 contact-sheet review (keeps UX-61 partial; D-WORKSPACE): setup, login, import, and settings still render the public site header (Work, Writing, Build, Timeline, Ask), a text 'Dark theme' button instead of the icon, and (import) the public footer with 'unofficial fork' text. Planned as first task of WP-16.1 (shell swap only, content untouched: import/settings use admin shell; setup/login use minimal auth shell with brand + theme icon only and no public nav; remove duplicated 'Back to Workspace' buttons; same theme icon everywhere; extend verify-ui-guards so no /admin* page renders public nav or footer, with the four pages on a deadline allowlist)."
-  verified_by: null
+    - date: 2026-11-15
+      status: fixed
+      note: "WP-16.1: swapped /admin/setup and /admin/login to renderAuthShell and /admin/import and /admin/settings to renderAdminShell; removed Back to Workspace links."
+  verified_by: tests/e2e/wp16-1-admin-shell-and-routes.spec.ts
 - id: 20261106-UX-92
   audit: AUD-2026-11-06
   title: 'At 320 px the Entries list sits above the editor in normal flow, pushing the editor ~340 px down'
@@ -5450,18 +5459,21 @@
     - "12.3"
     - "12.6"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp16-1-admin-shell-and-routes.spec.ts
   history:
     - date: 2026-11-15
       status: open
       note: "Registered at Gate G15 contact-sheet review: at 320 px on legacy admin pages (setup, login, import, settings), the public header wraps to 3 rows and setup wizard step labels collide/clip. Planned for WP-16.1: resolved by the shell swap plus collapsing the setup stepper to 'Step 1 of 6: Account' below 768 px."
-  verified_by: null
+    - date: 2026-11-15
+      status: fixed
+      note: "WP-16.1: swapped legacy pages off public header, updated #wizard-step-chip to 'Step 1 of 6: Account', and collapsed .wizard-step-labels below 768px."
+  verified_by: tests/e2e/wp16-1-admin-shell-and-routes.spec.ts
 - id: 20261106-UX-95
   audit: AUD-2026-11-06
   title: 'Settings copy exposes raw hex inputs and internal/spec jargon ("Simulated Degradation Mode", "bge-small-en-v1.5 dim 384", "Facet Known Threshold", "Self-Calibration Mechanisms (Spec §11, UX-08)", "shipped default: 0.82")'
@@ -5595,18 +5607,21 @@
   spec_sections:
     - "12.3"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp16-1-admin-shell-and-routes.spec.ts
   history:
     - date: 2026-11-15
       status: open
       note: "Registered at Gate G15 320 px sweep: /admin/settings has scrollWidth 364 at 320 px viewport. Planned for WP-16.1 (shell swap & responsive layout fix; full settings rewrite in WP-17)."
-  verified_by: null
+    - date: 2026-11-15
+      status: fixed
+      note: "WP-16.1: fixed minmax(min(100%, 340px),1fr) grid, wrapped settings tables in .lp-table-scroll, and made admin header compact at 320px (0 overflow verified)."
+  verified_by: tests/e2e/wp16-1-admin-shell-and-routes.spec.ts
 - id: 20261106-UX-102
   audit: AUD-2026-11-06
   title: 'Empty and first-run editor states have no h1 (axe page-has-heading-one)'
