@@ -1241,5 +1241,13 @@
     "path": "docs/execution-reports/A110-wp-164-dedicated-editor-routes.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A111",
+    "title": "WP-16.5 Inspector module and entry history restore",
+    "class": "A",
+    "path": "docs/execution-reports/A111-wp-165-inspector-module.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
