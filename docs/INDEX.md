@@ -110,6 +110,7 @@
 | `A102` | wp-156-ui-contract-and-budget-guards | `active` | [A102-wp-156-ui-contract-and-budget-guards.md](execution-reports/A102-wp-156-ui-contract-and-budget-guards.md) | — |
 | `A103` | g15-register-new-findings | `active` | [A103-g15-register-new-findings.md](execution-reports/A103-g15-register-new-findings.md) | — |
 | `A104` | g15-status-normalisation | `active` | [A104-g15-status-normalisation.md](execution-reports/A104-g15-status-normalisation.md) | — |
+| `A105` | G15 parity acceptance and closure | `active` | [A105-g15-parity-acceptance-and-closure.md](execution-reports/A105-g15-parity-acceptance-and-closure.md) | — |
 
 ## Handover Snapshots (Class H)
 
@@ -130,6 +131,7 @@
 | `H013` | WP-12 Gate closure and v0.1.0 GA release | `active` | [H013-wp-12-gate-closure-and-v010-ga-release.md](handovers/H013-wp-12-gate-closure-and-v010-ga-release.md) | `H012` |
 | `H014` | WP-13 onboarding and authentication gate closure | `active` | [H014-wp-13-onboarding-and-authentication-gate-closure.md](handovers/H014-wp-13-onboarding-and-authentication-gate-closure.md) | — |
 | `H015` | WP-14 entry lifecycle integrity gate closure | `active` | [H015-wp-14-entry-lifecycle-integrity-gate-closure.md](handovers/H015-wp-14-entry-lifecycle-integrity-gate-closure.md) | `H014` |
+| `H016` | WP-15 design system and editor gate closure | `active` | [H016-wp-15-design-system-and-editor-gate-closure.md](handovers/H016-wp-15-design-system-and-editor-gate-closure.md) | — |
 
 ## Plans & Protocols (Class P)
 
@@ -139,6 +141,7 @@
 | `P002` | API Boundary and Web Decoupling Architecture Decision Record | `active` | [P002-api-boundary-and-web-decoupling-adr.md](plans/P002-api-boundary-and-web-decoupling-adr.md) | — |
 | `P003` | Hosting provider evaluation and staging architecture ADR | `active` | [P003-hosting-provider-evaluation-and-staging-architecture-adr.md](plans/P003-hosting-provider-evaluation-and-staging-architecture-adr.md) | — |
 | `P004` | UX remediation work packages | `active` | [P004-ux-remediation-work-packages.md](plans/P004-ux-remediation-work-packages.md) | — |
+| `P005` | WP-15 Capability Parity Table | `active` | [P005-wp15-capability-parity.md](plans/P005-wp15-capability-parity.md) | — |
 
 ## Guides, References & Templates (Class G)
 
@@ -170,4 +173,5 @@
 | `L015` | UX Specification Audit Report | `frozen` | [report.md](audits/2026-11-06-ux-specification-audit/report.md) | — |
 | `L016` | Start-Here Onboarding Runbook and Deployment Checklist | `active` | [START-HERE.md](START-HERE.md) | — |
 | `L017` | Design Foundations Specification | `active` | [foundations.md](design/foundations.md) | — |
+| `L018` | Front-End Complete Acceptance Pack (Gate GFE) | `active` | [front-end-acceptance.md](plans/front-end-acceptance.md) | — |
 

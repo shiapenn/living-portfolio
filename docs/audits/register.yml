@@ -5481,3 +5481,188 @@
       status: open
       note: "Registered at Gate G15 contact-sheet review (D-CONTRACT-1 and D-HELP): /admin/settings exposes raw hex inputs for theme colours and developer/spec strings ('Simulated Degradation Mode', 'bge-small-en-v1.5 dim 384', 'Facet Known Threshold', 'Self-Calibration Mechanisms (Spec §11, UX-08)', 'shipped default: 0.82'). Planned for WP-17.1 and WP-17.8."
   verified_by: null
+- id: 20261106-UX-96
+  audit: AUD-2026-11-06
+  title: 'Draft buffer, restore prompt, beforeunload unsaved-changes guard, and offline banner lost when workspace.ts was deleted'
+  spec_sections:
+    - "6.2"
+    - "12.7"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 closure (capability parity gap): deleting apps/web/src/pages/admin/workspace.ts in WP-15.4 removed the IndexedDB draft buffer, restore notice, beforeunload guard, and offline banner from /admin. Planned for WP-16.0."
+  verified_by: null
+- id: 20261106-UX-97
+  audit: AUD-2026-11-06
+  title: 'Editor uses custom setupMenu in editor-page.ts where Enter keeps focus on the trigger button and ArrowDown does nothing'
+  spec_sections:
+    - "12.2"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 sweep (D-CONTRACT-2): editor-page.ts uses custom setupMenu instead of the shared Menu primitive; after Enter focus stays on the trigger button and ArrowDown does nothing. Replace with shared Menu primitive and test on the real editor in WP-16.0."
+  verified_by: null
+- id: 20261106-UX-98
+  audit: AUD-2026-11-06
+  title: 'Two message places are active when the Publish dialog opens over a saved status line'
+  spec_sections:
+    - "12.7"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 sweep (D-FEEDBACK): opening the Publish dialog while #ref-status-line holds a save status leaves two active message places. Clear or hide the editor status line while a dialog is open in WP-16.0."
+  verified_by: null
+- id: 20261106-UX-99
+  audit: AUD-2026-11-06
+  title: 'Publish dialog does not show what private details were matched (type, masked snippet, position, and text link)'
+  spec_sections:
+    - "3.11"
+    - "6.2"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 sweep: the Publish dialog blocks on detected private details without listing each match. List each match with its type (email, key, etc.), a masked snippet, and position with a link/highlight to the text in WP-16.0."
+  verified_by: null
+- id: 20261106-UX-100
+  audit: AUD-2026-11-06
+  title: 'Admin header brand link (a.lp-admin-header-brand) is 24 px high at 320 px, below the 44 px minimum touch target'
+  spec_sections:
+    - "12.3"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 320 px sweep: a.lp-admin-header-brand measures 24 px high at 320 px. Increase hit area to >= 44 px in WP-16.0."
+  verified_by: null
+- id: 20261106-UX-101
+  audit: AUD-2026-11-06
+  title: '/admin/settings overflows horizontally by 44 px (scrollWidth 364) at 320 px'
+  spec_sections:
+    - "12.3"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 320 px sweep: /admin/settings has scrollWidth 364 at 320 px viewport. Planned for WP-16.1 (shell swap & responsive layout fix; full settings rewrite in WP-17)."
+  verified_by: null
+- id: 20261106-UX-102
+  audit: AUD-2026-11-06
+  title: 'Empty and first-run editor states have no h1 (axe page-has-heading-one)'
+  spec_sections:
+    - "12.2"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 axe sweep: empty and first-run states on /admin lack an h1 (page-has-heading-one violation). Planned for WP-16.0."
+  verified_by: null
+- id: 20261106-UX-103
+  audit: AUD-2026-11-06
+  title: 'Duplicate banner landmark (landmark-no-duplicate-banner / landmark-unique on .lp-admin-header) when overlays are open'
+  spec_sections:
+    - "12.2"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 axe sweep: opening Publish dialog or Structure drawer produces landmark-no-duplicate-banner / landmark-unique violations on .lp-admin-header. Planned for WP-16.0."
+  verified_by: null
+- id: 20261106-UX-104
+  audit: AUD-2026-11-06
+  title: 'Automated-answering kill switch removed from /admin workspace when workspace.ts was deleted'
+  spec_sections:
+    - "9.4"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 capability parity review: #btn-killswitch was removed from /admin when workspace.ts was deleted in WP-15.4 (only available via /admin/settings checkbox or POST /api/settings until WP-17.1). Restore quick kill-switch control on /admin in WP-16.0."
+  verified_by: null
+- id: 20261106-UX-105
+  audit: AUD-2026-11-06
+  title: 'Escalation review and approval card removed from /admin workspace when workspace.ts was deleted (API-only until WP-16.6)'
+  spec_sections:
+    - "6.4"
+    - "9.3"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 capability parity review: escalation review/approval cards (#esc-card-*, approve/reject) were removed from /admin when workspace.ts was deleted in WP-15.4 (PATCH /api/v1/inbox/:id/approve is API-only until WP-16.6). Restore escalation review/approval card on /admin in WP-16.0."
+  verified_by: null

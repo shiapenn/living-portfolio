@@ -416,14 +416,22 @@
         "WP-15.5",
         "WP-15.6"
       ],
-      "requiredPassingTests": [],
-      "closingReceipt": null,
-      "handover": null
+      "requiredPassingTests": [
+        "tests/e2e/wp15-2-primitives-gallery.spec.ts",
+        "tests/e2e/wp15-3-feedback-and-containers.spec.ts",
+        "tests/e2e/wp15-3a-design-foundations.spec.ts",
+        "tests/e2e/wp15-7-editor-reference-page.spec.ts",
+        "apps/web/src/pages/admin/entries/editor.test.ts",
+        "apps/web/src/primitives/foundations.test.ts"
+      ],
+      "closingReceipt": "A105",
+      "handover": "H016"
     },
     "WP-16": {
       "name": "Work Package 16 (Gate G16 Admin Shell, Entries & Inbox)",
-      "description": "Admin routed navigation shell, Today needs-attention view, paginated entries list, per-entry editor routes, 5-tab Inspector pattern, inbox and answer rules, and monolith retirement (UX-06, UX-07 part, UX-12 part, UX-17 part, UX-25 part, UX-37 part, UX-39, UX-51 part, UX-54 part, UX-55 part, UX-56 part, UX-60 part, UX-61 part, UX-62 part, UX-63 part, UX-64 part, UX-65 part, UX-67 part, UX-68 part, UX-91, UX-92, UX-93, UX-94, CP-12 part, CP-13 part).",
+      "description": "G15 defect/parity fixes (WP-16.0), admin routed navigation shell, Today needs-attention view, paginated entries list, per-entry editor routes, 5-tab Inspector pattern, inbox and answer rules, and monolith retirement (UX-06, UX-07 part, UX-12 part, UX-17 part, UX-25 part, UX-37 part, UX-39, UX-51 part, UX-54 part, UX-55 part, UX-56 part, UX-60 part, UX-61 part, UX-62 part, UX-63 part, UX-64 part, UX-65 part, UX-67 part, UX-68 part, UX-91, UX-92, UX-93, UX-94, UX-96, UX-97, UX-98, UX-99, UX-100, UX-101, UX-102, UX-103, UX-104, UX-105, CP-12 part, CP-13 part).",
       "requiredTaskIds": [
+        "WP-16.0",
         "WP-16.1",
         "WP-16.2",
         "WP-16.3",
@@ -483,6 +491,14 @@
         "WP-19.7",
         "WP-19.8"
       ],
+      "requiredPassingTests": [],
+      "closingReceipt": null,
+      "handover": null
+    },
+    "GFE": {
+      "name": "Milestone Gate GFE (Front-End Complete)",
+      "description": "Single owner hands-on acceptance walkthrough on fresh clone on port 4000 across journeys J1-J11 (docs/plans/front-end-acceptance.md), positioned after WP-19 (G19) and before WP-20.",
+      "requiredTaskIds": [],
       "requiredPassingTests": [],
       "closingReceipt": null,
       "handover": null
