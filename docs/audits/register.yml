@@ -5723,3 +5723,25 @@
       status: fixed
       note: "Fixed in WP-16.0: restored #ref-escalations-card on /admin wired to PATCH /api/inbox/:id/approve and /reject."
   verified_by: A
+- id: 20261106-UX-106
+  audit: AUD-2026-11-06
+  title: 'Dedicated editor (/admin/entries/:id) shows empty body textarea for existing entries because repo.entries.get resolved to Map.prototype.get and list entries omitted revision.body_md'
+  spec_sections:
+    - "6.1"
+    - "10.0"
+  severity: P0
+  status: fixed
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-p0-editor-body.spec.ts
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered in WP-16.R pre-check: opening an existing seeded entry on /admin/entries/:id rendered an empty #ref-field-body textarea because renderDedicatedEditorPage checked clientOrRepo?.entries?.get (hitting Map.prototype.get on InMemoryPortfolioRepository instead of getEntry) and mapRawEditorEntry ignored e.revision?.body_md."
+    - date: 2026-11-15
+      status: fixed
+      note: "Fixed in WP-16.pre-h (P0 editor body fix): checked typeof clientOrRepo?.getEntry === 'function' before entries.get in editor.ts and history.ts, merged selectedEntry from getEntry into renderAdminEntriesPage, and fell back to e.revision/e.currentRevision in mapRawEditorEntry. Verified by tests/e2e/wp16-p0-editor-body.spec.ts."
+  verified_by: A
