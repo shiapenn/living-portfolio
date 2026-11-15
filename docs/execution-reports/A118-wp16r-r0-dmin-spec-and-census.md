@@ -14,10 +14,10 @@
 ## 1. Scope
 
 Executed `WP-16.R R0` (Minimal Visual Reset — specification, findings registration, and failing-first style-census harness):
-- Amended `docs/design/foundations.md` with `D-MIN: Minimal Visual Reset (Supersedes Conflicting D-FOUND-2, D-FOUND-3, D-FOUND-4)` covering all 12 closed design decisions and the Playwright style-census enforcement rule.
-- Amended `docs/plans/P004-ux-remediation-work-packages.md` and `docs/plans/gates.json` to include `WP-16.R` (`R0`–`R4`) and findings `UX-107`, `UX-108`.
-- Registered `20261106-UX-107` (P1, `open`: non-systematic radii/heights/type/spacing/borders/inline styles across admin) and `20261106-UX-108` (P1, `open`: non-journey elements and layout defects on Today/Entries/Editor/Inbox/Answer rules/Settings) in `docs/audits/register.yml`.
-- Wrote `tests/e2e/wp16-r-style-census.spec.ts` (Playwright census across every admin page x 2 themes x 1280 and 320 px), observed the initial failure against `0` budgets, and recorded the full-suite baseline in the shrinking-only `docs/audits/style-census-budget.json`.
+- `[implemented]` Amended `docs/design/foundations.md` with `D-MIN: Minimal Visual Reset (Supersedes Conflicting D-FOUND-2, D-FOUND-3, D-FOUND-4)` covering all 12 closed design decisions and the Playwright style-census enforcement rule.
+- `[implemented]` Amended `docs/plans/P004-ux-remediation-work-packages.md` and `docs/plans/gates.json` to include `WP-16.R` (`R0`–`R4`) and findings `UX-107`, `UX-108`.
+- `[implemented]` Registered `20261106-UX-107` (P1, `open`: non-systematic radii/heights/type/spacing/borders/inline styles across admin) and `20261106-UX-108` (P1, `open`: non-journey elements and layout defects on Today/Entries/Editor/Inbox/Answer rules/Settings) in `docs/audits/register.yml`.
+- `[implemented]` Wrote `tests/e2e/wp16-r-style-census.spec.ts` (Playwright census across every admin page x 2 themes x 1280 and 320 px), observed the initial failure against `0` budgets, and recorded the full-suite baseline in the shrinking-only `docs/audits/style-census-budget.json`.
 
 ## 2. CI Evidence
 
@@ -59,7 +59,7 @@ Executed `WP-16.R R0` (Minimal Visual Reset — specification, findings registra
 
 ## 6. Not Done (Tagged)
 
-- `WP-16.R R1`–`R4` (token/primitive reset, page migration, element removal/defect fixes, contact sheets and 0-violation census) remain open and are tracked in `UX-107` and `UX-108`.
+- `[not-started]` `WP-16.R R1`–`R4` (token/primitive reset, page migration, element removal/defect fixes, contact sheets and 0-violation census) remain open and are tracked in `UX-107` and `UX-108`.
 
 ## 7. Changes to Earlier Reports
 
