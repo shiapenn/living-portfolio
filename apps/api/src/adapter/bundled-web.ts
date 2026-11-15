@@ -4,6 +4,7 @@ import {
   createWebApp,
   renderAdminEntriesPage,
   renderDedicatedEditorPage,
+  renderEntryHistoryPage,
   renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
@@ -87,6 +88,12 @@ export function mountBundledWeb(
       });
       return html ? c.html(html) : c.html(renderNotFoundPage(), 404);
     });
+    app.get('/admin/entries/:id/history', auth.requireAdminMiddleware(), async (c) => {
+      const html = await renderEntryHistoryPage(repo, c.req.param('id') ?? '', {
+        answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+      });
+      return html ? c.html(html) : c.html(renderNotFoundPage(), 404);
+    });
     app.get('/admin/import', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminImportPage(repo))
     );
@@ -94,7 +101,6 @@ export function mountBundledWeb(
       c.html(await renderAdminSettingsPage(repo, runtimeState))
     );
     const adminSectionRoutes = [
-      '/admin/entries/:id/history',
       '/admin/quick-log',
       '/quick-log',
       '/admin/pages',

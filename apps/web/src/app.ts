@@ -12,6 +12,7 @@ import {
 import {
   renderAdminEntriesPage,
   renderDedicatedEditorPage,
+  renderEntryHistoryPage,
   renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
@@ -201,10 +202,13 @@ export function createWebApp(options?: WebAppOptions) {
     const html = await renderDedicatedEditorPage(client, { selectedId: id, siteName: cfg.PUBLIC_SITE_NAME });
     return html ? c.html(html) : c.html(renderNotFoundPage(), 404);
   });
+  app.get('/admin/entries/:id/history', async (c) => {
+    const html = await renderEntryHistoryPage(client, c.req.param('id'), { siteName: cfg.PUBLIC_SITE_NAME });
+    return html ? c.html(html) : c.html(renderNotFoundPage(), 404);
+  });
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
   app.get('/admin/settings', async (c) => c.html(await renderAdminSettingsPage(client)));
   const adminSectionRoutes = [
-    '/admin/entries/:id/history',
     '/admin/quick-log',
     '/quick-log',
     '/admin/pages',

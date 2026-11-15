@@ -1901,6 +1901,7 @@ input[type="date"].lp-input {
 
 .lp-tablist {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-1);
   border-bottom: 1px solid var(--border-subtle);
   margin-bottom: var(--space-3);
@@ -2493,6 +2494,10 @@ a.lp-admin-header-brand {
     order: 2;
   }
 
+  .lp-editor-inspector {
+    order: 3;
+  }
+
   .lp-entry-list[data-collapsed="true"] {
     display: none;
   }
@@ -2500,14 +2505,109 @@ a.lp-admin-header-brand {
 
 @media (min-width: 768px) {
   .lp-editor-shell {
-    grid-template-columns: 260px minmax(0, 720px);
-    gap: var(--space-6);
+    grid-template-columns: 240px minmax(0, 720px);
+    gap: var(--space-4);
     align-items: start;
   }
 
   .lp-sidebar-toggle {
     display: none;
   }
+}
+
+@media (min-width: 1080px) {
+  .lp-editor-shell {
+    grid-template-columns: 230px minmax(0, 1fr) 310px;
+    gap: var(--space-4);
+  }
+}
+
+.lp-editor-inspector {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.lp-inspector-levels {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-1);
+}
+
+.lp-inspector-level {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.lp-inspector-level-done {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--surface-subtle);
+}
+
+.lp-inspector-level-code {
+  font-weight: 600;
+}
+
+.lp-inspector-next-step,
+.lp-inspector-explainer {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.lp-inspector-list,
+.lp-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.lp-inspector-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  font-size: 0.875rem;
+}
+
+.lp-inspector-suggested {
+  border-style: dashed;
+}
+
+.lp-history-row {
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.lp-history-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.lp-history-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .lp-editor-sidebar {

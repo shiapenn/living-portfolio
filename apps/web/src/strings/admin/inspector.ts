@@ -1,0 +1,58 @@
+export const INSPECTOR_STRINGS = {
+  paneLabel: 'Entry inspector',
+  levels: [
+    { level: 0, code: '1', label: 'Captured' },
+    { level: 1, code: '2', label: 'Tagged' },
+    { level: 2, code: '3', label: 'Claimed' },
+    { level: 3, code: '4', label: 'Grounded' },
+  ],
+  nextStepPrefix: 'Next step:',
+  defaultNextStep: 'Add context facets or supporting evidence to raise this entry’s grounding level.',
+  suggestedBadge: 'Suggested',
+  tabs: {
+    structure: {
+      label: 'Structure',
+      explainer: 'Shows how well this entry is structured across 4 steps (Captured to Grounded) and what signals are captured vs. suggested.',
+      empty: 'No structural annotations recorded yet.',
+      suggestedHeading: 'Suggested structure improvements',
+    },
+    context: {
+      label: 'Context',
+      explainer: 'Timeframe, role, domains, and skills that anchor this entry on your portfolio.',
+      empty: 'No context facets tagged yet.',
+      suggestedHeading: 'Suggested context tags',
+    },
+    evidence: {
+      label: 'Evidence',
+      explainer: 'Concrete links, metrics, and artifacts that back up claims in this entry.',
+      empty: 'No evidence attached yet.',
+      suggestedHeading: 'Suggested evidence',
+    },
+    answerability: {
+      label: 'Answerability',
+      explainer: 'Controls whether automated Q&A can cite this entry when visitors ask questions.',
+      readyLabel: 'Answerable',
+      notReadyLabel: 'Not yet answerable',
+      readyDetail: 'This entry is visible and has structured claims visitors can ask about.',
+      draftDetail: 'Draft entries are never cited by automated Q&A until published or unlisted.',
+      ungroundedDetail: 'Publish or add a claim/evidence item so automated Q&A can ground answers here.',
+    },
+    history: {
+      label: 'History',
+      explainer: 'Immutable revision timeline for this entry. Restoring creates a new revision.',
+      empty: 'No saved revisions yet.',
+      viewAll: 'View full history',
+    },
+  },
+  historyPage: {
+    titlePrefix: 'History',
+    backToEntry: 'Back to entry',
+    subtitle: 'Every saved edit creates a new revision. Restoring an earlier revision appends a new revision at the top.',
+    restoreButton: 'Restore this version',
+    restoredStatus: 'Restored as a new revision.',
+    restoreError: 'Could not restore this revision. Please try again.',
+    emptyTitle: 'No revisions recorded',
+    emptyBody: 'Save edits in the entry editor to build a revision timeline.',
+    currentBadge: 'Latest',
+  },
+} as const;

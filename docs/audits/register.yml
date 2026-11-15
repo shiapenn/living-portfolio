@@ -3788,13 +3788,13 @@
     - "5.1"
     - "12.6"
   severity: P1
-  status: partial
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: tests/e2e/wp15-7-editor-reference-page.spec.ts
+  regression_test: tests/e2e/wp16-5-inspector-and-history.spec.ts
   history:
     - date: 2026-11-06
       status: open
@@ -3805,7 +3805,10 @@
     - date: 2026-11-15
       status: partial
       note: "Status normalised at Gate G15: Structure drawer scopes to active entry in Reference Editor; full 5-tab Inspector module remains for WP-16.5 (and WP-16.4 route scoping)."
-  verified_by: tests/e2e/wp15-7-editor-reference-page.spec.ts
+    - date: 2026-11-15
+      status: fixed
+      note: "WP-16.5: mounted 5-tab Inspector module (Structure, Context, Evidence, Answerability, History) scoped to the open entry in #ref-inspector-pane, plus /admin/entries/:id/history with restore as new revision."
+  verified_by: tests/e2e/wp16-5-inspector-and-history.spec.ts
 - id: 20261106-UX-38
   audit: AUD-2026-11-06
   title: 'Machine-suggested facets carry chip-suggested class with no CSS rules, rendering suggested vs confirmed distinction invisible'

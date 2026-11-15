@@ -15,6 +15,7 @@ import {
   renderStatusLine,
 } from '../../../components/index.js';
 import { EDITOR_STRINGS } from '../../../strings/admin/editor.js';
+import { renderStructureInspectorPanel, type StructureInspectorData } from '../../../patterns/structure-panel.js';
 import {
   renderDraftAndOfflineBanners,
   renderEditorDialogsAndDrawers,
@@ -52,6 +53,7 @@ export interface ReferenceEditorOptions {
   initialTheme?: 'light' | 'dark';
   answeringEnabled?: boolean;
   escalations?: WorkspaceEscalationItem[];
+  inspector?: StructureInspectorData;
 }
 
 function formatVisibilityLabel(vis: ReferenceEntryVisibility): string {
@@ -314,6 +316,7 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
         escalations: options.escalations ?? [],
       })}
     </section>
+    ${selected ? renderStructureInspectorPanel(options.inspector ?? { entryId: selected.id, visibility: selected.visibility, structureLevel: 0, gapQuestions: [], facets: [], claims: [], evidence: [], revisions: [] }) : ''}
   </main>
   ${renderEditorDialogsAndDrawers()}
   <script type="module" src="/assets/client/editor-page.js"${nonceAttr}></script>
@@ -336,45 +339,25 @@ function mapRawEditorEntry(e: any, rev?: any): ReferenceEditorEntry {
 
 export async function renderAdminEntriesPage(
   clientOrRepo: any,
-  options: {
-    selectedId?: string;
-    isNew?: boolean;
-    dedicatedRoute?: boolean;
-    siteName?: string;
-    legacyRecoveryUsed?: boolean;
-    answeringEnabled?: boolean;
-    initialTheme?: 'light' | 'dark';
-    nonce?: string;
-  } = {}
+  options: { selectedId?: string; isNew?: boolean; dedicatedRoute?: boolean; siteName?: string; legacyRecoveryUsed?: boolean; answeringEnabled?: boolean; initialTheme?: 'light' | 'dark'; nonce?: string; inspector?: StructureInspectorData } = {}
 ): Promise<string> {
-  const listRes = clientOrRepo?.entries?.list
-    ? await clientOrRepo.entries.list()
-    : { entries: (await clientOrRepo?.listEntries?.()) ?? [] };
-
+  const listRes = clientOrRepo?.entries?.list ? await clientOrRepo.entries.list() : { entries: (await clientOrRepo?.listEntries?.()) ?? [] };
   let answeringEnabled = options.answeringEnabled ?? true;
   let escalations: WorkspaceEscalationItem[] = [];
   try {
-    if (clientOrRepo?.settings?.get) {
-      const s = await clientOrRepo.settings.get();
-      if (typeof s?.automatedAnsweringEnabled === 'boolean') answeringEnabled = s.automatedAnsweringEnabled;
-    }
+    const s = clientOrRepo?.settings?.get ? await clientOrRepo.settings.get() : null;
+    if (typeof s?.automatedAnsweringEnabled === 'boolean') answeringEnabled = s.automatedAnsweringEnabled;
   } catch { /* fallback */ }
   try {
-    const rawEsc = clientOrRepo?.inbox?.list
-      ? (await clientOrRepo.inbox.list('pending'))?.escalations
-      : await clientOrRepo?.getEscalations?.('pending');
-    if (Array.isArray(rawEsc)) {
-      escalations = rawEsc.map((e: any) => ({ id: String(e.id), question: String(e.question ?? ''), draft: typeof e.draft === 'string' ? e.draft : '' }));
-    }
+    const rawEsc = clientOrRepo?.inbox?.list ? (await clientOrRepo.inbox.list('pending'))?.escalations : await clientOrRepo?.getEscalations?.('pending');
+    if (Array.isArray(rawEsc)) escalations = rawEsc.map((e: any) => ({ id: String(e.id), question: String(e.question ?? ''), draft: typeof e.draft === 'string' ? e.draft : '' }));
   } catch { /* fallback */ }
   const mapped: ReferenceEditorEntry[] = (listRes?.entries ?? []).map((e: any) => mapRawEditorEntry(e));
-
   if (options.isNew) {
     const newEntry: ReferenceEditorEntry = { id: 'new', slug: '', title: '', body: '', visibility: 'draft', date: new Date().toISOString().slice(0, 10), temporalConfidence: 'exact', profile: 'freeform' };
     return renderReferenceEditorPage({ entries: [newEntry, ...mapped], selectedId: 'new', isNew: true, dedicatedRoute: options.dedicatedRoute, siteName: options.siteName, legacyRecoveryUsed: options.legacyRecoveryUsed, initialTheme: options.initialTheme, nonce: options.nonce, answeringEnabled, escalations });
   }
-
-  return renderReferenceEditorPage({ entries: mapped, selectedId: options.dedicatedRoute ? options.selectedId : (options.selectedId ?? mapped[0]?.id), dedicatedRoute: options.dedicatedRoute, siteName: options.siteName, legacyRecoveryUsed: options.legacyRecoveryUsed, showWalkthrough: mapped.length === 0, initialTheme: options.initialTheme, nonce: options.nonce, answeringEnabled, escalations });
+  return renderReferenceEditorPage({ entries: mapped, selectedId: options.dedicatedRoute ? options.selectedId : (options.selectedId ?? mapped[0]?.id), dedicatedRoute: options.dedicatedRoute, siteName: options.siteName, legacyRecoveryUsed: options.legacyRecoveryUsed, showWalkthrough: mapped.length === 0, initialTheme: options.initialTheme, nonce: options.nonce, answeringEnabled, escalations, inspector: options.inspector });
 }
 
 export async function renderDedicatedEditorPage(
@@ -385,11 +368,12 @@ export async function renderDedicatedEditorPage(
   if (!options.selectedId) return null;
   let found: any = null;
   try {
-    const res = clientOrRepo?.entries?.get
-      ? await clientOrRepo.entries.get(options.selectedId)
-      : await clientOrRepo?.getEntry?.(options.selectedId, ['private', 'unlisted', 'public']);
+    const res = clientOrRepo?.entries?.get ? await clientOrRepo.entries.get(options.selectedId) : await clientOrRepo?.getEntry?.(options.selectedId, ['private', 'unlisted', 'public']);
     if (res && (res.entry || res.id)) found = res;
   } catch { return null; }
   if (!found) return null;
-  return renderAdminEntriesPage(clientOrRepo, { ...options, selectedId: options.selectedId, dedicatedRoute: true });
+  const rawEntry = found.entry ?? found;
+  const vis = rawEntry.visibility === 'public' ? 'public' : rawEntry.visibility === 'unlisted' ? 'unlisted' : 'draft';
+  const inspector: StructureInspectorData = { entryId: rawEntry.id, visibility: vis, structureLevel: Number(found.structureLevel ?? 0), gapQuestions: Array.isArray(found.gapQuestions) ? found.gapQuestions : [], facets: Array.isArray(found.facets) ? found.facets : [], claims: Array.isArray(found.claims) ? found.claims : [], evidence: Array.isArray(found.evidence) ? found.evidence : [], revisions: Array.isArray(found.revisions) ? found.revisions : [] };
+  return renderAdminEntriesPage(clientOrRepo, { ...options, selectedId: options.selectedId, dedicatedRoute: true, inspector });
 }
