@@ -2,21 +2,8 @@ name: Staging Automated Continuous Deployment (Gate G3)
 
 on:
   push:
-    branches:
-      - main
     tags:
       - "v*"
-    paths:
-      - "apps/**"
-      - "packages/**"
-      - "docker/**"
-      - "deploy/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - "turbo.json"
-      - "tsconfig.base.json"
-      - ".github/workflows/deploy-staging.yml"
   workflow_dispatch:
     inputs:
       trigger_rollback_drill:

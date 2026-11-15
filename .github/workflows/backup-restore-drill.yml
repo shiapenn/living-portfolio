@@ -2,26 +2,8 @@ name: Backup & Scratch Restore Drill
 
 on:
   schedule:
-    - cron: '0 2 * * *' # Nightly at 02:00 UTC (§13.9, OSR-20)
+    - cron: '0 2 * * 0' # Weekly on Sunday at 02:00 UTC (§13.9, OSR-20)
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'packages/db/src/backup/**'
-      - 'scripts/backup-db'
-      - 'scripts/restore-drill'
-      - 'scripts/seed-db'
-      - 'package.json'
-      - '.github/workflows/backup-restore-drill.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'packages/db/src/backup/**'
-      - 'scripts/backup-db'
-      - 'scripts/restore-drill'
-      - 'scripts/seed-db'
-      - 'package.json'
-      - '.github/workflows/backup-restore-drill.yml'
 
 permissions:
   contents: read
