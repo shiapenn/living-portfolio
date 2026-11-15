@@ -61,7 +61,7 @@ export async function renderAdminInboxPage(
           </li>`;
         })
         .join('')}</ul>`
-    : renderEmptyState({ id: 'inbox-empty', title: INBOX_STRINGS.inbox.emptyTitle, body: INBOX_STRINGS.inbox.emptyBody });
+    : renderEmptyState({ id: 'inbox-empty', headingTag: 'h2', title: INBOX_STRINGS.inbox.emptyTitle, body: INBOX_STRINGS.inbox.emptyBody });
 
   const detailHtml = selectedItem
     ? `<section class="lp-card lp-history-row" id="inbox-detail-card" data-escalation-id="${escapeHtml(String(selectedItem.id))}">

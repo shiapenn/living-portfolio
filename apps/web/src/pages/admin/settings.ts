@@ -72,7 +72,7 @@ export async function renderAdminSettingsPage(
           
           <div style="margin-bottom:10px">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
-              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+              <label style="display:flex;align-items:center;gap:8px;min-height:44px;font-size:13px;cursor:pointer">
                 <input type="checkbox" id="setting-mech-suggestion-thresholds" ${mechSuggestion ? 'checked' : ''} />
                 <span>Suggestion Thresholds</span>
               </label>
@@ -84,7 +84,7 @@ export async function renderAdminSettingsPage(
 
           <div style="margin-bottom:10px">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
-              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+              <label style="display:flex;align-items:center;gap:8px;min-height:44px;font-size:13px;cursor:pointer">
                 <input type="checkbox" id="setting-mech-routing-calibration" ${mechRouting ? 'checked' : ''} />
                 <span>Routing Calibration</span>
               </label>
@@ -96,7 +96,7 @@ export async function renderAdminSettingsPage(
 
           <div style="margin-bottom:10px">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
-              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+              <label style="display:flex;align-items:center;gap:8px;min-height:44px;font-size:13px;cursor:pointer">
                 <input type="checkbox" id="setting-mech-topology-audit" ${mechTopology ? 'checked' : ''} />
                 <span>Topology Audit</span>
               </label>
@@ -108,7 +108,7 @@ export async function renderAdminSettingsPage(
 
           <div style="margin-bottom:4px">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
-              <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer">
+              <label style="display:flex;align-items:center;gap:8px;min-height:44px;font-size:13px;cursor:pointer">
                 <input type="checkbox" id="setting-mech-scoped-constraints" ${mechScoped ? 'checked' : ''} />
                 <span>Scoped-Constraint Mining</span>
               </label>
@@ -119,9 +119,11 @@ export async function renderAdminSettingsPage(
           </div>
         </div>
 
-        <div style="margin-bottom:16px;display:flex;align-items:center;gap:8px">
-          <input type="checkbox" id="setting-answering-enabled" ${answeringEnabled ? 'checked' : ''} />
-          <label for="setting-answering-enabled" style="font-size:13px">Automated Answering Enabled (Kill-switch)</label>
+        <div style="margin-bottom:16px">
+          <label for="setting-answering-enabled" style="display:inline-flex;align-items:center;gap:8px;min-height:44px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="setting-answering-enabled" ${answeringEnabled ? 'checked' : ''} />
+            <span>Automated Answering Enabled (Kill-switch)</span>
+          </label>
         </div>
 
         <button type="button" class="btn" id="btn-save-routing">Save Calibration &amp; Routing</button>

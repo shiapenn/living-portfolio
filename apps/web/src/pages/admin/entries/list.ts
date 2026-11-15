@@ -93,6 +93,7 @@ ${renderButton({ id: 'btn-entries-delete-confirm', label: ENTRIES_LIST_STRINGS.d
 
   const emptyStateHtml = renderEmptyState({
     id: 'entries-empty-state',
+    headingTag: 'h2',
     title: ENTRIES_LIST_STRINGS.states.emptyTitle,
     body: ENTRIES_LIST_STRINGS.states.emptyBody,
     actionHtml: `<a href="/admin/entries/new" class="lp-btn lp-btn-primary lp-btn-sm">${escapeHtml(ENTRIES_LIST_STRINGS.newEntryLabel)}</a>`,

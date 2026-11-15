@@ -47,7 +47,7 @@ export async function renderAdminAuditRulesPage(
           </li>`;
         })
         .join('')}</ul>`
-    : renderEmptyState({ id: 'audit-empty', title: INBOX_STRINGS.audit.emptyTitle, body: INBOX_STRINGS.audit.emptyBody });
+    : renderEmptyState({ id: 'audit-empty', headingTag: 'h2', title: INBOX_STRINGS.audit.emptyTitle, body: INBOX_STRINGS.audit.emptyBody });
 
   const content = `<div class="lp-admin-section">
     <div>
