@@ -120,6 +120,7 @@
 | `A112` | WP-16.6 Inbox and audit rules pages | `active` | [A112-wp-166-inbox-and-audit-rules.md](execution-reports/A112-wp-166-inbox-and-audit-rules.md) | — |
 | `A113` | WP-16.7 Retire monolith and route /admin to Today | `active` | [A113-wp-167-retire-monolith.md](execution-reports/A113-wp-167-retire-monolith.md) | — |
 | `A114` | WP-16 Gate G16 closure and sweep verification | `active` | [A114-wp-16-gate-g16-closure.md](execution-reports/A114-wp-16-gate-g16-closure.md) | — |
+| `A115` | WP-16.pre-f CI cost optimization | `active` | [A115-wp-16pre-f-ci-cost-optimization.md](execution-reports/A115-wp-16pre-f-ci-cost-optimization.md) | — |
 
 ## Handover Snapshots (Class H)
 

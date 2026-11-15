@@ -1281,5 +1281,13 @@
     "path": "docs/handovers/H017-wp-16-admin-shell-entries-gate-closure.md",
     "status": "active",
     "supersedes": "H016"
+  },
+  {
+    "id": "A115",
+    "title": "WP-16.pre-f CI cost optimization",
+    "class": "A",
+    "path": "docs/execution-reports/A115-wp-16pre-f-ci-cost-optimization.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
