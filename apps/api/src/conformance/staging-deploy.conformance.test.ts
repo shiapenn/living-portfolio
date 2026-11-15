@@ -104,11 +104,12 @@ describe('Staging Deployment & Provider Configuration Conformance (OSR-18, Gate 
       expect(doc).toBeDefined();
     });
 
-    it('is triggered by pushes to main and manual dispatch', () => {
+    it('is triggered by v* tags and manual dispatch', () => {
       const content = readFileSync(deployWorkflowPath, 'utf8');
       const doc = parseYaml(content) as any;
 
-      expect(doc.on.push.branches).toContain('main');
+      expect(doc.on.push.tags).toContain('v*');
+      expect(doc.on.push.branches).toBeUndefined();
       expect(doc.on.workflow_dispatch).toBeDefined();
     });
 

@@ -281,7 +281,9 @@ describe('Database Backup, Restore Drill, Retention & Freshness Conformance (§1
       const workflowPath = resolve(monorepoRoot, '.github/workflows/backup-restore-drill.yml');
       expect(existsSync(workflowPath)).toBe(true);
       const workflowContent = readFileSync(workflowPath, 'utf8');
-      expect(workflowContent).toContain("cron: '0 2 * * *'");
+      expect(workflowContent).toContain("cron: '0 2 * * 0'");
+      expect(workflowContent).toContain('workflow_dispatch:');
+      expect(workflowContent).not.toContain('branches: [main]');
       expect(workflowContent).toContain('pgvector/pgvector:pg16');
       expect(workflowContent).toContain('pnpm db:backup');
       expect(workflowContent).toContain('pnpm db:restore-drill');
