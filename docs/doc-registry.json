@@ -1249,5 +1249,13 @@
     "path": "docs/execution-reports/A111-wp-165-inspector-module.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A112",
+    "title": "WP-16.6 Inbox and audit rules pages",
+    "class": "A",
+    "path": "docs/execution-reports/A112-wp-166-inbox-and-audit-rules.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

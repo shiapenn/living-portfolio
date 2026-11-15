@@ -117,6 +117,7 @@
 | `A109` | WP-16.3 Entries list page module (D-UI-1..D-UI-6) | `active` | [A109-wp-163-entries-list.md](execution-reports/A109-wp-163-entries-list.md) | — |
 | `A110` | WP-16.4 Dedicated editor routes, mobile collapse, and unsaved label | `active` | [A110-wp-164-dedicated-editor-routes.md](execution-reports/A110-wp-164-dedicated-editor-routes.md) | — |
 | `A111` | WP-16.5 Inspector module and entry history restore | `active` | [A111-wp-165-inspector-module.md](execution-reports/A111-wp-165-inspector-module.md) | — |
+| `A112` | WP-16.6 Inbox and audit rules pages | `active` | [A112-wp-166-inbox-and-audit-rules.md](execution-reports/A112-wp-166-inbox-and-audit-rules.md) | — |
 
 ## Handover Snapshots (Class H)
 
