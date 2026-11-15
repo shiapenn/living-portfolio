@@ -1329,5 +1329,13 @@
     "path": "docs/execution-reports/A120-wp16r-r2-migrate-admin-pages.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A121",
+    "title": "wp16r-r3-remove-and-fix",
+    "class": "A",
+    "path": "docs/execution-reports/A121-wp16r-r3-remove-and-fix.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

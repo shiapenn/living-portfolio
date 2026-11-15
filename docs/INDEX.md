@@ -126,6 +126,7 @@
 | `A118` | wp16r r0 dmin spec and census | `active` | [A118-wp16r-r0-dmin-spec-and-census.md](execution-reports/A118-wp16r-r0-dmin-spec-and-census.md) | — |
 | `A119` | wp16r r1 tokens and primitives | `active` | [A119-wp16r-r1-tokens-and-primitives.md](execution-reports/A119-wp16r-r1-tokens-and-primitives.md) | — |
 | `A120` | wp16r-r2-migrate-admin-pages | `active` | [A120-wp16r-r2-migrate-admin-pages.md](execution-reports/A120-wp16r-r2-migrate-admin-pages.md) | — |
+| `A121` | wp16r-r3-remove-and-fix | `active` | [A121-wp16r-r3-remove-and-fix.md](execution-reports/A121-wp16r-r3-remove-and-fix.md) | — |
 
 ## Handover Snapshots (Class H)
 
