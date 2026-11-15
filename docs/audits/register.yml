@@ -5745,3 +5745,41 @@
       status: fixed
       note: "Fixed in WP-16.pre-h (P0 editor body fix): checked typeof clientOrRepo?.getEntry === 'function' before entries.get in editor.ts and history.ts, merged selectedEntry from getEntry into renderAdminEntriesPage, and fell back to e.revision/e.currentRevision in mapRawEditorEntry. Verified by tests/e2e/wp16-p0-editor-body.spec.ts."
   verified_by: A
+- id: 20261106-UX-107
+  audit: AUD-2026-11-06
+  title: 'D-MIN design system not applied systematically across admin pages (multiple shells, duplicate per-page primitives, inline styles, inconsistent radii/heights/type/spacing)'
+  spec_sections:
+    - "6.4"
+    - "10.0"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-r-style-census.spec.ts
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered in WP-16.R R0 from WP-16 contact-sheet review: admin pages use inconsistent shells, duplicate primitives, inline styles, non-36px control heights, pill/mixed radii, extra font sizes/families, and page-height-dependent sidebar spacing."
+  verified_by: null
+- id: 20261106-UX-108
+  audit: AUD-2026-11-06
+  title: 'Non-journey elements and layout defects on admin pages (Today explainer, row Actions buttons, L0/dot meter, dead nav links, duplicate Structure tabs, false empty-list card, editor safety cards, raw JSON on Answer rules, monospace reply, Inbox decline layout, theme toggle placement, Settings serif heading & alpha banner)'
+  spec_sections:
+    - "6.4"
+    - "10.0"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-r-style-census.spec.ts
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered in WP-16.R R0 from WP-16 contact-sheet review: non-journey elements and layout defects identified for removal/remediation in WP-16.R R3."
+  verified_by: null

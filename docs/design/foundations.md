@@ -136,3 +136,23 @@ This specification defines the authoritative visual, structural, and interactive
 5. **Entry List Header & Non-Wrapping Labels**:
    - The sidebar list header displays the heading `"Entries"` beside a pill count `Badge` (`"0"`, `"1"`, `"2"`), never `"Entries (0 entries)"`, and renders the matching number of `EntryRow` items below.
    - Button and badge labels enforce `white-space: nowrap` so labels never wrap across lines.
+
+---
+
+## D-MIN: Minimal Visual Reset (Supersedes Conflicting D-FOUND-2, D-FOUND-3, D-FOUND-4)
+
+Where `D-MIN` conflicts with `D-FOUND-2`, `D-FOUND-3`, or `D-FOUND-4`, `D-MIN` supersedes them:
+
+1. **Remove rather than restyle**: An element stays only if a journey step in `docs/plans/front-end-acceptance.md` needs it.
+2. **Radius & shadows**: `4 px` (controls, inputs, tabs, menu items) and `8 px` (menus, dialogs, drawers). No pills or `999 px`, except status dots. No shadows except on overlays.
+3. **Control height & theme toggle**: All controls are `36 px` high (buttons, inputs, selects, dropdown triggers, icon buttons as `36 × 36`), with the same border and radius; the hit area grows to `44 px` on coarse pointers by padding, not by changing the look. The theme toggle lives in the Account menu.
+4. **State label & counts**: State label is a `6 px` dot in the state colour plus plain text (`Draft` grey, `Unlisted` amber, `Public` green), one component used everywhere. Counts are plain text, no badge.
+5. **Tabs**: One component, text with a `2 px` underline on the active tab, a single row. Boxed or pill tabs and step boxes are not used.
+6. **Containers & borders**: No card around a whole page section. Sections separated by whitespace and a `1 px` hairline. Borders only on inputs, menus, and dialogs; no dashed borders; no nested containers.
+7. **Spacing scale**: `4, 8, 16, 24, 40, 64` px; `16 px` between related items, `24 px` between groups, `40 px` between sections; page padding `24 px` (`16 px` below `768 px`).
+8. **Typography**: One sans family for the whole admin; serif only in the writing surface and public reading text; sizes `12, 14, 16, 24` px; weights `400` and `600`; monospace only for code and keys; never show raw JSON or internal ids.
+9. **Colour**: Neutrals plus one accent; status colours only for dots and text; tinted backgrounds only for the selected row and warning or error notices.
+10. **Buttons**: One primary per view; secondary outlined; quiet text.
+11. **Help**: No explainer cards; one line of help under a field; one line of page description.
+12. **Navigation**: Render only items whose pages exist. The editor screen holds only the list, the editor, and the optional structure panel.
+13. **Enforcement (style census, Playwright, every admin page × 2 themes × 1280 and 320 px)**: Computed radii are in `{0, 4, 8}` (dots excepted); every control is `36 px` high; font sizes are in `{12, 14, 16, 24}`; each role (state label, tab, button, icon button, input, select) has exactly one computed look across all pages; spacing values are in the scale; no inline styles; budgets live in a file that only shrinks (`docs/audits/style-census-budget.json`). Ratios and per-role signatures are printed in the report.
