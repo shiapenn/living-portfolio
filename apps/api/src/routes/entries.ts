@@ -30,6 +30,13 @@ export function createEntriesRoutes(
   router.get('/', async (c) => {
     const visibilityQuery = c.req.query('visibility');
     const ventureId = c.req.query('venture_id');
+    const typeFilter = c.req.query('type');
+    const searchQuery = (c.req.query('q') || '').trim().toLowerCase();
+    const pageParam = c.req.query('page');
+    const limitParam = c.req.query('limit');
+    const hasPagination = Boolean(pageParam || limitParam);
+    const page = Math.max(1, Number.parseInt(pageParam || '1', 10) || 1);
+    const limit = Math.min(100, Math.max(1, Number.parseInt(limitParam || '20', 10) || 20));
 
     let visibility: ('private' | 'unlisted' | 'public')[] = ['public'];
     if (visibilityQuery) {
@@ -46,10 +53,23 @@ export function createEntriesRoutes(
     }
 
     const rawEntries = await repo.listEntries({ visibility, venture_id: ventureId });
+    const filteredEntries = rawEntries.filter((entry) => {
+      if (typeFilter && typeFilter !== 'all' && entry.profile !== typeFilter) return false;
+      if (searchQuery) {
+        const haystack = `${entry.title || ''} ${entry.slug || ''} ${entry.id}`.toLowerCase();
+        if (!haystack.includes(searchQuery)) return false;
+      }
+      return true;
+    });
+    const total = filteredEntries.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const targetEntries = hasPagination
+      ? filteredEntries.slice((page - 1) * limit, page * limit)
+      : filteredEntries;
     const acceptedRelations = await repo.listAcceptedRelations();
 
     const entries = await Promise.all(
-      rawEntries.map(async (entry) => {
+      targetEntries.map(async (entry) => {
         const full = await repo.getEntry(entry.id, visibility);
         const currentRevision = full?.currentRevision ?? null;
         const profile = getProfile(entry.profile);
@@ -89,6 +109,9 @@ export function createEntriesRoutes(
       })
     );
 
+    if (hasPagination) {
+      return c.json({ entries, total, page, limit, totalPages });
+    }
     return c.json({ entries });
   });
 
