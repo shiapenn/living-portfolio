@@ -1225,5 +1225,13 @@
     "path": "docs/execution-reports/A108-wp-162-today-dashboard.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A109",
+    "title": "WP-16.3 Entries list page module (D-UI-1..D-UI-6)",
+    "class": "A",
+    "path": "docs/execution-reports/A109-wp-163-entries-list.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

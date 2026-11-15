@@ -114,6 +114,7 @@
 | `A106` | WP-16.0 G15 defects and capability parity fixes | `active` | [A106-wp-160-g15-defects-and-capability-parity-fixes.md](execution-reports/A106-wp-160-g15-defects-and-capability-parity-fixes.md) | — |
 | `A107` | WP-16.1 Admin shell, auth shell, route registry, and settings 320px fix | `active` | [A107-wp-161-admin-shell-and-route-registry.md](execution-reports/A107-wp-161-admin-shell-and-route-registry.md) | — |
 | `A108` | WP-16.2 Today dashboard module (D-UI-1..D-UI-6) | `active` | [A108-wp-162-today-dashboard.md](execution-reports/A108-wp-162-today-dashboard.md) | — |
+| `A109` | WP-16.3 Entries list page module (D-UI-1..D-UI-6) | `active` | [A109-wp-163-entries-list.md](execution-reports/A109-wp-163-entries-list.md) | — |
 
 ## Handover Snapshots (Class H)
 
