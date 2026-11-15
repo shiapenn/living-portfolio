@@ -1209,5 +1209,13 @@
     "path": "docs/execution-reports/A106-wp-160-g15-defects-and-capability-parity-fixes.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A107",
+    "title": "WP-16.1 Admin shell, auth shell, route registry, and settings 320px fix",
+    "class": "A",
+    "path": "docs/execution-reports/A107-wp-161-admin-shell-and-route-registry.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
