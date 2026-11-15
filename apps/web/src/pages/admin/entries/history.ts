@@ -15,16 +15,16 @@ export async function renderEntryHistoryPage(
   let entry: any = null;
   let revisions: any[] = [];
   try {
-    if (clientOrRepo?.entries?.get) {
-      const res = await clientOrRepo.entries.get(entryId);
-      entry = res?.entry ?? res;
-      revisions = Array.isArray(res?.revisions) ? res.revisions : [];
-    } else if (clientOrRepo?.getEntry) {
+    if (typeof clientOrRepo?.getEntry === 'function') {
       const res = await clientOrRepo.getEntry(entryId, ['private', 'unlisted', 'public']);
       if (res) {
         entry = res.entry;
         revisions = Array.isArray(res.revisions) ? res.revisions : [];
       }
+    } else if (typeof clientOrRepo?.entries?.get === 'function') {
+      const res = await clientOrRepo.entries.get(entryId);
+      entry = res?.entry ?? res;
+      revisions = Array.isArray(res?.revisions) ? res.revisions : [];
     }
   } catch {
     return null;

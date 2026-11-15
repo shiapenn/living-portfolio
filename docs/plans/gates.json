@@ -429,7 +429,7 @@
     },
     "WP-16": {
       "name": "Work Package 16 (Gate G16 Admin Shell, Entries & Inbox)",
-      "description": "G15 defect/parity fixes (WP-16.0), admin routed navigation shell, Today needs-attention view, paginated entries list, per-entry editor routes, 5-tab Inspector pattern, inbox and answer rules, and monolith retirement (UX-06, UX-07 part, UX-12 part, UX-17 part, UX-25 part, UX-37 part, UX-39, UX-51 part, UX-54 part, UX-55 part, UX-56 part, UX-60 part, UX-61 part, UX-62 part, UX-63 part, UX-64 part, UX-65 part, UX-67 part, UX-68 part, UX-91, UX-92, UX-93, UX-94, UX-96, UX-97, UX-98, UX-99, UX-100, UX-101, UX-102, UX-103, UX-104, UX-105, CP-12 part, CP-13 part).",
+      "description": "G15 defect/parity fixes (WP-16.0), admin routed navigation shell, Today needs-attention view, paginated entries list, per-entry editor routes, 5-tab Inspector pattern, inbox and answer rules, and monolith retirement (UX-06, UX-07 part, UX-12 part, UX-17 part, UX-25 part, UX-37 part, UX-39, UX-51 part, UX-54 part, UX-55 part, UX-56 part, UX-60 part, UX-61 part, UX-62 part, UX-63 part, UX-64 part, UX-65 part, UX-67 part, UX-68 part, UX-91, UX-92, UX-93, UX-94, UX-96, UX-97, UX-98, UX-99, UX-100, UX-101, UX-102, UX-103, UX-104, UX-105, UX-106, CP-12 part, CP-13 part).",
       "requiredTaskIds": [
         "WP-16.0",
         "WP-16.1",
