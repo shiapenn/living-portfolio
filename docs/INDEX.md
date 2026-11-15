@@ -119,6 +119,7 @@
 | `A111` | WP-16.5 Inspector module and entry history restore | `active` | [A111-wp-165-inspector-module.md](execution-reports/A111-wp-165-inspector-module.md) | — |
 | `A112` | WP-16.6 Inbox and audit rules pages | `active` | [A112-wp-166-inbox-and-audit-rules.md](execution-reports/A112-wp-166-inbox-and-audit-rules.md) | — |
 | `A113` | WP-16.7 Retire monolith and route /admin to Today | `active` | [A113-wp-167-retire-monolith.md](execution-reports/A113-wp-167-retire-monolith.md) | — |
+| `A114` | WP-16 Gate G16 closure and sweep verification | `active` | [A114-wp-16-gate-g16-closure.md](execution-reports/A114-wp-16-gate-g16-closure.md) | — |
 
 ## Handover Snapshots (Class H)
 
@@ -140,6 +141,7 @@
 | `H014` | WP-13 onboarding and authentication gate closure | `active` | [H014-wp-13-onboarding-and-authentication-gate-closure.md](handovers/H014-wp-13-onboarding-and-authentication-gate-closure.md) | — |
 | `H015` | WP-14 entry lifecycle integrity gate closure | `active` | [H015-wp-14-entry-lifecycle-integrity-gate-closure.md](handovers/H015-wp-14-entry-lifecycle-integrity-gate-closure.md) | `H014` |
 | `H016` | WP-15 design system and editor gate closure | `active` | [H016-wp-15-design-system-and-editor-gate-closure.md](handovers/H016-wp-15-design-system-and-editor-gate-closure.md) | — |
+| `H017` | WP-16 admin shell, entries, and inbox gate closure | `active` | [H017-wp-16-admin-shell-entries-gate-closure.md](handovers/H017-wp-16-admin-shell-entries-gate-closure.md) | `H016` |
 
 ## Plans & Protocols (Class P)
 

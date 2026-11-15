@@ -440,9 +440,21 @@
         "WP-16.6",
         "WP-16.7"
       ],
-      "requiredPassingTests": [],
-      "closingReceipt": null,
-      "handover": null
+      "requiredPassingTests": [
+        "tests/e2e/wp16-0-g15-defects-and-parity.spec.ts",
+        "tests/e2e/wp16-1-admin-shell-and-routes.spec.ts",
+        "tests/e2e/wp16-2-today-dashboard.spec.ts",
+        "tests/e2e/wp16-3-entries-list.spec.ts",
+        "tests/e2e/wp16-4-dedicated-editor-routes.spec.ts",
+        "tests/e2e/wp16-5-inspector-and-history.spec.ts",
+        "tests/e2e/wp16-6-inbox-and-audit-rules.spec.ts",
+        "tests/e2e/wp16-7-retire-monolith.spec.ts",
+        "apps/web/src/pages/admin/dashboard.test.ts",
+        "apps/web/src/pages/admin/entries/list.test.ts",
+        "apps/web/src/pages/admin/entries/editor.test.ts"
+      ],
+      "closingReceipt": "A114",
+      "handover": "H017"
     },
     "WP-17": {
       "name": "Work Package 17 (Gate G17 Settings, Maintenance & Account)",
