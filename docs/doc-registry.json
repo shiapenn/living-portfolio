@@ -1161,5 +1161,13 @@
     "path": "docs/execution-reports/A103-g15-register-new-findings.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A104",
+    "title": "g15-status-normalisation",
+    "class": "A",
+    "path": "docs/execution-reports/A104-g15-status-normalisation.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
