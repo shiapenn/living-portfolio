@@ -5,6 +5,8 @@ import {
   renderAdminEntriesPage,
   renderDedicatedEditorPage,
   renderEntryHistoryPage,
+  renderAdminInboxPage,
+  renderAdminAuditRulesPage,
   renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
@@ -94,6 +96,30 @@ export function mountBundledWeb(
       });
       return html ? c.html(html) : c.html(renderNotFoundPage(), 404);
     });
+    app.get('/admin/inbox', auth.requireAdminMiddleware(), async (c) =>
+      c.html(
+        await renderAdminInboxPage(repo, {
+          status: c.req.query('status'),
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+        })
+      )
+    );
+    app.get('/admin/inbox/:id', auth.requireAdminMiddleware(), async (c) =>
+      c.html(
+        await renderAdminInboxPage(repo, {
+          selectedId: c.req.param('id'),
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+        })
+      )
+    );
+    app.get('/admin/audit', auth.requireAdminMiddleware(), async (c) =>
+      c.html(
+        await renderAdminAuditRulesPage(repo, {
+          status: c.req.query('status'),
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+        })
+      )
+    );
     app.get('/admin/import', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminImportPage(repo))
     );
@@ -104,10 +130,7 @@ export function mountBundledWeb(
       '/admin/quick-log',
       '/quick-log',
       '/admin/pages',
-      '/admin/inbox',
-      '/admin/inbox/:id',
       '/admin/bookings',
-      '/admin/audit',
       '/admin/calibration',
       '/admin/structure',
       '/admin/routing',
