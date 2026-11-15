@@ -13,13 +13,12 @@ export const IMPORT_SCRIPT = `
 
         function setStep(step) {
           currentStep = step;
-          document.querySelectorAll('.triage-step').forEach(function(el) {
-            el.classList.remove('active');
+          ['add', 'plan', 'triage'].forEach(function(s) {
+            const tab = document.getElementById('step-tab-' + s);
+            const panel = document.getElementById('import-step-' + s);
+            if (tab) tab.setAttribute('aria-selected', s === step ? 'true' : 'false');
+            if (panel) panel.classList.toggle('lp-is-hidden', s !== step);
           });
-          document.getElementById('import-step-add').style.display = step === 'add' ? 'block' : 'none';
-          document.getElementById('import-step-plan').style.display = step === 'plan' ? 'block' : 'none';
-          document.getElementById('import-step-triage').style.display = step === 'triage' ? 'block' : 'none';
-          document.getElementById('step-tab-' + step)?.classList.add('active');
         }
 
         const sampleBatch = [
@@ -110,21 +109,21 @@ export const IMPORT_SCRIPT = `
           container.innerHTML = triageItems.map(function(item, idx) {
             const isSelected = idx === selectedIndex;
             const statusClass = item.status === 'accepted' ? 'status-accepted' : (item.status === 'skipped' ? 'status-skipped' : '');
-            return '<div class="triage-card ' + (isSelected ? 'selected' : '') + ' ' + statusClass + '" data-index="' + idx + '" id="triage-card-' + idx + '">' +
-              '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
+            return '<div class="triage-card lp-triage-item ' + (isSelected ? 'selected' : '') + ' ' + statusClass + '" data-index="' + idx + '" id="triage-card-' + idx + '">' +
+              '<div class="lp-row-between">' +
                 '<strong>' + escapeClientHtml(item.title) + '</strong>' +
-                '<span class="chip" style="font-size:11px">' + Math.round(item.confidence * 100) + '% confidence · ' + escapeClientHtml(item.status.toUpperCase()) + '</span>' +
+                '<span class="lp-badge">' + Math.round(item.confidence * 100) + '% confidence · ' + escapeClientHtml(item.status.toUpperCase()) + '</span>' +
               '</div>' +
-              '<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">' +
+              '<p class="lp-help-text">' +
                 escapeClientHtml(item.body_md.slice(0, 140)) + '...' +
-              '</div>' +
-              '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:12px">' +
-                '<label>Profile: <select class="ask-input triage-profile" data-index="' + idx + '" style="padding:2px 4px;font-size:12px">' +
+              '</p>' +
+              '<div class="lp-row-wrap">' +
+                '<label class="lp-field-label">Profile <select class="lp-input lp-select triage-profile" data-index="' + idx + '">' +
                   '<option value="case-study"' + (item.profile === 'case-study' ? ' selected' : '') + '>Case Study</option>' +
                   '<option value="decision-record"' + (item.profile === 'decision-record' ? ' selected' : '') + '>Decision Record</option>' +
                   '<option value="how-to"' + (item.profile === 'how-to' ? ' selected' : '') + '>How-to</option>' +
                 '</select></label>' +
-                '<label>Date: <input type="date" class="ask-input triage-date" data-index="' + idx + '" value="' + escapeClientHtml(item.valid_from) + '" style="padding:2px 4px;font-size:12px" /></label>' +
+                '<label class="lp-field-label">Date <input type="date" class="lp-input triage-date" data-index="' + idx + '" value="' + escapeClientHtml(item.valid_from) + '" /></label>' +
               '</div>' +
             '</div>';
           }).join('');
@@ -269,7 +268,7 @@ export const IMPORT_SCRIPT = `
               });
               if (res.ok) {
                 const data = await res.json();
-                banner.innerHTML = '<div class="as-of-banner">Successfully imported ' + data.importedCount + ' entries! <a href="/admin" style="font-weight:700;margin-left:8px">Go to Admin Workspace →</a></div>';
+                banner.innerHTML = '<div class="lp-notice lp-notice-ok">Successfully imported ' + data.importedCount + ' entries! <a href="/admin">Go to Admin Workspace →</a></div>';
               } else {
                 banner.innerHTML = '<div class="later-thinking-banner" role="alert">Batch import failed (HTTP ' + res.status + ').</div>';
               }

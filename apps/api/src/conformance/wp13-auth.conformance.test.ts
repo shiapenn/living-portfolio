@@ -779,7 +779,8 @@ describe('WP-13.9 Conformance: Honest Wizard Controls in Default Install (UX-33,
 
   it('Step 4: Notifications test button is disabled with visible plain explanation and no HTTP wording', async () => {
     const html = renderAdminSetupPage();
-    expect(html).toContain('id="btn-setup-test-alert" disabled');
+    expect(html).toContain('id="btn-setup-test-alert"');
+    expect(html).toMatch(/id="btn-setup-test-alert"[^>]*(disabled|aria-disabled="true")/);
     expect(html).toContain("Test alerts aren't available in this version yet.");
 
     // Direct API call also avoids "Not Implemented" and technical jargon

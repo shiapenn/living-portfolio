@@ -1,4 +1,4 @@
-import { STRATA_DESIGN_SYSTEM_CSS } from '../../../styles.js';
+import { renderAdminShell } from '../../../layouts/admin-shell.js';
 import { escapeHtml } from '../../../lib/html.js';
 import {
   renderBadge,
@@ -6,7 +6,6 @@ import {
   renderField,
   renderIcon,
   renderIconButton,
-  renderIconSprite,
 } from '../../../primitives/index.js';
 import {
   renderDisclosure,
@@ -19,7 +18,6 @@ import { renderStructureInspectorPanel, type StructureInspectorData } from '../.
 import {
   renderDraftAndOfflineBanners,
   renderEditorDialogsAndDrawers,
-  renderSlimAdminHeader,
   renderWorkspaceSafetyControls,
   type WorkspaceEscalationItem,
 } from './editor-sections.js';
@@ -258,7 +256,6 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
 
   const mainContent = selected ? renderEditorCanvas(selected, options) : emptyMainHtml;
 
-  const themeAttr = options.initialTheme ? ` data-theme="${escapeHtml(options.initialTheme)}"` : '';
   const nonceAttr = options.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : '';
 
   const legacyMessage = options.legacyRecoveryUsed
@@ -267,25 +264,7 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
   const noticeMessage = options.pageError || legacyMessage;
   const noticeTone = options.pageError ? 'danger' : 'warn';
 
-  const stagingBanner =
-    process.env.DEPLOYMENT_CLASS === 'staging'
-      ? `<div class="lp-staging-banner" data-banner="staging-synthetic-only" role="note"><strong>Staging: synthetic data only.</strong></div>`
-      : '';
-
-  return `<!DOCTYPE html>
-<html lang="en"${themeAttr}>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(EDITOR_STRINGS.pageTitle)} — ${escapeHtml(siteName)}</title>
-  <style>${STRATA_DESIGN_SYSTEM_CSS}</style>
-</head>
-<body class="lp-admin-body">
-  ${renderIconSprite()}
-  ${stagingBanner}
-  <a href="#ref-main" class="skip-link">Skip to editor</a>
-  ${renderSlimAdminHeader(theme)}
-  <div class="lp-admin-notice-slot">
+  const contentHtml = `<div class="lp-admin-notice-slot">
     ${renderDraftAndOfflineBanners()}
     <div class="lp-page-notice-slot">
       ${renderPageNotice({
@@ -297,7 +276,7 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
       })}
     </div>
   </div>
-  <main id="ref-main" class="lp-editor-shell">
+  <div id="ref-main" class="lp-editor-shell">
     <aside class="lp-editor-sidebar" aria-label="${escapeHtml(EDITOR_STRINGS.sidebar.heading)}">
       <div class="lp-preview-list-header">
         <div class="lp-sidebar-title-group">
@@ -317,11 +296,17 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
       })}
     </section>
     ${selected ? renderStructureInspectorPanel(options.inspector ?? { entryId: selected.id, visibility: selected.visibility, structureLevel: 0, gapQuestions: [], facets: [], claims: [], evidence: [], revisions: [] }) : ''}
-  </main>
+  </div>
   ${renderEditorDialogsAndDrawers()}
-  <script type="module" src="/assets/client/editor-page.js"${nonceAttr}></script>
-</body>
-</html>`;
+  <script type="module" src="/assets/client/editor-page.js"${nonceAttr}></script>`;
+
+  return renderAdminShell(EDITOR_STRINGS.pageTitle, '/admin/entries', contentHtml, {
+    nonce: options.nonce,
+    initialTheme: theme,
+    answeringEnabled: options.answeringEnabled,
+    siteName,
+    legacyRecoveryUsed: options.legacyRecoveryUsed,
+  });
 }
 
 function mapRawEditorEntry(e: any, rev?: any): ReferenceEditorEntry {

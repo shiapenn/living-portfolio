@@ -21,11 +21,7 @@ export const SETTINGS_SCRIPT = `
         if (tier1Input && tier1Warning) {
           tier1Input.addEventListener('input', function() {
             var val = parseFloat(tier1Input.value);
-            if (!isNaN(val) && val < 0.82) {
-              tier1Warning.style.display = 'block';
-            } else {
-              tier1Warning.style.display = 'none';
-            }
+            tier1Warning.classList.toggle('lp-is-hidden', isNaN(val) || val >= 0.82);
           });
         }
 
@@ -124,19 +120,19 @@ export const SETTINGS_SCRIPT = `
           btnTestNotification.addEventListener('click', async function() {
             var resultEl = document.getElementById('notify-test-result');
             btnTestNotification.setAttribute('disabled', 'true');
-            if (resultEl) resultEl.innerHTML = '<span style="color:var(--text-muted)">Testing delivery...</span>';
+            if (resultEl) resultEl.innerHTML = '<span class="lp-help-text">Testing delivery...</span>';
             try {
               var res = await apiClient('/api/settings/notifications/test', { method: 'POST' });
               if (res.status === 501) {
                 var errData = await res.json();
-                if (resultEl) resultEl.innerHTML = '<div class="later-thinking-banner" role="note" style="margin:4px 0;font-size:11px"><strong>501 Not Implemented:</strong> ' + (errData.message || 'Notification adapter is not yet implemented.') + '</div>';
+                if (resultEl) resultEl.innerHTML = '<div class="lp-notice lp-notice-warn" role="note"><strong>501 Not Implemented:</strong> ' + (errData.message || 'Notification adapter is not yet implemented.') + '</div>';
               } else if (res.ok) {
-                if (resultEl) resultEl.innerHTML = '<span style="color:green">✓ Delivery test completed.</span>';
+                if (resultEl) resultEl.innerHTML = '<span class="lp-status-line-ok">✓ Delivery test completed.</span>';
               } else {
-                if (resultEl) resultEl.innerHTML = '<span style="color:red">Delivery test failed (HTTP ' + res.status + ').</span>';
+                if (resultEl) resultEl.innerHTML = '<span class="lp-status-line-danger">Delivery test failed (HTTP ' + res.status + ').</span>';
               }
             } catch (err) {
-              if (resultEl) resultEl.innerHTML = '<span style="color:red">Network error testing notification.</span>';
+              if (resultEl) resultEl.innerHTML = '<span class="lp-status-line-danger">Network error testing notification.</span>';
             } finally {
               btnTestNotification.removeAttribute('disabled');
             }
@@ -149,19 +145,19 @@ export const SETTINGS_SCRIPT = `
           btnRunBackupDrill.addEventListener('click', async function() {
             var resultEl = document.getElementById('backup-drill-result');
             btnRunBackupDrill.setAttribute('disabled', 'true');
-            if (resultEl) resultEl.innerHTML = '<span style="color:var(--text-muted)">Executing backup drill...</span>';
+            if (resultEl) resultEl.innerHTML = '<span class="lp-help-text">Executing backup drill...</span>';
             try {
               var res = await apiClient('/api/settings/backups/run-drill', { method: 'POST' });
               if (res.status === 501) {
                 var errData = await res.json();
-                if (resultEl) resultEl.innerHTML = '<div class="later-thinking-banner" role="note" style="margin:4px 0;font-size:11px"><strong>501 Not Implemented:</strong> ' + (errData.message || 'Backup restore verification drill is not yet implemented.') + '</div>';
+                if (resultEl) resultEl.innerHTML = '<div class="lp-notice lp-notice-warn" role="note"><strong>501 Not Implemented:</strong> ' + (errData.message || 'Backup restore verification drill is not yet implemented.') + '</div>';
               } else if (res.ok) {
-                if (resultEl) resultEl.innerHTML = '<span style="color:green">✓ Backup restore drill passed.</span>';
+                if (resultEl) resultEl.innerHTML = '<span class="lp-status-line-ok">✓ Backup restore drill passed.</span>';
               } else {
-                if (resultEl) resultEl.innerHTML = '<span style="color:red">Backup drill failed (HTTP ' + res.status + ').</span>';
+                if (resultEl) resultEl.innerHTML = '<span class="lp-status-line-danger">Backup drill failed (HTTP ' + res.status + ').</span>';
               }
             } catch (err) {
-              if (resultEl) resultEl.innerHTML = '<span style="color:red">Network error executing backup drill.</span>';
+              if (resultEl) resultEl.innerHTML = '<span class="lp-status-line-danger">Network error executing backup drill.</span>';
             } finally {
               btnRunBackupDrill.removeAttribute('disabled');
             }

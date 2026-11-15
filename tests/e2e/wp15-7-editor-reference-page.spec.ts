@@ -150,7 +150,7 @@ test.describe('WP-15.7 Reference Editor Page', () => {
         return [16, 20, 24].includes(w) && w === h;
       });
       const bodyTa = document.getElementById('ref-field-body') as HTMLTextAreaElement;
-      const themeBtn = document.getElementById('ref-theme-toggle')!;
+      const themeBtn = document.getElementById('theme-toggle')!;
       return {
         badgeBorder: parseFloat(badgeCs.borderTopWidth),
         badgeRadius: parseFloat(badgeCs.borderTopLeftRadius),
@@ -158,7 +158,7 @@ test.describe('WP-15.7 Reference Editor Page', () => {
         bodyNotClipped: bodyTa.scrollHeight <= bodyTa.clientHeight + 2,
         themeLabel: themeBtn.getAttribute('aria-label'),
         themeUse: themeBtn.querySelector('use')?.getAttribute('href'),
-        desktopNavVisible: getComputedStyle(document.querySelector('.lp-admin-header-nav')!).display !== 'none',
+        desktopNavVisible: getComputedStyle(document.getElementById('lp-admin-rail')!).display !== 'none',
       };
     });
     expect(draftAudit.badgeBorder).toBe(0);
@@ -168,11 +168,11 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     expect(draftAudit.themeLabel).toBe('Switch to dark theme');
     expect(draftAudit.themeUse).toBe('#lp-icon-moon');
     expect(draftAudit.desktopNavVisible).toBe(true);
-    await expect(page.locator('#ref-mobile-menu-btn')).toBeHidden();
+    await expect(page.locator('#lp-rail-toggle')).toBeHidden();
 
-    await page.locator('#ref-theme-toggle').click();
-    await expect(page.locator('#ref-theme-toggle')).toHaveAttribute('aria-label', 'Switch to light theme');
-    await expect(page.locator('#ref-theme-toggle use')).toHaveAttribute('href', '#lp-icon-sun');
+    await page.locator('#theme-toggle').click();
+    await expect(page.locator('#theme-toggle')).toHaveAttribute('aria-label', 'Switch to light theme');
+    await expect(page.locator('#theme-toggle use')).toHaveAttribute('href', '#lp-icon-sun');
 
     await page.locator('#ref-details-disclosure summary').click();
     await expect(page.locator('#ref-details-disclosure')).toHaveAttribute('open', '');
@@ -201,7 +201,8 @@ test.describe('WP-15.7 Reference Editor Page', () => {
 
     const mobileAudit = await page.evaluate(() => {
       const headerRect = document.querySelector('.lp-admin-header')!.getBoundingClientRect();
-      const navHidden = getComputedStyle(document.querySelector('.lp-admin-header-nav')!).display === 'none';
+      const railEl = document.getElementById('lp-admin-rail')!;
+      const navHidden = !railEl.classList.contains('is-open') && railEl.getBoundingClientRect().right <= 0;
       const cols = getComputedStyle(document.querySelector('#ref-details-disclosure .lp-details-grid')!).gridTemplateColumns.trim().split(/\s+/).length;
       const bodyTa = document.getElementById('ref-field-body') as HTMLTextAreaElement;
       const targets = Array.from(document.querySelectorAll<HTMLElement>('.lp-admin-header button, .lp-editor-action-bar button')).filter(

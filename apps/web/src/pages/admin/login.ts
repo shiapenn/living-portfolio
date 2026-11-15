@@ -1,40 +1,41 @@
 import { renderAuthShell } from "../../layouts/admin-shell.js";
 import { ADMIN_API_CLIENT_SCRIPT } from "../../lib/admin-api-client.js";
+import { renderButton } from "../../primitives/index.js";
 
 export function renderAdminLoginPage(): string {
   const content = `
-    <div style="max-width:440px;margin:48px auto;padding:24px;border:1px solid var(--rule);background:var(--surface-page)">
-      <h1 style="font-size:24px;margin:0 0 8px 0">Owner Sign in</h1>
-      <p style="font-size:14px;color:var(--text-muted);margin:0 0 20px 0">
+    <div class="lp-auth-card">
+      <h1 class="lp-page-title">Owner Sign in</h1>
+      <p class="lp-page-subtitle">
         Enter your admin credentials and 6-digit TOTP code to access the workspace.
       </p>
 
-      <div id="login-error" role="alert" style="margin-bottom:16px;display:none"></div>
+      <div id="login-error" class="lp-notice lp-notice-danger lp-is-hidden" role="alert"></div>
 
-      <form id="admin-login-form">
-        <div style="margin-bottom:12px">
-          <label for="login-username" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Username</label>
-          <input id="login-username" type="text" class="ask-input" style="width:100%;padding:8px" autocomplete="username" required />
+      <form id="admin-login-form" class="lp-stack-md lp-divider-top">
+        <div class="lp-field">
+          <label class="lp-field-label" for="login-username">Username</label>
+          <input id="login-username" type="text" class="lp-input" autocomplete="username" required />
         </div>
-        <div style="margin-bottom:12px">
-          <label for="login-password" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Password</label>
-          <input id="login-password" type="password" class="ask-input" style="width:100%;padding:8px" autocomplete="current-password" required />
+        <div class="lp-field">
+          <label class="lp-field-label" for="login-password">Password</label>
+          <input id="login-password" type="password" class="lp-input" autocomplete="current-password" required />
         </div>
-        <div style="margin-bottom:16px">
-          <label id="login-code-label" for="login-totp" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">6-Digit Authenticator Code</label>
-          <input id="login-totp" type="text" class="ask-input" style="width:100%;padding:8px;font-family:var(--font-code);letter-spacing:2px" placeholder="000000" autocomplete="one-time-code" required />
-          <div id="login-code-help" style="font-size:12px;color:var(--text-muted);margin-top:4px">
+        <div class="lp-field">
+          <label id="login-code-label" class="lp-field-label" for="login-totp">6-Digit Authenticator Code</label>
+          <input id="login-totp" type="text" class="lp-input lp-input-code" placeholder="000000" autocomplete="one-time-code" required />
+          <p id="login-code-help" class="lp-field-help">
             Enter the 6-digit verification code from your authenticator app (Google Authenticator, 1Password, etc.).
-          </div>
-          <div style="margin-top:8px">
-            <button type="button" id="btn-toggle-recovery" style="background:none;border:none;padding:0;font-size:12px;color:var(--accent);text-decoration:underline;cursor:pointer">Lost your authenticator device? Sign in with a recovery code</button>
+          </p>
+          <div>
+            ${renderButton({ id: 'btn-toggle-recovery', label: 'Lost your authenticator device? Sign in with a recovery code', variant: 'quiet' })}
           </div>
         </div>
-        <button type="submit" class="btn" style="width:100%;padding:10px">Sign in</button>
+        ${renderButton({ label: 'Sign in', variant: 'primary', type: 'submit', className: 'lp-btn-full' })}
       </form>
-      <div style="margin-top:16px;font-size:12px;color:var(--text-muted);line-height:1.4">
+      <p class="lp-help-text lp-divider-top">
         Login attempts are rate-limited to 5 per 15 minutes. If throttled: "Too many failed login attempts. Try again later."
-      </div>
+      </p>
     </div>
     <script>
       (function() {
@@ -60,14 +61,20 @@ export function renderAdminLoginPage(): string {
           return false;
         }
 
+        const showErr = (msg) => {
+          errBox.className = 'lp-notice lp-notice-danger';
+          errBox.textContent = msg;
+        };
+        const hideErr = () => {
+          errBox.className = 'lp-notice lp-notice-danger lp-is-hidden';
+        };
+
         if (codeInput) {
           codeInput.addEventListener('paste', function(e) {
             const pasteData = (e.clipboardData || window.clipboardData) ? (e.clipboardData || window.clipboardData).getData('text') : '';
             if (pasteData && checkMultipleCodes(pasteData)) {
               e.preventDefault();
-              errBox.className = 'later-thinking-banner';
-              errBox.textContent = 'Enter one code at a time';
-              errBox.style.display = 'block';
+              showErr('Enter one code at a time');
               codeInput.value = '';
               return;
             }
@@ -77,7 +84,7 @@ export function renderAdminLoginPage(): string {
         if (toggleBtn && codeLabel && codeInput && codeHelp) {
           toggleBtn.addEventListener('click', function() {
             recoveryMode = !recoveryMode;
-            errBox.style.display = 'none';
+            hideErr();
             if (recoveryMode) {
               codeLabel.textContent = 'Single-Use Recovery Code';
               codeInput.placeholder = 'xxxx-xxxx-xxxx-xxxx';
@@ -96,15 +103,13 @@ export function renderAdminLoginPage(): string {
 
         form.addEventListener('submit', async function(e) {
           e.preventDefault();
-          errBox.style.display = 'none';
+          hideErr();
           const username = document.getElementById('login-username').value;
           const password = document.getElementById('login-password').value;
           const rawCode = document.getElementById('login-totp').value.trim();
 
           if (checkMultipleCodes(rawCode)) {
-            errBox.className = 'later-thinking-banner';
-            errBox.textContent = 'Enter one code at a time';
-            errBox.style.display = 'block';
+            showErr('Enter one code at a time');
             return;
           }
 
@@ -176,36 +181,22 @@ export function renderAdminLoginPage(): string {
               const rawNext = new URLSearchParams(window.location.search).get('next');
               window.location.href = sanitizeNext(rawNext);
             } else if (res.status === 400) {
-              errBox.className = 'later-thinking-banner';
-              errBox.textContent = data.message || data.error || 'Enter one code at a time';
-              errBox.style.display = 'block';
+              showErr(data.message || data.error || 'Enter one code at a time');
             } else if (res.status === 401) {
-              errBox.className = 'later-thinking-banner';
-              errBox.textContent = data.message || data.error || (recoveryMode
+              showErr(data.message || data.error || (recoveryMode
                 ? "That recovery code wasn't recognised. Enter one code, like abcd-1234. Each code works once."
-                : 'Invalid credentials or TOTP code.');
-              errBox.style.display = 'block';
+                : 'Invalid credentials or TOTP code.'));
             } else if (res.status === 403) {
-              errBox.className = 'later-thinking-banner';
-              errBox.textContent = data.message || data.error || 'Access forbidden (security check failed).';
-              errBox.style.display = 'block';
+              showErr(data.message || data.error || 'Access forbidden (security check failed).');
             } else if (res.status === 429) {
-              errBox.className = 'later-thinking-banner';
-              errBox.textContent = data.message || data.error || 'Too many failed login attempts. Try again in 15 minutes.';
-              errBox.style.display = 'block';
+              showErr(data.message || data.error || 'Too many failed login attempts. Try again in 15 minutes.');
             } else if (res.status >= 500) {
-              errBox.className = 'later-thinking-banner';
-              errBox.textContent = 'Server error during sign-in. Please retry.';
-              errBox.style.display = 'block';
+              showErr('Server error during sign-in. Please retry.');
             } else {
-              errBox.className = 'later-thinking-banner';
-              errBox.textContent = data.message || data.error || ('Sign-in failed (HTTP ' + res.status + ')');
-              errBox.style.display = 'block';
+              showErr(data.message || data.error || ('Sign-in failed (HTTP ' + res.status + ')'));
             }
           } catch (err) {
-            errBox.className = 'later-thinking-banner';
-            errBox.textContent = 'Network error connecting to login server.';
-            errBox.style.display = 'block';
+            showErr('Network error connecting to login server.');
           }
         });
       })();
