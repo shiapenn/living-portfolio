@@ -646,9 +646,9 @@ button.chip {
   font-family: var(--font-ui);
   font-weight: 600;
   border-radius: var(--radius-control);
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--surface-raised);
+  border: 1px solid var(--button-bg, var(--accent));
+  background: var(--button-bg, var(--accent));
+  color: var(--button-fg, var(--text-on-accent, #FFFFFF));
   cursor: pointer;
   min-height: 44px;
   display: inline-flex;
@@ -2589,11 +2589,18 @@ a.lp-admin-header-brand {
   border-style: dashed;
 }
 
+.lp-entries-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
 .lp-history-row {
   padding: var(--space-3);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  overflow-wrap: anywhere;
 }
 
 .lp-history-row-header {
@@ -2605,7 +2612,8 @@ a.lp-admin-header-brand {
 }
 
 .lp-history-meta {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
 }
