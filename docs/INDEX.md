@@ -118,6 +118,7 @@
 | `A110` | WP-16.4 Dedicated editor routes, mobile collapse, and unsaved label | `active` | [A110-wp-164-dedicated-editor-routes.md](execution-reports/A110-wp-164-dedicated-editor-routes.md) | — |
 | `A111` | WP-16.5 Inspector module and entry history restore | `active` | [A111-wp-165-inspector-module.md](execution-reports/A111-wp-165-inspector-module.md) | — |
 | `A112` | WP-16.6 Inbox and audit rules pages | `active` | [A112-wp-166-inbox-and-audit-rules.md](execution-reports/A112-wp-166-inbox-and-audit-rules.md) | — |
+| `A113` | WP-16.7 Retire monolith and route /admin to Today | `active` | [A113-wp-167-retire-monolith.md](execution-reports/A113-wp-167-retire-monolith.md) | — |
 
 ## Handover Snapshots (Class H)
 
