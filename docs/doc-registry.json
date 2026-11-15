@@ -1217,5 +1217,13 @@
     "path": "docs/execution-reports/A107-wp-161-admin-shell-and-route-registry.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A108",
+    "title": "WP-16.2 Today dashboard module (D-UI-1..D-UI-6)",
+    "class": "A",
+    "path": "docs/execution-reports/A108-wp-162-today-dashboard.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
