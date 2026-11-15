@@ -258,7 +258,7 @@ if (!Array.isArray(register)) {
       const part = rawPart.trim();
       if (!part) continue;
       const isPart = /\bpart\b/i.test(part);
-      const match = part.match(/(?:20261106-)?((?:UX|UI|CP)-\d{2})/);
+      const match = part.match(/(?:20261106-)?((?:UX|UI|CP)-\d{2,3})/);
       if (match) {
         entries.push({ shortId: match[1], fullId: `20261106-${match[1]}`, isPart });
       }

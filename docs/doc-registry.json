@@ -1169,5 +1169,37 @@
     "path": "docs/execution-reports/A104-g15-status-normalisation.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "P005",
+    "title": "WP-15 Capability Parity Table",
+    "class": "P",
+    "path": "docs/plans/P005-wp15-capability-parity.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L018",
+    "title": "Front-End Complete Acceptance Pack (Gate GFE)",
+    "class": "L",
+    "path": "docs/plans/front-end-acceptance.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "A105",
+    "title": "G15 parity acceptance and closure",
+    "class": "A",
+    "path": "docs/execution-reports/A105-g15-parity-acceptance-and-closure.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "H016",
+    "title": "WP-15 design system and editor gate closure",
+    "class": "H",
+    "path": "docs/handovers/H016-wp-15-design-system-and-editor-gate-closure.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
