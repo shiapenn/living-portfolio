@@ -11,6 +11,7 @@ import {
 } from '@living-portfolio/client';
 import {
   renderAdminEntriesPage,
+  renderDedicatedEditorPage,
   renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
@@ -185,11 +186,24 @@ export function createWebApp(options?: WebAppOptions) {
   });
   app.get('/admin/today', async (c) => c.html(await renderAdminDashboardPage(client, { siteName: cfg.PUBLIC_SITE_NAME })));
   app.get('/admin/entries', async (c) => c.html(await renderAdminEntriesListPage(client, { siteName: cfg.PUBLIC_SITE_NAME })));
+  app.get('/admin/entries/new', async (c) => {
+    const html = await renderDedicatedEditorPage(client, { isNew: true, siteName: cfg.PUBLIC_SITE_NAME });
+    return html ? c.html(html) : c.html(renderNotFoundPage(), 404);
+  });
+  app.get('/admin/entries/:id', async (c, next) => {
+    const id = c.req.param('id');
+    if (id === 'editor') {
+      if (process.env.NODE_ENV === 'production') {
+        return c.notFound();
+      }
+      return next();
+    }
+    const html = await renderDedicatedEditorPage(client, { selectedId: id, siteName: cfg.PUBLIC_SITE_NAME });
+    return html ? c.html(html) : c.html(renderNotFoundPage(), 404);
+  });
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
   app.get('/admin/settings', async (c) => c.html(await renderAdminSettingsPage(client)));
   const adminSectionRoutes = [
-    '/admin/entries/new',
-    '/admin/entries/:id',
     '/admin/entries/:id/history',
     '/admin/quick-log',
     '/quick-log',
@@ -205,15 +219,7 @@ export function createWebApp(options?: WebAppOptions) {
     '/admin/settings/:section',
   ];
   for (const routePath of adminSectionRoutes) {
-    app.get(routePath, async (c, next) => {
-      if (routePath === '/admin/entries/:id' && c.req.param('id') === 'editor') {
-        if (process.env.NODE_ENV === 'production') {
-          return c.notFound();
-        }
-        return next();
-      }
-      return c.html(renderAdminSectionPage(c.req.path));
-    });
+    app.get(routePath, async (c) => c.html(renderAdminSectionPage(c.req.path)));
   }
   if (process.env.NODE_ENV !== 'production') {
     app.get('/admin/dev/primitives', (c) => c.html(renderPrimitivesGalleryPage()));
@@ -357,8 +363,6 @@ export function createWebApp(options?: WebAppOptions) {
   };
 
     app.get('/admin/entries/editor', (c) => handleReferenceEditor(c));
-    app.get('/admin/entries/new', (c) => handleReferenceEditor(c));
-    app.get('/admin/entries/:id', (c) => handleReferenceEditor(c, c.req.param('id')));
   }
 
   // Public visitor booking & escalation status routes

@@ -26,6 +26,9 @@ export const EDITOR_STRINGS = {
     heading: 'Entries',
     newEntry: 'New entry',
     untitled: 'Untitled entry',
+    newUnsaved: 'New, unsaved',
+    unsavedBadge: 'Unsaved',
+    toggleEntries: 'Entries',
   },
   states: { draft: 'Draft', unlisted: 'Unlisted', public: 'Public' },
   emptyState: {

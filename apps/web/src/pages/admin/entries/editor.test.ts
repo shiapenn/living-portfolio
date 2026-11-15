@@ -91,11 +91,21 @@ describe('WP-15.7 Reference Editor Page', () => {
       expect(res.headers.get('location')).toBe('/admin/login');
     }
 
+    const mockEntry1 = {
+      id: 'entry-1',
+      slug: 'entry-1',
+      title: 'Entry 1',
+      body: 'Body 1',
+      visibility: 'public',
+    };
     const authApp = createWebApp({
       checkSession: async () => ({ authenticated: true, setupRequired: false }),
       client: {
-        entries: { list: async () => ({ entries: [] }) },
-        listEntries: async () => [],
+        entries: {
+          list: async () => ({ entries: [mockEntry1] }),
+          get: async (id: string) => (id === 'entry-1' ? { entry: mockEntry1 } : null),
+        },
+        listEntries: async () => [mockEntry1],
       } as any,
     }).app;
     for (const route of routes) {
@@ -109,8 +119,11 @@ describe('WP-15.7 Reference Editor Page', () => {
       const prodApp = createWebApp({
         checkSession: async () => ({ authenticated: true, setupRequired: false }),
         client: {
-          entries: { list: async () => ({ entries: [] }) },
-          listEntries: async () => [],
+          entries: {
+            list: async () => ({ entries: [mockEntry1] }),
+            get: async (id: string) => (id === 'entry-1' ? { entry: mockEntry1 } : null),
+          },
+          listEntries: async () => [mockEntry1],
         } as any,
       }).app;
       const editorRes = await prodApp.request('/admin/entries/editor?fixture=draft&theme=dark');

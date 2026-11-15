@@ -34,6 +34,7 @@ export {
 } from "./lib/admin-api-client.js";
 export {
   renderAdminEntriesPage,
+  renderDedicatedEditorPage,
   renderReferenceEditorPage,
   type ReferenceEditorEntry,
   type ReferenceEditorOptions,
