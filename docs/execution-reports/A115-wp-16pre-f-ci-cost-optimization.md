@@ -90,8 +90,8 @@ Found 0 section(s) marked verbatim.
 ---
 
 ## 9. Handover Decision
-- Decision: NOT REQUIRED
-- Rule(s): HO-R0
+- Decision: RECOMMENDED
+- Rule(s): HO-R3
 - Receipts since last handover: 1 (A115); work packages since: 0
 - Clean-boundary preconditions: met
 - Next action: `WP-16.pre-g` (close Dependabot alert #5).
