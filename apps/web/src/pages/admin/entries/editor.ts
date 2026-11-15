@@ -16,8 +16,11 @@ import {
 } from '../../../components/index.js';
 import { EDITOR_STRINGS } from '../../../strings/admin/editor.js';
 import {
+  renderDraftAndOfflineBanners,
   renderEditorDialogsAndDrawers,
   renderSlimAdminHeader,
+  renderWorkspaceSafetyControls,
+  type WorkspaceEscalationItem,
 } from './editor-sections.js';
 
 export type ReferenceEntryVisibility = 'draft' | 'unlisted' | 'public';
@@ -46,6 +49,8 @@ export interface ReferenceEditorOptions {
   statusTone?: 'info' | 'ok' | 'warn' | 'danger';
   nonce?: string;
   initialTheme?: 'light' | 'dark';
+  answeringEnabled?: boolean;
+  escalations?: WorkspaceEscalationItem[];
 }
 
 function formatVisibilityLabel(vis: ReferenceEntryVisibility): string {
@@ -208,6 +213,7 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
     ? renderEmptyState({
         id: 'ref-empty-state',
         title: EDITOR_STRINGS.firstRun.title,
+        headingTag: 'h1',
         body: EDITOR_STRINGS.firstRun.body,
         guideSteps: [...EDITOR_STRINGS.firstRun.steps],
         dismissHtml: renderIconButton({
@@ -228,6 +234,7 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
     : renderEmptyState({
         id: 'ref-empty-state',
         title: EDITOR_STRINGS.emptyState.title,
+        headingTag: 'h1',
         body: EDITOR_STRINGS.emptyState.body,
         actionHtml: renderButton({ id: 'ref-empty-start-btn', label: EDITOR_STRINGS.emptyState.action, variant: 'primary' }),
       });
@@ -262,6 +269,7 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
   <a href="#ref-main" class="skip-link">Skip to editor</a>
   ${renderSlimAdminHeader(theme)}
   <div class="lp-admin-notice-slot">
+    ${renderDraftAndOfflineBanners()}
     <div class="lp-page-notice-slot">
       ${renderPageNotice({
         id: options.legacyRecoveryUsed && !options.pageError ? 'admin-legacy-recovery-notice' : 'ref-page-notice',
@@ -285,6 +293,10 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
     </aside>
     <section id="ref-editor-main" class="lp-editor-main" aria-label="Entry editor">
       ${mainContent}
+      ${renderWorkspaceSafetyControls({
+        answeringEnabled: options.answeringEnabled ?? true,
+        escalations: options.escalations ?? [],
+      })}
     </section>
   </main>
   ${renderEditorDialogsAndDrawers()}
@@ -300,6 +312,7 @@ export async function renderAdminEntriesPage(
     isNew?: boolean;
     siteName?: string;
     legacyRecoveryUsed?: boolean;
+    answeringEnabled?: boolean;
     initialTheme?: 'light' | 'dark';
     nonce?: string;
   } = {}
@@ -307,6 +320,31 @@ export async function renderAdminEntriesPage(
   const listRes = clientOrRepo?.entries?.list
     ? await clientOrRepo.entries.list()
     : { entries: (await clientOrRepo?.listEntries?.()) ?? [] };
+
+  let answeringEnabled = options.answeringEnabled ?? true;
+  let escalations: WorkspaceEscalationItem[] = [];
+  try {
+    if (clientOrRepo?.settings?.get) {
+      const s = await clientOrRepo.settings.get();
+      if (typeof s?.automatedAnsweringEnabled === 'boolean') answeringEnabled = s.automatedAnsweringEnabled;
+    }
+  } catch {
+    // Keep default when settings endpoint is unavailable
+  }
+  try {
+    const rawEsc = clientOrRepo?.inbox?.list
+      ? (await clientOrRepo.inbox.list('pending'))?.escalations
+      : await clientOrRepo?.getEscalations?.('pending');
+    if (Array.isArray(rawEsc)) {
+      escalations = rawEsc.map((e: any) => ({
+        id: String(e.id),
+        question: String(e.question ?? ''),
+        draft: typeof e.draft === 'string' ? e.draft : '',
+      }));
+    }
+  } catch {
+    // Keep empty list when inbox is unavailable
+  }
   const rawEntries: any[] = listRes?.entries ?? [];
   const mapped: ReferenceEditorEntry[] = rawEntries.map((e: any) => ({
     id: e.id,
@@ -338,6 +376,8 @@ export async function renderAdminEntriesPage(
       legacyRecoveryUsed: options.legacyRecoveryUsed,
       initialTheme: options.initialTheme,
       nonce: options.nonce,
+      answeringEnabled,
+      escalations,
     });
   }
 
@@ -349,5 +389,7 @@ export async function renderAdminEntriesPage(
     showWalkthrough: mapped.length === 0,
     initialTheme: options.initialTheme,
     nonce: options.nonce,
+    answeringEnabled,
+    escalations,
   });
 }

@@ -407,7 +407,7 @@ Visualizing knowledge over time works best when spatial position strictly means 
   );
   await repo.saveSpans(chunkMarkdown(revPrivate.id, `Confidential internal notes under client NDA: project codename Aurora uses custom FPGA acceleration.`));
 
-  // 8. Seed Escalation in Inbox (§6.2)
+  // 8. Seed Escalations in Inbox (§6.2)
   await repo.saveEscalation({
     question: 'Should we use PostgreSQL advisory locks if our webhook workers hold locks across 2-second third-party Stripe API calls?',
     query_class: 'advisory',
@@ -416,6 +416,15 @@ Visualizing knowledge over time works best when spatial position strictly means 
     status: 'pending',
     status_token: 'seed-esc-status-token',
     due_at: new Date(Date.now() + 20 * 3600 * 1000).toISOString(),
+  });
+  await repo.saveEscalation({
+    question: 'Would you recommend splitting the billing worker into a separate service before reaching 50k daily jobs?',
+    query_class: 'advisory',
+    facets: { architecture: 'modular monolith', scale: '50k jobs/day' },
+    draft: 'Based on our retrospective on premature microservices, keep the billing worker in the modular monolith behind a clean queue boundary until deployment cadence or isolation actually bottlenecks.',
+    status: 'pending',
+    status_token: 'seed-esc-status-token-2',
+    due_at: new Date(Date.now() + 22 * 3600 * 1000).toISOString(),
   });
 
   // 9. Seed Scoped Constraint Proposal (§11)

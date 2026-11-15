@@ -40,6 +40,7 @@ export function mountBundledWeb(
           selectedId: c.req.query('entry') || undefined,
           isNew: c.req.query('new') === '1',
           legacyRecoveryUsed: Boolean(session?.legacyRecoveryUsed),
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
         })
       );
     });

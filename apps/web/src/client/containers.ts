@@ -6,10 +6,15 @@ export interface ModalController {
   close: () => void;
 }
 
+export interface ModalHooks {
+  onOpen?: () => void;
+  onClose?: () => void;
+}
+
 /**
  * Attaches focus-trap, Escape-key close, backdrop close, and focus-return behaviour to a Dialog or Drawer.
  */
-export function attachModalController(modalEl: HTMLElement): ModalController {
+export function attachModalController(modalEl: HTMLElement, hooks?: ModalHooks): ModalController {
   let lastTrigger: HTMLElement | null = null;
 
   const getFocusable = (): HTMLElement[] =>
@@ -24,6 +29,7 @@ export function attachModalController(modalEl: HTMLElement): ModalController {
       lastTrigger.focus();
     }
     lastTrigger = null;
+    hooks?.onClose?.();
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -50,6 +56,7 @@ export function attachModalController(modalEl: HTMLElement): ModalController {
 
   const open = (triggerEl?: HTMLElement | null) => {
     lastTrigger = triggerEl ?? (document.activeElement as HTMLElement | null);
+    hooks?.onOpen?.();
     modalEl.removeAttribute('hidden');
     document.addEventListener('keydown', onKeyDown);
     const focusable = getFocusable();
@@ -66,6 +73,93 @@ export function attachModalController(modalEl: HTMLElement): ModalController {
   });
 
   return { open, close };
+}
+
+/**
+ * Shared Menu popover controller: handles Enter/Space/ArrowDown/ArrowUp on trigger,
+ * ArrowDown/ArrowUp/Home/End/Escape/Tab inside menu, and outside-click dismissal.
+ */
+export function attachMenuController(buttonId: string, menuId: string): () => void {
+  const btn = document.getElementById(buttonId);
+  const menu = document.getElementById(menuId);
+  if (!btn || !menu) return () => {};
+
+  const getItems = (): HTMLElement[] =>
+    Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"], [role="menuitemradio"]')).filter(
+      (el) => !el.hasAttribute('disabled') && !el.closest('[hidden]')
+    );
+
+  const close = (returnFocus = false) => {
+    if (menu.hasAttribute('hidden')) return;
+    menu.setAttribute('hidden', '');
+    btn.setAttribute('aria-expanded', 'false');
+    if (returnFocus) btn.focus();
+  };
+
+  const open = (focusTarget: 'first' | 'last' | 'none' = 'none') => {
+    menu.removeAttribute('hidden');
+    btn.setAttribute('aria-expanded', 'true');
+    if (focusTarget === 'none') return;
+    const items = getItems();
+    if (items.length === 0) return;
+    const target = focusTarget === 'last' ? items[items.length - 1] : items[0];
+    target?.focus();
+  };
+
+  btn.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const isOpen = !menu.hasAttribute('hidden');
+    if (isOpen) {
+      close(false);
+    } else {
+      open(event.detail === 0 ? 'first' : 'none');
+    }
+  });
+
+  btn.addEventListener('keydown', (event) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      open('first');
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      open('last');
+    } else if (event.key === 'Escape' && !menu.hasAttribute('hidden')) {
+      event.preventDefault();
+      close(true);
+    }
+  });
+
+  menu.addEventListener('keydown', (event) => {
+    const items = getItems();
+    if (items.length === 0) return;
+    const idx = items.indexOf(document.activeElement as HTMLElement);
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      items[(idx + 1) % items.length]?.focus();
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      items[(idx - 1 + items.length) % items.length]?.focus();
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      items[0]?.focus();
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      items[items.length - 1]?.focus();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      close(true);
+    } else if (event.key === 'Tab') {
+      close(false);
+    }
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!menu.contains(event.target as Node) && event.target !== btn && !btn.contains(event.target as Node)) {
+      close(false);
+    }
+  });
+
+  return () => close(false);
 }
 
 /**
@@ -165,6 +259,11 @@ export function updateStatusLine(statusEl: HTMLElement, update: StatusLineUpdate
   statusEl.className = `lp-status-line lp-status-line-${tone}`;
   statusEl.setAttribute('role', tone === 'danger' ? 'alert' : 'status');
   statusEl.setAttribute('aria-live', tone === 'danger' ? 'assertive' : 'polite');
+  if (update.message) {
+    statusEl.removeAttribute('hidden');
+  } else {
+    statusEl.setAttribute('hidden', '');
+  }
   statusEl.innerHTML = '';
 
   if (update.message) {
