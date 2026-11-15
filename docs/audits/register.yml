@@ -4667,18 +4667,21 @@
     - "5.1"
     - "12.6"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: apps/web/src/pages/admin/entries/editor.test.ts
   history:
     - date: 2026-11-13
       status: open
       note: "Registered at Gate G14 sign-off (screenshot item 3a): renderAdminWorkspacePage() wraps the admin workspace inside renderLayout() (apps/web/src/renderer.ts L243-330, L3872), rendering the public site's <header class=\"site-header\"> (Work, Writing, Build, Timeline, Ask) and <footer class=\"site-footer\"> including .unofficial-fork-slot (PUBLIC_UNOFFICIAL_FORK_NOTICE: 'This deployment is an unofficial fork...'). Planned for WP-15.7 under D-WORKSPACE (slim admin header with product name, section navigation, Sign out, and theme toggle; never renders public navigation or footer; also linked to UX-06 in WP-16.1)."
-  verified_by: null
+    - date: 2026-11-15
+      status: partial
+      note: "Kept partial at Gate G15 owner contact-sheet review: /admin (Reference Editor Page) uses the slim admin header (WP-15.7/WP-15.4), while legacy admin pages (setup, login, import, settings) still render the public site header/footer; remaining seam tracked in 20261106-UX-91 for WP-16.1."
+  verified_by: apps/web/src/pages/admin/entries/editor.test.ts
 - id: 20261106-UX-62
   audit: AUD-2026-11-06
   title: 'Site-wide actions mixed with entry actions on editor screen, duplicate "Publish" naming ("Publish Now" vs "Publish…"), and "Deploy: Building..." contradicting "Static rebuild: Idle"'
@@ -5305,3 +5308,98 @@
       status: partial
       note: "fixed (pending owner review) — Fixed in WP-15.3a; verified in apps/web/src/primitives/foundations.test.ts ('enforces admin session authentication on /admin/dev/foundations and excludes the route in production') and tests/e2e/wp15-3a-design-foundations.spec.ts."
   verified_by: apps/web/src/primitives/foundations.test.ts
+- id: 20261106-UX-91
+  audit: AUD-2026-11-06
+  title: 'Admin shell seam: setup, login, import, and settings still render the public site header, text theme button, and (import) public footer'
+  spec_sections:
+    - "5.1"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 contact-sheet review (keeps UX-61 partial; D-WORKSPACE): setup, login, import, and settings still render the public site header (Work, Writing, Build, Timeline, Ask), a text 'Dark theme' button instead of the icon, and (import) the public footer with 'unofficial fork' text. Planned as first task of WP-16.1 (shell swap only, content untouched: import/settings use admin shell; setup/login use minimal auth shell with brand + theme icon only and no public nav; remove duplicated 'Back to Workspace' buttons; same theme icon everywhere; extend verify-ui-guards so no /admin* page renders public nav or footer, with the four pages on a deadline allowlist)."
+  verified_by: null
+- id: 20261106-UX-92
+  audit: AUD-2026-11-06
+  title: 'At 320 px the Entries list sits above the editor in normal flow, pushing the editor ~340 px down'
+  spec_sections:
+    - "5.3"
+    - "12.3"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 contact-sheet review: at 320 px the Entries list sits above the editor in normal flow (editor starts ~340 px down with one entry). Planned for WP-16.4: below 768 px the list becomes a collapsed 'Entries (n)' selector or drawer and the editor comes first; test with 20 entries at 320 px that the editor title is visible within 400 px of the top."
+  verified_by: null
+- id: 20261106-UX-93
+  audit: AUD-2026-11-06
+  title: 'Unsaved new entry placeholder renders as "Untitled entry · Draft" and raises entry count to 1 before saving'
+  spec_sections:
+    - "5.3"
+    - "6.4"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 contact-sheet review: opening 'New entry' immediately lists 'Untitled entry · Draft' and raises the count to 1 before anything is saved. Planned for WP-16.4: label the placeholder clearly (e.g., 'New, unsaved') and do not count it; test abandon, reload, and save."
+  verified_by: null
+- id: 20261106-UX-94
+  audit: AUD-2026-11-06
+  title: 'At 320 px legacy pages wrap the public header to 3 rows and setup wizard step labels collide or clip'
+  spec_sections:
+    - "12.3"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 contact-sheet review: at 320 px on legacy admin pages (setup, login, import, settings), the public header wraps to 3 rows and setup wizard step labels collide/clip. Planned for WP-16.1: resolved by the shell swap plus collapsing the setup stepper to 'Step 1 of 6: Account' below 768 px."
+  verified_by: null
+- id: 20261106-UX-95
+  audit: AUD-2026-11-06
+  title: 'Settings copy exposes raw hex inputs and internal/spec jargon ("Simulated Degradation Mode", "bge-small-en-v1.5 dim 384", "Facet Known Threshold", "Self-Calibration Mechanisms (Spec §11, UX-08)", "shipped default: 0.82")'
+  spec_sections:
+    - "10.1"
+    - "12.7"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: null
+  history:
+    - date: 2026-11-15
+      status: open
+      note: "Registered at Gate G15 contact-sheet review (D-CONTRACT-1 and D-HELP): /admin/settings exposes raw hex inputs for theme colours and developer/spec strings ('Simulated Degradation Mode', 'bge-small-en-v1.5 dim 384', 'Facet Known Threshold', 'Self-Calibration Mechanisms (Spec §11, UX-08)', 'shipped default: 0.82'). Planned for WP-17.1 and WP-17.8."
+  verified_by: null

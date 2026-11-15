@@ -1153,5 +1153,13 @@
     "path": "docs/execution-reports/A102-wp-156-ui-contract-and-budget-guards.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A103",
+    "title": "g15-register-new-findings",
+    "class": "A",
+    "path": "docs/execution-reports/A103-g15-register-new-findings.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
