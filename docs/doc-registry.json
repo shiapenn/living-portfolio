@@ -1265,5 +1265,21 @@
     "path": "docs/execution-reports/A113-wp-167-retire-monolith.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A114",
+    "title": "WP-16 Gate G16 closure and sweep verification",
+    "class": "A",
+    "path": "docs/execution-reports/A114-wp-16-gate-g16-closure.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "H017",
+    "title": "WP-16 admin shell, entries, and inbox gate closure",
+    "class": "H",
+    "path": "docs/handovers/H017-wp-16-admin-shell-entries-gate-closure.md",
+    "status": "active",
+    "supersedes": "H016"
   }
 ]
