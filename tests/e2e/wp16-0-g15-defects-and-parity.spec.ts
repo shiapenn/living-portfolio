@@ -148,13 +148,11 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     ).toEqual([]);
   });
 
-  test('UX-104 & UX-105: automated-answering kill switch and escalation review card on real /admin', async ({ page }) => {
+  test('UX-104 & UX-105: automated-answering kill switch on /admin and escalation review on /admin/inbox', async ({ page }) => {
     await ensureAdminLoggedIn(page);
 
-    // Create a pending escalation via /api/ask (or verify/seed one)
-    await page.goto('/admin/entries/new');
-
-    // UX-104: Kill switch visible on /admin and toggles automated answering across reload
+    // UX-104: Kill switch visible on /admin (Today) and toggles automated answering across reload
+    await page.goto('/admin');
     const killBtn = page.locator('#btn-killswitch');
     await expect(killBtn).toBeVisible();
     const initialPressed = await killBtn.getAttribute('aria-pressed');
@@ -167,20 +165,20 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     await page.locator('#btn-killswitch').click();
     await expect(page.locator('#btn-killswitch')).toHaveAttribute('aria-pressed', initialPressed ?? 'false');
 
-    // UX-105: Escalation review card visible on /admin with seeded pending escalation
-    await expect(page.locator('#ref-escalations-card')).toBeVisible();
-    const escCard = page.locator('#ref-escalations-card');
-    const escItem = escCard.locator('[data-escalation-id]').first();
-    await expect(escItem).toBeVisible();
-    const escId = await escItem.getAttribute('data-escalation-id');
+    // UX-105: Escalation review on /admin/inbox with seeded pending escalation
+    await page.goto('/admin/inbox');
+    const inboxRow = page.locator('[data-inbox-row]').first();
+    await expect(inboxRow).toBeVisible();
+    const escId = await inboxRow.getAttribute('data-inbox-row');
     expect(escId).toBeTruthy();
 
-    // Approve the escalation from the UI card
-    await escItem.locator('[data-esc-approve]').click();
-    await expect(escCard.locator(`[data-escalation-id="${escId}"]`)).toHaveCount(0);
+    await inboxRow.locator('a').first().click();
+    await expect(page.locator('#inbox-detail-card')).toBeVisible();
+    await page.fill('#inbox-reply-text', 'Approved response from inbox test.');
+    await page.locator('#inbox-btn-reply').click();
 
-    // Reload and confirm it remains approved (no longer in pending list)
-    await page.reload();
-    await expect(page.locator(`#ref-escalations-card [data-escalation-id="${escId}"]`)).toHaveCount(0);
+    // Return to /admin/inbox and confirm it is no longer in pending list
+    await page.goto('/admin/inbox');
+    await expect(page.locator(`[data-inbox-row="${escId}"]`)).toHaveCount(0);
   });
 });

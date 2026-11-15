@@ -34,10 +34,6 @@ export async function renderAdminSettingsPage(
       </div>
     </div>
 
-    <div class="lp-notice lp-notice-warn" data-banner="alpha-warning" role="note">
-      <strong>${escapeHtml(ALPHA_WARNING_TEXT)}</strong>
-    </div>
-
     <div id="settings-status-banner" role="status" aria-live="polite"></div>
 
     <div class="lp-section-grid">
@@ -251,6 +247,10 @@ export async function renderAdminSettingsPage(
         </div>
         <div id="backup-drill-result" class="lp-help-text"></div>
       </section>
+    </div>
+
+    <div class="lp-notice lp-notice-warn lp-divider-top" data-banner="alpha-warning" role="note">
+      <strong>${escapeHtml(ALPHA_WARNING_TEXT)}</strong>
     </div>
 
 ${SETTINGS_SCRIPT}

@@ -62,7 +62,6 @@ test.describe('WP-16.1 Admin Shell & Route Registry', () => {
       await expect(page.locator('.site-footer')).toHaveCount(0);
       await expect(page.locator('.lp-admin-rail')).toBeVisible();
       await expect(page.locator('a:has-text("Back to Workspace")')).toHaveCount(0);
-      await expect(page.locator('#theme-toggle svg.lp-icon')).toBeVisible();
     }
 
     // Status popover with legend
@@ -72,14 +71,15 @@ test.describe('WP-16.1 Admin Shell & Route Registry', () => {
     await expect(popover).toContainText('Site build');
     await expect(popover).toContainText('Automatic answers');
     await expect(popover).toContainText('System');
-    await expect(popover.locator('a[href="/admin/routing"]')).toBeVisible();
+    await expect(popover.locator('a[href="/admin/settings"]')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(popover).toBeHidden();
 
-    // Account menu with Sign out
+    // Account menu with Theme toggle and Sign out
     await page.locator('#lp-account-menu-btn').click();
     const acctMenu = page.locator('#lp-account-menu');
     await expect(acctMenu).toBeVisible();
+    await expect(acctMenu.locator('#theme-toggle svg.lp-icon')).toBeVisible();
     await expect(acctMenu.locator('#btn-admin-logout')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(acctMenu).toBeHidden();

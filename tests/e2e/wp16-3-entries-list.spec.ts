@@ -13,10 +13,12 @@ test.describe('WP-16.3 Entries List Page Module (D-UI-1..D-UI-6, UX-12)', () => 
     await expect(page.locator('#entries-search')).toBeVisible();
     await expect(page.locator('#entries-list-region')).toBeVisible();
 
-    // Verify at least one entry row renders with state chip and 4-step structure meter
+    // Verify at least one entry row renders with state chip and no structure meter or row menu (D-MIN)
     const rows = page.locator('[data-entry-row]');
     await expect(rows.first()).toBeVisible();
-    await expect(rows.first().locator('.lp-structure-meter')).toBeVisible();
+    await expect(rows.first().locator('.lp-structure-meter')).toHaveCount(0);
+    await expect(rows.first().locator('.lp-row-menu-btn')).toHaveCount(0);
+    await expect(page.locator('#entries-empty-state')).toBeHidden();
 
     // Verify GET /entries pagination API directly
     const apiRes = await page.evaluate(async () => {
@@ -30,15 +32,6 @@ test.describe('WP-16.3 Entries List Page Module (D-UI-1..D-UI-6, UX-12)', () => 
     expect(typeof apiRes.body.total).toBe('number');
     expect(typeof apiRes.body.totalPages).toBe('number');
 
-    // Open row menu via real click and verify Edit / Add context / Unpublish / Delete items
-    const menuBtn = rows.first().locator('.lp-row-menu-btn');
-    await menuBtn.click();
-    const menu = rows.first().locator('[role="menu"]');
-    await expect(menu).toBeVisible();
-    await expect(menu.locator('a:has-text("Edit")')).toBeVisible();
-    await expect(menu.locator('a:has-text("Add context")')).toBeVisible();
-    await expect(menu.locator('button:has-text("Delete")')).toBeVisible();
-
     // Check 320px responsiveness
     await page.setViewportSize({ width: 320, height: 640 });
     const overflow = await page.evaluate(() => ({
@@ -48,26 +41,23 @@ test.describe('WP-16.3 Entries List Page Module (D-UI-1..D-UI-6, UX-12)', () => 
     expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth);
   });
 
-  test('filter by search shows empty state when no match and delete dialog requires typed confirmation', async ({ page }) => {
+  test('filter by search shows empty state when no match and clicking a row opens the editor', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/entries');
 
     const rows = page.locator('[data-entry-row]');
     await expect(rows.first()).toBeVisible();
-
-    // Open Delete dialog on first row
-    await rows.first().locator('.lp-row-menu-btn').click();
-    await rows.first().locator('button:has-text("Delete")').click();
-    const dialog = page.locator('#entries-delete-dialog');
-    await expect(dialog).toBeVisible();
-    const confirmBtn = page.locator('#btn-entries-delete-confirm');
-    await expect(confirmBtn).toBeDisabled();
-    await page.locator('#entries-delete-cancel').click();
-    await expect(dialog).toBeHidden();
+    await expect(page.locator('#entries-empty-state')).toBeHidden();
 
     // Search for non-existent query -> empty state
     await page.fill('#entries-search', 'zzznonexistentquery999');
     await page.locator('#entries-search-submit').click();
     await expect(page.locator('#entries-empty-state')).toBeVisible();
+
+    // Reset search and click first row to open editor
+    await page.goto('/admin/entries');
+    const firstId = await rows.first().getAttribute('data-entry-row');
+    await rows.first().click();
+    await expect(page).toHaveURL(new RegExp(`/admin/entries/${firstId}$`));
   });
 });

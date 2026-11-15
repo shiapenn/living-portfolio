@@ -421,7 +421,7 @@ a {
 
 .strata-band .band-ym {
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .strata-band .band-count {
@@ -433,7 +433,7 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-muted);
   margin-top: var(--space-3);
   align-items: center;
@@ -490,7 +490,7 @@ button.chip {
 }
 
 .chip-facet {
-  font-size: 13px;
+  font-size: 14px;
   font-family: var(--font-ui);
 }
 
@@ -683,9 +683,9 @@ button.chip {
 }
 
 .btn-sm {
-  min-height: 32px;
-  padding: var(--space-1) var(--space-3);
-  font-size: 13px;
+  min-height: 36px;
+  padding: var(--space-1) var(--space-4);
+  font-size: 14px;
 }
 
 /* Responsive Admin Shell (20261020-UI-06, UI-07) */
@@ -812,7 +812,7 @@ button.chip {
   display: flex;
   gap: var(--space-1);
   border-bottom: 1px solid var(--rule);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
   overflow-x: auto;
 }
 
@@ -820,8 +820,8 @@ button.chip {
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  padding: var(--space-2) var(--space-3);
-  font-size: 13px;
+  padding: var(--space-2) var(--space-4);
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
@@ -852,9 +852,9 @@ button.chip {
 }
 
 .triage-step {
-  padding: var(--space-1) var(--space-3);
+  padding: var(--space-1) var(--space-4);
   border-radius: var(--radius-chip);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
   background: var(--surface-page);
@@ -867,15 +867,15 @@ button.chip {
 
 .triage-keys-legend {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--space-4);
   align-items: center;
   flex-wrap: wrap;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   background: var(--surface-page);
   border: 1px solid var(--rule);
   border-radius: var(--radius-control);
-  font-size: 13px;
-  margin-bottom: var(--space-3);
+  font-size: 12px;
+  margin-bottom: var(--space-4);
 }
 
 .key-badge {
@@ -1091,8 +1091,8 @@ button[type="submit"] {
 #editor-status-line .as-of-banner,
 #editor-status-line .later-thinking-banner {
   margin: 0;
-  padding: 4px 10px;
-  font-size: 13px;
+  padding: 4px 8px;
+  font-size: 14px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1524,6 +1524,9 @@ button.lp-chip.is-hover {
   height: auto;
   min-height: 144px;
   padding: var(--space-2);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  field-sizing: content;
   overflow-y: hidden;
   resize: vertical;
 }
@@ -1624,8 +1627,8 @@ input[type="date"].lp-input {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--space-4);
+  padding: var(--space-4);
   border-radius: var(--radius-container);
   border: 1px solid var(--border-subtle);
   background: var(--role-neutral-bg);
@@ -1845,7 +1848,7 @@ input[type="date"].lp-input {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-4);
   min-height: var(--size-target-min, 44px);
   padding: var(--space-2) 0;
   cursor: pointer;
@@ -1878,7 +1881,7 @@ input[type="date"].lp-input {
 }
 
 .lp-disclosure-body {
-  padding: var(--space-3) 0;
+  padding: var(--space-4) 0;
   border-top: 1px solid var(--border-subtle);
 }
 
@@ -1944,7 +1947,7 @@ input[type="date"].lp-input {
 .lp-table th,
 .lp-table td {
   text-align: left;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -1956,7 +1959,7 @@ input[type="date"].lp-input {
   background: var(--surface-raised);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .lp-empty-title {
@@ -1974,7 +1977,7 @@ input[type="date"].lp-input {
 }
 
 .lp-empty-guide {
-  padding-top: var(--space-3);
+  padding-top: var(--space-4);
   border-top: 1px solid var(--border-subtle);
 }
 
@@ -1997,14 +2000,14 @@ input[type="date"].lp-input {
 }
 
 .lp-type-page-title {
-  font-size: var(--type-page-title-size, 28px);
-  line-height: var(--type-page-title-line, 36px);
+  font-size: var(--type-page-title-size, 24px);
+  line-height: var(--type-page-title-line, 32px);
   font-weight: 600;
 }
 
 .lp-type-title {
-  font-size: var(--type-title-size, 20px);
-  line-height: var(--type-title-line, 28px);
+  font-size: var(--type-title-size, 16px);
+  line-height: var(--type-title-line, 24px);
   font-weight: 600;
 }
 
@@ -2299,7 +2302,7 @@ input[type="date"].lp-input {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-control);
   background: var(--surface-raised);
   color: var(--text);
@@ -2435,7 +2438,7 @@ input[type="date"].lp-input {
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .lp-page-notice-slot {
@@ -2452,7 +2455,8 @@ input[type="date"].lp-input {
 }
 
 /* WP-15.7 Reference Editor Page (D-FOUND-1..6, D-WORKSPACE, D-EDITOR) */
-.lp-is-hidden {
+.lp-is-hidden,
+[hidden] {
   display: none !important;
 }
 
@@ -2461,6 +2465,15 @@ input[type="date"].lp-input {
   background: var(--surface-page);
   color: var(--text);
   font-family: var(--font-ui);
+  font-size: 14px;
+}
+
+.lp-admin-body button,
+.lp-admin-body input,
+.lp-admin-body select,
+.lp-admin-body textarea {
+  font-family: inherit;
+  font-size: 14px;
 }
 
 a.lp-admin-header-brand {
@@ -2479,7 +2492,7 @@ a.lp-admin-header-brand {
 .lp-editor-shell {
   max-width: var(--size-layout-max, 1180px);
   margin: 0 auto;
-  padding: var(--space-3) var(--gutter, 16px) var(--space-6);
+  padding: var(--space-4) var(--gutter, 16px) var(--space-6);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
@@ -2526,31 +2539,29 @@ a.lp-admin-header-brand {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-3);
+  gap: var(--space-4);
+  padding: var(--space-4);
 }
 
 .lp-inspector-levels {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-1);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
 }
 
 .lp-inspector-level {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  padding: var(--space-1);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-control);
-  font-size: 0.75rem;
+  gap: var(--space-1);
+  padding: 0;
+  font-size: 12px;
   color: var(--text-muted);
 }
 
 .lp-inspector-level-done {
-  border-color: var(--accent);
-  color: var(--text);
-  background: var(--surface-subtle);
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .lp-inspector-level-code {
@@ -2596,7 +2607,7 @@ a.lp-admin-header-brand {
 }
 
 .lp-history-row {
-  padding: var(--space-3);
+  padding: var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -2657,7 +2668,7 @@ a.lp-admin-header-brand {
   max-width: 720px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .lp-editor-heading {
@@ -2671,7 +2682,7 @@ a.lp-admin-header-brand {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  padding-top: var(--space-3);
+  padding-top: var(--space-4);
   border-top: 1px solid var(--border-subtle);
 }
 
@@ -2710,7 +2721,7 @@ a.lp-admin-header-brand {
 .lp-publish-steps {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .lp-publish-step h3 {
@@ -2775,7 +2786,7 @@ a.lp-admin-header-brand {
 .lp-workspace-safety-bar {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
   margin-top: var(--space-4);
   padding-top: var(--space-4);
   border-top: 1px solid var(--border-subtle);
@@ -2787,7 +2798,7 @@ a.lp-admin-header-brand {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  padding: var(--space-3);
+  padding: var(--space-4);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-control);
   background: var(--surface-raised);
@@ -2796,14 +2807,14 @@ a.lp-admin-header-brand {
 .lp-killswitch-copy {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-1);
 }
 
 .lp-escalations-card {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  padding: var(--space-3);
+  padding: var(--space-4);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-control);
   background: var(--surface-raised);
@@ -2857,7 +2868,7 @@ a.lp-admin-header-brand {
 .lp-auth-shell-main {
   max-width: 720px;
   margin: 0 auto;
-  padding: var(--space-6) var(--space-4) var(--space-8);
+  padding: var(--space-6) var(--space-4) var(--space-12);
 }
 
 .lp-admin-header-start {
@@ -2973,7 +2984,7 @@ a.lp-admin-header-brand {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-container);
   box-shadow: var(--shadow-overlay);
-  padding: var(--space-3);
+  padding: var(--space-4);
   z-index: 60;
 }
 
@@ -2983,7 +2994,7 @@ a.lp-admin-header-brand {
 
 .lp-status-popover-title {
   margin: 0 0 var(--space-2);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -3001,7 +3012,7 @@ a.lp-admin-header-brand {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .lp-status-legend-label {
@@ -3091,22 +3102,22 @@ a.lp-admin-header-brand {
 .lp-dashboard-explain-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
-  gap: var(--space-3);
+  gap: var(--space-4);
   margin: 0;
 }
 
 .lp-dashboard-explain-grid dt {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
-  margin-bottom: 2px;
+  margin-bottom: var(--space-1);
 }
 
 .lp-dashboard-explain-grid dd {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .lp-dashboard-card-header {
@@ -3114,11 +3125,11 @@ a.lp-admin-header-brand {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .lp-dashboard-card-title {
-  margin: 0 0 var(--space-3);
+  margin: 0 0 var(--space-4);
   font-size: var(--type-body-size, 16px);
   font-weight: 600;
 }
@@ -3142,7 +3153,7 @@ a.lp-admin-header-brand {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-control);
   background: var(--surface-subtle);
@@ -3157,7 +3168,7 @@ a.lp-admin-header-brand {
 
 .lp-dashboard-checklist {
   margin: 0;
-  padding-left: 20px;
+  padding-left: var(--space-6);
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
@@ -3176,7 +3187,7 @@ a.lp-admin-header-brand {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .lp-entries-header h1,
@@ -3187,12 +3198,12 @@ a.lp-admin-header-brand {
 .lp-entries-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--space-4);
   align-items: flex-end;
   background: var(--surface-raised);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-container);
-  padding: var(--space-3);
+  padding: var(--space-4);
 }
 
 .lp-entries-filter-group {
@@ -3229,8 +3240,8 @@ a.lp-admin-header-brand {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3);
+  gap: var(--space-4);
+  padding: var(--space-4);
   background: var(--surface-raised);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-control);
@@ -3294,7 +3305,8 @@ a.lp-admin-header-brand {
 }
 
 /* WP-16.R R2 Unified Admin Page & Auth Primitives (D-MIN) */
-.lp-is-hidden {
+.lp-is-hidden,
+[hidden] {
   display: none !important;
 }
 
@@ -3487,6 +3499,13 @@ a.lp-admin-header-brand {
   transition: width 0.3s ease;
 }
 
+.lp-wizard-progress-fill[data-step="1"] { width: 16.6%; }
+.lp-wizard-progress-fill[data-step="2"] { width: 33.3%; }
+.lp-wizard-progress-fill[data-step="3"] { width: 50%; }
+.lp-wizard-progress-fill[data-step="4"] { width: 66.6%; }
+.lp-wizard-progress-fill[data-step="5"] { width: 83.3%; }
+.lp-wizard-progress-fill[data-step="6"] { width: 100%; }
+
 .lp-wizard-steps {
   display: flex;
   justify-content: space-between;
@@ -3574,5 +3593,39 @@ a.lp-admin-header-brand {
 .lp-inline-list {
   font-size: 14px;
   margin: 0 0 var(--space-4) var(--space-4);
+}
+
+.lp-inbox-decline-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.lp-inbox-decline-row .lp-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.lp-entries-row {
+  cursor: pointer;
+}
+
+.lp-admin-body h1,
+.lp-admin-body .lp-type-h1 {
+  font-family: var(--font-ui);
+  font-size: 24px;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+.lp-admin-body h2,
+.lp-admin-body h3,
+.lp-admin-body .lp-type-h2,
+.lp-admin-body .lp-type-h3 {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 600;
 }
 `;

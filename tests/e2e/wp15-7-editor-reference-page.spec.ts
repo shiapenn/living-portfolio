@@ -170,9 +170,11 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     expect(draftAudit.desktopNavVisible).toBe(true);
     await expect(page.locator('#lp-rail-toggle')).toBeHidden();
 
+    await page.locator('#lp-account-menu-btn').click();
     await page.locator('#theme-toggle').click();
     await expect(page.locator('#theme-toggle')).toHaveAttribute('aria-label', 'Switch to light theme');
     await expect(page.locator('#theme-toggle use')).toHaveAttribute('href', '#lp-icon-sun');
+    await page.keyboard.press('Escape');
 
     await page.locator('#ref-details-disclosure summary').click();
     await expect(page.locator('#ref-details-disclosure')).toHaveAttribute('open', '');

@@ -30,8 +30,12 @@ export async function renderAdminAuditRulesPage(
         .map((rule) => {
           const id = String(rule.id);
           const quote = String(rule.source_quote || '');
-          const scopeText = rule.scope && Object.keys(rule.scope).length > 0 ? JSON.stringify(rule.scope) : 'Global';
-          const summary = rule.constraint?.guidance || JSON.stringify(rule.constraint || {});
+          const scopeEntries = rule.scope && typeof rule.scope === 'object' ? Object.entries(rule.scope) : [];
+          const scopeText = scopeEntries.length > 0
+            ? `Applies when ${scopeEntries.map(([k, v]) => `${k} is ${Array.isArray(v) ? v.join(', ') : String(v)}`).join(' and ')}.`
+            : 'Applies to all questions (Global).';
+          const c = rule.constraint || {};
+          const summary = c.guidance || c.summary || c.rule || (typeof c === 'string' ? c : 'Answer constraint rule.');
           const tone = activeStatus === 'confirmed' ? 'ok' : activeStatus === 'revoked' ? 'neutral' : 'warn';
           return `<li class="lp-card lp-history-row" data-rule-row="${escapeHtml(id)}">
             <div class="lp-history-row-header">

@@ -29,30 +29,23 @@ const RAIL_GROUPS: RailGroup[] = [
       { href: '/admin', label: 'Today' },
       { href: '/admin/entries', label: 'Entries' },
       { href: '/admin/import', label: 'Import' },
-      { href: '/admin/quick-log', label: 'Quick Log' },
-      { href: '/admin/pages', label: 'Pages' },
     ],
   },
   {
     heading: 'Respond',
     links: [
       { href: '/admin/inbox', label: 'Inbox' },
-      { href: '/admin/bookings', label: 'Bookings' },
     ],
   },
   {
     heading: 'Govern',
     links: [
-      { href: '/admin/audit', label: 'Audit' },
-      { href: '/admin/calibration', label: 'Calibration' },
-      { href: '/admin/structure', label: 'Structure' },
+      { href: '/admin/audit', label: 'Answer rules' },
     ],
   },
   {
     heading: 'Configure',
     links: [
-      { href: '/admin/routing', label: 'Answering' },
-      { href: '/admin/theme', label: 'Theme' },
       { href: '/admin/settings', label: 'Settings' },
     ],
   },
@@ -117,6 +110,8 @@ function renderShellThemeAndMenuScript(nonceAttr: string, includeAdminMenus: boo
       themeBtn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
       const useEl = themeBtn.querySelector('use');
       if (useEl) useEl.setAttribute('href', '#lp-icon-' + icon);
+      const labelEl = themeBtn.querySelector('[data-theme-label]');
+      if (labelEl) labelEl.textContent = label;
     };
     syncThemeBtn(initial);
     if (themeBtn) {
@@ -274,27 +269,19 @@ export function renderAdminShell(
         </button>
         <div id="lp-status-popover" class="lp-popover-menu lp-status-popover" hidden>
           <p class="lp-status-legend-row"><span class="lp-status-dot lp-status-dot-ok" aria-hidden="true"></span><span><strong>Site build:</strong> Idle (ready)</span></p>
-          <p class="lp-status-legend-row"><span class="lp-status-dot ${answeringOn ? 'lp-status-dot-ok' : 'lp-status-dot-warn'}" aria-hidden="true"></span><span><strong>Automatic answers:</strong> ${answeringOn ? 'On' : 'Off'} — <a href="/admin/routing">Settings › Answering</a></span></p>
+          <p class="lp-status-legend-row"><span class="lp-status-dot ${answeringOn ? 'lp-status-dot-ok' : 'lp-status-dot-warn'}" aria-hidden="true"></span><span><strong>Automatic answers:</strong> ${answeringOn ? 'On' : 'Off'} — <a href="/admin/settings">Settings</a></span></p>
           <p class="lp-status-legend-row"><span class="lp-status-dot lp-status-dot-ok" aria-hidden="true"></span><span><strong>System:</strong> Operational</span></p>
         </div>
       </div>
-      ${renderIconButton({
-        id: 'theme-toggle',
-        ariaLabel: toggleLabel,
-        title: toggleLabel,
-        icon: toggleIcon,
-        iconSize: 20,
-        variant: 'secondary',
-        dataAttrs: { 'aria-pressed': theme === 'dark' ? 'true' : 'false' },
-      })}
       <div class="lp-menu-wrap">
         <button type="button" id="lp-account-menu-btn" class="lp-btn lp-btn-secondary lp-btn-sm" aria-haspopup="menu" aria-expanded="false" aria-controls="lp-account-menu">
           <span>Account</span>
           ${renderIcon({ name: 'chevron-down', size: 16 })}
         </button>
         <div id="lp-account-menu" class="lp-popover-menu lp-menu-popover-float" role="menu" aria-label="Account menu" hidden>
-          <a href="/admin/settings/account" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">Account settings</a>
+          <a href="/admin/settings" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">Account settings</a>
           <a href="/home" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">View public site</a>
+          <button type="button" id="theme-toggle" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" aria-label="${escapeHtml(toggleLabel)}" aria-pressed="${theme === 'dark' ? 'true' : 'false'}">${renderIcon({ name: toggleIcon, size: 16 })}<span data-theme-label="true">${escapeHtml(toggleLabel)}</span></button>
           <hr class="lp-menu-separator" role="separator" />
           <button type="button" role="menuitem" id="btn-admin-logout" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">Sign out</button>
         </div>

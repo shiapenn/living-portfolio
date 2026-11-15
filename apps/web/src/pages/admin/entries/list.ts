@@ -42,31 +42,12 @@ export async function renderAdminEntriesListPage(
 
   const rowsHtml = paged
     .map((entry) => {
-      const lvl = (entry as any).structureLevel || 'L0';
-      const steps = levelSteps(lvl);
-      const meter = [1, 2, 3, 4]
-        .map((n) => `<span class="lp-structure-step${n <= steps ? ' is-filled' : ''}"></span>`)
-        .join('');
-      const unpublishBtn =
-        entry.visibility === 'private'
-          ? ''
-          : `<button type="button" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" data-action="unpublish" data-id="${escapeHtml(entry.id)}">${escapeHtml(ENTRIES_LIST_STRINGS.rowActions.unpublish)}</button>`;
       return `<li class="lp-entries-row" data-entry-row="${escapeHtml(entry.id)}">
   <div class="lp-entries-row-main">
     <a href="/admin/entries/${encodeURIComponent(entry.id)}" class="lp-entries-row-title">${escapeHtml(entry.title || 'Untitled')}</a>
     <div class="lp-entries-row-meta">
       ${renderStatusDot({ label: visibilityLabel(entry.visibility), tone: entry.visibility === 'public' ? 'ok' : entry.visibility === 'unlisted' ? 'warn' : 'neutral' })}
       <span class="lp-entry-profile">${escapeHtml(entry.profile || 'work')}</span>
-      <span class="lp-structure-meter" aria-label="Structure ${escapeHtml(lvl)}">${meter}<span class="lp-structure-label">${escapeHtml(lvl)}</span></span>
-    </div>
-  </div>
-  <div class="lp-menu-wrap">
-    <button type="button" class="lp-btn lp-btn-secondary lp-btn-sm lp-row-menu-btn" aria-haspopup="menu" aria-expanded="false">Actions</button>
-    <div class="lp-popover-menu lp-menu-popover-float" role="menu" hidden>
-      <a href="/admin/entries/${encodeURIComponent(entry.id)}" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">${escapeHtml(ENTRIES_LIST_STRINGS.rowActions.edit)}</a>
-      <a href="/admin/entries/${encodeURIComponent(entry.id)}?tab=context" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">${escapeHtml(ENTRIES_LIST_STRINGS.rowActions.addContext)}</a>
-      ${unpublishBtn}
-      <button type="button" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" data-action="delete" data-id="${escapeHtml(entry.id)}">${escapeHtml(ENTRIES_LIST_STRINGS.rowActions.del)}</button>
     </div>
   </div>
 </li>`;

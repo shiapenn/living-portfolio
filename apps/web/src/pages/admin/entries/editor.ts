@@ -18,7 +18,6 @@ import { renderStructureInspectorPanel, type StructureInspectorData } from '../.
 import {
   renderDraftAndOfflineBanners,
   renderEditorDialogsAndDrawers,
-  renderWorkspaceSafetyControls,
   type WorkspaceEscalationItem,
 } from './editor-sections.js';
 
@@ -290,10 +289,6 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
     </aside>
     <section id="ref-editor-main" class="lp-editor-main" aria-label="Entry editor">
       ${mainContent}
-      ${renderWorkspaceSafetyControls({
-        answeringEnabled: options.answeringEnabled ?? true,
-        escalations: options.escalations ?? [],
-      })}
     </section>
     ${selected ? renderStructureInspectorPanel(options.inspector ?? { entryId: selected.id, visibility: selected.visibility, structureLevel: 0, gapQuestions: [], facets: [], claims: [], evidence: [], revisions: [] }) : ''}
   </div>
