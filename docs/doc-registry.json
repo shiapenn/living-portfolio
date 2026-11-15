@@ -1201,5 +1201,13 @@
     "path": "docs/handovers/H016-wp-15-design-system-and-editor-gate-closure.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A106",
+    "title": "WP-16.0 G15 defects and capability parity fixes",
+    "class": "A",
+    "path": "docs/execution-reports/A106-wp-160-g15-defects-and-capability-parity-fixes.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
