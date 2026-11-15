@@ -72,6 +72,14 @@ test.describe('WP-16.R D-MIN Style Census (every admin page x 2 themes x 1280/32
       input: new Set(),
       select: new Set(),
     };
+    const roleBorderColors: Record<string, Set<string>> = {
+      stateLabel: new Set(),
+      tab: new Set(),
+      button: new Set(),
+      iconButton: new Set(),
+      input: new Set(),
+      select: new Set(),
+    };
 
     const scanCurrentPage = async (route: string, theme: 'light' | 'dark', width: number) => {
       await page.evaluate((t) => {
@@ -98,6 +106,14 @@ test.describe('WP-16.R D-MIN Style Census (every admin page x 2 themes x 1280/32
         const familiesSeen: string[] = [];
 
         const sigs: Record<string, string[]> = {
+          stateLabel: [],
+          tab: [],
+          button: [],
+          iconButton: [],
+          input: [],
+          select: [],
+        };
+        const borderColors: Record<string, string[]> = {
           stateLabel: [],
           tab: [],
           button: [],
@@ -181,16 +197,22 @@ test.describe('WP-16.R D-MIN Style Census (every admin page x 2 themes x 1280/32
           // Role signatures
           if (el.classList.contains('lp-state-label') || el.classList.contains('lp-badge')) {
             sigs.stateLabel.push(`${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
+            borderColors.stateLabel.push(cs.borderTopColor);
           } else if (el.getAttribute('role') === 'tab' || el.classList.contains('lp-tab')) {
             sigs.tab.push(`${Math.round(rect.height)}|${radPx}|${cs.borderBottomWidth}|${fs}|${cs.fontFamily}`);
+            borderColors.tab.push(cs.borderBottomColor);
           } else if (el.classList.contains('lp-icon-btn') || (tag === 'button' && el.hasAttribute('aria-label') && !(el.textContent || '').trim())) {
             sigs.iconButton.push(`${Math.round(rect.width)}x${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}`);
+            borderColors.iconButton.push(cs.borderTopColor);
           } else if (tag === 'button' || el.classList.contains('lp-btn')) {
             sigs.button.push(`${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
+            borderColors.button.push(cs.borderTopColor);
           } else if (tag === 'input' && !['checkbox', 'radio', 'hidden'].includes((el as HTMLInputElement).type)) {
             sigs.input.push(`${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
+            borderColors.input.push(cs.borderTopColor);
           } else if (tag === 'select') {
             sigs.select.push(`${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
+            borderColors.select.push(cs.borderTopColor);
           }
         }
 
@@ -207,6 +229,7 @@ test.describe('WP-16.R D-MIN Style Census (every admin page x 2 themes x 1280/32
           fontsSeen,
           familiesSeen,
           sigs,
+          borderColors,
         };
       });
 
@@ -224,6 +247,7 @@ test.describe('WP-16.R D-MIN Style Census (every admin page x 2 themes x 1280/32
       res.familiesSeen.forEach((f) => distinctFontFamilies.add(f));
       for (const role of Object.keys(roleSignatures)) {
         res.sigs[role]?.forEach((s) => roleSignatures[role].add(s));
+        res.borderColors[role]?.forEach((c) => roleBorderColors[role].add(c));
       }
     };
 
@@ -277,6 +301,10 @@ test.describe('WP-16.R D-MIN Style Census (every admin page x 2 themes x 1280/32
       distinctControlHeights: [...distinctControlHeights].sort((a, b) => a - b),
       distinctFontSizes: [...distinctFontSizes].sort((a, b) => a - b),
       distinctFontFamiliesCount: distinctFontFamilies.size,
+      distinctFontFamilies: [...distinctFontFamilies],
+      borderColoursPerRole: Object.fromEntries(
+        Object.entries(roleBorderColors).map(([k, v]) => [k, [...v]])
+      ),
       perRoleSignatureCounts: Object.fromEntries(
         Object.entries(roleSignatures).map(([k, v]) => [k, v.size])
       ),
