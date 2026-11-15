@@ -179,15 +179,21 @@ export function createWebApp(options?: WebAppOptions) {
   app.get('/admin', async (c) => {
     const session = await checkSession(c.req.header('cookie'));
     return c.html(
-      await renderAdminEntriesPage(client, {
-        selectedId: c.req.query('entry') || undefined,
-        isNew: c.req.query('new') === '1',
+      await renderAdminDashboardPage(client, {
         siteName: cfg.PUBLIC_SITE_NAME,
         legacyRecoveryUsed: session.legacyRecoveryUsed,
       })
     );
   });
-  app.get('/admin/today', async (c) => c.html(await renderAdminDashboardPage(client, { siteName: cfg.PUBLIC_SITE_NAME })));
+  app.get('/admin/today', async (c) => {
+    const session = await checkSession(c.req.header('cookie'));
+    return c.html(
+      await renderAdminDashboardPage(client, {
+        siteName: cfg.PUBLIC_SITE_NAME,
+        legacyRecoveryUsed: session.legacyRecoveryUsed,
+      })
+    );
+  });
   app.get('/admin/entries', async (c) => c.html(await renderAdminEntriesListPage(client, { siteName: cfg.PUBLIC_SITE_NAME })));
   app.get('/admin/entries/new', async (c) => {
     const html = await renderDedicatedEditorPage(client, { isNew: true, siteName: cfg.PUBLIC_SITE_NAME });

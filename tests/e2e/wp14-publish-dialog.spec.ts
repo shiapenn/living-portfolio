@@ -8,7 +8,7 @@ test.describe.serial('WP-14.3: Publish Dialog with auto-scan, pre-flight checkli
     page,
   }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
 
     const openDialogBtn = page.locator('#ref-btn-publish');
     const publishDialog = page.locator('#ref-publish-dialog');

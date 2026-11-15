@@ -11,7 +11,7 @@ test.describe.serial('WP-14.7 Hotfix: Single Publish Path and Server Gate Refusa
     page,
   }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
 
     // Duplicate plain "Publish" button must not exist
     await expect(page.locator('#btn-publish-entry')).toHaveCount(0);
@@ -29,8 +29,8 @@ test.describe.serial('WP-14.7 Hotfix: Single Publish Path and Server Gate Refusa
     // Save as draft first, then verify server refuses direct PUT visibility=public without redactionPreviewToken
     await page.click('#ref-btn-save');
     await expect(page.locator('#ref-status-line')).toContainText(/draft saved/i);
-    await page.waitForURL((url) => Boolean(url.searchParams.get('entry')));
-    const entryId = new URL(page.url()).searchParams.get('entry');
+    await page.waitForURL((url) => url.pathname.startsWith('/admin/entries/') && url.pathname !== '/admin/entries/new');
+    const entryId = new URL(page.url()).pathname.split('/').pop();
     expect(entryId).toBeTruthy();
 
     const directPutStatus = await page.evaluate(async (id) => {
@@ -49,7 +49,7 @@ test.describe.serial('WP-14.7 Hotfix: Single Publish Path and Server Gate Refusa
     page,
   }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
 
     await page.fill('#ref-field-title', `${entryTitle} NDA`);
     await page.fill('#ref-field-body', 'Contact: secret-token-12345 and NDA confidential architecture.');

@@ -24,7 +24,7 @@ test.describe.serial('WP-11.2: Navigation Redesign & System States (20261020-UX-
     });
 
     // Create a structured entry if not already present via Reference Editor UI
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
     await page.fill('#ref-field-title', 'Nav Test Architecture Project');
     await page.locator('#ref-details-disclosure summary').click();
     await page.selectOption('#ref-field-profile', 'case-study');

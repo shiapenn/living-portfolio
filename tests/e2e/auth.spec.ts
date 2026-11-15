@@ -301,7 +301,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     // Finish setup
     await sharedPage.click('#btn-setup-finish-login');
     await sharedPage.waitForURL((url) => url.pathname === '/admin');
-    await expect(sharedPage.locator('#ref-main')).toBeVisible();
+    await expect(sharedPage.locator('main')).toBeVisible();
   });
 
   test('8. /admin/setup is locked down once configured', async ({ page, request }) => {
@@ -390,8 +390,8 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.click('button[type="submit"]');
 
     await page.waitForURL((url) => url.pathname === '/admin');
-    await expect(page.locator('#ref-main')).toBeVisible();
-    await expect(page.locator('#ref-btn-signout')).toBeVisible();
+    await expect(page.locator('main')).toBeVisible();
+    await expect(page.locator('#lp-account-menu-btn')).toBeVisible();
   });
 
   test('11. CSRF token is stored in sessionStorage and validated on admin requests', async ({ page }) => {
@@ -461,6 +461,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => url.pathname === '/admin');
     }
+    await page.goto('/admin/entries/new');
 
     const statusLine = page.locator('#ref-status-line');
     const titleInput = page.locator('#ref-field-title');
@@ -530,7 +531,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.click('button[type="submit"]');
 
     await page.waitForURL((url) => url.pathname === '/admin');
-    await expect(page.locator('#ref-main')).toBeVisible();
+    await expect(page.locator('main')).toBeVisible();
 
     // Clear session to test second attempt with the same recovery code
     await page.context().clearCookies();
@@ -608,12 +609,13 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.click('button[type="submit"]');
 
     await page.waitForURL((url) => url.pathname === '/admin');
-    await expect(page.locator('#ref-main')).toBeVisible();
+    await expect(page.locator('main')).toBeVisible();
     // Modern 16-hex recovery code sign-in does not show the legacy recovery notice
     await expect(page.locator('#admin-legacy-recovery-notice')).not.toBeVisible();
 
-    // 4. Header contains Sign out control (UX-41)
-    const logoutBtn = page.locator('#ref-btn-signout');
+    // 4. Header contains Sign out control in Account menu (UX-41)
+    await page.click('#lp-account-menu-btn');
+    const logoutBtn = page.locator('#btn-admin-logout');
     await expect(logoutBtn).toBeVisible();
     await expect(logoutBtn).toContainText('Sign out');
 
@@ -687,10 +689,11 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.fill('#login-totp', messyCode);
     await page.click('button[type="submit"]');
     await page.waitForURL((url) => url.pathname === '/admin');
-    await expect(page.locator('#ref-main')).toBeVisible();
+    await expect(page.locator('main')).toBeVisible();
 
     // 5. Sign out and test one code pasted
-    await page.click('#ref-btn-signout');
+    await page.click('#lp-account-menu-btn');
+    await page.click('#btn-admin-logout');
     await page.waitForURL((url) => url.pathname === '/admin/login');
     await toggleBtn.click();
 
@@ -704,10 +707,11 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await page.fill('#login-password', TEST_PASSWORD);
     await page.click('button[type="submit"]');
     await page.waitForURL((url) => url.pathname === '/admin');
-    await expect(page.locator('#ref-main')).toBeVisible();
+    await expect(page.locator('main')).toBeVisible();
 
     // 6. Sign out and test that the already-used code is rejected with exact recovery error message
-    await page.click('#ref-btn-signout');
+    await page.click('#lp-account-menu-btn');
+    await page.click('#btn-admin-logout');
     await page.waitForURL((url) => url.pathname === '/admin/login');
     await toggleBtn.click();
     await page.fill('#login-username', TEST_USERNAME);
@@ -723,10 +727,11 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
       await page.fill('#login-totp', code);
       await page.click('button[type="submit"]');
       await page.waitForURL((url) => url.pathname === '/admin');
-      await expect(page.locator('#ref-main')).toBeVisible();
+      await expect(page.locator('main')).toBeVisible();
 
       // Sign out
-      await page.click('#ref-btn-signout');
+      await page.click('#lp-account-menu-btn');
+    await page.click('#btn-admin-logout');
       await page.waitForURL((url) => url.pathname === '/admin/login');
       await toggleBtn.click();
 
@@ -770,7 +775,8 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     expect(legacyCode).toMatch(/^[a-f0-9]{4}-[a-f0-9]{4}$/);
 
     // 3. Sign out
-    await page.click('#ref-btn-signout');
+    await page.click('#lp-account-menu-btn');
+    await page.click('#btn-admin-logout');
     await page.waitForURL((url) => url.pathname === '/admin/login');
 
     // 4. Sign in with legacy-format code
@@ -788,7 +794,8 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(adminNotice).toContainText('You signed in with an older recovery code. Replace your recovery codes in Settings > Account as soon as you can.');
 
     // 6. Sign out and verify the legacy recovery code is burned
-    await page.click('#ref-btn-signout');
+    await page.click('#lp-account-menu-btn');
+    await page.click('#btn-admin-logout');
     await page.waitForURL((url) => url.pathname === '/admin/login');
     await toggleBtn.click();
     await page.fill('#login-username', TEST_USERNAME);

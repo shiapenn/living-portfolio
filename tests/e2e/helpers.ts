@@ -63,5 +63,5 @@ export async function ensureAdminLoggedIn(page: Page) {
     await page.click('button[type="submit"]');
     await page.waitForURL((url) => url.pathname === '/admin');
   }
-  await expect(page.locator('#ref-main')).toBeVisible();
+  await expect(page.locator('main')).toBeVisible();
 }

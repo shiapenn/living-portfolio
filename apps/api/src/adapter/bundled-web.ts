@@ -38,30 +38,21 @@ export function mountBundledWeb(
       return c.html(renderAdminSetupPage());
     });
     app.get('/admin/login', (c) => c.html(renderAdminLoginPage()));
-    app.get('/admin', auth.requireAdminMiddleware(), async (c) => {
+    const renderTodayHandler = async (c: any) => {
       const cookieHeader = c.req.header('cookie') || '';
       const sessionMatch = cookieHeader.match(/(?:^|;\s*)lp_session=([a-f0-9]+)/);
       const session = sessionMatch ? (auth as any).sessions?.get(sessionMatch[1]) : null;
-      return c.html(
-        await renderAdminEntriesPage(repo, {
-          selectedId: c.req.query('entry') || undefined,
-          isNew: c.req.query('new') === '1',
-          legacyRecoveryUsed: Boolean(session?.legacyRecoveryUsed),
-          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
-        })
-      );
-    });
-    app.get('/admin/today', auth.requireAdminMiddleware(), async (c) => {
       const inboxItems = typeof (repo as any).listInboxItems === 'function' ? await (repo as any).listInboxItems() : [];
       const pendingInboxCount = Array.isArray(inboxItems) ? inboxItems.filter((i: any) => i.status === 'pending').length : 0;
-      return c.html(
-        await renderAdminDashboardPage(repo, {
-          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
-          checklistDismissed: Boolean(runtimeState?.dashboardChecklistDismissed),
-          pendingInboxCount,
-        })
-      );
-    });
+      return renderAdminDashboardPage(repo, {
+        answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+        checklistDismissed: Boolean(runtimeState?.dashboardChecklistDismissed),
+        pendingInboxCount,
+        legacyRecoveryUsed: Boolean(session?.legacyRecoveryUsed),
+      });
+    };
+    app.get('/admin', auth.requireAdminMiddleware(), async (c) => c.html(await renderTodayHandler(c)));
+    app.get('/admin/today', auth.requireAdminMiddleware(), async (c) => c.html(await renderTodayHandler(c)));
     app.get('/admin/entries', auth.requireAdminMiddleware(), async (c) =>
       c.html(
         await renderAdminEntriesListPage(repo, {

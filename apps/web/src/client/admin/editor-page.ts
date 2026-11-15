@@ -873,7 +873,10 @@ function bootEditorPage(): void {
     if (!isFixtureMode && activeEntryId && activeEntryId !== 'new') {
       const res = await apiRequest(`/api/entries/${encodeURIComponent(activeEntryId)}`, { method: 'DELETE' });
       if (res.ok) {
-        window.location.href = '/admin';
+        window.location.href =
+          window.location.pathname.startsWith('/admin/entries') && window.location.pathname !== '/admin/entries/editor'
+            ? '/admin/entries'
+            : '/admin';
         return;
       }
     }

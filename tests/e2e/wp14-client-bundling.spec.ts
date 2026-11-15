@@ -17,7 +17,7 @@ test.describe.serial('WP-14.0: Client bundling and entry handler migration', () 
     page,
   }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin?new=1');
+    await page.goto('/admin/entries/new');
 
     // The script tag for the client bundle must exist and have the script asset path
     const scriptTag = page.locator('script[src*="/assets/client/editor-page.js"]');

@@ -956,7 +956,8 @@ console.log(x);
       const res = await app.fetch(new Request('http://localhost/admin'));
       expect(res.status).toBe(200);
       const text = await res.text();
-      expect(text).toContain('id="ref-main"');
+      expect(text).toContain('id="main-content"');
+      expect(text).toContain('Today');
       expect(text).toContain('Entries');
     });
 

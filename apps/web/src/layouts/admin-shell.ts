@@ -9,6 +9,7 @@ export interface AdminShellOptions {
   initialTheme?: 'light' | 'dark';
   answeringEnabled?: boolean;
   siteName?: string;
+  legacyRecoveryUsed?: boolean;
 }
 
 interface RailLink {
@@ -25,8 +26,7 @@ const RAIL_GROUPS: RailGroup[] = [
   {
     heading: 'Write',
     links: [
-      { href: '/admin/today', label: 'Today' },
-      { href: '/admin', label: 'Workspace' },
+      { href: '/admin', label: 'Today' },
       { href: '/admin/entries', label: 'Entries' },
       { href: '/admin/import', label: 'Import' },
       { href: '/admin/quick-log', label: 'Quick Log' },
@@ -228,7 +228,7 @@ export function renderAdminShell(
       .map((link) => {
         const isCurrent =
           link.href === '/admin'
-            ? activePath === '/admin'
+            ? activePath === '/admin' || activePath === '/admin/today'
             : activePath === link.href || activePath.startsWith(`${link.href}/`);
         return `<a href="${link.href}" class="lp-admin-rail-link${isCurrent ? ' lp-admin-rail-link-active' : ''}"${isCurrent ? ' aria-current="page"' : ''}>${escapeHtml(link.label)}</a>`;
       })
@@ -309,6 +309,7 @@ export function renderAdminShell(
       </div>
     </nav>
     <main id="main-content" class="lp-admin-shell-main">
+      ${options?.legacyRecoveryUsed ? '<div id="admin-legacy-recovery-notice" class="lp-notice lp-notice-warn"><span>You signed in with an older recovery code. Replace your recovery codes in <a href="/admin/settings/account">Settings &gt; Account</a> as soon as you can.</span></div>' : ''}
       ${safeContent}
     </main>
   </div>
