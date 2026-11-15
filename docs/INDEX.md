@@ -121,6 +121,7 @@
 | `A113` | WP-16.7 Retire monolith and route /admin to Today | `active` | [A113-wp-167-retire-monolith.md](execution-reports/A113-wp-167-retire-monolith.md) | — |
 | `A114` | WP-16 Gate G16 closure and sweep verification | `active` | [A114-wp-16-gate-g16-closure.md](execution-reports/A114-wp-16-gate-g16-closure.md) | — |
 | `A115` | WP-16.pre-f CI cost optimization | `active` | [A115-wp-16pre-f-ci-cost-optimization.md](execution-reports/A115-wp-16pre-f-ci-cost-optimization.md) | — |
+| `A116` | WP-16.pre-g Close Dependabot alert 5 | `active` | [A116-wp-16pre-g-close-dependabot-alert-5.md](execution-reports/A116-wp-16pre-g-close-dependabot-alert-5.md) | — |
 
 ## Handover Snapshots (Class H)
 
