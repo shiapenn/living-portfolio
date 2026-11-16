@@ -205,6 +205,7 @@ export const SEMANTIC_TOKENS_LIGHT = `
   --z-sticky: 100;
   --z-overlay: 200;
   --z-toast: 300;
+  --vv-bottom: 0px;
 
   /* Layout dimensions */
   --size-layout-max: 1180px;

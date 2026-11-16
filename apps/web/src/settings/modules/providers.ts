@@ -1,7 +1,7 @@
 import { z } from '@living-portfolio/core';
-import { escapeHtml } from '../../lib/html.js';
-import { renderButton, renderField, renderStatusDot } from '../../primitives/index.js';
-import { renderStatusLine } from '../../components/index.js';
+import { renderActionBar, renderField, renderFormSection } from '../../primitives/index.js';
+import { renderProviderRow, renderStatusLine } from '../../components/index.js';
+import { WIZARD_STRINGS } from '../../strings.js';
 import type { SettingsModuleManifest } from '../registry.js';
 
 export const ProvidersConfigSchema = z.object({
@@ -9,6 +9,10 @@ export const ProvidersConfigSchema = z.object({
 });
 
 export type ProvidersConfig = z.infer<typeof ProvidersConfigSchema>;
+
+function toProviderId(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
 
 export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
   id: 'providers',
@@ -24,49 +28,57 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
   schema: ProvidersConfigSchema,
   status: (_cfg, ctx) => {
     const enabledCount = (ctx?.providers ?? []).filter((p) => p.enabled).length;
-    return enabledCount > 0 ? `${enabledCount} active` : 'Extractive only';
+    return enabledCount > 0 ? `${enabledCount} active` : 'Local ONNX active';
   },
   render: (cfg, ctx) => {
-    const providers = ctx.providers ?? [];
+    const liveProviders = ctx.providers ?? [];
     const degradationMode =
       typeof ctx.settings?.degradation_mode === 'string'
         ? ctx.settings.degradation_mode
         : cfg.degradationMode;
 
-    const providerRows = providers.length
-      ? providers
-          .map((p) => {
-            const label = escapeHtml(p.name || p.id || 'Provider');
-            const model = escapeHtml(p.model || 'Default model');
-            const statusText = p.enabled ? 'Enabled' : 'Disabled';
-            const tone = p.enabled ? 'ok' : 'neutral';
-            return `
-              <div class="lp-list-row">
-                <div class="lp-list-row-main">
-                  <div class="lp-list-row-primary">${label}</div>
-                  <div class="lp-list-row-secondary">${model}</div>
-                </div>
-                <div class="lp-list-row-trailing">
-                  ${renderStatusDot({ label: statusText, tone })}
-                </div>
-              </div>
-            `;
-          })
-          .join('')
-      : `<p class="lp-help-text">No external providers configured. Visitor questions use direct quotes from your entries.</p>`;
+    const liveByName = new Map(
+      liveProviders.map((p) => [toProviderId(p.name || p.id || ''), p]),
+    );
+
+    const providerRows = WIZARD_STRINGS.step3.providersTable.rows
+      .map((row) => {
+        const id = toProviderId(row.name);
+        const live = liveByName.get(id);
+        const isEnabled = live ? Boolean(live.enabled) : row.isLocal;
+        const statusText = live
+          ? live.enabled
+            ? 'Enabled'
+            : 'Disabled'
+          : row.status;
+        return renderProviderRow({
+          id,
+          name: row.name,
+          model: live?.model || row.model,
+          classes: row.classes,
+          status: statusText,
+          tone: isEnabled ? 'ok' : 'neutral',
+          isLocal: row.isLocal,
+          mode: 'item',
+          editable: !row.isLocal,
+          hasKey: Boolean(live?.enabled),
+        });
+      })
+      .join('');
 
     return `
       <form id="settings-module-form" data-settings-module="providers" class="lp-stack-lg">
         ${renderStatusLine({ id: 'settings-status-banner' })}
 
-        <section class="lp-stack-md">
-          <h2 class="lp-section-title">Configured providers</h2>
-          <div class="lp-list">${providerRows}</div>
-        </section>
+        ${renderFormSection({
+          title: 'Configured providers',
+          description: 'Local ONNX runs on this server. External provider API keys are write-only and never echoed.',
+          fieldsHtml: `<div class="lp-list lp-stack-sm">${providerRows}</div>`,
+        })}
 
-        <section class="lp-stack-md">
-          <h2 class="lp-section-title">Fallback behaviour</h2>
-          ${renderField({
+        ${renderFormSection({
+          title: 'Fallback behaviour',
+          fieldsHtml: renderField({
             kind: 'select',
             id: 'setting-degradation-mode',
             name: 'degradationMode',
@@ -78,12 +90,17 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
               { value: 'force_extractive', label: 'Direct quotes only (skip AI synthesis)' },
               { value: 'force_unavailable', label: 'Queue all questions to Inbox' },
             ],
-          })}
-        </section>
+          }),
+        })}
 
-        <div>
-          ${renderButton({ id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' })}
-        </div>
+        ${renderActionBar({
+          primary: {
+            id: 'btn-save-settings-module',
+            label: 'Save',
+            variant: 'primary',
+            type: 'button',
+          },
+        })}
       </form>
     `;
   },

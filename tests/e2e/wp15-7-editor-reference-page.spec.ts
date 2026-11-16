@@ -86,7 +86,7 @@ test.describe('WP-15.7 Reference Editor Page', () => {
         await expect(page.locator('#ref-visibility-menu-btn')).toBeVisible();
         await expect(page.locator('#ref-btn-publish')).not.toHaveClass(/lp-is-hidden/);
         await expect(page.locator('#ref-more-menu-btn')).toBeVisible();
-        await expect(page.locator('#ref-more-menu [role="menuitem"]')).toHaveCount(1);
+        await expect(page.locator('#ref-more-menu [role="menuitem"]:not(.lp-mobile-only-menu-item)')).toHaveCount(1);
         await expect(page.locator('#ref-btn-structure')).toBeVisible();
       } else if (state === 'unlisted') {
         await expect(page.locator('#ref-btn-save')).toBeVisible();
@@ -96,7 +96,7 @@ test.describe('WP-15.7 Reference Editor Page', () => {
         await expect(page.locator('#ref-visibility-menu-btn')).toBeVisible();
         await expect(page.locator('#ref-visibility-menu [data-vis="unlisted"]')).toHaveAttribute('aria-checked', 'true');
         await expect(page.locator('#ref-more-menu-btn')).toBeVisible();
-        await expect(page.locator('#ref-more-menu [role="menuitem"]')).toHaveCount(1);
+        await expect(page.locator('#ref-more-menu [role="menuitem"]:not(.lp-mobile-only-menu-item)')).toHaveCount(1);
         await expect(page.locator('#ref-btn-structure')).toBeVisible();
       } else if (state === 'public') {
         await expect(page.locator('#ref-btn-save')).toBeVisible();
@@ -106,7 +106,7 @@ test.describe('WP-15.7 Reference Editor Page', () => {
         await expect(page.locator('#ref-visibility-menu-btn')).toBeVisible();
         await expect(page.locator('#ref-visibility-menu [data-vis="public"]')).toHaveAttribute('aria-checked', 'true');
         await expect(page.locator('#ref-more-menu-btn')).toBeVisible();
-        await expect(page.locator('#ref-more-menu [role="menuitem"]')).toHaveCount(1);
+        await expect(page.locator('#ref-more-menu [role="menuitem"]:not(.lp-mobile-only-menu-item)')).toHaveCount(1);
         await expect(page.locator('#ref-btn-structure')).toBeVisible();
       }
     }

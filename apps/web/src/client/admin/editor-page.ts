@@ -970,6 +970,30 @@ function bootEditorPage(): void {
         onClose: restoreStatusLineAfterModal,
       })
     : null;
+  document.getElementById('ref-more-source')?.addEventListener('click', () => {
+    closeMoreMenu();
+    sourceToggleBtn?.click();
+  });
+
+  // Dock formatting bar above virtual keyboard on mobile using visualViewport (D-COMP #10)
+  const fmtBar = document.querySelector<HTMLElement>('.lp-editor-toolbar-center');
+  if (fmtBar && window.visualViewport) {
+    const syncViewportDock = () => {
+      const vv = window.visualViewport;
+      if (!vv) return;
+      const offset = Math.max(0, Math.round(window.innerHeight - (vv.height + vv.offsetTop)));
+      if (offset > 0) {
+        fmtBar.style.setProperty('--vv-bottom', `${offset}px`);
+      } else {
+        fmtBar.style.removeProperty('--vv-bottom');
+        if (!fmtBar.getAttribute('style')) fmtBar.removeAttribute('style');
+      }
+    };
+    window.visualViewport.addEventListener('resize', syncViewportDock);
+    window.visualViewport.addEventListener('scroll', syncViewportDock);
+    syncViewportDock();
+  }
+
   document.getElementById('ref-more-delete')?.addEventListener('click', () => {
     closeMoreMenu();
     deleteCtrl?.open(document.getElementById('ref-more-menu-btn'));

@@ -71,14 +71,14 @@ export function renderEditorToolbar(
     })}
   </div>
   <div class="lp-editor-toolbar-center">
-    ${renderIconButton({ id: 'ref-fmt-heading', ariaLabel: 'Heading', title: 'Heading', icon: 'heading', iconSize: 16, variant: 'quiet', size: 'sm' })}
-    ${renderIconButton({ id: 'ref-fmt-bold', ariaLabel: 'Bold', title: 'Bold (Ctrl+B)', icon: 'bold', iconSize: 16, variant: 'quiet', size: 'sm' })}
-    ${renderIconButton({ id: 'ref-fmt-italic', ariaLabel: 'Italic', title: 'Italic (Ctrl+I)', icon: 'italic', iconSize: 16, variant: 'quiet', size: 'sm' })}
-    ${renderIconButton({ id: 'ref-fmt-link', ariaLabel: 'Link', title: 'Link', icon: 'link', iconSize: 16, variant: 'quiet', size: 'sm' })}
-    ${renderIconButton({ id: 'ref-fmt-bullet', ariaLabel: 'Bullet list', title: 'Bullet list', icon: 'list', iconSize: 16, variant: 'quiet', size: 'sm' })}
-    ${renderIconButton({ id: 'ref-fmt-quote', ariaLabel: 'Quote', title: 'Quote', icon: 'quote', iconSize: 16, variant: 'quiet', size: 'sm' })}
-    ${renderIconButton({ id: 'ref-fmt-code', ariaLabel: 'Code block', title: 'Code block', icon: 'code', iconSize: 16, variant: 'quiet', size: 'sm' })}
-    <button type="button" id="ref-btn-source-toggle" class="lp-btn lp-btn-quiet lp-btn-sm" aria-pressed="false" title="Toggle Markdown source">Source</button>
+    ${renderIconButton({ id: 'ref-fmt-heading', ariaLabel: 'Heading', title: 'Heading', icon: 'heading', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { format: 'heading' } })}
+    ${renderIconButton({ id: 'ref-fmt-bold', ariaLabel: 'Bold', title: 'Bold (Ctrl+B)', icon: 'bold', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { format: 'bold' } })}
+    ${renderIconButton({ id: 'ref-fmt-italic', ariaLabel: 'Italic', title: 'Italic (Ctrl+I)', icon: 'italic', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { format: 'italic' } })}
+    ${renderIconButton({ id: 'ref-fmt-link', ariaLabel: 'Link', title: 'Link', icon: 'link', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { format: 'link' } })}
+    ${renderIconButton({ id: 'ref-fmt-bullet', ariaLabel: 'Bullet list', title: 'Bullet list', icon: 'list', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { format: 'list' } })}
+    ${renderIconButton({ id: 'ref-fmt-quote', ariaLabel: 'Quote', title: 'Quote', icon: 'quote', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { format: 'quote' } })}
+    ${renderIconButton({ id: 'ref-fmt-code', ariaLabel: 'Code block', title: 'Code block', icon: 'code', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { format: 'code' } })}
+    ${renderIconButton({ id: 'ref-btn-source-toggle', ariaLabel: 'Markdown source', title: 'Markdown source', icon: 'source', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { 'aria-pressed': 'false', format: 'source' } })}
   </div>
   <div class="lp-editor-toolbar-right">
     <div id="ref-visibility-menu-wrap" class="lp-menu-wrap">
@@ -115,6 +115,7 @@ export function renderEditorToolbar(
         size: 'sm',
       })}
       <div id="ref-more-menu" class="lp-popover-menu lp-menu-popover-float" role="menu" aria-label="${escapeHtml(EDITOR_STRINGS.actions.more)}" hidden>
+        <button type="button" role="menuitem" id="ref-more-source" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item lp-mobile-only-menu-item" tabindex="0">Markdown source</button>
         <button type="button" role="menuitem" id="ref-more-delete" class="lp-btn lp-btn-danger lp-btn-sm lp-menu-item lp-menu-item-danger" tabindex="0">${escapeHtml(EDITOR_STRINGS.actions.deleteEntry)}</button>
       </div>
     </div>

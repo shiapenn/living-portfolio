@@ -114,5 +114,34 @@ export const SETTINGS_SCRIPT = `
             }
           });
         }
+
+        document.querySelectorAll('.btn-test-provider-key').forEach(function(btn) {
+          btn.addEventListener('click', async function() {
+            const providerId = btn.getAttribute('data-provider-id') || '';
+            const keyInput = document.getElementById('provider-key-' + providerId);
+            const resultEl = document.getElementById('provider-test-result-' + providerId);
+            const keyVal = keyInput && 'value' in keyInput ? String(keyInput.value).trim() : '';
+            if (!keyVal) {
+              if (resultEl) resultEl.textContent = 'Enter an API key to test.';
+              return;
+            }
+            btn.setAttribute('disabled', 'true');
+            try {
+              const res = await apiClient('/api/settings/providers/test', {
+                method: 'POST',
+                body: JSON.stringify({ providerId, apiKey: keyVal }),
+              });
+              if (resultEl) {
+                resultEl.textContent = res.ok
+                  ? 'API key verified.'
+                  : 'Provider key check is not enabled in this environment.';
+              }
+            } catch {
+              if (resultEl) resultEl.textContent = 'Could not verify API key.';
+            } finally {
+              btn.removeAttribute('disabled');
+            }
+          });
+        });
       })();
     </script>`;

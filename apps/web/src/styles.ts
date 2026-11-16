@@ -3459,6 +3459,58 @@ a.lp-admin-header-brand {
   cursor: pointer;
 }
 
+/* C3 Editor D-COMP #10 fixes */
+.lp-admin-shell-main-full .lp-page-notice-slot {
+  min-height: 0;
+}
+
+#ref-field-title.lp-editor-title-input {
+  font-size: 24px;
+  line-height: 32px;
+  height: auto;
+  min-height: 36px;
+  border: 0;
+}
+
+.lp-mobile-only-menu-item {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .lp-mobile-only-menu-item {
+    display: flex;
+  }
+
+  .lp-editor-toolbar {
+    flex-wrap: nowrap;
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .lp-editor-toolbar-status {
+    display: none;
+  }
+
+  .lp-editor-toolbar-center {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: var(--vv-bottom, 0px);
+    z-index: var(--z-sticky);
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 4px;
+    padding: 8px 16px;
+    background: var(--surface-page);
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .lp-editor-toolbar-center #ref-btn-source-toggle {
+    display: none;
+  }
+}
+
 .lp-input-code {
   font-family: var(--font-code);
   letter-spacing: 0.12em;
@@ -4845,6 +4897,58 @@ a.lp-item:hover {
   border: 0;
   padding: 0;
   cursor: pointer;
+}
+
+/* C3 Editor D-COMP #10 fixes */
+.lp-admin-shell-main-full .lp-page-notice-slot {
+  min-height: 0;
+}
+
+#ref-field-title.lp-editor-title-input {
+  font-size: 24px;
+  line-height: 32px;
+  height: auto;
+  min-height: 36px;
+  border: 0;
+}
+
+.lp-mobile-only-menu-item {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .lp-mobile-only-menu-item {
+    display: flex;
+  }
+
+  .lp-editor-toolbar {
+    flex-wrap: nowrap;
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .lp-editor-toolbar-status {
+    display: none;
+  }
+
+  .lp-editor-toolbar-center {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: var(--vv-bottom, 0px);
+    z-index: var(--z-sticky);
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 4px;
+    padding: 8px 16px;
+    background: var(--surface-page);
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .lp-editor-toolbar-center #ref-btn-source-toggle {
+    display: none;
+  }
 }
 
 @media (max-width: 639px) {
