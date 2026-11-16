@@ -5,6 +5,7 @@ export {
   renderBadge,
   renderStatusDot,
   renderField,
+  renderListRow,
 } from '../primitives/index.js';
 export type {
   ButtonProps,
@@ -18,6 +19,8 @@ export type {
   StatusTone,
   FieldProps,
   SelectOption,
+  SelectOptionGroup,
+  ListRowProps,
 } from '../primitives/index.js';
 export * from './entry-card.js';
 export * from './slots.js';

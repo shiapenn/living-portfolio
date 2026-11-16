@@ -54,7 +54,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     const html = await renderHomePage(repo);
     expect(html).toContain('Strata timeline');
     expect(html).toContain('Advisory Locks, Revisited: Dropping Redis for Postgres 15');
-    expect(html).toContain('--surface-page: #F3F5F4');
+    expect(html).toContain('--surface-page: #FFFFFF');
     expect(html).toContain('--surface-page: #0F1A22');
     // Private entry must never appear on public home page
     expect(html).not.toContain('Private NDA Architecture Notes');
@@ -136,7 +136,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
   it('renders Import & Triage page with 3-step planner and J K A R D S keyboard controls (20261020-UX-07)', async () => {
     const importHtml = await renderAdminImportPage(repo);
     expect(importHtml).toContain('Import &amp; Triage');
-    expect(importHtml).toContain('class="lp-tablist"');
+    expect(importHtml).toContain('class="lp-tabs"');
     expect(importHtml).toContain('id="step-tab-add"');
     expect(importHtml).toContain('id="step-tab-plan"');
     expect(importHtml).toContain('id="step-tab-triage"');
@@ -397,43 +397,19 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
   });
 
   describe('WP-5.1: Admin Operations, Calibration, Scoped Constraints & Settings Screen (20261020-UX-09)', () => {
-    it('4. Admin settings screen renders all operational sections with honest unconfigured statuses', async () => {
-      const html = await renderAdminSettingsPage(repo, {
-        tier1_floor: 0.82,
-        tier2_floor: 0.55,
-        facet_known_threshold: 0.90,
-        automatedAnsweringEnabled: true,
-        calibrationFrozen: false,
-        simulatedDegradationMode: 'normal',
-      });
+    it('4. Admin settings index and modules render plain-language List rows and single-column forms', async () => {
+      const html = await renderAdminSettingsPage(repo);
 
-      // Navigation back to workspace via admin shell rail (no duplicated Back to Workspace button)
-      expect(html).toContain('Admin Operations &amp; System Calibration');
-      expect(html).toContain('href="/admin"');
-      expect(html).not.toContain('← Back to Workspace');
-
-      // Routing & calibration inputs
-      expect(html).toContain('id="setting-tier1-floor"');
-      expect(html).toContain('id="tier1-warning"');
-      expect(html).toContain('id="setting-tier2-floor"');
-      expect(html).toContain('id="setting-facet-threshold"');
-      expect(html).toContain('id="btn-save-routing"');
-
-      // Provider registry & degradation mode
-      expect(html).toContain('local-onnx');
-      expect(html).toContain('bge-small-en-v1.5');
-      expect(html).toContain('id="setting-degradation-mode"');
-
-      // Theme customization & conformance
-      expect(html).toContain('id="setting-theme-light-accent"');
-      expect(html).toContain('id="setting-theme-dark-accent"');
-      expect(html).toContain('id="btn-save-theme"');
-
-      // Honest not_configured statuses (no invented passed/verified)
-      expect(html).toContain('id="chip-notify-status">not_configured</span>');
-      expect(html).toContain('id="chip-backup-status">not_configured</span>');
-      expect(html).toContain('id="btn-test-notification"');
-      expect(html).toContain('id="btn-run-backup-drill"');
+      expect(html).toContain('Settings');
+      expect(html).toContain('/admin/settings/answering');
+      expect(html).toContain('/admin/settings/providers');
+      expect(html).toContain('/admin/settings/appearance');
+      expect(html).toContain('/admin/settings/notifications');
+      expect(html).toContain('/admin/settings/backups');
+      expect(html).toContain('Not set up');
+      expect(html).not.toContain('not_configured');
+      const bodyOnly = html.split('</head>')[1] ?? html;
+      expect(bodyOnly).not.toContain('Tier 1');
     });
   });
 
@@ -441,11 +417,10 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     it('1. renderAdminSetupPage renders all 6 wizard steps, progress indicator, and walkthrough card', () => {
       const html = renderAdminSetupPage();
 
-      // Stepper header and progress bar
-      expect(html).toContain('Step 1 of 6: Account');
+      // Stepper header and progress bar (D-LAYOUT #6)
+      expect(html).toContain('Step 1 of 6 · Account');
       expect(html).toContain('id="wizard-progress-fill"');
-      expect(html).toContain('id="step-lbl-1"');
-      expect(html).toContain('id="step-lbl-6"');
+      expect(html).not.toContain('id="step-lbl-1"');
 
       // Step 1: Owner Account Setup
       expect(html).toContain('id="wizard-step-1"');
@@ -627,7 +602,7 @@ console.log(x);
       expect(PRIMITIVE_TOKENS).toContain('--bp-xl: 1280px;');
 
       // Semantic tokens
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--surface-page: #F3F5F4;');
+      expect(SEMANTIC_TOKENS_LIGHT).toContain('--surface-page: #FFFFFF;');
       expect(SEMANTIC_TOKENS_LIGHT).toContain('--surface-raised: #FFFFFF;');
       expect(SEMANTIC_TOKENS_LIGHT).toContain('--border-control: #6B7B88;');
       expect(SEMANTIC_TOKENS_LIGHT).toContain('--layout-max: 1180px;');

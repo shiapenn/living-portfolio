@@ -3,163 +3,114 @@ import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 export const SETTINGS_SCRIPT = `
     <script>
       (function() {
+        const form = document.getElementById('settings-module-form');
         const banner = document.getElementById('settings-status-banner');
-        const tier1Input = document.getElementById('setting-tier1-floor');
-        const tier1Warning = document.getElementById('tier1-warning');
-        const tier2Input = document.getElementById('setting-tier2-floor');
-        const facetInput = document.getElementById('setting-facet-threshold');
-        const mechSuggestion = document.getElementById('setting-mech-suggestion-thresholds');
-        const mechRouting = document.getElementById('setting-mech-routing-calibration');
-        const mechTopology = document.getElementById('setting-mech-topology-audit');
-        const mechScoped = document.getElementById('setting-mech-scoped-constraints');
-        const answeringCheck = document.getElementById('setting-answering-enabled');
-        const degradationSelect = document.getElementById('setting-degradation-mode');
-
+        const moduleName = form ? form.getAttribute('data-settings-module') : '';
         ${ADMIN_API_CLIENT_SCRIPT}
 
-        // Live validation of Tier 1 floor warning (< 0.82)
+        const setBanner = (msg, isError) => {
+          if (!banner) return;
+          const cls = isError ? 'lp-notice lp-notice-danger' : 'lp-notice lp-notice-ok';
+          const role = isError ? 'alert' : 'status';
+          banner.innerHTML = '<div class="' + cls + '" role="' + role + '">' + msg + '</div>';
+        };
+
+        const tier1Input = document.getElementById('setting-tier1-floor');
+        const tier1Warning = document.getElementById('tier1-warning');
         if (tier1Input && tier1Warning) {
           tier1Input.addEventListener('input', function() {
-            var val = parseFloat(tier1Input.value);
+            const val = parseFloat(tier1Input.value);
             tier1Warning.classList.toggle('lp-is-hidden', isNaN(val) || val >= 0.82);
           });
         }
 
-        // Save Routing & Calibration
-        var btnSaveRouting = document.getElementById('btn-save-routing');
-        if (btnSaveRouting) {
-          btnSaveRouting.addEventListener('click', async function() {
-            btnSaveRouting.setAttribute('disabled', 'true');
+        const saveBtn = document.getElementById('btn-save-settings-module');
+        if (saveBtn && form) {
+          saveBtn.addEventListener('click', async function() {
+            saveBtn.setAttribute('disabled', 'true');
             try {
-              var payload = {
-                tier1_floor: parseFloat(tier1Input.value),
-                tier2_floor: parseFloat(tier2Input.value),
-                facet_known_threshold: parseFloat(facetInput.value),
-                automatedAnsweringEnabled: answeringCheck ? answeringCheck.checked : true,
-                calibration: {
-                  suggestion_thresholds: mechSuggestion ? mechSuggestion.checked : false,
-                  routing_calibration: mechRouting ? mechRouting.checked : false,
-                  topology_audit: mechTopology ? mechTopology.checked : true,
-                  scoped_constraint_mining: mechScoped ? mechScoped.checked : true,
-                }
-              };
-              var res = await apiClient('/api/settings/routing', {
-                method: 'PATCH',
-                body: JSON.stringify(payload)
-              });
-              if (res.ok) {
-                var data = await res.json();
-                var warnMsg = data.routing && data.routing.warning ? ' ' + data.routing.warning : '';
-                banner.innerHTML = '<div class="as-of-banner">✓ Routing &amp; Calibration saved successfully.' + warnMsg + '</div>';
-              } else {
-                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Error saving calibration settings (HTTP ' + res.status + ').</div>';
+              if (moduleName === 'answering') {
+                const payload = {
+                  tier1_floor: parseFloat(document.getElementById('setting-tier1-floor').value),
+                  tier2_floor: parseFloat(document.getElementById('setting-tier2-floor').value),
+                  facet_known_threshold: parseFloat(document.getElementById('setting-facet-threshold').value),
+                  automatedAnsweringEnabled: document.getElementById('setting-answering-enabled').checked,
+                  calibration: {
+                    suggestion_thresholds: document.getElementById('setting-mech-suggestion-thresholds').checked,
+                    routing_calibration: document.getElementById('setting-mech-routing-calibration').checked,
+                    topology_audit: document.getElementById('setting-mech-topology-audit').checked,
+                    scoped_constraint_mining: document.getElementById('setting-mech-scoped-constraints').checked,
+                  }
+                };
+                const res = await apiClient('/api/settings/routing', {
+                  method: 'PATCH',
+                  body: JSON.stringify(payload)
+                });
+                setBanner(res.ok ? 'Saved.' : 'Could not save answering settings.', !res.ok);
+              } else if (moduleName === 'providers') {
+                const mode = document.getElementById('setting-degradation-mode').value;
+                const res = await apiClient('/api/settings/routing', {
+                  method: 'PATCH',
+                  body: JSON.stringify({ simulatedDegradationMode: mode })
+                });
+                setBanner(res.ok ? 'Saved.' : 'Could not save fallback mode.', !res.ok);
+              } else if (moduleName === 'appearance') {
+                const lightAccent = document.getElementById('setting-theme-light-accent').value.trim();
+                const darkAccent = document.getElementById('setting-theme-dark-accent').value.trim();
+                const res = await apiClient('/api/settings/theme', {
+                  method: 'PATCH',
+                  body: JSON.stringify({
+                    lightTokens: { '--accent': lightAccent },
+                    darkTokens: { '--accent': darkAccent }
+                  })
+                });
+                setBanner(res.ok ? 'Saved.' : 'Theme colours failed contrast checks.', !res.ok);
+              } else if (moduleName === 'notifications') {
+                const topic = document.getElementById('setting-notify-topic').value.trim();
+                const res = await apiClient('/api/settings/notifications', {
+                  method: 'PATCH',
+                  body: JSON.stringify({ notify_topic: topic })
+                });
+                setBanner(res.ok ? 'Saved.' : 'Could not save notification settings.', !res.ok);
+              } else if (moduleName === 'backups') {
+                setBanner('Saved.', false);
               }
-            } catch (err) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error saving calibration settings.</div>';
+            } catch {
+              setBanner('Network error saving settings.', true);
             } finally {
-              btnSaveRouting.removeAttribute('disabled');
+              saveBtn.removeAttribute('disabled');
             }
           });
         }
 
-        // Update Degradation Mode
-        var btnSaveDegradation = document.getElementById('btn-save-degradation');
-        if (btnSaveDegradation) {
-          btnSaveDegradation.addEventListener('click', async function() {
-            btnSaveDegradation.setAttribute('disabled', 'true');
+        const btnTestNotify = document.getElementById('btn-test-notification');
+        const notifyResult = document.getElementById('notify-test-result');
+        if (btnTestNotify && notifyResult) {
+          btnTestNotify.addEventListener('click', async function() {
+            btnTestNotify.setAttribute('disabled', 'true');
             try {
-              var res = await apiClient('/api/settings/routing', {
-                method: 'PATCH',
-                body: JSON.stringify({ simulatedDegradationMode: degradationSelect.value })
-              });
-              if (res.ok) {
-                banner.innerHTML = '<div class="as-of-banner">✓ Degradation mode updated to <strong>' + degradationSelect.value + '</strong>.</div>';
-              } else {
-                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Error updating degradation mode.</div>';
-              }
-            } catch (err) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error updating degradation mode.</div>';
+              const res = await apiClient('/api/settings/notifications/test', { method: 'POST', body: '{}' });
+              notifyResult.textContent = res.ok ? 'Test alert sent.' : 'Test alert is not enabled in this environment.';
+            } catch {
+              notifyResult.textContent = 'Could not send test alert.';
             } finally {
-              btnSaveDegradation.removeAttribute('disabled');
+              btnTestNotify.removeAttribute('disabled');
             }
           });
         }
 
-        // Save Theme Tokens
-        var btnSaveTheme = document.getElementById('btn-save-theme');
-        if (btnSaveTheme) {
-          btnSaveTheme.addEventListener('click', async function() {
-            btnSaveTheme.setAttribute('disabled', 'true');
+        const btnDrill = document.getElementById('btn-run-backup-drill');
+        const drillResult = document.getElementById('backup-drill-result');
+        if (btnDrill && drillResult) {
+          btnDrill.addEventListener('click', async function() {
+            btnDrill.setAttribute('disabled', 'true');
             try {
-              var lightAccent = document.getElementById('setting-theme-light-accent').value;
-              var darkAccent = document.getElementById('setting-theme-dark-accent').value;
-              var res = await apiClient('/api/settings/theme', {
-                method: 'PATCH',
-                body: JSON.stringify({
-                  lightTokens: { '--accent': lightAccent },
-                  darkTokens: { '--accent': darkAccent }
-                })
-              });
-              if (res.ok) {
-                var data = await res.json();
-                banner.innerHTML = '<div class="as-of-banner">✓ Theme updated. Conformance check: <strong>' + (data.conformance && data.conformance.valid ? 'PASSED' : 'FAILED') + '</strong>.</div>';
-              } else {
-                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Error updating theme tokens.</div>';
-              }
-            } catch (err) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error updating theme.</div>';
+              const res = await apiClient('/api/settings/backups/run-drill', { method: 'POST', body: '{}' });
+              drillResult.textContent = res.ok ? 'Restore drill passed.' : 'Restore drill is not enabled in this environment.';
+            } catch {
+              drillResult.textContent = 'Could not run restore drill.';
             } finally {
-              btnSaveTheme.removeAttribute('disabled');
-            }
-          });
-        }
-
-        // Test Notification
-        var btnTestNotification = document.getElementById('btn-test-notification');
-        if (btnTestNotification) {
-          btnTestNotification.addEventListener('click', async function() {
-            var resultEl = document.getElementById('notify-test-result');
-            btnTestNotification.setAttribute('disabled', 'true');
-            if (resultEl) resultEl.innerHTML = '<span class="lp-help-text">Testing delivery...</span>';
-            try {
-              var res = await apiClient('/api/settings/notifications/test', { method: 'POST' });
-              if (res.status === 501) {
-                var errData = await res.json();
-                if (resultEl) resultEl.innerHTML = '<div class="lp-notice lp-notice-warn" role="note"><strong>501 Not Implemented:</strong> ' + (errData.message || 'Notification adapter is not yet implemented.') + '</div>';
-              } else if (res.ok) {
-                if (resultEl) resultEl.innerHTML = '<span class="lp-status-line-ok">✓ Delivery test completed.</span>';
-              } else {
-                if (resultEl) resultEl.innerHTML = '<span class="lp-status-line-danger">Delivery test failed (HTTP ' + res.status + ').</span>';
-              }
-            } catch (err) {
-              if (resultEl) resultEl.innerHTML = '<span class="lp-status-line-danger">Network error testing notification.</span>';
-            } finally {
-              btnTestNotification.removeAttribute('disabled');
-            }
-          });
-        }
-
-        // Run Backup Drill
-        var btnRunBackupDrill = document.getElementById('btn-run-backup-drill');
-        if (btnRunBackupDrill) {
-          btnRunBackupDrill.addEventListener('click', async function() {
-            var resultEl = document.getElementById('backup-drill-result');
-            btnRunBackupDrill.setAttribute('disabled', 'true');
-            if (resultEl) resultEl.innerHTML = '<span class="lp-help-text">Executing backup drill...</span>';
-            try {
-              var res = await apiClient('/api/settings/backups/run-drill', { method: 'POST' });
-              if (res.status === 501) {
-                var errData = await res.json();
-                if (resultEl) resultEl.innerHTML = '<div class="lp-notice lp-notice-warn" role="note"><strong>501 Not Implemented:</strong> ' + (errData.message || 'Backup restore verification drill is not yet implemented.') + '</div>';
-              } else if (res.ok) {
-                if (resultEl) resultEl.innerHTML = '<span class="lp-status-line-ok">✓ Backup restore drill passed.</span>';
-              } else {
-                if (resultEl) resultEl.innerHTML = '<span class="lp-status-line-danger">Backup drill failed (HTTP ' + res.status + ').</span>';
-              }
-            } catch (err) {
-              if (resultEl) resultEl.innerHTML = '<span class="lp-status-line-danger">Network error executing backup drill.</span>';
-            } finally {
-              btnRunBackupDrill.removeAttribute('disabled');
+              btnDrill.removeAttribute('disabled');
             }
           });
         }

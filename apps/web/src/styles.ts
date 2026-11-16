@@ -1515,7 +1515,7 @@ button.lp-chip.is-hover {
   font-size: 14px;
   font-weight: 400;
   color: var(--text);
-  background: var(--surface-raised);
+  background: var(--surface-input);
   border: 1px solid var(--field-border, var(--border-control, var(--rule)));
   border-radius: 4px;
 }
@@ -1531,12 +1531,28 @@ button.lp-chip.is-hover {
   resize: vertical;
 }
 
+.lp-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
 .lp-select {
+  appearance: none;
+  -webkit-appearance: none;
   height: 36px;
   min-height: 36px;
-  padding: 0 var(--space-2);
+  padding: 0 36px 0 var(--space-2);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.lp-select-chevron {
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+  color: var(--text-muted);
 }
 
 .lp-select option {
@@ -2036,9 +2052,10 @@ input[type="date"].lp-input {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
+  height: 48px;
   min-height: 48px;
-  padding: var(--space-1) var(--gutter, 16px);
-  background: var(--surface-raised);
+  padding: 0 var(--space-4);
+  background: var(--surface-page);
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -3627,5 +3644,230 @@ a.lp-admin-header-brand {
   font-size: 16px;
   line-height: 1.4;
   font-weight: 600;
+}
+
+/* === D-LAYOUT Shell, Launcher, Page Template, List Row, Auth === */
+.lp-admin-shell-main {
+  width: 100%;
+  background: var(--surface-page);
+}
+
+.lp-page-column {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 16px 64px;
+}
+
+@media (min-width: 768px) {
+  .lp-page-column {
+    padding: 40px 24px 64px;
+  }
+}
+
+.lp-page-header {
+  margin-bottom: 24px;
+}
+
+.lp-page-header h1 {
+  margin: 0;
+}
+
+.lp-page-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.lp-page-description {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.lp-page-tabs-wrap,
+.lp-tabs {
+  margin-bottom: 24px;
+}
+
+.lp-page-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.lp-launcher-panel {
+  position: fixed;
+  top: 48px;
+  left: 0;
+  right: 0;
+  z-index: var(--z-overlay);
+  background: var(--surface-overlay);
+  border-bottom: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-overlay);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .lp-launcher-panel {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: auto;
+    min-width: 240px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+  }
+}
+
+.lp-launcher-panel[hidden] {
+  display: none;
+}
+
+.lp-launcher-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lp-launcher-heading {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 4px 8px;
+}
+
+.lp-launcher-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: 4px;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.lp-launcher-item:hover {
+  background: var(--surface-subtle);
+}
+
+.lp-launcher-item.is-current {
+  background: var(--role-action-bg);
+  color: var(--role-action-fg);
+  font-weight: 600;
+}
+
+.lp-launcher-footer {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+}
+
+.lp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.lp-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 48px;
+  padding: 16px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  text-decoration: none;
+  color: var(--text);
+  background: var(--surface-page);
+}
+
+.lp-list-row:hover {
+  background: var(--surface-subtle);
+}
+
+.lp-list-row.is-selected {
+  background: var(--role-action-bg);
+}
+
+.lp-list-row-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.lp-list-row-primary {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.lp-list-row-secondary {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.lp-list-row-trailing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.lp-auth-column {
+  width: 100%;
+  max-width: 360px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+
+.lp-auth-step-text {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.lp-auth-progress-track {
+  width: 100%;
+  height: 2px;
+  background: var(--border-subtle);
+  margin: 16px 0 24px;
+}
+
+.lp-auth-progress-fill {
+  height: 2px;
+  background: var(--accent);
+}
+
+.lp-recovery-link {
+  white-space: normal;
+  text-align: left;
+  height: auto;
+  min-height: 36px;
+}
+
+.lp-section-title {
+  margin: 0 0 16px;
+}
+
+.lp-help-text {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.lp-choice-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
 }
 `;

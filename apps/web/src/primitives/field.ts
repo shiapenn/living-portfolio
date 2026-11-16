@@ -1,8 +1,14 @@
 import { escapeHtml } from '../lib/html.js';
+import { renderIcon } from './icons.js';
 
 export interface SelectOption {
   value: string;
   label: string;
+}
+
+export interface SelectOptionGroup {
+  label: string;
+  options: SelectOption[];
 }
 
 export interface FieldProps {
@@ -15,12 +21,14 @@ export interface FieldProps {
   placeholder?: string;
   rows?: number;
   options?: SelectOption[];
+  optionGroups?: SelectOptionGroup[];
   checked?: boolean;
   required?: boolean;
   disabled?: boolean;
   help?: string;
   error?: string;
   className?: string;
+  attributes?: string;
 }
 
 /**
@@ -51,22 +59,29 @@ export function renderField(props: FieldProps): string {
 </div>`;
   }
 
+  const extraAttrs = props.attributes ? ` ${props.attributes}` : '';
   let controlHtml = '';
   if (props.kind === 'textarea') {
     const rows = Math.max(6, props.rows ?? 6);
-    controlHtml = `<textarea id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-input lp-textarea" rows="${rows}" data-lp-autogrow="true"${placeholderAttr}${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}>${escapeHtml(props.value ?? '')}</textarea>`;
+    controlHtml = `<textarea id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-input lp-textarea" rows="${rows}" data-lp-autogrow="true"${placeholderAttr}${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}${extraAttrs}>${escapeHtml(props.value ?? '')}</textarea>`;
   } else if (props.kind === 'select') {
-    const opts = (props.options ?? [])
-      .map((opt) => {
-        const selected = props.value === opt.value ? ' selected' : '';
-        return `<option value="${escapeHtml(opt.value)}"${selected}>${escapeHtml(opt.label)}</option>`;
-      })
-      .join('');
-    controlHtml = `<select id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-input lp-select"${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}>${opts}</select>`;
+    const renderOpts = (list: SelectOption[]) =>
+      list
+        .map((opt) => {
+          const selected = props.value === opt.value ? ' selected' : '';
+          return `<option value="${escapeHtml(opt.value)}"${selected}>${escapeHtml(opt.label)}</option>`;
+        })
+        .join('');
+    const inner = props.optionGroups?.length
+      ? props.optionGroups
+          .map((grp) => `<optgroup label="${escapeHtml(grp.label)}">${renderOpts(grp.options)}</optgroup>`)
+          .join('')
+      : renderOpts(props.options ?? []);
+    controlHtml = `<div class="lp-select-wrap"><select id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-input lp-select"${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}${extraAttrs}>${inner}</select>${renderIcon('chevron-down', 16, 'lp-select-chevron')}</div>`;
   } else {
     const type = props.inputType ?? 'text';
     const valAttr = props.value !== undefined ? ` value="${escapeHtml(props.value)}"` : '';
-    controlHtml = `<input type="${type}" id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-input"${valAttr}${placeholderAttr}${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr} />`;
+    controlHtml = `<input type="${type}" id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-input"${valAttr}${placeholderAttr}${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}${extraAttrs} />`;
   }
 
   return `<div class="${escapeHtml(wrapperClass)}">

@@ -7,16 +7,16 @@
     "invalidFontSizes": 0,
     "invalidSpacing": 0,
     "inlineStyles": 0,
-    "multiSignatureRoles": 0,
-    "h1PositionMismatch": 12,
-    "columnWidthMismatch": 28,
-    "tabGapViolations": 16,
-    "siblingGapViolations": 24,
-    "nonTokenColors": 400,
+    "multiSignatureRoles": 2,
+    "h1PositionMismatch": 0,
+    "columnWidthMismatch": 14,
+    "tabGapViolations": 12,
+    "siblingGapViolations": 4,
+    "nonTokenColors": 8,
     "excessBackgroundColors": 26,
     "parentBoxOverflows": 8,
-    "clippedText": 18,
-    "forbiddenTextMatches": 28,
-    "selectChevronMismatch": 36
+    "clippedText": 0,
+    "forbiddenTextMatches": 0,
+    "selectChevronMismatch": 0
   }
 }

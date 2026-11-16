@@ -21,6 +21,7 @@ import {
   renderAdminLoginPage,
   renderAdminSectionPage,
   renderAdminSettingsPage,
+  renderAdminSettingsModulePage,
   renderAdminSetupPage,
   renderAskPage,
   renderAskStatusPage,
@@ -225,6 +226,11 @@ export function createWebApp(options?: WebAppOptions) {
   );
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
   app.get('/admin/settings', async (c) => c.html(await renderAdminSettingsPage(client)));
+  app.get('/admin/settings/:id', async (c) => {
+    const html = await renderAdminSettingsModulePage(client, c.req.param('id'));
+    if (html) return c.html(html);
+    return c.html(renderAdminSectionPage(c.req.path));
+  });
   const adminSectionRoutes = [
     '/admin/quick-log',
     '/quick-log',
@@ -234,7 +240,6 @@ export function createWebApp(options?: WebAppOptions) {
     '/admin/structure',
     '/admin/routing',
     '/admin/theme',
-    '/admin/settings/:section',
   ];
   for (const routePath of adminSectionRoutes) {
     app.get(routePath, async (c) => c.html(renderAdminSectionPage(c.req.path)));

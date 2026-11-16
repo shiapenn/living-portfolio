@@ -11,11 +11,11 @@ test.describe('WP-16.6 Inbox & Answer Rules', () => {
     await expect(page.locator('#inbox-filter-approved')).toBeVisible();
     await expect(page.locator('#inbox-filter-rejected')).toBeVisible();
 
-    if ((await page.locator('[data-inbox-row] a').count()) === 0) {
+    if ((await page.locator('a[data-inbox-row]').count()) === 0) {
       await page.click('#inbox-filter-approved');
     }
 
-    const firstItem = page.locator('[data-inbox-row] a').first();
+    const firstItem = page.locator('a[data-inbox-row]').first();
     await expect(firstItem).toBeVisible();
     await firstItem.click();
 

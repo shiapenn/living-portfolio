@@ -100,6 +100,7 @@ export function renderEditorDialogsAndDrawers(): string {
   </section>
   <section class="lp-publish-step">
     <h3 id="ref-publish-next-heading">2. ${escapeHtml(EDITOR_STRINGS.publishDialog.nextTitle)}</h3>
+    <p id="ref-publish-section-target" class="lp-field-help"></p>
     <p>${escapeHtml(EDITOR_STRINGS.publishDialog.nextSummary)}</p>
   </section>
 </div>`;

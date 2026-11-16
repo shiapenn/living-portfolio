@@ -7,6 +7,30 @@
  * Tier 3: Components (component-specific dimensions, radii, heights, widths)
  */
 
+export const LIGHT_PACK_TOKENS = {
+  '--surface-page': '#FFFFFF',
+  '--surface': '#FFFFFF',
+  '--surface-input': '#FFFFFF',
+  '--text': '#14202A',
+  '--text-muted': '#4B5A66',
+  '--border-subtle': '#CBD3D8',
+  '--border-control': '#6B7B88',
+  '--accent': '#3A4FD0',
+  '--text-on-accent': '#FFFFFF',
+} as const;
+
+export const DARK_PACK_TOKENS = {
+  '--surface-page': '#0F1A22',
+  '--surface': '#0F1A22',
+  '--surface-input': '#16232D',
+  '--text': '#E6ECEF',
+  '--text-muted': '#A3B2BD',
+  '--border-subtle': '#2A3946',
+  '--border-control': '#7E8F9C',
+  '--accent': '#9AA8FF',
+  '--text-on-accent': '#0F1A22',
+} as const;
+
 export const PRIMITIVE_TOKENS = `
   /* === Tier 1: Primitives === */
 
@@ -109,13 +133,14 @@ export const PRIMITIVE_TOKENS = `
 
 export const SEMANTIC_TOKENS_LIGHT = `
   /* === Tier 2: Semantic Tokens (Light Default) === */
-  --surface-page: #F3F5F4;
+  --surface-page: #FFFFFF;
   --surface-raised: #FFFFFF;
   --surface-overlay: #FFFFFF;
-  --surface-sunken: #EAEFEA;
+  --surface-sunken: #F3F5F4;
   --surface-subtle: #F3F5F4;
-  --surface-panel: #EAEFEA;
+  --surface-panel: #F3F5F4;
   --surface: #FFFFFF;
+  --surface-input: #FFFFFF;
   --text: #14202A;
   --text-muted: #4B5A66;
   --text-on-accent: #FFFFFF;
@@ -201,7 +226,8 @@ export const SEMANTIC_TOKENS_DARK = `
   --surface-sunken: #121C24;
   --surface-subtle: #16232D;
   --surface-panel: #121C24;
-  --surface: #16232D;
+  --surface: #0F1A22;
+  --surface-input: #16232D;
   --text: #E6ECEF;
   --text-muted: #A3B2BD;
   --text-on-accent: #0F1A22;

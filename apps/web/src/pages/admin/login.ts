@@ -4,7 +4,7 @@ import { renderButton } from "../../primitives/index.js";
 
 export function renderAdminLoginPage(): string {
   const content = `
-    <div class="lp-auth-card">
+    <div class="lp-auth-column lp-stack-md">
       <h1 class="lp-page-title">Owner Sign in</h1>
       <p class="lp-page-subtitle">
         Enter your admin credentials and 6-digit TOTP code to access the workspace.
@@ -28,7 +28,7 @@ export function renderAdminLoginPage(): string {
             Enter the 6-digit verification code from your authenticator app (Google Authenticator, 1Password, etc.).
           </p>
           <div>
-            ${renderButton({ id: 'btn-toggle-recovery', label: 'Lost your authenticator device? Sign in with a recovery code', variant: 'quiet' })}
+            ${renderButton({ id: 'btn-toggle-recovery', label: 'Lost your authenticator device? Sign in with a recovery code', variant: 'quiet', className: 'lp-recovery-link' })}
           </div>
         </div>
         ${renderButton({ label: 'Sign in', variant: 'primary', type: 'submit', className: 'lp-btn-full' })}
