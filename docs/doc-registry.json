@@ -1385,5 +1385,13 @@
     "path": "docs/execution-reports/A127-wp-16c-c0-d-comp-foundations-and-census.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A128",
+    "title": "WP-16.C C1 D-COMP Primitives and Gallery",
+    "class": "A",
+    "path": "docs/execution-reports/A128-wp-16c-c1-d-comp-primitives-and-gallery.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
