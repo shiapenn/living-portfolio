@@ -1409,5 +1409,13 @@
     "path": "docs/execution-reports/A130-wp-16c-c3-editor-contract-and-providerrow-parity.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A131",
+    "title": "WP-16.C C4: Contact Sheets and Register Closure",
+    "class": "A",
+    "path": "docs/execution-reports/A131-wp-16c-c4-contact-sheets-and-register-closure.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
