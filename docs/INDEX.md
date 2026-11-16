@@ -128,6 +128,7 @@
 | `A120` | wp16r-r2-migrate-admin-pages | `active` | [A120-wp16r-r2-migrate-admin-pages.md](execution-reports/A120-wp16r-r2-migrate-admin-pages.md) | — |
 | `A121` | wp16r-r3-remove-and-fix | `active` | [A121-wp16r-r3-remove-and-fix.md](execution-reports/A121-wp16r-r3-remove-and-fix.md) | — |
 | `A122` | wp16r-r4-contact-sheets-and-census | `active` | [A122-wp16r-r4-contact-sheets-and-census.md](execution-reports/A122-wp16r-r4-contact-sheets-and-census.md) | — |
+| `A123` | wp16l-l0-foundations-and-census | `active` | [A123-wp16l-l0-foundations-and-census.md](execution-reports/A123-wp16l-l0-foundations-and-census.md) | — |
 
 ## Handover Snapshots (Class H)
 
