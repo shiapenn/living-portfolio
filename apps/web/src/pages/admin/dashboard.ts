@@ -1,11 +1,9 @@
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderIconButton, renderListRow, renderStatusDot } from '../../primitives/index.js';
-import { renderPageNotice } from '../../components/index.js';
+import { renderIconButton, renderItem } from '../../primitives/index.js';
 import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { escapeHtml } from '../../lib/html.js';
 import { DASHBOARD_STRINGS } from '../../strings/admin/dashboard.js';
-import { EDITOR_STRINGS } from '../../strings/admin/editor.js';
 
 export interface DashboardOptions {
   nonce?: string;
@@ -14,6 +12,7 @@ export interface DashboardOptions {
   checklistDismissed?: boolean;
   pendingInboxCount?: number;
   draftCount?: number;
+  pendingRulesCount?: number;
   buildFailed?: boolean;
   backupOverdue?: boolean;
   legacyRecoveryUsed?: boolean;
@@ -21,7 +20,7 @@ export interface DashboardOptions {
 
 interface AttentionItem {
   id: string;
-  tone: 'warn' | 'danger' | 'info';
+  tone: 'warn' | 'danger' | 'neutral';
   badge: string;
   summary: string;
   actionHref: string;
@@ -37,10 +36,21 @@ export async function renderAdminDashboardPage(
     options.draftCount ??
     allEntries.filter((e) => e.visibility === 'private').length;
   const pendingInboxCount = options.pendingInboxCount ?? 0;
+  const pendingRulesCount = options.pendingRulesCount ?? 0;
   const buildFailed = Boolean(options.buildFailed);
   const backupOverdue = options.backupOverdue ?? false;
+  const answeringOn = options.answeringEnabled ?? true;
 
   const items: AttentionItem[] = [];
+  if (!answeringOn) {
+    items.push({
+      id: 'att-answering-paused',
+      tone: 'warn',
+      badge: 'Paused',
+      summary: 'Automated answering is paused · Resume',
+      actionHref: '/admin/settings/answering',
+    });
+  }
   if (buildFailed) {
     items.push({
       id: 'att-build-failed',
@@ -62,10 +72,19 @@ export async function renderAdminDashboardPage(
   if (draftCount > 0) {
     items.push({
       id: 'att-drafts',
-      tone: 'info',
+      tone: 'neutral',
       badge: 'Drafts',
       summary: DASHBOARD_STRINGS.attention.draftsLabel(draftCount),
       actionHref: '/admin/entries',
+    });
+  }
+  if (pendingRulesCount > 0) {
+    items.push({
+      id: 'att-rules',
+      tone: 'warn',
+      badge: 'Rules',
+      summary: `${pendingRulesCount} answer rule${pendingRulesCount === 1 ? '' : 's'} waiting for confirmation`,
+      actionHref: '/admin/audit',
     });
   }
   if (backupOverdue) {
@@ -82,31 +101,29 @@ export async function renderAdminDashboardPage(
     ? `<div id="today-attention-list" class="lp-list">
 ${items
   .map((item) =>
-    renderListRow({
+    renderItem({
       id: item.id,
       href: item.actionHref,
-      primary: item.summary,
-      stateLabel: item.badge,
-      stateTone: item.tone === 'danger' ? 'danger' : item.tone === 'warn' ? 'warn' : 'neutral',
+      title: item.summary,
+      statusLabel: item.badge,
+      statusTone: item.tone,
+      showChevron: true,
     })
   )
   .join('\n')}
 </div>`
-    : `<div id="today-attention-list">${renderPageNotice({
-        tone: 'ok',
-        message: DASHBOARD_STRINGS.attention.empty,
-      })}</div>`;
+    : `<p id="today-attention-list" class="lp-page-description">Nothing needs your attention.</p>`;
 
   const checklistHtml = options.checklistDismissed
     ? ''
     : `<section id="today-checklist-card" aria-labelledby="today-checklist-heading">
-  <div class="lp-page-title-row">
+  <div class="lp-section-header-row">
     <h2 id="today-checklist-heading" class="lp-section-title">${escapeHtml(DASHBOARD_STRINGS.checklist.heading)}</h2>
     ${renderIconButton({
       id: 'btn-dismiss-today-checklist',
       ariaLabel: DASHBOARD_STRINGS.checklist.dismissLabel,
       title: DASHBOARD_STRINGS.checklist.dismissLabel,
-      icon: 'x',
+      icon: 'close',
       iconSize: 16,
       variant: 'quiet',
     })}
@@ -114,39 +131,18 @@ ${items
   <div class="lp-list">
     ${DASHBOARD_STRINGS.checklist.steps
       .map((step) =>
-        renderListRow({
+        renderItem({
           id: step.id,
           href: step.href,
-          primary: step.label,
+          title: step.label,
+          showChevron: true,
         })
       )
       .join('')}
   </div>
 </section>`;
 
-  const answeringOn = options.answeringEnabled ?? true;
-  const killLabel = answeringOn
-    ? EDITOR_STRINGS.safety.killSwitchPauseBtn
-    : EDITOR_STRINGS.safety.killSwitchResumeBtn;
-  const killStateLabel = answeringOn
-    ? EDITOR_STRINGS.safety.killSwitchActive
-    : EDITOR_STRINGS.safety.killSwitchPaused;
-
-  const answeringTrailing = `<span id="ref-killswitch-badge">${renderStatusDot({
-    label: killStateLabel,
-    tone: answeringOn ? 'ok' : 'warn',
-  })}</span><button type="button" id="btn-killswitch" class="lp-btn lp-btn-secondary lp-btn-sm" aria-pressed="${answeringOn ? 'true' : 'false'}">${escapeHtml(killLabel)}</button>`;
-
   const bodyHtml = `
-  <section aria-label="${escapeHtml(EDITOR_STRINGS.safety.killSwitchTitle)}">
-    <div class="lp-list">
-      ${renderListRow({
-        primary: EDITOR_STRINGS.safety.killSwitchTitle,
-        trailingHtml: answeringTrailing,
-      })}
-    </div>
-  </section>
-
   <section aria-labelledby="today-attention-heading">
     <h2 id="today-attention-heading" class="lp-section-title">${escapeHtml(DASHBOARD_STRINGS.attention.heading)}</h2>
     ${attentionHtml}
@@ -169,30 +165,6 @@ ${items
         card.setAttribute('hidden', '');
       } catch (_err) {
         dismissBtn.disabled = false;
-      }
-    });
-  }
-  const killBtn = document.getElementById('btn-killswitch');
-  const killBadge = document.getElementById('ref-killswitch-badge');
-  if (killBtn) {
-    killBtn.addEventListener('click', async function() {
-      const currentlyEnabled = killBtn.getAttribute('aria-pressed') === 'true';
-      const nextEnabled = !currentlyEnabled;
-      const res = await apiClient('/api/settings/routing', {
-        method: 'PATCH',
-        body: JSON.stringify({ automatedAnsweringEnabled: nextEnabled }),
-      });
-      if (!res || !res.ok) return;
-      killBtn.setAttribute('aria-pressed', nextEnabled ? 'true' : 'false');
-      killBtn.textContent = nextEnabled
-        ? ${JSON.stringify(EDITOR_STRINGS.safety.killSwitchPauseBtn)}
-        : ${JSON.stringify(EDITOR_STRINGS.safety.killSwitchResumeBtn)};
-      if (killBadge) {
-        const toneClass = nextEnabled ? 'lp-status-dot lp-status-dot-ok' : 'lp-status-dot lp-status-dot-warn';
-        const txt = nextEnabled
-          ? ${JSON.stringify(EDITOR_STRINGS.safety.killSwitchActive)}
-          : ${JSON.stringify(EDITOR_STRINGS.safety.killSwitchPaused)};
-        killBadge.innerHTML = '<span class="' + toneClass + '" aria-hidden="true"></span>' + txt;
       }
     });
   }

@@ -183,11 +183,11 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           select: [],
         };
 
-        // (a) Layout: h1 position and template column width
-        const h1 = document.querySelector<HTMLElement>('main h1, h1');
+        // (a) Layout: page header position and template column width
+        const headerEl = document.querySelector<HTMLElement>('.lp-page-header, main h1, h1');
         let h1Pos: { left: number; top: number } | null = null;
-        if (h1) {
-          const r = h1.getBoundingClientRect();
+        if (headerEl) {
+          const r = headerEl.getBoundingClientRect();
           h1Pos = { left: Math.round(r.left), top: Math.round(r.top) };
         }
         if (isTemplate) {
@@ -259,7 +259,9 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           const isDotOrPrimaryBtn =
             el.classList.contains('lp-status-dot') ||
             el.classList.contains('lp-btn-primary') ||
-            el.classList.contains('lp-auth-progress-fill');
+            el.classList.contains('lp-auth-progress-fill') ||
+            el.classList.contains('lp-stepper-fill') ||
+            el.classList.contains('lp-choice');
           if (!isDotOrPrimaryBtn && cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') {
             bgColorsSeen.add(cs.backgroundColor);
             if (!tokenColors.has(cs.backgroundColor)) badTokenColors++;

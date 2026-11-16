@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "note": "Shrinking-only D-COMP component contract census budgets (WP-16.C C1: icons & choice at 0). Must shrink to 0 across C2-C3.",
+  "note": "Shrinking-only D-COMP component contract census budgets (WP-16.C C2: 7/8 checks at 0; only 12 editor title 14px!==24px remain for C3).",
   "budgets": {
     "iconViolations": 0,
-    "stackingViolations": 12,
-    "overlayViolations": 1,
+    "stackingViolations": 0,
+    "overlayViolations": 0,
     "actionBarViolations": 0,
-    "choiceViolations": 20,
-    "verticalRhythmViolations": 24,
-    "pageHeaderViolations": 24,
-    "tabWrapViolations": 2
+    "choiceViolations": 0,
+    "verticalRhythmViolations": 0,
+    "pageHeaderViolations": 12,
+    "tabWrapViolations": 0
   }
 }

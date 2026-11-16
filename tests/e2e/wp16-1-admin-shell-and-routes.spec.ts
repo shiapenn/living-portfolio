@@ -70,9 +70,9 @@ test.describe('WP-16.1 Admin Shell & Route Registry', () => {
     const popover = page.locator('#lp-status-popover');
     await expect(popover).toBeVisible();
     await expect(popover).toContainText('Site build');
-    await expect(popover).toContainText('Automatic answers');
-    await expect(popover).toContainText('System');
-    await expect(popover.locator('a[href="/admin/settings/answering"]')).toBeVisible();
+    await expect(popover).toContainText('Automated answering');
+    await expect(popover.locator('#lp-status-answering-toggle')).toBeVisible();
+    await expect(popover.locator('#lp-status-rebuild-btn')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(popover).toBeHidden();
 

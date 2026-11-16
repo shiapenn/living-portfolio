@@ -6,7 +6,6 @@ export const ENTRIES_LIST_SCRIPT = `<script>
   const stateEl = document.getElementById('entries-filter-state');
   const typeEl = document.getElementById('entries-filter-type');
   const searchEl = document.getElementById('entries-search');
-  const searchBtn = document.getElementById('entries-search-submit');
   const regionEl = document.getElementById('entries-list-region');
   const emptyEl = document.getElementById('entries-empty-state');
   const errorEl = document.getElementById('entries-error-banner');
@@ -109,8 +108,20 @@ export const ENTRIES_LIST_SCRIPT = `<script>
 
   if (stateEl) stateEl.addEventListener('change', () => loadEntries(1));
   if (typeEl) typeEl.addEventListener('change', () => loadEntries(1));
-  if (searchBtn) searchBtn.addEventListener('click', () => loadEntries(1));
-  if (searchEl) searchEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); loadEntries(1); } });
+  if (searchEl) {
+    let searchTimer = null;
+    searchEl.addEventListener('input', () => {
+      if (searchTimer) clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => loadEntries(1), 300);
+    });
+    searchEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (searchTimer) clearTimeout(searchTimer);
+        loadEntries(1);
+      }
+    });
+  }
   if (prevBtn) prevBtn.addEventListener('click', () => { if (currentPage > 1) loadEntries(currentPage - 1); });
   if (nextBtn) nextBtn.addEventListener('click', () => { if (currentPage < totalPages) loadEntries(currentPage + 1); });
 

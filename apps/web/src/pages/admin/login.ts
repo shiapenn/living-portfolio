@@ -1,6 +1,6 @@
 import { renderAuthShell } from "../../layouts/admin-shell.js";
 import { ADMIN_API_CLIENT_SCRIPT } from "../../lib/admin-api-client.js";
-import { renderButton } from "../../primitives/index.js";
+import { renderActionBar } from "../../primitives/index.js";
 
 export function renderAdminLoginPage(): string {
   const content = `
@@ -27,11 +27,11 @@ export function renderAdminLoginPage(): string {
           <p id="login-code-help" class="lp-field-help">
             Enter the 6-digit verification code from your authenticator app (Google Authenticator, 1Password, etc.).
           </p>
-          <div>
-            ${renderButton({ id: 'btn-toggle-recovery', label: 'Lost your authenticator device? Sign in with a recovery code', variant: 'quiet', className: 'lp-recovery-link' })}
-          </div>
         </div>
-        ${renderButton({ label: 'Sign in', variant: 'primary', type: 'submit', className: 'lp-btn-full' })}
+        ${renderActionBar({
+          primary: { label: 'Sign in', variant: 'primary', type: 'submit' },
+          textAction: { id: 'btn-toggle-recovery', label: 'Lost your authenticator device? Sign in with a recovery code', variant: 'quiet', className: 'lp-recovery-link' },
+        })}
       </form>
       <p class="lp-help-text lp-divider-top">
         Login attempts are rate-limited to 5 per 15 minutes. If throttled: "Too many failed login attempts. Try again later."

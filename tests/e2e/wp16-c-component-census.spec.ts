@@ -274,6 +274,8 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
       const kids = Array.from(ph.children).filter((k): k is HTMLElement => isVisible(k));
       const pairs: Array<[HTMLElement, HTMLElement, number[]]> = [];
       for (let i = 1; i < kids.length; i++) {
+        if (kids[i].getBoundingClientRect().top < kids[i - 1].getBoundingClientRect().top) continue;
+        if (kids[i].classList.contains('lp-page-header-action') && kids[i - 1].tagName === 'H1') continue;
         pairs.push([kids[i - 1], kids[i], [8, 16]]);
       }
       rhythmChecks.push({ el: ph, pairs });

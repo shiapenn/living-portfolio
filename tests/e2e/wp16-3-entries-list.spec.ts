@@ -51,7 +51,7 @@ test.describe('WP-16.3 Entries List Page Module (D-UI-1..D-UI-6, UX-12)', () => 
 
     // Search for non-existent query -> empty state
     await page.fill('#entries-search', 'zzznonexistentquery999');
-    await page.locator('#entries-search-submit').click();
+    await page.press('#entries-search', 'Enter');
     await expect(page.locator('#entries-empty-state')).toBeVisible();
 
     // Reset search and click first row to open editor

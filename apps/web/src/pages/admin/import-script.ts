@@ -13,10 +13,20 @@ export const IMPORT_SCRIPT = `
 
         function setStep(step) {
           currentStep = step;
+          const stepMeta = {
+            add: { n: 1, title: 'Add material', pct: '35' },
+            plan: { n: 2, title: 'Plan', pct: '65' },
+            triage: { n: 3, title: 'Review', pct: '100' },
+          }[step] || { n: 1, title: 'Add material', pct: '35' };
+          const stepperEl = document.getElementById('import-stepper');
+          if (stepperEl) {
+            const labelEl = stepperEl.querySelector('.lp-stepper-label');
+            const fillEl = stepperEl.querySelector('.lp-stepper-fill');
+            if (labelEl) labelEl.textContent = 'Step ' + stepMeta.n + ' of 3 · ' + stepMeta.title;
+            if (fillEl) fillEl.className = 'lp-stepper-fill lp-stepper-pct-' + stepMeta.pct;
+          }
           ['add', 'plan', 'triage'].forEach(function(s) {
-            const tab = document.getElementById('step-tab-' + s);
             const panel = document.getElementById('import-step-' + s);
-            if (tab) tab.setAttribute('aria-selected', s === step ? 'true' : 'false');
             if (panel) panel.classList.toggle('lp-is-hidden', s !== step);
           });
         }

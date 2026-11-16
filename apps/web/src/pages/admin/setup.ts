@@ -1,5 +1,5 @@
 import { renderAuthShell } from "../../layouts/admin-shell.js";
-import { renderButton, renderChip } from "../../primitives/index.js";
+import { renderActionBar, renderButton, renderChip, renderChoiceGroup, renderIcon } from "../../primitives/index.js";
 import { WIZARD_STRINGS } from "../../strings.js";
 import { SETUP_SCRIPT_PART_1 } from './setup-script-part1.js';
 import { SETUP_SCRIPT_PART_2 } from './setup-script-part2.js';
@@ -89,12 +89,12 @@ export function renderAdminSetupPage(): string {
             <p class="lp-help-text">${WIZARD_STRINGS.step1.credentials.recoveryCodesHelp}</p>
           </div>
 
-          <div class="lp-notice lp-notice-warn">
-            <label class="lp-checkbox-row">
-              <input type="checkbox" id="setup-saved-credentials-gate" />
-              <span>${WIZARD_STRINGS.step1.credentials.gateLabel}</span>
-            </label>
-          </div>
+          ${renderChoiceGroup({
+            name: 'setup-saved-credentials-gate',
+            mode: 'multiple',
+            variant: 'card',
+            options: [{ id: 'setup-saved-credentials-gate', value: 'confirmed', label: WIZARD_STRINGS.step1.credentials.gateLabel }],
+          })}
 
           ${renderButton({ label: WIZARD_STRINGS.step1.credentials.continueButton, id: 'btn-continue-step2', variant: 'primary', className: 'lp-btn-full', disabled: true })}
         </div>
@@ -102,23 +102,23 @@ export function renderAdminSetupPage(): string {
 
       <!-- Step 2: Hosting Option & Preset -->
       <div id="wizard-step-2" class="wizard-step lp-stack-md lp-is-hidden">
-        <div>
-          <h2 class="lp-page-title">${WIZARD_STRINGS.step2.title}</h2>
-          <p class="lp-page-subtitle">${WIZARD_STRINGS.step2.subtitle}</p>
+        <div class="lp-page-header-dcomp">
+          <button type="button" class="lp-page-header-back btn-nav-step lp-btn-as-link" data-target="1">${renderIcon('chevron-left', 16)}<span>${WIZARD_STRINGS.step2.backButton}</span></button>
+          <h2 class="lp-page-header-title">${WIZARD_STRINGS.step2.title}</h2>
+          <p class="lp-page-description">${WIZARD_STRINGS.step2.subtitle}</p>
         </div>
 
-        <div class="lp-stack-sm">
-          ${WIZARD_STRINGS.step2.hostingPresets.map((preset, idx) => `
-            <label class="lp-radio-card">
-              <input type="radio" name="hosting-preset" value="${preset.value}" ${idx === 0 ? 'checked' : ''} />
-              <div class="lp-stack-sm">
-                <strong>${preset.title}</strong>
-                <div class="lp-body-sm">${preset.sentence}</div>
-                <div class="lp-help-text">${preset.tradeoff}</div>
-              </div>
-            </label>
-          `).join('')}
-        </div>
+        ${renderChoiceGroup({
+          name: 'hosting-preset',
+          mode: 'single',
+          variant: 'card',
+          options: WIZARD_STRINGS.step2.hostingPresets.map((preset, idx) => ({
+            value: preset.value,
+            label: preset.title,
+            description: `${preset.sentence} (${preset.tradeoff})`,
+            checked: idx === 0,
+          })),
+        })}
 
         <div class="lp-field lp-divider-top">
           <label for="setup-origin-url" class="lp-field-label">${WIZARD_STRINGS.step2.originUrl.label}</label>
@@ -126,17 +126,17 @@ export function renderAdminSetupPage(): string {
           <div class="lp-help-text">${WIZARD_STRINGS.step2.originUrl.help}</div>
         </div>
 
-        <div class="lp-row-between">
-          ${renderButton({ label: WIZARD_STRINGS.step2.backButton, variant: 'secondary', className: 'btn-nav-step', dataAttrs: { target: '1' } })}
-          ${renderButton({ label: WIZARD_STRINGS.step2.nextButton, variant: 'primary', className: 'btn-nav-step', dataAttrs: { target: '3' } })}
-        </div>
+        ${renderActionBar({
+          primary: { label: WIZARD_STRINGS.step2.nextButton, variant: 'primary', className: 'btn-nav-step', dataAttrs: { target: '3' } },
+        })}
       </div>
 
       <!-- Step 3: Model Providers & Privacy Boundary -->
       <div id="wizard-step-3" class="wizard-step lp-stack-md lp-is-hidden">
-        <div>
-          <h2 class="lp-page-title">${WIZARD_STRINGS.step3.title}</h2>
-          <p class="lp-page-subtitle">${WIZARD_STRINGS.step3.subtitle}</p>
+        <div class="lp-page-header-dcomp">
+          <button type="button" class="lp-page-header-back btn-nav-step lp-btn-as-link" data-target="2">${renderIcon('chevron-left', 16)}<span>${WIZARD_STRINGS.step3.backButton}</span></button>
+          <h2 class="lp-page-header-title">${WIZARD_STRINGS.step3.title}</h2>
+          <p class="lp-page-description">${WIZARD_STRINGS.step3.subtitle}</p>
         </div>
 
         <div class="lp-table-wrap">
@@ -164,17 +164,17 @@ export function renderAdminSetupPage(): string {
           <p id="step3-keys-notice" class="lp-body-sm">${WIZARD_STRINGS.step3.keysNotice}</p>
         </div>
 
-        <div class="lp-row-between">
-          ${renderButton({ label: WIZARD_STRINGS.step3.backButton, variant: 'secondary', className: 'btn-nav-step', dataAttrs: { target: '2' } })}
-          ${renderButton({ label: WIZARD_STRINGS.step3.nextButton, variant: 'primary', className: 'btn-nav-step', dataAttrs: { target: '4' } })}
-        </div>
+        ${renderActionBar({
+          primary: { label: WIZARD_STRINGS.step3.nextButton, variant: 'primary', className: 'btn-nav-step', dataAttrs: { target: '4' } },
+        })}
       </div>
 
       <!-- Step 4: Notifications -->
       <div id="wizard-step-4" class="wizard-step lp-stack-md lp-is-hidden">
-        <div>
-          <h2 class="lp-page-title">${WIZARD_STRINGS.step4.title}</h2>
-          <p class="lp-page-subtitle">${WIZARD_STRINGS.step4.subtitle}</p>
+        <div class="lp-page-header-dcomp">
+          <button type="button" class="lp-page-header-back btn-nav-step lp-btn-as-link" data-target="3">${renderIcon('chevron-left', 16)}<span>${WIZARD_STRINGS.step4.backButton}</span></button>
+          <h2 class="lp-page-header-title">${WIZARD_STRINGS.step4.title}</h2>
+          <p class="lp-page-description">${WIZARD_STRINGS.step4.subtitle}</p>
         </div>
 
         <div class="lp-field">
@@ -196,17 +196,17 @@ export function renderAdminSetupPage(): string {
           <div id="setup-alert-result" class="lp-is-hidden" role="alert"></div>
         </div>
 
-        <div class="lp-row-between">
-          ${renderButton({ label: WIZARD_STRINGS.step4.backButton, variant: 'secondary', className: 'btn-nav-step', dataAttrs: { target: '3' } })}
-          ${renderButton({ label: WIZARD_STRINGS.step4.nextButton, variant: 'primary', className: 'btn-nav-step', dataAttrs: { target: '5' } })}
-        </div>
+        ${renderActionBar({
+          primary: { label: WIZARD_STRINGS.step4.nextButton, variant: 'primary', className: 'btn-nav-step', dataAttrs: { target: '5' } },
+        })}
       </div>
 
       <!-- Step 5: Backups -->
       <div id="wizard-step-5" class="wizard-step lp-stack-md lp-is-hidden">
-        <div>
-          <h2 class="lp-page-title">${WIZARD_STRINGS.step5.title}</h2>
-          <p class="lp-page-subtitle">${WIZARD_STRINGS.step5.subtitle}</p>
+        <div class="lp-page-header-dcomp">
+          <button type="button" class="lp-page-header-back btn-nav-step lp-btn-as-link" data-target="4">${renderIcon('chevron-left', 16)}<span>${WIZARD_STRINGS.step5.backButton}</span></button>
+          <h2 class="lp-page-header-title">${WIZARD_STRINGS.step5.title}</h2>
+          <p class="lp-page-description">${WIZARD_STRINGS.step5.subtitle}</p>
         </div>
 
         <div class="lp-field">
@@ -233,31 +233,31 @@ export function renderAdminSetupPage(): string {
           <div id="setup-drill-result" class="lp-is-hidden" role="alert"></div>
         </div>
 
-        <div class="lp-row-between">
-          ${renderButton({ label: WIZARD_STRINGS.step5.backButton, variant: 'secondary', className: 'btn-nav-step', dataAttrs: { target: '4' } })}
-          ${renderButton({ label: WIZARD_STRINGS.step5.nextButton, variant: 'primary', className: 'btn-nav-step', dataAttrs: { target: '6' } })}
-        </div>
+        ${renderActionBar({
+          primary: { label: WIZARD_STRINGS.step5.nextButton, variant: 'primary', className: 'btn-nav-step', dataAttrs: { target: '6' } },
+        })}
       </div>
 
       <!-- Step 6: Theme Selection & First-Run Walkthrough -->
       <div id="wizard-step-6" class="wizard-step lp-stack-md lp-is-hidden">
-        <div>
-          <h2 class="lp-page-title">${WIZARD_STRINGS.step6.title}</h2>
-          <p class="lp-page-subtitle">${WIZARD_STRINGS.step6.subtitle}</p>
+        <div class="lp-page-header-dcomp">
+          <button type="button" class="lp-page-header-back btn-nav-step lp-btn-as-link" data-target="5">${renderIcon('chevron-left', 16)}<span>${WIZARD_STRINGS.step6.backButton}</span></button>
+          <h2 class="lp-page-header-title">${WIZARD_STRINGS.step6.title}</h2>
+          <p class="lp-page-description">${WIZARD_STRINGS.step6.subtitle}</p>
           <p id="step6-theme-notice" class="lp-help-text">${WIZARD_STRINGS.step6.themeAppliedNotice}</p>
         </div>
 
-        <div class="lp-theme-grid">
-          ${WIZARD_STRINGS.step6.themePresets.map((theme, idx) => `
-            <label class="theme-card${idx === 0 ? ' is-selected' : ''}">
-              <div class="lp-row-wrap">
-                <input type="radio" name="theme-preset" value="${theme.value}" ${idx === 0 ? 'checked' : ''} />
-                <strong>${theme.title}</strong>
-              </div>
-              <div class="lp-help-text">${theme.description}</div>
-            </label>
-          `).join('')}
-        </div>
+        ${renderChoiceGroup({
+          name: 'theme-preset',
+          mode: 'single',
+          variant: 'card',
+          options: WIZARD_STRINGS.step6.themePresets.map((theme, idx) => ({
+            value: theme.value,
+            label: theme.title,
+            description: theme.description,
+            checked: idx === 0,
+          })),
+        })}
 
         <div class="lp-notice lp-notice-info lp-stack-sm">
           <h3 class="lp-section-title">${WIZARD_STRINGS.step6.workedExample.title}</h3>
@@ -270,13 +270,9 @@ export function renderAdminSetupPage(): string {
 
         <p class="lp-help-text">${WIZARD_STRINGS.step6.deployNotice}</p>
 
-        <div class="lp-row-wrap">
-          <a href="/admin" class="lp-btn lp-btn-primary lp-btn-flex" id="btn-setup-finish-login">${WIZARD_STRINGS.step6.finishButton}</a>
-          <a href="/admin/import" class="lp-btn lp-btn-secondary lp-btn-flex" id="btn-setup-launch-import">${WIZARD_STRINGS.step6.importButton}</a>
-        </div>
-
-        <div>
-          ${renderButton({ label: WIZARD_STRINGS.step6.backButton, variant: 'secondary', className: 'btn-nav-step', dataAttrs: { target: '5' } })}
+        <div class="lp-action-bar">
+          <a href="/admin" class="lp-btn lp-btn-primary" id="btn-setup-finish-login">${WIZARD_STRINGS.step6.finishButton}</a>
+          <a href="/admin/import" class="lp-btn lp-btn-secondary" id="btn-setup-launch-import">${WIZARD_STRINGS.step6.importButton}</a>
         </div>
       </div>
     </div>
