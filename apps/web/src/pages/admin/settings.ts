@@ -73,10 +73,13 @@ export function renderSettingsModulePage<T>(
   });
 }
 
-export async function renderAdminSettingsPage(repo: WebDataClient): Promise<string> {
+export async function renderAdminSettingsPage(
+  repo: WebDataClient,
+  initialSettings?: Record<string, unknown>
+): Promise<string> {
   repo = adaptDataSource(repo);
   const cfg = loadConfig();
-  const settings = ((await repo.settings?.get?.()) ?? {}) as Record<string, unknown>;
+  const settings = initialSettings ?? (((await repo.settings?.get?.()) ?? {}) as Record<string, unknown>);
   const providersRes = (await (repo as any).system?.getProviders?.()) ?? { providers: [] };
   const providers = (providersRes as any).providers ?? [];
   const answeringOn = typeof settings.answering_enabled === 'boolean' ? settings.answering_enabled : true;
@@ -90,7 +93,8 @@ export async function renderAdminSettingsPage(repo: WebDataClient): Promise<stri
 
 export async function renderAdminSettingsModulePage(
   repo: WebDataClient,
-  moduleId: string
+  moduleId: string,
+  initialSettings?: Record<string, unknown>
 ): Promise<string | null> {
   ensureBuiltinSettingsModulesRegistered();
   const mod = getSettingsModule(moduleId);
@@ -98,7 +102,7 @@ export async function renderAdminSettingsModulePage(
 
   repo = adaptDataSource(repo);
   const cfg = loadConfig();
-  const settings = ((await repo.settings?.get?.()) ?? {}) as Record<string, unknown>;
+  const settings = initialSettings ?? (((await repo.settings?.get?.()) ?? {}) as Record<string, unknown>);
   const providersRes = (await (repo as any).system?.getProviders?.()) ?? { providers: [] };
   const providers = (providersRes as any).providers ?? [];
   const answeringOn = typeof settings.answering_enabled === 'boolean' ? settings.answering_enabled : true;

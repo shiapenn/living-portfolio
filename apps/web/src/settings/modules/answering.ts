@@ -43,10 +43,11 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
     const directFloor = typeof raw.tier1_floor === 'number' ? raw.tier1_floor : cfg.directConfidenceFloor;
     const synthFloor = typeof raw.tier2_floor === 'number' ? raw.tier2_floor : cfg.synthesisConfidenceFloor;
     const topicThreshold = typeof raw.facet_known_threshold === 'number' ? raw.facet_known_threshold : cfg.topicMatchThreshold;
-    const mechSuggest = typeof raw.mech_suggestion_thresholds === 'boolean' ? raw.mech_suggestion_thresholds : cfg.suggestThresholds;
-    const mechRouting = typeof raw.mech_routing_calibration === 'boolean' ? raw.mech_routing_calibration : cfg.autoCalibrateRouting;
-    const mechTopology = typeof raw.mech_topology_audit === 'boolean' ? raw.mech_topology_audit : cfg.auditContradictions;
-    const mechScoped = typeof raw.mech_scoped_constraints === 'boolean' ? raw.mech_scoped_constraints : cfg.rememberVisitorRules;
+    const cal = (raw.calibration && typeof raw.calibration === 'object' ? raw.calibration : {}) as Record<string, unknown>;
+    const mechSuggest = typeof cal.suggestion_thresholds === 'boolean' ? cal.suggestion_thresholds : typeof raw.mech_suggestion_thresholds === 'boolean' ? raw.mech_suggestion_thresholds : cfg.suggestThresholds;
+    const mechRouting = typeof cal.routing_calibration === 'boolean' ? cal.routing_calibration : typeof raw.mech_routing_calibration === 'boolean' ? raw.mech_routing_calibration : cfg.autoCalibrateRouting;
+    const mechTopology = typeof cal.topology_audit === 'boolean' ? cal.topology_audit : typeof raw.mech_topology_audit === 'boolean' ? raw.mech_topology_audit : cfg.auditContradictions;
+    const mechScoped = typeof cal.scoped_constraint_mining === 'boolean' ? cal.scoped_constraint_mining : typeof raw.mech_scoped_constraints === 'boolean' ? raw.mech_scoped_constraints : cfg.rememberVisitorRules;
 
     return `
       <form id="settings-module-form" data-settings-module="answering" class="lp-stack-lg">
