@@ -1,12 +1,22 @@
 {
-  "version": 1,
-  "note": "Shrinking-only D-MIN style census budgets (WP-16.R). Counts may only decrease.",
+  "version": 2,
+  "note": "Shrinking-only D-MIN & D-LAYOUT style/layout census budgets (WP-16.L). Counts may only decrease.",
   "budgets": {
     "invalidRadii": 0,
     "invalidControlHeights": 0,
     "invalidFontSizes": 0,
     "invalidSpacing": 0,
     "inlineStyles": 0,
-    "multiSignatureRoles": 0
+    "multiSignatureRoles": 0,
+    "h1PositionMismatch": 12,
+    "columnWidthMismatch": 28,
+    "tabGapViolations": 16,
+    "siblingGapViolations": 24,
+    "nonTokenColors": 28,
+    "excessBackgroundColors": 26,
+    "parentBoxOverflows": 8,
+    "clippedText": 18,
+    "forbiddenTextMatches": 28,
+    "selectChevronMismatch": 36
   }
 }
