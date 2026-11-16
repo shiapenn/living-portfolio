@@ -133,6 +133,7 @@
 | `A125` | WP-16.L L2 Tiptap Editor | `active` | [A125-wp-16l-l2-tiptap-editor.md](execution-reports/A125-wp-16l-l2-tiptap-editor.md) | — |
 | `A126` | WP-16.L L3 Contact Sheets | `active` | [A126-wp-16l-l3-contact-sheets.md](execution-reports/A126-wp-16l-l3-contact-sheets.md) | — |
 | `A127` | WP-16.C C0 D-COMP Foundations and Census | `active` | [A127-wp-16c-c0-d-comp-foundations-and-census.md](execution-reports/A127-wp-16c-c0-d-comp-foundations-and-census.md) | — |
+| `A128` | WP-16.C C1 D-COMP Primitives and Gallery | `active` | [A128-wp-16c-c1-d-comp-primitives-and-gallery.md](execution-reports/A128-wp-16c-c1-d-comp-primitives-and-gallery.md) | — |
 
 ## Handover Snapshots (Class H)
 
