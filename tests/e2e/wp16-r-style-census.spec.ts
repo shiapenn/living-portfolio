@@ -31,6 +31,7 @@ const BUDGET_PATH = resolve(process.cwd(), 'docs/audits/style-census-budget.json
 test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & overlay x 2 themes x 1280/320px + editor 1920px)', () => {
   test('census meets shrinking budgets and prints layout, colour, overflow, text, select & value metrics', async ({ page }) => {
     test.setTimeout(180_000);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     const budgetFile: BudgetFile = JSON.parse(readFileSync(BUDGET_PATH, 'utf8'));
 
     await ensureAdminLoggedIn(page);
@@ -104,9 +105,11 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
     };
 
     const scanCurrentPage = async (route: string, theme: 'light' | 'dark', width: number, isTemplatePage: boolean) => {
-      await page.evaluate((t) => {
+      await page.evaluate(async (t) => {
         document.documentElement.setAttribute('data-theme', t);
         try { localStorage.setItem('strata-theme', t); } catch {}
+        void document.body.offsetHeight;
+        await Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {})));
       }, theme);
 
       const res = await page.evaluate(({ isTemplate, vpWidth }) => {
