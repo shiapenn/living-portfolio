@@ -115,8 +115,8 @@ export function renderEditorToolbar(
         size: 'sm',
       })}
       <div id="ref-more-menu" class="lp-popover-menu lp-menu-popover-float" role="menu" aria-label="${escapeHtml(EDITOR_STRINGS.actions.more)}" hidden>
-        <button type="button" role="menuitem" id="ref-more-source" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item lp-mobile-only-menu-item" tabindex="0">Markdown source</button>
         <button type="button" role="menuitem" id="ref-more-delete" class="lp-btn lp-btn-danger lp-btn-sm lp-menu-item lp-menu-item-danger" tabindex="0">${escapeHtml(EDITOR_STRINGS.actions.deleteEntry)}</button>
+        <button type="button" role="menuitem" id="ref-more-source" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item lp-mobile-only-menu-item" tabindex="0">Markdown source</button>
       </div>
     </div>
     ${renderButton({ id: 'ref-btn-save', label: saveLabel, variant: 'primary', size: 'sm' })}
