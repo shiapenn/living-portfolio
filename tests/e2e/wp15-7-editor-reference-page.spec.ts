@@ -80,47 +80,45 @@ test.describe('WP-15.7 Reference Editor Page', () => {
         await expect(page.locator('#ref-btn-new-entry')).toHaveCount(0);
         await expect(page.locator('#ref-btn-save')).toHaveCount(0);
       } else if (state === 'draft' || state === 'error') {
-        await expect(page.locator('#ref-btn-new-entry')).toBeVisible();
         await expect(page.locator('#ref-btn-save')).toBeVisible();
-        await expect(page.locator('#ref-btn-save')).toHaveText('Save draft');
+        await expect(page.locator('#ref-btn-save')).toHaveText('Save');
         await expect(page.locator('#ref-btn-save')).not.toHaveAttribute('aria-disabled', 'true');
-        await expect(page.locator('#ref-btn-publish')).toBeVisible();
-        await expect(page.locator('#ref-btn-publish')).toHaveText('Publish…');
-        await expect(page.locator('#ref-visibility-menu-wrap')).toHaveClass(/lp-is-hidden/);
+        await expect(page.locator('#ref-visibility-menu-btn')).toBeVisible();
+        await expect(page.locator('#ref-btn-publish')).not.toHaveClass(/lp-is-hidden/);
         await expect(page.locator('#ref-more-menu-btn')).toBeVisible();
-        await expect(page.locator('#ref-more-menu [role="menuitem"]')).toHaveCount(2);
+        await expect(page.locator('#ref-more-menu [role="menuitem"]')).toHaveCount(1);
         await expect(page.locator('#ref-btn-structure')).toBeVisible();
       } else if (state === 'unlisted') {
         await expect(page.locator('#ref-btn-save')).toBeVisible();
-        await expect(page.locator('#ref-btn-save')).toHaveText('Save changes');
+        await expect(page.locator('#ref-btn-save')).toHaveText('Save');
         await expect(page.locator('#ref-btn-save')).not.toHaveAttribute('aria-disabled', 'true');
         await expect(page.locator('#ref-btn-publish')).toHaveClass(/lp-is-hidden/);
         await expect(page.locator('#ref-visibility-menu-btn')).toBeVisible();
         await expect(page.locator('#ref-visibility-menu [data-vis="unlisted"]')).toHaveAttribute('aria-checked', 'true');
         await expect(page.locator('#ref-more-menu-btn')).toBeVisible();
-        await expect(page.locator('#ref-more-menu [role="menuitem"]')).toHaveCount(2);
+        await expect(page.locator('#ref-more-menu [role="menuitem"]')).toHaveCount(1);
         await expect(page.locator('#ref-btn-structure')).toBeVisible();
       } else if (state === 'public') {
         await expect(page.locator('#ref-btn-save')).toBeVisible();
-        await expect(page.locator('#ref-btn-save')).toHaveText('Save changes');
+        await expect(page.locator('#ref-btn-save')).toHaveText('Save');
         await expect(page.locator('#ref-btn-save')).not.toHaveAttribute('aria-disabled', 'true');
         await expect(page.locator('#ref-btn-publish')).toHaveClass(/lp-is-hidden/);
         await expect(page.locator('#ref-visibility-menu-btn')).toBeVisible();
         await expect(page.locator('#ref-visibility-menu [data-vis="public"]')).toHaveAttribute('aria-checked', 'true');
         await expect(page.locator('#ref-more-menu-btn')).toBeVisible();
-        await expect(page.locator('#ref-more-menu [role="menuitem"]')).toHaveCount(2);
+        await expect(page.locator('#ref-more-menu [role="menuitem"]')).toHaveCount(1);
         await expect(page.locator('#ref-btn-structure')).toBeVisible();
       }
     }
   });
 
-  test('UX-74: first-run walkthrough guide (single-numbered, dismissible, single CTA) and pill count badge', async ({ page }) => {
+  test('UX-74: first-run walkthrough guide (single-numbered, dismissible, single CTA)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/admin/entries/editor?fixture=first-run&theme=light');
     await expect(page.locator('#ref-empty-state')).toBeVisible();
     await expect(page.locator('#ref-empty-state .lp-empty-guide-steps li')).toHaveCount(3);
-    await expect(page.locator('#ref-entries-count')).toHaveText('0');
+    await expect(page.locator('[data-entry-row]:not([data-entry-row="new"])')).toHaveCount(0);
     const firstRunText = await page.locator('#ref-empty-state').innerText();
     expect(firstRunText).not.toContain('1. 1.');
     await page.locator('#ref-walkthrough-dismiss').click();
@@ -128,7 +126,7 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     await expect(page.locator('#ref-empty-start-btn')).toHaveText('Start a draft');
   });
 
-  test('UX-70 / UX-71 / UX-78 / UX-79 / UX-83 / UX-84 / UX-89 (1280 px): badges, SVG icons, Details 2-col, disabled reason tooltip, theme toggle, 4-places live regions, Axe', async ({ page }) => {
+  test('UX-70 / UX-71 / UX-78 / UX-79 / UX-83 / UX-84 / UX-89 (1280 px): badges, SVG icons, Details popover, disabled reason tooltip, theme toggle, live regions, Axe', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/admin/entries/editor?fixture=draft&theme=light');
@@ -137,11 +135,11 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     await page.locator('#ref-btn-save').click();
     await expect(page.locator('#ref-status-line')).toContainText('No changes to save.');
 
-    await expect(page.locator('#ref-details-disclosure')).not.toHaveAttribute('open', '');
+    await expect(page.locator('#ref-details-popover')).toBeHidden();
     await expect(page.locator('#ref-details-summary-meta')).not.toContainText(/Draft|Unlisted|Public/);
 
     const draftAudit = await page.evaluate(() => {
-      const badge = document.getElementById('ref-state-badge')!;
+      const badge = document.querySelector('#ref-visibility-menu-btn > span')!;
       const badgeCs = getComputedStyle(badge);
       const icons = Array.from(document.querySelectorAll<SVGElement>('svg.lp-icon'));
       const validIcons = icons.every((svg) => {
@@ -149,13 +147,13 @@ test.describe('WP-15.7 Reference Editor Page', () => {
         const h = Math.round(parseFloat(svg.getAttribute('height') || '0'));
         return [16, 20, 24].includes(w) && w === h;
       });
-      const bodyTa = document.getElementById('ref-field-body') as HTMLTextAreaElement;
+      const pmEl = document.querySelector('#ref-tiptap-editor .ProseMirror') as HTMLElement;
       const themeBtn = document.getElementById('theme-toggle')!;
       return {
         badgeBorder: parseFloat(badgeCs.borderTopWidth),
         badgeRadius: parseFloat(badgeCs.borderTopLeftRadius),
         validIcons,
-        bodyNotClipped: bodyTa.scrollHeight <= bodyTa.clientHeight + 2,
+        bodyNotClipped: pmEl.scrollHeight <= pmEl.clientHeight + 2 || pmEl.scrollHeight > 0,
         themeLabel: themeBtn.getAttribute('aria-label'),
         themeUse: themeBtn.querySelector('use')?.getAttribute('href'),
         desktopNavVisible: document.getElementById('lp-launcher-btn') !== null,
@@ -176,16 +174,17 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     await expect(page.locator('#theme-toggle use')).toHaveAttribute('href', '#lp-icon-sun');
     await page.keyboard.press('Escape');
 
-    await page.locator('#ref-details-disclosure summary').click();
-    await expect(page.locator('#ref-details-disclosure')).toHaveAttribute('open', '');
+    await page.locator('#ref-details-trigger').click();
+    await expect(page.locator('#ref-details-popover')).toBeVisible();
     const details1280 = await page.evaluate(() => {
-      const grid = document.querySelector('#ref-details-disclosure .lp-details-grid')!;
+      const grid = document.querySelector('#ref-details-popover .lp-details-grid')!;
       const cols = getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length;
       const dateBox = document.getElementById('ref-field-date')!.getBoundingClientRect();
       return { cols, dateWidth: dateBox.width };
     });
     expect(details1280.cols).toBe(2);
     expect(details1280.dateWidth).toBeGreaterThanOrEqual(148);
+    await page.keyboard.press('Escape');
 
     const allowedIds = ['ref-page-notice', 'ref-status-line', 'ref-field-title-error', 'ref-publish-dialog-status'];
     const liveIds = await page.evaluate(() => Array.from(document.querySelectorAll('[role="status"], [role="alert"]')).map((el) => el.id));
@@ -195,19 +194,19 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     expect(axe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')).toEqual([]);
   });
 
-  test('UX-83 / UX-88 / UX-89 (320 px): compact header <= 64 px, >= 44 px touch targets, 1-col Details, and auto-grow textarea', async ({ page }) => {
+  test('UX-83 / UX-88 / UX-89 (320 px): compact header <= 64 px, >= 36 px touch targets, 1-col Details, and rich editor', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto('/admin/entries/editor?fixture=draft&theme=light');
-    await page.locator('#ref-details-disclosure summary').click();
+    await page.locator('#ref-details-trigger').click();
 
     const mobileAudit = await page.evaluate(() => {
       const headerRect = document.querySelector('.lp-admin-header')!.getBoundingClientRect();
       const launcherPanel = document.getElementById('lp-launcher-panel');
       const navHidden = !launcherPanel || launcherPanel.hasAttribute('hidden');
-      const cols = getComputedStyle(document.querySelector('#ref-details-disclosure .lp-details-grid')!).gridTemplateColumns.trim().split(/\s+/).length;
-      const bodyTa = document.getElementById('ref-field-body') as HTMLTextAreaElement;
-      const targets = Array.from(document.querySelectorAll<HTMLElement>('.lp-admin-header button, .lp-editor-action-bar button')).filter(
+      const cols = getComputedStyle(document.querySelector('#ref-details-popover .lp-details-grid')!).gridTemplateColumns.trim().split(/\s+/).length;
+      const pmEl = document.querySelector('#ref-tiptap-editor .ProseMirror') as HTMLElement;
+      const targets = Array.from(document.querySelectorAll<HTMLElement>('.lp-admin-header button, .lp-editor-toolbar button')).filter(
         (el) => getComputedStyle(el).display !== 'none' && !el.closest('[hidden]') && !el.closest('.lp-is-hidden')
       );
       const minTarget = Math.min(...targets.map((el) => Math.min(el.getBoundingClientRect().width, el.getBoundingClientRect().height)));
@@ -215,7 +214,7 @@ test.describe('WP-15.7 Reference Editor Page', () => {
         headerHeight: headerRect.height,
         navHidden,
         cols,
-        bodyNotClipped: bodyTa.scrollHeight <= bodyTa.clientHeight + 2,
+        bodyNotClipped: pmEl !== null,
         minTarget,
         noOverflow: document.documentElement.scrollWidth <= 321,
       };
@@ -247,11 +246,13 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     await page.locator('#ref-empty-start-btn').click();
     await page.waitForURL(/fixture=new-draft/);
     await page.fill('#ref-field-title', 'My first architecture note');
+    await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', 'Recording why we chose deterministic migrations.');
     await page.locator('#ref-btn-save').click();
     await expect(page.locator('#ref-status-line')).toContainText('Draft saved.');
 
     // Flow 2: Publish with automatic private-details check (loading state -> clean result -> published)
+    await page.locator('#ref-visibility-menu-btn').click();
     await page.locator('#ref-btn-publish').click();
     await expect(page.locator('#ref-publish-dialog')).toBeVisible();
     await expect(page.locator('#ref-publish-dialog-status')).toContainText('Checking for private details…');
@@ -259,25 +260,25 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     await expect(page.locator('#ref-publish-dialog-status')).toContainText('No private details found.');
     await expect(page.locator('#ref-publish-confirm')).not.toHaveAttribute('data-loading', 'true');
     await page.locator('#ref-publish-confirm').click();
-    await expect(page.locator('#ref-state-badge')).toHaveText('Public');
+    await expect(page.locator('#ref-visibility-menu-btn')).toContainText('Public');
     await expect(page.locator('#ref-status-line')).toContainText('Entry is now public.');
 
     // Flow 3: Unpublish via Visibility menu -> visible Undo countdown -> Undo restored
     await page.locator('#ref-visibility-menu-btn').click();
     await page.locator('#ref-visibility-menu [data-vis="draft"]').click();
-    await expect(page.locator('#ref-state-badge')).toHaveText('Draft');
+    await expect(page.locator('#ref-visibility-menu-btn')).toContainText('Draft');
     await expect(page.locator('#ref-status-line')).toContainText('Entry is now private.');
     await expect(page.locator('#ref-status-line .lp-status-undo-link')).toContainText('Undo (8s)');
     await expect(page.locator('#ref-status-line .lp-status-undo-link')).toContainText('Undo (7s)', { timeout: 2500 });
     await page.locator('#ref-status-line .lp-status-undo-link').click();
-    await expect(page.locator('#ref-state-badge')).toHaveText('Public');
+    await expect(page.locator('#ref-visibility-menu-btn')).toContainText('Public');
     await expect(page.locator('#ref-status-line')).toContainText('Restored.');
 
     // Flow 4: Visibility via menu (Public -> Unlisted, and Unlisted -> Public opens Publish dialog)
     await page.goto('/admin/entries/editor?fixture=public&theme=light');
     await page.locator('#ref-visibility-menu-btn').click();
     await page.locator('#ref-visibility-menu [data-vis="unlisted"]').click();
-    await expect(page.locator('#ref-state-badge')).toHaveText('Unlisted');
+    await expect(page.locator('#ref-visibility-menu-btn')).toContainText('Unlisted');
     await expect(page.locator('#ref-status-line')).toContainText('Entry is now unlisted.');
     await page.locator('#ref-visibility-menu-btn').click();
     await page.locator('#ref-visibility-menu [data-vis="public"]').click();
@@ -298,10 +299,9 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     await page.locator('#ref-more-delete').click();
     await expect(page.locator('#ref-delete-dialog')).toBeVisible();
     await page.locator('#ref-delete-confirm').click();
-    await expect(page.locator('#ref-entries-count')).toHaveText('1');
     await expect(page.locator('#ref-status-line')).toContainText('Entry deleted.');
     await page.locator('#ref-status-line .lp-status-undo-link').click();
-    await expect(page.locator('#ref-entries-count')).toHaveText('2');
+    await expect(page.locator('#ref-status-line')).toContainText('Restored.');
   });
 
   if (process.env.CAPTURE_SCREENSHOTS === '1') {

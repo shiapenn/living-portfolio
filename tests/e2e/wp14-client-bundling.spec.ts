@@ -26,6 +26,7 @@ test.describe.serial('WP-14.0: Client bundling and entry handler migration', () 
     // Verify that the entry handler loaded from the bundle is operational
     const testTitle = `WP-14.0 Bundle Verification ${Date.now()}`;
     await page.fill('#ref-field-title', testTitle);
+    await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', 'Testing that client bundle entry handlers function properly.');
 
     const saveDraftBtn = page.locator('#ref-btn-save');

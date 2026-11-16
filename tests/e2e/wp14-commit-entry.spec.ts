@@ -16,13 +16,15 @@ test.describe.serial('WP-14.1: Entry lifecycle and state machine on Reference Ed
     const openDialogBtn = page.locator('#ref-btn-publish');
     const confirmPublishBtn = page.locator('#ref-publish-confirm');
     const statusLine = page.locator('#ref-status-line');
-    const stateBadge = page.locator('#ref-state-badge');
+    const stateBadge = page.locator('#ref-visibility-menu-btn');
 
     // 1. New entry form fill & Save draft
     await page.fill('#ref-field-title', testTitle);
-    await page.locator('#ref-details-disclosure summary').click();
+    await page.click('#ref-details-trigger');
     await page.fill('#ref-field-slug', testSlug);
     await page.fill('#ref-field-date', '2026-11-10');
+    await page.keyboard.press('Escape');
+    await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', '## WP-14.1 Lifecycle Test\n\nTesting Reference Editor entry lifecycle.\n');
 
     await saveBtn.click();
@@ -30,6 +32,7 @@ test.describe.serial('WP-14.1: Entry lifecycle and state machine on Reference Ed
     await expect(stateBadge).toContainText(/draft/i);
 
     // 2. Publish -> Public
+    await stateBadge.click();
     await openDialogBtn.click();
     await expect(page.locator('#ref-publish-dialog-status')).toContainText(/no private details/i);
     await confirmPublishBtn.click();

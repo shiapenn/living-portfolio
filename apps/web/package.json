@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc && pnpm build:client",
-    "build:client": "esbuild src/client/admin-entry.ts src/client/gallery.ts src/client/admin/editor-page.ts --bundle --format=esm --target=es2022 --entry-names=[name] --outdir=dist/client",
+    "build:client": "esbuild src/client/admin-entry.ts src/client/gallery.ts src/client/admin/editor-page.ts src/client/admin/import-page.ts --bundle --minify --format=esm --target=es2022 --entry-names=[name] --outdir=dist/client",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
@@ -22,6 +22,10 @@
     "@living-portfolio/client": "workspace:*",
     "@living-portfolio/config": "workspace:*",
     "@living-portfolio/core": "workspace:*",
+    "@tiptap/core": "^3.34.0",
+    "@tiptap/extension-link": "^3.34.0",
+    "@tiptap/pm": "^3.34.0",
+    "@tiptap/starter-kit": "^3.34.0",
     "hono": "^4.13.18"
   },
   "devDependencies": {

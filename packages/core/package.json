@@ -8,6 +8,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./sections": {
+      "import": "./dist/sections/index.js",
+      "types": "./dist/sections/index.d.ts"
     }
   },
   "scripts": {

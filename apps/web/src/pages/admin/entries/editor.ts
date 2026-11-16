@@ -2,17 +2,15 @@ import { renderAdminShell } from '../../../layouts/admin-shell.js';
 import { BUILTIN_PROFILES, groupProfilesBySection } from '@living-portfolio/core';
 import { escapeHtml } from '../../../lib/html.js';
 import {
-  renderBadge,
   renderButton,
   renderField,
-  renderIcon,
   renderIconButton,
+  renderListRow,
+  renderStatusDot,
 } from '../../../primitives/index.js';
 import {
-  renderDisclosure,
   renderEmptyState,
   renderPageNotice,
-  renderStatusLine,
 } from '../../../components/index.js';
 import { EDITOR_STRINGS } from '../../../strings/admin/editor.js';
 import { renderStructureInspectorPanel, type StructureInspectorData } from '../../../patterns/structure-panel.js';
@@ -21,6 +19,7 @@ import {
   renderEditorDialogsAndDrawers,
   type WorkspaceEscalationItem,
 } from './editor-sections.js';
+import { formatDetailsMeta, formatVisibilityLabel, renderEditorToolbar } from './editor-toolbar.js';
 
 export type ReferenceEntryVisibility = 'draft' | 'unlisted' | 'public';
 
@@ -54,81 +53,10 @@ export interface ReferenceEditorOptions {
   inspector?: StructureInspectorData;
 }
 
-function formatVisibilityLabel(vis: ReferenceEntryVisibility): string {
-  return EDITOR_STRINGS.states[vis];
-}
-
 function visibilityTone(vis: ReferenceEntryVisibility): 'ok' | 'warn' | 'neutral' {
   if (vis === 'public') return 'ok';
   if (vis === 'unlisted') return 'warn';
   return 'neutral';
-}
-
-function formatDateSummary(isoDate: string): string {
-  const parsed = new Date(`${isoDate.slice(0, 10)}T00:00:00Z`);
-  if (Number.isNaN(parsed.getTime())) return isoDate;
-  return parsed.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC',
-  });
-}
-
-function formatDetailsMeta(entry: ReferenceEditorEntry): string {
-  const dateStr = formatDateSummary(entry.date);
-  const temporalStr = EDITOR_STRINGS.temporalShort[entry.temporalConfidence] ?? 'Exact date';
-  const profileStr = EDITOR_STRINGS.profileShort[entry.profile] ?? 'Freeform Essay';
-  return `${dateStr} · ${temporalStr} · ${profileStr}`;
-}
-
-function renderVisibilityMenuItem(
-  vis: ReferenceEntryVisibility,
-  current: ReferenceEntryVisibility,
-  label: string
-): string {
-  const checked = vis === current;
-  return `<button type="button" role="menuitemradio" aria-checked="${checked ? 'true' : 'false'}" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item lp-menu-item-vis" data-vis="${vis}"><span class="lp-menu-check">${renderIcon({ name: 'check-circle', size: 16 })}</span><span>${escapeHtml(label)}</span></button>`;
-}
-
-function renderActionBar(entry: ReferenceEditorEntry): string {
-  const isDraft = entry.visibility === 'draft';
-  const saveLabel = isDraft ? EDITOR_STRINGS.actions.saveDraft : EDITOR_STRINGS.actions.saveChanges;
-  const chevron = renderIcon({ name: 'chevron-down', size: 16, className: 'lp-disclosure-chevron' });
-
-  return `<div class="lp-editor-action-bar">
-  <div class="lp-editor-primary-actions">
-    ${renderButton({ id: 'ref-btn-save', label: saveLabel, variant: 'primary', size: 'sm' })}
-    ${renderButton({ id: 'ref-btn-publish', label: EDITOR_STRINGS.actions.publish, variant: 'secondary', size: 'sm', className: isDraft ? '' : 'lp-is-hidden' })}
-    <div id="ref-visibility-menu-wrap" class="lp-menu-wrap${isDraft ? ' lp-is-hidden' : ''}">
-      <button type="button" id="ref-visibility-menu-btn" class="lp-btn lp-btn-secondary lp-btn-sm" aria-haspopup="menu" aria-expanded="false" aria-controls="ref-visibility-menu">${escapeHtml(EDITOR_STRINGS.actions.visibility)} ${chevron}</button>
-      <div id="ref-visibility-menu" class="lp-popover-menu lp-menu-popover-float" role="menu" aria-label="${escapeHtml(EDITOR_STRINGS.actions.visibility)}" hidden>
-        ${renderVisibilityMenuItem('public', entry.visibility, EDITOR_STRINGS.visibilityMenu.public)}
-        ${renderVisibilityMenuItem('unlisted', entry.visibility, EDITOR_STRINGS.visibilityMenu.unlisted)}
-        ${renderVisibilityMenuItem('draft', entry.visibility, EDITOR_STRINGS.visibilityMenu.draft)}
-      </div>
-    </div>
-  </div>
-  <div class="lp-editor-secondary-actions">
-    ${renderButton({ id: 'ref-btn-structure', label: EDITOR_STRINGS.actions.structure, variant: 'quiet', size: 'sm' })}
-    <div class="lp-menu-wrap">
-      ${renderIconButton({
-        id: 'ref-more-menu-btn',
-        ariaLabel: EDITOR_STRINGS.actions.more,
-        title: EDITOR_STRINGS.actions.more,
-        icon: 'more-horizontal',
-        iconSize: 16,
-        variant: 'quiet',
-        size: 'sm',
-      })}
-      <div id="ref-more-menu" class="lp-popover-menu lp-menu-popover-float" role="menu" aria-label="${escapeHtml(EDITOR_STRINGS.actions.more)}" hidden>
-        <button type="button" role="menuitem" id="ref-more-history" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" tabindex="0">${escapeHtml(EDITOR_STRINGS.actions.history)}</button>
-        <hr class="lp-menu-separator" role="separator" />
-        <button type="button" role="menuitem" id="ref-more-delete" class="lp-btn lp-btn-danger lp-btn-sm lp-menu-item lp-menu-item-danger" tabindex="-1">${escapeHtml(EDITOR_STRINGS.actions.deleteEntry)}</button>
-      </div>
-    </div>
-  </div>
-</div>`;
 }
 
 function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEditorOptions): string {
@@ -157,35 +85,26 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
   })}
 </div>`;
 
-  const headingText = selected.title.trim() || EDITOR_STRINGS.sidebar.untitled;
-
-  return `<div id="ref-editor-form" class="lp-editor-canvas" data-entry-id="${escapeHtml(selected.id)}" data-visibility="${escapeHtml(selected.visibility)}" data-is-new="${options.isNew ? 'true' : 'false'}">
-  <div class="lp-dialog-header">
-    <h1 id="ref-editor-heading" class="lp-type-title lp-editor-heading">${escapeHtml(headingText)}</h1>
-    ${renderBadge({
-      id: 'ref-state-badge',
-      label: formatVisibilityLabel(selected.visibility),
-      tone: visibilityTone(selected.visibility),
-    })}
-  </div>
-  ${renderField({ kind: 'input', id: 'ref-field-title', name: 'title', label: EDITOR_STRINGS.fields.titleLabel, value: selected.title, placeholder: EDITOR_STRINGS.fields.titlePlaceholder, error: options.titleError, required: true })}
-  ${renderField({ kind: 'textarea', id: 'ref-field-body', name: 'body', label: EDITOR_STRINGS.fields.bodyLabel, value: selected.body, placeholder: EDITOR_STRINGS.fields.bodyPlaceholder, rows: 6, className: 'lp-writing-surface-field' })}
-  <div id="ref-details-wrap">
-    ${renderDisclosure({
-      id: 'ref-details-disclosure',
-      summary: EDITOR_STRINGS.details.summary,
-      summaryMeta: formatDetailsMeta(selected),
-      summaryMetaId: 'ref-details-summary-meta',
-      bodyHtml: detailsBody,
-    })}
-  </div>
-  ${renderActionBar(selected)}
-  <div class="lp-status-line-slot">
-    ${renderStatusLine({
-      id: 'ref-status-line',
-      message: options.statusMessage ?? '',
-      tone: options.statusTone ?? 'info',
-    })}
+  return `<div id="ref-editor-form" class="lp-editor-fullscreen" data-entry-id="${escapeHtml(selected.id)}" data-visibility="${escapeHtml(selected.visibility)}" data-is-new="${options.isNew ? 'true' : 'false'}">
+  ${renderEditorToolbar(selected, options.statusMessage ?? '', options.statusTone ?? 'info')}
+  <div class="lp-editor-writing-col">
+    <div class="lp-editor-title-wrap">
+      <input type="text" id="ref-field-title" name="title" class="lp-editor-title-input" value="${escapeHtml(selected.title)}" placeholder="${escapeHtml(EDITOR_STRINGS.fields.titlePlaceholder)}" aria-label="${escapeHtml(EDITOR_STRINGS.fields.titleLabel)}" required />
+      ${options.titleError ? `<p id="ref-field-title-error" class="lp-field-error">${escapeHtml(options.titleError)}</p>` : '<p id="ref-field-title-error" class="lp-field-error lp-is-hidden"></p>'}
+    </div>
+    <div id="ref-details-wrap" class="lp-editor-details-wrap">
+      <button type="button" id="ref-details-trigger" class="lp-btn lp-btn-quiet lp-btn-sm lp-editor-details-trigger" aria-haspopup="true" aria-expanded="false" aria-controls="ref-details-popover">
+        <span id="ref-details-summary-meta">${escapeHtml(formatDetailsMeta(selected))}</span>
+      </button>
+      <div id="ref-details-popover" class="lp-popover-menu lp-editor-details-popover" hidden>
+        ${detailsBody}
+      </div>
+    </div>
+    <div class="lp-editor-surface-wrap">
+      <div id="ref-tiptap-editor" class="lp-tiptap-mount"></div>
+      <div id="ref-slash-menu" class="lp-popover-menu lp-slash-menu" role="menu" aria-label="Insert block" hidden></div>
+      <textarea id="ref-field-body" name="body" class="lp-input lp-textarea lp-editor-source-textarea lp-is-hidden" rows="16" placeholder="${escapeHtml(EDITOR_STRINGS.fields.bodyPlaceholder)}" aria-label="${escapeHtml(EDITOR_STRINGS.fields.bodyLabel)}" hidden>${escapeHtml(selected.body)}</textarea>
+    </div>
   </div>
 </div>`;
 }
@@ -204,7 +123,7 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
 
   const sidebarItems = entries
     .map((e) => {
-      const active = selected && e.id === selected.id;
+      const active = Boolean(selected && e.id === selected.id);
       const isPlaceholder = e.id === 'new';
       const rowTitle = isPlaceholder
         ? EDITOR_STRINGS.sidebar.newUnsaved
@@ -216,15 +135,16 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
         : isPlaceholder
           ? '/admin?new=1'
           : `/admin?entry=${escapeHtml(e.id)}`;
-      const rowBadge = isPlaceholder
-        ? renderBadge({ label: EDITOR_STRINGS.sidebar.unsavedBadge, tone: 'warn' })
-        : renderBadge({ label: formatVisibilityLabel(e.visibility), tone: visibilityTone(e.visibility) });
-      return `<li>
-  <a href="${rowHref}" class="lp-entry-row${active ? ' lp-entry-row-active' : ''}" data-entry-row="${escapeHtml(e.id)}"${active ? ' aria-current="page"' : ''}>
-    <span class="lp-entry-list-title">${escapeHtml(rowTitle)}</span>
-    ${rowBadge}
-  </a>
-</li>`;
+      const stateLabel = isPlaceholder ? EDITOR_STRINGS.sidebar.unsavedBadge : formatVisibilityLabel(e.visibility);
+      const stateTone = isPlaceholder ? 'warn' : visibilityTone(e.visibility);
+      return renderListRow({
+        href: rowHref,
+        primary: rowTitle,
+        stateLabel,
+        stateTone,
+        selected: active,
+        attributes: `data-entry-row="${escapeHtml(e.id)}"${active ? ' aria-current="page"' : ''}`,
+      });
     })
     .join('');
 
@@ -280,19 +200,24 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
       })}
     </div>
   </div>
-  <div id="ref-main" class="lp-editor-shell">
-    <aside class="lp-editor-sidebar" aria-label="${escapeHtml(EDITOR_STRINGS.sidebar.heading)}">
-      <div class="lp-preview-list-header">
-        <div class="lp-sidebar-title-group">
-          <span class="lp-type-body-sm">${escapeHtml(EDITOR_STRINGS.sidebar.heading)}</span>
-          ${renderBadge({ id: 'ref-entries-count', label: String(savedCount), tone: 'neutral' })}
-        </div>
+  <div id="ref-main" class="lp-editor-shell-fullscreen">
+    <aside id="ref-entries-drawer" class="lp-editor-drawer lp-editor-drawer-left" aria-label="${escapeHtml(EDITOR_STRINGS.sidebar.heading)}" hidden>
+      <div class="lp-editor-drawer-header">
+        <input type="search" id="ref-entries-search" class="lp-input" placeholder="Search entries…" aria-label="Search entries" />
         ${entries.length > 0 ? renderButton({ id: 'ref-btn-new-entry', label: EDITOR_STRINGS.sidebar.newEntry, variant: 'secondary', size: 'sm' }) : ''}
+        ${renderIconButton({
+          id: 'ref-btn-close-entries',
+          ariaLabel: 'Close entries drawer',
+          title: 'Close entries drawer',
+          icon: 'x',
+          iconSize: 16,
+          variant: 'quiet',
+          size: 'sm',
+        })}
       </div>
-      <button type="button" id="ref-sidebar-toggle" class="lp-btn lp-btn-secondary lp-btn-sm lp-sidebar-toggle" aria-expanded="false" aria-controls="ref-entry-list">${escapeHtml(EDITOR_STRINGS.sidebar.toggleEntries)} (${savedCount})</button>
-      <ul id="ref-entry-list" class="lp-entry-list" data-collapsed="true">${sidebarItems}</ul>
+      <div id="ref-entry-list" class="lp-list">${sidebarItems}</div>
     </aside>
-    <section id="ref-editor-main" class="lp-editor-main" aria-label="Entry editor">
+    <section id="ref-editor-main" class="lp-editor-main-fullscreen" aria-label="Entry editor">
       ${mainContent}
     </section>
     ${selected ? renderStructureInspectorPanel(options.inspector ?? { entryId: selected.id, visibility: selected.visibility, structureLevel: 0, gapQuestions: [], facets: [], claims: [], evidence: [], revisions: [] }) : ''}
@@ -306,6 +231,7 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
     answeringEnabled: options.answeringEnabled,
     siteName,
     legacyRecoveryUsed: options.legacyRecoveryUsed,
+    fullWidth: true,
   });
 }
 

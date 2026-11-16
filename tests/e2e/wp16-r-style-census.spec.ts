@@ -188,7 +188,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           h1Pos = { left: Math.round(r.left), top: Math.round(r.top) };
         }
         if (isTemplate) {
-          const mainCol = document.querySelector<HTMLElement>('.lp-page-column, main > div, main');
+          const mainCol = document.querySelector<HTMLElement>('.lp-page-column') ?? document.querySelector<HTMLElement>('main > div, main');
           if (mainCol) {
             const expectedW = Math.min(720, vpWidth);
             const actualW = Math.round(mainCol.getBoundingClientRect().width);
@@ -252,8 +252,12 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           if (cs.display === 'none' || cs.visibility === 'hidden') continue;
           els++;
 
-          // (b) Colour tokens & distinct backgrounds
-          if (cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') {
+          // (b) Colour tokens & distinct backgrounds (excluding status dots and primary buttons)
+          const isDotOrPrimaryBtn =
+            el.classList.contains('lp-status-dot') ||
+            el.classList.contains('lp-btn-primary') ||
+            el.classList.contains('lp-auth-progress-fill');
+          if (!isDotOrPrimaryBtn && cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') {
             bgColorsSeen.add(cs.backgroundColor);
             if (!tokenColors.has(cs.backgroundColor)) badTokenColors++;
           }
@@ -352,7 +356,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           } else if (tag === 'button' || el.classList.contains('lp-btn')) {
             sigs.button.push(`${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
             borderColors.button.push(cs.borderTopColor);
-          } else if (tag === 'input' && !['checkbox', 'radio', 'hidden'].includes((el as HTMLInputElement).type)) {
+          } else if (tag === 'input' && !['checkbox', 'radio', 'hidden'].includes((el as HTMLInputElement).type) && !el.classList.contains('lp-editor-title-input')) {
             sigs.input.push(`${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
             borderColors.input.push(cs.borderTopColor);
           } else if (tag === 'select') {

@@ -15,9 +15,11 @@ test.describe('WP-16.5 Inspector Module & History Restore (UX-37, CP-13)', () =>
     await page.goto(`/admin/entries/${encodeURIComponent(entryId)}`);
 
     const pane = page.locator('#ref-inspector-pane');
+    await expect(pane).toBeHidden();
+    await page.click('#ref-btn-structure');
     await expect(pane).toBeVisible();
-    await expect(pane.locator('.lp-inspector-levels')).toBeVisible();
-    await expect(pane.locator('.lp-inspector-next-step')).toBeVisible();
+    await expect(pane).toContainText('Captured, Tagged, Claimed, Grounded');
+    await expect(pane.locator('.lp-inspector-explainer')).toHaveCount(0);
 
     const tabs = pane.locator('[role="tab"]');
     await expect(tabs).toHaveCount(5);
@@ -31,7 +33,6 @@ test.describe('WP-16.5 Inspector Module & History Restore (UX-37, CP-13)', () =>
     await tabs.nth(0).focus();
     await page.keyboard.press('ArrowRight');
     await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
-    await expect(pane.locator('#ref-inspector-tabs-panel-context .lp-inspector-explainer')).toBeVisible();
 
     await page.keyboard.press('ArrowRight');
     await expect(tabs.nth(2)).toHaveAttribute('aria-selected', 'true');
@@ -40,7 +41,7 @@ test.describe('WP-16.5 Inspector Module & History Restore (UX-37, CP-13)', () =>
     await page.keyboard.press('ArrowRight');
     await expect(tabs.nth(4)).toHaveAttribute('aria-selected', 'true');
 
-    const historyLink = pane.locator(`a[href="/admin/entries/${entryId}/history"]`);
+    const historyLink = page.locator(`#ref-btn-history[href="/admin/entries/${entryId}/history"]`);
     await expect(historyLink).toBeVisible();
   });
 
@@ -49,6 +50,7 @@ test.describe('WP-16.5 Inspector Module & History Restore (UX-37, CP-13)', () =>
 
     await page.goto('/admin/entries/new');
     await page.fill('#ref-field-title', 'History Restore Test Entry');
+    await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', 'Revision one body content.');
     await page.click('#ref-btn-save');
     await page.waitForURL((url) => /\/admin\/entries\/[^/]+$/.test(url.pathname) && !url.pathname.endsWith('/new'));

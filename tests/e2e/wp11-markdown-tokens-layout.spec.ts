@@ -11,7 +11,9 @@ test.describe('WP-11.4: Full Markdown Engine, Design Tokens & Responsive Multi-P
 
     // Desktop viewport (1280px)
     await page.setViewportSize({ width: 1280, height: 900 });
+    await page.click('#ref-sidebar-toggle');
     await expect(page.locator('#ref-entry-list')).toBeVisible();
+    await page.keyboard.press('Escape');
     await expect(page.locator('#lp-launcher-btn')).toBeVisible();
 
     // Mobile viewport (480px)
@@ -26,14 +28,17 @@ test.describe('WP-11.4: Full Markdown Engine, Design Tokens & Responsive Multi-P
     await page.goto('/admin/entries/new');
 
     const titleInput = page.locator('#ref-field-title');
+    const richSurface = page.locator('#ref-tiptap-editor .ProseMirror');
     const textarea = page.locator('#ref-field-body');
     const saveBtn = page.locator('#ref-btn-save');
 
     await expect(titleInput).toBeVisible();
-    await expect(textarea).toBeVisible();
+    await expect(richSurface).toBeVisible();
     await expect(saveBtn).toBeVisible();
 
     await titleInput.fill('Markdown Layout Verification');
+    await page.click('#ref-btn-source-toggle');
+    await expect(textarea).toBeVisible();
     await textarea.fill('## Heading 2\n\nTesting multi-tier design tokens and CommonMark parsing.');
     await saveBtn.click();
     await expect(page.locator('#ref-status-line')).toContainText(/draft saved/i);

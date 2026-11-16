@@ -18,9 +18,11 @@ test.describe.serial('WP-14.0a: In-viewport editor feedback and live announcemen
     const statusLine = page.locator('#ref-status-line');
 
     await page.fill('#ref-field-title', testTitle);
-    await page.locator('#ref-details-disclosure summary').click();
+    await page.click('#ref-details-trigger');
     await page.fill('#ref-field-slug', testSlug);
     await page.fill('#ref-field-date', '2026-11-10');
+    await page.keyboard.press('Escape');
+    await page.click('#ref-btn-source-toggle');
     await page.fill(
       '#ref-field-body',
       '## WP-14.0a Verification\n\nTesting in-viewport editor results for Save draft, Publish, Visibility, and Delete.\n'.repeat(10)
@@ -35,6 +37,7 @@ test.describe.serial('WP-14.0a: In-viewport editor feedback and live announcemen
     await expect(statusLine).toHaveAttribute('aria-live', 'polite');
 
     // Publish
+    await page.click('#ref-visibility-menu-btn');
     await openDialogBtn.click();
     await expect(page.locator('#ref-publish-dialog-status')).toContainText(/no private details/i);
     await confirmPublishBtn.click();
