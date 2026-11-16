@@ -131,6 +131,7 @@
 | `A123` | wp16l-l0-foundations-and-census | `active` | [A123-wp16l-l0-foundations-and-census.md](execution-reports/A123-wp16l-l0-foundations-and-census.md) | — |
 | `A124` | wp16l-l1-shell-pages-settings | `active` | [A124-wp16l-l1-shell-pages-settings.md](execution-reports/A124-wp16l-l1-shell-pages-settings.md) | — |
 | `A125` | WP-16.L L2 Tiptap Editor | `active` | [A125-wp-16l-l2-tiptap-editor.md](execution-reports/A125-wp-16l-l2-tiptap-editor.md) | — |
+| `A126` | WP-16.L L3 Contact Sheets | `active` | [A126-wp-16l-l3-contact-sheets.md](execution-reports/A126-wp-16l-l3-contact-sheets.md) | — |
 
 ## Handover Snapshots (Class H)
 
