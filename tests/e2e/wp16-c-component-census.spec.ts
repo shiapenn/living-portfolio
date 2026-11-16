@@ -506,7 +506,7 @@ test.describe('WP-16.C D-COMP Component Contract Census & Canaries', () => {
     for (const vp of viewports) {
       await page.setViewportSize(vp);
       await page.goto('/admin');
-      for (const btnId of ['admin-launcher-btn', 'admin-status-btn', 'admin-account-btn']) {
+      for (const btnId of ['lp-launcher-btn', 'lp-status-popover-btn', 'lp-account-menu-btn']) {
         const btn = page.locator(`#${btnId}`);
         if (await btn.count()) {
           await btn.click();
