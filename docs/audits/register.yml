@@ -6101,7 +6101,7 @@
   spec_sections:
     - "12.8"
   severity: P0
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6112,14 +6112,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review: sprite only resolves some icons and falls back to close glyph."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-127
   audit: AUD-2026-11-06
   title: 'Census blind spots: zero violations reported while headings touch helper text, Save touches last control, Today title sits beside description, editor title is 14 px'
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6130,14 +6134,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review: extend census with D-COMP checks and failing canaries."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-128
   audit: AUD-2026-11-06
   title: 'Editor defects: title field not 24 px, blank band above toolbar, toolbar wraps to 3 rows at 320 px, Source bare text, visibility popover clipped at 320 px'
   spec_sections:
     - "2.1.2"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6148,14 +6156,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-129
   audit: AUD-2026-11-06
   title: 'Pages at 320 px place siblings side by side instead of stacking (header, filters, list rows, tabs, buttons)'
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6166,14 +6178,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-130
   audit: AUD-2026-11-06
   title: 'Page headers: back link, title, description and action are not one PageHeader component (History, Settings, Today, Import)'
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6184,14 +6200,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-131
   audit: AUD-2026-11-06
   title: 'Buttons: primary and secondary alignment differs between web and mobile; Save touches the control above'
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6202,14 +6222,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-132
   audit: AUD-2026-11-06
   title: 'Native checkboxes and radios (Settings, Setup) do not follow the design system'
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6220,14 +6244,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-133
   audit: AUD-2026-11-06
   title: 'Settings: All settings link in header, unused settings index, Providers shows no providers or key field and does not match setup step 3'
   spec_sections:
     - "12.10"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6238,14 +6266,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-134
   audit: AUD-2026-11-06
   title: 'Answer rules: row title "Answer rule." with a stray full stop'
   spec_sections:
     - "10.0"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6256,14 +6288,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-135
   audit: AUD-2026-11-06
   title: 'Entries: the filter bar is boxed (D-MIN 6)'
   spec_sections:
     - "12.8"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6274,14 +6310,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-136
   audit: AUD-2026-11-06
   title: 'Setup: step line says "First-Run Wizard" and Back is misplaced'
   spec_sections:
     - "13.1"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6292,14 +6332,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-137
   audit: AUD-2026-11-06
   title: 'Login: the recovery link sits above the Sign in button'
   spec_sections:
     - "13.4"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6310,14 +6354,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-138
   audit: AUD-2026-11-06
   title: 'Today: no clear purpose; the dismiss button overlaps the heading'
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6328,14 +6376,18 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
 - id: 20261106-UX-139
   audit: AUD-2026-11-06
   title: 'Account menu duplicates Settings and View public site'
   spec_sections:
     - "12.8"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
@@ -6346,4 +6398,7 @@
     - date: 2026-11-16
       status: open
       note: "Registered in WP-16.C C0 from WP-16.L contact-sheet review."
-  verified_by: null
+    - date: 2026-11-16
+      status: fixed
+      note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
+  verified_by: tests/e2e/wp16-c-component-census.spec.ts
