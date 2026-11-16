@@ -4631,10 +4631,22 @@ a.lp-item:hover {
 /* Tabs & Stepper (D-COMP #6) */
 .lp-tabs {
   display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.lp-tabs[role="tablist"],
+.lp-tablist {
+  display: flex;
+  flex-direction: row;
   flex-wrap: nowrap;
   width: 100%;
   border-bottom: 1px solid var(--border-subtle);
-  margin-bottom: 24px;
+}
+
+.lp-tablist {
+  margin-bottom: 16px;
 }
 
 .lp-tab {
