@@ -1,5 +1,5 @@
 import { escapeHtml } from '../lib/html.js';
-import { renderBadge } from '../primitives/index.js';
+import { renderBadge, renderIconButton } from '../primitives/index.js';
 import { renderTabs } from '../components/index.js';
 import { INSPECTOR_STRINGS } from '../strings/admin/inspector.js';
 
@@ -39,55 +39,35 @@ export interface StructureInspectorData {
   revisions: InspectorRevision[];
 }
 
-function renderSuggestedBadge(): string {
-  return renderBadge({ label: INSPECTOR_STRINGS.suggestedBadge, tone: 'info' });
-}
-
 export function renderStructureInspectorPanel(data: StructureInspectorData): string {
   const level = Math.max(0, Math.min(3, Number.isFinite(data.structureLevel) ? data.structureLevel : 0));
-  const levelsHtml = INSPECTOR_STRINGS.levels
-    .map((step) => {
-      const done = step.level <= level;
-      const current = step.level === level;
-      return `<div class="lp-inspector-level${done ? ' lp-inspector-level-done' : ''}${current ? ' lp-inspector-level-current' : ''}" data-level="${step.level}">
-        <span class="lp-inspector-level-code">${escapeHtml(step.code)}</span>
-        <span class="lp-inspector-level-name">${escapeHtml(step.label)}</span>
-      </div>`;
-    })
-    .join('');
+  const stepNames = ['Captured', 'Tagged', 'Claimed', 'Grounded'];
+  const levelLineHtml = stepNames
+    .map((name, idx) => (idx === level ? `<strong>${escapeHtml(name)}</strong>` : escapeHtml(name)))
+    .join(', ');
 
   const nextPrompt = data.gapQuestions[0]?.trim() || INSPECTOR_STRINGS.defaultNextStep;
 
   const claimsList = data.claims.length > 0
     ? `<ul class="lp-inspector-list">${data.claims
         .slice(0, 5)
-        .map((c) => `<li class="lp-inspector-item${c.suggested ? ' lp-inspector-suggested' : ''}"><span>${escapeHtml(c.claim_text || '')}</span>${c.suggested ? renderSuggestedBadge() : ''}</li>`)
+        .map((c) => `<li class="lp-inspector-item"><span>${escapeHtml(c.claim_text || '')}</span></li>`)
         .join('')}</ul>`
     : `<p class="lp-field-help">${escapeHtml(INSPECTOR_STRINGS.tabs.structure.empty)}</p>`;
-
-  const structurePanel = `<p class="lp-inspector-explainer">${escapeHtml(INSPECTOR_STRINGS.tabs.structure.explainer)}</p>
-    ${claimsList}
-    ${data.claims.some((c) => c.suggested) ? '' : `<div class="lp-inspector-item lp-inspector-suggested"><span>${escapeHtml(INSPECTOR_STRINGS.tabs.structure.suggestedHeading)}</span>${renderSuggestedBadge()}</div>`}`;
 
   const facetsList = data.facets.length > 0
     ? `<ul class="lp-inspector-list">${data.facets
         .slice(0, 8)
-        .map((f) => `<li class="lp-inspector-item${f.suggested ? ' lp-inspector-suggested' : ''}"><span>${escapeHtml(`${f.facet_type ?? 'tag'}: ${f.facet_value ?? ''}`)}</span>${f.suggested ? renderSuggestedBadge() : ''}</li>`)
+        .map((f) => `<li class="lp-inspector-item"><span>${escapeHtml(`${f.facet_type ?? 'tag'}: ${f.facet_value ?? ''}`)}</span></li>`)
         .join('')}</ul>`
-    : `<p class="lp-field-help">${escapeHtml(INSPECTOR_STRINGS.tabs.context.empty)}</p>
-       <div class="lp-inspector-item lp-inspector-suggested"><span>${escapeHtml(INSPECTOR_STRINGS.tabs.context.suggestedHeading)}</span>${renderSuggestedBadge()}</div>`;
-
-  const contextPanel = `<p class="lp-inspector-explainer">${escapeHtml(INSPECTOR_STRINGS.tabs.context.explainer)}</p>${facetsList}`;
+    : `<p class="lp-field-help">${escapeHtml(INSPECTOR_STRINGS.tabs.context.empty)}</p>`;
 
   const evidenceList = data.evidence.length > 0
     ? `<ul class="lp-inspector-list">${data.evidence
         .slice(0, 6)
-        .map((e) => `<li class="lp-inspector-item${e.suggested ? ' lp-inspector-suggested' : ''}"><span>${escapeHtml(e.title || e.url || e.kind || 'Evidence')}</span>${e.suggested ? renderSuggestedBadge() : ''}</li>`)
+        .map((e) => `<li class="lp-inspector-item"><span>${escapeHtml(e.title || e.url || e.kind || 'Evidence')}</span></li>`)
         .join('')}</ul>`
-    : `<p class="lp-field-help">${escapeHtml(INSPECTOR_STRINGS.tabs.evidence.empty)}</p>
-       <div class="lp-inspector-item lp-inspector-suggested"><span>${escapeHtml(INSPECTOR_STRINGS.tabs.evidence.suggestedHeading)}</span>${renderSuggestedBadge()}</div>`;
-
-  const evidencePanel = `<p class="lp-inspector-explainer">${escapeHtml(INSPECTOR_STRINGS.tabs.evidence.explainer)}</p>${evidenceList}`;
+    : `<p class="lp-field-help">${escapeHtml(INSPECTOR_STRINGS.tabs.evidence.empty)}</p>`;
 
   const isAnswerable = data.visibility !== 'draft' && (data.claims.length > 0 || level >= 2);
   const answerDetail = data.visibility === 'draft'
@@ -95,8 +75,7 @@ export function renderStructureInspectorPanel(data: StructureInspectorData): str
     : isAnswerable
       ? INSPECTOR_STRINGS.tabs.answerability.readyDetail
       : INSPECTOR_STRINGS.tabs.answerability.ungroundedDetail;
-  const answerPanel = `<p class="lp-inspector-explainer">${escapeHtml(INSPECTOR_STRINGS.tabs.answerability.explainer)}</p>
-    <div class="lp-inspector-status">
+  const answerPanel = `<div class="lp-inspector-status">
       ${renderBadge({ label: isAnswerable ? INSPECTOR_STRINGS.tabs.answerability.readyLabel : INSPECTOR_STRINGS.tabs.answerability.notReadyLabel, tone: isAnswerable ? 'ok' : 'warn' })}
       <p class="lp-field-help">${escapeHtml(answerDetail)}</p>
     </div>`;
@@ -112,20 +91,29 @@ export function renderStructureInspectorPanel(data: StructureInspectorData): str
     ? `<a href="/admin/entries/${encodeURIComponent(data.entryId)}/history" class="lp-btn lp-btn-secondary lp-btn-sm">${escapeHtml(INSPECTOR_STRINGS.tabs.history.viewAll)}</a>`
     : '';
 
-  const historyPanel = `<p class="lp-inspector-explainer">${escapeHtml(INSPECTOR_STRINGS.tabs.history.explainer)}</p>${revList}${historyLink}`;
-
-  return `<aside id="ref-inspector-pane" class="lp-editor-inspector lp-card" aria-label="${escapeHtml(INSPECTOR_STRINGS.paneLabel)}">
-    <div class="lp-inspector-levels" role="group" aria-label="Structure level">${levelsHtml}</div>
+  return `<aside id="ref-inspector-pane" class="lp-editor-drawer lp-editor-drawer-right" aria-label="${escapeHtml(INSPECTOR_STRINGS.paneLabel)}" hidden>
+    <div class="lp-editor-drawer-header">
+      <p class="lp-inspector-level-line">${levelLineHtml}</p>
+      ${renderIconButton({
+        id: 'ref-btn-close-structure',
+        ariaLabel: 'Close structure panel',
+        title: 'Close structure panel',
+        icon: 'x',
+        iconSize: 16,
+        variant: 'quiet',
+        size: 'sm',
+      })}
+    </div>
     <p class="lp-inspector-next-step"><strong>${escapeHtml(INSPECTOR_STRINGS.nextStepPrefix)}</strong> ${escapeHtml(nextPrompt)}</p>
     ${renderTabs({
       id: 'ref-inspector-tabs',
       ariaLabel: INSPECTOR_STRINGS.paneLabel,
       tabs: [
-        { id: 'structure', label: INSPECTOR_STRINGS.tabs.structure.label, panelHtml: structurePanel, active: true },
-        { id: 'context', label: INSPECTOR_STRINGS.tabs.context.label, panelHtml: contextPanel },
-        { id: 'evidence', label: INSPECTOR_STRINGS.tabs.evidence.label, panelHtml: evidencePanel },
+        { id: 'structure', label: INSPECTOR_STRINGS.tabs.structure.label, panelHtml: claimsList, active: true },
+        { id: 'context', label: INSPECTOR_STRINGS.tabs.context.label, panelHtml: facetsList },
+        { id: 'evidence', label: INSPECTOR_STRINGS.tabs.evidence.label, panelHtml: evidenceList },
         { id: 'answerability', label: INSPECTOR_STRINGS.tabs.answerability.label, panelHtml: answerPanel },
-        { id: 'history', label: INSPECTOR_STRINGS.tabs.history.label, panelHtml: historyPanel },
+        { id: 'history', label: INSPECTOR_STRINGS.tabs.history.label, panelHtml: `${revList}${historyLink}` },
       ],
     })}
   </aside>`;

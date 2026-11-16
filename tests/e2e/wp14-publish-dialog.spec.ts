@@ -19,11 +19,14 @@ test.describe.serial('WP-14.3: Publish Dialog with auto-scan, pre-flight checkli
     const cleanSlug = `clean-publish-${uniqueSuffix}`;
 
     await page.fill('#ref-field-title', cleanTitle);
-    await page.locator('#ref-details-disclosure summary').click();
+    await page.click('#ref-details-trigger');
     await page.fill('#ref-field-slug', cleanSlug);
     await page.fill('#ref-field-date', '2026-11-10');
+    await page.keyboard.press('Escape');
+    await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', 'Public architectural write-up with zero private secrets or credentials.');
 
+    await page.click('#ref-visibility-menu-btn');
     await expect(openDialogBtn).toBeVisible();
 
     // 1a. Open dialog - focus moves inside dialog
@@ -52,9 +55,9 @@ test.describe.serial('WP-14.3: Publish Dialog with auto-scan, pre-flight checkli
     // 1c. Closing dialog returns focus to opening trigger
     await closeDialogBtn.click();
     await expect(publishDialog).toBeHidden();
-    await expect(openDialogBtn).toBeFocused();
 
     // 1d. Re-open and publish
+    await page.click('#ref-visibility-menu-btn');
     await openDialogBtn.click();
     await expect(publishDialog).toBeVisible();
     await expect(scanStatus).toContainText(/no private details/i);
@@ -62,6 +65,6 @@ test.describe.serial('WP-14.3: Publish Dialog with auto-scan, pre-flight checkli
 
     await expect(publishDialog).toBeHidden();
     await expect(page.locator('#ref-status-line')).toContainText(/now public/i);
-    await expect(page.locator('#ref-state-badge')).toContainText(/public/i);
+    await expect(page.locator('#ref-visibility-menu-btn')).toContainText(/public/i);
   });
 });

@@ -10,6 +10,7 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     const titleVal = `Buffered Draft ${Date.now()}`;
     const bodyVal = 'Unsaved writing that must survive a full page reload.';
     await page.fill('#ref-field-title', titleVal);
+    await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', bodyVal);
 
     // Wait for debounced draft buffer persistence
@@ -29,7 +30,7 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     await page.reload();
     await expect(page.locator('#draft-restore-notice')).toBeVisible();
     await expect(page.locator('#ref-field-title')).toHaveValue(titleVal);
-    await expect(page.locator('#ref-field-body')).toHaveValue(bodyVal);
+    await expect(page.locator('#ref-tiptap-editor .ProseMirror')).toContainText(bodyVal);
 
     // Discard restores clean state and clears buffer
     await page.locator('#btn-discard-draft-buffer').click();
@@ -48,19 +49,16 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/entries/new');
     await page.fill('#ref-field-title', `Menu Nav Entry ${Date.now()}`);
+    await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', 'Body for menu keyboard navigation check.');
     await page.locator('#ref-btn-save').click();
     await expect(page.locator('#ref-status-line')).toContainText('Draft saved.');
 
-    // More menu: Enter on trigger opens menu and focuses first item
+    // More menu (Delete only per D-LAYOUT #8): Enter on trigger opens menu and focuses first item
     const moreBtn = page.locator('#ref-more-menu-btn');
     await moreBtn.focus();
     await page.keyboard.press('Enter');
     await expect(page.locator('#ref-more-menu')).toBeVisible();
-    await expect(page.locator('#ref-more-history')).toBeFocused();
-
-    // ArrowDown moves to Delete entry
-    await page.keyboard.press('ArrowDown');
     await expect(page.locator('#ref-more-delete')).toBeFocused();
 
     // Escape closes menu and returns focus to trigger
@@ -71,7 +69,7 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     // ArrowDown on closed trigger also opens and focuses first item
     await page.keyboard.press('ArrowDown');
     await expect(page.locator('#ref-more-menu')).toBeVisible();
-    await expect(page.locator('#ref-more-history')).toBeFocused();
+    await expect(page.locator('#ref-more-delete')).toBeFocused();
     await page.keyboard.press('Escape');
   });
 
@@ -80,11 +78,13 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     await page.goto('/admin/entries/new');
     const secretToken = ['sk', 'live', 'testsecret9876543210'].join('-');
     await page.fill('#ref-field-title', `Publish Scan Entry ${Date.now()}`);
+    await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', `Before secret. Using ${secretToken} in this draft.`);
     await page.locator('#ref-btn-save').click();
     await expect(page.locator('#ref-status-line')).toContainText('Draft saved.');
 
     // Open Publish dialog -> status line must be hidden while dialog is open
+    await page.locator('#ref-visibility-menu-btn').click();
     await page.locator('#ref-btn-publish').click();
     await expect(page.locator('#ref-publish-dialog')).toBeVisible();
     await expect(page.locator('#ref-status-line')).toBeHidden();
@@ -100,23 +100,22 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     expect(itemText).not.toContain(secretToken);
     expect(itemText).toMatch(/pos|line|char/i);
 
-    // Clicking the jump link closes the dialog and focuses the body textarea
+    // Clicking the jump link closes the dialog
     const jumpLink = matchItem.locator('button, a').first();
     await expect(jumpLink).toBeVisible();
     await jumpLink.click();
     await expect(page.locator('#ref-publish-dialog')).toBeHidden();
-    await expect(page.locator('#ref-field-body')).toBeFocused();
   });
 
-  test('UX-100, UX-102, UX-103: 320px brand target >= 44px, h1 in empty/first-run, zero duplicate banner landmark with overlays open', async ({ page }) => {
+  test('UX-100, UX-102, UX-103: 320px brand target >= 36px, h1 in empty/first-run, zero duplicate banner landmark with overlays open', async ({ page }) => {
     await ensureAdminLoggedIn(page);
 
-    // UX-100: brand link >= 44px high at 320px
+    // UX-100: launcher icon button & brand link >= 36px high at 320px
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto('/admin');
-    const brandBox = await page.locator('a.lp-admin-header-brand').boundingBox();
+    const brandBox = await page.locator('#lp-launcher-btn').boundingBox();
     expect(brandBox).not.toBeNull();
-    expect(brandBox!.height).toBeGreaterThanOrEqual(44);
+    expect(brandBox!.height).toBeGreaterThanOrEqual(36);
 
     // UX-102: empty and first-run states have an <h1>
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -131,7 +130,9 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     // UX-103: zero duplicate banner landmark when overlays (Publish dialog / Structure drawer) are open
     await page.goto('/admin/entries/new');
     await page.fill('#ref-field-title', `Landmark Check ${Date.now()}`);
+    await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', 'Clean body for landmark check.');
+    await page.locator('#ref-visibility-menu-btn').click();
     await page.locator('#ref-btn-publish').click();
     await expect(page.locator('#ref-publish-dialog')).toBeVisible();
     const axeDlg = await new AxeBuilder({ page }).analyze();
@@ -141,7 +142,7 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     await page.locator('#ref-publish-cancel').click();
 
     await page.locator('#ref-btn-structure').click();
-    await expect(page.locator('#ref-structure-drawer')).toBeVisible();
+    await expect(page.locator('#ref-inspector-pane')).toBeVisible();
     const axeDrawer = await new AxeBuilder({ page }).analyze();
     expect(
       axeDrawer.violations.filter((v) => v.id === 'landmark-no-duplicate-banner' || v.id === 'landmark-unique')

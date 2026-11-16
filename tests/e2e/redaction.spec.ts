@@ -26,9 +26,11 @@ test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview
     const confirmBtn = page.locator('#ref-publish-confirm');
 
     await titleInput.fill('Redaction Gate Verification');
+    await page.click('#ref-btn-source-toggle');
 
     // 1. Clean state
     await bodyInput.fill('Writing about software performance and clean distributed data structures.');
+    await page.click('#ref-visibility-menu-btn');
     await openDialogBtn.click();
     await expect(dialog).toBeVisible();
     await expect(dialogStatus).toContainText(/no private details/i);
@@ -38,6 +40,7 @@ test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview
 
     // 2. Needs review state: configured exclusion matched
     await bodyInput.fill('Client deployment for internal.corp.example.com under secret-project-alpha.');
+    await page.click('#ref-visibility-menu-btn');
     await openDialogBtn.click();
     await expect(dialog).toBeVisible();
     await expect(ndaStep).toBeVisible();

@@ -66,16 +66,16 @@ export const EDITOR_STRINGS = {
   ],
   profileShort: {
     'case-study': 'Case Study',
-    decision: 'Decision Record',
+    decision: 'Decision',
     'build-note': 'Build Note',
-    freeform: 'Freeform Essay',
+    freeform: 'Freeform',
   } as Record<string, string>,
   temporal: [
     { value: 'exact', label: 'Exact date (day precision)' },
     { value: 'estimated', label: 'Estimated month or quarter' },
     { value: 'range', label: 'Date range (start to end)' },
   ],
-  temporalShort: { exact: 'Exact date', estimated: 'Estimated', range: 'Date range' } as Record<string, string>,
+  temporalShort: { exact: 'Exact', estimated: 'Estimated', range: 'Range' } as Record<string, string>,
   actions: {
     saveDraft: 'Save draft',
     saveChanges: 'Save changes',

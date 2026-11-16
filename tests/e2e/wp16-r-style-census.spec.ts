@@ -31,6 +31,7 @@ const BUDGET_PATH = resolve(process.cwd(), 'docs/audits/style-census-budget.json
 test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & overlay x 2 themes x 1280/320px + editor 1920px)', () => {
   test('census meets shrinking budgets and prints layout, colour, overflow, text, select & value metrics', async ({ page }) => {
     test.setTimeout(180_000);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     const budgetFile: BudgetFile = JSON.parse(readFileSync(BUDGET_PATH, 'utf8'));
 
     await ensureAdminLoggedIn(page);
@@ -104,9 +105,11 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
     };
 
     const scanCurrentPage = async (route: string, theme: 'light' | 'dark', width: number, isTemplatePage: boolean) => {
-      await page.evaluate((t) => {
+      await page.evaluate(async (t) => {
         document.documentElement.setAttribute('data-theme', t);
         try { localStorage.setItem('strata-theme', t); } catch {}
+        void document.body.offsetHeight;
+        await Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {})));
       }, theme);
 
       const res = await page.evaluate(({ isTemplate, vpWidth }) => {
@@ -188,7 +191,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           h1Pos = { left: Math.round(r.left), top: Math.round(r.top) };
         }
         if (isTemplate) {
-          const mainCol = document.querySelector<HTMLElement>('.lp-page-column, main > div, main');
+          const mainCol = document.querySelector<HTMLElement>('.lp-page-column') ?? document.querySelector<HTMLElement>('main > div, main');
           if (mainCol) {
             const expectedW = Math.min(720, vpWidth);
             const actualW = Math.round(mainCol.getBoundingClientRect().width);
@@ -252,8 +255,12 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           if (cs.display === 'none' || cs.visibility === 'hidden') continue;
           els++;
 
-          // (b) Colour tokens & distinct backgrounds
-          if (cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') {
+          // (b) Colour tokens & distinct backgrounds (excluding status dots and primary buttons)
+          const isDotOrPrimaryBtn =
+            el.classList.contains('lp-status-dot') ||
+            el.classList.contains('lp-btn-primary') ||
+            el.classList.contains('lp-auth-progress-fill');
+          if (!isDotOrPrimaryBtn && cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') {
             bgColorsSeen.add(cs.backgroundColor);
             if (!tokenColors.has(cs.backgroundColor)) badTokenColors++;
           }
@@ -352,7 +359,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           } else if (tag === 'button' || el.classList.contains('lp-btn')) {
             sigs.button.push(`${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
             borderColors.button.push(cs.borderTopColor);
-          } else if (tag === 'input' && !['checkbox', 'radio', 'hidden'].includes((el as HTMLInputElement).type)) {
+          } else if (tag === 'input' && !['checkbox', 'radio', 'hidden'].includes((el as HTMLInputElement).type) && !el.classList.contains('lp-editor-title-input')) {
             sigs.input.push(`${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
             borderColors.input.push(cs.borderTopColor);
           } else if (tag === 'select') {

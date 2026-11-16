@@ -5,7 +5,7 @@ import { renderButton } from "../../primitives/index.js";
 import { renderPageNotice } from "../../components/index.js";
 import { IMPORT_SCRIPT } from './import-script.js';
 
-export async function renderAdminImportPage(repo: WebDataClient): Promise<string> {
+export async function renderAdminImportPage(repo: WebDataClient, options: { nonce?: string } = {}): Promise<string> {
   repo = adaptDataSource(repo);
   const cfg = loadConfig();
   const stagingNoticeHtml =
@@ -36,8 +36,12 @@ export async function renderAdminImportPage(repo: WebDataClient): Promise<string
         </p>
 
         <div class="lp-field">
-          <label class="lp-field-label" for="import-paste-area">Markdown Content</label>
-          <textarea id="import-paste-area" rows="10" class="lp-input lp-textarea" placeholder="# Migrating to Postgres Advisory Locks&#10;&#10;In 2024 we eliminated lock contention by migrating to PostgreSQL 15 advisory locks...&#10;&#10;---&#10;&#10;# Edge Microservice Architecture&#10;&#10;Designed multi-region edge gateways on Cloudflare Workers..."></textarea>
+          <div class="lp-page-title-row">
+            <label class="lp-field-label" for="import-paste-area">Markdown Content</label>
+            <button type="button" id="import-source-toggle" class="lp-btn lp-btn-quiet lp-btn-sm" aria-pressed="true">Source</button>
+          </div>
+          <div id="import-tiptap-editor" class="lp-tiptap-mount lp-is-hidden" hidden></div>
+          <textarea id="import-paste-area" rows="10" class="lp-input lp-textarea lp-editor-source-textarea" placeholder="# Migrating to Postgres Advisory Locks&#10;&#10;In 2024 we eliminated lock contention by migrating to PostgreSQL 15 advisory locks...&#10;&#10;---&#10;&#10;# Edge Microservice Architecture&#10;&#10;Designed multi-region edge gateways on Cloudflare Workers..."></textarea>
         </div>
 
         <div class="lp-row-wrap">
@@ -108,6 +112,7 @@ export async function renderAdminImportPage(repo: WebDataClient): Promise<string
     </div>
 
 ${IMPORT_SCRIPT}
+${options.nonce ? `<script type="module" src="/assets/client/import-page.js" nonce="${options.nonce}"></script>` : '<script type="module" src="/assets/client/import-page.js"></script>'}
   `;
   const content = renderPageTemplate({
     title: 'Import & Triage',
@@ -115,5 +120,5 @@ ${IMPORT_SCRIPT}
     tabsHtml,
     bodyHtml,
   });
-  return renderAdminShell('Import & Triage', '/admin/import', content);
+  return renderAdminShell('Import & Triage', '/admin/import', content, { nonce: options.nonce });
 }

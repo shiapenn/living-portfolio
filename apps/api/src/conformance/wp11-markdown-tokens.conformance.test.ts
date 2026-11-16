@@ -134,12 +134,12 @@ Safe text before
       expect(sanitized).not.toContain('javascript:attack()');
     });
 
-    it('admin editor provides auto-growing writing surface and design token editor height', async () => {
+    it('admin editor provides full-height Tiptap rich editor, source textarea fallback, and design token editor height', async () => {
       const html = await renderAdminEntriesPage(repo);
 
       expect(html).toContain('id="ref-field-body"');
-      expect(html).toContain('lp-writing-surface-field');
-      expect(html).toContain('data-lp-autogrow');
+      expect(html).toContain('id="ref-tiptap-editor"');
+      expect(html).toContain('lp-tiptap-mount');
       expect(STRATA_DESIGN_SYSTEM_CSS).toContain('--editor-min-height: 60vh');
     });
   });
@@ -246,13 +246,13 @@ Safe text before
   });
 
   describe('20261020-UI-06, 20261020-UI-07, 20261020-UI-10: Multi-Pane Layout, Breakpoints & Slot Contracts', () => {
-    it('admin editor renders slim admin header and responsive editor shell layout', async () => {
+    it('admin editor renders slim admin header and full-screen D-LAYOUT editor with drawers', async () => {
       const adminHtml = await renderAdminEntriesPage(repo);
 
       expect(adminHtml).toContain('class="lp-admin-header"');
-      expect(adminHtml).toContain('class="lp-editor-shell"');
-      expect(adminHtml).toContain('class="lp-editor-sidebar"');
-      expect(adminHtml).toContain('id="ref-editor-main"');
+      expect(adminHtml).toContain('id="ref-editor-toolbar"');
+      expect(adminHtml).toContain('id="ref-entries-drawer"');
+      expect(adminHtml).toContain('id="ref-inspector-pane"');
     });
 
     it('responsive layout media queries handle mobile, tablet (2 panes), and desktop (3 panes)', () => {

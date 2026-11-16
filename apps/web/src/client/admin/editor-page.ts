@@ -5,8 +5,9 @@ import {
   initTabs,
   updateStatusLine,
 } from '../containers.js';
-import { resolveEntrySection } from '@living-portfolio/core';
+import { resolveEntrySection } from '@living-portfolio/core/sections';
 import { EDITOR_STRINGS } from '../../strings/admin/editor.js';
+import { mountTiptapEditor, type MountedTiptapController } from './tiptap-editor.js';
 import { formatActionableError } from '../../strings/formatters.js';
 
 type Visibility = 'draft' | 'unlisted' | 'public';
@@ -59,7 +60,7 @@ function autoGrowTextarea(_ta: HTMLTextAreaElement): void {
 
 function setFieldError(input: HTMLElement | null, message: string | null): void {
   if (!input) return;
-  const field = input.closest('.lp-field');
+  const field = input.closest('.lp-field, .lp-editor-title-wrap');
   if (!field) return;
   const errId = `${input.id}-error`;
   let errEl = document.getElementById(errId);
@@ -70,14 +71,17 @@ function setFieldError(input: HTMLElement | null, message: string | null): void 
       errEl = document.createElement('p');
       errEl.id = errId;
       errEl.className = 'lp-field-error';
-      errEl.setAttribute('role', 'alert');
       field.appendChild(errEl);
     }
+    errEl.classList.remove('lp-is-hidden');
     errEl.textContent = message;
   } else {
     field.classList.remove('lp-field-has-error');
     input.removeAttribute('aria-invalid');
-    errEl?.remove();
+    if (errEl) {
+      errEl.textContent = '';
+      errEl.classList.add('lp-is-hidden');
+    }
   }
 }
 
@@ -223,12 +227,15 @@ function bootEditorPage(): void {
       const itemVis = item.getAttribute('data-vis');
       item.setAttribute('aria-checked', itemVis === vis ? 'true' : 'false');
     });
+    const visBtn = document.getElementById('ref-visibility-menu-btn');
+    if (visBtn) {
+      const dotClass = vis === 'public' ? 'lp-status-dot lp-status-dot-ok' : vis === 'unlisted' ? 'lp-status-dot lp-status-dot-warn' : 'lp-status-dot lp-status-dot-neutral';
+      visBtn.innerHTML = `<span class="lp-state-label"><span class="${dotClass}" aria-hidden="true"></span>${label}</span>`;
+    }
     if (vis === 'draft') {
       publishBtn?.classList.remove('lp-is-hidden');
-      visMenuWrap?.classList.add('lp-is-hidden');
     } else {
       publishBtn?.classList.add('lp-is-hidden');
-      visMenuWrap?.classList.remove('lp-is-hidden');
     }
   };
 
@@ -241,6 +248,126 @@ function bootEditorPage(): void {
     temporal: temporalInput?.value ?? 'exact',
     profile: profileInput?.value ?? 'freeform',
   };
+
+  // Mount Tiptap editor (D-LAYOUT #8 & #9)
+  const tiptapMountEl = document.getElementById('ref-tiptap-editor');
+  const slashMenuEl = document.getElementById('ref-slash-menu');
+  let tiptapCtrl: MountedTiptapController | null = null;
+  if (tiptapMountEl && bodyInput) {
+    tiptapCtrl = mountTiptapEditor({
+      mountEl: tiptapMountEl,
+      textareaEl: bodyInput,
+      slashMenuEl,
+      onMarkdownChange: () => {
+        markDirty();
+      },
+    });
+  }
+
+  // Formatting toolbar buttons & Source toggle
+  const fmtHeading = document.getElementById('ref-fmt-heading');
+  const fmtBold = document.getElementById('ref-fmt-bold');
+  const fmtItalic = document.getElementById('ref-fmt-italic');
+  const fmtLink = document.getElementById('ref-fmt-link');
+  const fmtBullet = document.getElementById('ref-fmt-bullet');
+  const fmtQuote = document.getElementById('ref-fmt-quote');
+  const fmtCode = document.getElementById('ref-fmt-code');
+  const sourceToggleBtn = document.getElementById('ref-btn-source-toggle');
+
+  for (const btn of [fmtHeading, fmtBold, fmtItalic, fmtLink, fmtBullet, fmtQuote, fmtCode]) {
+    btn?.addEventListener('mousedown', (e) => e.preventDefault());
+  }
+  fmtHeading?.addEventListener('click', () => tiptapCtrl?.editor.chain().focus().toggleHeading({ level: 2 }).run());
+  fmtBold?.addEventListener('click', () => tiptapCtrl?.editor.chain().focus().toggleBold().run());
+  fmtItalic?.addEventListener('click', () => tiptapCtrl?.editor.chain().focus().toggleItalic().run());
+  fmtLink?.addEventListener('click', () => {
+    const href = window.prompt('Link URL', 'https://');
+    if (href) tiptapCtrl?.editor.chain().focus().setLink({ href }).run();
+  });
+  fmtBullet?.addEventListener('click', () => tiptapCtrl?.editor.chain().focus().toggleBulletList().run());
+  fmtQuote?.addEventListener('click', () => tiptapCtrl?.editor.chain().focus().toggleBlockquote().run());
+  fmtCode?.addEventListener('click', () => tiptapCtrl?.editor.chain().focus().toggleCodeBlock().run());
+  sourceToggleBtn?.addEventListener('click', () => {
+    if (!tiptapCtrl) return;
+    const next = !tiptapCtrl.isSourceMode();
+    tiptapCtrl.setSourceMode(next);
+    sourceToggleBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
+  });
+
+  // Left entries drawer & Right structure drawer (closed by default)
+  const entriesDrawer = document.getElementById('ref-entries-drawer');
+  const entriesToggleBtn = document.getElementById('ref-sidebar-toggle');
+  const entriesCloseBtn = document.getElementById('ref-btn-close-entries');
+  const entriesSearchInput = document.getElementById('ref-entries-search') as HTMLInputElement | null;
+  const structureDrawer = document.getElementById('ref-inspector-pane');
+  const structureToggleBtn = document.getElementById('ref-btn-structure');
+  const structureCloseBtn = document.getElementById('ref-btn-close-structure');
+
+  const toggleDrawer = (drawer: HTMLElement | null, btn: HTMLElement | null, open: boolean) => {
+    if (!drawer) return;
+    if (open) drawer.removeAttribute('hidden');
+    else drawer.setAttribute('hidden', '');
+    btn?.setAttribute('aria-expanded', open ? 'true' : 'false');
+  };
+
+  entriesToggleBtn?.addEventListener('click', () => {
+    const isOpen = entriesDrawer ? !entriesDrawer.hasAttribute('hidden') : false;
+    toggleDrawer(entriesDrawer, entriesToggleBtn, !isOpen);
+  });
+  entriesCloseBtn?.addEventListener('click', () => toggleDrawer(entriesDrawer, entriesToggleBtn, false));
+
+  entriesSearchInput?.addEventListener('input', () => {
+    const q = entriesSearchInput.value.trim().toLowerCase();
+    document.querySelectorAll<HTMLElement>('#ref-entry-list [data-entry-row]').forEach((row) => {
+      const txt = (row.textContent || '').toLowerCase();
+      row.hidden = Boolean(q && !txt.includes(q));
+    });
+  });
+
+  structureToggleBtn?.addEventListener('click', () => {
+    const isOpen = structureDrawer ? !structureDrawer.hasAttribute('hidden') : false;
+    toggleDrawer(structureDrawer, structureToggleBtn, !isOpen);
+  });
+  structureCloseBtn?.addEventListener('click', () => toggleDrawer(structureDrawer, structureToggleBtn, false));
+
+  // Details popover
+  const detailsTrigger = document.getElementById('ref-details-trigger');
+  const detailsPopover = document.getElementById('ref-details-popover');
+  detailsTrigger?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!detailsPopover) return;
+    const isOpen = !detailsPopover.hasAttribute('hidden');
+    if (isOpen) {
+      detailsPopover.setAttribute('hidden', '');
+      detailsTrigger.setAttribute('aria-expanded', 'false');
+    } else {
+      detailsPopover.removeAttribute('hidden');
+      detailsTrigger.setAttribute('aria-expanded', 'true');
+    }
+  });
+  document.addEventListener('click', (e) => {
+    if (detailsPopover && !detailsPopover.hasAttribute('hidden')) {
+      const t = e.target as Node;
+      if (!detailsPopover.contains(t) && t !== detailsTrigger && !detailsTrigger?.contains(t)) {
+        detailsPopover.setAttribute('hidden', '');
+        detailsTrigger?.setAttribute('aria-expanded', 'false');
+      }
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (detailsPopover && !detailsPopover.hasAttribute('hidden')) {
+      detailsPopover.setAttribute('hidden', '');
+      detailsTrigger?.setAttribute('aria-expanded', 'false');
+      detailsTrigger?.focus();
+    } else if (entriesDrawer && !entriesDrawer.hasAttribute('hidden')) {
+      toggleDrawer(entriesDrawer, entriesToggleBtn, false);
+      entriesToggleBtn?.focus();
+    } else if (structureDrawer && !structureDrawer.hasAttribute('hidden')) {
+      toggleDrawer(structureDrawer, structureToggleBtn, false);
+      structureToggleBtn?.focus();
+    }
+  });
   let isDirty = isNewEntry || (titleInput ? titleInput.value.trim().length === 0 : false);
   let draftBufferTimer: number | undefined;
 
@@ -306,7 +433,7 @@ function bootEditorPage(): void {
           }
           if (bodyInput && typeof data.body === 'string') {
             bodyInput.value = data.body;
-            autoGrowTextarea(bodyInput);
+            tiptapCtrl?.setMarkdown(data.body);
           }
           if (slugInput && typeof data.slug === 'string') slugInput.value = data.slug;
           if (dateInput && typeof data.date === 'string') dateInput.value = data.date;
@@ -389,9 +516,10 @@ function bootEditorPage(): void {
     const dateStr = Number.isNaN(parsed.getTime())
       ? dateInput.value
       : parsed.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
-    const temporalStr = EDITOR_STRINGS.temporalShort[temporalInput.value] ?? 'Exact date';
-    const profileStr = EDITOR_STRINGS.profileShort[profileInput.value] ?? 'Case Study';
-    metaEl.textContent = `${dateStr} · ${temporalStr} · ${profileStr}`;
+    const resolved = resolveEntrySection(profileInput.value, { slug: slugInput?.value });
+    const temporalStr = EDITOR_STRINGS.temporalShort[temporalInput.value] ?? 'Exact';
+    const profileStr = EDITOR_STRINGS.profileShort[profileInput.value] ?? 'Freeform';
+    metaEl.textContent = `${resolved.label} · ${profileStr} · ${dateStr} · ${temporalStr}`;
   };
   dateInput?.addEventListener('change', updateDetailsSummary);
   temporalInput?.addEventListener('change', updateDetailsSummary);

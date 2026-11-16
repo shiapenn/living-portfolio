@@ -45,7 +45,7 @@ describe('WP-15.7 Reference Editor Page', () => {
 
     // Details summary does not repeat entry visibility state (UX-78)
     const metaMatch = html.match(/id="ref-details-summary-meta"[^>]*>([^<]+)</);
-    expect(metaMatch?.[1]).toBe('14 Nov 2026 · Exact date · Decision Record');
+    expect(metaMatch?.[1]).toMatch(/^(Work|Writing) · Decision · 14 Nov 2026 · Exact$/);
     expect(metaMatch?.[1]).not.toMatch(/Draft|Unlisted|Public/);
 
     // Only the 4 D-FEEDBACK places may carry role="status" or role="alert"

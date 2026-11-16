@@ -8,7 +8,7 @@ test.describe.serial('WP-14.2: State badge and date correctness (UX-10, UX-11, U
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/entries/new');
 
-    const stateBadge = page.locator('#ref-state-badge');
+    const stateBadge = page.locator('#ref-visibility-menu-btn');
     await expect(stateBadge).toBeVisible();
     await expect(stateBadge).toContainText(/draft/i);
 
@@ -16,8 +16,10 @@ test.describe.serial('WP-14.2: State badge and date correctness (UX-10, UX-11, U
     const slug = `wp-14-2-chip-${uniqueSuffix}`;
 
     await page.fill('#ref-field-title', title);
-    await page.locator('#ref-details-disclosure summary').click();
+    await page.click('#ref-details-trigger');
     await page.fill('#ref-field-slug', slug);
+    await page.keyboard.press('Escape');
+    await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', 'Testing state badge visibility across lifecycle states.');
 
     // Save as draft
@@ -26,6 +28,7 @@ test.describe.serial('WP-14.2: State badge and date correctness (UX-10, UX-11, U
     await expect(stateBadge).toContainText(/draft/i);
 
     // Publish to public
+    await stateBadge.click();
     await page.click('#ref-btn-publish');
     await expect(page.locator('#ref-publish-dialog-status')).toContainText(/no private details/i);
     await page.click('#ref-publish-confirm');
@@ -46,7 +49,7 @@ test.describe.serial('WP-14.2: State badge and date correctness (UX-10, UX-11, U
     page.on('pageerror', (err) => pageErrors.push(err));
 
     await page.goto('/admin/entries/new');
-    await page.locator('#ref-details-disclosure summary').click();
+    await page.click('#ref-details-trigger');
 
     const dateInput = page.locator('#ref-field-date');
     await expect(dateInput).toBeVisible();
