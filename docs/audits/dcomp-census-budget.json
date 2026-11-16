@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "Shrinking-only D-COMP component contract census budgets (WP-16.C C2: 7/8 checks at 0; only 12 editor title 14px!==24px remain for C3).",
+  "note": "Shrinking-only D-COMP component contract census budgets (WP-16.C C3: 8/8 checks at 0).",
   "budgets": {
     "iconViolations": 0,
     "stackingViolations": 0,
@@ -8,7 +8,7 @@
     "actionBarViolations": 0,
     "choiceViolations": 0,
     "verticalRhythmViolations": 0,
-    "pageHeaderViolations": 12,
+    "pageHeaderViolations": 0,
     "tabWrapViolations": 0
   }
 }

@@ -36,6 +36,8 @@ export {
 } from './containers.js';
 export { renderTable } from './table.js';
 export type { TableColumn, TableProps } from './table.js';
+export { renderProviderRow } from './provider-row.js';
+export type { ProviderRowProps } from './provider-row.js';
 export type {
   DialogProps,
   DisclosureProps,

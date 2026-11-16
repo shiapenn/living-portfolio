@@ -1,4 +1,5 @@
 import { renderAuthShell } from "../../layouts/admin-shell.js";
+import { renderProviderRow } from "../../components/index.js";
 import { renderActionBar, renderButton, renderChip, renderChoiceGroup, renderIcon } from "../../primitives/index.js";
 import { WIZARD_STRINGS } from "../../strings.js";
 import { SETUP_SCRIPT_PART_1 } from './setup-script-part1.js';
@@ -147,14 +148,17 @@ export function renderAdminSetupPage(): string {
               </tr>
             </thead>
             <tbody>
-              ${WIZARD_STRINGS.step3.providersTable.rows.map(row => `
-                <tr>
-                  <td><strong>${row.name}</strong></td>
-                  <td>${row.classes.map(c => renderChip({ label: c })).join(' ')}</td>
-                  <td><code>${row.model}</code></td>
-                  <td class="${row.isLocal ? 'lp-status-line-ok' : 'lp-help-text'}" ${row.statusId ? `id="${row.statusId}"` : ''}>${row.status}</td>
-                </tr>
-              `).join('')}
+              ${WIZARD_STRINGS.step3.providersTable.rows.map(row => renderProviderRow({
+                id: row.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+                name: row.name,
+                model: row.model,
+                classes: row.classes,
+                status: row.status,
+                statusId: row.statusId,
+                isLocal: row.isLocal,
+                mode: 'table-row',
+                editable: false,
+              })).join('')}
             </tbody>
           </table>
         </div>
