@@ -1,5 +1,5 @@
 import { escapeHtml } from '../lib/html.js';
-import { renderIcon, type IconName, type IconSize } from './icons.js';
+import { isKnownIconName, renderIcon, type IconName, type IconSize } from './icons.js';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'quiet';
 export type ButtonSize = 'sm' | 'md';
@@ -43,32 +43,23 @@ function formatDataAttrs(dataAttrs?: Record<string, string>): string {
 }
 
 function normalizeIconName(raw: string): IconName {
-  const map: Record<string, IconName> = {
-    x: 'x',
-    '×': 'x',
-    '✕': 'x',
-    'chevron-down': 'chevron-down',
+  if (isKnownIconName(raw)) {
+    return raw;
+  }
+  const legacyGlyphMap: Record<string, IconName> = {
+    '×': 'close',
+    '✕': 'close',
     '▾': 'chevron-down',
-    'chevron-right': 'chevron-right',
     '▸': 'chevron-right',
-    sun: 'sun',
-    moon: 'moon',
-    'sun-moon': 'sun-moon',
     '◐': 'moon',
-    menu: 'menu',
-    info: 'info',
-    'check-circle': 'check-circle',
-    'alert-triangle': 'alert-triangle',
-    'alert-circle': 'alert-circle',
-    'more-horizontal': 'more-horizontal',
-    '...': 'more-horizontal',
-    copy: 'copy',
-    plus: 'plus',
-    'file-text': 'file-text',
-    layers: 'layers',
-    loader: 'loader',
+    '...': 'more',
   };
-  return map[raw] ?? 'x';
+  const mapped = legacyGlyphMap[raw];
+  if (mapped) return mapped;
+  if (process.env.NODE_ENV !== 'production') {
+    throw new Error(`Unknown icon id: "${raw}"`);
+  }
+  return 'close';
 }
 
 /**
@@ -116,6 +107,7 @@ export function renderIconButton(props: IconButtonProps): string {
   const busyAttr = props.loading ? ' aria-busy="true"' : '';
   const disabledAttr = isDisabled ? ' disabled' : '';
   const data = formatDataAttrs(props.dataAttrs);
-  const iconSvg = renderIcon({ name: normalizeIconName(props.icon), size: props.iconSize ?? 16 });
-  return `<button type="button" class="${escapeHtml(classes)}" aria-label="${escapeHtml(props.ariaLabel)}"${idAttr}${titleAttr}${busyAttr}${disabledAttr}${data}>${iconSvg}</button>`;
+  const resolvedIcon = normalizeIconName(props.icon);
+  const iconSvg = renderIcon({ name: resolvedIcon, size: props.iconSize ?? 16 });
+  return `<button type="button" class="${escapeHtml(classes)}" aria-label="${escapeHtml(props.ariaLabel)}" data-icon-name="${escapeHtml(resolvedIcon)}"${idAttr}${titleAttr}${busyAttr}${disabledAttr}${data}>${iconSvg}</button>`;
 }
