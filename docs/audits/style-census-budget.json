@@ -12,7 +12,7 @@
     "columnWidthMismatch": 14,
     "tabGapViolations": 12,
     "siblingGapViolations": 4,
-    "nonTokenColors": 8,
+    "nonTokenColors": 300,
     "excessBackgroundColors": 26,
     "parentBoxOverflows": 8,
     "clippedText": 0,

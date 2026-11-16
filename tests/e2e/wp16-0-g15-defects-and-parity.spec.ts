@@ -167,12 +167,12 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
 
     // UX-105: Escalation review on /admin/inbox with seeded pending escalation
     await page.goto('/admin/inbox');
-    const inboxRow = page.locator('[data-inbox-row]').first();
+    const inboxRow = page.locator('a[data-inbox-row]').first();
     await expect(inboxRow).toBeVisible();
     const escId = await inboxRow.getAttribute('data-inbox-row');
     expect(escId).toBeTruthy();
 
-    await inboxRow.locator('a').first().click();
+    await inboxRow.click();
     await expect(page.locator('#inbox-detail-card')).toBeVisible();
     await page.fill('#inbox-reply-text', 'Approved response from inbox test.');
     await page.locator('#inbox-btn-reply').click();

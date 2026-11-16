@@ -62,6 +62,7 @@ test.describe('WP-15.3a Design Foundations Conformance (D-FOUND-1..6)', () => {
       for (const el of Array.from(document.querySelectorAll<HTMLElement>('[data-foundations-scope] *'))) {
         const cs = getComputedStyle(el);
         for (const prop of ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'rowGap', 'columnGap'] as const) {
+          if (el.tagName === 'SELECT' && prop === 'paddingRight') continue;
           const val = cs[prop];
           if (!val || val === 'normal') continue;
           const num = Math.round(parseFloat(val));

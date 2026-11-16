@@ -45,7 +45,7 @@ export function renderSettingsIndexPage(
     <section aria-label="Settings areas">
       <div class="lp-list">${rowsHtml}</div>
     </section>
-    <p class="lp-help-text">Early preview software. Back up your data before upgrading.</p>
+    <p class="lp-help-text" data-banner="alpha-warning" role="note">Early preview software. Back up your data before upgrading.</p>
   `;
 
   return renderPageTemplate({
