@@ -39,6 +39,7 @@ import {
 } from './renderer.js';
 import { renderPrimitivesGalleryPage } from './primitives/gallery.js';
 import { renderFoundationsGalleryPage } from './primitives/foundations-gallery.js';
+import { renderComponentGalleryPage, renderCensusCanaryPage } from './pages/admin/gallery.js';
 import { renderReferenceEditorPage, type ReferenceEditorEntry } from './pages/admin/entries/editor.js';
 
 export interface WebAppOptions {
@@ -249,6 +250,14 @@ export function createWebApp(options?: WebAppOptions) {
     app.get('/admin/dev/foundations', (c) => {
       const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';
       return c.html(renderFoundationsGalleryPage(theme));
+    });
+    app.get('/admin/_gallery', (c) => {
+      const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';
+      return c.html(renderComponentGalleryPage({ theme }));
+    });
+    app.get('/admin/_canary', (c) => {
+      const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';
+      return c.html(renderCensusCanaryPage({ theme }));
     });
 
     const handleReferenceEditor = async (c: any, selectedId?: string) => {

@@ -4090,4 +4090,88 @@ a.lp-admin-header-brand {
 .lp-slash-menu[hidden] {
   display: none;
 }
+
+/* WP-16.C Gallery & Canary Fixtures */
+.lp-gallery-root {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.lp-gallery-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lp-gallery-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+
+.lp-gallery-icon-sample {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.lp-canary-stacking {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.lp-canary-small-h1 {
+  font-size: 14px;
+  margin: 0;
+}
+
+.lp-canary-zero-margin {
+  margin: 0;
+  padding: 0;
+}
+
+.lp-canary-overlay {
+  position: fixed;
+  left: -80px;
+  top: 40px;
+  width: 200px;
+  height: 80px;
+  display: block;
+}
+
+.lp-canary-action-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.lp-canary-btn-sm {
+  width: 100px;
+}
+
+.lp-canary-btn-md {
+  width: 120px;
+}
+
+.lp-canary-rhythm {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.lp-canary-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  width: 280px;
+}
+
+.lp-canary-tab {
+  width: 160px;
+}
 `;
