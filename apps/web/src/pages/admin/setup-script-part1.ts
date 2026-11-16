@@ -132,7 +132,8 @@ export const SETUP_SCRIPT_PART_1 = `
             progressFill.setAttribute('data-step', String(stepNum));
           }
           if (chip) {
-            chip.textContent = 'Step ' + stepNum + ' of 6 · First-Run Wizard';
+            const stepNames = { 1: 'Account', 2: 'Hosting', 3: 'Providers', 4: 'Notifications', 5: 'Backups', 6: 'Theme' };
+            chip.textContent = 'Step ' + stepNum + ' of 6 · ' + (stepNames[stepNum] || 'Setup');
           }
         }
 

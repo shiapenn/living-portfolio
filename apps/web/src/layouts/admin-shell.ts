@@ -2,7 +2,8 @@ import { loadConfig } from '@living-portfolio/config';
 import { STRATA_DESIGN_SYSTEM_CSS } from '../styles.js';
 import { escapeHtml } from '../lib/html.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../lib/admin-api-client.js';
-import { renderIcon, renderIconButton, renderIconSprite, type IconName } from '../primitives/index.js';
+import { renderButton, renderIcon, renderIconButton, renderIconSprite, renderPageHeader, type IconName } from '../primitives/index.js';
+import { getSettingsModules } from '../settings/index.js';
 
 export interface AdminShellOptions {
   nonce?: string;
@@ -46,7 +47,6 @@ const BUILTIN_DESTINATIONS: AdminNavDestination[] = [
   { id: 'import', group: 'Write', href: '/admin/import', label: 'Import', icon: 'upload', order: 3 },
   { id: 'inbox', group: 'Respond', href: '/admin/inbox', label: 'Inbox', icon: 'inbox', order: 4 },
   { id: 'audit', group: 'Govern', href: '/admin/audit', label: 'Answer rules', icon: 'shield', order: 5 },
-  { id: 'settings', group: 'Configure', href: '/admin/settings', label: 'Settings', icon: 'sliders', order: 6 },
 ];
 for (const d of BUILTIN_DESTINATIONS) {
   registerAdminDestination(d);
@@ -55,6 +55,8 @@ for (const d of BUILTIN_DESTINATIONS) {
 export interface PageTemplateOptions {
   title: string;
   description?: string;
+  backHref?: string;
+  backLabel?: string;
   tabsHtml?: string;
   bodyHtml: string;
   actionsHtml?: string;
@@ -62,19 +64,20 @@ export interface PageTemplateOptions {
 }
 
 /**
- * Unified 720px centred page template for every non-editor admin page (D-LAYOUT #2).
+ * Unified 720px centred page template for every non-editor admin page (D-LAYOUT #2, D-COMP #2).
  */
 export function renderPageTemplate(opts: PageTemplateOptions): string {
   const cls = ['lp-page-column', opts.className].filter(Boolean).join(' ');
-  const headerTop = opts.actionsHtml
-    ? `<div class="lp-page-title-row"><h1>${escapeHtml(opts.title)}</h1><div class="lp-page-title-actions">${opts.actionsHtml}</div></div>`
-    : `<h1>${escapeHtml(opts.title)}</h1>`;
+  const headerHtml = renderPageHeader({
+    title: opts.title,
+    description: opts.description,
+    backHref: opts.backHref,
+    backLabel: opts.backLabel,
+    actionHtml: opts.actionsHtml,
+  });
 
   return `<div class="${escapeHtml(cls)}">
-  <header class="lp-page-header">
-    ${headerTop}
-    ${opts.description ? `<p class="lp-page-description">${escapeHtml(opts.description)}</p>` : ''}
-  </header>
+  ${headerHtml}
   ${opts.tabsHtml ? opts.tabsHtml : ''}
   <div class="lp-page-sections">
     ${opts.bodyHtml}
@@ -149,6 +152,34 @@ function renderShellThemeAndMenuScript(nonceAttr: string, includeAdminMenus: boo
           await apiClient('/api/auth/logout', { method: 'POST' });
         } catch {}
         window.location.href = '/admin/login';
+      });
+    }
+    const statusAnsweringBtn = document.getElementById('lp-status-answering-toggle');
+    if (statusAnsweringBtn) {
+      statusAnsweringBtn.addEventListener('click', async () => {
+        const isEnabled = statusAnsweringBtn.getAttribute('data-enabled') === 'true';
+        if (isEnabled && !window.confirm('Pause automated answering on the public site?')) return;
+        try {
+          ${ADMIN_API_CLIENT_SCRIPT}
+          await apiClient('/api/settings/routing', {
+            method: 'PATCH',
+            body: JSON.stringify({ automatedAnsweringEnabled: !isEnabled }),
+          });
+          window.location.reload();
+        } catch {}
+      });
+    }
+    const statusRebuildBtn = document.getElementById('lp-status-rebuild-btn');
+    if (statusRebuildBtn) {
+      statusRebuildBtn.addEventListener('click', async () => {
+        statusRebuildBtn.setAttribute('disabled', '');
+        statusRebuildBtn.textContent = 'Rebuilding…';
+        try {
+          ${ADMIN_API_CLIENT_SCRIPT}
+          await apiClient('/api/settings/backups/export', { method: 'GET' });
+        } catch {}
+        statusRebuildBtn.removeAttribute('disabled');
+        statusRebuildBtn.textContent = 'Rebuild site';
       });
     }`
     : '';
@@ -280,7 +311,15 @@ export function renderAdminShell(
   }
 
   const groupOrder: LauncherGroupId[] = ['Write', 'Respond', 'Govern', 'Configure'];
-  const allDests = getAdminDestinations();
+  const settingsDests: AdminNavDestination[] = getSettingsModules().map((mod) => ({
+    id: `settings-${mod.id}`,
+    group: 'Configure',
+    href: mod.route,
+    label: mod.title,
+    icon: (mod.icon as IconName) || 'sliders',
+    order: 10 + mod.order,
+  }));
+  const allDests = [...getAdminDestinations().filter((d) => d.group !== 'Configure'), ...settingsDests];
   const launcherGroupsHtml = groupOrder
     .map((group) => {
       const items = allDests.filter((d) => d.group === group);
@@ -342,10 +381,24 @@ export function renderAdminShell(
         <button type="button" id="lp-status-popover-btn" class="lp-icon-btn lp-icon-btn-quiet" aria-label="Site status" title="Site status" aria-haspopup="true" aria-expanded="false" aria-controls="lp-status-popover">
           <span class="lp-status-dot ${answeringOn ? 'lp-status-dot-ok' : 'lp-status-dot-warn'}" aria-hidden="true"></span>
         </button>
-        <div id="lp-status-popover" class="lp-popover-menu lp-status-popover" hidden>
+        <div id="lp-status-popover" class="lp-popover-menu lp-status-popover" role="dialog" aria-label="Site status" hidden>
           <p class="lp-status-legend-row"><span class="lp-status-dot lp-status-dot-ok" aria-hidden="true"></span><span><strong>Site build:</strong> Idle (ready)</span></p>
-          <p class="lp-status-legend-row"><span class="lp-status-dot ${answeringOn ? 'lp-status-dot-ok' : 'lp-status-dot-warn'}" aria-hidden="true"></span><span><strong>Automatic answers:</strong> ${answeringOn ? 'On' : 'Paused'} — <a href="/admin/settings/answering">Settings</a></span></p>
-          <p class="lp-status-legend-row"><span class="lp-status-dot lp-status-dot-ok" aria-hidden="true"></span><span><strong>System:</strong> Operational</span></p>
+          <p class="lp-status-legend-row"><span class="lp-status-dot ${answeringOn ? 'lp-status-dot-ok' : 'lp-status-dot-warn'}" aria-hidden="true"></span><span><strong>Automated answering:</strong> ${answeringOn ? 'Active' : 'Paused'}</span></p>
+          <div class="lp-status-popover-actions">
+            ${renderButton({
+              id: 'lp-status-answering-toggle',
+              label: answeringOn ? 'Pause answering' : 'Resume answering',
+              variant: 'secondary',
+              size: 'sm',
+              dataAttrs: { enabled: answeringOn ? 'true' : 'false' },
+            })}
+            ${renderButton({
+              id: 'lp-status-rebuild-btn',
+              label: 'Rebuild site',
+              variant: 'quiet',
+              size: 'sm',
+            })}
+          </div>
         </div>
       </div>
       <div class="lp-menu-wrap">
@@ -359,8 +412,7 @@ export function renderAdminShell(
           dataAttrs: { 'aria-haspopup': 'menu', 'aria-expanded': 'false', 'aria-controls': 'lp-account-menu' },
         })}
         <div id="lp-account-menu" class="lp-popover-menu lp-menu-popover-float" role="menu" aria-label="Account menu" hidden>
-          <a href="/admin/settings" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">Settings</a>
-          <a href="/home" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">View public site</a>
+          <div class="lp-menu-header" role="presentation">Owner</div>
           <button type="button" id="theme-toggle" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" aria-label="${escapeHtml(toggleLabel)}" aria-pressed="${theme === 'dark' ? 'true' : 'false'}">${renderIcon({ name: toggleIcon, size: 16 })}<span data-theme-label="true">${escapeHtml(toggleLabel)}</span></button>
           <hr class="lp-menu-separator" role="separator" />
           <button type="button" role="menuitem" id="btn-admin-logout" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">Sign out</button>

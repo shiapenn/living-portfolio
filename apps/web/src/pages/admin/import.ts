@@ -1,7 +1,7 @@
 import { loadConfig } from "@living-portfolio/config";
 import { adaptDataSource, type WebDataClient } from "../../lib/data-source.js";
 import { renderAdminShell, renderPageTemplate } from "../../layouts/admin-shell.js";
-import { renderButton } from "../../primitives/index.js";
+import { renderActionBar, renderButton, renderStepper } from "../../primitives/index.js";
 import { renderPageNotice } from "../../components/index.js";
 import { IMPORT_SCRIPT } from './import-script.js';
 
@@ -16,15 +16,16 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
         })}</div>`
       : '';
 
-  const tabsHtml = `
-    <div class="lp-tabs" role="tablist" aria-label="Import stages">
-      <button type="button" role="tab" class="lp-tab" id="step-tab-add" aria-selected="true">Add Material</button>
-      <button type="button" role="tab" class="lp-tab" id="step-tab-plan" aria-selected="false">Import Planner</button>
-      <button type="button" role="tab" class="lp-tab" id="step-tab-triage" aria-selected="false">Triage &amp; Review</button>
-    </div>`;
+  const stepperHtml = renderStepper({
+    id: 'import-stepper',
+    currentStep: 1,
+    totalSteps: 3,
+    stepTitle: 'Add material',
+  });
 
   const bodyHtml = `
     ${stagingNoticeHtml}
+    ${stepperHtml}
     <div id="import-status-banner" role="status" aria-live="polite"></div>
 
     <!-- Step 1: Add Material -->
@@ -36,18 +37,14 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
         </p>
 
         <div class="lp-field">
-          <div class="lp-page-title-row">
-            <label class="lp-field-label" for="import-paste-area">Markdown Content</label>
-            <button type="button" id="import-source-toggle" class="lp-btn lp-btn-quiet lp-btn-sm" aria-pressed="true">Source</button>
-          </div>
-          <div id="import-tiptap-editor" class="lp-tiptap-mount lp-is-hidden" hidden></div>
+          <label class="lp-field-label" for="import-paste-area">Paste Markdown or text</label>
           <textarea id="import-paste-area" rows="10" class="lp-input lp-textarea lp-editor-source-textarea" placeholder="# Migrating to Postgres Advisory Locks&#10;&#10;In 2024 we eliminated lock contention by migrating to PostgreSQL 15 advisory locks...&#10;&#10;---&#10;&#10;# Edge Microservice Architecture&#10;&#10;Designed multi-region edge gateways on Cloudflare Workers..."></textarea>
         </div>
 
-        <div class="lp-row-wrap">
-          ${renderButton({ id: 'btn-generate-plan', label: 'Generate Processing Plan →', variant: 'primary' })}
-          ${renderButton({ id: 'btn-load-sample', label: 'Load Sample Entries', variant: 'secondary' })}
-        </div>
+        ${renderActionBar({
+          primary: { id: 'btn-generate-plan', label: 'Generate Processing Plan →', variant: 'primary' },
+          secondary: { id: 'btn-load-sample', label: 'Load Sample Entries', variant: 'secondary' },
+        })}
       </section>
     </div>
 
@@ -76,10 +73,10 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
           </div>
         </div>
 
-        <div class="lp-row-wrap">
-          ${renderButton({ id: 'btn-proceed-triage', label: 'Proceed to Triage →', variant: 'primary' })}
-          ${renderButton({ id: 'btn-back-add', label: '← Back', variant: 'secondary' })}
-        </div>
+        ${renderActionBar({
+          primary: { id: 'btn-proceed-triage', label: 'Proceed to Triage →', variant: 'primary' },
+          secondary: { id: 'btn-back-add', label: '← Back', variant: 'secondary' },
+        })}
       </section>
     </div>
 
@@ -117,7 +114,6 @@ ${options.nonce ? `<script type="module" src="/assets/client/import-page.js" non
   const content = renderPageTemplate({
     title: 'Import & Triage',
     description: 'Connect or paste existing material, plan processing budget, and triage with confidence sorting.',
-    tabsHtml,
     bodyHtml,
   });
   return renderAdminShell('Import & Triage', '/admin/import', content, { nonce: options.nonce });

@@ -152,19 +152,23 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
   test('UX-104 & UX-105: automated-answering kill switch on /admin and escalation review on /admin/inbox', async ({ page }) => {
     await ensureAdminLoggedIn(page);
 
-    // UX-104: Kill switch visible on /admin (Today) and toggles automated answering across reload
+    // UX-104 (D-COMP #8, #12): Automated-answering switch lives in Site status menu with confirmed quick pause
     await page.goto('/admin');
-    const killBtn = page.locator('#btn-killswitch');
-    await expect(killBtn).toBeVisible();
-    const initialPressed = await killBtn.getAttribute('aria-pressed');
-    await killBtn.click();
-    const nextPressed = initialPressed === 'true' ? 'false' : 'true';
-    await expect(killBtn).toHaveAttribute('aria-pressed', nextPressed);
-    await page.reload();
-    await expect(page.locator('#btn-killswitch')).toHaveAttribute('aria-pressed', nextPressed);
+    await expect(page.locator('#btn-killswitch')).toHaveCount(0);
+    await page.locator('#lp-status-popover-btn').click();
+    const toggleBtn = page.locator('#lp-status-answering-toggle');
+    await expect(toggleBtn).toBeVisible();
+    const initialEnabled = await toggleBtn.getAttribute('data-enabled');
+    page.once('dialog', (d) => d.accept());
+    await toggleBtn.click();
+    await page.waitForLoadState('load');
+    await page.locator('#lp-status-popover-btn').click();
+    const nextEnabled = initialEnabled === 'true' ? 'false' : 'true';
+    await expect(page.locator('#lp-status-answering-toggle')).toHaveAttribute('data-enabled', nextEnabled);
     // Restore original state
-    await page.locator('#btn-killswitch').click();
-    await expect(page.locator('#btn-killswitch')).toHaveAttribute('aria-pressed', initialPressed ?? 'false');
+    page.once('dialog', (d) => d.accept());
+    await page.locator('#lp-status-answering-toggle').click();
+    await page.waitForLoadState('load');
 
     // UX-105: Escalation review on /admin/inbox with seeded pending escalation
     await page.goto('/admin/inbox');

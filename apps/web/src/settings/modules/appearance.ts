@@ -1,5 +1,5 @@
 import { z } from '@living-portfolio/core';
-import { renderButton, renderField } from '../../primitives/index.js';
+import { renderActionBar, renderField, renderFormSection } from '../../primitives/index.js';
 import { renderStatusLine } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 import { BUILTIN_THEME_PACKS } from '../theme-packs.js';
@@ -52,32 +52,33 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
           })}
         </section>
 
-        <section class="lp-stack-md">
-          <h2 class="lp-section-title">Accent colours</h2>
-          ${renderField({
-            kind: 'input',
-            id: 'setting-theme-light-accent',
-            name: 'lightAccent',
-            label: 'Light theme accent',
-            inputType: 'text',
-            value: lightAccent,
-            help: 'Hex colour used for primary buttons and links in light mode.',
-          })}
-          ${renderField({
-            kind: 'input',
-            id: 'setting-theme-dark-accent',
-            name: 'darkAccent',
-            label: 'Dark theme accent',
-            inputType: 'text',
-            value: darkAccent,
-            help: 'Hex colour used for primary buttons and links in dark mode.',
-          })}
-          <div id="theme-conformance-box" class="lp-help-text"></div>
-        </section>
-
-        <div>
-          ${renderButton({ id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' })}
-        </div>
+        ${renderFormSection({
+          title: 'Accent colours',
+          fieldsHtml: `
+            ${renderField({
+              kind: 'input',
+              id: 'setting-theme-light-accent',
+              name: 'lightAccent',
+              label: 'Light theme accent',
+              inputType: 'text',
+              value: lightAccent,
+              help: 'Hex colour used for primary buttons and links in light mode.',
+            })}
+            ${renderField({
+              kind: 'input',
+              id: 'setting-theme-dark-accent',
+              name: 'darkAccent',
+              label: 'Dark theme accent',
+              inputType: 'text',
+              value: darkAccent,
+              help: 'Hex colour used for primary buttons and links in dark mode.',
+            })}
+            <div id="theme-conformance-box" class="lp-help-text"></div>
+          `,
+          actionBarHtml: renderActionBar({
+            primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
+          }),
+        })}
       </form>
     `;
   },

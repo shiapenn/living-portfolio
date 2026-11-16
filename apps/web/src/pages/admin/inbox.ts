@@ -1,7 +1,7 @@
 import { escapeHtml } from '../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
-import { renderListRow, renderStatusDot } from '../../primitives/index.js';
+import { renderActionBar, renderItem, renderStatusDot } from '../../primitives/index.js';
 import { renderEmptyState, renderStatusLine } from '../../components/index.js';
 import { INBOX_STRINGS } from '../../strings/admin/inbox.js';
 
@@ -52,12 +52,13 @@ export async function renderAdminInboxPage(
           const id = String(item.id);
           const due = getDueBadge(item);
           const dateLabel = item.created_at ? String(item.created_at).slice(0, 10) : '';
-          return renderListRow({
+          return renderItem({
             href: `/admin/inbox/${encodeURIComponent(id)}`,
-            primary: String(item.question || 'Untitled question'),
-            secondary: dateLabel || undefined,
-            stateLabel: due.label,
-            stateTone: due.tone === 'danger' ? 'danger' : due.tone === 'warn' ? 'warn' : due.tone === 'ok' ? 'ok' : 'neutral',
+            title: String(item.question || 'Untitled question'),
+            meta: dateLabel || undefined,
+            statusLabel: due.label,
+            statusTone: due.tone === 'danger' ? 'danger' : due.tone === 'warn' ? 'warn' : due.tone === 'ok' ? 'ok' : 'neutral',
+            showChevron: true,
             attributes: `data-inbox-row="${escapeHtml(id)}"`,
           });
         })
@@ -66,10 +67,7 @@ export async function renderAdminInboxPage(
 
   const detailHtml = selectedItem
     ? `<section id="inbox-detail-card" class="lp-stack-md" data-escalation-id="${escapeHtml(String(selectedItem.id))}">
-        <div class="lp-page-title-row">
-          <a href="/admin/inbox" class="lp-btn lp-btn-quiet lp-btn-sm">&larr; ${escapeHtml(INBOX_STRINGS.inbox.detailBack)}</a>
-          ${renderStatusDot({ label: getDueBadge(selectedItem).label, tone: getDueBadge(selectedItem).tone === 'danger' ? 'danger' : getDueBadge(selectedItem).tone === 'warn' ? 'warn' : getDueBadge(selectedItem).tone === 'ok' ? 'ok' : 'neutral' })}
-        </div>
+        <div>${renderStatusDot({ label: getDueBadge(selectedItem).label, tone: getDueBadge(selectedItem).tone === 'danger' ? 'danger' : getDueBadge(selectedItem).tone === 'warn' ? 'warn' : getDueBadge(selectedItem).tone === 'ok' ? 'ok' : 'neutral' })}</div>
         <h2 class="lp-section-title">${escapeHtml(INBOX_STRINGS.inbox.questionHeading)}</h2>
         <p class="lp-type-body">${escapeHtml(String(selectedItem.question || ''))}</p>
         ${selectedItem.draft ? `<p class="lp-help-text"><strong>${escapeHtml(INBOX_STRINGS.inbox.draftHeading)}:</strong> ${escapeHtml(String(selectedItem.draft))}</p>` : ''}
@@ -77,23 +75,22 @@ export async function renderAdminInboxPage(
           <label for="inbox-reply-text" class="lp-field-label">${escapeHtml(INBOX_STRINGS.inbox.replyLabel)}</label>
           <textarea id="inbox-reply-text" class="lp-input lp-textarea" rows="4" placeholder="${escapeHtml(INBOX_STRINGS.inbox.replyPlaceholder)}">${escapeHtml(String(selectedItem.final || selectedItem.draft || ''))}</textarea>
         </div>
-        <div class="lp-stack-md">
-          <div class="lp-row-wrap">
-            <button type="button" id="inbox-btn-reply" class="lp-btn lp-btn-primary lp-btn-sm">${escapeHtml(INBOX_STRINGS.inbox.sendReply)}</button>
-          </div>
-          <div class="lp-inbox-decline-row">
-            <input id="inbox-decline-reason" type="text" class="lp-input" placeholder="${escapeHtml(INBOX_STRINGS.inbox.declinePlaceholder)}" aria-label="${escapeHtml(INBOX_STRINGS.inbox.declineLabel)}" />
-            <button type="button" id="inbox-btn-decline" class="lp-btn lp-btn-secondary lp-btn-sm">${escapeHtml(INBOX_STRINGS.inbox.declineButton)}</button>
-          </div>
+        <div class="lp-field">
+          <label for="inbox-decline-reason" class="lp-field-label">${escapeHtml(INBOX_STRINGS.inbox.declineLabel)}</label>
+          <input id="inbox-decline-reason" type="text" class="lp-input" placeholder="${escapeHtml(INBOX_STRINGS.inbox.declinePlaceholder)}" />
         </div>
+        ${renderActionBar({
+          primary: { id: 'inbox-btn-reply', label: INBOX_STRINGS.inbox.sendReply, variant: 'primary', size: 'sm' },
+          secondary: { id: 'inbox-btn-decline', label: INBOX_STRINGS.inbox.declineButton, variant: 'secondary', size: 'sm' },
+        })}
         <div id="inbox-make-rule-card" class="lp-stack-sm lp-divider-top" hidden>
           <h3 class="lp-section-title">${escapeHtml(INBOX_STRINGS.inbox.makeRuleTitle)}</h3>
           <p class="lp-help-text">${escapeHtml(INBOX_STRINGS.inbox.makeRuleBody)}</p>
           <input id="inbox-rule-text" type="text" class="lp-input" placeholder="${escapeHtml(INBOX_STRINGS.inbox.makeRulePlaceholder)}" value="${escapeHtml(String(selectedItem.question || ''))}" />
-          <div class="lp-row lp-gap-sm">
-            <button type="button" id="inbox-btn-make-rule" class="lp-btn lp-btn-primary lp-btn-sm">${escapeHtml(INBOX_STRINGS.inbox.makeRuleConfirm)}</button>
-            <button type="button" id="inbox-btn-dismiss-rule" class="lp-btn lp-btn-quiet lp-btn-sm">${escapeHtml(INBOX_STRINGS.inbox.makeRuleDismiss)}</button>
-          </div>
+          ${renderActionBar({
+            primary: { id: 'inbox-btn-make-rule', label: INBOX_STRINGS.inbox.makeRuleConfirm, variant: 'primary', size: 'sm' },
+            textAction: { id: 'inbox-btn-dismiss-rule', label: INBOX_STRINGS.inbox.makeRuleDismiss, variant: 'quiet', size: 'sm' },
+          })}
         </div>
       </section>`
     : '';
@@ -149,6 +146,8 @@ export async function renderAdminInboxPage(
   const content = renderPageTemplate({
     title: INBOX_STRINGS.inbox.title,
     description: INBOX_STRINGS.inbox.subtitle,
+    backHref: selectedItem ? '/admin/inbox' : undefined,
+    backLabel: selectedItem ? INBOX_STRINGS.inbox.detailBack : undefined,
     tabsHtml,
     bodyHtml,
   });

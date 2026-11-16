@@ -1,6 +1,6 @@
 import { z } from '@living-portfolio/core';
 import { escapeHtml } from '../../lib/html.js';
-import { renderButton } from '../../primitives/index.js';
+import { renderActionBar, renderFormSection } from '../../primitives/index.js';
 import { renderStatusLine } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 
@@ -30,18 +30,15 @@ export const backupsModule: SettingsModuleManifest<BackupsConfig> = {
       <form id="settings-module-form" data-settings-module="backups" class="lp-stack-lg">
         ${renderStatusLine({ id: 'settings-status-banner' })}
 
-        <section class="lp-stack-md">
-          <h2 class="lp-section-title">Backup destination</h2>
-          <p class="lp-help-text">Current target: ${escapeHtml(backupTarget)}. Backups are encrypted before leaving the server.</p>
-          <div class="lp-row lp-gap-sm">
-            ${renderButton({ id: 'btn-run-backup-drill', label: 'Run restore drill', variant: 'secondary', type: 'button' })}
-          </div>
-          <div id="backup-drill-result" class="lp-help-text"></div>
-        </section>
-
-        <div>
-          ${renderButton({ id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' })}
-        </div>
+        ${renderFormSection({
+          title: 'Backup destination',
+          description: `Current target: ${backupTarget}. Backups are encrypted before leaving the server.`,
+          fieldsHtml: `<div id="backup-drill-result" class="lp-help-text"></div>`,
+          actionBarHtml: renderActionBar({
+            primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
+            secondary: { id: 'btn-run-backup-drill', label: 'Run restore drill', variant: 'secondary', type: 'button' },
+          }),
+        })}
       </form>
     `;
   },

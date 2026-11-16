@@ -1,7 +1,7 @@
 import { escapeHtml } from '../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
-import { renderListRow, renderStatusDot } from '../../primitives/index.js';
+import { renderItem } from '../../primitives/index.js';
 import { renderEmptyState, renderStatusLine } from '../../components/index.js';
 import { INBOX_STRINGS } from '../../strings/admin/inbox.js';
 
@@ -35,16 +35,33 @@ export async function renderAdminAuditRulesPage(
             ? `Applies when ${scopeEntries.map(([k, v]) => `${k} is ${Array.isArray(v) ? v.join(', ') : String(v)}`).join(' and ')}.`
             : 'Applies to all questions.';
           const c = rule.constraint || {};
-          const summary = c.guidance || c.summary || c.rule || (typeof c === 'string' ? c : 'Answer rule.');
+          const summary = c.guidance || c.summary || c.rule || (typeof c === 'string' ? c : 'Answer rule');
           const tone = activeStatus === 'confirmed' ? 'ok' : activeStatus === 'revoked' ? 'neutral' : 'warn';
           const statusLabel = INBOX_STRINGS.audit.tabs[activeStatus as 'proposed' | 'confirmed' | 'revoked'];
-          const trailingHtml = renderStatusDot({ label: statusLabel, tone }) +
-            (activeStatus === 'proposed' ? `<button type="button" class="lp-btn lp-btn-primary lp-btn-sm" data-rule-id="${escapeHtml(id)}" data-rule-action="confirmed">${escapeHtml(INBOX_STRINGS.audit.confirmRule)}</button>` : '') +
-            (activeStatus !== 'revoked' ? `<button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" data-rule-id="${escapeHtml(id)}" data-rule-action="revoked">${escapeHtml(INBOX_STRINGS.audit.revokeRule)}</button>` : '');
-          return renderListRow({
-            primary: String(summary),
-            secondary: `${scopeText}${quote ? ` · Source quote: ${quote}` : ''}`,
-            trailingHtml,
+          return renderItem({
+            title: String(summary),
+            subtitle: scopeText,
+            segments: quote ? [{ heading: 'Source quote', body: quote }] : undefined,
+            statusLabel,
+            statusTone: tone,
+            actions: activeStatus === 'revoked'
+              ? undefined
+              : {
+                  primary: activeStatus === 'proposed'
+                    ? {
+                        label: INBOX_STRINGS.audit.confirmRule,
+                        variant: 'primary',
+                        size: 'sm',
+                        dataAttrs: { 'rule-id': id, 'rule-action': 'confirmed' },
+                      }
+                    : undefined,
+                  secondary: {
+                    label: INBOX_STRINGS.audit.revokeRule,
+                    variant: 'secondary',
+                    size: 'sm',
+                    dataAttrs: { 'rule-id': id, 'rule-action': 'revoked' },
+                  },
+                },
             attributes: `data-rule-row="${escapeHtml(id)}"`,
           });
         })

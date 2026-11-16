@@ -1,6 +1,6 @@
 import { z } from '@living-portfolio/core';
 import { escapeHtml } from '../../lib/html.js';
-import { renderButton, renderField } from '../../primitives/index.js';
+import { renderActionBar, renderChoiceGroup, renderField, renderFormSection } from '../../primitives/index.js';
 import { renderStatusLine } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 
@@ -21,7 +21,7 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
   id: 'answering',
   title: 'Answering',
   summary: 'Automatic visitor replies, confidence thresholds, and self-checks.',
-  icon: 'message',
+  icon: 'sliders',
   order: 1,
   route: '/admin/settings/answering',
   version: 1,
@@ -53,75 +53,100 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
       <form id="settings-module-form" data-settings-module="answering" class="lp-stack-lg">
         ${renderStatusLine({ id: 'settings-status-banner' })}
 
-        <section class="lp-stack-md">
-          <h2 class="lp-section-title">Automatic answering</h2>
-          <label class="lp-choice-row">
-            <input type="checkbox" id="setting-answering-enabled" class="lp-choice-input" ${answeringEnabled ? 'checked' : ''} />
-            <span>Allow automatic visitor answers on the public site</span>
-          </label>
-          <p class="lp-help-text">When paused, visitor questions wait for your reply in Inbox.</p>
-        </section>
+        ${renderFormSection({
+          title: 'Automatic answering',
+          description: 'When paused, visitor questions wait for your reply in Inbox.',
+          fieldsHtml: renderChoiceGroup({
+            name: 'answering-enabled-group',
+            mode: 'multiple',
+            variant: 'card',
+            options: [
+              {
+                id: 'setting-answering-enabled',
+                value: 'enabled',
+                label: 'Allow automatic visitor answers on the public site',
+                checked: answeringEnabled,
+              },
+            ],
+          }),
+        })}
 
-        <section class="lp-stack-md">
-          <h2 class="lp-section-title">Confidence thresholds</h2>
-          ${renderField({
-            kind: 'input',
-            id: 'setting-tier1-floor',
-            name: 'directConfidenceFloor',
-            label: 'Direct quote threshold',
-            inputType: 'number',
-            value: String(directFloor),
-            help: 'Minimum match score (0.10 to 1.00, recommended 0.82) before quoting an entry directly.',
-            attributes: 'step="0.01" min="0.1" max="1.0"',
-          })}
-          <div id="tier1-warning" class="lp-notice lp-notice-warn${directFloor < 0.82 ? '' : ' lp-is-hidden'}">
-            Lowering this below 0.82 may allow weaker direct quotes.
-          </div>
-          ${renderField({
-            kind: 'input',
-            id: 'setting-tier2-floor',
-            name: 'synthesisConfidenceFloor',
-            label: 'Summary answer threshold',
-            inputType: 'number',
-            value: String(synthFloor),
-            help: 'Minimum match score (0.10 to 1.00, recommended 0.65) before combining multiple entries.',
-            attributes: 'step="0.01" min="0.1" max="1.0"',
-          })}
-          ${renderField({
-            kind: 'input',
-            id: 'setting-facet-threshold',
-            name: 'topicMatchThreshold',
-            label: 'Topic recognition threshold',
-            inputType: 'number',
-            value: String(topicThreshold),
-            help: 'Minimum similarity (0.50 to 1.00, recommended 0.75) to match a known topic.',
-            attributes: 'step="0.01" min="0.5" max="1.0"',
-          })}
-        </section>
+        ${renderFormSection({
+          title: 'Confidence thresholds',
+          fieldsHtml: `
+            ${renderField({
+              kind: 'input',
+              id: 'setting-tier1-floor',
+              name: 'directConfidenceFloor',
+              label: 'Direct quote threshold',
+              inputType: 'number',
+              value: String(directFloor),
+              help: 'Minimum match score (0.10 to 1.00, recommended 0.82) before quoting an entry directly.',
+              attributes: 'step="0.01" min="0.1" max="1.0"',
+            })}
+            <div id="tier1-warning" class="lp-notice lp-notice-warn${directFloor < 0.82 ? '' : ' lp-is-hidden'}">
+              Lowering this below 0.82 may allow weaker direct quotes.
+            </div>
+            ${renderField({
+              kind: 'input',
+              id: 'setting-tier2-floor',
+              name: 'synthesisConfidenceFloor',
+              label: 'Summary answer threshold',
+              inputType: 'number',
+              value: String(synthFloor),
+              help: 'Minimum match score (0.10 to 1.00, recommended 0.65) before combining multiple entries.',
+              attributes: 'step="0.01" min="0.1" max="1.0"',
+            })}
+            ${renderField({
+              kind: 'input',
+              id: 'setting-facet-threshold',
+              name: 'topicMatchThreshold',
+              label: 'Topic recognition threshold',
+              inputType: 'number',
+              value: String(topicThreshold),
+              help: 'Minimum similarity (0.50 to 1.00, recommended 0.75) to match a known topic.',
+              attributes: 'step="0.01" min="0.5" max="1.0"',
+            })}
+          `,
+        })}
 
-        <section class="lp-stack-md">
-          <h2 class="lp-section-title">Self-checks</h2>
-          <label class="lp-choice-row">
-            <input type="checkbox" id="setting-mech-suggestion-thresholds" class="lp-choice-input" ${mechSuggest ? 'checked' : ''} />
-            <span>Adjust tag suggestion thresholds from your approvals</span>
-          </label>
-          <label class="lp-choice-row">
-            <input type="checkbox" id="setting-mech-routing-calibration" class="lp-choice-input" ${mechRouting ? 'checked' : ''} />
-            <span>Calibrate routing thresholds from visitor feedback</span>
-          </label>
-          <label class="lp-choice-row">
-            <input type="checkbox" id="setting-mech-topology-audit" class="lp-choice-input" ${mechTopology ? 'checked' : ''} />
-            <span>Flag contradicting claims across entries</span>
-          </label>
-          <label class="lp-choice-row">
-            <input type="checkbox" id="setting-mech-scoped-constraints" class="lp-choice-input" ${mechScoped ? 'checked' : ''} />
-            <span>Propose reusable answer rules after you reply</span>
-          </label>
-        </section>
-
-        <div>
-          ${renderButton({ id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' })}
-        </div>
+        ${renderFormSection({
+          title: 'Self-checks',
+          fieldsHtml: renderChoiceGroup({
+            name: 'answering-mechanisms',
+            mode: 'multiple',
+            variant: 'card',
+            options: [
+              {
+                id: 'setting-mech-suggestion-thresholds',
+                value: 'suggest',
+                label: 'Adjust tag suggestion thresholds from your approvals',
+                checked: mechSuggest,
+              },
+              {
+                id: 'setting-mech-routing-calibration',
+                value: 'routing',
+                label: 'Calibrate routing thresholds from visitor feedback',
+                checked: mechRouting,
+              },
+              {
+                id: 'setting-mech-topology-audit',
+                value: 'topology',
+                label: 'Flag contradicting claims across entries',
+                checked: mechTopology,
+              },
+              {
+                id: 'setting-mech-scoped-constraints',
+                value: 'scoped',
+                label: 'Propose reusable answer rules after you reply',
+                checked: mechScoped,
+              },
+            ],
+          }),
+          actionBarHtml: renderActionBar({
+            primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
+          }),
+        })}
       </form>
       <div class="lp-is-hidden" data-module-meta="${escapeHtml(answeringModule.id)}"></div>
     `;

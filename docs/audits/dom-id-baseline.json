@@ -2,6 +2,11 @@
   "version": 1,
   "allowlist": {
     "removedIds": [
+      "import-source-toggle",
+      "import-tiptap-editor",
+      "step-tab-add",
+      "step-tab-plan",
+      "step-tab-triage",
       "admin-entries-list",
       "admin-entry-form",
       "admin-offline-banner",

@@ -100,10 +100,7 @@ ${renderButton({ id: 'btn-entries-delete-confirm', label: ENTRIES_LIST_STRINGS.d
     </div>
     <div class="lp-entries-search-group">
       <label class="lp-field-label" for="entries-search">${escapeHtml(ENTRIES_LIST_STRINGS.filters.searchLabel)}</label>
-      <div class="lp-entries-search-row">
-        <input type="search" id="entries-search" class="lp-input" placeholder="${escapeHtml(ENTRIES_LIST_STRINGS.filters.searchPlaceholder)}" />
-        ${renderButton({ id: 'entries-search-submit', label: ENTRIES_LIST_STRINGS.filters.searchSubmit, variant: 'secondary', size: 'sm' })}
-      </div>
+      <input type="search" id="entries-search" class="lp-input" placeholder="${escapeHtml(ENTRIES_LIST_STRINGS.filters.searchPlaceholder)}" />
     </div>
   </div>
 

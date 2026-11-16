@@ -1,5 +1,5 @@
 import { z } from '@living-portfolio/core';
-import { renderButton, renderField } from '../../primitives/index.js';
+import { renderActionBar, renderField, renderFormSection } from '../../primitives/index.js';
 import { renderStatusLine } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 
@@ -32,27 +32,26 @@ export const notificationsModule: SettingsModuleManifest<NotificationsConfig> = 
       <form id="settings-module-form" data-settings-module="notifications" class="lp-stack-lg">
         ${renderStatusLine({ id: 'settings-status-banner' })}
 
-        <section class="lp-stack-md">
-          <h2 class="lp-section-title">Alert destination</h2>
-          ${renderField({
-            kind: 'input',
-            id: 'setting-notify-topic',
-            name: 'topicUrl',
-            label: 'Notification topic URL',
-            inputType: 'text',
-            value: topicUrl,
-            placeholder: 'https://ntfy.sh/owner-alerts',
-            help: 'Endpoint notified when a visitor question needs your attention.',
-          })}
-          <div class="lp-row lp-gap-sm">
-            ${renderButton({ id: 'btn-test-notification', label: 'Send test alert', variant: 'secondary', type: 'button' })}
-          </div>
-          <div id="notify-test-result" class="lp-help-text"></div>
-        </section>
-
-        <div>
-          ${renderButton({ id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' })}
-        </div>
+        ${renderFormSection({
+          title: 'Alert destination',
+          fieldsHtml: `
+            ${renderField({
+              kind: 'input',
+              id: 'setting-notify-topic',
+              name: 'topicUrl',
+              label: 'Notification topic URL',
+              inputType: 'text',
+              value: topicUrl,
+              placeholder: 'https://ntfy.sh/owner-alerts',
+              help: 'Endpoint notified when a visitor question needs your attention.',
+            })}
+            <div id="notify-test-result" class="lp-help-text"></div>
+          `,
+          actionBarHtml: renderActionBar({
+            primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
+            secondary: { id: 'btn-test-notification', label: 'Send test alert', variant: 'secondary', type: 'button' },
+          }),
+        })}
       </form>
     `;
   },

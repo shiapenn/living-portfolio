@@ -92,27 +92,15 @@ test.describe('WP-16.L L2 Tiptap Block Editor & Import Source Mode', () => {
     expect(serious, JSON.stringify(serious, null, 2)).toHaveLength(0);
   });
 
-  test('Import page uses Tiptap component in Source mode by default and toggles to rich text', async ({ page }) => {
+  test('Import page has no mode toggle and renders labelled Paste Markdown or text field (D-COMP #10)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/import');
 
-    const toggle = page.locator('#import-source-toggle');
+    await expect(page.locator('#import-source-toggle')).toHaveCount(0);
+    await expect(page.locator('label[for="import-paste-area"]')).toHaveText('Paste Markdown or text');
     const textarea = page.locator('#import-paste-area');
-    const tiptap = page.locator('#import-tiptap-editor');
-
-    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
     await expect(textarea).toBeVisible();
-    await expect(tiptap).toBeHidden();
-
     await textarea.fill('# Imported Title\n\nBody paragraph.');
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-pressed', 'false');
-    await expect(textarea).toBeHidden();
-    await expect(tiptap.locator('.ProseMirror h1')).toContainText('Imported Title');
-
-    await toggle.click();
-    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-    await expect(textarea).toBeVisible();
     expect(await textarea.inputValue()).toContain('# Imported Title');
   });
 });

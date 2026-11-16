@@ -1,7 +1,7 @@
 import { escapeHtml } from '../../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../../layouts/admin-shell.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../../lib/admin-api-client.js';
-import { renderListRow } from '../../../primitives/index.js';
+import { renderItem } from '../../../primitives/index.js';
 import { renderEmptyState, renderStatusLine } from '../../../components/index.js';
 import { INSPECTOR_STRINGS } from '../../../strings/admin/inspector.js';
 
@@ -65,10 +65,25 @@ export async function renderEntryHistoryPage(
           const preview = plain.length > 160 ? `${plain.slice(0, 160)}…` : plain;
           const dateLabel = validFrom || 'Revision';
           const stateLabel = idx === 0 ? INSPECTOR_STRINGS.historyPage.currentBadge : temporalLevel;
-          return renderListRow({
-            primary: `${dateLabel} — ${preview || '(Empty body)'}`,
-            secondary: idx === 0 ? `${temporalLevel} · ${INSPECTOR_STRINGS.historyPage.currentBadge}` : temporalLevel,
-            trailingHtml: `<span class="lp-state-label">${escapeHtml(stateLabel)}</span><button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" data-restore-rev="${escapeHtml(revId)}" data-body-md="${escapeHtml(bodyMd)}" data-valid-from="${escapeHtml(rawValidFrom)}" data-temporal-level="${escapeHtml(temporalLevel)}">${escapeHtml(INSPECTOR_STRINGS.historyPage.restoreButton)}</button>`,
+          return renderItem({
+            title: preview || '(Empty body)',
+            subtitle: idx === 0 ? `${temporalLevel} · ${INSPECTOR_STRINGS.historyPage.currentBadge}` : temporalLevel,
+            meta: dateLabel,
+            statusLabel: stateLabel,
+            statusTone: idx === 0 ? 'ok' : 'neutral',
+            actions: {
+              secondary: {
+                label: INSPECTOR_STRINGS.historyPage.restoreButton,
+                variant: 'secondary',
+                size: 'sm',
+                dataAttrs: {
+                  'restore-rev': revId,
+                  'body-md': bodyMd,
+                  'valid-from': rawValidFrom,
+                  'temporal-level': temporalLevel,
+                },
+              },
+            },
             attributes: `data-revision-row="${escapeHtml(revId)}"`,
           });
         })
@@ -126,7 +141,8 @@ export async function renderEntryHistoryPage(
   const content = renderPageTemplate({
     title: `${INSPECTOR_STRINGS.historyPage.titlePrefix}: ${String(entry.title || 'Untitled')}`,
     description: INSPECTOR_STRINGS.historyPage.subtitle,
-    actionsHtml: `<a href="/admin/entries/${encodeURIComponent(entryId)}" class="lp-btn lp-btn-quiet lp-btn-sm">&larr; ${escapeHtml(INSPECTOR_STRINGS.historyPage.backToEntry)}</a>`,
+    backHref: `/admin/entries/${encodeURIComponent(entryId)}`,
+    backLabel: INSPECTOR_STRINGS.historyPage.backToEntry,
     bodyHtml,
   });
 

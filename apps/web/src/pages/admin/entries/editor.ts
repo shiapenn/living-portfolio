@@ -202,18 +202,21 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
   </div>
   <div id="ref-main" class="lp-editor-shell-fullscreen">
     <aside id="ref-entries-drawer" class="lp-editor-drawer lp-editor-drawer-left" aria-label="${escapeHtml(EDITOR_STRINGS.sidebar.heading)}" hidden>
-      <div class="lp-editor-drawer-header">
+      <div class="lp-editor-drawer-header lp-editor-drawer-header-stack">
+        <div class="lp-section-header-row">
+          <span class="lp-form-section-title">${escapeHtml(EDITOR_STRINGS.sidebar.heading)}</span>
+          ${renderIconButton({
+            id: 'ref-btn-close-entries',
+            ariaLabel: 'Close entries drawer',
+            title: 'Close entries drawer',
+            icon: 'close',
+            iconSize: 16,
+            variant: 'quiet',
+            size: 'sm',
+          })}
+        </div>
+        ${entries.length > 0 ? renderButton({ id: 'ref-btn-new-entry', label: EDITOR_STRINGS.sidebar.newEntry, variant: 'primary', size: 'sm', className: 'lp-btn-full' }) : ''}
         <input type="search" id="ref-entries-search" class="lp-input" placeholder="Search entries…" aria-label="Search entries" />
-        ${entries.length > 0 ? renderButton({ id: 'ref-btn-new-entry', label: EDITOR_STRINGS.sidebar.newEntry, variant: 'secondary', size: 'sm' }) : ''}
-        ${renderIconButton({
-          id: 'ref-btn-close-entries',
-          ariaLabel: 'Close entries drawer',
-          title: 'Close entries drawer',
-          icon: 'x',
-          iconSize: 16,
-          variant: 'quiet',
-          size: 'sm',
-        })}
       </div>
       <div id="ref-entry-list" class="lp-list">${sidebarItems}</div>
     </aside>

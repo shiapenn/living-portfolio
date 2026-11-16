@@ -136,10 +136,9 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
   it('renders Import & Triage page with 3-step planner and J K A R D S keyboard controls (20261020-UX-07)', async () => {
     const importHtml = await renderAdminImportPage(repo);
     expect(importHtml).toContain('Import &amp; Triage');
-    expect(importHtml).toContain('class="lp-tabs"');
-    expect(importHtml).toContain('id="step-tab-add"');
-    expect(importHtml).toContain('id="step-tab-plan"');
-    expect(importHtml).toContain('id="step-tab-triage"');
+    expect(importHtml).toContain('id="import-stepper"');
+    expect(importHtml).toContain('Step 1 of 3 · Add material');
+    expect(importHtml).toContain('Paste Markdown or text');
 
     // Add & Plan controls
     expect(importHtml).toContain('id="import-paste-area"');
