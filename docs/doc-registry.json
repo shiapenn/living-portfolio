@@ -1377,5 +1377,13 @@
     "path": "docs/execution-reports/A126-wp-16l-l3-contact-sheets.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A127",
+    "title": "WP-16.C C0 D-COMP Foundations and Census",
+    "class": "A",
+    "path": "docs/execution-reports/A127-wp-16c-c0-d-comp-foundations-and-census.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
