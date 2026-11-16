@@ -64,3 +64,4 @@ This protocol establishes the binding operational procedure for all implementati
 | 2026-10-21 | Initial execution protocol |
 | 2026-10-22 | PROC-1: Adopt Document Identity and IAHP nine-section receipt structure |
 | 2026-11-08 | Amend Merge Strategy: PRs into review/wp-13 and main use merge commits to preserve receipt Evidence SHA ancestry (owner approved exception to rebase) |
+| 2026-11-16 | H017 baseline superseded by WP-16.R, merged PR #162 to #171 (A115 to A122); baseline for WP-16.L is fe3cd51; verified by L on 2026-11-16. |

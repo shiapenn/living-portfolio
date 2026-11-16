@@ -156,3 +156,55 @@ Where `D-MIN` conflicts with `D-FOUND-2`, `D-FOUND-3`, or `D-FOUND-4`, `D-MIN` s
 11. **Help**: No explainer cards; one line of help under a field; one line of page description.
 12. **Navigation**: Render only items whose pages exist. The editor screen holds only the list, the editor, and the optional structure panel.
 13. **Enforcement (style census, Playwright, every admin page × 2 themes × 1280 and 320 px)**: Computed radii are in `{0, 4, 8}` (dots excepted); every control is `36 px` high; font sizes are in `{12, 14, 16, 24}`; each role (state label, tab, button, icon button, input, select) has exactly one computed look across all pages; spacing values are in the scale; no inline styles; budgets live in a file that only shrinks (`docs/audits/style-census-budget.json`). Ratios and per-role signatures are printed in the report.
+
+---
+
+## D-LAYOUT: Layout and Editor Reset (Supersedes Conflicting Parts of D-MIN and D-FOUND)
+
+Where `D-LAYOUT` conflicts with `D-MIN` or `D-FOUND`, `D-LAYOUT` supersedes them:
+
+1. **Shell**: Top bar only (`48 px`, `1 px` hairline below), no sidebar anywhere. Left: launcher icon button (grid icon, `36 × 36`) plus product name. Right: site status (dot icon button with menu) and account (user icon button with menu: theme, sign out). The launcher opens a panel (popover from `768 px` up, full-width sheet below) listing the existing destinations in one column, grouped: Write (`Today`, `Entries`, `Import`), Respond (`Inbox`), Govern (`Answer rules`), Configure (`Settings`), plus `View public site`; each item has an icon and label; the current one is marked. `Esc` closes, arrow keys move, focus returns to the trigger. Render only pages that exist. The launcher list is built from a registry so a new page appears by registering it.
+2. **One page template (every page except the editor)**: Single centred column, max width `720 px`, padding `24 px` (`16 px` below `768 px`), `h1` at the same top offset on every page (`40 px` below the top bar), optional one-line description, `24 px` between the title block and content, `40 px` between sections. One page background colour; no grey canvas; no cards or boxes around sections; hairlines and whitespace only. A tab list is followed by a `24 px` gap.
+3. **One List row component**: Used for Entries, Inbox, Answer rules, History, Today, the entry drawer, and the Settings index. Primary text, optional one-line secondary text, a right-aligned trailing slot for the state label (dot plus text), vertically centred, hairline separators, the whole row is the click target, hover tint. No per-row buttons. Status always sits in the trailing slot.
+4. **One Select primitive**: Native appearance removed, a `16 px` chevron icon `12 px` from the right edge, `36 px` right padding, identical in every dropdown on every page.
+5. **Colours from theme tokens only**: Inputs, textareas, and selects use input tokens per theme (no hard-coded white or hex anywhere). One page background and one surface colour per theme; tinted backgrounds only for the selected row and warning or error notices.
+6. **Login and setup**: No card; centred `360 px` column. The step indicator is the text `"Step 1 of 6 · Account"` plus a `2 px` progress line `16 px` below it; no row of six labels. The recovery link is a quiet text button that wraps inside the column.
+7. **Today**: No boxes. Three plain sections made of List rows: `Automated answering` (state dot and text, Pause or Resume), `Needs attention`, `Getting started` (a dismiss icon). The per-row `"Open Editor"` button is removed; the row opens.
+8. **Editor (`entries-detail` and `entries-new`, same screen)**: Full-screen. Below the top bar, a sticky toolbar:
+   - Left: entries icon opening a left drawer (search plus List rows), closed by default.
+   - Centre: icon-only formatting buttons with accessible names and tooltips (heading, bold, italic, link, bullet list, quote, code, and a `Source` toggle).
+   - Right: state label (click opens the `Visibility` menu: `Draft`, `Unlisted`, `Public`, with `Publish`), a `History` icon (clock; link to `/admin/entries/:id/history`), a `Structure` icon (right drawer, closed by default), a `More` menu (`Delete` only), and `Save` (the one primary text button, with `"No changes to save."` and `"Saved"` messages kept in the toolbar).
+   - Below toolbar: borderless `24 px` title field and, on one line under it, the details as plain text opening a popover to edit: date, date precision, type (shown with its section per rule 13).
+   - Writing column: centred, max `760 px` for text, `16 px` serif, line-height `1.7`, filling the viewport height; nothing else on screen. Remove the stray `"Structure"` label and duplicate state label.
+   - Structure drawer: keeps its current content without step boxes (one text line `"Captured, Tagged, Claimed, Grounded"` with the current step in bold), without explainer text, without dashed containers; add nothing to it.
+9. **Editor engine**: Tiptap core (ProseMirror, MIT) only; no paid Tiptap extensions; custom nodes where needed. `body_md` stays the stored value. Markdown shortcuts and pasted Markdown work. The `Source` toggle swaps to a monospace textarea holding the same Markdown. Import uses the same component, `Source` mode by default. Built on a block registry: each block type registers its schema, editor view, Markdown serialiser, public renderer, and export rule. A test fails if a registered block lacks a public renderer or export rule. Round-trip gate: loads every seeded entry and a fixture set (including fixtures for future directives), serialises, and asserts identical normalised Markdown; saving without edits never changes `body_md` (amends `D-05` fallback: do not fall back to a plain source editor). Bundle growth `<= 150 KB` gzip; CSP compatible; keyboard operable; axe clean.
+10. **Settings**: `/admin/settings` is an index of List rows built from the `D-SETTINGS-ARCH` registry, each with plain status text such as `"Not set up"`; each module opens `/admin/settings/<id>`, one column, one form, one Save. Initial modules: `Answering`, `Providers`, `Appearance`, `Notifications`, `Backups` (`Home` and `Account` follow in WP-17; `Storage` in WP-18). Plain language only: no spec ids, no section signs (`§`), no `snake_case` values, no `"Tier 1/2"` names; numbers shown with a one-line explanation; alpha notice is one line at the bottom of the index only.
+11. **Import, History & Inbox**: Import tabs lose their numerals; History shows a plain-text excerpt with Markdown markers stripped; the Inbox reply box uses the normal input look (sans, not monospace).
+12. **Remove rather than add**: Every removed and added element is listed with its reason.
+13. **Sections (publishing target)**: Derived from entry type (profile) through configuration, not code: `case-study`, `design-project`, and `decision-record` → `Work`; `freeform` → `Writing`; `dev-log` entries attached to a venture → `Build`; any unmapped type defaults to `Writing`. Shown in three places: editor details line (`"Work · Case study"`), type picker grouped by section, and Publish dialog (`"Will appear in Work at /work/<slug>"`). Adding a new section later is a configuration change plus a public page, with no editor change.
+
+---
+
+## D-EDITOR-3: Target Block Model (for WP-18)
+
+A Notion-class block editor with a slash menu, drag handles to reorder, and block types: paragraph, heading 1 to 3, bullet and numbered list, quote, callout, code, table, divider, link or embed, image, video, and a Columns container of 1 to 4 columns that can hold any block except another Columns container. Dropping an image or video beside another block creates columns. Layout is stored in `body_md` as container directives (`P004` §6.6) that degrade to readable text in plain Markdown; reading order equals source order; columns collapse to one below a container width. Markdown stays canonical. `WP-16.L` (`L2`) builds the editor shell, text blocks, slash menu, toolbar, shortcuts, `Source` toggle, and block registry; `WP-18.2` builds on this editor; `WP-18.5` adds nested Columns and drop-to-columns.
+
+---
+
+## D-SETTINGS-ARCH: Settings Module Architecture
+
+Each settings module is a self-contained unit that registers a manifest: `id`, `title`, one-line `summary`, `icon`, `order`, `route`, a `status` function for the index, a config schema (`zod`) with defaults and a `version`, and its page component. Modules must not import each other; they read and write only their own namespaced config through one settings service, which validates, versions, and migrates. The `/admin/settings` index and launcher render from the registry.
+
+`Appearance` defines a **theme-pack extension point**: a theme pack is a validated set of design tokens (the existing token schema, required keys, contrast checks per `D-FOUND`), selectable and applied globally to admin and public site; built-in `light` and `dark` packs and the existing accent settings ship through it (no pack editor yet). A theme pack with a failing contrast value is rejected with a plain message.
+
+---
+
+## D-STORAGE: Media and Storage Management (WP-18.9)
+
+Registered as a Settings module (`/admin/settings/storage`) under `D-SETTINGS-ARCH` and built in `WP-18` after the media API (`WP-18.3`):
+- Shows used space against available space or quota, and storage backend (`local volume` or `S3-compatible`).
+- Editable upload limits written to the same configuration store (defaults: image `10 MB`, video `100 MB`, total `5 GB`; allowed types from configuration).
+- Media list with thumbnail, size, date, and `"used in N entries (including past revisions)"`.
+- Delete allowed only for files no entry or revision references; `"Remove unused"` with a confirmation that states the space freed.
+- Quota warning at `80%` on `Today` under `Needs attention`.
+- Backups, the backup drill, and Markdown export must include media, with a conformance test that a restored backup renders every image.
