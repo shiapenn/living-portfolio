@@ -118,11 +118,11 @@ export const PRIMITIVE_TOKENS = `
   --radius-overlay: 8px;
   --radius-pill: 4px;
 
-  /* Motion tokens (D-FOUND-5: 150-200ms) */
-  --duration-fast: 150ms;
+  /* Motion tokens (D-COMP #5: 100, 160, 240 ms, one easing) */
+  --duration-fast: 100ms;
   --duration-base: 160ms;
-  --duration-slow: 200ms;
-  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-slow: 240ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
 
   /* Breakpoint tokens (Spec §12.5) */
   --bp-sm: 480px;
@@ -200,6 +200,7 @@ export const SEMANTIC_TOKENS_LIGHT = `
 
   /* Elevation & z-index */
   --shadow-overlay: 0 8px 24px rgba(20, 32, 42, 0.16);
+  --backdrop: rgba(15, 26, 34, 0.45);
   --z-base: 0;
   --z-sticky: 100;
   --z-overlay: 200;
@@ -287,6 +288,7 @@ export const SEMANTIC_TOKENS_DARK = `
 
   /* Elevation */
   --shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --backdrop: rgba(0, 0, 0, 0.6);
 `;
 
 export const COMPONENT_TOKENS = `

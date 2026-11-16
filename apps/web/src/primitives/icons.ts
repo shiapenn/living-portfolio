@@ -6,8 +6,11 @@
 
 export type IconName =
   | 'x'
+  | 'close'
   | 'chevron-down'
+  | 'chevron-left'
   | 'chevron-right'
+  | 'check'
   | 'sun'
   | 'moon'
   | 'sun-moon'
@@ -16,6 +19,7 @@ export type IconName =
   | 'check-circle'
   | 'alert-triangle'
   | 'alert-circle'
+  | 'more'
   | 'more-horizontal'
   | 'copy'
   | 'plus'
@@ -38,7 +42,9 @@ export type IconName =
   | 'list'
   | 'quote'
   | 'code'
+  | 'source'
   | 'heading'
+  | 'search'
   | 'trash';
 
 export type IconSize = 16 | 20 | 24;
@@ -49,10 +55,13 @@ export interface IconProps {
   className?: string;
 }
 
-const LUCIDE_SYMBOLS: Record<IconName, string> = {
+export const LUCIDE_SYMBOLS: Record<IconName, string> = {
   x: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  close: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
   'chevron-down': '<path d="m6 9 6 6 6-6"/>',
+  'chevron-left': '<path d="m15 18-6-6 6-6"/>',
   'chevron-right': '<path d="m9 18 6-6-6-6"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
   moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
   'sun-moon':
@@ -64,6 +73,7 @@ const LUCIDE_SYMBOLS: Record<IconName, string> = {
     '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
   'alert-circle':
     '<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>',
+  more: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
   'more-horizontal':
     '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
   copy: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
@@ -90,28 +100,36 @@ const LUCIDE_SYMBOLS: Record<IconName, string> = {
   list: '<line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/>',
   quote: '<path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/>',
   code: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+  source: '<path d="m18 16 4-4-4-4"/><path d="m6 8-4 4 4 4"/><path d="m14.5 4-5 16"/>',
   heading: '<path d="M6 12h12"/><path d="M6 20V4"/><path d="M18 20V4"/>',
+  search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
   trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
 };
 
 export const LUCIDE_ICON_NAMES: IconName[] = [
-  'x',
-  'chevron-down',
-  'chevron-right',
-  'moon',
-  'sun',
-  'menu',
-  'info',
-  'check-circle',
-  'alert-triangle',
-  'alert-circle',
-  'more-horizontal',
-  'copy',
-  'plus',
-  'file-text',
+  'grid',
+  'user',
+  'bold',
+  'italic',
+  'heading',
+  'link',
+  'list',
+  'quote',
+  'code',
+  'source',
+  'clock',
   'layers',
-  'loader',
+  'more',
+  'search',
+  'chevron-down',
+  'chevron-left',
+  'check',
+  'close',
 ];
+
+export function isKnownIconName(name: string): name is IconName {
+  return Object.prototype.hasOwnProperty.call(LUCIDE_SYMBOLS, name);
+}
 
 export function renderIconSprite(): string {
   const symbols = (Object.entries(LUCIDE_SYMBOLS) as Array<[IconName, string]>)
@@ -129,6 +147,11 @@ export function renderIcon(
   classNameArg?: string
 ): string {
   const name: IconName = typeof nameOrProps === 'string' ? nameOrProps : nameOrProps.name;
+  if (!isKnownIconName(name)) {
+    if (process.env.NODE_ENV !== 'production') {
+      throw new Error(`Unknown icon id: "${String(name)}"`);
+    }
+  }
   const rawSize = typeof nameOrProps === 'string' ? sizeArg : (nameOrProps.size ?? 16);
   const size: IconSize = rawSize === 20 || rawSize === 24 ? rawSize : 16;
   const extraClass = typeof nameOrProps === 'string' ? classNameArg : nameOrProps.className;

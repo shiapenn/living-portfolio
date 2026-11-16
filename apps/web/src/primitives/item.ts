@@ -1,0 +1,84 @@
+import { escapeHtml } from '../lib/html.js';
+import { renderStatusDot, type StatusTone } from './chip.js';
+import { renderIcon, type IconName } from './icons.js';
+import { renderActionBar, type ActionBarProps } from './action-bar.js';
+
+export interface ItemBodySegment {
+  heading?: string;
+  body: string;
+}
+
+export interface ItemProps {
+  id?: string;
+  href?: string;
+  leadingIcon?: IconName;
+  title: string;
+  subtitle?: string;
+  body?: string;
+  segments?: ItemBodySegment[];
+  meta?: string;
+  statusLabel?: string;
+  statusTone?: StatusTone;
+  showChevron?: boolean;
+  actions?: ActionBarProps;
+  selected?: boolean;
+  className?: string;
+  attributes?: string;
+}
+
+/**
+ * Unified Item primitive (D-COMP #3):
+ * Slots in order: leading icon (optional), title (14, 600), subtitle (12 grey),
+ * body (14; or segments with 8px between heading/body and 16px between segments),
+ * meta (date/time, 12 grey), status (dot + text), actions (ActionBar, max 2).
+ * >= 640px: content left; status + chevron in trailing slot aligned to title line; meta under subtitle; actions below body.
+ * < 640px: every slot stacks in order: title, subtitle, body, status, meta, actions.
+ * Whole row opens on click unless it holds actions.
+ */
+export function renderItem(props: ItemProps): string {
+  const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
+  const hasActions = Boolean(props.actions && (props.actions.primary || props.actions.secondary || props.actions.textAction));
+  const classes = ['lp-item', props.selected ? 'is-selected' : '', hasActions ? 'lp-item-has-actions' : '', props.className]
+    .filter(Boolean)
+    .join(' ');
+  const extra = props.attributes ? ` ${props.attributes}` : '';
+
+  const leadingHtml = props.leadingIcon
+    ? `<span class="lp-item-leading" aria-hidden="true">${renderIcon(props.leadingIcon, 16)}</span>`
+    : '';
+
+  const titleHtml = `<div class="lp-item-title">${leadingHtml}<span>${escapeHtml(props.title)}</span></div>`;
+  const subtitleHtml = props.subtitle ? `<div class="lp-item-subtitle">${escapeHtml(props.subtitle)}</div>` : '';
+
+  let bodyHtml = '';
+  if (props.segments && props.segments.length > 0) {
+    bodyHtml = `<div class="lp-item-segments">${props.segments
+      .map(
+        (seg) => `<div class="lp-item-segment">
+          ${seg.heading ? `<div class="lp-item-segment-heading">${escapeHtml(seg.heading)}</div>` : ''}
+          <div class="lp-item-body">${escapeHtml(seg.body)}</div>
+        </div>`
+      )
+      .join('')}</div>`;
+  } else if (props.body) {
+    bodyHtml = `<div class="lp-item-body">${escapeHtml(props.body)}</div>`;
+  }
+
+  const statusHtml = props.statusLabel
+    ? `<div class="lp-item-status">${renderStatusDot({ label: props.statusLabel, tone: props.statusTone ?? 'neutral' })}${
+        props.showChevron ? `<span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span>` : ''
+      }</div>`
+    : props.showChevron
+      ? `<div class="lp-item-status"><span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span></div>`
+      : '';
+
+  const metaHtml = props.meta ? `<div class="lp-item-meta">${escapeHtml(props.meta)}</div>` : '';
+  const actionsHtml = hasActions && props.actions ? `<div class="lp-item-actions">${renderActionBar(props.actions)}</div>` : '';
+
+  const inner = `${titleHtml}${subtitleHtml}${bodyHtml}${statusHtml}${metaHtml}${actionsHtml}`;
+
+  if (props.href && !hasActions) {
+    return `<a href="${escapeHtml(props.href)}"${idAttr} class="${escapeHtml(classes)}"${extra}>${inner}</a>`;
+  }
+  return `<div${idAttr} class="${escapeHtml(classes)}"${extra}>${inner}</div>`;
+}

@@ -1,5 +1,18 @@
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderIcon } from '../../primitives/index.js';
+import {
+  renderActionBar,
+  renderButton,
+  renderChoiceGroup,
+  renderField,
+  renderFormSection,
+  renderIcon,
+  renderIconButton,
+  renderItem,
+  renderOverlay,
+  renderPageHeader,
+  renderStepper,
+  renderTabs,
+} from '../../primitives/index.js';
 
 export interface GalleryOptions {
   theme?: 'light' | 'dark';
@@ -8,47 +21,225 @@ export interface GalleryOptions {
 
 /**
  * Dev/test-only Component Contract Gallery (/admin/_gallery, D-COMP #15).
- * Scaffolded in WP-16.C C0; populated with full primitive states in C1.
+ * Renders every D-COMP primitive in every applicable state at 1280px and 320px.
  */
 export function renderComponentGalleryPage(options: GalleryOptions = {}): string {
+  const requiredIcons = [
+    'grid',
+    'user',
+    'bold',
+    'italic',
+    'heading',
+    'link',
+    'list',
+    'quote',
+    'code',
+    'source',
+    'clock',
+    'layers',
+    'more',
+    'search',
+    'chevron-down',
+    'chevron-left',
+    'check',
+    'close',
+  ] as const;
+
   const bodyHtml = `
     <div id="dcomp-gallery" class="lp-gallery-root">
       <section id="gallery-icons" class="lp-gallery-section" data-component="Icon">
         <h2>Icons</h2>
-        <p>Required D-COMP sprite glyphs (16 px / 20 px / 24 px).</p>
         <div class="lp-gallery-row">
-          ${(['grid', 'user', 'bold', 'italic', 'heading', 'link', 'list', 'quote', 'code', 'source', 'clock', 'layers', 'more', 'search', 'chevron-down', 'chevron-left', 'check', 'close'] as const)
-            .map((name) => `<span class="lp-gallery-icon-sample" data-icon-sample="${name}">${renderIcon(name as any, 20)}<span>${name}</span></span>`)
+          ${requiredIcons
+            .map(
+              (name) =>
+                `<span class="lp-gallery-icon-sample" data-icon-sample="${name}">${renderIconButton({
+                  ariaLabel: name,
+                  icon: name,
+                  iconSize: 20,
+                  variant: 'quiet',
+                })}<span>${name}</span></span>`
+            )
             .join('')}
         </div>
       </section>
+
+      <section id="gallery-buttons" class="lp-gallery-section" data-component="Button">
+        <h2>Buttons</h2>
+        <div class="lp-gallery-row">
+          ${renderButton({ label: 'Primary', variant: 'primary' })}
+          ${renderButton({ label: 'Secondary', variant: 'secondary' })}
+          ${renderButton({ label: 'Quiet', variant: 'quiet' })}
+          ${renderButton({ label: 'Hover', variant: 'secondary', className: 'is-hover' })}
+          ${renderButton({ label: 'Pressed', variant: 'secondary', dataAttrs: { pressed: 'true' } })}
+          ${renderButton({ label: 'Disabled', variant: 'secondary', disabled: true, disabledReason: 'Unavailable in this state' })}
+          ${renderButton({ label: 'Saving…', variant: 'primary', loading: true })}
+        </div>
+      </section>
+
       <section id="gallery-page-header" class="lp-gallery-section" data-component="PageHeader">
         <h2>PageHeader</h2>
-        <p>Scaffolded for C1 implementation.</p>
+        ${renderPageHeader({
+          id: 'gallery-ph-sample',
+          backHref: '/admin',
+          backLabel: 'Back to Today',
+          title: 'Page header title',
+          description: 'One-line description below the 24 px title.',
+          actionHtml: renderButton({ label: 'New item', variant: 'primary' }),
+        })}
       </section>
+
       <section id="gallery-item" class="lp-gallery-section" data-component="Item">
         <h2>Item</h2>
-        <p>Scaffolded for C1 implementation.</p>
+        ${renderItem({
+          id: 'gallery-item-link',
+          href: '#gallery-item',
+          leadingIcon: 'file-text',
+          title: 'Clickable item without actions',
+          subtitle: 'Subtitle · Scope',
+          body: 'Plain-text body excerpt.',
+          meta: '16 Nov 2026 · 14:30',
+          statusLabel: 'Active',
+          statusTone: 'ok',
+        })}
+        ${renderItem({
+          id: 'gallery-item-selected',
+          href: '#gallery-item',
+          title: 'Selected item state',
+          subtitle: 'Selected row',
+          statusLabel: 'Pending',
+          statusTone: 'warn',
+          selected: true,
+        })}
+        ${renderItem({
+          id: 'gallery-item-actions',
+          title: 'Item with segments and actions',
+          subtitle: 'Scope: Public answers',
+          segments: [
+            { heading: 'Rule', body: 'Always state the date of evidence.' },
+            { heading: 'Source quote', body: 'Reviewed during Q3 audit.' },
+          ],
+          meta: '16 Nov 2026 · 15:00',
+          statusLabel: 'Waiting',
+          statusTone: 'warn',
+          actions: {
+            primary: { label: 'Confirm', variant: 'primary' },
+            secondary: { label: 'Dismiss', variant: 'secondary' },
+          },
+        })}
       </section>
+
       <section id="gallery-action-bar" class="lp-gallery-section" data-component="ActionBar">
         <h2>ActionBar</h2>
-        <p>Scaffolded for C1 implementation.</p>
+        ${renderActionBar({
+          id: 'gallery-ab-sample',
+          primary: { label: 'Save changes', variant: 'primary' },
+          secondary: { label: 'Cancel', variant: 'secondary' },
+          textAction: { label: 'Reset defaults', variant: 'quiet' },
+        })}
       </section>
+
       <section id="gallery-choice" class="lp-gallery-section" data-component="Choice">
         <h2>Choice</h2>
-        <p>Scaffolded for C1 implementation.</p>
+        ${renderChoiceGroup({
+          id: 'gallery-choice-btn-single',
+          name: 'gallery-btn-single',
+          legend: 'Button variant (single)',
+          mode: 'single',
+          variant: 'button',
+          options: [
+            { value: 'a', label: 'Default option' },
+            { value: 'b', label: 'Selected option', checked: true },
+            { value: 'c', label: 'Disabled option', disabled: true },
+          ],
+        })}
+        ${renderChoiceGroup({
+          id: 'gallery-choice-btn-multi',
+          name: 'gallery-btn-multi',
+          legend: 'Button variant (multiple)',
+          mode: 'multiple',
+          variant: 'button',
+          options: [
+            { value: 'm1', label: 'Unchecked' },
+            { value: 'm2', label: 'Checked', checked: true },
+          ],
+        })}
+        ${renderChoiceGroup({
+          id: 'gallery-choice-card',
+          name: 'gallery-card-multi',
+          legend: 'Card variant (multiple, error state)',
+          mode: 'multiple',
+          variant: 'card',
+          error: 'Select at least one option.',
+          options: [
+            { value: 'c1', label: 'Selected card option', description: 'One-line description of this setting.', checked: true },
+            { value: 'c2', label: 'Long card title that wraps up to two lines before truncating with an ellipsis and exposing a tooltip', description: 'Secondary option.' },
+            { value: 'c3', label: 'Disabled card option', description: 'Unavailable.', disabled: true },
+          ],
+        })}
       </section>
+
       <section id="gallery-tabs-stepper" class="lp-gallery-section" data-component="TabsStepper">
         <h2>Tabs &amp; Stepper</h2>
-        <p>Scaffolded for C1 implementation.</p>
+        ${renderTabs({
+          id: 'gallery-tabs-3',
+          ariaLabel: 'Peer views',
+          tabs: [
+            { id: 'pending', label: 'Pending', active: true },
+            { id: 'active', label: 'Active' },
+            { id: 'archived', label: 'Archived' },
+          ],
+        })}
+        ${renderTabs({
+          id: 'gallery-tabs-5',
+          ariaLabel: 'Five views (Select)',
+          tabs: [
+            { id: 't1', label: 'One', active: true },
+            { id: 't2', label: 'Two' },
+            { id: 't3', label: 'Three' },
+            { id: 't4', label: 'Four' },
+            { id: 't5', label: 'Five' },
+          ],
+        })}
+        ${renderStepper({
+          id: 'gallery-stepper-sample',
+          currentStep: 2,
+          totalSteps: 6,
+          stepTitle: 'Hosting',
+        })}
       </section>
+
       <section id="gallery-overlay" class="lp-gallery-section" data-component="Overlay">
         <h2>Overlay</h2>
-        <p>Scaffolded for C1 implementation.</p>
+        <p>Unified actions popover/sheet, full-screen panel, and modal dialog.</p>
+        ${renderOverlay({
+          id: 'gallery-overlay-dialog',
+          kind: 'dialog',
+          title: 'Confirm action',
+          bodyHtml: '<p>Dialog body content.</p>',
+          footerHtml: renderActionBar({
+            primary: { label: 'Confirm', variant: 'primary' },
+            secondary: { label: 'Cancel', variant: 'secondary' },
+          }),
+          open: false,
+        })}
       </section>
+
       <section id="gallery-form-section" class="lp-gallery-section" data-component="FormSection">
         <h2>FormSection</h2>
-        <p>Scaffolded for C1 implementation.</p>
+        ${renderFormSection({
+          id: 'gallery-fs-sample',
+          title: 'Section heading',
+          description: 'Optional one-line description under the heading.',
+          fieldsHtml: [
+            renderField({ id: 'gallery-f1', name: 'f1', label: 'Text field', kind: 'input', value: 'Sample' }),
+            renderField({ id: 'gallery-f2', name: 'f2', label: 'Error field', kind: 'input', value: '', error: 'Enter a value.' }),
+          ].join(''),
+          actionBarHtml: renderActionBar({
+            primary: { label: 'Save', variant: 'primary' },
+            secondary: { label: 'Cancel', variant: 'secondary' },
+          }),
+        })}
       </section>
     </div>
   `;
