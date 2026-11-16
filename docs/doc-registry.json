@@ -1361,5 +1361,13 @@
     "path": "docs/execution-reports/A124-wp16l-l1-shell-pages-settings.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A125",
+    "title": "WP-16.L L2 Tiptap Editor",
+    "class": "A",
+    "path": "docs/execution-reports/A125-wp-16l-l2-tiptap-editor.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
