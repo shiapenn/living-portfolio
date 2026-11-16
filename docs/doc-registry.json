@@ -1345,5 +1345,13 @@
     "path": "docs/execution-reports/A122-wp16r-r4-contact-sheets-and-census.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A123",
+    "title": "wp16l-l0-foundations-and-census",
+    "class": "A",
+    "path": "docs/execution-reports/A123-wp16l-l0-foundations-and-census.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
