@@ -5,6 +5,7 @@ import {
   initTabs,
   updateStatusLine,
 } from '../containers.js';
+import { resolveEntrySection } from '@living-portfolio/core';
 import { EDITOR_STRINGS } from '../../strings/admin/editor.js';
 import { formatActionableError } from '../../strings/formatters.js';
 
@@ -608,6 +609,11 @@ function bootEditorPage(): void {
     const ndaStep = document.getElementById('ref-publish-nda-step');
     const ndaCheck = document.getElementById('ref-publish-nda-check') as HTMLInputElement | null;
     const nextHeading = document.getElementById('ref-publish-next-heading');
+    const sectionTargetEl = document.getElementById('ref-publish-section-target');
+    if (sectionTargetEl) {
+      const resolved = resolveEntrySection(profileInput?.value, { slug: slugInput?.value });
+      sectionTargetEl.textContent = `Will appear in ${resolved.label} at ${resolved.url}`;
+    }
     const confirmBtn = document.getElementById('ref-publish-confirm');
     const bodyText = bodyInput?.value ?? '';
 

@@ -13,6 +13,7 @@ import {
   renderAdminLoginPage,
   renderAdminSectionPage,
   renderAdminSettingsPage,
+  renderAdminSettingsModulePage,
   renderAdminSetupPage,
   renderNotFoundPage,
 } from '@living-portfolio/web';
@@ -117,6 +118,11 @@ export function mountBundledWeb(
     app.get('/admin/settings', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminSettingsPage(repo, runtimeState))
     );
+    app.get('/admin/settings/:id', auth.requireAdminMiddleware(), async (c) => {
+      const html = await renderAdminSettingsModulePage(repo, c.req.param('id') || '', runtimeState);
+      if (html) return c.html(html);
+      return c.html(renderAdminSectionPage(c.req.path));
+    });
     const adminSectionRoutes = [
       '/admin/quick-log',
       '/quick-log',
@@ -126,7 +132,6 @@ export function mountBundledWeb(
       '/admin/structure',
       '/admin/routing',
       '/admin/theme',
-      '/admin/settings/:section',
     ];
     for (const routePath of adminSectionRoutes) {
       app.get(routePath, auth.requireAdminMiddleware(), async (c) =>

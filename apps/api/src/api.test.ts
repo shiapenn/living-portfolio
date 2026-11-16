@@ -717,8 +717,8 @@ describe('Living Portfolio API Integration Tests', () => {
       const res = await bundledApp.request('/admin/settings', { headers: authHeaders });
       expect(res.status).toBe(200);
       const text = await res.text();
-      expect(text).toContain('Admin Operations &amp; System Calibration');
-      expect(text).toContain('id="btn-save-routing"');
+      expect(text).toContain('Settings');
+      expect(text).toContain('/admin/settings/answering');
     });
   });
 

@@ -60,7 +60,8 @@ test.describe('WP-16.1 Admin Shell & Route Registry', () => {
       await page.goto(route);
       await expect(page.locator('.site-nav')).toHaveCount(0);
       await expect(page.locator('.site-footer')).toHaveCount(0);
-      await expect(page.locator('.lp-admin-rail')).toBeVisible();
+      await expect(page.locator('.lp-admin-rail')).toHaveCount(0);
+      await expect(page.locator('#lp-launcher-btn')).toBeVisible();
       await expect(page.locator('a:has-text("Back to Workspace")')).toHaveCount(0);
     }
 
@@ -71,7 +72,7 @@ test.describe('WP-16.1 Admin Shell & Route Registry', () => {
     await expect(popover).toContainText('Site build');
     await expect(popover).toContainText('Automatic answers');
     await expect(popover).toContainText('System');
-    await expect(popover.locator('a[href="/admin/settings"]')).toBeVisible();
+    await expect(popover.locator('a[href="/admin/settings/answering"]')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(popover).toBeHidden();
 

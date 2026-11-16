@@ -7,5 +7,7 @@ export type { BadgeProps, ChipProps, ChipState, StatusDotProps, StatusTone } fro
 export { renderSwitch } from './switch.js';
 export type { SwitchProps } from './switch.js';
 export { renderField } from './field.js';
-export type { FieldProps, SelectOption } from './field.js';
+export type { FieldProps, SelectOption, SelectOptionGroup } from './field.js';
+export { renderListRow } from './list-row.js';
+export type { ListRowProps } from './list-row.js';
 export { renderFoundationsGalleryPage } from './foundations-gallery.js';

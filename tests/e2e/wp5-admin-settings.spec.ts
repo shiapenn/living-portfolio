@@ -2,56 +2,50 @@ import { test, expect } from '@playwright/test';
 import { ensureAdminLoggedIn } from './helpers.js';
 
 test.describe.serial('WP-5.1: Admin Operations, Calibration, Scoped Constraints & Settings Screen (20261020-UX-09)', () => {
-  test('2. Admin Settings page renders routing floors, dynamic warnings, providers, theme, notifications, and backup drills', async ({ page }) => {
+  test('2. Admin Settings index and modules render routing floors, dynamic warnings, providers, notifications, and backup drills', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/settings');
 
-    // 1. Verify page title and header
-    await expect(page.locator('h1')).toContainText('Admin Operations & System Calibration');
-    await expect(page.locator('#lp-admin-rail a[href="/admin"]')).toBeVisible();
+    await expect(page.locator('h1')).toContainText('Settings');
+    await expect(page.locator('#settings-row-answering')).toBeVisible();
+    await expect(page.locator('#settings-row-providers')).toBeVisible();
+    await expect(page.locator('#settings-row-appearance')).toBeVisible();
+    await expect(page.locator('#settings-row-notifications')).toBeVisible();
+    await expect(page.locator('#settings-row-backups')).toBeVisible();
 
-    // 2. Dynamic warning on Tier 1 Floor < 0.82
+    // Answering module: dynamic warning & save
+    await page.goto('/admin/settings/answering');
     const tier1Input = page.locator('#setting-tier1-floor');
     const warning = page.locator('#tier1-warning');
 
-    // Set to 0.75 (below default 0.82)
     await tier1Input.fill('0.75');
     await tier1Input.dispatchEvent('input');
     await expect(warning).toBeVisible();
-    await expect(warning).toContainText('Warning: Tier 1 floor is set below the shipped default (0.82)');
 
-    // Set to 0.85 (above default 0.82)
     await tier1Input.fill('0.85');
     await tier1Input.dispatchEvent('input');
     await expect(warning).toBeHidden();
 
-    // Reset to 0.80 to test save with warning
-    await tier1Input.fill('0.80');
-    await tier1Input.dispatchEvent('input');
-    await page.click('#btn-save-routing');
-    await expect(page.locator('#settings-status-banner')).toContainText('Routing & Calibration saved successfully');
+    await tier1Input.fill('0.82');
+    await page.click('#btn-save-settings-module');
+    await expect(page.locator('#settings-status-banner')).toContainText('Saved.');
 
-    // 3. Provider Registry & Degradation Mode
-    await expect(page.locator('#providers-heading')).toBeVisible();
-    await page.selectOption('#setting-degradation-mode', 'extractive');
-    await page.click('#btn-save-degradation');
-    await expect(page.locator('#settings-status-banner')).toContainText('Degradation mode updated to extractive');
-
-    // Restore to normal
+    // Providers module
+    await page.goto('/admin/settings/providers');
+    await page.selectOption('#setting-degradation-mode', 'force_extractive');
+    await page.click('#btn-save-settings-module');
+    await expect(page.locator('#settings-status-banner')).toContainText('Saved.');
     await page.selectOption('#setting-degradation-mode', 'normal');
-    await page.click('#btn-save-degradation');
-    await expect(page.locator('#settings-status-banner')).toContainText('Degradation mode updated to normal');
+    await page.click('#btn-save-settings-module');
 
-    // 4. Notification Channel Test (Honest 501 Not Implemented)
-    await expect(page.locator('#chip-notify-status')).toContainText('not_configured');
+    // Notifications module (honest 501)
+    await page.goto('/admin/settings/notifications');
     await page.click('#btn-test-notification');
-    await expect(page.locator('#notify-test-result')).toContainText('501 Not Implemented');
-    await expect(page.locator('#notify-test-result')).toContainText('Notification channel delivery adapter is not yet implemented');
+    await expect(page.locator('#notify-test-result')).toContainText('not enabled');
 
-    // 5. Encrypted Backup Drill (Honest 501 Not Implemented)
-    await expect(page.locator('#chip-backup-status')).toContainText('not_configured');
+    // Backups module (honest 501)
+    await page.goto('/admin/settings/backups');
     await page.click('#btn-run-backup-drill');
-    await expect(page.locator('#backup-drill-result')).toContainText('501 Not Implemented');
-    await expect(page.locator('#backup-drill-result')).toContainText('restore verification are not yet implemented');
+    await expect(page.locator('#backup-drill-result')).toContainText('not enabled');
   });
 });

@@ -1,6 +1,6 @@
 import { loadConfig } from "@living-portfolio/config";
 import { adaptDataSource, type WebDataClient } from "../../lib/data-source.js";
-import { renderAdminShell } from "../../layouts/admin-shell.js";
+import { renderAdminShell, renderPageTemplate } from "../../layouts/admin-shell.js";
 import { renderButton } from "../../primitives/index.js";
 import { renderPageNotice } from "../../components/index.js";
 import { IMPORT_SCRIPT } from './import-script.js';
@@ -16,23 +16,15 @@ export async function renderAdminImportPage(repo: WebDataClient): Promise<string
         })}</div>`
       : '';
 
-  const content = `
-    <div class="lp-page-header">
-      <div>
-        <h1 class="lp-page-title">Import &amp; Triage</h1>
-        <p class="lp-page-subtitle">
-          Connect or paste existing material, plan processing budget, and triage with confidence sorting and keyboard controls.
-        </p>
-      </div>
-    </div>
+  const tabsHtml = `
+    <div class="lp-tabs" role="tablist" aria-label="Import stages">
+      <button type="button" role="tab" class="lp-tab" id="step-tab-add" aria-selected="true">Add Material</button>
+      <button type="button" role="tab" class="lp-tab" id="step-tab-plan" aria-selected="false">Import Planner</button>
+      <button type="button" role="tab" class="lp-tab" id="step-tab-triage" aria-selected="false">Triage &amp; Review</button>
+    </div>`;
 
+  const bodyHtml = `
     ${stagingNoticeHtml}
-    <div class="lp-tablist" role="tablist" aria-label="Import stages">
-      <button type="button" role="tab" class="lp-tab" id="step-tab-add" aria-selected="true">1. Add Material</button>
-      <button type="button" role="tab" class="lp-tab" id="step-tab-plan" aria-selected="false">2. Import Planner</button>
-      <button type="button" role="tab" class="lp-tab" id="step-tab-triage" aria-selected="false">3. Triage &amp; Review</button>
-    </div>
-
     <div id="import-status-banner" role="status" aria-live="polite"></div>
 
     <!-- Step 1: Add Material -->
@@ -117,5 +109,11 @@ export async function renderAdminImportPage(repo: WebDataClient): Promise<string
 
 ${IMPORT_SCRIPT}
   `;
+  const content = renderPageTemplate({
+    title: 'Import & Triage',
+    description: 'Connect or paste existing material, plan processing budget, and triage with confidence sorting.',
+    tabsHtml,
+    bodyHtml,
+  });
   return renderAdminShell('Import & Triage', '/admin/import', content);
 }

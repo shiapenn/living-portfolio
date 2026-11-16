@@ -1,4 +1,5 @@
 import { renderAdminShell } from '../../../layouts/admin-shell.js';
+import { BUILTIN_PROFILES, groupProfilesBySection } from '@living-portfolio/core';
 import { escapeHtml } from '../../../lib/html.js';
 import {
   renderBadge,
@@ -131,6 +132,10 @@ function renderActionBar(entry: ReferenceEditorEntry): string {
 }
 
 function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEditorOptions): string {
+  const profileGroups = groupProfilesBySection(Object.values(BUILTIN_PROFILES)).map((g) => ({
+    label: g.sectionLabel,
+    options: g.profiles.map((p) => ({ value: p.id, label: p.label })),
+  }));
   const detailsBody = `<div class="lp-details-grid">
   ${renderField({ kind: 'input', id: 'ref-field-slug', name: 'slug', label: EDITOR_STRINGS.fields.slugLabel, value: selected.slug })}
   ${renderField({
@@ -139,7 +144,7 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
     name: 'profile',
     label: EDITOR_STRINGS.fields.profileLabel,
     value: selected.profile,
-    options: [...EDITOR_STRINGS.profiles],
+    optionGroups: profileGroups,
   })}
   ${renderField({ kind: 'input', inputType: 'date', id: 'ref-field-date', name: 'date', label: EDITOR_STRINGS.fields.dateLabel, value: selected.date.slice(0, 10) })}
   ${renderField({

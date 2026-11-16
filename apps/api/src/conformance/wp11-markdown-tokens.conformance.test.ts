@@ -161,7 +161,7 @@ Safe text before
       expect(PRIMITIVE_TOKENS).toContain('--bp-xl: 1280px');
 
       // Tier 2: Semantics
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--surface-page: #F3F5F4');
+      expect(SEMANTIC_TOKENS_LIGHT).toContain('--surface-page: #FFFFFF');
       expect(SEMANTIC_TOKENS_LIGHT).toContain('--surface-raised: #FFFFFF');
       expect(SEMANTIC_TOKENS_LIGHT).toContain('--border-control: #6B7B88');
       expect(SEMANTIC_TOKENS_LIGHT).toContain('--layout-max: 1180px');

@@ -42,7 +42,7 @@ export {
 export { renderEntryHistoryPage } from "./pages/admin/entries/history.js";
 export { renderAdminInboxPage } from "./pages/admin/inbox.js";
 export { renderAdminAuditRulesPage } from "./pages/admin/audit.js";
-export { renderAdminSettingsPage } from "./pages/admin/settings.js";
+export { renderAdminSettingsPage, renderAdminSettingsModulePage } from "./pages/admin/settings.js";
 export { renderAdminLoginPage } from "./pages/admin/login.js";
 export { renderAdminSetupPage } from "./pages/admin/setup.js";
 export { renderAdminImportPage } from "./pages/admin/import.js";

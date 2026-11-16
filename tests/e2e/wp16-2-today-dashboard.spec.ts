@@ -8,7 +8,8 @@ test.describe('WP-16.2 Today Dashboard (D-UI-1..D-UI-6)', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/admin/today');
     await expect(page.locator('h1')).toContainText('Today');
-    await expect(page.locator('#lp-admin-rail')).toBeVisible();
+    await expect(page.locator('#lp-admin-rail')).toHaveCount(0);
+    await expect(page.locator('#lp-launcher-btn')).toBeVisible();
     await expect(page.locator('#today-attention-list')).toBeVisible();
     await expect(page.locator('#today-explanation')).toHaveCount(0);
     await expect(page.locator('nav.site-nav, footer.site-footer')).toHaveCount(0);

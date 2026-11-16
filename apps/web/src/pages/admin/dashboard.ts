@@ -1,5 +1,5 @@
-import { renderAdminShell } from '../../layouts/admin-shell.js';
-import { renderBadge, renderButton, renderStatusDot } from '../../primitives/index.js';
+import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
+import { renderIconButton, renderListRow, renderStatusDot } from '../../primitives/index.js';
 import { renderPageNotice } from '../../components/index.js';
 import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
@@ -24,7 +24,6 @@ interface AttentionItem {
   tone: 'warn' | 'danger' | 'info';
   badge: string;
   summary: string;
-  actionLabel: string;
   actionHref: string;
 }
 
@@ -48,8 +47,7 @@ export async function renderAdminDashboardPage(
       tone: 'danger',
       badge: 'Build',
       summary: DASHBOARD_STRINGS.attention.buildFailureLabel,
-      actionLabel: DASHBOARD_STRINGS.attention.buildFailureAction,
-      actionHref: '/admin/settings',
+      actionHref: '/admin/settings/backups',
     });
   }
   if (pendingInboxCount > 0) {
@@ -58,7 +56,6 @@ export async function renderAdminDashboardPage(
       tone: 'warn',
       badge: 'Inbox',
       summary: DASHBOARD_STRINGS.attention.questionsDueLabel(pendingInboxCount),
-      actionLabel: DASHBOARD_STRINGS.attention.questionsDueAction,
       actionHref: '/admin/inbox',
     });
   }
@@ -68,8 +65,7 @@ export async function renderAdminDashboardPage(
       tone: 'info',
       badge: 'Drafts',
       summary: DASHBOARD_STRINGS.attention.draftsLabel(draftCount),
-      actionLabel: DASHBOARD_STRINGS.attention.draftsAction,
-      actionHref: '/admin',
+      actionHref: '/admin/entries',
     });
   }
   if (backupOverdue) {
@@ -78,25 +74,24 @@ export async function renderAdminDashboardPage(
       tone: 'warn',
       badge: 'Backup',
       summary: DASHBOARD_STRINGS.attention.backupOverdueLabel,
-      actionLabel: DASHBOARD_STRINGS.attention.backupOverdueAction,
-      actionHref: '/admin/settings',
+      actionHref: '/admin/settings/backups',
     });
   }
 
   const attentionHtml = items.length
-    ? `<ul id="today-attention-list" class="lp-dashboard-list">
+    ? `<div id="today-attention-list" class="lp-list">
 ${items
-  .map(
-    (item) => `<li id="${escapeHtml(item.id)}" class="lp-dashboard-item">
-  <div class="lp-dashboard-item-meta">
-    ${renderStatusDot({ label: item.badge, tone: 'warn' })}
-    <span>${escapeHtml(item.summary)}</span>
-  </div>
-  <a href="${escapeHtml(item.actionHref)}" class="lp-btn lp-btn-secondary lp-btn-sm">${escapeHtml(item.actionLabel)}</a>
-</li>`
+  .map((item) =>
+    renderListRow({
+      id: item.id,
+      href: item.actionHref,
+      primary: item.summary,
+      stateLabel: item.badge,
+      stateTone: item.tone === 'danger' ? 'danger' : item.tone === 'warn' ? 'warn' : 'neutral',
+    })
   )
   .join('\n')}
-</ul>`
+</div>`
     : `<div id="today-attention-list">${renderPageNotice({
         tone: 'ok',
         message: DASHBOARD_STRINGS.attention.empty,
@@ -104,23 +99,29 @@ ${items
 
   const checklistHtml = options.checklistDismissed
     ? ''
-    : `<section id="today-checklist-card" class="lp-dashboard-card" aria-labelledby="today-checklist-heading">
-  <div class="lp-dashboard-card-header">
-    <h2 id="today-checklist-heading" class="lp-dashboard-card-title">${escapeHtml(DASHBOARD_STRINGS.checklist.heading)}</h2>
-    ${renderButton({
+    : `<section id="today-checklist-card" aria-labelledby="today-checklist-heading">
+  <div class="lp-page-title-row">
+    <h2 id="today-checklist-heading" class="lp-section-title">${escapeHtml(DASHBOARD_STRINGS.checklist.heading)}</h2>
+    ${renderIconButton({
       id: 'btn-dismiss-today-checklist',
-      label: DASHBOARD_STRINGS.checklist.dismissLabel,
+      ariaLabel: DASHBOARD_STRINGS.checklist.dismissLabel,
+      title: DASHBOARD_STRINGS.checklist.dismissLabel,
+      icon: 'x',
+      iconSize: 16,
       variant: 'quiet',
-      size: 'sm',
     })}
   </div>
-  <ol class="lp-dashboard-checklist">
+  <div class="lp-list">
     ${DASHBOARD_STRINGS.checklist.steps
-      .map(
-        (step) => `<li id="${escapeHtml(step.id)}"><a href="${escapeHtml(step.href)}">${escapeHtml(step.label)}</a></li>`
+      .map((step) =>
+        renderListRow({
+          id: step.id,
+          href: step.href,
+          primary: step.label,
+        })
       )
       .join('')}
-  </ol>
+  </div>
 </section>`;
 
   const answeringOn = options.answeringEnabled ?? true;
@@ -131,33 +132,27 @@ ${items
     ? EDITOR_STRINGS.safety.killSwitchActive
     : EDITOR_STRINGS.safety.killSwitchPaused;
 
-  const content = `<div class="lp-dashboard-stack">
-  <header class="lp-dashboard-header">
-    <h1 class="lp-type-title">${escapeHtml(DASHBOARD_STRINGS.heading)}</h1>
-    <p class="lp-field-help">${escapeHtml(DASHBOARD_STRINGS.lead)}</p>
-  </header>
+  const answeringTrailing = `<span id="ref-killswitch-badge">${renderStatusDot({
+    label: killStateLabel,
+    tone: answeringOn ? 'ok' : 'warn',
+  })}</span><button type="button" id="btn-killswitch" class="lp-btn lp-btn-secondary lp-btn-sm" aria-pressed="${answeringOn ? 'true' : 'false'}">${escapeHtml(killLabel)}</button>`;
 
-  <section class="lp-dashboard-card" aria-label="${escapeHtml(EDITOR_STRINGS.safety.killSwitchTitle)}">
-    <div class="lp-killswitch-row">
-      <div class="lp-killswitch-copy">
-        <span class="lp-type-body-sm">${escapeHtml(EDITOR_STRINGS.safety.killSwitchTitle)}</span>
-        ${renderBadge({
-          id: 'ref-killswitch-badge',
-          label: killStateLabel,
-          tone: answeringOn ? 'ok' : 'warn',
-        })}
-      </div>
-      <button type="button" id="btn-killswitch" class="lp-btn lp-btn-secondary lp-btn-sm" aria-pressed="${answeringOn ? 'true' : 'false'}">${escapeHtml(killLabel)}</button>
+  const bodyHtml = `
+  <section aria-label="${escapeHtml(EDITOR_STRINGS.safety.killSwitchTitle)}">
+    <div class="lp-list">
+      ${renderListRow({
+        primary: EDITOR_STRINGS.safety.killSwitchTitle,
+        trailingHtml: answeringTrailing,
+      })}
     </div>
   </section>
 
-  ${checklistHtml}
-
-  <section class="lp-dashboard-card" aria-labelledby="today-attention-heading">
-    <h2 id="today-attention-heading" class="lp-dashboard-card-title">${escapeHtml(DASHBOARD_STRINGS.attention.heading)}</h2>
+  <section aria-labelledby="today-attention-heading">
+    <h2 id="today-attention-heading" class="lp-section-title">${escapeHtml(DASHBOARD_STRINGS.attention.heading)}</h2>
     ${attentionHtml}
   </section>
-</div>
+
+  ${checklistHtml}
 <script>
 (function() {
   ${ADMIN_API_CLIENT_SCRIPT}
@@ -193,15 +188,22 @@ ${items
         ? ${JSON.stringify(EDITOR_STRINGS.safety.killSwitchPauseBtn)}
         : ${JSON.stringify(EDITOR_STRINGS.safety.killSwitchResumeBtn)};
       if (killBadge) {
-        killBadge.textContent = nextEnabled
+        const toneClass = nextEnabled ? 'lp-status-dot lp-status-dot-ok' : 'lp-status-dot lp-status-dot-warn';
+        const txt = nextEnabled
           ? ${JSON.stringify(EDITOR_STRINGS.safety.killSwitchActive)}
           : ${JSON.stringify(EDITOR_STRINGS.safety.killSwitchPaused)};
-        killBadge.className = nextEnabled ? 'lp-badge lp-badge-ok' : 'lp-badge lp-badge-warn';
+        killBadge.innerHTML = '<span class="' + toneClass + '" aria-hidden="true"></span>' + txt;
       }
     });
   }
 })();
 </script>`;
+
+  const content = renderPageTemplate({
+    title: DASHBOARD_STRINGS.heading,
+    description: DASHBOARD_STRINGS.lead,
+    bodyHtml,
+  });
 
   return renderAdminShell(DASHBOARD_STRINGS.pageTitle, '/admin/today', content, {
     nonce: options.nonce,

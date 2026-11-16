@@ -158,7 +158,7 @@ test.describe('WP-15.7 Reference Editor Page', () => {
         bodyNotClipped: bodyTa.scrollHeight <= bodyTa.clientHeight + 2,
         themeLabel: themeBtn.getAttribute('aria-label'),
         themeUse: themeBtn.querySelector('use')?.getAttribute('href'),
-        desktopNavVisible: getComputedStyle(document.getElementById('lp-admin-rail')!).display !== 'none',
+        desktopNavVisible: document.getElementById('lp-launcher-btn') !== null,
       };
     });
     expect(draftAudit.badgeBorder).toBe(0);
@@ -168,7 +168,7 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     expect(draftAudit.themeLabel).toBe('Switch to dark theme');
     expect(draftAudit.themeUse).toBe('#lp-icon-moon');
     expect(draftAudit.desktopNavVisible).toBe(true);
-    await expect(page.locator('#lp-rail-toggle')).toBeHidden();
+    await expect(page.locator('#lp-admin-rail')).toHaveCount(0);
 
     await page.locator('#lp-account-menu-btn').click();
     await page.locator('#theme-toggle').click();
@@ -203,8 +203,8 @@ test.describe('WP-15.7 Reference Editor Page', () => {
 
     const mobileAudit = await page.evaluate(() => {
       const headerRect = document.querySelector('.lp-admin-header')!.getBoundingClientRect();
-      const railEl = document.getElementById('lp-admin-rail')!;
-      const navHidden = !railEl.classList.contains('is-open') && railEl.getBoundingClientRect().right <= 0;
+      const launcherPanel = document.getElementById('lp-launcher-panel');
+      const navHidden = !launcherPanel || launcherPanel.hasAttribute('hidden');
       const cols = getComputedStyle(document.querySelector('#ref-details-disclosure .lp-details-grid')!).gridTemplateColumns.trim().split(/\s+/).length;
       const bodyTa = document.getElementById('ref-field-body') as HTMLTextAreaElement;
       const targets = Array.from(document.querySelectorAll<HTMLElement>('.lp-admin-header button, .lp-editor-action-bar button')).filter(

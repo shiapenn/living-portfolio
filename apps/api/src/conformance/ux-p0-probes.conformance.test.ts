@@ -70,7 +70,8 @@ describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/a
     '[V2] admin workspace script attaches CSRF/auth headers via apiClient, checks res.ok before reporting success, and never renders a green confidentiality message on 401/error',
     async () => {
       const repo = new InMemoryPortfolioRepository();
-      const settingsHtml = await renderAdminSettingsPage(repo);
+      const { renderAdminSettingsModulePage } = await import('@living-portfolio/web');
+      const settingsHtml = (await renderAdminSettingsModulePage(repo as any, 'answering')) || '';
       const editorClient = readFileSync(resolve(process.cwd(), '../web/src/client/admin/editor-page.ts'), 'utf8');
 
       // Must check res.ok and attach X-CSRF-Token
@@ -145,7 +146,8 @@ describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/a
     async () => {
       const repo = new InMemoryPortfolioRepository();
       const html = await renderAdminEntriesPage(repo);
-      const settingsHtml = await renderAdminSettingsPage(repo);
+      const { renderAdminSettingsModulePage } = await import('@living-portfolio/web');
+      const settingsHtml = (await renderAdminSettingsModulePage(repo as any, 'answering')) || '';
 
       // Must not render hard-coded fictional claim conflict card
       expect(html).not.toContain('Detected Claim Conflict:');

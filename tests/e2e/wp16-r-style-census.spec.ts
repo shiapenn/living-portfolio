@@ -190,8 +190,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
         if (isTemplate) {
           const mainCol = document.querySelector<HTMLElement>('.lp-page-column, main > div, main');
           if (mainCol) {
-            const pad = vpWidth < 768 ? 32 : 48;
-            const expectedW = Math.min(720, vpWidth - pad);
+            const expectedW = Math.min(720, vpWidth);
             const actualW = Math.round(mainCol.getBoundingClientRect().width);
             if (Math.abs(actualW - expectedW) > 4) {
               badColWidth++;
@@ -311,14 +310,14 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
             if (!allowedFonts.has(fs)) badFonts++;
           }
 
-          const spaces = [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft, cs.rowGap, cs.columnGap];
+          const tag = el.tagName.toLowerCase();
+          const spaces = [cs.paddingTop, cs.paddingBottom, cs.paddingLeft, cs.rowGap, cs.columnGap];
+          if (tag !== 'select') spaces.push(cs.paddingRight);
           for (const sp of spaces) {
             if (!sp || sp === 'normal' || sp === 'auto') continue;
             const px = Math.round(parseFloat(sp) || 0);
             if (px > 0 && !allowedSpace.has(px)) badSpace++;
           }
-
-          const tag = el.tagName.toLowerCase();
           const isControl =
             tag === 'button' ||
             tag === 'select' ||

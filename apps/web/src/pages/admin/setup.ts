@@ -6,22 +6,11 @@ import { SETUP_SCRIPT_PART_2 } from './setup-script-part2.js';
 
 export function renderAdminSetupPage(): string {
   const content = `
-    <div class="admin-setup-container lp-setup-card lp-stack-md">
+    <div class="admin-setup-container lp-auth-column lp-stack-md">
       <div class="lp-wizard-header">
-        <div class="lp-row-between">
-          ${renderChip({ label: 'Step 1 of 6: Account', id: 'wizard-step-chip' })}
-          <span class="lp-help-text">The Living Portfolio</span>
-        </div>
-        <div class="lp-wizard-progress">
-          <div id="wizard-progress-fill" class="lp-wizard-progress-fill"></div>
-        </div>
-        <div class="lp-wizard-steps">
-          <span id="step-lbl-1" class="lp-wizard-step-label is-active">1. Account</span>
-          <span id="step-lbl-2" class="lp-wizard-step-label">2. Hosting</span>
-          <span id="step-lbl-3" class="lp-wizard-step-label">3. Providers</span>
-          <span id="step-lbl-4" class="lp-wizard-step-label">4. Alerts</span>
-          <span id="step-lbl-5" class="lp-wizard-step-label">5. Backups</span>
-          <span id="step-lbl-6" class="lp-wizard-step-label">6. Walkthrough</span>
+        <p id="wizard-step-chip" class="lp-auth-step-text">Step 1 of 6 · Account</p>
+        <div class="lp-auth-progress-track">
+          <div id="wizard-progress-fill" class="lp-auth-progress-fill"></div>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 export * from './types/index.js';
 export * from './schemas/index.js';
 export * from './profiles/index.js';
+export * from './sections/index.js';
 export * from './algorithms/chunking.js';
 export * from './algorithms/structureLevel.js';
 export * from './algorithms/gapQuestions.js';
@@ -14,3 +15,4 @@ export * from './algorithms/importPlanner.js';
 export * from './openapi/index.js';
 export * from './sdk/index.js';
 export { parse as parseYaml } from 'yaml';
+export { z } from 'zod';
