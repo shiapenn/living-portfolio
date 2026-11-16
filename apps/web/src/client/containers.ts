@@ -86,7 +86,7 @@ export function attachMenuController(buttonId: string, menuId: string): () => vo
 
   const getItems = (): HTMLElement[] =>
     Array.from(menu.querySelectorAll<HTMLElement>('[role="menuitem"], [role="menuitemradio"]')).filter(
-      (el) => !el.hasAttribute('disabled') && !el.closest('[hidden]')
+      (el) => !el.hasAttribute('disabled') && !el.closest('[hidden]') && getComputedStyle(el).display !== 'none'
     );
 
   const close = (returnFocus = false) => {
