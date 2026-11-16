@@ -135,6 +135,7 @@
 | `A127` | WP-16.C C0 D-COMP Foundations and Census | `active` | [A127-wp-16c-c0-d-comp-foundations-and-census.md](execution-reports/A127-wp-16c-c0-d-comp-foundations-and-census.md) | — |
 | `A128` | WP-16.C C1 D-COMP Primitives and Gallery | `active` | [A128-wp-16c-c1-d-comp-primitives-and-gallery.md](execution-reports/A128-wp-16c-c1-d-comp-primitives-and-gallery.md) | — |
 | `A129` | WP-16.C C2 Page and Overlay Migrations | `active` | [A129-wp-16c-c2-page-and-overlay-migrations.md](execution-reports/A129-wp-16c-c2-page-and-overlay-migrations.md) | — |
+| `A130` | WP-16.C C3: Editor Contract and ProviderRow Parity | `active` | [A130-wp-16c-c3-editor-contract-and-providerrow-parity.md](execution-reports/A130-wp-16c-c3-editor-contract-and-providerrow-parity.md) | — |
 
 ## Handover Snapshots (Class H)
 

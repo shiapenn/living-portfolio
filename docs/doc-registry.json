@@ -1401,5 +1401,13 @@
     "path": "docs/execution-reports/A129-wp-16c-c2-page-and-overlay-migrations.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A130",
+    "title": "WP-16.C C3: Editor Contract and ProviderRow Parity",
+    "class": "A",
+    "path": "docs/execution-reports/A130-wp-16c-c3-editor-contract-and-providerrow-parity.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
