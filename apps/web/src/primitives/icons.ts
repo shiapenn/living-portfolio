@@ -107,6 +107,25 @@ export const LUCIDE_SYMBOLS: Record<IconName, string> = {
 };
 
 export const LUCIDE_ICON_NAMES: IconName[] = [
+  'x',
+  'chevron-down',
+  'chevron-right',
+  'moon',
+  'sun',
+  'menu',
+  'info',
+  'check-circle',
+  'alert-triangle',
+  'alert-circle',
+  'more-horizontal',
+  'copy',
+  'plus',
+  'file-text',
+  'layers',
+  'loader',
+];
+
+export const DCOMP_ICON_NAMES: IconName[] = [
   'grid',
   'user',
   'bold',

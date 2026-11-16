@@ -6,8 +6,8 @@
     "stackingViolations": 12,
     "overlayViolations": 1,
     "actionBarViolations": 0,
-    "choiceViolations": 0,
-    "verticalRhythmViolations": 22,
+    "choiceViolations": 20,
+    "verticalRhythmViolations": 24,
     "pageHeaderViolations": 22,
     "tabWrapViolations": 2
   }

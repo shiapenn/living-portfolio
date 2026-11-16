@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  LUCIDE_ICON_NAMES,
+  DCOMP_ICON_NAMES,
   renderActionBar,
   renderChoiceGroup,
   renderFormSection,
@@ -17,7 +17,7 @@ import {
 describe('WP-16.C C1 D-COMP Primitives', () => {
   it('renders all 18 required D-COMP icons, keeps source distinct from code, and throws on unknown icon id in non-prod', () => {
     const sprite = renderIconSprite();
-    for (const name of LUCIDE_ICON_NAMES) {
+    for (const name of DCOMP_ICON_NAMES) {
       expect(sprite).toContain(`id="lp-icon-${name}"`);
       const btn = renderIconButton({ ariaLabel: name, icon: name, iconSize: 20 });
       expect(btn).toContain(`href="#lp-icon-${name}"`);
