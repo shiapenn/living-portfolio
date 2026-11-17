@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "note": "Shrinking-only D-SYS system simplification census budgets (S0 baseline; target 0 across all checks).",
+  "budgets": {
+    "textAlignViolations": 0,
+    "emptyInFlowViolations": 20,
+    "upperGapViolations": 8,
+    "lineBudgetViolations": 296,
+    "actionBarFullWidthViolations": 34,
+    "itemHoverAndPaddingViolations": 80,
+    "topBarSignatureViolations": 0,
+    "topBarLabelViolations": 48,
+    "arrowsInStringsViolations": 4,
+    "iconButtonFilledViolations": 408,
+    "editorHeaderFit320Violations": 0,
+    "formattingBarGeometryViolations": 8
+  }
+}

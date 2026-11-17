@@ -4980,4 +4980,16 @@ a.lp-item:hover {
     z-index: var(--z-overlay);
   }
 }
+
+.lp-canary-center { text-align: center; }
+.lp-canary-empty-tall { height: 48px; }
+.lp-canary-gap-80 { display: flex; flex-direction: column; gap: 80px; }
+.lp-canary-hairline { border-bottom: 1px solid var(--border-subtle); padding: 8px 0; }
+.lp-canary-zero-pad-clip { padding: 0; overflow: hidden; }
+.lp-canary-outlined-icon-btn { border: 1px solid var(--border-control); background: transparent; }
+.lp-canary-wide-row { display: flex; width: 100%; overflow: hidden; }
+.lp-canary-wide-btn { min-width: 400px; }
+.lp-canary-btn-narrow { width: 160px !important; max-width: 160px !important; }
+.lp-canary-formatting-offcenter { position: relative; }
+.lp-canary-bar-offset { position: fixed; left: 0; bottom: 16px; width: 200px; }
 `;

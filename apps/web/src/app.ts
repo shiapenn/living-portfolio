@@ -257,7 +257,8 @@ export function createWebApp(options?: WebAppOptions) {
     });
     app.get('/admin/_canary', (c) => {
       const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';
-      return c.html(renderCensusCanaryPage({ theme }));
+      const suite = c.req.query('suite');
+      return c.html(renderCensusCanaryPage({ theme, suite }));
     });
 
     const handleReferenceEditor = async (c: any, selectedId?: string) => {
