@@ -15,18 +15,16 @@ test.describe.serial('WP-14.7 Hotfix: Single Publish Path and Server Gate Refusa
 
     // Duplicate plain "Publish" button must not exist
     await expect(page.locator('#btn-publish-entry')).toHaveCount(0);
-    // Single "Publish…" menu item inside Visibility menu opens pre-flight dialog
-    await page.click('#ref-visibility-menu-btn');
+    // Single "Publish…" button inside Settings view opens pre-flight dialog
+    await page.click('#ref-switch-settings');
     const openDialogBtn = page.locator('#ref-btn-publish');
     await expect(openDialogBtn).toBeVisible();
     await expect(openDialogBtn).toHaveText('Publish…');
-    await page.keyboard.press('Escape');
 
-    await page.fill('#ref-field-title', entryTitle);
-    await page.click('#ref-details-trigger');
     await page.fill('#ref-field-slug', entrySlug);
     await page.fill('#ref-field-date', '2026-11-13');
-    await page.keyboard.press('Escape');
+    await page.click('#ref-switch-edit');
+    await page.fill('#ref-field-title', entryTitle);
     await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', initialBody);
 
@@ -58,7 +56,7 @@ test.describe.serial('WP-14.7 Hotfix: Single Publish Path and Server Gate Refusa
     await page.fill('#ref-field-title', `${entryTitle} NDA`);
     await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', 'Contact: secret-token-12345 and NDA confidential architecture.');
-    await page.click('#ref-visibility-menu-btn');
+    await page.click('#ref-switch-settings');
     await page.click('#ref-btn-publish');
 
     const dialog = page.locator('#ref-publish-dialog');

@@ -1974,7 +1974,6 @@ input[type="date"].lp-input {
 .lp-empty-state {
   text-align: left;
   padding: var(--space-6);
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-container);
   background: var(--surface-raised);
   display: flex;

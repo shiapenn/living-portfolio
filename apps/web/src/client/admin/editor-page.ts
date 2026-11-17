@@ -223,18 +223,15 @@ function bootEditorPage(): void {
       if (span) span.textContent = nextText;
       else saveBtn.textContent = nextText;
     }
-    document.querySelectorAll<HTMLElement>('#ref-visibility-menu [data-vis]').forEach((item) => {
-      const itemVis = item.getAttribute('data-vis');
-      item.setAttribute('aria-checked', itemVis === vis ? 'true' : 'false');
+    document.querySelectorAll<HTMLInputElement>('input[name="ref-visibility-choice"]').forEach((radio) => {
+      radio.checked = radio.value === vis;
     });
-    const visBtn = document.getElementById('ref-visibility-menu-btn');
-    if (visBtn) {
-      const dotClass = vis === 'public' ? 'lp-status-dot lp-status-dot-ok' : vis === 'unlisted' ? 'lp-status-dot lp-status-dot-warn' : 'lp-status-dot lp-status-dot-neutral';
-      visBtn.innerHTML = `<span class="lp-state-label"><span class="${dotClass}" aria-hidden="true"></span>${label}</span>`;
-    }
+    const publishWrap = document.getElementById('ref-publish-wrap');
     if (vis === 'draft') {
+      publishWrap?.classList.remove('lp-is-hidden');
       publishBtn?.classList.remove('lp-is-hidden');
     } else {
+      publishWrap?.classList.add('lp-is-hidden');
       publishBtn?.classList.add('lp-is-hidden');
     }
   };
@@ -315,15 +312,6 @@ function bootEditorPage(): void {
 
   switchEditBtn?.addEventListener('click', () => setEditorView('edit'));
   switchSettingsBtn?.addEventListener('click', () => setEditorView('settings'));
-
-  // Visibility choice radios inside Settings view
-  document.querySelectorAll<HTMLInputElement>('input[name="ref-visibility-choice"]').forEach((radio) => {
-    radio.addEventListener('change', () => {
-      if (radio.checked) {
-        applyVisibility(radio.value as Visibility);
-      }
-    });
-  });
 
   // Full Structure restoration (D-EDITOR-4)
   let cachedRevId = '';
@@ -1112,20 +1100,22 @@ function bootEditorPage(): void {
     }
   });
 
-  // Visibility menu items (D-EDITOR-2a: Public, Unlisted, Private; Public opens Publish dialog)
-  document.querySelectorAll<HTMLElement>('#ref-visibility-menu [data-vis]').forEach((item) => {
-    item.addEventListener('click', async () => {
-      const targetVis = item.getAttribute('data-vis') as Visibility;
-      const priorVis = (formEl?.getAttribute('data-visibility') as Visibility) ?? 'public';
-      closeVisMenu();
+  // Visibility choice radios (D-EDITOR-4: Public, Unlisted, Private; Public opens Publish dialog)
+  document.querySelectorAll<HTMLInputElement>('input[name="ref-visibility-choice"]').forEach((radio) => {
+    radio.addEventListener('change', async () => {
+      if (!radio.checked) return;
+      const targetVis = radio.value as Visibility;
+      const priorVis = (formEl?.getAttribute('data-visibility') as Visibility) ?? 'draft';
       if (targetVis === priorVis) return;
       if (targetVis === 'public') {
-        await openPublishPreFlight(document.getElementById('ref-visibility-menu-btn'));
+        applyVisibility(priorVis);
+        await openPublishPreFlight(radio);
         return;
       }
       if (!isFixtureMode && activeEntryId) {
         const ok = await persistEntry(targetVis);
         if (!ok && statusLineEl) {
+          applyVisibility(priorVis);
           updateStatusLine(statusLineEl, { message: EDITOR_STRINGS.feedback.saveFailed, tone: 'danger' });
           return;
         }
