@@ -6,6 +6,11 @@ export const IMPORT_SCRIPT = `
         ${ADMIN_API_CLIENT_SCRIPT}
 
         const banner = document.getElementById('import-status-banner');
+        function setBanner(html) {
+          if (!banner) return;
+          banner.innerHTML = html || '';
+          banner.hidden = !html;
+        }
         let currentStep = 'add';
         let documents = [];
         let triageItems = [];
@@ -21,9 +26,10 @@ export const IMPORT_SCRIPT = `
           const stepperEl = document.getElementById('import-stepper');
           if (stepperEl) {
             const labelEl = stepperEl.querySelector('.lp-stepper-label');
-            const fillEl = stepperEl.querySelector('.lp-stepper-fill');
-            if (labelEl) labelEl.textContent = 'Step ' + stepMeta.n + ' of 3 · ' + stepMeta.title;
-            if (fillEl) fillEl.className = 'lp-stepper-fill lp-stepper-pct-' + stepMeta.pct;
+            if (labelEl) {
+              labelEl.textContent = 'Step ' + stepMeta.n + ' of 3 · ' + stepMeta.title;
+              labelEl.className = 'lp-stepper-label lp-stepper-pct-' + stepMeta.pct;
+            }
           }
           ['add', 'plan', 'triage'].forEach(function(s) {
             const panel = document.getElementById('import-step-' + s);
@@ -51,7 +57,7 @@ export const IMPORT_SCRIPT = `
             const pasteArea = document.getElementById('import-paste-area');
             const rawText = pasteArea ? pasteArea.value.trim() : '';
             if (!rawText) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Please paste or enter Markdown content first.</div>';
+              setBanner('<div class="later-thinking-banner" role="alert">Please paste or enter Markdown content first.</div>');
               return;
             }
 
@@ -87,12 +93,12 @@ export const IMPORT_SCRIPT = `
                 });
 
                 setStep('plan');
-                banner.innerHTML = '';
+                setBanner('');
               } else {
-                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Planner calculation failed.</div>';
+                setBanner('<div class="later-thinking-banner" role="alert">Planner calculation failed.</div>');
               }
             } catch (err) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error connecting to planner.</div>';
+              setBanner('<div class="later-thinking-banner" role="alert">Network error connecting to planner.</div>');
             }
           });
         }
@@ -255,7 +261,7 @@ export const IMPORT_SCRIPT = `
           commitBatchBtn.addEventListener('click', async function() {
             const accepted = triageItems.filter(function(i) { return i.status === 'accepted'; });
             if (accepted.length === 0) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">No items are marked as accepted. Use "A" or click Accept on items before committing.</div>';
+              setBanner('<div class="later-thinking-banner" role="alert">No items are marked as accepted. Use "A" or click Accept on items before committing.</div>');
               return;
             }
 
@@ -278,12 +284,12 @@ export const IMPORT_SCRIPT = `
               });
               if (res.ok) {
                 const data = await res.json();
-                banner.innerHTML = '<div class="lp-notice lp-notice-ok">Successfully imported ' + data.importedCount + ' entries! <a href="/admin">Go to Admin Workspace →</a></div>';
+                setBanner('<div class="lp-notice lp-notice-ok">Successfully imported ' + data.importedCount + ' entries. <a href="/admin">Go to Today</a></div>');
               } else {
-                banner.innerHTML = '<div class="later-thinking-banner" role="alert">Batch import failed (HTTP ' + res.status + ').</div>';
+                setBanner('<div class="later-thinking-banner" role="alert">Batch import failed (HTTP ' + res.status + ').</div>');
               }
             } catch (err) {
-              banner.innerHTML = '<div class="later-thinking-banner" role="alert">Network error committing batch.</div>';
+              setBanner('<div class="later-thinking-banner" role="alert">Network error committing batch.</div>');
             }
           });
         }

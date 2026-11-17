@@ -63,6 +63,8 @@ test.describe('WP-16.5 Inspector Module & History Restore (UX-37, CP-13)', () =>
     // Restore the older revision (containing "Revision one body content.")
     const olderRow = rows.filter({ hasText: 'Revision one body content.' }).first();
     await olderRow.locator('button[data-restore-rev]').click();
+    await expect(page.locator('#history-restore-dialog')).toBeVisible();
+    await page.locator('#history-restore-confirm').click();
 
     await expect(rows).toHaveCount(3);
   });

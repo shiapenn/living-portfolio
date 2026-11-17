@@ -12,7 +12,7 @@ export function renderAdminLoginPage(): string {
 
       <div id="login-error" class="lp-notice lp-notice-danger lp-is-hidden" role="alert"></div>
 
-      <form id="admin-login-form" class="lp-stack-md lp-divider-top">
+      <form id="admin-login-form" class="lp-stack-md">
         <div class="lp-field">
           <label class="lp-field-label" for="login-username">Username</label>
           <input id="login-username" type="text" class="lp-input" autocomplete="username" required />
@@ -33,7 +33,7 @@ export function renderAdminLoginPage(): string {
           textAction: { id: 'btn-toggle-recovery', label: 'Lost your authenticator device? Sign in with a recovery code', variant: 'quiet', className: 'lp-recovery-link' },
         })}
       </form>
-      <p class="lp-help-text lp-divider-top">
+      <p class="lp-help-text">
         Login attempts are rate-limited to 5 per 15 minutes. If throttled: "Too many failed login attempts. Try again later."
       </p>
     </div>

@@ -1,7 +1,7 @@
 import { escapeHtml } from '../../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../../layouts/admin-shell.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../../lib/admin-api-client.js';
-import { renderItem } from '../../../primitives/index.js';
+import { renderButton, renderItem, renderOverlay } from '../../../primitives/index.js';
 import { renderEmptyState, renderStatusLine } from '../../../components/index.js';
 import { INSPECTOR_STRINGS } from '../../../strings/admin/inspector.js';
 
@@ -59,16 +59,15 @@ export async function renderEntryHistoryPage(
           const revId = String(rev.id ?? idx);
           const bodyMd = String(rev.body_md ?? '');
           const rawValidFrom = String(rev.valid_from ?? '');
-          const validFrom = String(rev.valid_from ?? rev.created_at ?? '').slice(0, 10);
           const temporalLevel = String(rev.temporal_level ?? 'exact');
+          const rawDate = String(rev.valid_from ?? rev.created_at ?? '');
+          const dateLabel = rawDate ? rawDate.replace('T', ' ').slice(0, 16) : 'Revision';
           const plain = stripMarkdownMarkers(bodyMd);
           const preview = plain.length > 160 ? `${plain.slice(0, 160)}…` : plain;
-          const dateLabel = validFrom || 'Revision';
-          const stateLabel = idx === 0 ? INSPECTOR_STRINGS.historyPage.currentBadge : temporalLevel;
+          const stateLabel = idx === 0 ? INSPECTOR_STRINGS.historyPage.currentBadge : undefined;
           return renderItem({
-            title: preview || '(Empty body)',
-            subtitle: idx === 0 ? `${temporalLevel} · ${INSPECTOR_STRINGS.historyPage.currentBadge}` : temporalLevel,
-            meta: dateLabel,
+            title: dateLabel,
+            subtitle: preview || '(Empty body)',
             statusLabel: stateLabel,
             statusTone: idx === 0 ? 'ok' : 'neutral',
             actions: {
@@ -94,18 +93,32 @@ export async function renderEntryHistoryPage(
         body: INSPECTOR_STRINGS.historyPage.emptyBody,
       });
 
+  const restoreDialogHtml = renderOverlay({
+    id: 'history-restore-dialog',
+    kind: 'dialog',
+    title: 'Restore revision',
+    open: false,
+    bodyHtml: '<p>Restore this revision as a new draft revision? Your previous revisions remain in history.</p>',
+    footerHtml: `${renderButton({ id: 'history-restore-cancel', label: 'Cancel', variant: 'secondary', size: 'sm', dataAttrs: { 'overlay-close': 'true' } })}
+${renderButton({ id: 'history-restore-confirm', label: INSPECTOR_STRINGS.historyPage.restoreButton, variant: 'primary', size: 'sm' })}`,
+  });
+
   const bodyHtml = `
     ${renderStatusLine({ id: 'history-status' })}
     <div id="history-list-container" data-entry-id="${escapeHtml(entryId)}">${rowsHtml}</div>
+    ${restoreDialogHtml}
     <script${options.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : ''}>
       ${ADMIN_API_CLIENT_SCRIPT}
       (function () {
         var container = document.getElementById('history-list-container');
         var statusEl = document.getElementById('history-status');
+        var dialog = document.getElementById('history-restore-dialog');
+        var confirmBtn = document.getElementById('history-restore-confirm');
         if (!container) return;
         var entryId = container.getAttribute('data-entry-id');
-        container.addEventListener('click', async function (e) {
-          var btn = e.target && e.target.closest ? e.target.closest('button[data-restore-rev]') : null;
+        var pendingBtn = null;
+
+        var doRestore = async function (btn) {
           if (!btn || !entryId) return;
           btn.disabled = true;
           try {
@@ -134,13 +147,43 @@ export async function renderEntryHistoryPage(
             }
             btn.disabled = false;
           }
+        };
+
+        if (dialog) {
+          dialog.addEventListener('click', function (e) {
+            if (e.target === dialog || (e.target && e.target.closest && e.target.closest('[data-overlay-close]'))) {
+              dialog.setAttribute('hidden', '');
+              if (pendingBtn) pendingBtn.focus();
+              pendingBtn = null;
+            }
+          });
+        }
+        if (confirmBtn) {
+          confirmBtn.addEventListener('click', function () {
+            if (dialog) dialog.setAttribute('hidden', '');
+            var btn = pendingBtn;
+            pendingBtn = null;
+            doRestore(btn);
+          });
+        }
+
+        container.addEventListener('click', function (e) {
+          var btn = e.target && e.target.closest ? e.target.closest('button[data-restore-rev]') : null;
+          if (!btn || !entryId) return;
+          if (dialog && confirmBtn) {
+            pendingBtn = btn;
+            dialog.removeAttribute('hidden');
+            confirmBtn.focus();
+          } else {
+            doRestore(btn);
+          }
         });
       })();
     </script>`;
 
   const content = renderPageTemplate({
-    title: `${INSPECTOR_STRINGS.historyPage.titlePrefix}: ${String(entry.title || 'Untitled')}`,
-    description: INSPECTOR_STRINGS.historyPage.subtitle,
+    title: INSPECTOR_STRINGS.historyPage.titlePrefix,
+    description: String(entry.title || 'Untitled'),
     backHref: `/admin/entries/${encodeURIComponent(entryId)}`,
     backLabel: INSPECTOR_STRINGS.historyPage.backToEntry,
     bodyHtml,

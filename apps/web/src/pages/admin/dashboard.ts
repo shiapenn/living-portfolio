@@ -1,5 +1,5 @@
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderIconButton, renderItem } from '../../primitives/index.js';
+import { renderIconButton, renderItem, renderSectionHeader } from '../../primitives/index.js';
 import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { escapeHtml } from '../../lib/html.js';
@@ -48,7 +48,7 @@ export async function renderAdminDashboardPage(
       tone: 'warn',
       badge: 'Paused',
       summary: 'Automated answering is paused · Resume',
-      actionHref: '/admin/settings/answering',
+      actionHref: '/admin/status',
     });
   }
   if (buildFailed) {
@@ -117,17 +117,18 @@ ${items
   const checklistHtml = options.checklistDismissed
     ? ''
     : `<section id="today-checklist-card" aria-labelledby="today-checklist-heading">
-  <div class="lp-section-header-row">
-    <h2 id="today-checklist-heading" class="lp-section-title">${escapeHtml(DASHBOARD_STRINGS.checklist.heading)}</h2>
-    ${renderIconButton({
+  ${renderSectionHeader({
+    id: 'today-checklist-heading',
+    title: DASHBOARD_STRINGS.checklist.heading,
+    actionHtml: renderIconButton({
       id: 'btn-dismiss-today-checklist',
       ariaLabel: DASHBOARD_STRINGS.checklist.dismissLabel,
       title: DASHBOARD_STRINGS.checklist.dismissLabel,
       icon: 'close',
       iconSize: 16,
       variant: 'quiet',
-    })}
-  </div>
+    }),
+  })}
   <div class="lp-list">
     ${DASHBOARD_STRINGS.checklist.steps
       .map((step) =>

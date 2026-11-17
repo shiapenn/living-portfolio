@@ -1,13 +1,12 @@
 import { renderAdminShell } from "../../layouts/admin-shell.js";
-import { renderProviderRow } from "../../components/index.js";
-import { renderActionBar, renderButton, renderChip, renderChoiceGroup, renderIcon } from "../../primitives/index.js";
+import { renderActionBar, renderButton, renderChip, renderChoiceGroup, renderIcon, renderItem } from "../../primitives/index.js";
 import { WIZARD_STRINGS } from "../../strings.js";
 import { SETUP_SCRIPT_PART_1 } from './setup-script-part1.js';
 import { SETUP_SCRIPT_PART_2 } from './setup-script-part2.js';
 
 export function renderAdminSetupPage(): string {
   const content = `
-    <div class="admin-setup-container lp-auth-column lp-stack-md">
+    <div class="admin-setup-container lp-stack-md">
       <div class="lp-wizard-header">
         <p id="wizard-step-chip" class="lp-auth-step-text">Step 1 of 6 · Account</p>
         <div class="lp-auth-progress-track">
@@ -121,7 +120,7 @@ export function renderAdminSetupPage(): string {
           })),
         })}
 
-        <div class="lp-field lp-divider-top">
+        <div class="lp-field">
           <label for="setup-origin-url" class="lp-field-label">${WIZARD_STRINGS.step2.originUrl.label}</label>
           <input type="text" id="setup-origin-url" class="lp-input" placeholder="${WIZARD_STRINGS.step2.originUrl.placeholder}" />
           <div class="lp-help-text">${WIZARD_STRINGS.step2.originUrl.help}</div>
@@ -140,27 +139,16 @@ export function renderAdminSetupPage(): string {
           <p class="lp-page-description">${WIZARD_STRINGS.step3.subtitle}</p>
         </div>
 
-        <div class="lp-table-wrap">
-          <table class="lp-table">
-            <thead>
-              <tr>
-                ${WIZARD_STRINGS.step3.providersTable.headers.map(h => `<th>${h}</th>`).join('')}
-              </tr>
-            </thead>
-            <tbody>
-              ${WIZARD_STRINGS.step3.providersTable.rows.map(row => renderProviderRow({
-                id: row.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-                name: row.name,
-                model: row.model,
-                classes: row.classes,
-                status: row.status,
-                statusId: row.statusId,
-                isLocal: row.isLocal,
-                mode: 'table-row',
-                editable: false,
-              })).join('')}
-            </tbody>
-          </table>
+        <div class="lp-list">
+          ${WIZARD_STRINGS.step3.providersTable.rows.map((row) =>
+            renderItem({
+              id: row.statusId,
+              title: `${row.name} · ${row.model}`,
+              subtitle: row.classes.join(', '),
+              statusLabel: row.status,
+              statusTone: row.isLocal ? 'ok' : 'neutral',
+            })
+          ).join('')}
         </div>
 
         <div class="lp-notice lp-notice-info">

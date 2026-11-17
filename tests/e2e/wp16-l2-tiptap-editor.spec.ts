@@ -97,7 +97,7 @@ test.describe('WP-16.L L2 Tiptap Block Editor & Import Source Mode', () => {
     await page.goto('/admin/import');
 
     await expect(page.locator('#import-source-toggle')).toHaveCount(0);
-    await expect(page.locator('label[for="import-paste-area"]')).toHaveText('Paste Markdown or text');
+    await expect(page.locator('label[for="import-paste-area"]')).toHaveText('Markdown or text');
     const textarea = page.locator('#import-paste-area');
     await expect(textarea).toBeVisible();
     await textarea.fill('# Imported Title\n\nBody paragraph.');

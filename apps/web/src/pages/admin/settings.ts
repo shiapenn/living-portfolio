@@ -64,11 +64,12 @@ export function renderSettingsModulePage<T>(
   modConfig: T,
   ctx: SettingsRenderContext
 ): string {
-  const backHtml = `<a href="/admin/settings" class="lp-btn lp-btn-quiet lp-btn-sm">All settings</a>`;
   const bodyHtml = `${mod.render(modConfig, ctx)}${SETTINGS_SCRIPT}`;
   return renderPageTemplate({
     title: mod.title,
     description: mod.summary,
+    backHref: '/admin/settings',
+    backLabel: 'Settings',
     bodyHtml,
   });
 }
