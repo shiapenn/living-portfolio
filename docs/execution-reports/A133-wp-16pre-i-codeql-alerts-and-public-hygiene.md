@@ -18,10 +18,10 @@ Executed `WP-16.pre-i` (CodeQL alerts fix) and public-repo hygiene + ruleset/Cod
 - [implemented] Verified `CodeQL (JavaScript / TypeScript)` manually via `gh workflow run codeql.yml --ref feat/wp-16-pre-i-codeql-alerts` (run `44015155308`): `Run SARIF Gate` passed with 0 alerts.
 - [implemented] **Ruleset & `codeql.yml` diagnosis:** Read-only inspection of `gh api repos/shiapenn/living-portfolio/rulesets` (`id: 25530940`, `main-gates`) and `.github/workflows/codeql.yml` confirmed `codeql.yml` had only `schedule` and `workflow_dispatch` triggers (no `pull_request` trigger), so `CodeQL (JavaScript / TypeScript)` never reported on PRs. Owner temporarily removed `CodeQL (JavaScript / TypeScript)` from `main-gates` required checks, unblocking `PR #191` (`A132`) merge at `50fcab4`.
 - [implemented] **Public-repo hygiene audit (read-only):**
-  - Full-history `node scripts/gitleaks-scan`: 497 commits scanned (~8.14 MB), 0 leaks found.
-  - Workflow fork-safety: 0 `pull_request_target` triggers across all 8 workflows; deployment secrets (`RENDER_*`, `PRODUCTION_*`, `STAGING_*`) used only in `deploy-production.yml` and `deploy-staging.yml`; all other workflows use `GITHUB_TOKEN` only with explicit `permissions:`.
-  - Licence: `LICENSE` exists at repository root (Apache License, Version 2.0, January 2004).
-  - Personal data in tracked files (for owner's decision; unchanged): `~/Desktop/wp16r-contact-sheets.zip` path in `A122`, `@shiapeng` in `CODEOWNERS` and `wp11-copy-harmonization.conformance.test.ts`, and `shiapenn <11827148+shiapenn@users.noreply.github.com>` in `A004`–`A013`.
+  - [implemented] Full-history `node scripts/gitleaks-scan`: 497 commits scanned (~8.14 MB), 0 leaks found.
+  - [implemented] Workflow fork-safety: 0 `pull_request_target` triggers across all 8 workflows; deployment secrets (`RENDER_*`, `PRODUCTION_*`, `STAGING_*`) used only in `deploy-production.yml` and `deploy-staging.yml`; all other workflows use `GITHUB_TOKEN` only with explicit `permissions:`.
+  - [implemented] Licence: `LICENSE` exists at repository root (Apache License, Version 2.0, January 2004).
+  - [implemented] Personal data in tracked files (for owner's decision; unchanged): `~/Desktop/wp16r-contact-sheets.zip` path in `A122`, `@shiapeng` in `CODEOWNERS` and `wp11-copy-harmonization.conformance.test.ts`, and `shiapenn <11827148+shiapenn@users.noreply.github.com>` in `A004`–`A013`.
 
 ## 2. CI Evidence
 
