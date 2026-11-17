@@ -137,6 +137,7 @@
 | `A129` | WP-16.C C2 Page and Overlay Migrations | `active` | [A129-wp-16c-c2-page-and-overlay-migrations.md](execution-reports/A129-wp-16c-c2-page-and-overlay-migrations.md) | — |
 | `A130` | WP-16.C C3: Editor Contract and ProviderRow Parity | `active` | [A130-wp-16c-c3-editor-contract-and-providerrow-parity.md](execution-reports/A130-wp-16c-c3-editor-contract-and-providerrow-parity.md) | — |
 | `A131` | WP-16.C C4: Contact Sheets and Register Closure | `active` | [A131-wp-16c-c4-contact-sheets-and-register-closure.md](execution-reports/A131-wp-16c-c4-contact-sheets-and-register-closure.md) | — |
+| `A132` | WP-16.S S0 D-SYS Foundations and Census | `active` | [A132-wp-16s-s0-d-sys-foundations-and-census.md](execution-reports/A132-wp-16s-s0-d-sys-foundations-and-census.md) | — |
 
 ## Handover Snapshots (Class H)
 
