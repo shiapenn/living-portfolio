@@ -1457,5 +1457,13 @@
     "path": "docs/execution-reports/A136-wp-16s-s2-page-migrations-and-status.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A137",
+    "title": "WP-16.S S3 D-EDITOR-4 Editor and Full Structure Restoration",
+    "class": "A",
+    "path": "docs/execution-reports/A137-wp-16s-s3-editor-and-structure.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
