@@ -1,6 +1,5 @@
 import { escapeHtml } from '../lib/html.js';
-import { renderBadge, renderIconButton } from '../primitives/index.js';
-import { renderTabs } from '../components/index.js';
+import { renderBadge, renderIconButton, renderTabs } from '../primitives/index.js';
 import { INSPECTOR_STRINGS } from '../strings/admin/inspector.js';
 
 export interface InspectorFacet {

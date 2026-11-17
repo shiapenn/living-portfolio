@@ -1,5 +1,5 @@
 import { escapeHtml } from '../lib/html.js';
-import { renderIcon } from './icons.js';
+import { renderBackLink } from './back-link.js';
 
 export interface PageHeaderProps {
   title: string;
@@ -25,7 +25,7 @@ export function renderPageHeader(props: PageHeaderProps): string {
   const classes = ['lp-page-header', 'lp-page-header-dcomp', props.className].filter(Boolean).join(' ');
 
   const backHtml = props.backHref
-    ? `<a href="${escapeHtml(props.backHref)}" class="lp-page-header-back">${renderIcon('chevron-left', 16)}<span>${escapeHtml(props.backLabel ?? 'Back')}</span></a>`
+    ? renderBackLink({ href: props.backHref, destination: props.backLabel ?? 'previous page' })
     : '';
 
   const descHtml = props.description

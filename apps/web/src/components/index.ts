@@ -5,7 +5,6 @@ export {
   renderBadge,
   renderStatusDot,
   renderField,
-  renderListRow,
 } from '../primitives/index.js';
 export type {
   ButtonProps,
@@ -20,7 +19,6 @@ export type {
   FieldProps,
   SelectOption,
   SelectOptionGroup,
-  ListRowProps,
 } from '../primitives/index.js';
 export * from './entry-card.js';
 export * from './slots.js';
@@ -31,7 +29,6 @@ export {
   renderDrawer,
   renderDisclosure,
   renderMenu,
-  renderTabs,
   renderEmptyState,
 } from './containers.js';
 export { renderTable } from './table.js';
@@ -46,6 +43,4 @@ export type {
   EmptyStateProps,
   MenuItem,
   MenuProps,
-  TabItem,
-  TabsProps,
 } from './containers.js';

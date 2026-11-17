@@ -212,20 +212,9 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
           violations.actionBar++;
           details.actionBar.push(`ActionBar unequal widths: ${bw}px vs ${firstW}px`);
         }
-        if (width >= 640) {
-          if (bw < 160 || bw > 240) {
-            violations.actionBar++;
-            details.actionBar.push(`ActionBar button width ${bw}px outside [160, 240] at ${width}px`);
-          }
-          if (Math.abs(br.left - barRect.left) > 4) {
-            violations.actionBar++;
-            details.actionBar.push(`ActionBar button not left-aligned (left=${Math.round(br.left)} vs bar=${Math.round(barRect.left)})`);
-          }
-        } else {
-          if (Math.abs(bw - Math.round(barRect.width)) > 4) {
-            violations.actionBar++;
-            details.actionBar.push(`ActionBar button not full width at 320px (${bw}px vs ${Math.round(barRect.width)}px)`);
-          }
+        if (Math.abs(bw - Math.round(barRect.width)) > 4) {
+          violations.actionBar++;
+          details.actionBar.push(`ActionBar button not full width at ${width}px (${bw}px vs ${Math.round(barRect.width)}px)`);
         }
       }
     }

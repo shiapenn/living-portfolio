@@ -63,7 +63,7 @@ describe('WP-15.3a Design Foundations (D-FOUND-1..6)', () => {
     });
     expect(ghost).toContain('aria-label="Dismiss notice"');
     expect(ghost).toContain('title="Dismiss notice"');
-    expect(ghost).toContain('lp-icon-btn-ghost');
+    expect(ghost).toContain('lp-icon-btn');
     expect(ghost).not.toContain('×');
 
     const outlined = renderIconButton({
@@ -72,7 +72,7 @@ describe('WP-15.3a Design Foundations (D-FOUND-1..6)', () => {
       variant: 'secondary',
       iconSize: 20,
     });
-    expect(outlined).toContain('lp-icon-btn-outlined');
+    expect(outlined).toContain('lp-icon-btn');
     expect(outlined).toContain('#lp-icon-moon');
 
     const loadingBtn = renderButton({

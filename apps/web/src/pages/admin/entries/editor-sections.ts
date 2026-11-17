@@ -3,11 +3,11 @@ import {
   renderBadge,
   renderButton,
   renderField,
+  renderTabs,
 } from '../../../primitives/index.js';
 import {
   renderDialog,
   renderDrawer,
-  renderTabs,
 } from '../../../components/index.js';
 import { EDITOR_STRINGS } from '../../../strings/admin/editor.js';
 

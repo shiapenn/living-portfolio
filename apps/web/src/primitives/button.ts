@@ -93,14 +93,12 @@ export function renderButton(props: ButtonProps): string {
 }
 
 /**
- * Renders a shared icon-only button primitive (D-FOUND-1: ghost or outlined only, never filled, with aria-label and title tooltip).
+ * Renders a shared icon-only button primitive (D-SYS #14: 36x36, radius 4, no border, filled control surface).
  */
 export function renderIconButton(props: IconButtonProps): string {
-  const variant = props.variant === 'secondary' ? 'secondary' : 'quiet';
-  const surfaceClass = variant === 'secondary' ? 'lp-icon-btn-outlined' : 'lp-icon-btn-ghost';
   const sizeClass = props.size === 'sm' ? 'lp-icon-btn-sm' : '';
   const isDisabled = Boolean(props.disabled || props.loading);
-  const classes = ['lp-icon-btn', `lp-btn-${variant}`, surfaceClass, sizeClass, props.className].filter(Boolean).join(' ');
+  const classes = ['lp-icon-btn', sizeClass, props.className].filter(Boolean).join(' ');
   const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
   const tooltip = props.disabledReason || props.title || props.ariaLabel;
   const titleAttr = ` title="${escapeHtml(tooltip)}" data-tooltip="${escapeHtml(tooltip)}"`;

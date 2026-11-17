@@ -2,7 +2,7 @@ import { loadConfig } from '@living-portfolio/config';
 import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { escapeHtml } from '../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderListRow } from '../../primitives/index.js';
+import { renderItem } from '../../primitives/index.js';
 import {
   ensureBuiltinSettingsModulesRegistered,
   getSettingsModule,
@@ -30,13 +30,14 @@ export function renderSettingsIndexPage(
     .map((mod) => {
       const modCfg = readModuleConfig(mod, settings);
       const statusText = mod.status(modCfg, ctx);
-      return renderListRow({
+      return renderItem({
         id: `settings-row-${mod.id}`,
         href: mod.route,
-        primary: mod.title,
-        secondary: mod.summary,
-        stateLabel: statusText,
-        stateTone: statusText === 'Not set up' || statusText === 'Paused' ? 'neutral' : 'ok',
+        title: mod.title,
+        subtitle: mod.summary,
+        statusLabel: statusText,
+        statusTone: statusText === 'Not set up' || statusText === 'Paused' ? 'neutral' : 'ok',
+        showChevron: true,
       });
     })
     .join('');

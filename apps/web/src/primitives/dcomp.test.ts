@@ -39,7 +39,7 @@ describe('WP-16.C C1 D-COMP Primitives', () => {
       backLabel: 'Today',
       actionHtml: '<button type="button" class="lp-btn lp-btn-primary">Save</button>',
     });
-    expect(html).toContain('lp-page-header-back');
+    expect(html).toContain('lp-back-link');
     expect(html).toContain('#lp-icon-chevron-left');
     expect(html).toContain('<h1 class="lp-page-header-title">Answering</h1>');
     expect(html).toContain('lp-page-description');

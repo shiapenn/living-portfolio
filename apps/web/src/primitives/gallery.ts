@@ -8,6 +8,7 @@ import {
   renderStatusDot,
   renderSwitch,
   renderField,
+  renderTabs,
 } from './index.js';
 import {
   renderPageNotice,
@@ -15,7 +16,6 @@ import {
   renderDialog,
   renderDrawer,
   renderDisclosure,
-  renderTabs,
   renderTable,
   renderEmptyState,
 } from '../components/index.js';

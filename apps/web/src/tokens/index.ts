@@ -141,6 +141,10 @@ export const SEMANTIC_TOKENS_LIGHT = `
   --surface-panel: #F3F5F4;
   --surface: #FFFFFF;
   --surface-input: #FFFFFF;
+  --surface-control: #EEF1F3;
+  --surface-control-hover: #E1E6EA;
+  --surface-control-active: #D2D9DF;
+  --surface-control-selected: #EEF1FF;
   --text: #14202A;
   --text-muted: #4B5A66;
   --text-on-accent: #FFFFFF;
@@ -230,6 +234,10 @@ export const SEMANTIC_TOKENS_DARK = `
   --surface-panel: #121C24;
   --surface: #0F1A22;
   --surface-input: #16232D;
+  --surface-control: #1E2C38;
+  --surface-control-hover: #273847;
+  --surface-control-active: #314557;
+  --surface-control-selected: #1A244D;
   --text: #E6ECEF;
   --text-muted: #A3B2BD;
   --text-on-accent: #0F1A22;

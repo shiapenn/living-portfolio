@@ -8,6 +8,7 @@ export interface TabItem {
   active?: boolean;
   controls?: string;
   count?: number;
+  panelHtml?: string;
 }
 
 export interface TabsProps {
@@ -40,21 +41,36 @@ export function renderTabs(props: TabsProps): string {
 
   const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
   const classes = ['lp-tabs', props.className].filter(Boolean).join(' ');
+  const idPrefix = props.id ?? 'tabs';
+  const hasPanels = props.tabs.some((t) => t.panelHtml !== undefined);
   const items = props.tabs
     .map((t) => {
       const isActive = Boolean(t.active);
       const cls = ['lp-tab', isActive ? 'is-active' : ''].filter(Boolean).join(' ');
-      const controlsAttr = t.controls ? ` aria-controls="${escapeHtml(t.controls)}"` : '';
+      const controlsId = t.controls ?? (hasPanels ? `${idPrefix}-panel-${t.id}` : undefined);
+      const controlsAttr = controlsId ? ` aria-controls="${escapeHtml(controlsId)}"` : '';
+      const tabIdAttr = hasPanels ? ` id="${escapeHtml(idPrefix)}-tab-${escapeHtml(t.id)}"` : '';
       const countText = typeof t.count === 'number' ? ` (${t.count})` : '';
       const label = `${escapeHtml(t.label)}${escapeHtml(countText)}`;
       if (t.href) {
-        return `<a href="${escapeHtml(t.href)}" role="tab" class="${escapeHtml(cls)}" aria-selected="${isActive ? 'true' : 'false'}"${controlsAttr} data-tab-id="${escapeHtml(t.id)}">${label}</a>`;
+        return `<a href="${escapeHtml(t.href)}" role="tab"${tabIdAttr} class="${escapeHtml(cls)}" aria-selected="${isActive ? 'true' : 'false'}"${controlsAttr} data-tab-id="${escapeHtml(t.id)}">${label}</a>`;
       }
-      return `<button type="button" role="tab" class="${escapeHtml(cls)}" aria-selected="${isActive ? 'true' : 'false'}" tabindex="${isActive ? '0' : '-1'}"${controlsAttr} data-tab-id="${escapeHtml(t.id)}">${label}</button>`;
+      return `<button type="button" role="tab"${tabIdAttr} class="${escapeHtml(cls)}" aria-selected="${isActive ? 'true' : 'false'}" tabindex="${isActive ? '0' : '-1'}"${controlsAttr} data-tab-id="${escapeHtml(t.id)}">${label}</button>`;
     })
     .join('');
 
-  return `<div${idAttr} class="${escapeHtml(classes)}" role="tablist" aria-label="${escapeHtml(props.ariaLabel)}">${items}</div>`;
+  const tablistHtml = `<div${idAttr} class="${escapeHtml(classes)}" role="tablist" aria-label="${escapeHtml(props.ariaLabel)}">${items}</div>`;
+  if (!hasPanels) return tablistHtml;
+
+  const panelsHtml = props.tabs
+    .map((t) => {
+      const isActive = Boolean(t.active);
+      const panelId = t.controls ?? `${idPrefix}-panel-${t.id}`;
+      return `<div id="${escapeHtml(panelId)}" role="tabpanel" aria-labelledby="${escapeHtml(idPrefix)}-tab-${escapeHtml(t.id)}" class="lp-tab-panel"${isActive ? '' : ' hidden'}>${t.panelHtml ?? ''}</div>`;
+    })
+    .join('');
+
+  return `${tablistHtml}\n${panelsHtml}`;
 }
 
 export interface StepperProps {

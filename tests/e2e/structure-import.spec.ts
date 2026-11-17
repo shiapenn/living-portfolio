@@ -12,7 +12,7 @@ test.describe.serial('WP-4.1: Structure Review Loop, Import Triage, and Visitor 
     await expect(drawer).toBeVisible();
 
     // Verify 3 Structure tabs exist with accessible tablist role
-    const tablist = drawer.locator('.lp-tablist[role="tablist"]');
+    const tablist = drawer.locator('[role="tablist"]');
     await expect(tablist).toBeVisible();
     await expect(page.locator('#ref-structure-tabs-tab-summary')).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('#ref-structure-tabs-panel-summary')).toBeVisible();

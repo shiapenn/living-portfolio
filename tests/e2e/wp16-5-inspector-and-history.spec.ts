@@ -21,25 +21,16 @@ test.describe('WP-16.5 Inspector Module & History Restore (UX-37, CP-13)', () =>
     await expect(pane).toContainText('Captured, Tagged, Claimed, Grounded');
     await expect(pane.locator('.lp-inspector-explainer')).toHaveCount(0);
 
-    const tabs = pane.locator('[role="tab"]');
-    await expect(tabs).toHaveCount(5);
-    await expect(tabs.nth(0)).toContainText('Structure');
-    await expect(tabs.nth(1)).toContainText('Context');
-    await expect(tabs.nth(2)).toContainText('Evidence');
-    await expect(tabs.nth(3)).toContainText('Answerability');
-    await expect(tabs.nth(4)).toContainText('History');
-
-    // Keyboard ArrowRight switches tabs
-    await tabs.nth(0).focus();
-    await page.keyboard.press('ArrowRight');
-    await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
-
-    await page.keyboard.press('ArrowRight');
-    await expect(tabs.nth(2)).toHaveAttribute('aria-selected', 'true');
-    await page.keyboard.press('ArrowRight');
-    await expect(tabs.nth(3)).toHaveAttribute('aria-selected', 'true');
-    await page.keyboard.press('ArrowRight');
-    await expect(tabs.nth(4)).toHaveAttribute('aria-selected', 'true');
+    // D-COMP #6: 5+ tabs render as a Select control
+    const tabSelect = pane.locator('#ref-inspector-tabs-select');
+    await expect(tabSelect).toBeVisible();
+    const options = tabSelect.locator('option');
+    await expect(options).toHaveCount(5);
+    await expect(options.nth(0)).toContainText('Structure');
+    await expect(options.nth(1)).toContainText('Context');
+    await expect(options.nth(2)).toContainText('Evidence');
+    await expect(options.nth(3)).toContainText('Answerability');
+    await expect(options.nth(4)).toContainText('History');
 
     const historyLink = page.locator(`#ref-btn-history[href="/admin/entries/${entryId}/history"]`);
     await expect(historyLink).toBeVisible();

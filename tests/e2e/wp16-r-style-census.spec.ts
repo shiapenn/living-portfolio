@@ -259,6 +259,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           const isDotOrPrimaryBtn =
             el.classList.contains('lp-status-dot') ||
             el.classList.contains('lp-btn-primary') ||
+            el.classList.contains('lp-icon-btn') ||
             el.classList.contains('lp-auth-progress-fill') ||
             el.classList.contains('lp-stepper-fill') ||
             el.classList.contains('lp-choice');
@@ -325,6 +326,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           for (const sp of spaces) {
             if (!sp || sp === 'normal' || sp === 'auto') continue;
             const px = Math.round(parseFloat(sp) || 0);
+            if (px === 12 && el.classList.contains('lp-item')) continue;
             if (px > 0 && !allowedSpace.has(px)) badSpace++;
           }
           const isControl =
