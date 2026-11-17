@@ -267,7 +267,7 @@ export function renderCensusCanaryPage(options: GalleryOptions = {}): string {
     const dsysBodyHtml = `
       <div id="dsys-canary" data-canary-fixture="dsys">
         <h2 id="canary-text-align" class="lp-canary-center" data-canary="textAlign">Centred Heading</h2>
-        <div id="canary-empty-inflow" class="lp-status-line-slot lp-canary-empty-tall" data-canary="emptyInFlow"></div>
+        <div id="canary-empty-inflow" class="lp-canary-empty-tall" data-canary="emptyInFlow"></div>
         <div id="canary-upper-gap" class="lp-canary-gap-80" data-canary="upperGapBound">
           <p>Block A</p>
           <p>Block B</p>

@@ -1,5 +1,5 @@
 import { renderAdminShell, renderPageTemplate } from '../../../layouts/admin-shell.js';
-import { renderButton, renderIcon, renderListRow } from '../../../primitives/index.js';
+import { renderButton, renderIcon, renderItem } from '../../../primitives/index.js';
 import { renderDialog, renderEmptyState, renderPageNotice } from '../../../components/index.js';
 import { adaptDataSource, type WebDataClient } from '../../../lib/data-source.js';
 import { escapeHtml } from '../../../lib/html.js';
@@ -35,12 +35,13 @@ export async function renderAdminEntriesListPage(
 
   const rowsHtml = paged
     .map((entry) =>
-      renderListRow({
+      renderItem({
         href: `/admin/entries/${encodeURIComponent(entry.id)}`,
-        primary: entry.title || 'Untitled',
-        secondary: entry.profile || 'freeform',
-        stateLabel: visibilityLabel(entry.visibility),
-        stateTone: entry.visibility === 'public' ? 'ok' : entry.visibility === 'unlisted' ? 'warn' : 'neutral',
+        title: entry.title || 'Untitled',
+        subtitle: entry.profile || 'freeform',
+        statusLabel: visibilityLabel(entry.visibility),
+        statusTone: entry.visibility === 'public' ? 'ok' : entry.visibility === 'unlisted' ? 'warn' : 'neutral',
+        showChevron: true,
         attributes: `data-entry-row="${escapeHtml(entry.id)}"`,
       })
     )

@@ -5,7 +5,7 @@ import {
   renderButton,
   renderField,
   renderIconButton,
-  renderListRow,
+  renderItem,
   renderStatusDot,
 } from '../../../primitives/index.js';
 import {
@@ -137,11 +137,11 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
           : `/admin?entry=${escapeHtml(e.id)}`;
       const stateLabel = isPlaceholder ? EDITOR_STRINGS.sidebar.unsavedBadge : formatVisibilityLabel(e.visibility);
       const stateTone = isPlaceholder ? 'warn' : visibilityTone(e.visibility);
-      return renderListRow({
+      return renderItem({
         href: rowHref,
-        primary: rowTitle,
-        stateLabel,
-        stateTone,
+        title: rowTitle,
+        statusLabel: stateLabel,
+        statusTone: stateTone,
         selected: active,
         attributes: `data-entry-row="${escapeHtml(e.id)}"${active ? ' aria-current="page"' : ''}`,
       });
