@@ -1,7 +1,7 @@
 import { escapeHtml } from '../lib/html.js';
 import { renderIconButton } from './button.js';
 
-export type OverlayKind = 'actions' | 'panel' | 'dialog';
+export type OverlayKind = 'actions' | 'panel' | 'push-panel' | 'dialog';
 
 export interface OverlayProps {
   id: string;

@@ -12,6 +12,8 @@ export interface AdminShellOptions {
   siteName?: string;
   legacyRecoveryUsed?: boolean;
   fullWidth?: boolean;
+  authenticated?: boolean;
+  template?: 'standard' | 'narrow' | 'editor';
 }
 
 export type LauncherGroupId = 'Write' | 'Respond' | 'Govern' | 'Configure';
@@ -47,6 +49,7 @@ const BUILTIN_DESTINATIONS: AdminNavDestination[] = [
   { id: 'import', group: 'Write', href: '/admin/import', label: 'Import', icon: 'upload', order: 3 },
   { id: 'inbox', group: 'Respond', href: '/admin/inbox', label: 'Inbox', icon: 'inbox', order: 4 },
   { id: 'audit', group: 'Govern', href: '/admin/audit', label: 'Answer rules', icon: 'shield', order: 5 },
+  { id: 'status', group: 'Govern', href: '/admin/status', label: 'Status', icon: 'activity', order: 6 },
 ];
 for (const d of BUILTIN_DESTINATIONS) {
   registerAdminDestination(d);
@@ -61,13 +64,15 @@ export interface PageTemplateOptions {
   bodyHtml: string;
   actionsHtml?: string;
   className?: string;
+  template?: 'standard' | 'narrow' | 'editor';
 }
 
 /**
- * Unified 720px centred page template for every non-editor admin page (D-LAYOUT #2, D-COMP #2).
+ * Unified page template (D-SYS #4): standard (720px), narrow (400px, login only), editor.
  */
 export function renderPageTemplate(opts: PageTemplateOptions): string {
-  const cls = ['lp-page-column', opts.className].filter(Boolean).join(' ');
+  const tmplClass = opts.template === 'narrow' ? 'lp-page-column-narrow' : '';
+  const cls = ['lp-page-column', tmplClass, opts.className].filter(Boolean).join(' ');
   const headerHtml = renderPageHeader({
     title: opts.title,
     description: opts.description,
@@ -217,72 +222,10 @@ function renderShellThemeAndMenuScript(nonceAttr: string, includeAdminMenus: boo
 }
 
 /**
- * Minimal authentication shell for /admin/setup and /admin/login:
- * brand and SVG theme toggle icon only; no public nav, no footer, no cards.
- */
-export function renderAuthShell(
-  title: string,
-  contentHtml: string,
-  options?: AdminShellOptions
-): string {
-  const cfg = loadConfig();
-  const siteName = options?.siteName || cfg.PUBLIC_SITE_NAME || 'Living Portfolio';
-  const theme = options?.initialTheme === 'dark' ? 'dark' : 'light';
-  const nonceAttr = options?.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : '';
-  const toggleIcon = theme === 'dark' ? 'sun' : 'moon';
-  const toggleLabel = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
-  const stagingBanner =
-    cfg.DEPLOYMENT_CLASS === 'staging'
-      ? `<div class="lp-staging-banner" data-banner="staging-synthetic-only" role="note"><strong>Staging: synthetic data only.</strong></div>`
-      : '';
-
-  let safeContent = contentHtml;
-  if (options?.nonce) {
-    safeContent = safeContent.replace(
-      /<script\b(?![^>]*\bnonce=)([^>]*)>/gi,
-      `<script nonce="${escapeHtml(options.nonce)}"$1>`
-    );
-  }
-
-  return `<!DOCTYPE html>
-<html lang="en" data-theme="${theme}">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>${escapeHtml(title)} — ${escapeHtml(siteName)}</title>
-  <style${nonceAttr}>${STRATA_DESIGN_SYSTEM_CSS}</style>
-</head>
-<body class="lp-admin-body">
-  ${renderIconSprite()}
-  ${stagingBanner}
-  <a href="#main-content" class="skip-link">Skip to main content</a>
-  <header class="lp-admin-header" role="banner">
-    <a href="/admin" class="lp-admin-header-brand">${escapeHtml(siteName)}</a>
-    <div class="lp-admin-header-actions">
-      ${renderIconButton({
-        id: 'theme-toggle',
-        ariaLabel: toggleLabel,
-        title: toggleLabel,
-        icon: toggleIcon,
-        iconSize: 20,
-        variant: 'quiet',
-        dataAttrs: { 'aria-pressed': theme === 'dark' ? 'true' : 'false' },
-      })}
-    </div>
-  </header>
-  <main id="main-content" class="lp-auth-shell-main">
-    ${safeContent}
-  </main>
-  ${renderShellThemeAndMenuScript(nonceAttr, false)}
-</body>
-</html>`;
-}
-
-/**
- * Top-bar-only admin shell (D-LAYOUT #1):
- * 48px top bar with hairline below, no sidebar anywhere.
- * Left: launcher grid icon button (36x36) + product name.
- * Right: site status dot icon button + account user icon button.
+ * Single Admin Shell (D-SYS #8, #9, #10):
+ * One top bar and page frame for every admin page including editor, login, and setup.
+ * Left: launcher icon button (authenticated only) + fixed text "Admin".
+ * Right: theme toggle icon button + account icon button (authenticated only).
  */
 export function renderAdminShell(
   title: string,
@@ -293,7 +236,7 @@ export function renderAdminShell(
   const cfg = loadConfig();
   const siteName = options?.siteName || cfg.PUBLIC_SITE_NAME || 'Living Portfolio';
   const theme = options?.initialTheme === 'dark' ? 'dark' : 'light';
-  const answeringOn = options?.answeringEnabled ?? true;
+  const isAuth = options?.authenticated !== false;
   const nonceAttr = options?.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : '';
   const toggleIcon = theme === 'dark' ? 'sun' : 'moon';
   const toggleLabel = theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
@@ -341,7 +284,50 @@ export function renderAdminShell(
     .filter(Boolean)
     .join('');
 
-  const mainClass = options?.fullWidth ? 'lp-admin-shell-main lp-admin-shell-main-full' : 'lp-admin-shell-main';
+  const mainClass =
+    options?.fullWidth || options?.template === 'editor'
+      ? 'lp-admin-shell-main lp-admin-shell-main-full'
+      : 'lp-admin-shell-main';
+
+  const launcherHtml = isAuth
+    ? `<div class="lp-menu-wrap">
+        ${renderIconButton({
+          id: 'lp-launcher-btn',
+          ariaLabel: 'Open navigation',
+          title: 'Open navigation',
+          icon: 'grid',
+          iconSize: 20,
+          dataAttrs: { 'aria-haspopup': 'true', 'aria-expanded': 'false', 'aria-controls': 'lp-launcher-panel' },
+        })}
+        <nav id="lp-launcher-panel" class="lp-launcher-panel" aria-label="Admin navigation" hidden>
+          ${launcherGroupsHtml}
+          <div class="lp-launcher-footer">
+            <a href="/home" class="lp-launcher-item">${renderIcon({ name: 'external-link', size: 16 })}<span>View public site</span></a>
+          </div>
+        </nav>
+      </div>`
+    : '';
+
+  const brandHtml = isAuth
+    ? `<a href="/admin" class="lp-admin-header-brand">Admin</a>`
+    : `<span class="lp-admin-header-brand">Admin</span>`;
+
+  const accountHtml = isAuth
+    ? `<div class="lp-menu-wrap">
+        ${renderIconButton({
+          id: 'lp-account-menu-btn',
+          ariaLabel: 'Account',
+          title: 'Account',
+          icon: 'user',
+          iconSize: 20,
+          dataAttrs: { 'aria-haspopup': 'menu', 'aria-expanded': 'false', 'aria-controls': 'lp-account-menu' },
+        })}
+        <div id="lp-account-menu" class="lp-popover-menu lp-menu-popover-float" role="menu" aria-label="Account menu" hidden>
+          <div class="lp-menu-header" role="presentation">Owner</div>
+          <button type="button" role="menuitem" id="btn-admin-logout" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">Sign out</button>
+        </div>
+      </div>`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="en" data-theme="${theme}">
@@ -357,74 +343,27 @@ export function renderAdminShell(
   <a href="#main-content" class="skip-link">Skip to main content</a>
   <header class="lp-admin-header" role="banner">
     <div class="lp-admin-header-start">
-      <div class="lp-menu-wrap">
-        ${renderIconButton({
-          id: 'lp-launcher-btn',
-          ariaLabel: 'Open navigation',
-          title: 'Open navigation',
-          icon: 'grid',
-          iconSize: 20,
-          variant: 'quiet',
-          dataAttrs: { 'aria-haspopup': 'true', 'aria-expanded': 'false', 'aria-controls': 'lp-launcher-panel' },
-        })}
-        <nav id="lp-launcher-panel" class="lp-launcher-panel" aria-label="Admin navigation" hidden>
-          ${launcherGroupsHtml}
-          <div class="lp-launcher-footer">
-            <a href="/home" class="lp-launcher-item">${renderIcon({ name: 'external-link', size: 16 })}<span>View public site</span></a>
-          </div>
-        </nav>
-      </div>
-      <a href="/admin" class="lp-admin-header-brand">${escapeHtml(siteName)}</a>
+      ${launcherHtml}
+      ${brandHtml}
     </div>
     <div class="lp-admin-header-actions">
-      <div class="lp-menu-wrap">
-        <button type="button" id="lp-status-popover-btn" class="lp-icon-btn lp-icon-btn-quiet" aria-label="Site status" title="Site status" aria-haspopup="true" aria-expanded="false" aria-controls="lp-status-popover">
-          <span class="lp-status-dot ${answeringOn ? 'lp-status-dot-ok' : 'lp-status-dot-warn'}" aria-hidden="true"></span>
-        </button>
-        <div id="lp-status-popover" class="lp-popover-menu lp-status-popover" role="dialog" aria-label="Site status" hidden>
-          <p class="lp-status-legend-row"><span class="lp-status-dot lp-status-dot-ok" aria-hidden="true"></span><span><strong>Site build:</strong> Idle (ready)</span></p>
-          <p class="lp-status-legend-row"><span class="lp-status-dot ${answeringOn ? 'lp-status-dot-ok' : 'lp-status-dot-warn'}" aria-hidden="true"></span><span><strong>Automated answering:</strong> ${answeringOn ? 'Active' : 'Paused'}</span></p>
-          <div class="lp-status-popover-actions">
-            ${renderButton({
-              id: 'lp-status-answering-toggle',
-              label: answeringOn ? 'Pause answering' : 'Resume answering',
-              variant: 'secondary',
-              size: 'sm',
-              dataAttrs: { enabled: answeringOn ? 'true' : 'false' },
-            })}
-            ${renderButton({
-              id: 'lp-status-rebuild-btn',
-              label: 'Rebuild site',
-              variant: 'quiet',
-              size: 'sm',
-            })}
-          </div>
-        </div>
-      </div>
-      <div class="lp-menu-wrap">
-        ${renderIconButton({
-          id: 'lp-account-menu-btn',
-          ariaLabel: 'Account',
-          title: 'Account',
-          icon: 'user',
-          iconSize: 20,
-          variant: 'quiet',
-          dataAttrs: { 'aria-haspopup': 'menu', 'aria-expanded': 'false', 'aria-controls': 'lp-account-menu' },
-        })}
-        <div id="lp-account-menu" class="lp-popover-menu lp-menu-popover-float" role="menu" aria-label="Account menu" hidden>
-          <div class="lp-menu-header" role="presentation">Owner</div>
-          <button type="button" id="theme-toggle" role="menuitem" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item" aria-label="${escapeHtml(toggleLabel)}" aria-pressed="${theme === 'dark' ? 'true' : 'false'}">${renderIcon({ name: toggleIcon, size: 16 })}<span data-theme-label="true">${escapeHtml(toggleLabel)}</span></button>
-          <hr class="lp-menu-separator" role="separator" />
-          <button type="button" role="menuitem" id="btn-admin-logout" class="lp-btn lp-btn-quiet lp-btn-sm lp-menu-item">Sign out</button>
-        </div>
-      </div>
+      ${renderIconButton({
+        id: 'theme-toggle',
+        ariaLabel: toggleLabel,
+        title: toggleLabel,
+        icon: toggleIcon,
+        iconSize: 20,
+        className: 'lp-icon-toggle',
+        dataAttrs: { 'aria-pressed': theme === 'dark' ? 'true' : 'false' },
+      })}
+      ${accountHtml}
     </div>
   </header>
   <main id="main-content" class="${mainClass}">
     ${options?.legacyRecoveryUsed ? '<div id="admin-legacy-recovery-notice" class="lp-notice lp-notice-warn"><span>You signed in with an older recovery code. Replace your recovery codes in <a href="/admin/settings/account">Settings &gt; Account</a> as soon as you can.</span></div>' : ''}
     ${safeContent}
   </main>
-  ${renderShellThemeAndMenuScript(nonceAttr, true)}
+  ${renderShellThemeAndMenuScript(nonceAttr, isAuth)}
 </body>
 </html>`;
 }

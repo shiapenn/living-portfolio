@@ -1,4 +1,4 @@
-import { renderAuthShell } from "../../layouts/admin-shell.js";
+import { renderAdminShell } from "../../layouts/admin-shell.js";
 import { ADMIN_API_CLIENT_SCRIPT } from "../../lib/admin-api-client.js";
 import { renderActionBar } from "../../primitives/index.js";
 
@@ -202,5 +202,5 @@ export function renderAdminLoginPage(): string {
       })();
     </script>
   `;
-  return renderAuthShell('Sign in', content);
+  return renderAdminShell('Sign in', '/admin/login', content, { authenticated: false, template: 'narrow' });
 }

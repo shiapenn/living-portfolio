@@ -45,7 +45,9 @@ export type IconName =
   | 'source'
   | 'heading'
   | 'search'
-  | 'trash';
+  | 'trash'
+  | 'activity'
+  | 'edit';
 
 export type IconSize = 16 | 20 | 24;
 
@@ -104,6 +106,8 @@ export const LUCIDE_SYMBOLS: Record<IconName, string> = {
   heading: '<path d="M6 12h12"/><path d="M6 20V4"/><path d="M18 20V4"/>',
   search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
   trash: '<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+  activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
 };
 
 export const LUCIDE_ICON_NAMES: IconName[] = [

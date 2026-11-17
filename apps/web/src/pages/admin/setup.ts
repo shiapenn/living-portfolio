@@ -1,4 +1,4 @@
-import { renderAuthShell } from "../../layouts/admin-shell.js";
+import { renderAdminShell } from "../../layouts/admin-shell.js";
 import { renderProviderRow } from "../../components/index.js";
 import { renderActionBar, renderButton, renderChip, renderChoiceGroup, renderIcon } from "../../primitives/index.js";
 import { WIZARD_STRINGS } from "../../strings.js";
@@ -283,5 +283,5 @@ export function renderAdminSetupPage(): string {
 ${SETUP_SCRIPT_PART_1}
 ${SETUP_SCRIPT_PART_2}
   `;
-  return renderAuthShell('First-Run Setup', content);
+  return renderAdminShell('First-Run Setup', '/admin/setup', content, { authenticated: false, template: 'standard' });
 }

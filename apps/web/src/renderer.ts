@@ -13,7 +13,7 @@ export {
   type AsOfDateInfo,
 } from "./lib/html.js";
 export { renderLayout, type RenderLayoutOptions } from "./layouts/public-shell.js";
-export { renderAdminShell, renderAuthShell, type AdminShellOptions } from "./layouts/admin-shell.js";
+export { renderAdminShell, type AdminShellOptions } from "./layouts/admin-shell.js";
 export { renderAdminSectionPage } from "./pages/admin/section-page.js";
 export { renderAdminDashboardPage, type DashboardOptions } from "./pages/admin/dashboard.js";
 export { renderAdminEntriesListPage, type EntriesListOptions } from "./pages/admin/entries/list.js";
