@@ -175,14 +175,11 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(sharedPage.locator('#wizard-step-chip')).toContainText('Step 3 of 6');
     await expect(sharedPage.locator('#wizard-step-3')).toBeVisible();
 
-    // Providers table is read-only
-    const step3Table = sharedPage.locator('#wizard-step-3 table');
-    await expect(step3Table).toBeVisible();
-    await expect(step3Table.locator('input, button, select, textarea')).toHaveCount(0);
-
-    // Badges lack button-like styling or interactive chip class
-    await expect(step3Table.locator('.chip')).toHaveCount(0);
-    await expect(step3Table.locator('.lp-chip')).toHaveCount(6);
+    // Providers list is read-only
+    const step3List = sharedPage.locator('#wizard-step-3 .lp-list');
+    await expect(step3List).toBeVisible();
+    await expect(step3List.locator('input, button, select, textarea')).toHaveCount(0);
+    await expect(step3List.locator('.lp-item')).toHaveCount(4);
 
     // Explainer sentence is visible
     const keysNotice = sharedPage.locator('#step3-keys-notice');
