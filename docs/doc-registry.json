@@ -1433,5 +1433,13 @@
     "path": "docs/execution-reports/A133-wp-16pre-i-codeql-alerts-and-public-hygiene.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A134",
+    "title": "WP-16.pre-h CodeQL Pull Request Trigger",
+    "class": "A",
+    "path": "docs/execution-reports/A134-wp-16pre-h-codeql-pr-trigger.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

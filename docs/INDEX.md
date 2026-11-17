@@ -139,6 +139,7 @@
 | `A131` | WP-16.C C4: Contact Sheets and Register Closure | `active` | [A131-wp-16c-c4-contact-sheets-and-register-closure.md](execution-reports/A131-wp-16c-c4-contact-sheets-and-register-closure.md) | — |
 | `A132` | WP-16.S S0 D-SYS Foundations and Census | `active` | [A132-wp-16s-s0-d-sys-foundations-and-census.md](execution-reports/A132-wp-16s-s0-d-sys-foundations-and-census.md) | — |
 | `A133` | WP-16.pre-i CodeQL Alerts and Public Hygiene | `active` | [A133-wp-16pre-i-codeql-alerts-and-public-hygiene.md](execution-reports/A133-wp-16pre-i-codeql-alerts-and-public-hygiene.md) | — |
+| `A134` | WP-16.pre-h CodeQL Pull Request Trigger | `active` | [A134-wp-16pre-h-codeql-pr-trigger.md](execution-reports/A134-wp-16pre-h-codeql-pr-trigger.md) | — |
 
 ## Handover Snapshots (Class H)
 
