@@ -5116,6 +5116,10 @@ a.lp-item:hover {
   color: var(--accent);
 }
 .lp-icon-toggle svg { transition: opacity 120ms ease, transform 120ms ease; }
+@media (min-width: 768px) {
+  .lp-admin-header-menu-btn,
+  .lp-admin-header-mobile-only { display: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .lp-icon-btn,
   .lp-icon-btn svg,

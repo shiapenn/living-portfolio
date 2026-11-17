@@ -24,9 +24,12 @@ export function renderFormSection(props: FormSectionProps): string {
     : '';
   const actionHtml = props.actionBarHtml ?? '';
 
+  const headerHtml = descHtml
+    ? `<div class="lp-stack lp-gap-8"><h2 class="lp-form-section-title">${escapeHtml(props.title)}</h2>${descHtml}</div>`
+    : `<h2 class="lp-form-section-title">${escapeHtml(props.title)}</h2>`;
+
   return `<section${idAttr} class="${escapeHtml(classes)}">
-  <h2 class="lp-form-section-title">${escapeHtml(props.title)}</h2>
-  ${descHtml}
+  ${headerHtml}
   ${props.fieldsHtml}
   ${actionHtml}
 </section>`;
