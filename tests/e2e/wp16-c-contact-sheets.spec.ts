@@ -3,9 +3,9 @@ import { mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve, basename } from 'node:path';
 import { ensureAdminLoggedIn } from './helpers.js';
 
-const OUT_DIR = resolve(process.cwd(), 'test-results/wp16c-contact-sheets');
+const OUT_DIR = resolve(process.cwd(), 'test-results/wp16s-contact-sheets');
 
-test.describe('WP-16.C C4 Contact Sheet Capture', () => {
+test.describe('WP-16.S S4 Contact Sheet Capture', () => {
   if (process.env.CAPTURE_CONTACT_SHEETS === '1') {
     test('captures every page, overlay state, and _gallery at 1280 & 320px (light & dark) + editor 1920px', async ({ page }) => {
       test.setTimeout(300_000);
@@ -29,6 +29,7 @@ test.describe('WP-16.C C4 Contact Sheet Capture', () => {
         { name: 'inbox', path: '/admin/inbox' },
         { name: 'answer-rules', path: '/admin/audit' },
         { name: 'import', path: '/admin/import' },
+        { name: 'status', path: '/admin/status' },
         { name: 'settings-answering', path: '/admin/settings/answering' },
         { name: 'settings-providers', path: '/admin/settings/providers' },
         { name: 'settings-appearance', path: '/admin/settings/appearance' },
@@ -70,37 +71,26 @@ test.describe('WP-16.C C4 Contact Sheet Capture', () => {
           captured.push({ label: `overlay-launcher (${width}px, ${theme})`, file: `overlay-launcher-${width}px-${theme}.png`, group });
           await page.keyboard.press('Escape');
 
-          await page.click('#lp-status-popover-btn');
-          await page.screenshot({ path: resolve(OUT_DIR, `overlay-status-${width}px-${theme}.png`) });
-          captured.push({ label: `overlay-status (${width}px, ${theme})`, file: `overlay-status-${width}px-${theme}.png`, group });
-          await page.keyboard.press('Escape');
-
           await page.click('#lp-account-menu-btn');
           await page.screenshot({ path: resolve(OUT_DIR, `overlay-account-${width}px-${theme}.png`) });
           captured.push({ label: `overlay-account (${width}px, ${theme})`, file: `overlay-account-${width}px-${theme}.png`, group });
           await page.keyboard.press('Escape');
 
-          // Overlay states on Editor
+          // Overlay & View states on Editor
           await page.goto(`/admin/entries/${encodeURIComponent(seededId)}`);
           await setTheme(theme);
           await page.click('#ref-sidebar-toggle');
-          await page.screenshot({ path: resolve(OUT_DIR, `overlay-entries-drawer-${width}px-${theme}.png`) });
-          captured.push({ label: `overlay-entries-drawer (${width}px, ${theme})`, file: `overlay-entries-drawer-${width}px-${theme}.png`, group });
-          await page.keyboard.press('Escape');
+          await page.screenshot({ path: resolve(OUT_DIR, `overlay-entries-panel-${width}px-${theme}.png`) });
+          captured.push({ label: `overlay-entries-panel (${width}px, ${theme})`, file: `overlay-entries-panel-${width}px-${theme}.png`, group });
+          await page.click('#ref-sidebar-toggle');
 
-          await page.click('#ref-btn-structure');
-          await page.screenshot({ path: resolve(OUT_DIR, `overlay-structure-drawer-${width}px-${theme}.png`) });
-          captured.push({ label: `overlay-structure-drawer (${width}px, ${theme})`, file: `overlay-structure-drawer-${width}px-${theme}.png`, group });
-          await page.keyboard.press('Escape');
+          await page.click('#ref-switch-settings');
+          await page.screenshot({ path: resolve(OUT_DIR, `editor-settings-${width}px-${theme}.png`), fullPage: true });
+          captured.push({ label: `editor-settings (${width}px, ${theme})`, file: `editor-settings-${width}px-${theme}.png`, group });
 
-          await page.click('#ref-visibility-menu-btn');
-          await page.screenshot({ path: resolve(OUT_DIR, `overlay-visibility-menu-${width}px-${theme}.png`) });
-          captured.push({ label: `overlay-visibility-menu (${width}px, ${theme})`, file: `overlay-visibility-menu-${width}px-${theme}.png`, group });
-          await page.keyboard.press('Escape');
-
-          await page.click('#ref-more-menu-btn');
-          await page.screenshot({ path: resolve(OUT_DIR, `overlay-more-menu-${width}px-${theme}.png`) });
-          captured.push({ label: `overlay-more-menu (${width}px, ${theme})`, file: `overlay-more-menu-${width}px-${theme}.png`, group });
+          await page.click('#ref-btn-delete');
+          await page.screenshot({ path: resolve(OUT_DIR, `overlay-delete-dialog-${width}px-${theme}.png`) });
+          captured.push({ label: `overlay-delete-dialog (${width}px, ${theme})`, file: `overlay-delete-dialog-${width}px-${theme}.png`, group });
           await page.keyboard.press('Escape');
 
           await page.goto('/admin/entries/new');
@@ -109,6 +99,12 @@ test.describe('WP-16.C C4 Contact Sheet Capture', () => {
           await page.keyboard.type('/');
           await page.screenshot({ path: resolve(OUT_DIR, `overlay-slash-menu-${width}px-${theme}.png`) });
           captured.push({ label: `overlay-slash-menu (${width}px, ${theme})`, file: `overlay-slash-menu-${width}px-${theme}.png`, group });
+
+          await page.click('#ref-switch-settings');
+          await page.click('#ref-btn-publish');
+          await page.screenshot({ path: resolve(OUT_DIR, `overlay-publish-dialog-${width}px-${theme}.png`) });
+          captured.push({ label: `overlay-publish-dialog (${width}px, ${theme})`, file: `overlay-publish-dialog-${width}px-${theme}.png`, group });
+          await page.keyboard.press('Escape');
         }
       }
 
@@ -135,20 +131,20 @@ test.describe('WP-16.C C4 Contact Sheet Capture', () => {
 
       for (const group of ['1280px-light', '1280px-dark', '320px-light', '320px-dark']) {
         await renderSheet(
-          `WP-16.C Contact Sheet (${group})`,
+          `WP-16.S Contact Sheet (${group})`,
           captured.filter((c) => c.group === group),
           `CONTACT-SHEET-${group}.png`,
           `contact-sheet-${group}.html`,
         );
       }
-      await renderSheet('WP-16.C Contact Sheets (All)', captured, 'CONTACT-SHEET-ALL.png', 'contact-sheet-index.html');
+      await renderSheet('WP-16.S Contact Sheets (All)', captured, 'CONTACT-SHEET-ALL.png', 'contact-sheet-index.html');
 
       const files = readdirSync(OUT_DIR).filter((f) => f.endsWith('.png'));
-      expect(files.length).toBeGreaterThanOrEqual(98);
+      expect(files.length).toBeGreaterThanOrEqual(90);
     });
   } else {
     test('contact sheet capture spec is registered (set CAPTURE_CONTACT_SHEETS=1 to generate)', async () => {
-      expect(basename(OUT_DIR)).toBe('wp16c-contact-sheets');
+      expect(basename(OUT_DIR)).toBe('wp16s-contact-sheets');
     });
   }
 });

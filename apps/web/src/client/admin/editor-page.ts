@@ -1,5 +1,4 @@
 import {
-  attachMenuController,
   attachModalController,
   initDismissibleNotices,
   initTabs,
@@ -159,31 +158,10 @@ function bootEditorPage(): void {
     sidebarToggle.setAttribute('aria-expanded', collapsed ? 'true' : 'false');
   });
 
-  // Structure & History drawers & right-hand Inspector tabs
-  const structureTabs = document.getElementById('ref-structure-tabs');
-  if (structureTabs) initTabs(structureTabs);
-  const inspectorTabs = document.getElementById('ref-inspector-tabs');
-  if (inspectorTabs) initTabs(inspectorTabs);
-
-  const structureDrawerEl = document.getElementById('ref-structure-drawer');
-  const structureBtn = document.getElementById('ref-btn-structure');
-  if (structureDrawerEl && structureBtn) {
-    const ctrl = attachModalController(structureDrawerEl);
-    structureBtn.addEventListener('click', () => ctrl.open(structureBtn));
-  }
-
-  const historyDrawerEl = document.getElementById('ref-history-drawer');
-  const historyCtrl = historyDrawerEl ? attachModalController(historyDrawerEl) : null;
-
-  // Popover menus (shared Menu controller, UX-97)
-  const closeVisMenu = attachMenuController('ref-visibility-menu-btn', 'ref-visibility-menu');
-  const closeMoreMenu = attachMenuController('ref-more-menu-btn', 'ref-more-menu');
-
   const formEl = document.getElementById('ref-editor-form');
   const statusLineEl = document.getElementById('ref-status-line');
   const saveBtn = document.getElementById('ref-btn-save');
   const publishBtn = document.getElementById('ref-btn-publish');
-  const visMenuWrap = document.getElementById('ref-visibility-menu-wrap');
   const titleInput = document.getElementById('ref-field-title') as HTMLInputElement | null;
   const bodyInput = document.getElementById('ref-field-body') as HTMLTextAreaElement | null;
   const slugInput = document.getElementById('ref-field-slug') as HTMLInputElement | null;
@@ -191,7 +169,6 @@ function bootEditorPage(): void {
   const temporalInput = document.getElementById('ref-field-temporal') as HTMLSelectElement | null;
   const profileInput = document.getElementById('ref-field-profile') as HTMLSelectElement | null;
   const headingEl = document.getElementById('ref-editor-heading');
-  const stateBadge = document.getElementById('ref-state-badge');
 
   let activeEntryId = formEl?.getAttribute('data-entry-id') ?? '';
   let isNewEntry = formEl?.getAttribute('data-is-new') === 'true';
@@ -202,16 +179,10 @@ function bootEditorPage(): void {
   const getActiveRowTitle = () =>
     activeEntryId ? document.querySelector(`[data-entry-row="${activeEntryId}"] .lp-entry-list-title`) : null;
 
-  const historyEntries: Array<{ time: string; title: string }> = [];
-
   const applyVisibility = (vis: Visibility) => {
     formEl?.setAttribute('data-visibility', vis);
     const label = EDITOR_STRINGS.states[vis];
     const badgeCls = vis === 'public' ? 'lp-badge lp-badge-ok' : vis === 'unlisted' ? 'lp-badge lp-badge-warn' : 'lp-badge lp-badge-neutral';
-    if (stateBadge) {
-      stateBadge.textContent = label;
-      stateBadge.className = badgeCls;
-    }
     const rowBadge = getActiveRowBadge();
     if (rowBadge) {
       rowBadge.textContent = label;
@@ -342,58 +313,41 @@ function bootEditorPage(): void {
     }
   };
 
-  const escapeHtmlStr = (s: string) =>
-    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const esc = (s: unknown) =>
+    String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
   const renderStructureLists = (
-    facets: Array<{ id?: string; key?: string; facet_type?: string; value?: string; facet_value?: string }>,
-    claims: Array<{ id?: string; text?: string; claim_text?: string; status?: string }>,
-    evidence: Array<{ id?: string; title?: string; url?: string; kind?: string; verification?: { title?: string } }>,
-    spans: Array<{ id?: string; text?: string; suggested_role?: string; status?: string }>
+    facets: any[],
+    claims: any[],
+    evidence: any[],
+    spans: any[]
   ) => {
-    const facetsEl = document.getElementById('ref-facets-list');
-    if (facetsEl) {
-      facetsEl.innerHTML = facets
-        .map(
-          (f) =>
-            `<span class="lp-chip lp-chip-confirmed" data-facet-id="${escapeHtmlStr(String(f.id ?? ''))}">${escapeHtmlStr(String(f.key ?? f.facet_type ?? 'topic'))}: ${escapeHtmlStr(String(f.value ?? f.facet_value ?? ''))}</span>`
-        )
+    const byId = (id: string) => document.getElementById(id);
+    const fEl = byId('ref-facets-list');
+    if (fEl) {
+      fEl.innerHTML = facets
+        .map((f) => `<span class="lp-chip lp-chip-confirmed" data-facet-id="${esc(f.id)}">${esc(f.key || f.facet_type || 'topic')}: ${esc(f.value ?? f.facet_value)}</span>`)
         .join('');
     }
-    const claimsEl = document.getElementById('ref-claims-list');
-    if (claimsEl) {
-      claimsEl.innerHTML = claims
-        .map(
-          (c) =>
-            `<div class="lp-item"><div class="lp-item-main"><div class="lp-item-title">${escapeHtmlStr(String(c.text ?? c.claim_text ?? ''))}</div></div><span class="lp-badge lp-badge-neutral">${escapeHtmlStr(String(c.status ?? 'Claim'))}</span></div>`
-        )
+    const cEl = byId('ref-claims-list');
+    if (cEl) {
+      cEl.innerHTML = claims
+        .map((c) => `<div class="lp-item"><div class="lp-item-main"><div class="lp-item-title">${esc(c.text ?? c.claim_text)}</div></div><span class="lp-badge lp-badge-neutral">${esc(c.status || 'Claim')}</span></div>`)
         .join('');
     }
-    const evidenceEl = document.getElementById('ref-evidence-list');
-    if (evidenceEl) {
-      evidenceEl.innerHTML = evidence
-        .map(
-          (ev) =>
-            `<div class="lp-item"><div class="lp-item-main"><div class="lp-item-title">${escapeHtmlStr(String(ev.verification?.title ?? ev.title ?? ev.url ?? 'Evidence'))}</div>${ev.url ? `<div class="lp-item-subtitle">${escapeHtmlStr(String(ev.url))}</div>` : ''}</div><span class="lp-badge lp-badge-ok">${escapeHtmlStr(String(ev.kind ?? 'url'))}</span></div>`
-        )
+    const eEl = byId('ref-evidence-list');
+    if (eEl) {
+      eEl.innerHTML = evidence
+        .map((ev) => `<div class="lp-item"><div class="lp-item-main"><div class="lp-item-title">${esc(ev.verification?.title ?? ev.title ?? ev.url ?? 'Evidence')}</div>${ev.url ? `<div class="lp-item-subtitle">${esc(ev.url)}</div>` : ''}</div><span class="lp-badge lp-badge-ok">${esc(ev.kind || 'url')}</span></div>`)
         .join('');
     }
-    const spansEl = document.getElementById('ref-spans-list');
-    if (spansEl) {
-      spansEl.innerHTML = spans.length
+    const sEl = byId('ref-spans-list');
+    if (sEl) {
+      sEl.innerHTML = spans.length
         ? spans
             .map(
               (sp) =>
-                `<div class="lp-item" data-span-id="${escapeHtmlStr(String(sp.id ?? ''))}" data-span-status="${escapeHtmlStr(String(sp.status ?? 'suggested'))}">
-                  <div class="lp-item-main">
-                    <div class="lp-item-title">${escapeHtmlStr(String(sp.text ?? 'Span'))}</div>
-                    <div class="lp-item-subtitle">${escapeHtmlStr(String(sp.suggested_role ?? 'context'))}</div>
-                  </div>
-                  <div class="lp-item-actions">
-                    <button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" data-span-action="accept" data-span-id="${escapeHtmlStr(String(sp.id ?? ''))}" data-span-role="${escapeHtmlStr(String(sp.suggested_role ?? 'context'))}">Accept</button>
-                    <button type="button" class="lp-btn lp-btn-quiet lp-btn-sm" data-span-action="reject" data-span-id="${escapeHtmlStr(String(sp.id ?? ''))}" data-span-role="${escapeHtmlStr(String(sp.suggested_role ?? 'context'))}">Ignore</button>
-                  </div>
-                </div>`
+                `<div class="lp-item" data-span-id="${esc(sp.id)}" data-span-status="${esc(sp.status || 'suggested')}"><div class="lp-item-main"><div class="lp-item-title">${esc(sp.text || 'Span')}</div><div class="lp-item-subtitle">${esc(sp.suggested_role || 'context')}</div></div><div class="lp-item-actions"><button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" data-span-action="accept" data-span-id="${esc(sp.id)}" data-span-role="${esc(sp.suggested_role || 'context')}">Accept</button><button type="button" class="lp-btn lp-btn-quiet lp-btn-sm" data-span-action="reject" data-span-id="${esc(sp.id)}" data-span-role="${esc(sp.suggested_role || 'context')}">Ignore</button></div></div>`
             )
             .join('')
         : '<p class="lp-field-help">Save entry to detect suggested span roles.</p>';
@@ -509,11 +463,7 @@ function bootEditorPage(): void {
   // Left entries drawer (push panel, closed by default)
   const entriesDrawer = document.getElementById('ref-entries-drawer');
   const entriesToggleBtn = document.getElementById('ref-sidebar-toggle');
-  const entriesCloseBtn = document.getElementById('ref-btn-close-entries');
   const entriesSearchInput = document.getElementById('ref-entries-search') as HTMLInputElement | null;
-  const structureDrawer = document.getElementById('ref-inspector-pane');
-  const structureToggleBtn = document.getElementById('ref-btn-structure');
-  const structureCloseBtn = document.getElementById('ref-btn-close-structure');
 
   const toggleDrawer = (drawer: HTMLElement | null, btn: HTMLElement | null, open: boolean) => {
     if (!drawer) return;
@@ -526,7 +476,6 @@ function bootEditorPage(): void {
     const isOpen = entriesDrawer ? !entriesDrawer.hasAttribute('hidden') : false;
     toggleDrawer(entriesDrawer, entriesToggleBtn, !isOpen);
   });
-  entriesCloseBtn?.addEventListener('click', () => toggleDrawer(entriesDrawer, entriesToggleBtn, false));
 
   entriesSearchInput?.addEventListener('input', () => {
     const q = entriesSearchInput.value.trim().toLowerCase();
@@ -535,49 +484,11 @@ function bootEditorPage(): void {
       row.hidden = Boolean(q && !txt.includes(q));
     });
   });
-
-  structureToggleBtn?.addEventListener('click', () => {
-    const isOpen = structureDrawer ? !structureDrawer.hasAttribute('hidden') : false;
-    toggleDrawer(structureDrawer, structureToggleBtn, !isOpen);
-  });
-  structureCloseBtn?.addEventListener('click', () => toggleDrawer(structureDrawer, structureToggleBtn, false));
-
-  // Details popover
-  const detailsTrigger = document.getElementById('ref-details-trigger');
-  const detailsPopover = document.getElementById('ref-details-popover');
-  detailsTrigger?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (!detailsPopover) return;
-    const isOpen = !detailsPopover.hasAttribute('hidden');
-    if (isOpen) {
-      detailsPopover.setAttribute('hidden', '');
-      detailsTrigger.setAttribute('aria-expanded', 'false');
-    } else {
-      detailsPopover.removeAttribute('hidden');
-      detailsTrigger.setAttribute('aria-expanded', 'true');
-    }
-  });
-  document.addEventListener('click', (e) => {
-    if (detailsPopover && !detailsPopover.hasAttribute('hidden')) {
-      const t = e.target as Node;
-      if (!detailsPopover.contains(t) && t !== detailsTrigger && !detailsTrigger?.contains(t)) {
-        detailsPopover.setAttribute('hidden', '');
-        detailsTrigger?.setAttribute('aria-expanded', 'false');
-      }
-    }
-  });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    if (detailsPopover && !detailsPopover.hasAttribute('hidden')) {
-      detailsPopover.setAttribute('hidden', '');
-      detailsTrigger?.setAttribute('aria-expanded', 'false');
-      detailsTrigger?.focus();
-    } else if (entriesDrawer && !entriesDrawer.hasAttribute('hidden')) {
+    if (entriesDrawer && !entriesDrawer.hasAttribute('hidden')) {
       toggleDrawer(entriesDrawer, entriesToggleBtn, false);
       entriesToggleBtn?.focus();
-    } else if (structureDrawer && !structureDrawer.hasAttribute('hidden')) {
-      toggleDrawer(structureDrawer, structureToggleBtn, false);
-      structureToggleBtn?.focus();
     }
   });
   let isDirty = isNewEntry || (titleInput ? titleInput.value.trim().length === 0 : false);
@@ -848,10 +759,6 @@ function bootEditorPage(): void {
     previousBody = bodyInput?.value ?? '';
     syncDirtyFlag(false);
     clearDraftBuffer();
-    historyEntries.unshift({
-      time: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-      title,
-    });
     updateStatusLine(statusLineEl, {
       message: vis === 'draft' ? EDITOR_STRINGS.feedback.savedDraft : EDITOR_STRINGS.feedback.savedChanges,
       tone: 'ok',
@@ -1142,41 +1049,6 @@ function bootEditorPage(): void {
       }
     });
   });
-
-  // More menu: History, Delete entry… (D-EDITOR-2a: never holds visibility actions)
-  document.getElementById('ref-more-history')?.addEventListener('click', async () => {
-    closeMoreMenu();
-    const listEl = document.getElementById('ref-history-list');
-    const emptyEl = document.getElementById('ref-history-empty');
-    if (listEl && emptyEl) {
-      listEl.innerHTML = '';
-      let items = historyEntries;
-      if (!isFixtureMode && activeEntryId && activeEntryId !== 'new') {
-        const res = await apiRequest<{ revisions?: Array<{ created_at?: string; title?: string }> }>(
-          `/api/entries/${encodeURIComponent(activeEntryId)}/revisions`
-        );
-        if (res.ok && Array.isArray(res.data?.revisions) && res.data.revisions.length > 0) {
-          items = res.data.revisions.map((r) => ({
-            time: (r.created_at ?? '').slice(0, 16).replace('T', ' '),
-            title: r.title ?? EDITOR_STRINGS.historyDrawer.savedAt,
-          }));
-        }
-      }
-      if (items.length === 0) {
-        emptyEl.removeAttribute('hidden');
-      } else {
-        emptyEl.setAttribute('hidden', '');
-        items.forEach((h) => {
-          const li = document.createElement('li');
-          li.className = 'lp-entry-row';
-          li.textContent = `${h.time} — ${h.title}`;
-          listEl.appendChild(li);
-        });
-      }
-    }
-    historyCtrl?.open(document.getElementById('ref-more-menu-btn'));
-  });
-
   const deleteDlgEl = document.getElementById('ref-delete-dialog');
   const deleteCtrl = deleteDlgEl
     ? attachModalController(deleteDlgEl, {
@@ -1184,10 +1056,6 @@ function bootEditorPage(): void {
         onClose: restoreStatusLineAfterModal,
       })
     : null;
-  document.getElementById('ref-more-source')?.addEventListener('click', () => {
-    closeMoreMenu();
-    sourceToggleBtn?.click();
-  });
 
   // Dock formatting bar above virtual keyboard on mobile using visualViewport (D-COMP #10)
   const fmtBar = document.querySelector<HTMLElement>('.lp-editor-toolbar-center');
@@ -1210,10 +1078,6 @@ function bootEditorPage(): void {
 
   document.getElementById('ref-btn-delete')?.addEventListener('click', () => {
     deleteCtrl?.open(document.getElementById('ref-btn-delete'));
-  });
-  document.getElementById('ref-more-delete')?.addEventListener('click', () => {
-    closeMoreMenu();
-    deleteCtrl?.open(document.getElementById('ref-more-menu-btn'));
   });
 
   document.getElementById('ref-delete-confirm')?.addEventListener('click', async () => {
