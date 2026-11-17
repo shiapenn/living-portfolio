@@ -1,6 +1,8 @@
 name: CodeQL Static Analysis
 
 on:
+  # Public repository (free Actions minutes); no path filters so the required check always reports on every PR.
+  pull_request:
   schedule:
     - cron: "30 3 * * 1"
   workflow_dispatch:
