@@ -143,6 +143,7 @@
 | `A135` | WP-16.S S1 Design Foundations and Single Admin Shell | `active` | [A135-wp-16s-s1-foundations-and-single-shell.md](execution-reports/A135-wp-16s-s1-foundations-and-single-shell.md) | — |
 | `A136` | WP-16.S S2 Page Migrations and /admin/status | `active` | [A136-wp-16s-s2-page-migrations-and-status.md](execution-reports/A136-wp-16s-s2-page-migrations-and-status.md) | — |
 | `A137` | WP-16.S S3 D-EDITOR-4 Editor and Full Structure Restoration | `active` | [A137-wp-16s-s3-editor-and-structure.md](execution-reports/A137-wp-16s-s3-editor-and-structure.md) | — |
+| `A138` | WP-16.S S4 Contact Sheets, Bundle/CSS Trim & Register Closure | `active` | [A138-wp-16s-s4-contact-sheets-and-closure.md](execution-reports/A138-wp-16s-s4-contact-sheets-and-closure.md) | — |
 
 ## Handover Snapshots (Class H)
 
