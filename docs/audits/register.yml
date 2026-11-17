@@ -6402,3 +6402,328 @@
       status: fixed
       note: "Resolved in WP-16.C C1-C4; verified by D-COMP census (0/8 violations) and contact-sheet review."
   verified_by: tests/e2e/wp16-c-component-census.spec.ts
+
+- id: 20261106-UX-140
+  audit: AUD-2026-11-06
+  title: 'Titles centred at 320 px across Answer rules, Entries, History, Import, Inbox, Settings modules, and Today'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-141
+  audit: AUD-2026-11-06
+  title: 'Unexplained vertical gaps (~80 px) under tabs, descriptions, and Import step line, followed by a stray divider'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-142
+  audit: AUD-2026-11-06
+  title: 'ActionBar buttons do not span their container at 1280 px (Answer rules, Import, Login, Settings modules, Setup)'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-143
+  audit: AUD-2026-11-06
+  title: 'Setup content squeezed to narrow width at 1280 px with heading in a two-column layout'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-144
+  audit: AUD-2026-11-06
+  title: 'Back links differ across pages ("< Back to entry", "< <- Back") and contain arrow characters inside strings'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-145
+  audit: AUD-2026-11-06
+  title: 'History page repeats entry name in title, shows long explanatory sentence, flattened excerpt title, and "exact" text'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-146
+  audit: AUD-2026-11-06
+  title: 'Import page shows duplicated labels and instructions'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-147
+  audit: AUD-2026-11-06
+  title: 'Answer rules Item title is "Answer rule" instead of the rule sentence'
+  spec_sections:
+    - "6.2"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-148
+  audit: AUD-2026-11-06
+  title: 'Three top-bar and shell variants exist (editor, other pages, login/setup) instead of one shell'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-149
+  audit: AUD-2026-11-06
+  title: 'Top bar has status dot with no stated purpose and theme toggle hidden inside account menu'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-150
+  audit: AUD-2026-11-06
+  title: 'REGRESSION: Editor Structure area lost its tagging content (level line, next step, facets, roles, claims, evidence); drawer shows one sentence under three tabs'
+  spec_sections:
+    - "3.4"
+    - "3.5"
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets (corrects erroneous A130 claim via S0 erratum)."
+  verified_by: null
+
+- id: 20261106-UX-151
+  audit: AUD-2026-11-06
+  title: 'Editor header disorganised on mobile, formatting bar not floating/centred, unclear visibility/structure triggers, More menu holds single destructive action'
+  spec_sections:
+    - "12.6"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-152
+  audit: AUD-2026-11-06
+  title: 'Entries panel overlays instead of pushing, title centred, toggle shows close glyph, list rows touch panel edge on hover'
+  spec_sections:
+    - "12.6"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-153
+  audit: AUD-2026-11-06
+  title: 'Today dismiss icon not vertically centred on its heading'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-154
+  audit: AUD-2026-11-06
+  title: 'Too many hairlines across editor header, FormSection dividers, menu separators, setup dividers, and tab baseline'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-155
+  audit: AUD-2026-11-06
+  title: 'Icon buttons are outlined instead of having a filled background click area'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-156
+  audit: AUD-2026-11-06
+  title: 'Census passes with obvious defects (missing upper gap bounds, empty-element check, alignment check, and line count)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-s-system-census.spec.ts
+  history:
+    - date: 2026-11-17
+      status: open
+      note: "Registered in WP-16.S S0 from owner review of WP-16.C contact sheets."
+  verified_by: null

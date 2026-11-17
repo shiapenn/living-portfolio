@@ -152,6 +152,26 @@ export function evaluateUiGuards({ rootDir = DEFAULT_ROOT, allowlist } = {}) {
         );
       }
     }
+
+    // 7. Shared component CSS margin guard (D-SYS #1: only margin 0 or auto allowed)
+    if (relPath === 'apps/web/src/styles.ts') {
+      let marginViolations = 0;
+      for (const line of lines) {
+        const m = line.match(
+          /\bmargin(?:-(?:top|right|bottom|left|block|inline)(?:-(?:start|end))?)?\s*:\s*([^;}{]+);/
+        );
+        if (!m) continue;
+        const vals = m[1].replace(/!important/g, '').trim().split(/\s+/);
+        const ok = vals.every((v) => v === '0' || v === '0px' || v === 'auto');
+        if (!ok) marginViolations++;
+      }
+      const allowedMargin = loadedAllowlist.componentMargin?.[relPath] ?? 0;
+      if (marginViolations > allowedMargin) {
+        errors.push(
+          `[COMPONENT-MARGIN] ${relPath}: found ${marginViolations} non-zero/non-auto margin declaration(s), max allowed is ${allowedMargin}.`
+        );
+      }
+    }
   }
 
   return {

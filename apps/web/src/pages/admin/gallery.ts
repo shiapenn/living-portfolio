@@ -17,6 +17,7 @@ import {
 export interface GalleryOptions {
   theme?: 'light' | 'dark';
   nonce?: string;
+  suite?: string;
 }
 
 /**
@@ -262,6 +263,52 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
  * to prove every check catches real defects and measures > 0 elements.
  */
 export function renderCensusCanaryPage(options: GalleryOptions = {}): string {
+  if (options.suite === 'dsys') {
+    const dsysBodyHtml = `
+      <div id="dsys-canary" data-canary-fixture="dsys">
+        <h2 id="canary-text-align" class="lp-canary-center" data-canary="textAlign">Centred Heading</h2>
+        <div id="canary-empty-inflow" class="lp-status-line-slot lp-canary-empty-tall" data-canary="emptyInFlow"></div>
+        <div id="canary-upper-gap" class="lp-canary-gap-80" data-canary="upperGapBound">
+          <p>Block A</p>
+          <p>Block B</p>
+        </div>
+        <div id="canary-line-budget" data-canary="lineBudget">
+          <hr />
+          <div class="lp-canary-hairline">Stray hairline</div>
+        </div>
+        <div id="canary-actionbar-width" class="lp-action-bar" data-canary="actionBarFullWidth">
+          <button type="button" class="lp-btn lp-btn-primary lp-canary-btn-narrow">Narrow Primary</button>
+        </div>
+        <div id="canary-item-edge" class="lp-canary-zero-pad-clip" data-canary="itemHoverAndPadding">
+          <div class="lp-item">
+            <div class="lp-item-title">Edge-touching item</div>
+          </div>
+        </div>
+        <div id="canary-topbar-label" class="lp-topbar-brand" data-canary="topBarLabel">Portfolio Sandbox</div>
+        <a id="canary-arrows" href="#back" data-canary="arrowsInStrings">← Back</a>
+        <button id="canary-icon-btn" type="button" class="lp-icon-btn lp-canary-outlined-icon-btn" aria-label="Outlined" data-canary="iconButtonFilled">
+          <svg class="lp-icon" width="20" height="20" aria-hidden="true"><use href="#lp-icon-x"></use></svg>
+        </button>
+        <div id="canary-editor-header" class="lp-editor-header lp-canary-wide-row" data-canary="editorHeaderFit320">
+          <button type="button" class="lp-btn lp-btn-primary lp-canary-wide-btn">Overflowing Header</button>
+        </div>
+        <div id="canary-formatting-bar" class="lp-canary-formatting-offcenter" data-canary="formattingBarGeometry">
+          <div class="lp-editor-writing-col">Writing column</div>
+          <div class="lp-formatting-bar lp-canary-bar-offset">B I H</div>
+        </div>
+      </div>
+    `;
+    const content = renderPageTemplate({
+      title: 'D-SYS Canary',
+      description: 'Intentional D-SYS violation fixtures.',
+      bodyHtml: dsysBodyHtml,
+    });
+    return renderAdminShell('D-SYS Canary', '/admin/_canary', content, {
+      initialTheme: options.theme,
+      nonce: options.nonce,
+    });
+  }
+
   const bodyHtml = `
     <div id="dcomp-canary" data-canary-fixture="true">
       <div id="canary-icons" data-canary="icons">

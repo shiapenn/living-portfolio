@@ -114,4 +114,13 @@ describe('WP-15.6 UI Contract & Size-Budget Guard Rails (D-CONTRACT-2..7, D-FEED
     expect(res2.passed).toBe(false);
     expect(res2.errors[0]).toContain('[SIZE-BUDGET]');
   });
+
+  it('rejects non-zero/non-auto margin declarations in shared component CSS (D-SYS #1 canary)', () => {
+    const ctx = createTempRepo({
+      'apps/web/src/styles.ts': 'export const CSS = `\n.lp-card { margin: 0 auto; }\n.lp-bad { margin-bottom: 16px; }\n`;',
+    });
+    const res = evaluateUiGuards(ctx);
+    expect(res.passed).toBe(false);
+    expect(res.errors[0]).toContain('[COMPONENT-MARGIN]');
+  });
 });
