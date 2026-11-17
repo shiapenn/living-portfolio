@@ -65,26 +65,20 @@ test.describe('WP-16.L L2 Tiptap Block Editor & Import Source Mode', () => {
     await expect(sourceBtn).toHaveAttribute('aria-pressed', 'false');
     await expect(pm).toBeVisible();
 
-    // Details popover opens and updates section mapping summary
-    await page.locator('#ref-details-trigger').click();
-    const detailsPopover = page.locator('#ref-details-popover');
-    await expect(detailsPopover).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(detailsPopover).toBeHidden();
+    // D-EDITOR-4: Settings view holds Details and Structure sections
+    await page.locator('#ref-switch-settings').click();
+    await expect(page.locator('#ref-details-section')).toBeVisible();
+    const structureSection = page.locator('#ref-structure-section');
+    await expect(structureSection).toBeVisible();
+    await expect(structureSection).toContainText('Captured');
+    await expect(structureSection).toContainText('Grounded');
+    await page.locator('#ref-switch-edit').click();
 
-    // Left entries drawer opens and closes on Escape
+    // Left entries push panel opens and closes on toggle
     await page.locator('#ref-sidebar-toggle').click();
     await expect(entriesDrawer).toBeVisible();
-    await page.keyboard.press('Escape');
+    await page.locator('#ref-sidebar-toggle').click();
     await expect(entriesDrawer).toBeHidden();
-
-    // Right Structure drawer opens with plain text line and no step boxes/dashed containers
-    await page.locator('#ref-btn-structure').click();
-    await expect(structureDrawer).toBeVisible();
-    await expect(structureDrawer).toContainText('Captured');
-    await expect(structureDrawer).toContainText('Grounded');
-    await page.keyboard.press('Escape');
-    await expect(structureDrawer).toBeHidden();
 
     // Accessibility check
     const axe = await new AxeBuilder({ page }).analyze();

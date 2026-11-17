@@ -14,23 +14,20 @@ test.describe('WP-16.5 Inspector Module & History Restore (UX-37, CP-13)', () =>
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto(`/admin/entries/${encodeURIComponent(entryId)}`);
 
-    const pane = page.locator('#ref-inspector-pane');
-    await expect(pane).toBeHidden();
-    await page.click('#ref-btn-structure');
-    await expect(pane).toBeVisible();
-    await expect(pane).toContainText('Captured, Tagged, Claimed, Grounded');
-    await expect(pane.locator('.lp-inspector-explainer')).toHaveCount(0);
-
-    // D-COMP #6: 5+ tabs render as a Select control
-    const tabSelect = pane.locator('#ref-inspector-tabs-select');
-    await expect(tabSelect).toBeVisible();
-    const options = tabSelect.locator('option');
-    await expect(options).toHaveCount(5);
-    await expect(options.nth(0)).toContainText('Structure');
-    await expect(options.nth(1)).toContainText('Context');
-    await expect(options.nth(2)).toContainText('Evidence');
-    await expect(options.nth(3)).toContainText('Answerability');
-    await expect(options.nth(4)).toContainText('History');
+    // D-EDITOR-4: Structure lives inside Settings view
+    const structureSection = page.locator('#ref-structure-section');
+    await expect(structureSection).toBeHidden();
+    await page.click('#ref-switch-settings');
+    await expect(structureSection).toBeVisible();
+    await expect(structureSection).toContainText('Captured');
+    await expect(structureSection).toContainText('Tagged');
+    await expect(structureSection).toContainText('Claimed');
+    await expect(structureSection).toContainText('Grounded');
+    await expect(page.locator('#ref-structure-next-step')).toBeVisible();
+    await expect(page.locator('#ref-facets-list')).toBeVisible();
+    await expect(page.locator('#ref-spans-list')).toBeVisible();
+    await expect(page.locator('#ref-claims-list')).toBeVisible();
+    await expect(page.locator('#ref-evidence-list')).toBeVisible();
 
     const historyLink = page.locator(`#ref-btn-history[href="/admin/entries/${entryId}/history"]`);
     await expect(historyLink).toBeVisible();

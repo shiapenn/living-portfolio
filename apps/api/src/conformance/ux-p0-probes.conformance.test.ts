@@ -231,8 +231,8 @@ describe('AUD-2026-10-20 UX P0 Regression Probes V1–V5 & P0-9 (Bound to docs/a
 
       // Verify CMS actions and elements are present in markup
       expect(html).toContain('id="ref-btn-save"');
-      expect(html).toContain('id="ref-visibility-menu"');
-      expect(html).toContain('id="ref-more-delete"');
+      expect(html).toContain('id="ref-vis-section"');
+      expect(html).toContain('id="ref-btn-delete"');
       expect(html).toContain('id="ref-btn-new-entry"');
       expect(html).toContain('id="ref-status-line"');
       expect(html).toContain('id="ref-history-list"');

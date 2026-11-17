@@ -1,11 +1,11 @@
 {
   "version": 1,
-  "note": "Shrinking-only D-SYS system simplification census budgets (S2 shrunk counts; target 0 across all checks).",
+  "note": "Shrinking-only D-SYS system simplification census budgets (S3 shrunk counts; 11 checks at 0, lineBudget=16).",
   "budgets": {
     "textAlignViolations": 0,
     "emptyInFlowViolations": 0,
     "upperGapViolations": 0,
-    "lineBudgetViolations": 180,
+    "lineBudgetViolations": 16,
     "actionBarFullWidthViolations": 0,
     "itemHoverAndPaddingViolations": 0,
     "topBarSignatureViolations": 0,
@@ -13,6 +13,6 @@
     "arrowsInStringsViolations": 0,
     "iconButtonFilledViolations": 0,
     "editorHeaderFit320Violations": 0,
-    "formattingBarGeometryViolations": 8
+    "formattingBarGeometryViolations": 0
   }
 }
