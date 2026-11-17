@@ -2,6 +2,19 @@
   "version": 1,
   "allowlist": {
     "removedIds": [
+      "lp-status-popover",
+      "lp-status-popover-btn",
+      "ref-inspector-tabs",
+      "ref-inspector-tabs-panel-answerability",
+      "ref-inspector-tabs-panel-context",
+      "ref-inspector-tabs-panel-evidence",
+      "ref-inspector-tabs-panel-history",
+      "ref-inspector-tabs-panel-structure",
+      "ref-inspector-tabs-tab-answerability",
+      "ref-inspector-tabs-tab-context",
+      "ref-inspector-tabs-tab-evidence",
+      "ref-inspector-tabs-tab-history",
+      "ref-inspector-tabs-tab-structure",
       "import-source-toggle",
       "import-tiptap-editor",
       "step-tab-add",
@@ -155,7 +168,8 @@
       "data-dialog-step-heading",
       "data-id",
       "data-level",
-      "data-status"
+      "data-status",
+      "data-theme-label"
     ]
   },
   "allIds": [

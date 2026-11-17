@@ -65,22 +65,16 @@ test.describe('WP-16.1 Admin Shell & Route Registry', () => {
       await expect(page.locator('a:has-text("Back to Workspace")')).toHaveCount(0);
     }
 
-    // Status popover with legend
-    await page.locator('#lp-status-popover-btn').click();
-    const popover = page.locator('#lp-status-popover');
-    await expect(popover).toBeVisible();
-    await expect(popover).toContainText('Site build');
-    await expect(popover).toContainText('Automated answering');
-    await expect(popover.locator('#lp-status-answering-toggle')).toBeVisible();
-    await expect(popover.locator('#lp-status-rebuild-btn')).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(popover).toBeHidden();
+    // D-SYS #10: Status dot popover removed from top bar; theme toggle lives directly in top bar
+    await expect(page.locator('#lp-status-popover-btn')).toHaveCount(0);
+    await expect(page.locator('.lp-admin-header #theme-toggle svg.lp-icon')).toBeVisible();
 
-    // Account menu with Theme toggle and Sign out
+    // Account menu holds only Owner and Sign out
     await page.locator('#lp-account-menu-btn').click();
     const acctMenu = page.locator('#lp-account-menu');
     await expect(acctMenu).toBeVisible();
-    await expect(acctMenu.locator('#theme-toggle svg.lp-icon')).toBeVisible();
+    await expect(acctMenu).toContainText('Owner');
+    await expect(acctMenu.locator('#theme-toggle')).toHaveCount(0);
     await expect(acctMenu.locator('#btn-admin-logout')).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(acctMenu).toBeHidden();
