@@ -141,6 +141,7 @@
 | `A133` | WP-16.pre-i CodeQL Alerts and Public Hygiene | `active` | [A133-wp-16pre-i-codeql-alerts-and-public-hygiene.md](execution-reports/A133-wp-16pre-i-codeql-alerts-and-public-hygiene.md) | — |
 | `A134` | WP-16.pre-h CodeQL Pull Request Trigger | `active` | [A134-wp-16pre-h-codeql-pr-trigger.md](execution-reports/A134-wp-16pre-h-codeql-pr-trigger.md) | — |
 | `A135` | WP-16.S S1 Design Foundations and Single Admin Shell | `active` | [A135-wp-16s-s1-foundations-and-single-shell.md](execution-reports/A135-wp-16s-s1-foundations-and-single-shell.md) | — |
+| `A136` | WP-16.S S2 Page Migrations and /admin/status | `active` | [A136-wp-16s-s2-page-migrations-and-status.md](execution-reports/A136-wp-16s-s2-page-migrations-and-status.md) | — |
 
 ## Handover Snapshots (Class H)
 
