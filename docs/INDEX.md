@@ -140,6 +140,7 @@
 | `A132` | WP-16.S S0 D-SYS Foundations and Census | `active` | [A132-wp-16s-s0-d-sys-foundations-and-census.md](execution-reports/A132-wp-16s-s0-d-sys-foundations-and-census.md) | — |
 | `A133` | WP-16.pre-i CodeQL Alerts and Public Hygiene | `active` | [A133-wp-16pre-i-codeql-alerts-and-public-hygiene.md](execution-reports/A133-wp-16pre-i-codeql-alerts-and-public-hygiene.md) | — |
 | `A134` | WP-16.pre-h CodeQL Pull Request Trigger | `active` | [A134-wp-16pre-h-codeql-pr-trigger.md](execution-reports/A134-wp-16pre-h-codeql-pr-trigger.md) | — |
+| `A135` | WP-16.S S1 Design Foundations and Single Admin Shell | `active` | [A135-wp-16s-s1-foundations-and-single-shell.md](execution-reports/A135-wp-16s-s1-foundations-and-single-shell.md) | — |
 
 ## Handover Snapshots (Class H)
 
