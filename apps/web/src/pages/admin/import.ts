@@ -26,24 +26,20 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
   const bodyHtml = `
     ${stagingNoticeHtml}
     ${stepperHtml}
-    <div id="import-status-banner" role="status" aria-live="polite"></div>
+    <div id="import-status-banner" role="status" aria-live="polite" hidden></div>
 
     <!-- Step 1: Add Material -->
     <div id="import-step-add" class="lp-stack-md">
       <section class="lp-section-block lp-stack-md">
-        <h2 class="lp-section-title">Add Existing Material</h2>
-        <p class="lp-body-sm-muted">
-          Paste one or more Markdown articles, notes, or case studies (separate multiple entries with <code>---</code>).
-        </p>
-
         <div class="lp-field">
-          <label class="lp-field-label" for="import-paste-area">Paste Markdown or text</label>
+          <label class="lp-field-label" for="import-paste-area">Markdown or text</label>
+          <p class="lp-field-help">Separate several entries with <code>---</code>.</p>
           <textarea id="import-paste-area" rows="10" class="lp-input lp-textarea lp-editor-source-textarea" placeholder="# Migrating to Postgres Advisory Locks&#10;&#10;In 2024 we eliminated lock contention by migrating to PostgreSQL 15 advisory locks...&#10;&#10;---&#10;&#10;# Edge Microservice Architecture&#10;&#10;Designed multi-region edge gateways on Cloudflare Workers..."></textarea>
         </div>
 
         ${renderActionBar({
-          primary: { id: 'btn-generate-plan', label: 'Generate Processing Plan →', variant: 'primary' },
-          secondary: { id: 'btn-load-sample', label: 'Load Sample Entries', variant: 'secondary' },
+          primary: { id: 'btn-generate-plan', label: 'Generate plan', variant: 'primary' },
+          secondary: { id: 'btn-load-sample', label: 'Load sample entries', variant: 'secondary' },
         })}
       </section>
     </div>
@@ -74,8 +70,8 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
         </div>
 
         ${renderActionBar({
-          primary: { id: 'btn-proceed-triage', label: 'Proceed to Triage →', variant: 'primary' },
-          secondary: { id: 'btn-back-add', label: '← Back', variant: 'secondary' },
+          primary: { id: 'btn-proceed-triage', label: 'Proceed to triage', variant: 'primary' },
+          secondary: { id: 'btn-back-add', label: 'Back', variant: 'secondary' },
         })}
       </section>
     </div>

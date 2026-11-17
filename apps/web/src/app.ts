@@ -226,6 +226,10 @@ export function createWebApp(options?: WebAppOptions) {
     c.html(await renderAdminAuditRulesPage(client, { status: c.req.query('status'), siteName: cfg.PUBLIC_SITE_NAME }))
   );
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
+  app.get('/admin/status', async (c) => {
+    const { renderAdminStatusPage } = await import('./pages/admin/status.js');
+    return c.html(await renderAdminStatusPage(client, { siteName: cfg.PUBLIC_SITE_NAME }));
+  });
   app.get('/admin/settings', (c) => c.redirect('/admin/settings/answering', 302));
   app.get('/admin/settings/:id', async (c) => {
     const html = await renderAdminSettingsModulePage(client, c.req.param('id'));

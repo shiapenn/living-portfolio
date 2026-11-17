@@ -152,35 +152,23 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
   test('UX-104 & UX-105: automated-answering kill switch on /admin and escalation review on /admin/inbox', async ({ page }) => {
     await ensureAdminLoggedIn(page);
 
-    // UX-104 (D-SYS #10): Status dot popover removed from top bar; automated answering is toggled via /api/settings (and /admin/status in S2)
+    // UX-104 (D-SYS #10): Status dot popover removed from top bar; automated answering is toggled on /admin/status
     await page.goto('/admin');
     await expect(page.locator('#btn-killswitch')).toHaveCount(0);
     await expect(page.locator('#lp-status-popover-btn')).toHaveCount(0);
-    await page.goto('/admin/settings/answering');
-    const toggledState = await page.evaluate(async () => {
-      const csrf = sessionStorage.getItem('lp_csrf_token') || '';
-      const res = await fetch('/api/settings/routing', {
-        method: 'PATCH',
-        credentials: 'same-origin',
-        headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
-        body: JSON.stringify({ automatedAnsweringEnabled: false }),
-      });
-      if (!res.ok) throw new Error('PATCH /api/settings/routing failed: ' + res.status);
-      const getRes = await fetch('/api/settings', { credentials: 'same-origin' });
-      return getRes.json();
-    });
-    expect(toggledState.runtime?.automatedAnsweringEnabled).toBe(false);
+    await page.goto('/admin/status');
+    const toggleBtn = page.locator('#status-answering-toggle');
+    await expect(toggleBtn).toBeVisible();
+    const initialEnabled = await toggleBtn.getAttribute('data-enabled');
+    page.once('dialog', (d) => d.accept());
+    await toggleBtn.click();
+    await page.waitForLoadState('load');
+    const nextEnabled = initialEnabled === 'true' ? 'false' : 'true';
+    await expect(page.locator('#status-answering-toggle')).toHaveAttribute('data-enabled', nextEnabled);
     // Restore original state
-    await page.evaluate(async () => {
-      const csrf = sessionStorage.getItem('lp_csrf_token') || '';
-      const res = await fetch('/api/settings/routing', {
-        method: 'PATCH',
-        credentials: 'same-origin',
-        headers: { 'content-type': 'application/json', 'x-csrf-token': csrf },
-        body: JSON.stringify({ automatedAnsweringEnabled: true }),
-      });
-      if (!res.ok) throw new Error('PATCH /api/settings/routing failed: ' + res.status);
-    });
+    page.once('dialog', (d) => d.accept());
+    await page.locator('#status-answering-toggle').click();
+    await page.waitForLoadState('load');
 
     // UX-105: Escalation review on /admin/inbox with seeded pending escalation
     await page.goto('/admin/inbox');

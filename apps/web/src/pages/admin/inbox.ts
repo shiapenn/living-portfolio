@@ -83,7 +83,7 @@ export async function renderAdminInboxPage(
           primary: { id: 'inbox-btn-reply', label: INBOX_STRINGS.inbox.sendReply, variant: 'primary', size: 'sm' },
           secondary: { id: 'inbox-btn-decline', label: INBOX_STRINGS.inbox.declineButton, variant: 'secondary', size: 'sm' },
         })}
-        <div id="inbox-make-rule-card" class="lp-stack-sm lp-divider-top" hidden>
+        <div id="inbox-make-rule-card" class="lp-stack-sm" hidden>
           <h3 class="lp-section-title">${escapeHtml(INBOX_STRINGS.inbox.makeRuleTitle)}</h3>
           <p class="lp-help-text">${escapeHtml(INBOX_STRINGS.inbox.makeRuleBody)}</p>
           <input id="inbox-rule-text" type="text" class="lp-input" placeholder="${escapeHtml(INBOX_STRINGS.inbox.makeRulePlaceholder)}" value="${escapeHtml(String(selectedItem.question || ''))}" />

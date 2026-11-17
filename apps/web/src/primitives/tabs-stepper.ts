@@ -94,7 +94,6 @@ export function renderStepper(props: StepperProps): string {
   const pct = Math.round((clampedStep / Math.max(1, props.totalSteps)) * 100);
 
   return `<div${idAttr} class="${escapeHtml(classes)}" role="progressbar" aria-valuenow="${clampedStep}" aria-valuemin="1" aria-valuemax="${props.totalSteps}" aria-label="Step ${clampedStep} of ${props.totalSteps} · ${escapeHtml(props.stepTitle)}">
-  <div class="lp-stepper-label">Step ${clampedStep} of ${props.totalSteps} · ${escapeHtml(props.stepTitle)}</div>
-  <div class="lp-stepper-track"><div class="lp-stepper-fill lp-stepper-pct-${Math.round(pct / 5) * 5}"></div></div>
+  <div class="lp-stepper-label lp-stepper-pct-${Math.round(pct / 5) * 5}">Step ${clampedStep} of ${props.totalSteps} · ${escapeHtml(props.stepTitle)}</div>
 </div>`;
 }

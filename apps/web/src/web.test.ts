@@ -138,7 +138,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     expect(importHtml).toContain('Import &amp; Triage');
     expect(importHtml).toContain('id="import-stepper"');
     expect(importHtml).toContain('Step 1 of 3 · Add material');
-    expect(importHtml).toContain('Paste Markdown or text');
+    expect(importHtml).toContain('Markdown or text');
 
     // Add & Plan controls
     expect(importHtml).toContain('id="import-paste-area"');

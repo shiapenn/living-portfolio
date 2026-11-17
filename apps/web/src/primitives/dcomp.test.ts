@@ -126,7 +126,7 @@ describe('WP-16.C C1 D-COMP Primitives', () => {
 
     const stepper = renderStepper({ currentStep: 2, totalSteps: 6, stepTitle: 'Hosting' });
     expect(stepper).toContain('Step 2 of 6 · Hosting');
-    expect(stepper).toContain('lp-stepper-track');
+    expect(stepper).toContain('lp-stepper-label');
   });
 
   it('renders Overlay and FormSection', () => {

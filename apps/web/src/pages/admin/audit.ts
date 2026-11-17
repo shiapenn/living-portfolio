@@ -35,7 +35,23 @@ export async function renderAdminAuditRulesPage(
             ? `Applies when ${scopeEntries.map(([k, v]) => `${k} is ${Array.isArray(v) ? v.join(', ') : String(v)}`).join(' and ')}.`
             : 'Applies to all questions.';
           const c = rule.constraint || {};
-          const summary = c.guidance || c.summary || c.rule || (typeof c === 'string' ? c : 'Answer rule');
+          const cObj = typeof c === 'object' && c !== null ? (c as Record<string, unknown>) : null;
+          const summary =
+            cObj?.guidance ||
+            cObj?.summary ||
+            cObj?.rule ||
+            cObj?.description ||
+            cObj?.message ||
+            cObj?.text ||
+            (cObj?.disallow_claim ? `Do not claim ${String(cObj.disallow_claim)}` : undefined) ||
+            (cObj?.topic ? `Topic rule: ${String(cObj.topic)}` : undefined) ||
+            (typeof c === 'string' && c.trim() ? c : undefined) ||
+            (quote ? quote : undefined) ||
+            (cObj && Object.keys(cObj).length > 0
+              ? Object.entries(cObj)
+                  .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${String(v)}`)
+                  .join('; ')
+              : 'Answer rule');
           const tone = activeStatus === 'confirmed' ? 'ok' : activeStatus === 'revoked' ? 'neutral' : 'warn';
           const statusLabel = INBOX_STRINGS.audit.tabs[activeStatus as 'proposed' | 'confirmed' | 'revoked'];
           return renderItem({
