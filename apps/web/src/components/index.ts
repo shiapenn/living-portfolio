@@ -29,7 +29,6 @@ export {
   renderDrawer,
   renderDisclosure,
   renderMenu,
-  renderTabs,
   renderEmptyState,
 } from './containers.js';
 export { renderTable } from './table.js';
@@ -44,6 +43,4 @@ export type {
   EmptyStateProps,
   MenuItem,
   MenuProps,
-  TabItem,
-  TabsProps,
 } from './containers.js';

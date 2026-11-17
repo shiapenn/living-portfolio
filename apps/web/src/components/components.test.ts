@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
+import { renderTabs } from '../primitives/index.js';
 import {
   renderPageNotice,
   renderStatusLine,
   renderDialog,
   renderDrawer,
   renderDisclosure,
-  renderTabs,
   renderTable,
   renderEmptyState,
 } from './index.js';

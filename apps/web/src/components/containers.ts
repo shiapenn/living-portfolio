@@ -43,20 +43,6 @@ export interface MenuProps {
   className?: string;
 }
 
-export interface TabItem {
-  id: string;
-  label: string;
-  panelHtml: string;
-  active?: boolean;
-}
-
-export interface TabsProps {
-  id: string;
-  ariaLabel: string;
-  tabs: TabItem[];
-  className?: string;
-}
-
 export interface EmptyStateGuideStep {
   title: string;
   body: string;
@@ -170,39 +156,6 @@ export function renderMenu(props: MenuProps): string {
   return `<div id="${escapeHtml(props.id)}" class="lp-menu-wrap ${escapeHtml(props.className ?? '')}">
   <button type="button" id="${escapeHtml(props.id)}-trigger" class="lp-btn lp-btn-secondary lp-btn-sm" aria-haspopup="menu" aria-expanded="${open ? 'true' : 'false'}" aria-controls="${escapeHtml(menuId)}">${escapeHtml(props.triggerLabel)} ${chevron}</button>
   <div id="${escapeHtml(menuId)}" role="menu" aria-label="${escapeHtml(props.triggerLabel)}" class="lp-popover-menu"${open ? '' : ' hidden'}>${itemsHtml}</div>
-</div>`;
-}
-
-/**
- * Renders an accessible Tabs container with roving tabindex and hidden inactive panels.
- */
-export function renderTabs(props: TabsProps): string {
-  const activeIdx = Math.max(
-    0,
-    props.tabs.findIndex((t) => t.active)
-  );
-  const tabButtons = props.tabs
-    .map((tab, idx) => {
-      const isSelected = idx === activeIdx;
-      const tabId = `${props.id}-tab-${tab.id}`;
-      const panelId = `${props.id}-panel-${tab.id}`;
-      return `<button type="button" role="tab" id="${escapeHtml(tabId)}" class="lp-tab" aria-selected="${isSelected ? 'true' : 'false'}" aria-controls="${escapeHtml(panelId)}" tabindex="${isSelected ? '0' : '-1'}">${escapeHtml(tab.label)}</button>`;
-    })
-    .join('');
-
-  const panels = props.tabs
-    .map((tab, idx) => {
-      const isSelected = idx === activeIdx;
-      const tabId = `${props.id}-tab-${tab.id}`;
-      const panelId = `${props.id}-panel-${tab.id}`;
-      return `<div role="tabpanel" id="${escapeHtml(panelId)}" class="lp-tab-panel" aria-labelledby="${escapeHtml(tabId)}"${isSelected ? '' : ' hidden'}>${tab.panelHtml}</div>`;
-    })
-    .join('');
-
-  const classes = ['lp-tabs', props.className].filter(Boolean).join(' ');
-  return `<div id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}">
-  <div class="lp-tablist" role="tablist" aria-label="${escapeHtml(props.ariaLabel)}">${tabButtons}</div>
-  ${panels}
 </div>`;
 }
 
