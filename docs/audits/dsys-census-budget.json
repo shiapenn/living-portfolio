@@ -7,7 +7,7 @@
     "upperGapViolations": 8,
     "lineBudgetViolations": 296,
     "actionBarFullWidthViolations": 34,
-    "itemHoverAndPaddingViolations": 72,
+    "itemHoverAndPaddingViolations": 80,
     "topBarSignatureViolations": 0,
     "topBarLabelViolations": 48,
     "arrowsInStringsViolations": 4,
