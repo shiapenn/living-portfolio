@@ -2,35 +2,29 @@ import { test, expect } from '@playwright/test';
 import { ensureAdminLoggedIn } from './helpers.js';
 
 test.describe.serial('WP-4.1: Structure Review Loop, Import Triage, and Visitor Ask States', () => {
-  test('1. Structure Drawer 3-tab inspector in Reference Editor (20261020-UX-06, UX-07, WP-15.4)', async ({ page }) => {
+  test('1. Structure section (level, facets, spans, claims, evidence) in Reference Editor Settings view (D-EDITOR-4)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin/entries/new');
+    await page.goto('/admin/entries/editor?fixture=draft');
 
-    // Open Structure drawer from editor action bar
-    await page.click('#ref-btn-structure');
-    const drawer = page.locator('#ref-structure-drawer');
-    await expect(drawer).toBeVisible();
+    // Open Settings view from editor header
+    await page.click('#ref-switch-settings');
+    const structureSection = page.locator('#ref-structure-section');
+    await expect(structureSection).toBeVisible();
 
-    // Verify 3 Structure tabs exist with accessible tablist role
-    const tablist = drawer.locator('[role="tablist"]');
-    await expect(tablist).toBeVisible();
-    await expect(page.locator('#ref-structure-tabs-tab-summary')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('#ref-structure-tabs-panel-summary')).toBeVisible();
-
-    // Switch to Context tab
-    await page.click('#ref-structure-tabs-tab-context');
-    await expect(page.locator('#ref-structure-tabs-tab-context')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('#ref-structure-tabs-panel-context')).toBeVisible();
-
-    // Switch to Evidence tab
-    await page.click('#ref-structure-tabs-tab-evidence');
-    await expect(page.locator('#ref-structure-tabs-tab-evidence')).toHaveAttribute('aria-selected', 'true');
-    await expect(page.locator('#ref-structure-tabs-panel-evidence')).toBeVisible();
+    // Verify Structure level steps and all 4 subsections exist
+    await expect(page.locator('#ref-structure-level')).toBeVisible();
+    await expect(page.locator('#ref-structure-level')).toContainText('Tagged');
+    await expect(page.locator('#ref-facets-list')).toBeAttached();
+    await expect(page.locator('#ref-spans-list')).toBeAttached();
+    await expect(page.locator('#ref-claims-list')).toBeAttached();
+    await expect(page.locator('#ref-evidence-list')).toBeAttached();
+    await expect(page.locator('#ref-btn-add-facet')).toBeVisible();
+    await expect(page.locator('#ref-btn-add-claim')).toBeVisible();
+    await expect(page.locator('#ref-btn-add-evidence')).toBeVisible();
   });
 
   test('2. Import Planner and J K A R D S triage keyboard workflow (20261020-UX-07)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
-    await page.goto('/admin/entries/new');
     await page.goto('/admin/import');
     await expect(page.locator('h1')).toContainText('Import & Triage');
 

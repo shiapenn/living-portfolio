@@ -3,12 +3,15 @@ import {
   renderBadge,
   renderButton,
   renderField,
+  renderFormSection,
+  renderItem,
   renderTabs,
 } from '../../../primitives/index.js';
 import {
   renderDialog,
   renderDrawer,
 } from '../../../components/index.js';
+import { type StructureInspectorData } from '../../../patterns/structure-panel.js';
 import { EDITOR_STRINGS } from '../../../strings/admin/editor.js';
 
 export function renderDraftAndOfflineBanners(): string {
@@ -140,4 +143,105 @@ ${renderTabs({
     bodyHtml: `<p id="ref-history-empty" class="lp-field-help">${escapeHtml(EDITOR_STRINGS.historyDrawer.empty)}</p><ul id="ref-history-list" class="lp-entry-list"></ul>`,
     position: 'right',
   })}`;
+}
+
+export function renderStructureSection(inspector?: StructureInspectorData): string {
+  const facets = inspector?.facets ?? [];
+  const claims = inspector?.claims ?? [];
+  const evidence = inspector?.evidence ?? [];
+  const levelNames = ['Captured', 'Tagged', 'Claimed', 'Grounded'] as const;
+  const currentIdx = evidence.length > 0 ? 3 : claims.length > 0 ? 2 : facets.length > 0 ? 1 : 0;
+  const currentLevel = levelNames[currentIdx];
+  const nextStep =
+    currentIdx === 0
+      ? 'Add a facet tag to reach Tagged.'
+      : currentIdx === 1
+        ? 'Add a claim to reach Claimed.'
+        : currentIdx === 2
+          ? 'Attach evidence to reach Grounded.'
+          : 'All structure levels complete.';
+
+  const levelHtml = `<div id="ref-structure-level" class="lp-row lp-gap-8 lp-structure-levels" data-current-level="${currentLevel}">
+    ${levelNames
+      .map(
+        (lvl, idx) =>
+          `<span class="lp-badge ${idx <= currentIdx ? 'lp-badge-ok' : 'lp-badge-neutral'}" data-level-step="${lvl}">${lvl}</span>`
+      )
+      .join('')}
+  </div>
+  <p id="ref-structure-next-step" class="lp-field-help">${escapeHtml(nextStep)}</p>`;
+
+  const facetsHtml = `<div class="lp-stack lp-gap-8">
+    <h3 class="lp-form-section-title">Facets</h3>
+    <div id="ref-facets-list" class="lp-row lp-gap-8 lp-row-wrap">
+      ${facets
+        .map(
+          (f: any) =>
+            `<span class="lp-chip lp-chip-confirmed" data-facet-id="${escapeHtml(String(f.id ?? ''))}">${escapeHtml(String(f.key ?? f.facet_type ?? 'topic'))}: ${escapeHtml(String(f.value ?? f.facet_value ?? ''))}</span>`
+        )
+        .join('')}
+    </div>
+    <div class="lp-row lp-gap-8">
+      <select id="ref-facet-type" class="lp-select" aria-label="Facet type">
+        <option value="topic">Topic</option>
+        <option value="role">Role</option>
+        <option value="technology">Technology</option>
+        <option value="domain">Domain</option>
+      </select>
+      <input type="text" id="ref-facet-value" class="lp-input" placeholder="Add facet tag…" aria-label="Facet value" />
+      ${renderButton({ id: 'ref-btn-add-facet', label: 'Add tag', variant: 'secondary', size: 'sm' })}
+    </div>
+  </div>`;
+
+  const spansHtml = `<div class="lp-stack lp-gap-8">
+    <h3 class="lp-form-section-title">Suggested roles</h3>
+    <div id="ref-spans-list" class="lp-stack lp-gap-8"></div>
+  </div>`;
+
+  const claimsHtml = `<div class="lp-stack lp-gap-8">
+    <h3 class="lp-form-section-title">Claims</h3>
+    <div id="ref-claims-list" class="lp-list">
+      ${claims
+        .map((c: any) =>
+          renderItem({
+            title: String(c.text ?? c.claim_text ?? ''),
+            statusLabel: c.status ? String(c.status) : 'Claim',
+            statusTone: 'neutral',
+          })
+        )
+        .join('')}
+    </div>
+    <div class="lp-row lp-gap-8">
+      <input type="text" id="ref-claim-input" class="lp-input" placeholder="Add a claim…" aria-label="Claim text" />
+      ${renderButton({ id: 'ref-btn-add-claim', label: 'Add claim', variant: 'secondary', size: 'sm' })}
+    </div>
+  </div>`;
+
+  const evidenceHtml = `<div class="lp-stack lp-gap-8">
+    <h3 class="lp-form-section-title">Evidence</h3>
+    <div id="ref-evidence-list" class="lp-list">
+      ${evidence
+        .map((ev: any) =>
+          renderItem({
+            title: String(ev.verification?.title ?? ev.title ?? ev.url ?? 'Evidence'),
+            subtitle: ev.url ? String(ev.url) : undefined,
+            statusLabel: ev.kind ? String(ev.kind) : 'url',
+            statusTone: 'ok',
+          })
+        )
+        .join('')}
+    </div>
+    <div class="lp-row lp-gap-8">
+      <input type="text" id="ref-evidence-title" class="lp-input" placeholder="Evidence title" aria-label="Evidence title" />
+      <input type="url" id="ref-evidence-url" class="lp-input" placeholder="https://…" aria-label="Evidence URL" />
+      ${renderButton({ id: 'ref-btn-add-evidence', label: 'Attach', variant: 'secondary', size: 'sm' })}
+    </div>
+  </div>`;
+
+  return renderFormSection({
+    id: 'ref-structure-section',
+    title: 'Structure',
+    description: 'Tagging, suggested span roles, claims, and evidence.',
+    fieldsHtml: `<div class="lp-stack lp-gap-16">${levelHtml}${facetsHtml}${spansHtml}${claimsHtml}${evidenceHtml}</div>`,
+  });
 }

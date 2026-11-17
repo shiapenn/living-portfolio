@@ -45,32 +45,20 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     await expect(page.locator('#admin-offline-banner')).toBeHidden();
   });
 
-  test('UX-97: More and Visibility menus use shared Menu keyboard navigation (Enter focuses first item, ArrowDown moves, Escape returns focus)', async ({ page }) => {
+  test('UX-97: Account menu uses shared Menu keyboard navigation (Enter focuses first item, ArrowDown moves, Escape returns focus)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/entries/new');
-    await page.fill('#ref-field-title', `Menu Nav Entry ${Date.now()}`);
-    await page.click('#ref-btn-source-toggle');
-    await page.fill('#ref-field-body', 'Body for menu keyboard navigation check.');
-    await page.locator('#ref-btn-save').click();
-    await expect(page.locator('#ref-status-line')).toContainText('Draft saved.');
 
-    // More menu (Delete only per D-LAYOUT #8): Enter on trigger opens menu and focuses first item
-    const moreBtn = page.locator('#ref-more-menu-btn');
-    await moreBtn.focus();
+    const acctBtn = page.locator('#lp-account-menu-btn');
+    await acctBtn.focus();
     await page.keyboard.press('Enter');
-    await expect(page.locator('#ref-more-menu')).toBeVisible();
-    await expect(page.locator('#ref-more-delete')).toBeFocused();
+    await expect(page.locator('#lp-account-menu')).toBeVisible();
+    await expect(page.locator('#btn-admin-logout')).toBeFocused();
 
     // Escape closes menu and returns focus to trigger
     await page.keyboard.press('Escape');
-    await expect(page.locator('#ref-more-menu')).toBeHidden();
-    await expect(moreBtn).toBeFocused();
-
-    // ArrowDown on closed trigger also opens and focuses first item
-    await page.keyboard.press('ArrowDown');
-    await expect(page.locator('#ref-more-menu')).toBeVisible();
-    await expect(page.locator('#ref-more-delete')).toBeFocused();
-    await page.keyboard.press('Escape');
+    await expect(page.locator('#lp-account-menu')).toBeHidden();
+    await expect(acctBtn).toBeFocused();
   });
 
   test('UX-98 & UX-99: Publish dialog hides saved status line (single active message place) and lists matched private details with jump link', async ({ page }) => {
@@ -83,8 +71,8 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     await page.locator('#ref-btn-save').click();
     await expect(page.locator('#ref-status-line')).toContainText('Draft saved.');
 
-    // Open Publish dialog -> status line must be hidden while dialog is open
-    await page.locator('#ref-visibility-menu-btn').click();
+    // Open Publish dialog from Settings view -> status line must be hidden while dialog is open
+    await page.locator('#ref-switch-settings').click();
     await page.locator('#ref-btn-publish').click();
     await expect(page.locator('#ref-publish-dialog')).toBeVisible();
     await expect(page.locator('#ref-status-line')).toBeHidden();
@@ -132,7 +120,7 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
     await page.fill('#ref-field-title', `Landmark Check ${Date.now()}`);
     await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', 'Clean body for landmark check.');
-    await page.locator('#ref-visibility-menu-btn').click();
+    await page.locator('#ref-switch-settings').click();
     await page.locator('#ref-btn-publish').click();
     await expect(page.locator('#ref-publish-dialog')).toBeVisible();
     const axeDlg = await new AxeBuilder({ page }).analyze();
@@ -140,9 +128,7 @@ test.describe('WP-16.0 G15 Defects & Capability Parity', () => {
       axeDlg.violations.filter((v) => v.id === 'landmark-no-duplicate-banner' || v.id === 'landmark-unique')
     ).toEqual([]);
     await page.locator('#ref-publish-cancel').click();
-
-    await page.locator('#ref-btn-structure').click();
-    await expect(page.locator('#ref-inspector-pane')).toBeVisible();
+    await expect(page.locator('#ref-structure-section')).toBeVisible();
     const axeDrawer = await new AxeBuilder({ page }).analyze();
     expect(
       axeDrawer.violations.filter((v) => v.id === 'landmark-no-duplicate-banner' || v.id === 'landmark-unique')

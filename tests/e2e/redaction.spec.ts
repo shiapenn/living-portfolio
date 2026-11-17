@@ -30,7 +30,7 @@ test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview
 
     // 1. Clean state
     await bodyInput.fill('Writing about software performance and clean distributed data structures.');
-    await page.click('#ref-visibility-menu-btn');
+    await page.click('#ref-switch-settings');
     await openDialogBtn.click();
     await expect(dialog).toBeVisible();
     await expect(dialogStatus).toContainText(/no private details/i);
@@ -39,8 +39,9 @@ test.describe.serial('WP-1 Task 3 & 4: Redaction Scanner, Publish Gate & Preview
     await expect(dialog).toBeHidden();
 
     // 2. Needs review state: configured exclusion matched
+    await page.click('#ref-switch-edit');
     await bodyInput.fill('Client deployment for internal.corp.example.com under secret-project-alpha.');
-    await page.click('#ref-visibility-menu-btn');
+    await page.click('#ref-switch-settings');
     await openDialogBtn.click();
     await expect(dialog).toBeVisible();
     await expect(ndaStep).toBeVisible();

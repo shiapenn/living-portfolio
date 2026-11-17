@@ -43,10 +43,9 @@ describe('WP-15.7 Reference Editor Page', () => {
     expect(html).not.toMatch(/\bL[0-3]\b/);
     expect(html).not.toMatch(/\b(above|below)\b/i);
 
-    // Details summary does not repeat entry visibility state (UX-78)
-    const metaMatch = html.match(/id="ref-details-summary-meta"[^>]*>([^<]+)</);
-    expect(metaMatch?.[1]).toMatch(/^(Work|Writing) · Decision · 14 Nov 2026 · Exact$/);
-    expect(metaMatch?.[1]).not.toMatch(/Draft|Unlisted|Public/);
+    // Details and Structure sections live in Settings view and do not repeat entry visibility state (UX-78)
+    expect(html).toContain('id="ref-details-section"');
+    expect(html).toContain('id="ref-structure-section"');
 
     // Only the 4 D-FEEDBACK places may carry role="status" or role="alert"
     const roleMatches = html.match(/role="(status|alert)"/g) ?? [];

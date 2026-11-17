@@ -252,7 +252,7 @@ Safe text before
       expect(adminHtml).toContain('class="lp-admin-header"');
       expect(adminHtml).toContain('id="ref-editor-toolbar"');
       expect(adminHtml).toContain('id="ref-entries-drawer"');
-      expect(adminHtml).toContain('id="ref-inspector-pane"');
+      expect(adminHtml).toContain('id="ref-structure-section"');
     });
 
     it('responsive layout media queries handle mobile, tablet (2 panes), and desktop (3 panes)', () => {

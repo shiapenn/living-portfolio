@@ -223,18 +223,15 @@ function bootEditorPage(): void {
       if (span) span.textContent = nextText;
       else saveBtn.textContent = nextText;
     }
-    document.querySelectorAll<HTMLElement>('#ref-visibility-menu [data-vis]').forEach((item) => {
-      const itemVis = item.getAttribute('data-vis');
-      item.setAttribute('aria-checked', itemVis === vis ? 'true' : 'false');
+    document.querySelectorAll<HTMLInputElement>('input[name="ref-visibility-choice"]').forEach((radio) => {
+      radio.checked = radio.value === vis;
     });
-    const visBtn = document.getElementById('ref-visibility-menu-btn');
-    if (visBtn) {
-      const dotClass = vis === 'public' ? 'lp-status-dot lp-status-dot-ok' : vis === 'unlisted' ? 'lp-status-dot lp-status-dot-warn' : 'lp-status-dot lp-status-dot-neutral';
-      visBtn.innerHTML = `<span class="lp-state-label"><span class="${dotClass}" aria-hidden="true"></span>${label}</span>`;
-    }
+    const publishWrap = document.getElementById('ref-publish-wrap');
     if (vis === 'draft') {
+      publishWrap?.classList.remove('lp-is-hidden');
       publishBtn?.classList.remove('lp-is-hidden');
     } else {
+      publishWrap?.classList.add('lp-is-hidden');
       publishBtn?.classList.add('lp-is-hidden');
     }
   };
@@ -294,7 +291,222 @@ function bootEditorPage(): void {
     sourceToggleBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
   });
 
-  // Left entries drawer & Right structure drawer (closed by default)
+  // View switcher: Edit vs Settings (D-EDITOR-4)
+  const switchEditBtn = document.getElementById('ref-switch-edit');
+  const switchSettingsBtn = document.getElementById('ref-switch-settings');
+  const writingViewEl = document.getElementById('ref-writing-view');
+  const settingsViewEl = document.getElementById('ref-settings-view');
+
+  const setEditorView = (view: 'edit' | 'settings') => {
+    const isEdit = view === 'edit';
+    if (writingViewEl) writingViewEl.hidden = !isEdit;
+    if (settingsViewEl) settingsViewEl.hidden = isEdit;
+    switchEditBtn?.setAttribute('aria-selected', isEdit ? 'true' : 'false');
+    switchEditBtn?.classList.toggle('is-active', isEdit);
+    switchSettingsBtn?.setAttribute('aria-selected', isEdit ? 'false' : 'true');
+    switchSettingsBtn?.classList.toggle('is-active', !isEdit);
+    if (!isEdit) {
+      void loadStructureData();
+    }
+  };
+
+  switchEditBtn?.addEventListener('click', () => setEditorView('edit'));
+  switchSettingsBtn?.addEventListener('click', () => setEditorView('settings'));
+
+  // Full Structure restoration (D-EDITOR-4)
+  let cachedRevId = '';
+  const updateStructureLevel = (facetCount: number, claimCount: number, evidenceCount: number) => {
+    const levelEl = document.getElementById('ref-structure-level');
+    const nextEl = document.getElementById('ref-structure-next-step');
+    const levels = ['Captured', 'Tagged', 'Claimed', 'Grounded'] as const;
+    const idx = evidenceCount > 0 ? 3 : claimCount > 0 ? 2 : facetCount > 0 ? 1 : 0;
+    const currentLevel = levels[idx];
+    if (levelEl) {
+      levelEl.setAttribute('data-current-level', currentLevel);
+      levels.forEach((lvl, i) => {
+        const badge = levelEl.querySelector(`[data-level-step="${lvl}"]`);
+        if (badge) {
+          badge.className = `lp-badge ${i <= idx ? 'lp-badge-ok' : 'lp-badge-neutral'}`;
+        }
+      });
+    }
+    if (nextEl) {
+      nextEl.textContent =
+        idx === 0
+          ? 'Add a facet tag to reach Tagged.'
+          : idx === 1
+            ? 'Add a claim to reach Claimed.'
+            : idx === 2
+              ? 'Attach evidence to reach Grounded.'
+              : 'All structure levels complete.';
+    }
+  };
+
+  const escapeHtmlStr = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  const renderStructureLists = (
+    facets: Array<{ id?: string; key?: string; facet_type?: string; value?: string; facet_value?: string }>,
+    claims: Array<{ id?: string; text?: string; claim_text?: string; status?: string }>,
+    evidence: Array<{ id?: string; title?: string; url?: string; kind?: string; verification?: { title?: string } }>,
+    spans: Array<{ id?: string; text?: string; suggested_role?: string; status?: string }>
+  ) => {
+    const facetsEl = document.getElementById('ref-facets-list');
+    if (facetsEl) {
+      facetsEl.innerHTML = facets
+        .map(
+          (f) =>
+            `<span class="lp-chip lp-chip-confirmed" data-facet-id="${escapeHtmlStr(String(f.id ?? ''))}">${escapeHtmlStr(String(f.key ?? f.facet_type ?? 'topic'))}: ${escapeHtmlStr(String(f.value ?? f.facet_value ?? ''))}</span>`
+        )
+        .join('');
+    }
+    const claimsEl = document.getElementById('ref-claims-list');
+    if (claimsEl) {
+      claimsEl.innerHTML = claims
+        .map(
+          (c) =>
+            `<div class="lp-item"><div class="lp-item-main"><div class="lp-item-title">${escapeHtmlStr(String(c.text ?? c.claim_text ?? ''))}</div></div><span class="lp-badge lp-badge-neutral">${escapeHtmlStr(String(c.status ?? 'Claim'))}</span></div>`
+        )
+        .join('');
+    }
+    const evidenceEl = document.getElementById('ref-evidence-list');
+    if (evidenceEl) {
+      evidenceEl.innerHTML = evidence
+        .map(
+          (ev) =>
+            `<div class="lp-item"><div class="lp-item-main"><div class="lp-item-title">${escapeHtmlStr(String(ev.verification?.title ?? ev.title ?? ev.url ?? 'Evidence'))}</div>${ev.url ? `<div class="lp-item-subtitle">${escapeHtmlStr(String(ev.url))}</div>` : ''}</div><span class="lp-badge lp-badge-ok">${escapeHtmlStr(String(ev.kind ?? 'url'))}</span></div>`
+        )
+        .join('');
+    }
+    const spansEl = document.getElementById('ref-spans-list');
+    if (spansEl) {
+      spansEl.innerHTML = spans.length
+        ? spans
+            .map(
+              (sp) =>
+                `<div class="lp-item" data-span-id="${escapeHtmlStr(String(sp.id ?? ''))}" data-span-status="${escapeHtmlStr(String(sp.status ?? 'suggested'))}">
+                  <div class="lp-item-main">
+                    <div class="lp-item-title">${escapeHtmlStr(String(sp.text ?? 'Span'))}</div>
+                    <div class="lp-item-subtitle">${escapeHtmlStr(String(sp.suggested_role ?? 'context'))}</div>
+                  </div>
+                  <div class="lp-item-actions">
+                    <button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" data-span-action="accept" data-span-id="${escapeHtmlStr(String(sp.id ?? ''))}" data-span-role="${escapeHtmlStr(String(sp.suggested_role ?? 'context'))}">Accept</button>
+                    <button type="button" class="lp-btn lp-btn-quiet lp-btn-sm" data-span-action="reject" data-span-id="${escapeHtmlStr(String(sp.id ?? ''))}" data-span-role="${escapeHtmlStr(String(sp.suggested_role ?? 'context'))}">Ignore</button>
+                  </div>
+                </div>`
+            )
+            .join('')
+        : '<p class="lp-field-help">Save entry to detect suggested span roles.</p>';
+    }
+    updateStructureLevel(facets.length, claims.length, evidence.length);
+  };
+
+  async function loadStructureData() {
+    if (isFixtureMode || !activeEntryId || activeEntryId === 'new') return;
+    const [entryRes, facetsRes, claimsRes, evRes] = await Promise.all([
+      apiRequest<any>(`/api/entries/${encodeURIComponent(activeEntryId)}`),
+      apiRequest<{ facets?: any[] }>(`/api/structure/entries/${encodeURIComponent(activeEntryId)}/facets`),
+      apiRequest<{ claims?: any[] }>(`/api/structure/entries/${encodeURIComponent(activeEntryId)}/claims`),
+      apiRequest<{ evidence?: any[] }>(`/api/structure/entries/${encodeURIComponent(activeEntryId)}/evidence`),
+    ]);
+    const revId =
+      entryRes.data?.currentRevision?.id ??
+      entryRes.data?.revisions?.[0]?.id ??
+      '';
+    cachedRevId = revId;
+    let spans: any[] = [];
+    if (revId) {
+      const spansRes = await apiRequest<{ spans?: any[] }>(`/api/structure/revisions/${encodeURIComponent(revId)}/spans`);
+      spans = spansRes.data?.spans ?? [];
+    }
+    const facets = facetsRes.data?.facets ?? [];
+    const claims = claimsRes.data?.claims ?? [];
+    const evidence = evRes.data?.evidence ?? [];
+    renderStructureLists(facets, claims, evidence, spans);
+  }
+
+  document.getElementById('ref-btn-add-facet')?.addEventListener('click', async () => {
+    const typeEl = document.getElementById('ref-facet-type') as HTMLSelectElement | null;
+    const valEl = document.getElementById('ref-facet-value') as HTMLInputElement | null;
+    const value = valEl?.value.trim() ?? '';
+    if (!value || !activeEntryId || activeEntryId === 'new') return;
+    const res = await apiRequest('/api/structure/facets', {
+      method: 'POST',
+      body: JSON.stringify({
+        entry_id: activeEntryId,
+        key: typeEl?.value || 'topic',
+        value,
+        source: 'owner',
+        status: 'confirmed',
+      }),
+    });
+    if (res.ok) {
+      if (valEl) valEl.value = '';
+      await loadStructureData();
+    }
+  });
+
+  document.getElementById('ref-btn-add-claim')?.addEventListener('click', async () => {
+    const claimEl = document.getElementById('ref-claim-input') as HTMLInputElement | null;
+    const text = claimEl?.value.trim() ?? '';
+    if (!text || !cachedRevId) return;
+    const res = await apiRequest('/api/structure/claims', {
+      method: 'POST',
+      body: JSON.stringify({
+        revision_id: cachedRevId,
+        text,
+        kind: 'fact',
+        source: 'owner',
+        status: 'accepted',
+      }),
+    });
+    if (res.ok) {
+      if (claimEl) claimEl.value = '';
+      await loadStructureData();
+    }
+  });
+
+  document.getElementById('ref-btn-add-evidence')?.addEventListener('click', async () => {
+    const titleEl = document.getElementById('ref-evidence-title') as HTMLInputElement | null;
+    const urlEl = document.getElementById('ref-evidence-url') as HTMLInputElement | null;
+    const title = titleEl?.value.trim() ?? '';
+    const url = urlEl?.value.trim() ?? '';
+    if ((!title && !url) || !activeEntryId || activeEntryId === 'new') return;
+    const res = await apiRequest('/api/structure/evidence', {
+      method: 'POST',
+      body: JSON.stringify({
+        entry_id: activeEntryId,
+        url: url || undefined,
+        kind: 'url',
+        verification: title ? { title } : undefined,
+      }),
+    });
+    if (res.ok) {
+      if (titleEl) titleEl.value = '';
+      if (urlEl) urlEl.value = '';
+      await loadStructureData();
+    }
+  });
+
+  document.getElementById('ref-spans-list')?.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement | null)?.closest<HTMLElement>('button[data-span-action]');
+    if (!btn) return;
+    const action = btn.getAttribute('data-span-action');
+    const span_id = btn.getAttribute('data-span-id') ?? '';
+    const role = btn.getAttribute('data-span-role') ?? 'context';
+    if (!span_id) return;
+    const status = action === 'accept' ? 'accepted' : 'rejected';
+    const res = await apiRequest('/api/structure/annotations', {
+      method: 'POST',
+      body: JSON.stringify({ span_id, role, status }),
+    });
+    if (res.ok) {
+      const row = btn.closest('[data-span-id]');
+      row?.setAttribute('data-span-status', status);
+    }
+  });
+
+  // Left entries drawer (push panel, closed by default)
   const entriesDrawer = document.getElementById('ref-entries-drawer');
   const entriesToggleBtn = document.getElementById('ref-sidebar-toggle');
   const entriesCloseBtn = document.getElementById('ref-btn-close-entries');
@@ -888,20 +1100,22 @@ function bootEditorPage(): void {
     }
   });
 
-  // Visibility menu items (D-EDITOR-2a: Public, Unlisted, Private; Public opens Publish dialog)
-  document.querySelectorAll<HTMLElement>('#ref-visibility-menu [data-vis]').forEach((item) => {
-    item.addEventListener('click', async () => {
-      const targetVis = item.getAttribute('data-vis') as Visibility;
-      const priorVis = (formEl?.getAttribute('data-visibility') as Visibility) ?? 'public';
-      closeVisMenu();
+  // Visibility choice radios (D-EDITOR-4: Public, Unlisted, Private; Public opens Publish dialog)
+  document.querySelectorAll<HTMLInputElement>('input[name="ref-visibility-choice"]').forEach((radio) => {
+    radio.addEventListener('change', async () => {
+      if (!radio.checked) return;
+      const targetVis = radio.value as Visibility;
+      const priorVis = (formEl?.getAttribute('data-visibility') as Visibility) ?? 'draft';
       if (targetVis === priorVis) return;
       if (targetVis === 'public') {
-        await openPublishPreFlight(document.getElementById('ref-visibility-menu-btn'));
+        applyVisibility(priorVis);
+        await openPublishPreFlight(radio);
         return;
       }
       if (!isFixtureMode && activeEntryId) {
         const ok = await persistEntry(targetVis);
         if (!ok && statusLineEl) {
+          applyVisibility(priorVis);
           updateStatusLine(statusLineEl, { message: EDITOR_STRINGS.feedback.saveFailed, tone: 'danger' });
           return;
         }
@@ -994,6 +1208,9 @@ function bootEditorPage(): void {
     syncViewportDock();
   }
 
+  document.getElementById('ref-btn-delete')?.addEventListener('click', () => {
+    deleteCtrl?.open(document.getElementById('ref-btn-delete'));
+  });
   document.getElementById('ref-more-delete')?.addEventListener('click', () => {
     closeMoreMenu();
     deleteCtrl?.open(document.getElementById('ref-more-menu-btn'));

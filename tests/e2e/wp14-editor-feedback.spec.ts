@@ -18,10 +18,10 @@ test.describe.serial('WP-14.0a: In-viewport editor feedback and live announcemen
     const statusLine = page.locator('#ref-status-line');
 
     await page.fill('#ref-field-title', testTitle);
-    await page.click('#ref-details-trigger');
+    await page.click('#ref-switch-settings');
     await page.fill('#ref-field-slug', testSlug);
     await page.fill('#ref-field-date', '2026-11-10');
-    await page.keyboard.press('Escape');
+    await page.click('#ref-switch-edit');
     await page.click('#ref-btn-source-toggle');
     await page.fill(
       '#ref-field-body',
@@ -37,16 +37,15 @@ test.describe.serial('WP-14.0a: In-viewport editor feedback and live announcemen
     await expect(statusLine).toHaveAttribute('aria-live', 'polite');
 
     // Publish
-    await page.click('#ref-visibility-menu-btn');
+    await page.click('#ref-switch-settings');
     await openDialogBtn.click();
     await expect(page.locator('#ref-publish-dialog-status')).toContainText(/no private details/i);
     await confirmPublishBtn.click();
     await expect(statusLine).toContainText(/now public/i);
     await expect(statusLine).toBeInViewport();
 
-    // Delete via More menu -> confirm dialog (redirects to /admin/entries on success)
-    await page.click('#ref-more-menu-btn');
-    await page.click('#ref-more-delete');
+    // Delete via header button -> confirm dialog (redirects to /admin/entries on success)
+    await page.click('#ref-btn-delete');
     await expect(page.locator('#ref-delete-dialog')).toBeVisible();
     await page.click('#ref-delete-confirm');
     await page.waitForURL((url) => url.pathname === '/admin/entries');

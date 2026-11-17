@@ -32,7 +32,7 @@ test.describe('WP-15.3a Design Foundations Conformance (D-FOUND-1..6)', () => {
         dots999: checkRadius('.lp-status-dot', '999px'),
         badgesBorderless: badges.every((b) => parseFloat(getComputedStyle(b).borderTopWidth) === 0),
         badgesNonPointer: badges.every((b) => getComputedStyle(b).cursor !== 'pointer'),
-        chipsBordered: chips.every((c) => parseFloat(getComputedStyle(c).borderTopWidth) === 1),
+        chipsBorderless: chips.every((c) => parseFloat(getComputedStyle(c).borderTopWidth) === 0),
         containerFlat: getComputedStyle(document.getElementById('specimen-radius-container')!).boxShadow === 'none',
         overlayRaised: getComputedStyle(document.getElementById('specimen-radius-overlay')!).boxShadow !== 'none',
       };
@@ -45,7 +45,7 @@ test.describe('WP-15.3a Design Foundations Conformance (D-FOUND-1..6)', () => {
       dots999: true,
       badgesBorderless: true,
       badgesNonPointer: true,
-      chipsBordered: true,
+      chipsBorderless: true,
       containerFlat: true,
       overlayRaised: true,
     });

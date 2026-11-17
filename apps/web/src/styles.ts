@@ -1974,7 +1974,6 @@ input[type="date"].lp-input {
 .lp-empty-state {
   text-align: left;
   padding: var(--space-6);
-  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-container);
   background: var(--surface-raised);
   display: flex;
@@ -3483,8 +3482,13 @@ a.lp-admin-header-brand {
 
   .lp-editor-toolbar {
     flex-wrap: nowrap;
-    padding: 8px;
+    padding: 8px 4px;
     gap: 4px;
+  }
+
+  .lp-editor-view-switch .lp-tab {
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
   .lp-editor-toolbar-status {
@@ -3503,7 +3507,8 @@ a.lp-admin-header-brand {
     gap: 4px;
     padding: 8px 16px;
     background: var(--surface-page);
-    border-top: 1px solid var(--border-subtle);
+    border-radius: 0;
+    box-shadow: var(--shadow-overlay);
   }
 
   .lp-editor-toolbar-center #ref-btn-source-toggle {
@@ -3975,20 +3980,55 @@ a.lp-admin-header-brand {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   min-height: 48px;
   padding: 8px 16px;
   background: var(--surface-page);
-  border-bottom: 1px solid var(--border-subtle);
 }
 
 .lp-editor-toolbar-left,
-.lp-editor-toolbar-center,
 .lp-editor-toolbar-right {
   display: flex;
   align-items: center;
   gap: 4px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+}
+
+.lp-editor-view-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.lp-format-bar {
+  align-self: center;
+  position: sticky;
+  bottom: 16px;
+  z-index: var(--z-sticky);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  padding: 4px 8px;
+  background: var(--surface-overlay);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-overlay);
+  transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+
+.lp-format-bar .lp-icon-btn:active {
+  transform: scale(0.96);
+  transition-duration: 100ms;
+}
+
+.lp-editor-writing-view,
+.lp-editor-settings-view {
+  width: 100%;
+}
+
+.lp-editor-writing-view[hidden],
+.lp-editor-settings-view[hidden] {
+  display: none;
 }
 
 .lp-editor-toolbar-status {
@@ -4092,20 +4132,27 @@ a.lp-admin-header-brand {
   min-height: 360px;
 }
 
+.lp-editor-shell-fullscreen {
+  display: flex;
+  width: 100%;
+  min-height: calc(100vh - 56px);
+}
+
+.lp-editor-main-fullscreen {
+  flex: 1;
+  min-width: 0;
+}
+
 .lp-editor-drawer {
-  position: fixed;
-  top: 48px;
-  bottom: 0;
-  z-index: var(--z-overlay);
-  width: min(360px, 100vw);
+  flex: 0 0 260px;
+  width: 260px;
   background: var(--surface-overlay);
-  border: 1px solid var(--border-subtle);
-  box-shadow: var(--shadow-overlay);
-  padding: 16px;
+  padding: 16px 8px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  transition: width 240ms var(--ease-out), flex-basis 240ms var(--ease-out);
 }
 
 .lp-editor-drawer[hidden] {
@@ -4113,8 +4160,11 @@ a.lp-admin-header-brand {
 }
 
 .lp-editor-drawer-left {
-  left: 0;
-  border-left: 0;
+  border: 0;
+}
+
+#ref-entry-list {
+  padding: 0 8px;
 }
 
 .lp-editor-drawer-right {
@@ -4944,8 +4994,13 @@ a.lp-item:hover {
 
   .lp-editor-toolbar {
     flex-wrap: nowrap;
-    padding: 8px;
+    padding: 8px 4px;
     gap: 4px;
+  }
+
+  .lp-editor-view-switch .lp-tab {
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
   .lp-editor-toolbar-status {
@@ -4964,7 +5019,8 @@ a.lp-item:hover {
     gap: 4px;
     padding: 8px 16px;
     background: var(--surface-page);
-    border-top: 1px solid var(--border-subtle);
+    border-radius: 0;
+    box-shadow: var(--shadow-overlay);
   }
 
   .lp-editor-toolbar-center #ref-btn-source-toggle {
@@ -5149,10 +5205,8 @@ a.lp-item:hover {
 .lp-item {
   position: relative;
   padding: 12px 0;
-  border-top: 0;
-  border-bottom: 1px solid var(--border-subtle);
+  border: 0;
 }
-.lp-item:last-child { border-bottom: 0; }
 .lp-item::before {
   content: '';
   position: absolute;
@@ -5179,15 +5233,29 @@ a.lp-item:hover {
   padding: 0;
   margin: 0;
 }
-.lp-tabs { border-bottom: 0; }
+.lp-tabs,
+.lp-tabs[role="tablist"] {
+  border: 0;
+}
+.skip-link,
+.lp-admin-header,
+.lp-chip,
+.lp-choice,
 .lp-section-block,
 .lp-gallery-section,
 .lp-editor-toolbar,
 .lp-editor-toolbar-center,
 .lp-overlay-header,
 .lp-overlay-footer {
-  border-top: 0;
-  border-bottom: 0;
+  border: 0;
+}
+.lp-chip,
+.lp-choice {
+  background: var(--surface-control);
+}
+.lp-choice:has(input:checked),
+.lp-choice.is-selected {
+  background: var(--surface-control-selected);
 }
 
 /* D-SYS #11 & #15: Push panel overlay */

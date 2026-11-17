@@ -8,38 +8,39 @@ test.describe.serial('WP-14.2: State badge and date correctness (UX-10, UX-11, U
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/entries/new');
 
-    const stateBadge = page.locator('#ref-visibility-menu-btn');
-    await expect(stateBadge).toBeVisible();
-    await expect(stateBadge).toContainText(/draft/i);
+    const visRadio = (vis: 'draft' | 'unlisted' | 'public') =>
+      page.locator(`input[name="ref-visibility-choice"][value="${vis}"]`);
+    await page.click('#ref-switch-settings');
+    await expect(visRadio('draft')).toBeChecked();
+    await page.click('#ref-switch-edit');
 
     const title = `WP-14.2 Chip Lifecycle ${uniqueSuffix}`;
     const slug = `wp-14-2-chip-${uniqueSuffix}`;
 
     await page.fill('#ref-field-title', title);
-    await page.click('#ref-details-trigger');
+    await page.click('#ref-switch-settings');
     await page.fill('#ref-field-slug', slug);
-    await page.keyboard.press('Escape');
+    await page.click('#ref-switch-edit');
     await page.click('#ref-btn-source-toggle');
     await page.fill('#ref-field-body', 'Testing state badge visibility across lifecycle states.');
 
     // Save as draft
     await page.click('#ref-btn-save');
     await expect(page.locator('#ref-status-line')).toContainText(/draft saved/i);
-    await expect(stateBadge).toContainText(/draft/i);
+    await expect(visRadio('draft')).toBeChecked();
 
     // Publish to public
-    await stateBadge.click();
+    await page.click('#ref-switch-settings');
     await page.click('#ref-btn-publish');
     await expect(page.locator('#ref-publish-dialog-status')).toContainText(/no private details/i);
     await page.click('#ref-publish-confirm');
     await expect(page.locator('#ref-status-line')).toContainText(/now public/i);
-    await expect(stateBadge).toContainText(/public/i);
+    await expect(visRadio('public')).toBeChecked();
 
-    // Unlist via Visibility menu (D-EDITOR-2)
-    await page.click('#ref-visibility-menu-btn');
-    await page.click('#ref-visibility-menu [data-vis="unlisted"]');
+    // Unlist via Visibility choice (D-EDITOR-4)
+    await page.check('input[name="ref-visibility-choice"][value="unlisted"]');
     await expect(page.locator('#ref-status-line')).toContainText(/unlisted/i);
-    await expect(stateBadge).toContainText(/unlisted/i);
+    await expect(visRadio('unlisted')).toBeChecked();
   });
 
   test('2. Date defaults to today and clearing the date does not throw (UX-11)', async ({ page }) => {
@@ -49,7 +50,7 @@ test.describe.serial('WP-14.2: State badge and date correctness (UX-10, UX-11, U
     page.on('pageerror', (err) => pageErrors.push(err));
 
     await page.goto('/admin/entries/new');
-    await page.click('#ref-details-trigger');
+    await page.click('#ref-switch-settings');
 
     const dateInput = page.locator('#ref-field-date');
     await expect(dateInput).toBeVisible();

@@ -106,7 +106,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     expect(adminHtml).toContain('id="ref-field-title"');
     expect(adminHtml).toContain('id="ref-field-body"');
     expect(adminHtml).toContain('id="ref-btn-save"');
-    expect(adminHtml).toContain('id="ref-btn-structure"');
+    expect(adminHtml).toContain('id="ref-switch-settings"');
   });
 
   it('renders Structure Drawer with 3 tabs, ARIA attributes, and interactive controls (20261020-UX-06, WP-15.4)', async () => {
@@ -681,7 +681,7 @@ console.log(x);
       expect(html).toContain('id="ref-field-title"');
       expect(html).toContain('id="ref-field-body"');
       expect(html).toContain('id="ref-btn-save"');
-      expect(html).toContain('id="ref-btn-structure"');
+      expect(html).toContain('id="ref-switch-settings"');
     });
 
     it('5. Slot layout composers fulfill core slot contracts and renderLayout supports nonces (20261020-UI-10)', () => {

@@ -2,6 +2,20 @@
   "version": 1,
   "allowlist": {
     "removedIds": [
+      "ref-btn-close-entries",
+      "ref-btn-close-structure",
+      "ref-btn-structure",
+      "ref-details-popover",
+      "ref-details-summary-meta",
+      "ref-details-trigger",
+      "ref-details-wrap",
+      "ref-inspector-pane",
+      "ref-more-delete",
+      "ref-more-menu",
+      "ref-more-menu-btn",
+      "ref-visibility-menu",
+      "ref-visibility-menu-btn",
+      "ref-visibility-menu-wrap",
       "lp-status-popover",
       "lp-status-popover-btn",
       "ref-inspector-tabs",
@@ -169,7 +183,8 @@
       "data-id",
       "data-level",
       "data-status",
-      "data-theme-label"
+      "data-theme-label",
+      "data-vis"
     ]
   },
   "allIds": [
