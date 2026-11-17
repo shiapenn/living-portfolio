@@ -28,6 +28,28 @@ const JARGON_PATTERNS = [
   /\b(?:UX|CP)-\d+\b/,
 ];
 
+const HTML_TAG_PATTERN = /<[a-z!/]/i;
+
+function extractOutsideBlocks(html: string, tagName: string): string {
+  const lower = html.toLowerCase();
+  const openTag = `<${tagName}`;
+  const closeTag = `</${tagName}>`;
+  let out = '';
+  let pos = 0;
+  while (pos < html.length) {
+    const start = lower.indexOf(openTag, pos);
+    if (start === -1) {
+      out += html.slice(pos);
+      break;
+    }
+    out += html.slice(pos, start);
+    const end = lower.indexOf(closeTag, start + openTag.length);
+    if (end === -1) break;
+    pos = end + closeTag.length;
+  }
+  return out;
+}
+
 describe('WP-15.5 Copy and Help Catalogues', () => {
   it('formats counts, plurals, and titles with counts from one helper', () => {
     expect(formatPlural(1, 'entry', 'entries')).toBe('entry');
@@ -88,10 +110,15 @@ describe('WP-15.5 Copy and Help Catalogues', () => {
       ...collectStrings(WIZARD_STRINGS),
     ];
     for (const text of allCatalogueStrings) {
+      expect(text, `Catalogue string "${text}" contains HTML tag`).not.toMatch(HTML_TAG_PATTERN);
       for (const pattern of JARGON_PATTERNS) {
         expect(text, `Catalogue string "${text}" matched ${pattern}`).not.toMatch(pattern);
       }
     }
+
+    // Negative fixtures proving HTML_TAG_PATTERN catches planted <SCRIPT> and <style strings
+    expect('<SCRIPT>alert(1)</SCRIPT>').toMatch(HTML_TAG_PATTERN);
+    expect('<style>body{color:red}</style>').toMatch(HTML_TAG_PATTERN);
 
     const editorHtml = renderReferenceEditorPage({
       entries: [
@@ -108,9 +135,7 @@ describe('WP-15.5 Copy and Help Catalogues', () => {
       ],
       selectedId: 'e1',
     });
-    const visibleEditorMarkup = editorHtml
-      .replace(/<style[\s\S]*?<\/style>/g, '')
-      .replace(/<script[\s\S]*?<\/script>/g, '');
+    const visibleEditorMarkup = extractOutsideBlocks(extractOutsideBlocks(editorHtml, 'style'), 'script');
     for (const pattern of JARGON_PATTERNS) {
       expect(visibleEditorMarkup).not.toMatch(pattern);
     }
