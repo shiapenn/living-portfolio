@@ -1,5 +1,5 @@
 import { renderAdminShell } from '../../../layouts/admin-shell.js';
-import { BUILTIN_PROFILES, groupProfilesBySection } from '@living-portfolio/core';
+import { BUILTIN_PROFILES, groupProfilesBySection, resolveEntrySection } from '@living-portfolio/core';
 import { escapeHtml } from '../../../lib/html.js';
 import {
   renderButton,
@@ -22,7 +22,7 @@ import {
   renderStructureSection,
   type WorkspaceEscalationItem,
 } from './editor-sections.js';
-import { formatVisibilityLabel, renderEditorFormattingBar, renderEditorToolbar } from './editor-toolbar.js';
+import { formatDetailsMeta, formatVisibilityLabel, renderEditorFormattingBar, renderEditorToolbar } from './editor-toolbar.js';
 
 export type ReferenceEntryVisibility = 'draft' | 'unlisted' | 'public';
 
@@ -67,7 +67,17 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
     label: g.sectionLabel,
     options: g.profiles.map((p) => ({ value: p.id, label: p.label })),
   }));
-  const detailsBody = `<div class="lp-details-grid">
+  const effectiveSlug =
+    selected.slug?.trim() ||
+    selected.title
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') ||
+    'untitled-entry';
+  const resolvedTarget = resolveEntrySection(selected.profile, { slug: effectiveSlug });
+
+  const detailsBody = `<div class="lp-stack lp-gap-related">
   ${renderField({ kind: 'input', id: 'ref-field-slug', name: 'slug', label: EDITOR_STRINGS.fields.slugLabel, value: selected.slug })}
   ${renderField({
     kind: 'select',
@@ -86,6 +96,7 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
     value: selected.temporalConfidence,
     options: [...EDITOR_STRINGS.temporal],
   })}
+  <p id="ref-details-publish-target" class="lp-description">Publishes to ${escapeHtml(resolvedTarget.label)} at ${escapeHtml(resolvedTarget.url)}</p>
 </div>`;
 
   const isDraft = selected.visibility === 'draft';
@@ -111,7 +122,7 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
   const detailsSection = renderFormSection({
     id: 'ref-details-section',
     title: 'Details',
-    description: 'Slug, profile, date, and precision.',
+    description: 'Slug, type, date, and precision.',
     fieldsHtml: detailsBody,
   });
 
@@ -122,11 +133,12 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
   <div id="ref-writing-view" class="lp-editor-writing-view">
     <div class="lp-editor-writing-col">
       <div class="lp-editor-title-wrap">
-        <input type="text" id="ref-field-title" name="title" class="lp-editor-title-input" value="${escapeHtml(selected.title)}" placeholder="${escapeHtml(EDITOR_STRINGS.fields.titlePlaceholder)}" aria-label="${escapeHtml(EDITOR_STRINGS.fields.titleLabel)}" required />
+        <textarea id="ref-field-title" name="title" rows="1" data-lp-autogrow="true" class="lp-editor-title-input" placeholder="${escapeHtml(EDITOR_STRINGS.fields.titlePlaceholder)}" aria-label="${escapeHtml(EDITOR_STRINGS.fields.titleLabel)}" required>${escapeHtml(selected.title)}</textarea>
+        <a href="#settings" id="ref-details-line" class="lp-editor-details-line">${escapeHtml(formatVisibilityLabel(selected.visibility))}, ${escapeHtml(formatDetailsMeta(selected))}</a>
         ${options.titleError ? `<p id="ref-field-title-error" class="lp-field-error">${escapeHtml(options.titleError)}</p>` : '<p id="ref-field-title-error" class="lp-field-error lp-is-hidden"></p>'}
       </div>
       <div class="lp-editor-surface-wrap">
-        <div id="ref-tiptap-editor" class="lp-tiptap-mount"></div>
+        <div id="ref-tiptap-editor" class="lp-tiptap-mount lp-prose"></div>
         <div id="ref-slash-menu" class="lp-popover-menu lp-slash-menu" role="menu" aria-label="Insert block" hidden></div>
         <textarea id="ref-field-body" name="body" class="lp-input lp-textarea lp-editor-source-textarea lp-is-hidden" rows="16" placeholder="${escapeHtml(EDITOR_STRINGS.fields.bodyPlaceholder)}" aria-label="${escapeHtml(EDITOR_STRINGS.fields.bodyLabel)}" hidden>${escapeHtml(selected.body)}</textarea>
       </div>
@@ -134,7 +146,7 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
     </div>
   </div>
   <div id="ref-settings-view" class="lp-editor-settings-view" hidden>
-    <div class="lp-editor-writing-col lp-stack lp-gap-24">
+    <div class="lp-editor-writing-col lp-stack lp-gap-section">
       ${visibilitySection}
       ${detailsSection}
       ${structureSection}

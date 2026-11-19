@@ -232,6 +232,15 @@ export function createWebApp(options?: WebAppOptions) {
     return c.html(await renderAdminStatusPage(client, { siteName: cfg.PUBLIC_SITE_NAME }));
   });
   app.get('/admin/settings', (c) => c.redirect('/admin/settings/answering', 302));
+  app.get('/admin/settings/providers/change', async (c) => {
+    const { renderProviderChangePage } = await import('./pages/admin/providers-change.js');
+    const stepParam = Number(c.req.query('step') || '1');
+    const step = (stepParam === 2 || stepParam === 3 ? stepParam : 1) as 1 | 2 | 3;
+    const provParam = c.req.query('provider');
+    const provider = (provParam === 'openai' || provParam === 'anthropic' || provParam === 'ollama' ? provParam : 'local');
+    const model = c.req.query('model') || undefined;
+    return c.html(renderProviderChangePage({ step, provider, model }));
+  });
   app.get('/admin/settings/:id', async (c) => {
     const html = await renderAdminSettingsModulePage(client, c.req.param('id'));
     if (html) return c.html(html);

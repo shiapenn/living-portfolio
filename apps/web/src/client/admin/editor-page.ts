@@ -272,10 +272,10 @@ function bootEditorPage(): void {
     const isEdit = view === 'edit';
     if (writingViewEl) writingViewEl.hidden = !isEdit;
     if (settingsViewEl) settingsViewEl.hidden = isEdit;
-    switchEditBtn?.setAttribute('aria-selected', isEdit ? 'true' : 'false');
-    switchEditBtn?.classList.toggle('is-active', isEdit);
-    switchSettingsBtn?.setAttribute('aria-selected', isEdit ? 'false' : 'true');
-    switchSettingsBtn?.classList.toggle('is-active', !isEdit);
+    switchEditBtn?.setAttribute('aria-checked', isEdit ? 'true' : 'false');
+    switchEditBtn?.classList.toggle('is-selected', isEdit);
+    switchSettingsBtn?.setAttribute('aria-checked', isEdit ? 'false' : 'true');
+    switchSettingsBtn?.classList.toggle('is-selected', !isEdit);
     if (!isEdit) {
       void loadStructureData();
     }
@@ -283,28 +283,46 @@ function bootEditorPage(): void {
 
   switchEditBtn?.addEventListener('click', () => setEditorView('edit'));
   switchSettingsBtn?.addEventListener('click', () => setEditorView('settings'));
+  document.getElementById('ref-details-line')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    setEditorView('settings');
+  });
+
+  document.getElementById('ref-btn-open-claim')?.addEventListener('click', () => {
+    document.getElementById('ref-claim-form-wrap')?.classList.remove('lp-is-hidden');
+    document.getElementById('ref-claim-input')?.focus();
+  });
+  document.getElementById('ref-btn-cancel-claim')?.addEventListener('click', () => {
+    document.getElementById('ref-claim-form-wrap')?.classList.add('lp-is-hidden');
+  });
+  document.getElementById('ref-btn-open-evidence')?.addEventListener('click', () => {
+    document.getElementById('ref-evidence-form-wrap')?.classList.remove('lp-is-hidden');
+    document.getElementById('ref-evidence-title')?.focus();
+  });
+  document.getElementById('ref-btn-cancel-evidence')?.addEventListener('click', () => {
+    document.getElementById('ref-evidence-form-wrap')?.classList.add('lp-is-hidden');
+  });
 
   // Full Structure restoration (D-EDITOR-4)
   let cachedRevId = '';
   const updateStructureLevel = (facetCount: number, claimCount: number, evidenceCount: number) => {
     const levelEl = document.getElementById('ref-structure-level');
-    const nextEl = document.getElementById('ref-structure-next-step');
+    const nextEl = levelEl?.querySelector('.lp-level-next');
     const levels = ['Captured', 'Tagged', 'Claimed', 'Grounded'] as const;
     const idx = evidenceCount > 0 ? 3 : claimCount > 0 ? 2 : facetCount > 0 ? 1 : 0;
-    const currentLevel = levels[idx];
     if (levelEl) {
-      levelEl.setAttribute('data-current-level', currentLevel);
-      levels.forEach((lvl, i) => {
-        const badge = levelEl.querySelector(`[data-level-step="${lvl}"]`);
-        if (badge) {
-          badge.className = `lp-badge ${i <= idx ? 'lp-badge-ok' : 'lp-badge-neutral'}`;
-        }
+      levelEl.setAttribute('data-current-level', levels[idx]);
+      const segs = Array.from(levelEl.querySelectorAll('.lp-level-segment'));
+      segs.forEach((seg, i) => {
+        seg.classList.toggle('is-done', i <= idx);
+        seg.classList.toggle('is-upcoming', i > idx);
+        seg.classList.toggle('is-current', i === idx);
       });
     }
     if (nextEl) {
       nextEl.textContent =
         idx === 0
-          ? 'Add a facet tag to reach Tagged.'
+          ? 'Add a tag to reach Tagged.'
           : idx === 1
             ? 'Add a claim to reach Claimed.'
             : idx === 2
@@ -326,7 +344,7 @@ function bootEditorPage(): void {
     const fEl = byId('ref-facets-list');
     if (fEl) {
       fEl.innerHTML = facets
-        .map((f) => `<span class="lp-chip lp-chip-confirmed" data-facet-id="${esc(f.id)}">${esc(f.key || f.facet_type || 'topic')}: ${esc(f.value ?? f.facet_value)}</span>`)
+        .map((f) => `<span class="lp-tag" data-facet-id="${esc(f.id)}"><span class="lp-tag-label">${esc(f.key || f.facet_type || 'topic')}: ${esc(f.value ?? f.facet_value)}</span></span>`)
         .join('');
     }
     const cEl = byId('ref-claims-list');
@@ -343,12 +361,27 @@ function bootEditorPage(): void {
     }
     const sEl = byId('ref-spans-list');
     if (sEl) {
+      const formatRoleLabel = (raw: string) => {
+        const clean = (raw || 'context').replace(/[-_]+/g, ' ').trim();
+        return clean ? clean.charAt(0).toUpperCase() + clean.slice(1) : 'Context';
+      };
+      const statusMeta = (rawStatus: string) => {
+        const st = rawStatus || 'suggested';
+        if (st === 'accepted') return { st: 'accepted', label: 'Accepted', tone: 'ok' };
+        if (st === 'rejected') return { st: 'rejected', label: 'Ignored', tone: 'muted' };
+        return { st: 'suggested', label: 'Suggested', tone: 'neutral' };
+      };
       sEl.innerHTML = spans.length
         ? spans
-            .map(
-              (sp) =>
-                `<div class="lp-item" data-span-id="${esc(sp.id)}" data-span-status="${esc(sp.status || 'suggested')}"><div class="lp-item-main"><div class="lp-item-title">${esc(sp.text || 'Span')}</div><div class="lp-item-subtitle">${esc(sp.suggested_role || 'context')}</div></div><div class="lp-item-actions"><button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" data-span-action="accept" data-span-id="${esc(sp.id)}" data-span-role="${esc(sp.suggested_role || 'context')}">Accept</button><button type="button" class="lp-btn lp-btn-quiet lp-btn-sm" data-span-action="reject" data-span-id="${esc(sp.id)}" data-span-role="${esc(sp.suggested_role || 'context')}">Ignore</button></div></div>`
-            )
+            .map((sp) => {
+              const roleRaw = sp.suggested_role || sp.role || 'context';
+              const roleLabel = formatRoleLabel(roleRaw);
+              const passage = sp.text || '';
+              const meta = statusMeta(sp.status);
+              const isAccepted = meta.st === 'accepted';
+              const isRejected = meta.st === 'rejected';
+              return `<div class="lp-item lp-item-has-actions" data-span-id="${esc(sp.id)}" data-span-status="${esc(meta.st)}"><div class="lp-item-title"><span>${esc(roleLabel)}</span></div><div class="lp-item-status"><span class="lp-status-dot lp-status-${meta.tone}"><span class="lp-status-dot-circle" aria-hidden="true"></span><span>${esc(meta.label)}</span></span></div>${passage ? `<div class="lp-item-body lp-line-clamp-3" title="${esc(passage)}">${esc(passage)}</div>` : ''}<div class="lp-item-actions"><div class="lp-choice-list" role="group" aria-label="Role decision"><button type="button" class="lp-choice lp-choice-button${isAccepted ? ' is-selected' : ''}" data-span-action="accept" data-span-id="${esc(sp.id)}" data-span-role="${esc(roleRaw)}" aria-pressed="${isAccepted ? 'true' : 'false'}"><span class="lp-choice-btn-label">Accept</span></button><button type="button" class="lp-choice lp-choice-button${isRejected ? ' is-selected' : ''}" data-span-action="reject" data-span-id="${esc(sp.id)}" data-span-role="${esc(roleRaw)}" aria-pressed="${isRejected ? 'true' : 'false'}"><span class="lp-choice-btn-label">Ignore</span></button></div></div></div>`;
+            })
             .join('')
         : '<p class="lp-field-help">Save entry to detect suggested span roles.</p>';
     }
@@ -449,14 +482,30 @@ function bootEditorPage(): void {
     const span_id = btn.getAttribute('data-span-id') ?? '';
     const role = btn.getAttribute('data-span-role') ?? 'context';
     if (!span_id) return;
-    const status = action === 'accept' ? 'accepted' : 'rejected';
+    const row = btn.closest('[data-span-id]');
+    const currentStatus = row?.getAttribute('data-span-status') || 'suggested';
+    const targetStatus = action === 'accept' ? 'accepted' : 'rejected';
+    const nextStatus = currentStatus === targetStatus ? 'suggested' : targetStatus;
     const res = await apiRequest('/api/structure/annotations', {
       method: 'POST',
-      body: JSON.stringify({ span_id, role, status }),
+      body: JSON.stringify({ span_id, role, status: nextStatus }),
     });
-    if (res.ok) {
-      const row = btn.closest('[data-span-id]');
-      row?.setAttribute('data-span-status', status);
+    if (res.ok && row) {
+      row.setAttribute('data-span-status', nextStatus);
+      const statusEl = row.querySelector('.lp-item-status .lp-status-dot');
+      if (statusEl) {
+        const tone = nextStatus === 'accepted' ? 'ok' : nextStatus === 'rejected' ? 'muted' : 'neutral';
+        const label = nextStatus === 'accepted' ? 'Accepted' : nextStatus === 'rejected' ? 'Ignored' : 'Suggested';
+        statusEl.className = `lp-status-dot lp-status-${tone}`;
+        const labelEl = statusEl.querySelector('span:last-child');
+        if (labelEl) labelEl.textContent = label;
+      }
+      row.querySelectorAll<HTMLButtonElement>('button[data-span-action]').forEach((b) => {
+        const bAction = b.getAttribute('data-span-action');
+        const active = (nextStatus === 'accepted' && bAction === 'accept') || (nextStatus === 'rejected' && bAction === 'reject');
+        b.classList.toggle('is-selected', active);
+        b.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
     }
   });
 

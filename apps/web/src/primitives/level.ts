@@ -43,7 +43,7 @@ export function renderLevel(props: LevelProps): string {
     ? `<p class="lp-level-next lp-description">${escapeHtml(props.nextStep)}</p>`
     : '';
 
-  return `<div${idAttr} class="${escapeHtml(classes)}">
+  return `<div${idAttr} class="${escapeHtml(classes)}" data-current-level="${escapeHtml(props.current)}">
   <div class="lp-level-bar" role="img" aria-readonly="true" aria-label="Structure level: ${escapeHtml(props.current)} (${currentIndex + 1} of 4)">${segmentsHtml}</div>
   ${nextHtml}
 </div>`;

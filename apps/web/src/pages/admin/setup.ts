@@ -1,5 +1,6 @@
 import { renderAdminShell } from "../../layouts/admin-shell.js";
 import { renderActionBar, renderButton, renderChip, renderChoiceGroup, renderIcon, renderItem } from "../../primitives/index.js";
+import { PROVIDERS_CATALOG } from "../../patterns/provider-flow.js";
 import { WIZARD_STRINGS } from "../../strings.js";
 import { SETUP_SCRIPT_PART_1 } from './setup-script-part1.js';
 import { SETUP_SCRIPT_PART_2 } from './setup-script-part2.js';
@@ -140,14 +141,14 @@ export function renderAdminSetupPage(): string {
         </div>
 
         <div class="lp-list">
-          ${WIZARD_STRINGS.step3.providersTable.rows.map((row) =>
+          ${PROVIDERS_CATALOG.map((p) =>
             renderItem({
-              id: row.statusId,
-              title: `${row.name} · ${row.model}`,
-              subtitle: row.classes.join(', '),
-              statusLabel: row.status,
-              statusTone: row.isLocal ? 'ok' : 'neutral',
-            })
+              title: p.id === 'local' ? 'Local ONNX' : p.label,
+              subtitle: `${p.description} ${p.dataNote}`,
+              statusLabel: p.id === 'local' ? 'Configured' : 'Not configured',
+              statusTone: p.id === 'local' ? 'ok' : 'neutral',
+              attributes: `data-provider="${p.id}"`,
+            }).replace('<div class="lp-item-status">', `<div id="status-${p.id}" class="lp-item-status">`)
           ).join('')}
         </div>
 

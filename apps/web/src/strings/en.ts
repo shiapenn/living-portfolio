@@ -71,7 +71,7 @@ export const WIZARD_STRINGS = {
   },
   step2: {
     title: 'Step 2: Hosting Option & Presets',
-    subtitle: 'Choose a deployment profile matching your server infrastructure.',
+    subtitle: 'Choose a hosting option matching your server infrastructure.',
     hostingPresets: [
       {
         value: 'hobbyist-docker',

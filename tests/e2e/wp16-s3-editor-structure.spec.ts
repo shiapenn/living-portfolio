@@ -57,12 +57,14 @@ test.describe('WP-16.S S3: D-EDITOR-4 & Full Structure Restoration', () => {
     await expect(page.locator('#ref-structure-level')).toHaveAttribute('data-current-level', 'Tagged');
 
     // Add a claim -> level advances to Claimed
+    await page.click('#ref-btn-open-claim');
     await page.fill('#ref-claim-input', 'Postgres advisory locks eliminated lock contention.');
     await page.click('#ref-btn-add-claim');
     await expect(page.locator('#ref-claims-list')).toContainText('Postgres advisory locks eliminated lock contention.');
     await expect(page.locator('#ref-structure-level')).toHaveAttribute('data-current-level', 'Claimed');
 
     // Attach evidence -> level advances to Grounded
+    await page.click('#ref-btn-open-evidence');
     await page.fill('#ref-evidence-title', 'Load test benchmark');
     await page.fill('#ref-evidence-url', 'https://example.com/bench');
     await page.click('#ref-btn-add-evidence');

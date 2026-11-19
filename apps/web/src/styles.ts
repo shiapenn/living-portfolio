@@ -4941,6 +4941,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-section-title, .lp-form-section-title, .lp-section-header-title { font-size: 16px; font-weight: 600; color: var(--text-1); line-height: 24px; }
 .lp-item-title, .lp-field-label { font-size: 14px; font-weight: 600; color: var(--text-1); line-height: 20px; }
 .lp-body, .lp-item-body { font-size: 14px; font-weight: 400; color: var(--text-1); line-height: 20px; }
+.lp-line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .lp-description, .lp-page-description, .lp-form-section-desc { font-size: 14px; font-weight: 400; color: var(--text-2); line-height: 20px; }
 .lp-caption, .lp-item-subtitle, .lp-item-meta, .lp-field-help, .lp-item-segment-heading { font-size: 12px; font-weight: 400; color: var(--text-2); line-height: 16px; }
 .lp-input::placeholder, .lp-textarea::placeholder, :disabled { color: var(--text-3); }
@@ -4997,21 +4998,25 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   display: inline-flex;
   align-items: center;
   height: 36px;
-  padding: 2px;
+  padding: 0;
   border-radius: 4px;
   background: var(--surface-l2);
-  gap: 2px;
+  gap: 4px;
 }
 .lp-segment-btn {
-  height: 32px;
-  padding: 0 12px;
-  border: 0;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
   color: var(--text-2);
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+}
+@media (min-width: 640px) {
+  .lp-segment-btn { padding: 0 16px; }
 }
 .lp-segment-btn.is-selected {
   background: var(--surface-l0);
@@ -5023,13 +5028,13 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   display: inline-flex;
   align-items: center;
   height: 28px;
-  padding: 0 0 0 10px;
+  padding: 0 0 0 8px;
   border-radius: 4px;
   background: var(--surface-l2);
   color: var(--text-2);
   font-size: 12px;
   font-weight: 400;
-  border: 1px solid var(--border-subtle);
+  border: 0;
   animation: lp-tag-enter 160ms var(--ease-out);
 }
 .lp-tag-remove {
@@ -5056,6 +5061,86 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-level-segment.is-done .lp-level-bar-fill { background: var(--accent); }
 .lp-level-label { font-size: 12px; font-weight: 400; color: var(--text-2); line-height: 16px; }
 .lp-level-segment.is-current .lp-level-label { font-weight: 600; color: var(--text-1); }
+
+/* D-FINAL #15, #16: Editor header row (1fr auto 1fr), Edit prose, details line, format bar */
+.lp-editor-header-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: 36px;
+  height: 36px;
+  padding: 0 var(--space-4);
+  background: var(--surface-l0);
+  border-bottom: 0;
+  gap: 4px;
+}
+.lp-editor-toolbar-sticky {
+  position: sticky;
+  top: 56px;
+  z-index: var(--z-sticky);
+  background: var(--surface-l0);
+}
+.lp-editor-toolbar-left { justify-self: start; display: flex; align-items: center; gap: 8px; }
+.lp-editor-toolbar-center-slot { justify-self: center; display: flex; align-items: center; }
+.lp-editor-toolbar-right { justify-self: end; display: flex; align-items: center; gap: 4px; }
+@media (min-width: 640px) {
+  .lp-editor-toolbar-right { gap: 8px; }
+  .lp-editor-mobile-only { display: none; }
+}
+@media (max-width: 639px) {
+  .lp-editor-desktop-only { display: none; }
+}
+.lp-editor-title-input {
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  background: transparent;
+  color: var(--text-1);
+  border: 0;
+  padding: 0;
+}
+.lp-editor-details-line {
+  display: inline-block;
+  max-width: 100%;
+  text-align: left;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-2);
+  cursor: pointer;
+}
+.lp-prose .ProseMirror {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.lp-prose .ProseMirror > * { margin: 0; }
+.lp-prose .ProseMirror h1,
+.lp-prose .ProseMirror h2,
+.lp-prose .ProseMirror h3 {
+  padding-top: 8px;
+}
+.lp-format-bar {
+  position: fixed;
+  bottom: calc(16px + var(--vv-bottom, 0px));
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
+  z-index: var(--z-overlay);
+  background: var(--surface-l1);
+  box-shadow: var(--shadow-overlay);
+  border-radius: 8px;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
 
 .lp-canary-center { text-align: center; }
 .lp-canary-empty-tall { height: 48px; }
