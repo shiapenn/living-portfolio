@@ -144,6 +144,9 @@
 | `A136` | WP-16.S S2 Page Migrations and /admin/status | `active` | [A136-wp-16s-s2-page-migrations-and-status.md](execution-reports/A136-wp-16s-s2-page-migrations-and-status.md) | — |
 | `A137` | WP-16.S S3 D-EDITOR-4 Editor and Full Structure Restoration | `active` | [A137-wp-16s-s3-editor-and-structure.md](execution-reports/A137-wp-16s-s3-editor-and-structure.md) | — |
 | `A138` | WP-16.S S4 Contact Sheets, Bundle/CSS Trim & Register Closure | `active` | [A138-wp-16s-s4-contact-sheets-and-closure.md](execution-reports/A138-wp-16s-s4-contact-sheets-and-closure.md) | — |
+| `A139` | WP-16.F F0 Contract and Failing Census | `active` | [A139-wp-16f-f0-contract-and-failing-census.md](execution-reports/A139-wp-16f-f0-contract-and-failing-census.md) | — |
+| `A140` | WP-16.F F1 Tokens, Primitives and Fixture | `active` | [A140-wp-16f-f1-tokens-primitives-and-fixture.md](execution-reports/A140-wp-16f-f1-tokens-primitives-and-fixture.md) | — |
+| `A141` | wp-16f-f2-pages-and-overlays | `active` | [A141-wp-16f-f2-pages-and-overlays.md](execution-reports/A141-wp-16f-f2-pages-and-overlays.md) | — |
 
 ## Handover Snapshots (Class H)
 
