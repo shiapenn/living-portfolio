@@ -148,6 +148,7 @@
 | `A140` | WP-16.F F1 Tokens, Primitives and Fixture | `active` | [A140-wp-16f-f1-tokens-primitives-and-fixture.md](execution-reports/A140-wp-16f-f1-tokens-primitives-and-fixture.md) | — |
 | `A141` | wp-16f-f2-pages-and-overlays | `active` | [A141-wp-16f-f2-pages-and-overlays.md](execution-reports/A141-wp-16f-f2-pages-and-overlays.md) | — |
 | `A142` | wp-16f-f3-editor-structure-providers | `active` | [A142-wp-16f-f3-editor-structure-providers.md](execution-reports/A142-wp-16f-f3-editor-structure-providers.md) | — |
+| `A143` | wp-16f-f4-contact-sheets-and-closure | `active` | [A143-wp-16f-f4-contact-sheets-and-closure.md](execution-reports/A143-wp-16f-f4-contact-sheets-and-closure.md) | — |
 
 ## Handover Snapshots (Class H)
 
