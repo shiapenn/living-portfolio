@@ -265,3 +265,68 @@ Where `D-SYS` conflicts with `D-COMP`, `D-LAYOUT`, `D-MIN`, `D-FOUND`, `D-08`, o
 14. **Icon buttons**: Keep the Lucide stroke glyphs. The click area of every icon button is a filled background, not an outline: `36 × 36 px`, radius `4 px`, no border; fill from a control-surface token at rest, stronger token on hover, stronger one on press (`scale(0.92)` on glyph over `100 ms`), accent tint with accent glyph when selected/pressed (toggles), standard focus ring. The `Edit`/`Settings` switch is one filled container with a moving selected thumb. Toggles cross-fade over `120 ms` (`sun`/`moon`, panel open/close); `prefers-reduced-motion` removes motion.
 15. **Simplification**: Only allowed shared components: `Page` (templates), the one `Shell`, `Stack`, `Row`, `PageHeader`, `BackLink`, `SectionHeader`, `Item`, `FormSection`, `Field`, `Choice`, `Button` (`primary`, `secondary`, `text`, `icon`), `ActionBar`, `Tabs`, `Stepper`, `Select`, `Input` and `Textarea`, `Overlay` (`popover`, `sheet`, `panel`, `push panel`, `dialog`), `Icon`, `StatusLabel`, `Toolbar`. Delete any other component or duplicate class; no role may have two implementations. One components stylesheet generated from tokens; per-page CSS only for page-specific layout, under a size cap. CSS and client bundle bytes must not grow.
 16. **Other fixes**: `Answer rules` `Item`: title is the rule as one plain sentence, subtitle is the scope, status stacked per `Item` contract, actions in `ActionBar`. `Setup`: `Choice` cards keep radio group with `D-COMP` #5 selection micro-interaction; `Next` is full-width primary; `Back` uses `BackLink`. `Login`: `narrow` template (`400 px`); `Sign in` primary full width above recovery link as full-width text button.
+
+---
+
+## D-FINAL: Final Polish and Contract Closure (Supersedes Conflicting Earlier Rules)
+
+Where `D-FINAL` conflicts with `D-SYS`, `D-COMP`, `D-LAYOUT`, `D-MIN`, or `D-FOUND`, `D-FINAL` supersedes them:
+
+### A. Measurement & Census Contract
+1. **Single `STATES` Manifest**: `tests/e2e/states-manifest.ts` lists every page, view, and overlay state (all admin pages, editor Edit and Settings views, publish and delete dialogs, entries panel open, launcher, account menu, slash menu, setup steps 1–6, login and recovery login, Providers change flow steps, tag add, suggested role states `suggested`/`accepted`/`ignored`, empty and error states, gallery). Census and contact sheets iterate the exact same manifest × 2 themes × `320`, `1280`, and `1920`; the census fails if a sheet exists that is not in the manifest or vice versa.
+2. **Painted-Gap Check**: Measures painted boxes only (elements with text, border, or background; ignoring empty containers and wrappers). Between consecutive painted blocks inside the page column, vertical whitespace must equal the relation token (`±1 px`):
+   - `page-title-to-description`: `8 px`
+   - `header-to-content`: `24 px`
+   - `tabs-to-content`: `16 px`
+   - `section-heading-to-intro`: `8 px`
+   - `heading-or-intro-to-first`: `16 px`
+   - `label-to-control`: `8 px`
+   - `control-to-help`: `8 px`
+   - `field-to-field`: `16 px`
+   - `item-to-item`: `0 px` (`12 px` top/bottom padding + `1 px` hairline)
+   - `section-to-section`: `40 px`
+   - `last-control-to-action-bar`: `24 px`
+   - `button-to-button`: `8 px`
+   - `dialog-title-to-body`: `16 px`
+   - `dialog-body-to-action-bar`: `24 px`
+   `Stack` accepts only `tight` (`8`), `related` (`16`), `group` (`24`), `section` (`40`); numeric gaps in page and pattern code fail a guard. Canaries catch a hidden `80 px` spacer and a collapsed-margin case.
+3. **Rendered-Text Check**: Checks DOM text of every state for arrows (`->`, `<-`, `→`, `←`), internal words (`profile`, `facet`, `temporal`, `tier`, `spec`, `ids`), unresolved placeholders (`<slug>`), and raw JSON.
+4. **Colour Check (Including Native Controls)**: Sets `color-scheme` per theme and styles every native control (`select`, `input`, `date`, `textarea`, scrollbars) from tokens. Every computed colour, background, and border in every state (plus hover/focus states in the gallery) belongs to the active theme's token set.
+5. **Line Check (Positive & Negative)**: Required hairlines (top bar bottom edge; between `Item`s in a list; inner edge of push panel) must exist; no other hairlines; `Tabs` has only the active `2 px` underline.
+
+### B. Design System (`D-DS`)
+6. **Layers & Dependency Rule**: `tokens` -> `primitives` -> `patterns` -> `pages`. Pages import patterns and primitives only; patterns import primitives and tokens only; primitives import tokens only; no lateral or upward imports; no CSS in pages (layout only through `Stack`, `Row`, `Page`). Enforced by an import-direction guard and a fixture page built solely from patterns that passes the entire census.
+7. **Surfaces**: Three levels per theme: `L0` page canvas (`--surface-l0` / `--surface-page`); `L1` raised areas (top bar, push panel, sheets, popovers, dialogs, format bar) with ~4% lightness shift from `L0` in both themes, allowed hairline (top bar bottom edge; panel inner edge), and overlay shadow only for popovers, dialogs, sheets, and format bar; `L2` control fill (icon buttons, unselected `Choice` cards, tags). Sticky editor header row uses `L0` with no line.
+8. **Type Roles (7 Exact Signatures)**:
+   - `page-title`: `24px` / `600` / `text-1`
+   - `section-title`: `16px` / `600` / `text-1`
+   - `item-title` & `field-label`: `14px` / `600` / `text-1`
+   - `body`: `14px` / `400` / `text-1`
+   - `description` (page/section intros, sentence subtitles): `14px` / `400` / `text-2`
+   - `caption` (help text, meta, chip text, `Item` subtitle): `12px` / `400` / `text-2`
+   - `placeholder` & `disabled`: `14px` / `400` / `text-3`
+   `text-2` and `text-3` contrast checked in both themes.
+9. **Vertical Fields**: Label above, control, help below at every width; never side by side. Inline combinations (Category, Tag, Add) stack vertically full width.
+10. **Item Contract**: From `640 px` up: title row with status label trailing and aligned to title; below it subtitle, body, meta; actions last. Under `640 px`: title, status label directly under title, then subtitle, body, meta, actions. Status never sits next to actions.
+11. **Dialogs**: Padding `24 px`; title, `16 px`, body, `24 px`, `ActionBar` stacked (primary, then secondary), full width, no empty icon slot, `8 px` between buttons; close icon in the title row.
+12. **BackLink Scope**: Appears only on child pages (History, Inbox detail, setup steps 2–6, Providers change flow). Removed from Settings modules, Status, and every launcher destination.
+13. **Login & Setup**: Login uses `narrow` (`400 px`) template, centred, padding `24 px` (`16 px` below `768 px`), `40 px` top padding. Setup uses `standard` (`720 px`) template with the same padding; `Stepper` inside container, no full-bleed line, no divider.
+14. **Choice Cards**: Unselected `L2` fill, selected accent tint and `check` or filled radio; Visibility labels `"Draft, only you"`, `"Unlisted, anyone with the link"`, `"Public, listed on your site"`.
+
+### C. Editor
+15. **Header Row**: CSS grid `1fr auto 1fr` (`36 px` row, vertically centred). Left: panel toggle aligned to top bar's left icon edge. Centre: two-segment control `"Edit"` and `"Settings"` (text labels, filled selected thumb, no underline), centred on viewport (`±1 px`). Right: from `640 px` up `History`, `Delete`, `Save` with `Save`'s right edge equal to top bar's account icon right edge; below `640 px` `More` icon button (`History`, `Delete entry` sheet) and `Save`.
+16. **Edit View**: Prose spacing inside writing surface (`.lp-prose` exempt from margin guard): `16 px` between blocks, headings `24 px` above and `8 px` below; read-only details line under title (`"Draft, Work · Case study · 14 Sept 2021"`; click opens Settings view); auto-growing wrapping title (never truncates). Format bar: `position: fixed`, centred on writing column, `16 px` above viewport bottom (`visualViewport` on mobile).
+17. **Settings View**: Uses `D-FINAL` A & B. Details: `"Type"` (grouped by section), `"Date precision"`, slug, date, read-only line `"Publishes to Work at /work/<actual slug>"` using real slug and section (same in Publish dialog).
+18. **Structure Section**:
+    - `Level`: read-only 4-segment progress bar (`Captured`, `Tagged`, `Claimed`, `Grounded`, `12 px` caption, done filled, current `600`, upcoming muted, non-interactive) + one next-step sentence (`description`).
+    - `Tags`: section title `"Tags"`; themed `Tag` chips (`28 px` high, caption, remove icon button `36 px` hit area); stacked add form (`Select` `"Category"` with chevron, `Input` `"Tag"`, secondary `"Add tag"` full width; Enter adds & keeps focus; `160 ms` scale `0.96`/fade enter; duplicate error in feedback slot).
+    - `Suggested roles`: intro `"Passages that may play a role in your story. Accept to label one, or ignore it."`; `Item`s with title=role, body=passage (3-line ellipsis, full text tooltip), status=`Suggested`/`Accepted`/`Ignored`; two-option `Choice` (button variant, single-select, deselectable: `Accept`, `Ignore` side by side equal width, persisted via annotations endpoint, `160 ms` status cross-fade, live-region announcement).
+    - `Claims` & `Evidence`: lists of `Item`s (title, status, remove icon button); `"Add claim"` and `"Attach evidence"` secondary `ActionBar` buttons opening an `Overlay` (dialog `>= 640 px`, sheet `< 640 px`) with endpoint fields, `"Add"` primary, `"Cancel"` secondary stacked. Never blocks `Save` or `Publish`.
+
+### D. Pages & Surfaces
+19. **Providers (`D-PROV`)**: Top-level page, no Back. `PageHeader`; one `Item` `"Answering model"` (status `"Local only, quotes from your entries"` or `"Connected"`, `"Change"` secondary button -> `/admin/settings/providers/change` child page with Back, 3-step `Stepper`: Step 1 `Provider` Choice cards, Step 2 `Model` Select/Input, Step 3 `Key` write-only + `"Test and save"`; Local only & Ollama skip Step 3); below `Item`, `FormSection` `"Fallback behaviour"`. Setup step 3 uses the same flow components.
+20. **Status**: Title `"Status"`, description `"Site build, automated answering, backups and providers."`. One list of 4 `Item`s (no section headings): `Site` (`Rebuild site`), `Automated answering` (`Pause`/`Resume`), `Backups` (whole-row link to Settings > Backups, trailing chevron), `Providers` (whole-row link to Settings > Providers, trailing chevron; Local counts as configured).
+21. **Today**: Description `"What needs your attention."`. Needs attention rows: title only (`"1 unpublished draft"`, `"2 questions waiting in Inbox"`), trailing chevron, no status label; paused/failed rows only when applicable; `Getting started` dismiss vertically centred on heading line.
+22. **Answer Rules & Settings Modules**: `Answer rules` `Item`: title=plain sentence, status per #10, subtitle=scope, body only if source quote differs from title with `"From your reply"` caption, `ActionBar` below. Settings modules: `PageHeader`, `FormSection`s, vertical fields, `ActionBar` `Save` `24 px` below last control.
+23. **Entries Panel**: `L1` surface + inner-edge hairline, `Item`s with `8 px` bleed and `8 px` container padding, header `"Entries"` with trailing collapse icon, push layout from `640 px`.
+24. **Hairlines & Surfaces**: Top bar `L1` with bottom hairline; `Item`s separated by hairlines (not before first or after last); push panel inner edge.
