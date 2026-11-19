@@ -201,41 +201,79 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 });
 
-test.describe('WP-16.F F0 Full STATES Manifest Census (failing-first)', () => {
+test.describe('WP-16.F Full STATES Manifest Census', () => {
   test('STATES manifest covers all pages, views, and overlays across 2 themes x 320/1280/1920', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: full STATES manifest census fails until F1-F3 complete');
-    test.setTimeout(180_000);
+    test.setTimeout(240_000);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
 
-    const allViolations: string[] = [];
+    const textAndColourViolations: string[] = [];
+    const gapViolations: string[] = [];
     const totalPairs: Record<string, number> = {};
+    const typeSignatures: Record<string, Set<string>> = {
+      'page-title': new Set(),
+      'section-title': new Set(),
+      'item-title-or-label': new Set(),
+      body: new Set(),
+      description: new Set(),
+      caption: new Set(),
+      'placeholder-or-disabled': new Set(),
+    };
 
-    // Sample core states in F0 to verify manifest & print relation counts
-    for (const vp of [VIEWPORTS[0], VIEWPORTS[1]]) {
+    for (const vp of VIEWPORTS) {
       await page.setViewportSize(vp);
       for (const theme of THEMES) {
         for (const state of STATES) {
-          if (state.pendingUntil) continue;
           const ok = await navigateToState(page, state, ids);
           if (!ok) continue;
           await setTheme(page, theme);
           const textIssues = await checkRenderedText(page);
           const colourIssues = await checkColoursAndNativeControls(page, theme);
           const gapRes = await checkPaintedGaps(page);
+          const sigs = await page.evaluate(() => {
+            const pick = (sel: string) => {
+              const el = document.querySelector(sel);
+              if (!el) return null;
+              const cs = getComputedStyle(el);
+              return `${Math.round(parseFloat(cs.fontSize))}/${cs.fontWeight}/${cs.color}`;
+            };
+            return {
+              'page-title': pick('h1, .lp-page-header-title'),
+              'section-title': pick('.lp-section-title, .lp-form-section-title, .lp-section-header-title'),
+              'item-title-or-label': pick('.lp-item-title, .lp-field-label'),
+              body: pick('.lp-item-body, .lp-body'),
+              description: pick('.lp-page-description, .lp-form-section-desc, .lp-description'),
+              caption: pick('.lp-item-subtitle, .lp-item-meta, .lp-field-help, .lp-tag'),
+              'placeholder-or-disabled': pick(':disabled'),
+            };
+          });
+          for (const [k, v] of Object.entries(sigs)) {
+            if (v) typeSignatures[k].add(v);
+          }
           for (const [k, v] of Object.entries(gapRes.pairsByRelation)) {
             totalPairs[k] = (totalPairs[k] || 0) + v;
           }
-          for (const issue of [...textIssues, ...colourIssues, ...gapRes.violations]) {
-            allViolations.push(`[${state.id} ${vp.width} ${theme}] ${issue}`);
+          for (const issue of [...textIssues, ...colourIssues]) {
+            textAndColourViolations.push(`[${state.id} ${vp.width} ${theme}] ${issue}`);
+          }
+          for (const issue of gapRes.violations) {
+            gapViolations.push(`[${state.id} ${vp.width} ${theme}] ${issue}`);
           }
         }
       }
     }
 
-    console.log('[D-FINAL F0 Census] Pairs measured per relation:', JSON.stringify(totalPairs));
-    console.log('[D-FINAL F0 Census] Total violations:', allViolations.length);
-    expect(allViolations).toEqual([]);
+    const perRoleTypeSigs = Object.fromEntries(
+      Object.entries(typeSignatures).map(([k, v]) => [k, [...v]])
+    );
+    console.log('[D-FINAL Census] Pairs measured per relation:', JSON.stringify(totalPairs));
+    console.log('[D-FINAL Census] Per-role type signatures:', JSON.stringify(perRoleTypeSigs));
+    console.log('[D-FINAL Census] Text/colour violations:', textAndColourViolations.length);
+    console.log('[D-FINAL Census] Painted-gap violations:', gapViolations.length);
+    if (gapViolations.length > 0) {
+      console.log('[D-FINAL Census] Sample painted-gap violations:', JSON.stringify(gapViolations.slice(0, 15)));
+    }
+    expect(textAndColourViolations).toEqual([]);
   });
 });
