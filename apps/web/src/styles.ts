@@ -4549,7 +4549,6 @@ a.lp-item:hover {
   margin: 0;
 }
 
-.lp-form-section > .lp-field,
 /* Canary overrides (must stay after D-COMP rules so intentional violations remain broken) */
 .lp-canary-stacking.lp-page-header {
   display: flex;
@@ -4886,7 +4885,8 @@ a.lp-item:hover {
   bottom: 0;
   width: 100%;
   z-index: var(--z-overlay);
-  background: var(--surface-page);
+  background: var(--surface-l1);
+  border-right: 1px solid var(--border-subtle);
   transition: transform 240ms ease;
 }
 @media (min-width: 640px) {
@@ -4894,6 +4894,158 @@ a.lp-item:hover {
     width: 320px;
   }
 }
+
+/* === D-FINAL Design System (F1) === */
+.lp-gap-tight { gap: 8px; }
+.lp-gap-related { gap: 16px; }
+.lp-gap-group { gap: 24px; }
+.lp-gap-section { gap: 40px; }
+
+/* Surfaces (F1) */
+body { background: var(--surface-l0); color: var(--text-1); }
+.lp-top-bar, .lp-admin-header, header[data-lp-shell-topbar] {
+  background: var(--surface-l1);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.lp-popover-menu, .lp-launcher-panel, .lp-dialog-panel, .lp-overlay-sheet, .lp-format-bar {
+  background: var(--surface-l1);
+}
+.lp-choice, .lp-icon-btn, .lp-icon-btn-ghost, .lp-icon-btn-outlined {
+  background: var(--surface-l2);
+}
+
+/* Native controls styled from tokens (D-FINAL #4) */
+select.lp-input, select.lp-select, input.lp-input, textarea.lp-input, textarea.lp-textarea, input.lp-choice-input {
+  background-color: var(--surface-input);
+  color: var(--text-1);
+  border: 1px solid var(--border-control);
+  color-scheme: inherit;
+}
+select.lp-input option, select.lp-select option, select.lp-input optgroup, select.lp-select optgroup {
+  background-color: var(--surface-l1);
+  color: var(--text-1);
+}
+
+/* 7 Type Roles (D-FINAL #8) */
+.lp-page-title { font-size: 24px; font-weight: 600; color: var(--text-1); line-height: 32px; }
+.lp-section-title, .lp-form-section-title, .lp-section-header-title { font-size: 16px; font-weight: 600; color: var(--text-1); line-height: 24px; }
+.lp-item-title, .lp-field-label { font-size: 14px; font-weight: 600; color: var(--text-1); line-height: 20px; }
+.lp-body, .lp-item-body { font-size: 14px; font-weight: 400; color: var(--text-1); line-height: 20px; }
+.lp-description, .lp-page-description, .lp-form-section-desc { font-size: 14px; font-weight: 400; color: var(--text-2); line-height: 20px; }
+.lp-caption, .lp-item-subtitle, .lp-item-meta, .lp-field-help { font-size: 12px; font-weight: 400; color: var(--text-2); line-height: 16px; }
+.lp-input::placeholder, .lp-textarea::placeholder, :disabled { color: var(--text-3); }
+
+/* Relation gaps (D-FINAL #2) */
+.lp-page-header { display: flex; flex-direction: column; gap: 8px; margin: 0; }
+.lp-tabs { margin: 0; }
+.lp-form-section { display: flex; flex-direction: column; gap: 16px; margin: 0; }
+.lp-form-section + .lp-form-section { margin-top: 0; }
+.lp-form-section-header { display: flex; flex-direction: column; gap: 8px; }
+.lp-field { display: flex; flex-direction: column; gap: 8px; margin: 0; }
+.lp-field > .lp-field-label { display: block; position: static; margin: 0; }
+.lp-field > .lp-input, .lp-field > .lp-select-wrap { display: block; position: relative; margin: 0; }
+.lp-action-bar { margin-top: 0; }
+.lp-item-actions .lp-action-bar { margin-top: 0; }
+
+/* Item contract & hairlines (D-FINAL #5, #10, #24) */
+.lp-item:not(:last-child) { border-bottom: 1px solid var(--border-subtle); }
+.lp-item {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+.lp-item-title { order: 1; }
+.lp-item-status { order: 2; }
+.lp-item-subtitle { order: 3; }
+.lp-item-body, .lp-item-segments { order: 4; }
+.lp-item-meta { order: 5; }
+.lp-item-actions { order: 6; }
+@media (min-width: 640px) {
+  .lp-item {
+    grid-template-columns: 1fr auto;
+    column-gap: 16px;
+  }
+  .lp-item-title { grid-column: 1; order: 1; }
+  .lp-item-status { grid-column: 2; grid-row: 1; align-self: center; justify-self: end; order: 1; }
+  .lp-item-subtitle, .lp-item-body, .lp-item-segments, .lp-item-meta, .lp-item-actions { grid-column: 1 / -1; }
+}
+
+/* Dialogs (D-FINAL #11) */
+.lp-dialog-panel {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.lp-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0; }
+.lp-dialog-body { padding: 0; }
+.lp-dialog-footer, .lp-dialog-panel .lp-action-bar { padding-top: 8px; display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn { width: 100%; }
+
+/* SegmentedControl (D-FINAL #15) */
+.lp-segmented-control {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 2px;
+  border-radius: 4px;
+  background: var(--surface-l2);
+  gap: 2px;
+}
+.lp-segment-btn {
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lp-segment-btn.is-selected {
+  background: var(--surface-l0);
+  color: var(--text-1);
+}
+
+/* Tag chip (D-FINAL #18) */
+.lp-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 0 0 10px;
+  border-radius: 4px;
+  background: var(--surface-l2);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 400;
+  border: 1px solid var(--border-subtle);
+  animation: lp-tag-enter 160ms var(--ease-out);
+}
+.lp-tag-remove {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+}
+@keyframes lp-tag-enter {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Level 4-segment progress bar (D-FINAL #18) */
+.lp-level { display: flex; flex-direction: column; gap: 8px; }
+.lp-level-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.lp-level-segment { display: flex; flex-direction: column; gap: 4px; }
+.lp-level-bar-fill { height: 4px; border-radius: 4px; background: var(--surface-l2); }
+.lp-level-segment.is-done .lp-level-bar-fill { background: var(--accent); }
+.lp-level-label { font-size: 12px; font-weight: 400; color: var(--text-2); line-height: 16px; }
+.lp-level-segment.is-current .lp-level-label { font-weight: 600; color: var(--text-1); }
 
 .lp-canary-center { text-align: center; }
 .lp-canary-empty-tall { height: 48px; }

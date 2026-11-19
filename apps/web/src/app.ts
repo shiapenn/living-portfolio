@@ -40,6 +40,7 @@ import {
 import { renderPrimitivesGalleryPage } from './primitives/gallery.js';
 import { renderFoundationsGalleryPage } from './primitives/foundations-gallery.js';
 import { renderComponentGalleryPage, renderCensusCanaryPage } from './pages/admin/gallery.js';
+import { renderFixturePatternPage } from './pages/admin/fixture.js';
 import { renderReferenceEditorPage, type ReferenceEditorEntry } from './pages/admin/entries/editor.js';
 
 export interface WebAppOptions {
@@ -258,6 +259,9 @@ export function createWebApp(options?: WebAppOptions) {
     app.get('/admin/_gallery', (c) => {
       const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';
       return c.html(renderComponentGalleryPage({ theme }));
+    });
+    app.get('/admin/_fixture', (c) => {
+      return c.html(renderFixturePatternPage());
     });
     app.get('/admin/_canary', (c) => {
       const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';

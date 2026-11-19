@@ -85,6 +85,12 @@ export const PRIMITIVE_TOKENS = `
   --space-section: 40px;
   --gutter: 16px;
 
+  /* D-FINAL #2 Relation Gaps */
+  --gap-tight: 8px;
+  --gap-related: 16px;
+  --gap-group: 24px;
+  --gap-section: 40px;
+
   /* D-MIN 8 Type Scale Roles (12, 14, 16, 24) */
   --type-caption-size: 12px;
   --type-caption-line: 16px;
@@ -133,20 +139,27 @@ export const PRIMITIVE_TOKENS = `
 
 export const SEMANTIC_TOKENS_LIGHT = `
   /* === Tier 2: Semantic Tokens (Light Default) === */
+  color-scheme: light;
+  --surface-l0: #FFFFFF;
+  --surface-l1: #F5F6F7;
+  --surface-l2: #EBEFF2;
   --surface-page: #FFFFFF;
   --surface-raised: #FFFFFF;
-  --surface-overlay: #FFFFFF;
+  --surface-overlay: var(--surface-l1);
   --surface-sunken: #F3F5F4;
   --surface-subtle: #F3F5F4;
-  --surface-panel: #F3F5F4;
-  --surface: #FFFFFF;
-  --surface-input: #FFFFFF;
-  --surface-control: #EEF1F3;
+  --surface-panel: var(--surface-l1);
+  --surface: var(--surface-l0);
+  --surface-input: var(--surface-l0);
+  --surface-control: var(--surface-l2);
   --surface-control-hover: #E1E6EA;
   --surface-control-active: #D2D9DF;
   --surface-control-selected: #EEF1FF;
-  --text: #14202A;
-  --text-muted: #4B5A66;
+  --text-1: #14202A;
+  --text-2: #4B5A66;
+  --text-3: #63727E;
+  --text: var(--text-1);
+  --text-muted: var(--text-2);
   --text-on-accent: #FFFFFF;
   --rule: #CBD3D8;
   --border-subtle: #CBD3D8;
@@ -226,20 +239,27 @@ export const SEMANTIC_TOKENS_LIGHT = `
 
 export const SEMANTIC_TOKENS_DARK = `
   /* === Tier 2: Semantic Tokens (Dark Theme) === */
+  color-scheme: dark;
+  --surface-l0: #0F1A22;
+  --surface-l1: #16232D;
+  --surface-l2: #1E2E3B;
   --surface-page: #0F1A22;
   --surface-raised: #16232D;
-  --surface-overlay: #16232D;
+  --surface-overlay: var(--surface-l1);
   --surface-sunken: #121C24;
-  --surface-subtle: #16232D;
-  --surface-panel: #121C24;
-  --surface: #0F1A22;
-  --surface-input: #16232D;
-  --surface-control: #1E2C38;
+  --surface-subtle: var(--surface-l1);
+  --surface-panel: var(--surface-l1);
+  --surface: var(--surface-l0);
+  --surface-input: var(--surface-l1);
+  --surface-control: var(--surface-l2);
   --surface-control-hover: #273847;
   --surface-control-active: #314557;
   --surface-control-selected: #1A244D;
-  --text: #E6ECEF;
-  --text-muted: #A3B2BD;
+  --text-1: #E6ECEF;
+  --text-2: #A3B2BD;
+  --text-3: #8A99A6;
+  --text: var(--text-1);
+  --text-muted: var(--text-2);
   --text-on-accent: #0F1A22;
   --rule: #2A3946;
   --border-subtle: #2A3946;

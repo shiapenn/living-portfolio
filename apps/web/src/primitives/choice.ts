@@ -16,6 +16,8 @@ export interface ChoiceGroupProps {
   legend?: string;
   mode: 'single' | 'multiple';
   variant?: 'button' | 'card';
+  /** D-FINAL #18: Allows single-select button Choice to deselect back to none (e.g. Accept/Ignore -> Suggested). */
+  deselectable?: boolean;
   options: ChoiceOption[];
   error?: string;
   className?: string;
@@ -79,7 +81,8 @@ export function renderChoiceGroup(props: ChoiceGroupProps): string {
   const legendHtml = props.legend ? `<div class="lp-choice-legend">${escapeHtml(props.legend)}</div>` : '';
   const errorHtml = props.error ? `<div class="lp-field-error">${escapeHtml(props.error)}</div>` : '';
 
-  return `<div${idAttr} class="${escapeHtml(classes)}"${roleAttr}${props.legend ? ` aria-label="${escapeHtml(props.legend)}"` : ''}>
+  const deselectAttr = props.deselectable ? ' data-deselectable="true"' : '';
+  return `<div${idAttr} class="${escapeHtml(classes)}"${roleAttr}${deselectAttr}${props.legend ? ` aria-label="${escapeHtml(props.legend)}"` : ''}>
     ${legendHtml}
     <div class="lp-choice-list">${optionsHtml}</div>
     ${errorHtml}
