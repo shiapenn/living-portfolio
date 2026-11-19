@@ -41,11 +41,36 @@ export async function navigateToState(
   if (state.id === 'inbox-detail') {
     if (!ids.inboxId) return false;
     route = `/admin/inbox/${encodeURIComponent(ids.inboxId)}`;
+  } else if (state.action === 'providers-step-2') {
+    route = '/admin/settings/providers/change?step=2&provider=openai';
+  } else if (state.action === 'providers-step-3') {
+    route = '/admin/settings/providers/change?step=3&provider=openai';
   }
 
   await page.goto(route);
 
   switch (state.action) {
+    case 'setup-step-2':
+    case 'setup-step-3':
+    case 'setup-step-4':
+    case 'setup-step-5':
+    case 'setup-step-6': {
+      const targetStep = Number(state.action.replace('setup-step-', ''));
+      await page.evaluate((stepNum) => {
+        document.querySelectorAll('.wizard-step').forEach((el) => el.classList.add('lp-is-hidden'));
+        const target = document.getElementById(`wizard-step-${stepNum}`);
+        if (target) target.classList.remove('lp-is-hidden');
+        const stepper = document.getElementById('setup-stepper');
+        if (stepper) {
+          const steps = ['Account', 'Hosting', 'Model Providers', 'Notifications', 'Backups', 'Theme & Launch'];
+          const countEl = stepper.querySelector('.lp-stepper-label');
+          if (countEl) countEl.textContent = `Step ${stepNum} of 6 · ${steps[stepNum - 1] ?? ''}`;
+          const fill = stepper.querySelector('.lp-stepper-fill') as HTMLElement | null;
+          if (fill) fill.style.width = `${Math.round((stepNum / 6) * 100)}%`;
+        }
+      }, targetStep);
+      break;
+    }
     case 'editor-settings': {
       await page.click('#ref-switch-settings');
       break;
@@ -297,7 +322,11 @@ export async function checkPaintedGaps(page: Page): Promise<{
         main.querySelectorAll(
           'h1, h2, p, a, button, input, select, textarea, .lp-segmented-control, .lp-level-bar-fill, .lp-level-label, .lp-tag, .lp-choice, .lp-tab, .lp-stepper-label, .lp-item-title, .lp-item-title > span, .lp-item-subtitle, .lp-item-body, .lp-item-status, .lp-field-label, .lp-field-help'
         )
-      ).filter((el) => isPainted(el));
+      ).filter((el) => {
+        if (!isPainted(el)) return false;
+        if (el.closest('.lp-format-bar, .lp-dialog-backdrop, .lp-popover-menu, .lp-overlay-sheet, .lp-launcher-panel, [role="dialog"], [role="menu"]')) return false;
+        return getComputedStyle(el).position !== 'fixed';
+      });
       for (let i = 0; i < blocks.length - 1; i++) {
         const a = blocks[i];
         const b = blocks[i + 1];

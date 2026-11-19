@@ -462,7 +462,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
       expect(html).toContain('Editorial Classic');
       expect(html).toContain('Modern Monospace');
       expect(html).toContain('Minimalist Sans');
-      expect(html).toContain('Worked Example: Case Study Profile');
+      expect(html).toContain('Worked Example: Case Study');
       expect(html).toContain('Now try one of yours — create your first case study or launch the Import Planner');
       expect(html).toContain('id="btn-setup-finish-login"');
       expect(html).toContain('id="btn-setup-launch-import"');

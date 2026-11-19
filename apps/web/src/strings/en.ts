@@ -195,7 +195,7 @@ export const WIZARD_STRINGS = {
   },
   step6: {
     title: 'Step 6: Theme & First-Run Walkthrough',
-    subtitle: 'Select your typographic theme and review the profile structure model.',
+    subtitle: 'Select your typographic theme and review the entry structure model.',
     themeAppliedNotice: "Your choice is saved. It isn't applied to your public site yet. You'll be able to apply it in Theme.",
     themePresets: [
       {
@@ -215,7 +215,7 @@ export const WIZARD_STRINGS = {
       },
     ],
     workedExample: {
-      title: 'Worked Example: Case Study Profile',
+      title: 'Worked Example: Case Study',
       lead: 'In The Living Portfolio, writing is structured into actionable claims:',
       claims: [
         { label: 'Problem / Context', text: 'Scaling payment reconciliation under traffic spikes.' },
