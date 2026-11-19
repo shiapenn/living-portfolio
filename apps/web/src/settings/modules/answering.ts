@@ -50,7 +50,7 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
     const mechScoped = typeof cal.scoped_constraint_mining === 'boolean' ? cal.scoped_constraint_mining : typeof raw.mech_scoped_constraints === 'boolean' ? raw.mech_scoped_constraints : cfg.rememberVisitorRules;
 
     return `
-      <form id="settings-module-form" data-settings-module="answering" class="lp-stack-lg">
+      <form id="settings-module-form" data-settings-module="answering" class="lp-stack lp-gap-section">
         ${renderStatusLine({ id: 'settings-status-banner' })}
 
         ${renderFormSection({

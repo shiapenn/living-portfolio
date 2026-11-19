@@ -105,8 +105,6 @@ ${items
       id: item.id,
       href: item.actionHref,
       title: item.summary,
-      statusLabel: item.badge,
-      statusTone: item.tone,
       showChevron: true,
     })
   )

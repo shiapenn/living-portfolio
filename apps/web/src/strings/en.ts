@@ -66,7 +66,7 @@ export const WIZARD_STRINGS = {
       recoveryCodesLabel: 'Single-Use Recovery Codes',
       recoveryCodesHelp: 'Each code can only be used once. Once used, the server burns the hash and it cannot be reused.',
       gateLabel: 'I have safely downloaded or copied these recovery codes',
-      continueButton: 'Continue to Step 2: Hosting Option & Presets →',
+      continueButton: 'Continue to Step 2: Hosting Option & Presets',
     },
   },
   step2: {
@@ -97,8 +97,8 @@ export const WIZARD_STRINGS = {
       placeholder: 'https://portfolio.example.org',
       help: 'The address people will visit, for example https://yourname.com. Skip to try it on this computer. Sets your canonical URLs and security origin checks.',
     },
-    backButton: '← Back',
-    nextButton: 'Next: Model Providers →',
+    backButton: 'Back',
+    nextButton: 'Next: Model Providers',
   },
   step3: {
     title: 'Step 3: Model Providers & Privacy Boundary',
@@ -142,8 +142,8 @@ export const WIZARD_STRINGS = {
         },
       ],
     },
-    backButton: '← Back',
-    nextButton: 'Next: Alerts & Notifications →',
+    backButton: 'Back',
+    nextButton: 'Next: Alerts & Notifications',
   },
   step4: {
     title: 'Step 4: Notifications & Alerts',
@@ -164,8 +164,8 @@ export const WIZARD_STRINGS = {
     },
     testButton: 'Test Delivery Notification',
     testDisabledReason: "Test alerts aren't available in this version yet.",
-    backButton: '← Back',
-    nextButton: 'Next: Encrypted Backups →',
+    backButton: 'Back',
+    nextButton: 'Next: Encrypted Backups',
   },
   step5: {
     title: 'Step 5: Encrypted Backup Destination',
@@ -190,8 +190,8 @@ export const WIZARD_STRINGS = {
     },
     drillButton: 'Run Restore Verification Drill',
     drillDisabledReason: 'Not available until a backup folder is set',
-    backButton: '← Back',
-    nextButton: 'Next: Theme & Walkthrough →',
+    backButton: 'Back',
+    nextButton: 'Next: Theme & Walkthrough',
   },
   step6: {
     title: 'Step 6: Theme & First-Run Walkthrough',
@@ -226,9 +226,9 @@ export const WIZARD_STRINGS = {
       closing: 'Now try one of yours — create your first case study or launch the Import Planner to stage twenty existing documents.',
     },
     deployNotice: 'The static reading site is automatically compiled and deployed on completion.',
-    finishButton: 'Go to your dashboard →',
-    importButton: 'Import writing you already have →',
-    backButton: '← Back to Backups',
+    finishButton: 'Go to your dashboard',
+    importButton: 'Import writing you already have',
+    backButton: 'Back to Backups',
   },
 } as const;
 

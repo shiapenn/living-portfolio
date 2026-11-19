@@ -27,7 +27,7 @@ export const backupsModule: SettingsModuleManifest<BackupsConfig> = {
     const backupTarget = String(ctx.config?.BACKUP_TARGET || 'Local volume');
 
     return `
-      <form id="settings-module-form" data-settings-module="backups" class="lp-stack-lg">
+      <form id="settings-module-form" data-settings-module="backups" class="lp-stack lp-gap-section">
         ${renderStatusLine({ id: 'settings-status-banner' })}
 
         ${renderFormSection({

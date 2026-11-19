@@ -41,7 +41,7 @@ test.describe('WP-16.6 Inbox & Answer Rules', () => {
 
     const firstRule = page.locator('[data-rule-row]').first();
     await expect(firstRule).toBeVisible();
-    await expect(firstRule).toContainText(/Source quote/i);
+    await expect(firstRule).toContainText(/Applies when/i);
 
     const revokeBtn = firstRule.locator('button[data-rule-action="revoked"]');
     await revokeBtn.click();

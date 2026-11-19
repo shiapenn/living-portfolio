@@ -57,7 +57,7 @@ export async function renderAdminAuditRulesPage(
           return renderItem({
             title: String(summary),
             subtitle: scopeText,
-            segments: quote ? [{ heading: 'Source quote', body: quote }] : undefined,
+            segments: quote && quote.trim() !== String(summary).trim() ? [{ heading: 'From your reply', body: quote }] : undefined,
             statusLabel,
             statusTone: tone,
             actions: activeStatus === 'revoked'

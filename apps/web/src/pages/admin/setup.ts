@@ -6,7 +6,7 @@ import { SETUP_SCRIPT_PART_2 } from './setup-script-part2.js';
 
 export function renderAdminSetupPage(): string {
   const content = `
-    <div class="admin-setup-container lp-stack-md">
+    <div class="lp-page-column admin-setup-container lp-stack lp-gap-group">
       <div class="lp-wizard-header">
         <p id="wizard-step-chip" class="lp-auth-step-text">Step 1 of 6 · Account</p>
         <div class="lp-auth-progress-track">

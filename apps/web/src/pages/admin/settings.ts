@@ -68,8 +68,6 @@ export function renderSettingsModulePage<T>(
   return renderPageTemplate({
     title: mod.title,
     description: mod.summary,
-    backHref: '/admin/settings',
-    backLabel: 'Settings',
     bodyHtml,
   });
 }

@@ -25,23 +25,25 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
 
   const bodyHtml = `
     ${stagingNoticeHtml}
-    ${stepperHtml}
-    <div id="import-status-banner" role="status" aria-live="polite" hidden></div>
+    <div class="lp-stack lp-gap-related">
+      ${stepperHtml}
+      <div id="import-status-banner" role="status" aria-live="polite" hidden></div>
 
-    <!-- Step 1: Add Material -->
-    <div id="import-step-add" class="lp-stack-md">
-      <section class="lp-section-block lp-stack-md">
-        <div class="lp-field">
-          <label class="lp-field-label" for="import-paste-area">Markdown or text</label>
-          <p class="lp-field-help">Separate several entries with <code>---</code>.</p>
-          <textarea id="import-paste-area" rows="10" class="lp-input lp-textarea lp-editor-source-textarea" placeholder="# Migrating to Postgres Advisory Locks&#10;&#10;In 2024 we eliminated lock contention by migrating to PostgreSQL 15 advisory locks...&#10;&#10;---&#10;&#10;# Edge Microservice Architecture&#10;&#10;Designed multi-region edge gateways on Cloudflare Workers..."></textarea>
-        </div>
+      <!-- Step 1: Add Material -->
+      <div id="import-step-add" class="lp-stack lp-gap-group">
+        <section class="lp-stack lp-gap-group">
+          <div class="lp-field">
+            <label class="lp-field-label" for="import-paste-area">Markdown or text</label>
+            <textarea id="import-paste-area" rows="10" class="lp-input lp-textarea lp-editor-source-textarea" placeholder="# Migrating to Postgres Advisory Locks&#10;&#10;In 2024 we eliminated lock contention by migrating to PostgreSQL 15 advisory locks...&#10;&#10;---&#10;&#10;# Edge Microservice Architecture&#10;&#10;Designed multi-region edge gateways on Cloudflare Workers..."></textarea>
+            <p class="lp-field-help">Separate several entries with <code>---</code>.</p>
+          </div>
 
-        ${renderActionBar({
-          primary: { id: 'btn-generate-plan', label: 'Generate plan', variant: 'primary' },
-          secondary: { id: 'btn-load-sample', label: 'Load sample entries', variant: 'secondary' },
-        })}
-      </section>
+          ${renderActionBar({
+            primary: { id: 'btn-generate-plan', label: 'Generate plan', variant: 'primary' },
+            secondary: { id: 'btn-load-sample', label: 'Load sample entries', variant: 'secondary' },
+          })}
+        </section>
+      </div>
     </div>
 
     <!-- Step 2: Import Planner -->

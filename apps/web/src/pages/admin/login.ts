@@ -4,11 +4,13 @@ import { renderActionBar } from "../../primitives/index.js";
 
 export function renderAdminLoginPage(): string {
   const content = `
-    <div class="lp-auth-column lp-stack-md">
-      <h1 class="lp-page-title">Owner Sign in</h1>
-      <p class="lp-page-subtitle">
-        Enter your admin credentials and 6-digit TOTP code to access the workspace.
-      </p>
+    <div class="lp-page-column lp-page-column-narrow lp-auth-column lp-stack lp-gap-group">
+      <div class="lp-page-header">
+        <h1 class="lp-page-title">Owner Sign in</h1>
+        <p class="lp-page-description">
+          Enter your admin credentials and 6-digit TOTP code to access the workspace.
+        </p>
+      </div>
 
       <div id="login-error" class="lp-notice lp-notice-danger lp-is-hidden" role="alert"></div>
 

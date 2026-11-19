@@ -28,9 +28,11 @@ export function renderFormSection(props: FormSectionProps): string {
     ? `<div class="lp-stack lp-gap-8"><h2 class="lp-form-section-title">${escapeHtml(props.title)}</h2>${descHtml}</div>`
     : `<h2 class="lp-form-section-title">${escapeHtml(props.title)}</h2>`;
 
-  return `<section${idAttr} class="${escapeHtml(classes)}">
-  ${headerHtml}
-  ${props.fieldsHtml}
+  return `<section${idAttr} class="${escapeHtml(classes)} lp-stack lp-gap-group">
+  <div class="lp-stack lp-gap-related">
+    ${headerHtml}
+    <div class="lp-stack lp-gap-related">${props.fieldsHtml}</div>
+  </div>
   ${actionHtml}
 </section>`;
 }

@@ -99,7 +99,6 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 
   test('20261106-UX-158: painted-gap check catches oversized tabs/description gaps and touching sections', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: Answer rules / Inbox tabs gap ~130px, History/Import/Settings description gaps');
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 800 });
     for (const route of ['/admin/audit', '/admin/inbox', '/admin/import', '/admin/settings/answering']) {
@@ -118,10 +117,9 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 
   test('20261106-UX-160: login narrow 400px & setup 720px padding without full-bleed stepper line', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: login full width, setup flush at 320/1280, Back has arrow');
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/admin/login');
-    const mainWidth = await page.locator('main').evaluate((el) => el.getBoundingClientRect().width);
+    const mainWidth = await page.locator('main > .lp-page-column').evaluate((el) => el.getBoundingClientRect().width);
     expect(mainWidth).toBeLessThanOrEqual(400);
     await page.goto('/admin/setup');
     const issues = await checkRenderedText(page);
@@ -129,13 +127,12 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 
   test('20261106-UX-161: Publish dialog stacked ActionBar, no left empty slot, real slug', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: dialog buttons side by side and literal /writing/<slug>');
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/admin/entries/new');
     await page.click('#ref-switch-settings');
     await page.click('#ref-btn-publish');
-    const dialogText = await page.locator('[role="dialog"]').innerText();
+    const dialogText = await page.locator('#ref-publish-dialog').innerText();
     expect(dialogText).not.toContain('<slug>');
   });
 
@@ -160,7 +157,6 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 
   test('20261106-UX-164: Settings modules vertical fields & no Back link on top-level pages', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: Back link appears on top-level Settings modules');
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/admin/settings/answering');
@@ -177,7 +173,6 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 
   test('20261106-UX-166: Status single 4-Item list with no section headings & Local counts as configured', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: Status has repeated headings and says 0 configured providers');
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/admin/status');
@@ -186,7 +181,6 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 
   test('20261106-UX-167: Today description is "What needs your attention." and count rows have no status label', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: Today promises unshown recent drafts and health');
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/admin');
@@ -194,7 +188,6 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 
   test('20261106-UX-168: Answer rules status on title row (desktop) / under title (mobile) & "From your reply" caption', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: Answer rules uses "Source quote" label and status sits next to button on mobile');
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/admin/audit');

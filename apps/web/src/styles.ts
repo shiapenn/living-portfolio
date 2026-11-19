@@ -4691,8 +4691,16 @@ a.lp-item:hover {
   max-width: 720px;
   width: 100%;
   margin: 0 auto;
+  padding: 40px 16px 64px;
+  box-sizing: border-box;
+}
+@media (min-width: 768px) {
+  .lp-page-column {
+    padding: 40px 24px 64px;
+  }
 }
 .lp-page-column-narrow { max-width: 400px; }
+.lp-wizard-header { border-bottom: 0; padding: 0; }
 .lp-page-sections { display: flex; flex-direction: column; gap: var(--space-12); }
 
 .lp-page-header,
@@ -4844,6 +4852,8 @@ a.lp-item:hover {
 
 /* D-SYS #2: Empty message regions take 0 height and 0 margin; remove stray hairlines */
 .lp-status-line-slot:empty,
+.lp-status-line:empty,
+.lp-status-line[data-empty="true"]:has(.lp-status-line-text:empty),
 .lp-page-notice-slot:empty,
 .lp-help-text:empty,
 .lp-field-error:empty {
@@ -4932,7 +4942,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-item-title, .lp-field-label { font-size: 14px; font-weight: 600; color: var(--text-1); line-height: 20px; }
 .lp-body, .lp-item-body { font-size: 14px; font-weight: 400; color: var(--text-1); line-height: 20px; }
 .lp-description, .lp-page-description, .lp-form-section-desc { font-size: 14px; font-weight: 400; color: var(--text-2); line-height: 20px; }
-.lp-caption, .lp-item-subtitle, .lp-item-meta, .lp-field-help { font-size: 12px; font-weight: 400; color: var(--text-2); line-height: 16px; }
+.lp-caption, .lp-item-subtitle, .lp-item-meta, .lp-field-help, .lp-item-segment-heading { font-size: 12px; font-weight: 400; color: var(--text-2); line-height: 16px; }
 .lp-input::placeholder, .lp-textarea::placeholder, :disabled { color: var(--text-3); }
 
 /* Relation gaps (D-FINAL #2) */
