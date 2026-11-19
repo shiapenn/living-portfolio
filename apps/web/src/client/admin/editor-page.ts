@@ -358,12 +358,27 @@ function bootEditorPage(): void {
     }
     const sEl = byId('ref-spans-list');
     if (sEl) {
+      const formatRoleLabel = (raw: string) => {
+        const clean = (raw || 'context').replace(/[-_]+/g, ' ').trim();
+        return clean ? clean.charAt(0).toUpperCase() + clean.slice(1) : 'Context';
+      };
+      const statusMeta = (rawStatus: string) => {
+        const st = rawStatus || 'suggested';
+        if (st === 'accepted') return { st: 'accepted', label: 'Accepted', tone: 'ok' };
+        if (st === 'rejected') return { st: 'rejected', label: 'Ignored', tone: 'muted' };
+        return { st: 'suggested', label: 'Suggested', tone: 'neutral' };
+      };
       sEl.innerHTML = spans.length
         ? spans
-            .map(
-              (sp) =>
-                `<div class="lp-item" data-span-id="${esc(sp.id)}" data-span-status="${esc(sp.status || 'suggested')}"><div class="lp-item-main"><div class="lp-item-title">${esc(sp.text || 'Span')}</div><div class="lp-item-subtitle">${esc(sp.suggested_role || 'context')}</div></div><div class="lp-item-actions"><button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" data-span-action="accept" data-span-id="${esc(sp.id)}" data-span-role="${esc(sp.suggested_role || 'context')}">Accept</button><button type="button" class="lp-btn lp-btn-quiet lp-btn-sm" data-span-action="reject" data-span-id="${esc(sp.id)}" data-span-role="${esc(sp.suggested_role || 'context')}">Ignore</button></div></div>`
-            )
+            .map((sp) => {
+              const roleRaw = sp.suggested_role || sp.role || 'context';
+              const roleLabel = formatRoleLabel(roleRaw);
+              const passage = sp.text || '';
+              const meta = statusMeta(sp.status);
+              const isAccepted = meta.st === 'accepted';
+              const isRejected = meta.st === 'rejected';
+              return `<div class="lp-item lp-item-has-actions" data-span-id="${esc(sp.id)}" data-span-status="${esc(meta.st)}"><div class="lp-item-title"><span>${esc(roleLabel)}</span></div><div class="lp-item-status"><span class="lp-status-dot lp-status-${meta.tone}"><span class="lp-status-dot-circle" aria-hidden="true"></span><span>${esc(meta.label)}</span></span></div>${passage ? `<div class="lp-item-body lp-line-clamp-3" title="${esc(passage)}">${esc(passage)}</div>` : ''}<div class="lp-item-actions"><div class="lp-choice-list" role="group" aria-label="Role decision"><button type="button" class="lp-choice lp-choice-button${isAccepted ? ' is-selected' : ''}" data-span-action="accept" data-span-id="${esc(sp.id)}" data-span-role="${esc(roleRaw)}" aria-pressed="${isAccepted ? 'true' : 'false'}"><span class="lp-choice-btn-label">Accept</span></button><button type="button" class="lp-choice lp-choice-button${isRejected ? ' is-selected' : ''}" data-span-action="reject" data-span-id="${esc(sp.id)}" data-span-role="${esc(roleRaw)}" aria-pressed="${isRejected ? 'true' : 'false'}"><span class="lp-choice-btn-label">Ignore</span></button></div></div></div>`;
+            })
             .join('')
         : '<p class="lp-field-help">Save entry to detect suggested span roles.</p>';
     }
@@ -464,14 +479,30 @@ function bootEditorPage(): void {
     const span_id = btn.getAttribute('data-span-id') ?? '';
     const role = btn.getAttribute('data-span-role') ?? 'context';
     if (!span_id) return;
-    const status = action === 'accept' ? 'accepted' : 'rejected';
+    const row = btn.closest('[data-span-id]');
+    const currentStatus = row?.getAttribute('data-span-status') || 'suggested';
+    const targetStatus = action === 'accept' ? 'accepted' : 'rejected';
+    const nextStatus = currentStatus === targetStatus ? 'suggested' : targetStatus;
     const res = await apiRequest('/api/structure/annotations', {
       method: 'POST',
-      body: JSON.stringify({ span_id, role, status }),
+      body: JSON.stringify({ span_id, role, status: nextStatus }),
     });
-    if (res.ok) {
-      const row = btn.closest('[data-span-id]');
-      row?.setAttribute('data-span-status', status);
+    if (res.ok && row) {
+      row.setAttribute('data-span-status', nextStatus);
+      const statusEl = row.querySelector('.lp-item-status .lp-status-dot');
+      if (statusEl) {
+        const tone = nextStatus === 'accepted' ? 'ok' : nextStatus === 'rejected' ? 'muted' : 'neutral';
+        const label = nextStatus === 'accepted' ? 'Accepted' : nextStatus === 'rejected' ? 'Ignored' : 'Suggested';
+        statusEl.className = `lp-status-dot lp-status-${tone}`;
+        const labelEl = statusEl.querySelector('span:last-child');
+        if (labelEl) labelEl.textContent = label;
+      }
+      row.querySelectorAll<HTMLButtonElement>('button[data-span-action]').forEach((b) => {
+        const bAction = b.getAttribute('data-span-action');
+        const active = (nextStatus === 'accepted' && bAction === 'accept') || (nextStatus === 'rejected' && bAction === 'reject');
+        b.classList.toggle('is-selected', active);
+        b.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
     }
   });
 

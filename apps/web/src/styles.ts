@@ -4941,6 +4941,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-section-title, .lp-form-section-title, .lp-section-header-title { font-size: 16px; font-weight: 600; color: var(--text-1); line-height: 24px; }
 .lp-item-title, .lp-field-label { font-size: 14px; font-weight: 600; color: var(--text-1); line-height: 20px; }
 .lp-body, .lp-item-body { font-size: 14px; font-weight: 400; color: var(--text-1); line-height: 20px; }
+.lp-line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .lp-description, .lp-page-description, .lp-form-section-desc { font-size: 14px; font-weight: 400; color: var(--text-2); line-height: 20px; }
 .lp-caption, .lp-item-subtitle, .lp-item-meta, .lp-field-help, .lp-item-segment-heading { font-size: 12px; font-weight: 400; color: var(--text-2); line-height: 16px; }
 .lp-input::placeholder, .lp-textarea::placeholder, :disabled { color: var(--text-3); }
