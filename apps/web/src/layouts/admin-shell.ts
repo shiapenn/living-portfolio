@@ -341,7 +341,7 @@ export function renderAdminShell(
   ${renderIconSprite()}
   ${stagingBanner}
   <a href="#main-content" class="skip-link">Skip to main content</a>
-  <header class="lp-admin-header" role="banner">
+  <header class="lp-admin-header" role="banner" data-shell-topbar="true">
     <div class="lp-admin-header-start">
       ${launcherHtml}
       ${brandHtml}

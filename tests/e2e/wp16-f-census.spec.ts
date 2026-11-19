@@ -110,7 +110,6 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 
   test('20261106-UX-159: hairlines between Items and top bar bottom line and L1 surface separation', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: missing Item hairlines and top-bar bottom hairline');
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/admin/entries');

@@ -4948,7 +4948,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-item-actions .lp-action-bar { margin-top: 0; }
 
 /* Item contract & hairlines (D-FINAL #5, #10, #24) */
-.lp-item + .lp-item { border-top: 1px solid var(--border-subtle); }
+.lp-item:not(:last-child) { border-bottom: 1px solid var(--border-subtle); }
 .lp-item {
   display: grid;
   grid-template-columns: 1fr;
@@ -4979,7 +4979,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 }
 .lp-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0; }
 .lp-dialog-body { padding: 0; }
-.lp-dialog-footer, .lp-dialog-panel .lp-action-bar { margin-top: 8px; padding: 0; display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.lp-dialog-footer, .lp-dialog-panel .lp-action-bar { padding-top: 8px; display: flex; flex-direction: column; gap: 8px; width: 100%; }
 .lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn { width: 100%; }
 
 /* SegmentedControl (D-FINAL #15) */
