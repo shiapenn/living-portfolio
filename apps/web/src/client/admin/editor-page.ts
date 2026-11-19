@@ -272,10 +272,10 @@ function bootEditorPage(): void {
     const isEdit = view === 'edit';
     if (writingViewEl) writingViewEl.hidden = !isEdit;
     if (settingsViewEl) settingsViewEl.hidden = isEdit;
-    switchEditBtn?.setAttribute('aria-selected', isEdit ? 'true' : 'false');
-    switchEditBtn?.classList.toggle('is-active', isEdit);
-    switchSettingsBtn?.setAttribute('aria-selected', isEdit ? 'false' : 'true');
-    switchSettingsBtn?.classList.toggle('is-active', !isEdit);
+    switchEditBtn?.setAttribute('aria-checked', isEdit ? 'true' : 'false');
+    switchEditBtn?.classList.toggle('is-selected', isEdit);
+    switchSettingsBtn?.setAttribute('aria-checked', isEdit ? 'false' : 'true');
+    switchSettingsBtn?.classList.toggle('is-selected', !isEdit);
     if (!isEdit) {
       void loadStructureData();
     }
@@ -283,28 +283,43 @@ function bootEditorPage(): void {
 
   switchEditBtn?.addEventListener('click', () => setEditorView('edit'));
   switchSettingsBtn?.addEventListener('click', () => setEditorView('settings'));
+  document.getElementById('ref-details-line')?.addEventListener('click', () => setEditorView('settings'));
+
+  document.getElementById('ref-btn-open-claim')?.addEventListener('click', () => {
+    document.getElementById('ref-claim-form-wrap')?.classList.remove('lp-is-hidden');
+    document.getElementById('ref-claim-input')?.focus();
+  });
+  document.getElementById('ref-btn-cancel-claim')?.addEventListener('click', () => {
+    document.getElementById('ref-claim-form-wrap')?.classList.add('lp-is-hidden');
+  });
+  document.getElementById('ref-btn-open-evidence')?.addEventListener('click', () => {
+    document.getElementById('ref-evidence-form-wrap')?.classList.remove('lp-is-hidden');
+    document.getElementById('ref-evidence-title')?.focus();
+  });
+  document.getElementById('ref-btn-cancel-evidence')?.addEventListener('click', () => {
+    document.getElementById('ref-evidence-form-wrap')?.classList.add('lp-is-hidden');
+  });
 
   // Full Structure restoration (D-EDITOR-4)
   let cachedRevId = '';
   const updateStructureLevel = (facetCount: number, claimCount: number, evidenceCount: number) => {
     const levelEl = document.getElementById('ref-structure-level');
-    const nextEl = document.getElementById('ref-structure-next-step');
+    const nextEl = levelEl?.querySelector('.lp-level-next');
     const levels = ['Captured', 'Tagged', 'Claimed', 'Grounded'] as const;
     const idx = evidenceCount > 0 ? 3 : claimCount > 0 ? 2 : facetCount > 0 ? 1 : 0;
-    const currentLevel = levels[idx];
     if (levelEl) {
-      levelEl.setAttribute('data-current-level', currentLevel);
-      levels.forEach((lvl, i) => {
-        const badge = levelEl.querySelector(`[data-level-step="${lvl}"]`);
-        if (badge) {
-          badge.className = `lp-badge ${i <= idx ? 'lp-badge-ok' : 'lp-badge-neutral'}`;
-        }
+      levelEl.setAttribute('data-current-level', levels[idx]);
+      const segs = Array.from(levelEl.querySelectorAll('.lp-level-segment'));
+      segs.forEach((seg, i) => {
+        seg.classList.toggle('is-done', i <= idx);
+        seg.classList.toggle('is-upcoming', i > idx);
+        seg.classList.toggle('is-current', i === idx);
       });
     }
     if (nextEl) {
       nextEl.textContent =
         idx === 0
-          ? 'Add a facet tag to reach Tagged.'
+          ? 'Add a tag to reach Tagged.'
           : idx === 1
             ? 'Add a claim to reach Claimed.'
             : idx === 2
@@ -326,7 +341,7 @@ function bootEditorPage(): void {
     const fEl = byId('ref-facets-list');
     if (fEl) {
       fEl.innerHTML = facets
-        .map((f) => `<span class="lp-chip lp-chip-confirmed" data-facet-id="${esc(f.id)}">${esc(f.key || f.facet_type || 'topic')}: ${esc(f.value ?? f.facet_value)}</span>`)
+        .map((f) => `<span class="lp-tag" data-facet-id="${esc(f.id)}"><span class="lp-tag-label">${esc(f.key || f.facet_type || 'topic')}: ${esc(f.value ?? f.facet_value)}</span></span>`)
         .join('');
     }
     const cEl = byId('ref-claims-list');

@@ -1,7 +1,6 @@
 import { z } from '@living-portfolio/core';
-import { renderActionBar, renderField, renderFormSection } from '../../primitives/index.js';
-import { renderProviderRow, renderStatusLine } from '../../components/index.js';
-import { WIZARD_STRINGS } from '../../strings.js';
+import { renderActionBar, renderField, renderFormSection, renderItem } from '../../primitives/index.js';
+import { renderStatusLine } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 
 export const ProvidersConfigSchema = z.object({
@@ -17,7 +16,7 @@ function toProviderId(name: string): string {
 export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
   id: 'providers',
   title: 'Providers',
-  summary: 'Configured AI models and fallback behaviour when providers are offline.',
+  summary: 'The local search model runs on this server. Configure your answering model and fallback behaviour.',
   icon: 'layers',
   order: 2,
   route: '/admin/settings/providers',
@@ -27,8 +26,8 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
   },
   schema: ProvidersConfigSchema,
   status: (_cfg, ctx) => {
-    const enabledCount = (ctx?.providers ?? []).filter((p) => p.enabled).length;
-    return enabledCount > 0 ? `${enabledCount} active` : 'Local ONNX active';
+    const active = (ctx?.providers ?? []).find((p) => p.enabled);
+    return active ? `${active.name || active.id}` : 'Local only';
   },
   render: (cfg, ctx) => {
     const liveProviders = ctx.providers ?? [];
@@ -37,44 +36,31 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
         ? ctx.settings.degradation_mode
         : cfg.degradationMode;
 
-    const liveByName = new Map(
-      liveProviders.map((p) => [toProviderId(p.name || p.id || ''), p]),
-    );
-
-    const providerRows = WIZARD_STRINGS.step3.providersTable.rows
-      .map((row) => {
-        const id = toProviderId(row.name);
-        const live = liveByName.get(id);
-        const isEnabled = live ? Boolean(live.enabled) : row.isLocal;
-        const statusText = live
-          ? live.enabled
-            ? 'Enabled'
-            : 'Disabled'
-          : row.status;
-        return renderProviderRow({
-          id,
-          name: row.name,
-          model: live?.model || row.model,
-          classes: row.classes,
-          status: statusText,
-          tone: isEnabled ? 'ok' : 'neutral',
-          isLocal: row.isLocal,
-          mode: 'item',
-          editable: !row.isLocal,
-          hasKey: Boolean(live?.enabled),
-        });
-      })
-      .join('');
+    const active = liveProviders.find((p) => p.enabled && p.id !== 'local');
+    const answeringItemHtml = `<div class="lp-list">
+      ${renderItem({
+        id: 'provider-role-answering',
+        title: 'Answering model',
+        subtitle: active ? `${active.name || active.id}${active.model ? ` · ${active.model}` : ''}` : undefined,
+        statusLabel: active ? 'Connected' : 'Local only, quotes from your entries',
+        statusTone: active ? 'ok' : 'neutral',
+        actions: {
+          secondary: {
+            id: 'btn-change-provider',
+            label: 'Change',
+            href: '/admin/settings/providers/change',
+            variant: 'secondary',
+            size: 'sm',
+          },
+        },
+        attributes: 'data-role-id="answering"',
+      })}
+    </div>`;
 
     return `
-      <form id="settings-module-form" data-settings-module="providers" class="lp-stack-lg">
+      <form id="settings-module-form" data-settings-module="providers" class="lp-stack lp-gap-section">
         ${renderStatusLine({ id: 'settings-status-banner' })}
-
-        ${renderFormSection({
-          title: 'Configured providers',
-          description: 'Local ONNX runs on this server. External provider API keys are write-only and never echoed.',
-          fieldsHtml: `<div class="lp-list lp-stack-sm">${providerRows}</div>`,
-        })}
+        ${answeringItemHtml}
 
         ${renderFormSection({
           title: 'Fallback behaviour',
@@ -91,15 +77,14 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
               { value: 'force_unavailable', label: 'Queue all questions to Inbox' },
             ],
           }),
-        })}
-
-        ${renderActionBar({
-          primary: {
-            id: 'btn-save-settings-module',
-            label: 'Save',
-            variant: 'primary',
-            type: 'button',
-          },
+          actionBarHtml: renderActionBar({
+            primary: {
+              id: 'btn-save-settings-module',
+              label: 'Save',
+              variant: 'primary',
+              type: 'button',
+            },
+          }),
         })}
       </form>
     `;

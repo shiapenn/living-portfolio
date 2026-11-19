@@ -4,6 +4,7 @@ import {
   renderButton,
   renderIcon,
   renderIconButton,
+  renderSegmentedControl,
   renderStatusDot,
 } from '../../../primitives/index.js';
 import { renderStatusLine } from '../../../components/index.js';
@@ -69,7 +70,7 @@ export function renderEditorToolbar(
   const saveLabel = 'Save';
   const historyHref = entry.id && entry.id !== 'new' ? `/admin/entries/${encodeURIComponent(entry.id)}/history` : '#';
 
-  return `<div id="ref-editor-toolbar" class="lp-editor-toolbar" role="toolbar" aria-label="Editor toolbar">
+  return `<div id="ref-editor-toolbar" class="lp-editor-toolbar lp-editor-header-row" role="toolbar" aria-label="Editor toolbar">
   <div class="lp-editor-toolbar-left">
     ${renderIconButton({
       id: 'ref-sidebar-toggle',
@@ -81,13 +82,20 @@ export function renderEditorToolbar(
       size: 'sm',
       dataAttrs: { 'aria-expanded': 'false', 'aria-controls': 'ref-entries-drawer' },
     })}
-    <div id="ref-view-switch" class="lp-editor-view-switch" role="tablist" aria-label="Editor view">
-      <button type="button" role="tab" id="ref-switch-edit" class="lp-tab is-active" aria-selected="true" aria-controls="ref-writing-view">Edit</button>
-      <button type="button" role="tab" id="ref-switch-settings" class="lp-tab" aria-selected="false" aria-controls="ref-settings-view">Settings</button>
-    </div>
+  </div>
+  <div class="lp-editor-toolbar-center-slot">
+    ${renderSegmentedControl({
+      id: 'ref-view-switch',
+      ariaLabel: 'Editor view',
+      options: [
+        { id: 'ref-switch-edit', value: 'edit', label: 'Edit' },
+        { id: 'ref-switch-settings', value: 'settings', label: 'Settings' },
+      ],
+      selectedValue: 'edit',
+    })}
   </div>
   <div class="lp-editor-toolbar-right">
-    <a id="ref-btn-history" href="${escapeHtml(historyHref)}" class="lp-icon-btn lp-icon-btn-quiet lp-icon-btn-sm" aria-label="History" title="History">${renderIcon('clock', 16)}</a>
+    <a id="ref-btn-history" href="${escapeHtml(historyHref)}" class="lp-icon-btn lp-icon-btn-quiet lp-icon-btn-sm lp-editor-desktop-only" aria-label="History" title="History">${renderIcon('clock', 16)}</a>
     ${renderIconButton({
       id: 'ref-btn-delete',
       ariaLabel: EDITOR_STRINGS.actions.deleteEntry,
@@ -96,15 +104,26 @@ export function renderEditorToolbar(
       iconSize: 16,
       variant: 'quiet',
       size: 'sm',
+      className: 'lp-editor-desktop-only',
+    })}
+    ${renderIconButton({
+      id: 'ref-btn-more',
+      ariaLabel: 'More actions',
+      title: 'More actions',
+      icon: 'more',
+      iconSize: 16,
+      variant: 'quiet',
+      size: 'sm',
+      className: 'lp-editor-mobile-only',
     })}
     ${renderButton({ id: 'ref-btn-save', label: saveLabel, variant: 'primary', size: 'sm' })}
-    <div class="lp-editor-toolbar-status">
-      ${renderStatusLine({
-        id: 'ref-status-line',
-        message: statusMessage,
-        tone: statusTone,
-      })}
-    </div>
   </div>
+</div>
+<div class="lp-editor-toolbar-status">
+  ${renderStatusLine({
+    id: 'ref-status-line',
+    message: statusMessage,
+    tone: statusTone,
+  })}
 </div>`;
 }

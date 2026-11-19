@@ -6,7 +6,10 @@ import {
   renderField,
   renderFormSection,
   renderItem,
+  renderLevel,
   renderTabs,
+  renderTag,
+  type StructureStage,
 } from '../../../primitives/index.js';
 import {
   renderDialog,
@@ -156,57 +159,77 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
   const facets = inspector?.facets ?? [];
   const claims = inspector?.claims ?? [];
   const evidence = inspector?.evidence ?? [];
-  const levelNames = ['Captured', 'Tagged', 'Claimed', 'Grounded'] as const;
+  const levelNames: StructureStage[] = ['Captured', 'Tagged', 'Claimed', 'Grounded'];
   const currentIdx = evidence.length > 0 ? 3 : claims.length > 0 ? 2 : facets.length > 0 ? 1 : 0;
   const currentLevel = levelNames[currentIdx];
   const nextStep =
     currentIdx === 0
-      ? 'Add a facet tag to reach Tagged.'
+      ? 'Add a tag to reach Tagged.'
       : currentIdx === 1
         ? 'Add a claim to reach Claimed.'
         : currentIdx === 2
           ? 'Attach evidence to reach Grounded.'
           : 'All structure levels complete.';
 
-  const levelHtml = `<div id="ref-structure-level" class="lp-row lp-gap-8 lp-structure-levels" data-current-level="${currentLevel}">
-    ${levelNames
-      .map(
-        (lvl, idx) =>
-          `<span class="lp-badge ${idx <= currentIdx ? 'lp-badge-ok' : 'lp-badge-neutral'}" data-level-step="${lvl}">${lvl}</span>`
-      )
-      .join('')}
-  </div>
-  <p id="ref-structure-next-step" class="lp-field-help">${escapeHtml(nextStep)}</p>`;
+  const levelHtml = renderLevel({
+    id: 'ref-structure-level',
+    current: currentLevel,
+    nextStep,
+  });
 
-  const facetsHtml = `<div class="lp-stack lp-gap-8">
-    <h3 class="lp-form-section-title">Facets</h3>
+  const tagsHtml = `<div class="lp-stack lp-gap-related">
+    <h3 class="lp-section-title">Tags</h3>
     <div id="ref-facets-list" class="lp-row lp-gap-8 lp-row-wrap">
       ${facets
-        .map(
-          (f: any) =>
-            `<span class="lp-chip lp-chip-confirmed" data-facet-id="${escapeHtml(String(f.id ?? ''))}">${escapeHtml(String(f.key ?? f.facet_type ?? 'topic'))}: ${escapeHtml(String(f.value ?? f.facet_value ?? ''))}</span>`
+        .map((f: any) =>
+          renderTag({
+            label: String(f.value ?? f.facet_value ?? ''),
+            category: String(f.key ?? f.facet_type ?? 'topic'),
+            removeAction: 'facet',
+            removeValue: String(f.id ?? ''),
+          })
         )
         .join('')}
     </div>
-    <div class="lp-row lp-gap-8">
-      <select id="ref-facet-type" class="lp-select" aria-label="Facet type">
-        <option value="topic">Topic</option>
-        <option value="role">Role</option>
-        <option value="technology">Technology</option>
-        <option value="domain">Domain</option>
-      </select>
-      <input type="text" id="ref-facet-value" class="lp-input" placeholder="Add facet tag…" aria-label="Facet value" />
-      ${renderButton({ id: 'ref-btn-add-facet', label: 'Add tag', variant: 'secondary', size: 'sm' })}
+    <div id="ref-tag-feedback" class="lp-field-error"></div>
+    <div class="lp-stack lp-gap-related">
+      ${renderField({
+        kind: 'select',
+        id: 'ref-facet-type',
+        name: 'facetType',
+        label: 'Category',
+        value: 'topic',
+        options: [
+          { value: 'topic', label: 'Topic' },
+          { value: 'role', label: 'Role' },
+          { value: 'technology', label: 'Technology' },
+          { value: 'domain', label: 'Domain' },
+        ],
+      })}
+      ${renderField({
+        kind: 'input',
+        id: 'ref-facet-value',
+        name: 'facetValue',
+        label: 'Tag',
+        placeholder: 'Add a tag',
+      })}
+      ${renderActionBar({
+        secondary: { id: 'ref-btn-add-facet', label: 'Add tag', variant: 'secondary', type: 'button' },
+      })}
     </div>
   </div>`;
 
-  const spansHtml = `<div class="lp-stack lp-gap-8">
-    <h3 class="lp-form-section-title">Suggested roles</h3>
-    <div id="ref-spans-list" class="lp-stack lp-gap-8"></div>
+  const spansHtml = `<div class="lp-stack lp-gap-related">
+    <div class="lp-stack lp-gap-tight">
+      <h3 class="lp-section-title">Suggested roles</h3>
+      <p class="lp-description">Passages that may play a role in your story. Accept to label one, or ignore it.</p>
+    </div>
+    <div id="ref-spans-feedback" class="lp-sr-only" aria-live="polite"></div>
+    <div id="ref-spans-list" class="lp-list"></div>
   </div>`;
 
-  const claimsHtml = `<div class="lp-stack lp-gap-8">
-    <h3 class="lp-form-section-title">Claims</h3>
+  const claimsHtml = `<div class="lp-stack lp-gap-related">
+    <h3 class="lp-section-title">Claims</h3>
     <div id="ref-claims-list" class="lp-list">
       ${claims
         .map((c: any) =>
@@ -218,14 +241,20 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
         )
         .join('')}
     </div>
-    <div class="lp-row lp-gap-8">
-      <input type="text" id="ref-claim-input" class="lp-input" placeholder="Add a claim…" aria-label="Claim text" />
-      ${renderButton({ id: 'ref-btn-add-claim', label: 'Add claim', variant: 'secondary', size: 'sm' })}
+    <div id="ref-claim-form-wrap" class="lp-stack lp-gap-related lp-is-hidden">
+      ${renderField({ kind: 'input', id: 'ref-claim-input', name: 'claimText', label: 'Claim', placeholder: 'Add a claim' })}
+      ${renderActionBar({
+        primary: { id: 'ref-btn-add-claim', label: 'Add', variant: 'primary', type: 'button' },
+        secondary: { id: 'ref-btn-cancel-claim', label: 'Cancel', variant: 'secondary', type: 'button' },
+      })}
     </div>
+    ${renderActionBar({
+      secondary: { id: 'ref-btn-open-claim', label: 'Add claim', variant: 'secondary', type: 'button' },
+    })}
   </div>`;
 
-  const evidenceHtml = `<div class="lp-stack lp-gap-8">
-    <h3 class="lp-form-section-title">Evidence</h3>
+  const evidenceHtml = `<div class="lp-stack lp-gap-related">
+    <h3 class="lp-section-title">Evidence</h3>
     <div id="ref-evidence-list" class="lp-list">
       ${evidence
         .map((ev: any) =>
@@ -238,17 +267,23 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
         )
         .join('')}
     </div>
-    <div class="lp-row lp-gap-8">
-      <input type="text" id="ref-evidence-title" class="lp-input" placeholder="Evidence title" aria-label="Evidence title" />
-      <input type="url" id="ref-evidence-url" class="lp-input" placeholder="https://…" aria-label="Evidence URL" />
-      ${renderButton({ id: 'ref-btn-add-evidence', label: 'Attach', variant: 'secondary', size: 'sm' })}
+    <div id="ref-evidence-form-wrap" class="lp-stack lp-gap-related lp-is-hidden">
+      ${renderField({ kind: 'input', id: 'ref-evidence-title', name: 'evidenceTitle', label: 'Evidence title', placeholder: 'Evidence title' })}
+      ${renderField({ kind: 'input', inputType: 'url', id: 'ref-evidence-url', name: 'evidenceUrl', label: 'Evidence URL', placeholder: 'https://example.com' })}
+      ${renderActionBar({
+        primary: { id: 'ref-btn-add-evidence', label: 'Add', variant: 'primary', type: 'button' },
+        secondary: { id: 'ref-btn-cancel-evidence', label: 'Cancel', variant: 'secondary', type: 'button' },
+      })}
     </div>
+    ${renderActionBar({
+      secondary: { id: 'ref-btn-open-evidence', label: 'Attach evidence', variant: 'secondary', type: 'button' },
+    })}
   </div>`;
 
   return renderFormSection({
     id: 'ref-structure-section',
     title: 'Structure',
-    description: 'Tagging, suggested span roles, claims, and evidence.',
-    fieldsHtml: `<div class="lp-stack lp-gap-16">${levelHtml}${facetsHtml}${spansHtml}${claimsHtml}${evidenceHtml}</div>`,
+    description: 'Tags, suggested roles, claims, and evidence.',
+    fieldsHtml: `<div class="lp-stack lp-gap-group">${levelHtml}${tagsHtml}${spansHtml}${claimsHtml}${evidenceHtml}</div>`,
   });
 }

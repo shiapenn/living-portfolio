@@ -29,7 +29,7 @@ export const PROVIDERS_CATALOG: readonly ProviderMeta[] = [
   },
   {
     id: 'openai',
-    label: 'OpenAI-compatible',
+    label: 'OpenAI Compatible',
     description: 'Uses OpenAI or any compatible chat completions endpoint.',
     dataNote: 'Data handling: sends retrieved excerpts to your configured endpoint.',
     models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini'],

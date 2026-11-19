@@ -1,5 +1,6 @@
 import { renderAdminShell } from "../../layouts/admin-shell.js";
 import { renderActionBar, renderButton, renderChip, renderChoiceGroup, renderIcon, renderItem } from "../../primitives/index.js";
+import { PROVIDERS_CATALOG } from "../../patterns/provider-flow.js";
 import { WIZARD_STRINGS } from "../../strings.js";
 import { SETUP_SCRIPT_PART_1 } from './setup-script-part1.js';
 import { SETUP_SCRIPT_PART_2 } from './setup-script-part2.js';
@@ -139,17 +140,19 @@ export function renderAdminSetupPage(): string {
           <p class="lp-page-description">${WIZARD_STRINGS.step3.subtitle}</p>
         </div>
 
-        <div class="lp-list">
-          ${WIZARD_STRINGS.step3.providersTable.rows.map((row) =>
-            renderItem({
-              id: row.statusId,
-              title: `${row.name} · ${row.model}`,
-              subtitle: row.classes.join(', '),
-              statusLabel: row.status,
-              statusTone: row.isLocal ? 'ok' : 'neutral',
-            })
-          ).join('')}
-        </div>
+        ${renderChoiceGroup({
+          id: 'setup-provider-choice',
+          name: 'setupProvider',
+          mode: 'single',
+          variant: 'card',
+          options: PROVIDERS_CATALOG.map((p) => ({
+            id: `setup-provider-${p.id}`,
+            value: p.id,
+            label: p.id === 'local' ? 'Local ONNX' : p.label,
+            description: `${p.description} ${p.dataNote}`,
+            checked: p.id === 'local',
+          })),
+        })}
 
         <div class="lp-notice lp-notice-info">
           <strong>${WIZARD_STRINGS.step3.boundaryNotice}</strong>

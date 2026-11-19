@@ -5057,6 +5057,75 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-level-label { font-size: 12px; font-weight: 400; color: var(--text-2); line-height: 16px; }
 .lp-level-segment.is-current .lp-level-label { font-weight: 600; color: var(--text-1); }
 
+/* D-FINAL #15, #16: Editor header row (1fr auto 1fr), Edit prose, details line, format bar */
+.lp-editor-header-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  min-height: 36px;
+  height: 36px;
+  padding: 0 var(--space-4);
+  background: var(--surface-l0);
+  border-bottom: 0;
+  gap: 4px;
+}
+.lp-editor-toolbar-left { justify-self: start; display: flex; align-items: center; gap: 8px; }
+.lp-editor-toolbar-center-slot { justify-self: center; display: flex; align-items: center; }
+.lp-editor-toolbar-right { justify-self: end; display: flex; align-items: center; gap: 4px; }
+@media (min-width: 640px) {
+  .lp-editor-toolbar-right { gap: 8px; }
+  .lp-editor-mobile-only { display: none; }
+}
+@media (max-width: 639px) {
+  .lp-editor-desktop-only { display: none; }
+}
+.lp-editor-title-input {
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  background: transparent;
+  color: var(--text-1);
+  border: 0;
+  padding: 0;
+}
+.lp-editor-details-line {
+  background: transparent;
+  border: 0;
+  padding: 4px 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-2);
+  text-align: start;
+  cursor: pointer;
+}
+.lp-prose .ProseMirror {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.lp-prose .ProseMirror > * { margin: 0; }
+.lp-prose .ProseMirror h1,
+.lp-prose .ProseMirror h2,
+.lp-prose .ProseMirror h3 {
+  padding-top: 8px;
+}
+.lp-format-bar {
+  position: fixed;
+  bottom: calc(16px + var(--vv-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-overlay);
+  background: var(--surface-l1);
+  box-shadow: var(--shadow-overlay);
+  border-radius: 8px;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .lp-canary-center { text-align: center; }
 .lp-canary-empty-tall { height: 48px; }
 .lp-canary-gap-80 { display: flex; flex-direction: column; gap: 80px; }

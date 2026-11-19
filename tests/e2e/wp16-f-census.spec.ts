@@ -80,7 +80,6 @@ test.describe('WP-16.F F0 Canaries (must pass: prove checks catch real defects)'
 
 test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', () => {
   test('20261106-UX-157: rendered-text & dark native select & STATES manifest coverage', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: setup has arrows, editor Settings has white native select in dark mode');
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 800 });
 
@@ -137,7 +136,6 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 
   test('20261106-UX-162: Editor header 1fr auto 1fr, right-edge alignment, centred switch, format bar at 16px', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: Save 4px off right edge, switch left-aligned, format bar 116px above bottom');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -147,7 +145,6 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 
   test('20261106-UX-163: Editor Settings Structure (Level progress bar, themed Tag chips, Suggested roles passage & Accept/Ignore)', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: stateless level line, unthemed chips, missing role passage');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -164,7 +161,6 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 
   test('20261106-UX-165: Providers D-PROV journey (single Answering model Item + /admin/settings/providers/change)', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: Providers lists all providers with key fields');
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/admin/settings/providers');
@@ -195,7 +191,6 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
   });
 
   test('20261106-UX-169: Copy terminology updated across admin UI', async ({ page }) => {
-    test.fail(true, 'F0 failing-first: legacy terms Role profile / Temporal confidence / Facets / Topic still rendered');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 1280, height: 800 });

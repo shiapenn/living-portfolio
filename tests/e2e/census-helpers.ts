@@ -52,7 +52,7 @@ export async function navigateToState(
     }
     case 'editor-tag-add': {
       await page.click('#ref-switch-settings');
-      const input = page.locator('#ref-facet-input, #ref-tag-input').first();
+      const input = page.locator('#ref-facet-value, #ref-facet-input, #ref-tag-input').first();
       if (await input.isVisible()) {
         await input.fill('architecture');
         await input.press('Enter');
@@ -91,7 +91,12 @@ export async function navigateToState(
       break;
     }
     case 'open-delete-dialog': {
-      await page.click('#ref-btn-delete');
+      const delBtn = page.locator('#ref-btn-delete');
+      if (await delBtn.isVisible()) {
+        await delBtn.click();
+      } else {
+        await page.click('#ref-btn-more');
+      }
       break;
     }
     case 'open-publish-dialog': {
