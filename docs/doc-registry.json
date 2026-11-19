@@ -1497,5 +1497,13 @@
     "path": "docs/execution-reports/A141-wp-16f-f2-pages-and-overlays.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A142",
+    "title": "wp-16f-f3-editor-structure-providers",
+    "class": "A",
+    "path": "docs/execution-reports/A142-wp-16f-f3-editor-structure-providers.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

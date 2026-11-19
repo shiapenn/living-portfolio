@@ -147,6 +147,7 @@
 | `A139` | WP-16.F F0 Contract and Failing Census | `active` | [A139-wp-16f-f0-contract-and-failing-census.md](execution-reports/A139-wp-16f-f0-contract-and-failing-census.md) | — |
 | `A140` | WP-16.F F1 Tokens, Primitives and Fixture | `active` | [A140-wp-16f-f1-tokens-primitives-and-fixture.md](execution-reports/A140-wp-16f-f1-tokens-primitives-and-fixture.md) | — |
 | `A141` | wp-16f-f2-pages-and-overlays | `active` | [A141-wp-16f-f2-pages-and-overlays.md](execution-reports/A141-wp-16f-f2-pages-and-overlays.md) | — |
+| `A142` | wp-16f-f3-editor-structure-providers | `active` | [A142-wp-16f-f3-editor-structure-providers.md](execution-reports/A142-wp-16f-f3-editor-structure-providers.md) | — |
 
 ## Handover Snapshots (Class H)
 
