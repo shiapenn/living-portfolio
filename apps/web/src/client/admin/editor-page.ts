@@ -283,7 +283,10 @@ function bootEditorPage(): void {
 
   switchEditBtn?.addEventListener('click', () => setEditorView('edit'));
   switchSettingsBtn?.addEventListener('click', () => setEditorView('settings'));
-  document.getElementById('ref-details-line')?.addEventListener('click', () => setEditorView('settings'));
+  document.getElementById('ref-details-line')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    setEditorView('settings');
+  });
 
   document.getElementById('ref-btn-open-claim')?.addEventListener('click', () => {
     document.getElementById('ref-claim-form-wrap')?.classList.remove('lp-is-hidden');

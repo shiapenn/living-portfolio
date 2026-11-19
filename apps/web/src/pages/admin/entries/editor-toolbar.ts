@@ -70,7 +70,7 @@ export function renderEditorToolbar(
   const saveLabel = 'Save';
   const historyHref = entry.id && entry.id !== 'new' ? `/admin/entries/${encodeURIComponent(entry.id)}/history` : '#';
 
-  return `<div id="ref-editor-toolbar" class="lp-editor-toolbar lp-editor-header-row" role="toolbar" aria-label="Editor toolbar">
+  return `<div class="lp-editor-toolbar-sticky"><div id="ref-editor-toolbar" class="lp-editor-toolbar lp-editor-header-row" role="toolbar" aria-label="Editor toolbar">
   <div class="lp-editor-toolbar-left">
     ${renderIconButton({
       id: 'ref-sidebar-toggle',
@@ -125,5 +125,5 @@ export function renderEditorToolbar(
     message: statusMessage,
     tone: statusTone,
   })}
-</div>`;
+</div></div>`;
 }

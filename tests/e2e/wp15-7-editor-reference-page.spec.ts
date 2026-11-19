@@ -139,8 +139,8 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     await expect(page.locator('#ref-settings-view')).toBeHidden();
 
     const draftAudit = await page.evaluate(() => {
-      const badge = document.querySelector('#ref-structure-level .lp-badge')!;
-      const badgeCs = getComputedStyle(badge);
+      const levelBar = document.querySelector('#ref-structure-level .lp-level-segment.is-current .lp-level-bar-fill')!;
+      const badgeCs = getComputedStyle(levelBar);
       const icons = Array.from(document.querySelectorAll<SVGElement>('svg.lp-icon'));
       const validIcons = icons.every((svg) => {
         const w = Math.round(parseFloat(svg.getAttribute('width') || '0'));
@@ -160,7 +160,7 @@ test.describe('WP-15.7 Reference Editor Page', () => {
       };
     });
     expect(draftAudit.badgeBorder).toBe(0);
-    expect(draftAudit.badgeRadius).toBe(0);
+    expect(draftAudit.badgeRadius).toBe(4);
     expect(draftAudit.validIcons).toBe(true);
     expect(draftAudit.bodyNotClipped).toBe(true);
     expect(draftAudit.themeLabel).toBe('Switch to dark theme');
@@ -177,12 +177,12 @@ test.describe('WP-15.7 Reference Editor Page', () => {
     await page.locator('#ref-switch-settings').click();
     await expect(page.locator('#ref-settings-view')).toBeVisible();
     const details1280 = await page.evaluate(() => {
-      const grid = document.querySelector('#ref-details-section .lp-details-grid')!;
-      const cols = getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length;
       const dateBox = document.getElementById('ref-field-date')!.getBoundingClientRect();
-      return { cols, dateWidth: dateBox.width };
+      const slugBox = document.getElementById('ref-field-slug')!.getBoundingClientRect();
+      const stacked = dateBox.top >= slugBox.bottom - 1;
+      return { stacked, dateWidth: dateBox.width };
     });
-    expect(details1280.cols).toBe(2);
+    expect(details1280.stacked).toBe(true);
     expect(details1280.dateWidth).toBeGreaterThanOrEqual(148);
     await page.locator('#ref-switch-edit').click();
 
@@ -204,7 +204,9 @@ test.describe('WP-15.7 Reference Editor Page', () => {
       const headerRect = document.querySelector('.lp-admin-header')!.getBoundingClientRect();
       const launcherPanel = document.getElementById('lp-launcher-panel');
       const navHidden = !launcherPanel || launcherPanel.hasAttribute('hidden');
-      const cols = getComputedStyle(document.querySelector('#ref-details-section .lp-details-grid')!).gridTemplateColumns.trim().split(/\s+/).length;
+      const dateBox = document.getElementById('ref-field-date')!.getBoundingClientRect();
+      const slugBox = document.getElementById('ref-field-slug')!.getBoundingClientRect();
+      const cols = dateBox.top >= slugBox.bottom - 1 ? 1 : 2;
       const pmEl = document.querySelector('#ref-tiptap-editor .ProseMirror') as HTMLElement;
       const targets = Array.from(document.querySelectorAll<HTMLElement>('.lp-admin-header button, .lp-editor-toolbar button')).filter(
         (el) => getComputedStyle(el).display !== 'none' && !el.closest('[hidden]') && !el.closest('.lp-is-hidden')

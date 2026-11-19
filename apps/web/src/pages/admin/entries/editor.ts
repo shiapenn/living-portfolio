@@ -134,7 +134,7 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
     <div class="lp-editor-writing-col">
       <div class="lp-editor-title-wrap">
         <textarea id="ref-field-title" name="title" rows="1" data-lp-autogrow="true" class="lp-editor-title-input" placeholder="${escapeHtml(EDITOR_STRINGS.fields.titlePlaceholder)}" aria-label="${escapeHtml(EDITOR_STRINGS.fields.titleLabel)}" required>${escapeHtml(selected.title)}</textarea>
-        <button type="button" id="ref-details-line" class="lp-editor-details-line">${escapeHtml(formatVisibilityLabel(selected.visibility))}, ${escapeHtml(formatDetailsMeta(selected))}</button>
+        <a href="#settings" id="ref-details-line" class="lp-editor-details-line">${escapeHtml(formatVisibilityLabel(selected.visibility))}, ${escapeHtml(formatDetailsMeta(selected))}</a>
         ${options.titleError ? `<p id="ref-field-title-error" class="lp-field-error">${escapeHtml(options.titleError)}</p>` : '<p id="ref-field-title-error" class="lp-field-error lp-is-hidden"></p>'}
       </div>
       <div class="lp-editor-surface-wrap">

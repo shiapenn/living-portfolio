@@ -140,19 +140,17 @@ export function renderAdminSetupPage(): string {
           <p class="lp-page-description">${WIZARD_STRINGS.step3.subtitle}</p>
         </div>
 
-        ${renderChoiceGroup({
-          id: 'setup-provider-choice',
-          name: 'setupProvider',
-          mode: 'single',
-          variant: 'card',
-          options: PROVIDERS_CATALOG.map((p) => ({
-            id: `setup-provider-${p.id}`,
-            value: p.id,
-            label: p.id === 'local' ? 'Local ONNX' : p.label,
-            description: `${p.description} ${p.dataNote}`,
-            checked: p.id === 'local',
-          })),
-        })}
+        <div class="lp-list">
+          ${PROVIDERS_CATALOG.map((p) =>
+            renderItem({
+              title: p.id === 'local' ? 'Local ONNX' : p.label,
+              subtitle: `${p.description} ${p.dataNote}`,
+              statusLabel: p.id === 'local' ? 'Configured' : 'Not configured',
+              statusTone: p.id === 'local' ? 'ok' : 'neutral',
+              attributes: `data-provider="${p.id}"`,
+            }).replace('<div class="lp-item-status">', `<div id="status-${p.id}" class="lp-item-status">`)
+          ).join('')}
+        </div>
 
         <div class="lp-notice lp-notice-info">
           <strong>${WIZARD_STRINGS.step3.boundaryNotice}</strong>

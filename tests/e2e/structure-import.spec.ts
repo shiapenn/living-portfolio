@@ -19,7 +19,9 @@ test.describe.serial('WP-4.1: Structure Review Loop, Import Triage, and Visitor 
     await expect(page.locator('#ref-claims-list')).toBeAttached();
     await expect(page.locator('#ref-evidence-list')).toBeAttached();
     await expect(page.locator('#ref-btn-add-facet')).toBeVisible();
+    await page.click('#ref-btn-open-claim');
     await expect(page.locator('#ref-btn-add-claim')).toBeVisible();
+    await page.click('#ref-btn-open-evidence');
     await expect(page.locator('#ref-btn-add-evidence')).toBeVisible();
   });
 

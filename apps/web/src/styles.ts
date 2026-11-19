@@ -5001,18 +5001,22 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   padding: 0;
   border-radius: 4px;
   background: var(--surface-l2);
-  gap: 2px;
+  gap: 4px;
 }
 .lp-segment-btn {
   height: 36px;
-  padding: 0 12px;
-  border: 0;
+  padding: 0 8px;
+  border: 1px solid transparent;
   border-radius: 4px;
   background: transparent;
   color: var(--text-2);
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+}
+@media (min-width: 640px) {
+  .lp-segment-btn { padding: 0 16px; }
 }
 .lp-segment-btn.is-selected {
   background: var(--surface-l0);
@@ -5024,7 +5028,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   display: inline-flex;
   align-items: center;
   height: 28px;
-  padding: 0 0 0 10px;
+  padding: 0 0 0 8px;
   border-radius: 4px;
   background: var(--surface-l2);
   color: var(--text-2);
@@ -5070,6 +5074,12 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   border-bottom: 0;
   gap: 4px;
 }
+.lp-editor-toolbar-sticky {
+  position: sticky;
+  top: 56px;
+  z-index: var(--z-sticky);
+  background: var(--surface-l0);
+}
 .lp-editor-toolbar-left { justify-self: start; display: flex; align-items: center; gap: 8px; }
 .lp-editor-toolbar-center-slot { justify-self: center; display: flex; align-items: center; }
 .lp-editor-toolbar-right { justify-self: end; display: flex; align-items: center; gap: 4px; }
@@ -5092,13 +5102,16 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   padding: 0;
 }
 .lp-editor-details-line {
+  display: inline-block;
+  max-width: 100%;
+  text-align: left;
+  text-decoration: none;
   background: transparent;
   border: 0;
-  padding: 4px 0;
+  padding: 0;
   font-size: 12px;
   line-height: 16px;
   color: var(--text-2);
-  text-align: start;
   cursor: pointer;
 }
 .lp-prose .ProseMirror {
@@ -5115,8 +5128,10 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-format-bar {
   position: fixed;
   bottom: calc(16px + var(--vv-bottom, 0px));
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
   z-index: var(--z-overlay);
   background: var(--surface-l1);
   box-shadow: var(--shadow-overlay);

@@ -261,8 +261,10 @@ export function updateStatusLine(statusEl: HTMLElement, update: StatusLineUpdate
   statusEl.setAttribute('aria-live', tone === 'danger' ? 'assertive' : 'polite');
   if (update.message) {
     statusEl.removeAttribute('hidden');
+    statusEl.removeAttribute('data-empty');
   } else {
     statusEl.setAttribute('hidden', '');
+    statusEl.setAttribute('data-empty', 'true');
   }
   statusEl.innerHTML = '';
 

@@ -175,7 +175,7 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
     id: 'ref-structure-level',
     current: currentLevel,
     nextStep,
-  });
+  }).replace('<p class="lp-level-next', '<p id="ref-structure-next-step" class="lp-level-next');
 
   const tagsHtml = `<div class="lp-stack lp-gap-related">
     <h3 class="lp-section-title">Tags</h3>
