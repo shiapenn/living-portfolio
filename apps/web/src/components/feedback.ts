@@ -89,7 +89,8 @@ export function renderStatusLine(props: StatusLineProps): string {
     undoBtn = ` <button type="button" class="lp-status-undo lp-status-undo-link" data-lp-status-undo="true" data-undo-seconds="${props.undoSeconds}" data-undo-label="${escapeHtml(props.undoLabel)}">${escapeHtml(`${props.undoLabel} (${props.undoSeconds}s)`)}</button>`;
   }
 
-  return `<div id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}" role="${role}" aria-live="${role === 'alert' ? 'assertive' : 'polite'}" aria-atomic="true">
+  const emptyAttr = message ? '' : ' data-empty="true"';
+  return `<div id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}" role="${role}" aria-live="${role === 'alert' ? 'assertive' : 'polite'}" aria-atomic="true"${emptyAttr}>
   ${toneIcon}
   <span class="lp-status-line-body"><span class="lp-status-line-text">${escapeHtml(message)}</span>${undoBtn}</span>
 </div>`;

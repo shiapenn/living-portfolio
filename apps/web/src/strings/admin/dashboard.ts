@@ -4,7 +4,7 @@
 export const DASHBOARD_STRINGS = {
   pageTitle: 'Today',
   heading: 'Today',
-  lead: 'Daily workspace summary: items needing your review, recent drafts, and system health.',
+  lead: 'What needs your attention.',
   explanation: {
     what: 'Today surfaces pending visitor questions, unpublished drafts, build errors, and backup reminders in one queue.',
     when: 'Check this view at the start of a writing session or after publishing.',

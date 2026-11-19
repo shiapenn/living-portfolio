@@ -54,9 +54,9 @@ export const EDITOR_STRINGS = {
     bodyLabel: 'Body',
     bodyPlaceholder: 'Write in plain text or Markdown…',
     slugLabel: 'URL slug',
-    profileLabel: 'Role profile',
+    profileLabel: 'Type',
     dateLabel: 'Entry date',
-    temporalLabel: 'Temporal confidence',
+    temporalLabel: 'Date precision',
   },
   profiles: [
     { value: 'case-study', label: 'Case Study' },
@@ -89,9 +89,9 @@ export const EDITOR_STRINGS = {
     undo: 'Undo',
   },
   visibilityMenu: {
-    public: 'Public — listed on your site',
-    unlisted: 'Unlisted — anyone with the link',
-    draft: 'Private — only you',
+    public: 'Public, listed on your site',
+    unlisted: 'Unlisted, anyone with the link',
+    draft: 'Draft, only you',
   },
   details: { summary: 'Details' },
   publishDialog: {

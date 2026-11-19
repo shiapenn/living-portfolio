@@ -33,7 +33,7 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
     const darkAccent = themeObj.darkTokens?.['--accent'] || cfg.darkAccent;
 
     return `
-      <form id="settings-module-form" data-settings-module="appearance" class="lp-stack-lg">
+      <form id="settings-module-form" data-settings-module="appearance" class="lp-stack lp-gap-section">
         ${renderStatusLine({ id: 'settings-status-banner' })}
 
         <section class="lp-stack-md">

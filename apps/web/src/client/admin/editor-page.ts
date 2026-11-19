@@ -858,8 +858,16 @@ function bootEditorPage(): void {
     const nextHeading = document.getElementById('ref-publish-next-heading');
     const sectionTargetEl = document.getElementById('ref-publish-section-target');
     if (sectionTargetEl) {
-      const resolved = resolveEntrySection(profileInput?.value, { slug: slugInput?.value });
-      sectionTargetEl.textContent = `Will appear in ${resolved.label} at ${resolved.url}`;
+      const effectiveSlug =
+        slugInput?.value?.trim() ||
+        (titleInput?.value || '')
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '') ||
+        'untitled-entry';
+      const resolved = resolveEntrySection(profileInput?.value, { slug: effectiveSlug });
+      sectionTargetEl.textContent = `Publishes to ${resolved.label} at ${resolved.url}`;
     }
     const confirmBtn = document.getElementById('ref-publish-confirm');
     const bodyText = bodyInput?.value ?? '';

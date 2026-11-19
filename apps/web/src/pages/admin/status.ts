@@ -30,74 +30,59 @@ export async function renderAdminStatusPage(
         ? settings.answering_enabled
         : true);
 
-  const siteBuildHtml = renderFormSection({
-    id: 'status-section-build',
-    title: 'Site build',
-    description: 'Static visitor pages and timeline artifacts.',
-    fieldsHtml: `<div class="lp-list">
-      ${renderItem({
-        id: 'status-build-row',
-        title: 'Site build',
-        subtitle: 'Static snapshot for public visitors.',
-        statusLabel: 'Idle (ready)',
-        statusTone: 'ok',
-        actions: {
-          secondary: { id: 'status-rebuild-btn', label: 'Rebuild site', variant: 'secondary', size: 'sm' },
-        },
-      })}
-    </div>`,
-  });
+  const backupState =
+    typeof runtime.lastBackupDrill === 'string' && runtime.lastBackupDrill
+      ? `Last drill passed ${runtime.lastBackupDrill}`
+      : 'Not set up';
+  const activeProvider = providers.find((p: any) => p && p.configured);
+  const providerState = activeProvider
+    ? `${activeProvider.label || activeProvider.id}${activeProvider.model ? ` · ${activeProvider.model}` : ''}`
+    : 'Local only';
 
-  const answeringHtml = renderFormSection({
-    id: 'status-section-answering',
-    title: 'Automated answering',
-    description: 'Pause or resume public question answering.',
-    fieldsHtml: `<div class="lp-list">
-      ${renderItem({
-        id: 'status-answering-row',
-        title: 'Automated answering',
-        subtitle: answeringOn ? 'Visitors receive answers from published entries.' : 'Public answering is paused.',
-        statusLabel: answeringOn ? 'Active' : 'Paused',
-        statusTone: answeringOn ? 'ok' : 'warn',
-        actions: {
-          secondary: {
-            id: 'status-answering-toggle',
-            label: answeringOn ? 'Pause answering' : 'Resume answering',
-            variant: 'secondary',
-            size: 'sm',
-            dataAttrs: { enabled: answeringOn ? 'true' : 'false' },
-          },
+  const listHtml = `<div class="lp-list">
+    ${renderItem({
+      id: 'status-build-row',
+      title: 'Site',
+      statusLabel: 'Idle (ready)',
+      statusTone: 'ok',
+      actions: {
+        secondary: { id: 'status-rebuild-btn', label: 'Rebuild site', variant: 'secondary', size: 'sm' },
+      },
+    })}
+    ${renderItem({
+      id: 'status-answering-row',
+      title: 'Automated answering',
+      statusLabel: answeringOn ? 'Active' : 'Paused',
+      statusTone: answeringOn ? 'ok' : 'warn',
+      actions: {
+        secondary: {
+          id: 'status-answering-toggle',
+          label: answeringOn ? 'Pause' : 'Resume',
+          variant: 'secondary',
+          size: 'sm',
+          dataAttrs: { enabled: answeringOn ? 'true' : 'false' },
         },
-      })}
-    </div>`,
-  });
-
-  const linksHtml = renderFormSection({
-    id: 'status-section-infra',
-    title: 'Backups & Providers',
-    fieldsHtml: `<div class="lp-list">
-      ${renderItem({
-        id: 'status-backups-link',
-        href: '/admin/settings/backups',
-        title: 'Backups',
-        subtitle: 'Configure backup directory, age encryption key, and restore drills.',
-        showChevron: true,
-      })}
-      ${renderItem({
-        id: 'status-providers-link',
-        href: '/admin/settings/providers',
-        title: 'Providers',
-        subtitle: `${providers.length} configured provider${providers.length === 1 ? '' : 's'} · Configure degradation mode and routing.`,
-        showChevron: true,
-      })}
-    </div>`,
-  });
+      },
+    })}
+    ${renderItem({
+      id: 'status-backups-link',
+      href: '/admin/settings/backups',
+      title: 'Backups',
+      subtitle: backupState,
+      showChevron: true,
+    })}
+    ${renderItem({
+      id: 'status-providers-link',
+      href: '/admin/settings/providers',
+      title: 'Providers',
+      subtitle: providerState,
+      showChevron: true,
+    })}
+  </div>`;
 
   const bodyHtml = `
     ${renderStatusLine({ id: 'status-page-line' })}
-    ${siteBuildHtml}
-    ${answeringHtml}
-    ${linksHtml}
+    ${listHtml}
     <script${options.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : ''}>
       ${ADMIN_API_CLIENT_SCRIPT}
       (function () {
@@ -112,7 +97,7 @@ export async function renderAdminStatusPage(
         var applyAnsweringState = function (enabled) {
           if (toggleBtn) {
             toggleBtn.setAttribute('data-enabled', enabled ? 'true' : 'false');
-            toggleBtn.textContent = enabled ? 'Pause answering' : 'Resume answering';
+            toggleBtn.textContent = enabled ? 'Pause' : 'Resume';
           }
           var row = document.getElementById('status-answering-row');
           if (row) {
@@ -171,12 +156,12 @@ export async function renderAdminStatusPage(
   `;
 
   const content = renderPageTemplate({
-    title: 'Site Status',
-    description: 'Build state, automated answering, backups, and providers.',
+    title: 'Status',
+    description: 'Site build, automated answering, backups and providers.',
     bodyHtml,
   });
 
-  return renderAdminShell('Site Status', '/admin/status', content, {
+  return renderAdminShell('Status', '/admin/status', content, {
     nonce: options.nonce,
     siteName: options.siteName ?? cfg.PUBLIC_SITE_NAME,
     answeringEnabled: answeringOn,

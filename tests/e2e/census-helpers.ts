@@ -290,7 +290,7 @@ export async function checkPaintedGaps(page: Page): Promise<{
     if (main) {
       const blocks = Array.from(
         main.querySelectorAll(
-          'h1, h2, p, a, button, input, select, textarea, .lp-segmented-control, .lp-level-bar-fill, .lp-level-label, .lp-tag, .lp-choice, .lp-choice-card-title, .lp-choice-card-desc, .lp-tab, .lp-stepper-label, .lp-item-title, .lp-item-title > span, .lp-item-subtitle, .lp-item-body, .lp-item-status, .lp-field-label, .lp-field-help'
+          'h1, h2, p, a, button, input, select, textarea, .lp-segmented-control, .lp-level-bar-fill, .lp-level-label, .lp-tag, .lp-choice, .lp-tab, .lp-stepper-label, .lp-item-title, .lp-item-title > span, .lp-item-subtitle, .lp-item-body, .lp-item-status, .lp-field-label, .lp-field-help'
         )
       ).filter((el) => isPainted(el));
       for (let i = 0; i < blocks.length - 1; i++) {

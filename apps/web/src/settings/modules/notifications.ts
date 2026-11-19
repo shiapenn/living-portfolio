@@ -29,7 +29,7 @@ export const notificationsModule: SettingsModuleManifest<NotificationsConfig> = 
     const topicUrl = (ctx.settings?.notify_topic as string) || cfg.topicUrl;
 
     return `
-      <form id="settings-module-form" data-settings-module="notifications" class="lp-stack-lg">
+      <form id="settings-module-form" data-settings-module="notifications" class="lp-stack lp-gap-section">
         ${renderStatusLine({ id: 'settings-status-banner' })}
 
         ${renderFormSection({

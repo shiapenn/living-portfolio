@@ -81,12 +81,13 @@ export function renderPageTemplate(opts: PageTemplateOptions): string {
     actionHtml: opts.actionsHtml,
   });
 
+  const bodyWithTabs = opts.tabsHtml
+    ? `<div class="lp-stack lp-gap-related">${opts.tabsHtml}<div class="lp-page-sections">${opts.bodyHtml}</div></div>`
+    : `<div class="lp-page-sections">${opts.bodyHtml}</div>`;
+
   return `<div class="${escapeHtml(cls)}">
   ${headerHtml}
-  ${opts.tabsHtml ? opts.tabsHtml : ''}
-  <div class="lp-page-sections">
-    ${opts.bodyHtml}
-  </div>
+  ${bodyWithTabs}
 </div>`;
 }
 

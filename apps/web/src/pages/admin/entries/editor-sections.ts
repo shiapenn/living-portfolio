@@ -1,5 +1,6 @@
 import { escapeHtml } from '../../../lib/html.js';
 import {
+  renderActionBar,
   renderBadge,
   renderButton,
   renderField,
@@ -123,13 +124,19 @@ ${renderTabs({
     id: 'ref-publish-dialog',
     title: EDITOR_STRINGS.publishDialog.title,
     bodyHtml: publishDialogBody,
-    footerHtml: `${renderButton({ id: 'ref-publish-cancel', label: EDITOR_STRINGS.publishDialog.cancel, variant: 'secondary', dataAttrs: { 'lp-dialog-close': 'true' } })} ${renderButton({ id: 'ref-publish-confirm', label: EDITOR_STRINGS.publishDialog.confirm, variant: 'primary' })}`,
+    footerHtml: renderActionBar({
+      primary: { id: 'ref-publish-confirm', label: EDITOR_STRINGS.publishDialog.confirm, variant: 'primary' },
+      secondary: { id: 'ref-publish-cancel', label: EDITOR_STRINGS.publishDialog.cancel, variant: 'secondary', dataAttrs: { 'lp-dialog-close': 'true' } },
+    }),
   })}
   ${renderDialog({
     id: 'ref-delete-dialog',
     title: EDITOR_STRINGS.deleteDialog.title,
     bodyHtml: `<p>${escapeHtml(EDITOR_STRINGS.deleteDialog.body)}</p>`,
-    footerHtml: `${renderButton({ id: 'ref-delete-cancel', label: EDITOR_STRINGS.deleteDialog.cancel, variant: 'secondary', dataAttrs: { 'lp-dialog-close': 'true' } })} ${renderButton({ id: 'ref-delete-confirm', label: EDITOR_STRINGS.deleteDialog.confirm, variant: 'danger', className: 'lp-btn-danger-confirm' })}`,
+    footerHtml: renderActionBar({
+      primary: { id: 'ref-delete-confirm', label: EDITOR_STRINGS.deleteDialog.confirm, variant: 'danger', className: 'lp-btn-danger-confirm' },
+      secondary: { id: 'ref-delete-cancel', label: EDITOR_STRINGS.deleteDialog.cancel, variant: 'secondary', dataAttrs: { 'lp-dialog-close': 'true' } },
+    }),
   })}
   ${renderDrawer({
     id: 'ref-structure-drawer',

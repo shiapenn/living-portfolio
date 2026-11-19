@@ -159,7 +159,7 @@ export function showPublishSuccessToast(title: string, slug: string): void {
     `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">` +
     `<div>` +
     `<strong>Published "${escapeClientHtml(title)}"</strong><br/>` +
-    `<a href="/work/${escapeClientHtml(slug)}" style="font-size:13px;color:var(--indigo-600,#3b82f6)">View page →</a>` +
+    `<a href="/work/${escapeClientHtml(slug)}" style="font-size:13px;color:var(--indigo-600,#3b82f6)">View page</a>` +
     `</div>` +
     `<button type="button" class="btn btn-secondary" id="btn-toast-unpublish" style="font-size:12px;padding:3px 8px">Unpublish</button>` +
     `</div>`;
