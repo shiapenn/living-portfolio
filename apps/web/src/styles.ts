@@ -4997,13 +4997,13 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   display: inline-flex;
   align-items: center;
   height: 36px;
-  padding: 2px;
+  padding: 0;
   border-radius: 4px;
   background: var(--surface-l2);
   gap: 2px;
 }
 .lp-segment-btn {
-  height: 32px;
+  height: 36px;
   padding: 0 12px;
   border: 0;
   border-radius: 4px;
@@ -5029,7 +5029,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   color: var(--text-2);
   font-size: 12px;
   font-weight: 400;
-  border: 1px solid var(--border-subtle);
+  border: 0;
   animation: lp-tag-enter 160ms var(--ease-out);
 }
 .lp-tag-remove {

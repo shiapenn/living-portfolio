@@ -49,6 +49,6 @@ test.describe('WP-16.L L1: Shell Launcher, Settings Split & Section Display', ()
     await expect(writingGroup).toHaveCount(1);
 
     await page.click('#ref-btn-publish');
-    await expect(page.locator('#ref-publish-section-target')).toContainText(/Will appear in (Work|Writing) at \/(work|writing)\//);
+    await expect(page.locator('#ref-publish-section-target')).toContainText(/Publishes to (Work|Writing) at \/(work|writing)\//);
   });
 });
