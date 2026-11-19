@@ -221,12 +221,12 @@ test.describe('WP-16.F Full STATES Manifest Census', () => {
       'placeholder-or-disabled': new Set(),
     };
 
-    for (const vp of VIEWPORTS) {
-      await page.setViewportSize(vp);
-      for (const theme of THEMES) {
-        for (const state of STATES) {
-          const ok = await navigateToState(page, state, ids);
-          if (!ok) continue;
+    for (const state of STATES) {
+      for (const vp of VIEWPORTS) {
+        await page.setViewportSize(vp);
+        const ok = await navigateToState(page, state, ids);
+        if (!ok) continue;
+        for (const theme of THEMES) {
           await setTheme(page, theme);
           const textIssues = await checkRenderedText(page);
           const colourIssues = await checkColoursAndNativeControls(page, theme);
