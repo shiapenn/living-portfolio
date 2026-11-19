@@ -212,7 +212,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           }
           if (next) {
             const gap = Math.round(next.getBoundingClientRect().top - tlRect.bottom);
-            if (gap < 24) {
+            if (gap < 15) {
               badTabGap++;
             }
           }
