@@ -6778,3 +6778,250 @@
       status: fixed
       note: "Fixed and verified in WP-16.S S1-S4."
   verified_by: wp16-s-system-census
+
+- id: 20261106-UX-157
+  audit: AUD-2026-11-06
+  title: 'Measurement gaps: arrows in rendered text, white native select in dark mode, census states differ from sheet states, and gaps measured on containers instead of painted content'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-158
+  audit: AUD-2026-11-06
+  title: 'Spacing defects: ~130 px tabs-to-content on Answer rules and Inbox, oversized description-to-module gaps, touching Confidence thresholds/Self-checks/Accent colours, and Save touching control above'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-159
+  audit: AUD-2026-11-06
+  title: 'Lines and surfaces: missing hairline between Items, missing top bar bottom line, and panels/bars not distinguishable from page canvas'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-160
+  audit: AUD-2026-11-06
+  title: 'Login and setup: flush to window edge at 320/1280, login full browser width, full-bleed setup stepper with line under it, and setup Back renders "< <- Back"'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-161
+  audit: AUD-2026-11-06
+  title: 'Dialogs: side-by-side buttons, empty space left of Publish now, no top margin on buttons, and literal "/writing/<slug>" in Publish dialog'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-162
+  audit: AUD-2026-11-06
+  title: 'Editor: lost paragraph spacing and details line, title cut off at 320 px, left-aligned Edit/Settings switch, Save 4 px off right edge, format bar ~116 px above bottom, and mobile header overflow/uncentred icons'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-163
+  audit: AUD-2026-11-06
+  title: 'Editor Settings view: stateless level line, bare white Topic select in dark mode, overflowing horizontal tag add row, unthemed tag chips, suggested roles missing passage/explanation, and unclear Attach evidence action'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-164
+  audit: AUD-2026-11-06
+  title: 'Settings modules: side-by-side fields with wrapped labels and Back link appearing on top-level pages'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-165
+  audit: AUD-2026-11-06
+  title: 'Providers: lists every provider with a key field each, no clear current state, poor mobile hierarchy, and does not match intended D-PROV journey'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-166
+  audit: AUD-2026-11-06
+  title: 'Status: repeated headings and Items, unclear Backups and Providers rows, and wrong "0 configured providers" count'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-167
+  audit: AUD-2026-11-06
+  title: 'Today: description promises unshown recent drafts and system health, and ambiguous "Drafts" status label on count row'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-168
+  audit: AUD-2026-11-06
+  title: 'Answer rules: status sits on title row on web but next to button on mobile, and "Source quote" label repeats title text'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-169
+  audit: AUD-2026-11-06
+  title: 'Copy terminology: Role profile->Type, Temporal confidence->Date precision, Facets->Tags, Add facet tag...->Add a tag, Topic->Category, Private->Draft, Site Status->Status, Today description'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-f-census.spec.ts
+  history:
+    - date: 2026-11-19
+      status: open
+      note: "Registered in WP-16.F F0 from owner review of WP-16.S contact sheets."
+  verified_by: null
