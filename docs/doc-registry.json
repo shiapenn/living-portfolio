@@ -1513,5 +1513,13 @@
     "path": "docs/execution-reports/A143-wp-16f-f4-contact-sheets-and-closure.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A144",
+    "title": "wp-16g-g0-contract-and-failing-census",
+    "class": "A",
+    "path": "docs/execution-reports/A144-wp-16g-g0-contract-and-failing-census.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

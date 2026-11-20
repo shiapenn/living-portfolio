@@ -149,6 +149,7 @@
 | `A141` | wp-16f-f2-pages-and-overlays | `active` | [A141-wp-16f-f2-pages-and-overlays.md](execution-reports/A141-wp-16f-f2-pages-and-overlays.md) | — |
 | `A142` | wp-16f-f3-editor-structure-providers | `active` | [A142-wp-16f-f3-editor-structure-providers.md](execution-reports/A142-wp-16f-f3-editor-structure-providers.md) | — |
 | `A143` | wp-16f-f4-contact-sheets-and-closure | `active` | [A143-wp-16f-f4-contact-sheets-and-closure.md](execution-reports/A143-wp-16f-f4-contact-sheets-and-closure.md) | — |
+| `A144` | wp-16g-g0-contract-and-failing-census | `active` | [A144-wp-16g-g0-contract-and-failing-census.md](execution-reports/A144-wp-16g-g0-contract-and-failing-census.md) | — |
 
 ## Handover Snapshots (Class H)
 
