@@ -77,5 +77,5 @@ export function renderStatusDot(props: StatusDotProps): string {
   const tone = props.tone ?? 'neutral';
   const classes = ['lp-status-indicator', props.className].filter(Boolean).join(' ');
   const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
-  return `<span class="${escapeHtml(classes)}"${idAttr}><span class="lp-status-dot lp-status-dot-${escapeHtml(tone)}" aria-hidden="true"></span><span class="lp-status-label">${escapeHtml(props.label)}</span></span>`;
+  return `<span data-c="StatusLabel" class="${escapeHtml(classes)}"${idAttr}><span class="lp-status-dot lp-status-dot-${escapeHtml(tone)}" aria-hidden="true"></span><span class="lp-status-label">${escapeHtml(props.label)}</span></span>`;
 }

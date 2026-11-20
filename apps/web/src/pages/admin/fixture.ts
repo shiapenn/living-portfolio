@@ -1,4 +1,4 @@
-import { renderAdminShell } from '../../layouts/admin-shell.js';
+import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
 import {
   renderActionBar,
   renderChoiceGroup,
@@ -11,6 +11,7 @@ import {
   renderSegmentedControl,
   renderStack,
   renderStepper,
+  renderSubsection,
   renderTabs,
   renderTag,
 } from '../../primitives/index.js';
@@ -74,13 +75,27 @@ export function renderFixturePatternPage(): string {
       })}${renderItem({
         title: 'Second item row',
         subtitle: 'Writing',
-        body: 'Plain body sentence inside an item.',
+        segments: [
+          { heading: 'From your reply', body: 'Quoted answer passage.' },
+          { heading: 'Rule', body: 'Always verify with primary evidence.' },
+        ],
         statusLabel: 'Public',
         statusTone: 'ok',
         actions: {
           secondary: { label: 'Review', variant: 'secondary', type: 'button' },
         },
       })}</div>`,
+  });
+
+  const sub1 = renderSubsection({
+    title: 'First subsection',
+    intro: 'Intro for first subsection.',
+    bodyHtml: renderField({ id: 'fix-sub-a', name: 'fixSubA', label: 'Sub field', kind: 'input' }),
+  });
+  const sub2 = renderSubsection({
+    title: 'Second subsection',
+    intro: 'Intro for second subsection.',
+    bodyHtml: renderField({ id: 'fix-sub-b', name: 'fixSubB', label: 'Sub field B', kind: 'input' }),
   });
 
   const form = renderFormSection({
@@ -134,14 +149,33 @@ export function renderFixturePatternPage(): string {
     stepTitle: 'Add material',
   });
 
-  const body = renderStack({
-    gap: 'group',
-    childrenHtml:
-      header +
-      renderStack({
-        gap: 'related',
-        childrenHtml: `${tabs}${seg}${level}${tags}${items}${form}${stepper}${wizard}`,
-      }),
+  const extraSection = renderFormSection({
+    id: 'fixture-subsections',
+    title: 'Subsections',
+    description: 'Nested subsections inside a FormSection.',
+    fieldsHtml: renderStack({ gap: 'group', childrenHtml: `${sub1}${sub2}` }),
+  });
+
+  const pageAction = renderActionBar({
+    pageLevel: true,
+    primary: { label: 'Save all', variant: 'primary', type: 'button' },
+  });
+
+  const body = renderPageTemplate({
+    title: 'Pattern Fixture',
+    description: 'Verifies all primitives and patterns compose without custom page CSS.',
+    bodyHtml: renderStack({
+      gap: 'group',
+      childrenHtml:
+        renderStack({
+          gap: 'related',
+          childrenHtml: `${tabs}${seg}${level}${tags}${items}${stepper}${wizard}`,
+        }) +
+        renderStack({
+          gap: 'section',
+          childrenHtml: `${form}${extraSection}${pageAction}`,
+        }),
+    }),
   });
 
   return renderAdminShell('Pattern Fixture', '/admin/_fixture', body);

@@ -59,7 +59,7 @@ export function renderTabs(props: TabsProps): string {
     })
     .join('');
 
-  const tablistHtml = `<div${idAttr} class="${escapeHtml(classes)}" role="tablist" aria-label="${escapeHtml(props.ariaLabel)}">${items}</div>`;
+  const tablistHtml = `<div${idAttr} data-c="Tabs" data-rel="tabs" class="${escapeHtml(classes)}" role="tablist" aria-label="${escapeHtml(props.ariaLabel)}">${items}</div>`;
   if (!hasPanels) return tablistHtml;
 
   const panelsHtml = props.tabs
@@ -93,7 +93,7 @@ export function renderStepper(props: StepperProps): string {
   const clampedStep = Math.max(1, Math.min(props.currentStep, props.totalSteps));
   const pct = Math.round((clampedStep / Math.max(1, props.totalSteps)) * 100);
 
-  return `<div${idAttr} class="${escapeHtml(classes)}" role="progressbar" aria-valuenow="${clampedStep}" aria-valuemin="1" aria-valuemax="${props.totalSteps}" aria-label="Step ${clampedStep} of ${props.totalSteps} · ${escapeHtml(props.stepTitle)}">
-  <div class="lp-stepper-label lp-stepper-pct-${Math.round(pct / 5) * 5}">Step ${clampedStep} of ${props.totalSteps} · ${escapeHtml(props.stepTitle)}</div>
+  return `<div${idAttr} data-c="Stepper" class="${escapeHtml(classes)}" role="progressbar" aria-valuenow="${clampedStep}" aria-valuemin="1" aria-valuemax="${props.totalSteps}" aria-label="Step ${clampedStep} of ${props.totalSteps}${props.stepTitle ? ` · ${escapeHtml(props.stepTitle)}` : ''}">
+  <div class="lp-stepper-label lp-stepper-pct-${Math.round(pct / 5) * 5}">Step ${clampedStep} of ${props.totalSteps}</div>
 </div>`;
 }

@@ -216,7 +216,12 @@ export const SEMANTIC_TOKENS_LIGHT = `
   --state-provisional-border: #4B5A66;
 
   /* Elevation & z-index */
-  --shadow-overlay: 0 8px 24px rgba(20, 32, 42, 0.16);
+  --border-overlay: #CBD3D8;
+  --shadow-e1: 0 6px 16px rgba(20, 32, 42, 0.14);
+  --shadow-e1-up: 0 -6px 16px rgba(20, 32, 42, 0.14);
+  --shadow-e1-right: 6px 0 16px rgba(20, 32, 42, 0.14);
+  --shadow-e2: 0 12px 32px rgba(20, 32, 42, 0.18);
+  --shadow-overlay: var(--shadow-e2);
   --backdrop: rgba(15, 26, 34, 0.45);
   --z-base: 0;
   --z-sticky: 100;
@@ -316,7 +321,12 @@ export const SEMANTIC_TOKENS_DARK = `
   --state-provisional-border: #A3B2BD;
 
   /* Elevation */
-  --shadow-overlay: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --border-overlay: #334656;
+  --shadow-e1: 0 6px 18px rgba(0, 0, 0, 0.55);
+  --shadow-e1-up: 0 -6px 18px rgba(0, 0, 0, 0.55);
+  --shadow-e1-right: 6px 0 18px rgba(0, 0, 0, 0.55);
+  --shadow-e2: 0 12px 36px rgba(0, 0, 0, 0.65);
+  --shadow-overlay: var(--shadow-e2);
   --backdrop: rgba(0, 0, 0, 0.6);
 `;
 

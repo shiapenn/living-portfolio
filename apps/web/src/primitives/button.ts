@@ -1,7 +1,7 @@
 import { escapeHtml } from '../lib/html.js';
 import { isKnownIconName, renderIcon, type IconName, type IconSize } from './icons.js';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'quiet';
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'quiet' | 'text';
 export type ButtonSize = 'sm' | 'md';
 
 export interface ButtonProps {
@@ -91,9 +91,9 @@ export function renderButton(props: ButtonProps): string {
   const data = formatDataAttrs(props.dataAttrs);
   const spinner = props.loading ? `${renderIcon({ name: 'loader', size: 16, className: 'lp-icon-spin' })} ` : '';
   if (props.href && !isDisabled) {
-    return `<a href="${escapeHtml(props.href)}" class="${escapeHtml(classes)}"${idAttr}${titleAttr}${data}>${spinner}<span>${escapeHtml(props.label)}</span></a>`;
+    return `<a href="${escapeHtml(props.href)}" data-c="Button" class="${escapeHtml(classes)}"${idAttr}${titleAttr}${data}>${spinner}<span>${escapeHtml(props.label)}</span></a>`;
   }
-  return `<button type="${type}" class="${escapeHtml(classes)}"${idAttr}${nameAttr}${valueAttr}${titleAttr}${busyAttr}${disabledAttr}${data}>${spinner}<span>${escapeHtml(props.label)}</span></button>`;
+  return `<button type="${type}" data-c="Button" class="${escapeHtml(classes)}"${idAttr}${nameAttr}${valueAttr}${titleAttr}${busyAttr}${disabledAttr}${data}>${spinner}<span>${escapeHtml(props.label)}</span></button>`;
 }
 
 /**
