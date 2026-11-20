@@ -6,6 +6,7 @@ export interface BackLinkProps {
   destination: string;
   id?: string;
   className?: string;
+  dataAttrs?: Record<string, string>;
 }
 
 /**
@@ -17,5 +18,10 @@ export function renderBackLink(props: BackLinkProps): string {
   const classes = ['lp-back-link', props.className].filter(Boolean).join(' ');
   const dest = props.destination.replace(/^Back to\s+/i, '').trim() || 'previous page';
   const ariaLabel = `Back to ${dest}`;
-  return `<a href="${escapeHtml(props.href)}"${idAttr} data-c="BackLink" class="${escapeHtml(classes)}" aria-label="${escapeHtml(ariaLabel)}">${renderIcon('chevron-left', 16)}<span>Back</span></a>`;
+  const dataStr = props.dataAttrs
+    ? Object.entries(props.dataAttrs)
+        .map(([k, v]) => ` data-${escapeHtml(k)}="${escapeHtml(v)}"`)
+        .join('')
+    : '';
+  return `<a href="${escapeHtml(props.href)}"${idAttr} data-c="BackLink" class="${escapeHtml(classes)}" aria-label="${escapeHtml(ariaLabel)}"${dataStr}>${renderIcon('chevron-left', 16)}<span>Back</span></a>`;
 }

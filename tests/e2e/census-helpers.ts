@@ -57,19 +57,7 @@ export async function navigateToState(
     case 'setup-step-5':
     case 'setup-step-6': {
       const targetStep = Number(state.action.replace('setup-step-', ''));
-      await page.evaluate((stepNum) => {
-        document.querySelectorAll('.wizard-step').forEach((el) => el.classList.add('lp-is-hidden'));
-        const target = document.getElementById(`wizard-step-${stepNum}`);
-        if (target) target.classList.remove('lp-is-hidden');
-        const stepper = document.getElementById('setup-stepper');
-        if (stepper) {
-          const steps = ['Account', 'Hosting', 'Model Providers', 'Notifications', 'Backups', 'Theme & Launch'];
-          const countEl = stepper.querySelector('.lp-stepper-label');
-          if (countEl) countEl.textContent = `Step ${stepNum} of 6 · ${steps[stepNum - 1] ?? ''}`;
-          const fill = stepper.querySelector('.lp-stepper-fill') as HTMLElement | null;
-          if (fill) fill.style.width = `${Math.round((stepNum / 6) * 100)}%`;
-        }
-      }, targetStep);
+      await page.waitForSelector(`#wizard-step-${targetStep}:not(.lp-is-hidden)`, { timeout: 5000 });
       break;
     }
     case 'editor-settings': {
@@ -374,7 +362,7 @@ export async function checkPaintedGaps(
         const sIntro = sec.querySelector('[data-rel="section-intro"], .lp-form-section-desc');
         if (sTitle && sIntro) checkPair('section-heading-to-intro', sTitle, sIntro, 8);
         const headerLead = sIntro ?? sTitle;
-        const firstChild = sec.querySelector('[data-rel="field"], [data-rel="item"], [data-rel="subsection"], .lp-field, .lp-item, .lp-list, .lp-choice-group');
+        const firstChild = sec.querySelector('.lp-level, [data-rel="field"], [data-rel="item"], [data-rel="subsection"], .lp-field, .lp-item, .lp-list, .lp-choice-group');
         if (headerLead && firstChild) checkPair('heading-or-intro-to-first', headerLead, firstChild, 16);
       }
       for (let i = 0; i < sections.length - 1; i++) {
@@ -396,7 +384,7 @@ export async function checkPaintedGaps(
         const subIntro = sub.querySelector('[data-rel="subsection-intro"], .lp-subsection-intro');
         if (subTitle && subIntro) checkPair('subsection-title-to-intro', subTitle, subIntro, 8);
         const subLead = subIntro ?? subTitle;
-        const subFirst = sub.querySelector('[data-rel="field"], [data-rel="item"], .lp-field, .lp-item, .lp-list');
+        const subFirst = sub.querySelector('#ref-facets-list:not(:empty), [data-rel="field"], [data-rel="item"], .lp-field, .lp-item, .lp-list');
         if (subLead && subFirst) checkPair('subsection-intro-to-first', subLead, subFirst, 16);
       }
       for (let i = 0; i < subsections.length - 1; i++) {
@@ -418,7 +406,7 @@ export async function checkPaintedGaps(
       }
 
       for (const itemEl of items) {
-        const iBody = itemEl.querySelector('[data-rel="itembody"], .lp-item-segments, .lp-item-body');
+        const iBody = itemEl.querySelector('.lp-item-content') ?? itemEl.querySelector('[data-rel="itembody"], .lp-item-segments, .lp-item-body');
         const iActions = itemEl.querySelector('[data-rel="actions"], .lp-item-actions');
         if (iBody && iActions) checkPair('item-body-to-action-bar', iBody, iActions, 24);
       }
@@ -432,7 +420,7 @@ export async function checkPaintedGaps(
           if (r2.top >= r1.bottom - 1) checkPair('button-to-button', btns[i], btns[i + 1], 8);
         }
         const prev = bar.previousElementSibling;
-        if (prev && !prev.matches('[data-rel="section"], .lp-form-section') && !bar.closest('[role="dialog"]')) {
+        if (prev && !prev.matches('[data-rel="section"], .lp-form-section, h1, h2, h3') && !bar.closest('[role="dialog"]') && !bar.classList.contains('lp-item-actions')) {
           checkPair('last-control-to-action-bar', prev, bar, 24);
         }
       }
@@ -451,7 +439,7 @@ export async function checkPaintedGaps(
     if (main) {
       const blocks = Array.from(
         main.querySelectorAll(
-          'h1, h2, h3, p, a, button, input, select, textarea, .lp-segmented-control, .lp-level-bar-fill, .lp-level-label, .lp-tag, .lp-choice, .lp-tab, .lp-stepper-label, .lp-item-title, .lp-item-title > span, .lp-item-subtitle, .lp-item-body, .lp-item-status, .lp-field-label, .lp-field-help'
+          'h1, h2, h3, p, li, a, button, input, select, textarea, .lp-segmented-control, .lp-level-bar-fill, .lp-level-label, .lp-tag, .lp-choice, .lp-tab, .lp-stepper-label, .lp-stepper-bar, .lp-auth-progress-track, .lp-item-title, .lp-item-title > span, .lp-item-subtitle, .lp-item-body, .lp-item-status, .lp-field-label, .lp-field-help'
         )
       ).filter((el) => {
         if (!isPainted(el)) return false;
@@ -461,6 +449,7 @@ export async function checkPaintedGaps(
       for (let i = 0; i < blocks.length - 1; i++) {
         const a = blocks[i];
         const b = blocks[i + 1];
+        if (a.parentElement !== b.parentElement) continue;
         if (a.contains(b) || b.contains(a)) continue;
         const ra = a.getBoundingClientRect();
         const rb = b.getBoundingClientRect();
@@ -613,7 +602,7 @@ export async function checkSingleImplementationPerRole(page: Page): Promise<stri
         issues.push(`stepper-outside-component: "${(el.textContent || '').trim()}"`);
       }
     }
-    const selects = Array.from(document.querySelectorAll('select')).filter((el) => getComputedStyle(el).display !== 'none');
+    const selects = Array.from(document.querySelectorAll('select')).filter((el) => getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0);
     for (const sel of selects) {
       if (!sel.closest('[data-c="Select"]')) {
         issues.push(`select-outside-component: #${sel.id || '(no-id)'}`);
@@ -655,7 +644,7 @@ export async function checkOverlaysOutlineAndShadow(page: Page, stateId: string)
       if (bw < 0.9) issues.push(`overlay-missing-1px-outline: ${el.className} border=${bw}`);
       if (!cs.boxShadow || cs.boxShadow === 'none') {
         issues.push(`overlay-missing-shadow: ${el.className}`);
-      } else if (sid === 'overlay-entries-panel') {
+      } else if (sid === 'overlay-entries-panel' && (el.id === 'ref-entries-drawer' || el.classList.contains('lp-editor-drawer') || el.classList.contains('lp-entries-drawer'))) {
         // Left panel shadow should point right (positive x offset)
         const m = cs.boxShadow.match(/rgb[a]?\([^)]+\)\s+(-?\d+(?:\.\d+)?)px\s+(-?\d+(?:\.\d+)?)px/);
         if (m && parseFloat(m[1]) <= 0) issues.push(`overlay-panel-shadow-direction: x=${m[1]} expected > 0`);

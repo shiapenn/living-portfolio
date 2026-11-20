@@ -66,7 +66,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     // Navigating unauthenticated to /admin redirects to /admin/setup
     await sharedPage.goto('/admin');
     await expect(sharedPage).toHaveURL(/\/admin\/setup$/);
-    await expect(sharedPage.locator('h1')).toContainText('Owner Account Setup');
+    await expect(sharedPage.locator('#wizard-step-1 h1')).toContainText('Owner Account Setup');
 
     // Fill in setup form (leave TOTP secret blank to exercise server-side random generation)
     await sharedPage.fill('#setup-username', TEST_USERNAME);
@@ -171,22 +171,42 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
     await expect(sharedPage.locator('#wizard-step-3')).toBeVisible();
   });
 
-  test('3. First-run setup wizard: Step 3 Model Providers read-only visible state (UX-09)', async () => {
+  test('3. First-run setup wizard: Step 3 Model Providers embeds shared ProviderFlow (UX-09)', async () => {
     await expect(sharedPage.locator('#wizard-step-chip')).toContainText('Step 3 of 6');
     await expect(sharedPage.locator('#wizard-step-3')).toBeVisible();
 
-    // Providers list is read-only
-    const step3List = sharedPage.locator('#wizard-step-3 .lp-list');
-    await expect(step3List).toBeVisible();
-    await expect(step3List.locator('input, button, select, textarea')).toHaveCount(0);
-    await expect(step3List.locator('.lp-item')).toHaveCount(4);
+    // Shared ProviderFlow with Local only default and 4 provider choice cards
+    const step3Flow = sharedPage.locator('#setup-provider-flow-root');
+    await expect(step3Flow).toBeVisible();
+    await expect(step3Flow.locator('input[name="provider"][value="local"]')).toBeChecked();
+    await expect(step3Flow.locator('input[name="provider"]')).toHaveCount(4);
 
-    // Explainer sentence is visible
+    // Configure an external provider (OpenAI Compatible) -> Model -> Key -> Test and save
+    await step3Flow.locator('label.lp-choice:has(input[value="openai"])').click();
+    await step3Flow.locator('#lp-provider-next').click();
+    await expect(step3Flow.locator('#lp-provider-model')).toBeVisible();
+    await step3Flow.locator('#lp-provider-next').click();
+    await expect(step3Flow.locator('#lp-provider-key')).toBeVisible();
+    await step3Flow.locator('#lp-provider-key').fill('sk-test-setup-key-123456');
+    await step3Flow.locator('#lp-provider-test-save').click();
+    await expect(sharedPage.locator('#setup-provider-status')).toContainText('OpenAI Compatible');
+
+    // Plain description text (no bordered Privacy Boundary box)
     const keysNotice = sharedPage.locator('#step3-keys-notice');
     await expect(keysNotice).toBeVisible();
-    await expect(keysNotice).toContainText('Keys are added later in Settings > Providers; until then Ask shows direct quotes from entries.');
+    await expect(keysNotice).toContainText('Without an external provider, Ask shows direct quotes from your entries.');
 
     await sharedPage.click('#wizard-step-3 button[data-target="4"]');
+    await expect(sharedPage.locator('#wizard-step-4')).toBeVisible();
+  });
+
+  test('3b. External provider configured in Setup Step 3 shows Connected on Settings > Providers and Status', async () => {
+    const baseUrl = new URL(sharedPage.url()).origin;
+    await sharedPage.goto(`${baseUrl}/admin/settings/providers`);
+    await expect(sharedPage.locator('#provider-role-answering')).toContainText('Connected');
+    await sharedPage.goto(`${baseUrl}/admin/status`);
+    await expect(sharedPage.locator('#status-providers-link')).toContainText('Connected');
+    await sharedPage.goto(`${baseUrl}/admin/setup?step=4`);
     await expect(sharedPage.locator('#wizard-step-4')).toBeVisible();
   });
 
@@ -267,7 +287,7 @@ test.describe.serial('WP-1 Task 1: Admin Setup & Authentication E2E Harness', ()
   test('7. First-run setup wizard: No wizard step shows an enabled control whose only result is an error', async () => {
     // Traverse backwards and forwards through steps 6 to 2 to confirm no enabled controls fail
     for (let step = 6; step >= 3; step--) {
-      const prevBtn = sharedPage.locator(`#wizard-step-${step} button[data-target="${step - 1}"]`);
+      const prevBtn = sharedPage.locator(`#wizard-step-${step} [data-target="${step - 1}"]`);
       if (await prevBtn.count() > 0) {
         await prevBtn.click();
         await expect(sharedPage.locator(`#wizard-step-${step - 1}`)).toBeVisible();

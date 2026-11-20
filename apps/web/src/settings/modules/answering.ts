@@ -143,9 +143,10 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
               },
             ],
           }),
-          actionBarHtml: renderActionBar({
-            primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
-          }),
+        })}
+        ${renderActionBar({
+          pageLevel: true,
+          primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
         })}
       </form>
       <div class="lp-is-hidden" data-module-meta="${escapeHtml(answeringModule.id)}"></div>

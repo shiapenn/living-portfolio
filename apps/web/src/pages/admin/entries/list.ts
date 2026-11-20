@@ -1,5 +1,5 @@
 import { renderAdminShell, renderPageTemplate } from '../../../layouts/admin-shell.js';
-import { renderButton, renderIcon, renderItem } from '../../../primitives/index.js';
+import { renderButton, renderField, renderIcon, renderItem } from '../../../primitives/index.js';
 import { renderDialog, renderEmptyState, renderPageNotice } from '../../../components/index.js';
 import { adaptDataSource, type WebDataClient } from '../../../lib/data-source.js';
 import { escapeHtml } from '../../../lib/html.js';
@@ -76,28 +76,32 @@ ${renderButton({ id: 'btn-entries-delete-confirm', label: ENTRIES_LIST_STRINGS.d
 
   <div class="lp-entries-toolbar">
     <div class="lp-entries-filter-group">
-      <label class="lp-field-label" for="entries-filter-state">${escapeHtml(ENTRIES_LIST_STRINGS.filters.stateLabel)}</label>
-      <div class="lp-select-wrap">
-        <select id="entries-filter-state" class="lp-input lp-select">
-          <option value="all">${escapeHtml(ENTRIES_LIST_STRINGS.filters.stateAll)}</option>
-          <option value="private">${escapeHtml(ENTRIES_LIST_STRINGS.filters.stateDraft)}</option>
-          <option value="unlisted">${escapeHtml(ENTRIES_LIST_STRINGS.filters.stateUnlisted)}</option>
-          <option value="public">${escapeHtml(ENTRIES_LIST_STRINGS.filters.statePublic)}</option>
-        </select>
-        ${renderIcon('chevron-down', 16, 'lp-select-chevron')}
-      </div>
+      ${renderField({
+        kind: 'select',
+        id: 'entries-filter-state',
+        name: 'filterState',
+        label: ENTRIES_LIST_STRINGS.filters.stateLabel,
+        options: [
+          { value: 'all', label: ENTRIES_LIST_STRINGS.filters.stateAll },
+          { value: 'private', label: ENTRIES_LIST_STRINGS.filters.stateDraft },
+          { value: 'unlisted', label: ENTRIES_LIST_STRINGS.filters.stateUnlisted },
+          { value: 'public', label: ENTRIES_LIST_STRINGS.filters.statePublic },
+        ],
+      })}
     </div>
     <div class="lp-entries-filter-group">
-      <label class="lp-field-label" for="entries-filter-type">${escapeHtml(ENTRIES_LIST_STRINGS.filters.typeLabel)}</label>
-      <div class="lp-select-wrap">
-        <select id="entries-filter-type" class="lp-input lp-select">
-          <option value="all">${escapeHtml(ENTRIES_LIST_STRINGS.filters.typeAll)}</option>
-          <option value="work">${escapeHtml(ENTRIES_LIST_STRINGS.filters.typeWork)}</option>
-          <option value="note">${escapeHtml(ENTRIES_LIST_STRINGS.filters.typeNote)}</option>
-          <option value="venture">${escapeHtml(ENTRIES_LIST_STRINGS.filters.typeVenture)}</option>
-        </select>
-        ${renderIcon('chevron-down', 16, 'lp-select-chevron')}
-      </div>
+      ${renderField({
+        kind: 'select',
+        id: 'entries-filter-type',
+        name: 'filterType',
+        label: ENTRIES_LIST_STRINGS.filters.typeLabel,
+        options: [
+          { value: 'all', label: ENTRIES_LIST_STRINGS.filters.typeAll },
+          { value: 'work', label: ENTRIES_LIST_STRINGS.filters.typeWork },
+          { value: 'note', label: ENTRIES_LIST_STRINGS.filters.typeNote },
+          { value: 'venture', label: ENTRIES_LIST_STRINGS.filters.typeVenture },
+        ],
+      })}
     </div>
     <div class="lp-entries-search-group">
       <label class="lp-field-label" for="entries-search">${escapeHtml(ENTRIES_LIST_STRINGS.filters.searchLabel)}</label>

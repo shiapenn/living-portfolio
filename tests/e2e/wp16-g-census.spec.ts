@@ -76,7 +76,6 @@ test.describe('WP-16.G G0 Measurement Integrity Canaries (D-G A1-A6)', () => {
 
 test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)', () => {
   test('20261106-UX-170: zero 0-pair relations, zero .lp-tag 14/400 variants, and 14/400 disabled text', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: missing data-rel hooks and .lp-tag 14/400 variant');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.goto(`/admin/entries/${encodeURIComponent(ids.entryId)}`);
@@ -89,7 +88,6 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
   });
 
   test('20261106-UX-171: setup steps 1-6 each show their own step natively without DOM hack', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: /admin/setup lands on step 2 when authenticated instead of requested ?step=N');
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/setup?step=3');
     const issues = await verifyStateMarker(page, {
@@ -103,7 +101,6 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
   });
 
   test('20261106-UX-172: setup step 3 embeds ProviderFlow, step 6 Back says "Back", no 2-col Privacy Boundary box, no "Step N:" in h1', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: setup step 3 still read-only table & step 6 Back says Back to Backups');
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/setup');
     const step3Html = await page.locator('#wizard-step-3').innerHTML();
@@ -114,7 +111,6 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
   });
 
   test('20261106-UX-173: editor Settings view suggested role has passage, actionable level next step, symmetric Tag with remove', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: suggested role passage empty and Tag has no remove button');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.goto(`/admin/entries/${encodeURIComponent(ids.entryId)}`);
@@ -138,7 +134,6 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
   });
 
   test('20261106-UX-176: entries panel header left-aligned and inner left edge 16px', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: entries panel header centred');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.goto(`/admin/entries/${encodeURIComponent(ids.entryId)}`);
@@ -157,7 +152,6 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
   });
 
   test('20261106-UX-178: login recovery text button has transparent background and zero border', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: login recovery button lacks .lp-btn-text / text-button contract');
     await page.goto('/admin/login');
     const res = await page.locator('#btn-toggle-recovery').evaluate((el) => {
       const cs = getComputedStyle(el);
@@ -185,7 +179,6 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
   });
 
   test('20261106-UX-181: settings-providers page-level CTA (Save) has 40px gap after last FormSection', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: Save CTA is 16px/24px instead of 40px after last FormSection');
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/settings/providers');
     const gapRes = await checkPaintedGaps(page, { includeDG: true });
@@ -196,7 +189,6 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
 
 test.describe('WP-16.G Full D-G Census (no logged mode, no zero-pair relations)', () => {
   test('every STATES entry passes marker, hooks, roles, single-impl, overlays, and edge padding', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: full D-G census fails until G1-G2 complete');
     test.setTimeout(240_000);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await ensureAdminLoggedIn(page);

@@ -70,12 +70,12 @@ export const STATES: readonly StateDefinition[] = [
   { id: 'login', kind: 'auth', route: '/admin/login', fullPage: true, marker: { routePattern: '/admin/login', text: 'Sign in', selector: 'h1' } },
   { id: 'login-recovery', kind: 'auth', route: '/admin/login', action: 'login-recovery', fullPage: true, marker: { routePattern: '/admin/login', text: 'Recovery', selector: 'h1' } },
   { id: 'login-error', kind: 'auth', route: '/admin/login', action: 'login-error', fullPage: true, marker: { routePattern: '/admin/login', text: 'Sign in', selector: 'h1' } },
-  { id: 'setup-step-1', kind: 'auth', route: '/admin/setup', action: 'setup-step-1', fullPage: true, marker: { routePattern: '/admin/setup', text: 'Step 1 of 6', selector: '#wizard-step-1' } },
-  { id: 'setup-step-2', kind: 'auth', route: '/admin/setup', action: 'setup-step-2', fullPage: true, marker: { routePattern: '/admin/setup', text: 'Step 2 of 6', selector: '#wizard-step-2' } },
-  { id: 'setup-step-3', kind: 'auth', route: '/admin/setup', action: 'setup-step-3', fullPage: true, marker: { routePattern: '/admin/setup', text: 'Step 3 of 6', selector: '#wizard-step-3' } },
-  { id: 'setup-step-4', kind: 'auth', route: '/admin/setup', action: 'setup-step-4', fullPage: true, marker: { routePattern: '/admin/setup', text: 'Step 4 of 6', selector: '#wizard-step-4' } },
-  { id: 'setup-step-5', kind: 'auth', route: '/admin/setup', action: 'setup-step-5', fullPage: true, marker: { routePattern: '/admin/setup', text: 'Step 5 of 6', selector: '#wizard-step-5' } },
-  { id: 'setup-step-6', kind: 'auth', route: '/admin/setup', action: 'setup-step-6', fullPage: true, marker: { routePattern: '/admin/setup', text: 'Step 6 of 6', selector: '#wizard-step-6' } },
+  { id: 'setup-step-1', kind: 'auth', route: '/admin/setup?step=1', action: 'setup-step-1', fullPage: true, marker: { routePattern: '/admin/setup', text: 'Step 1 of 6', selector: '#wizard-step-1' } },
+  { id: 'setup-step-2', kind: 'auth', route: '/admin/setup?step=2', action: 'setup-step-2', fullPage: true, marker: { routePattern: '/admin/setup', text: 'Step 2 of 6', selector: '#wizard-step-2' } },
+  { id: 'setup-step-3', kind: 'auth', route: '/admin/setup?step=3', action: 'setup-step-3', fullPage: true, marker: { routePattern: '/admin/setup', text: 'Step 3 of 6', selector: '#wizard-step-3' } },
+  { id: 'setup-step-4', kind: 'auth', route: '/admin/setup?step=4', action: 'setup-step-4', fullPage: true, marker: { routePattern: '/admin/setup', text: 'Step 4 of 6', selector: '#wizard-step-4' } },
+  { id: 'setup-step-5', kind: 'auth', route: '/admin/setup?step=5', action: 'setup-step-5', fullPage: true, marker: { routePattern: '/admin/setup', text: 'Step 5 of 6', selector: '#wizard-step-5' } },
+  { id: 'setup-step-6', kind: 'auth', route: '/admin/setup?step=6', action: 'setup-step-6', fullPage: true, marker: { routePattern: '/admin/setup', text: 'Step 6 of 6', selector: '#wizard-step-6' } },
 
   // Overlays
   { id: 'overlay-launcher', kind: 'overlay', route: '/admin', action: 'open-launcher', fullPage: false, marker: { selector: '#lp-launcher-panel' } },

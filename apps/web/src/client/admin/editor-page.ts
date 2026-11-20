@@ -307,7 +307,7 @@ function bootEditorPage(): void {
   let cachedRevId = '';
   const updateStructureLevel = (facetCount: number, claimCount: number, evidenceCount: number) => {
     const levelEl = document.getElementById('ref-structure-level');
-    const nextEl = levelEl?.querySelector('.lp-level-next');
+    const nextEl = document.getElementById('ref-structure-next-step');
     const levels = ['Captured', 'Tagged', 'Claimed', 'Grounded'] as const;
     const idx = evidenceCount > 0 ? 3 : claimCount > 0 ? 2 : facetCount > 0 ? 1 : 0;
     if (levelEl) {
@@ -320,7 +320,7 @@ function bootEditorPage(): void {
       });
     }
     if (nextEl) {
-      nextEl.textContent =
+      const msg =
         idx === 0
           ? 'Add a tag to reach Tagged.'
           : idx === 1
@@ -328,8 +328,31 @@ function bootEditorPage(): void {
             : idx === 2
               ? 'Attach evidence to reach Grounded.'
               : 'All structure levels complete.';
+      const targetId =
+        idx === 0
+          ? 'ref-facet-value'
+          : idx === 1
+            ? 'ref-btn-open-claim'
+            : idx === 2
+              ? 'ref-btn-open-evidence'
+              : '';
+      nextEl.setAttribute('data-next-target', targetId);
+      const span = nextEl.querySelector('span');
+      if (span) span.textContent = msg;
+      else nextEl.textContent = msg;
     }
   };
+
+  document.getElementById('ref-structure-next-step')?.addEventListener('click', (e) => {
+    const btn = (e.currentTarget as HTMLElement | null);
+    const targetId = btn?.getAttribute('data-next-target');
+    if (!targetId) return;
+    const target = document.getElementById(targetId);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.focus();
+    }
+  });
 
   const esc = (s: unknown) =>
     String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -338,13 +361,20 @@ function bootEditorPage(): void {
     facets: any[],
     claims: any[],
     evidence: any[],
-    spans: any[]
+    spans: any[],
+    bodyText = ''
   ) => {
+    const visibleFacets = facets.filter((f) => f?.status !== 'rejected');
     const byId = (id: string) => document.getElementById(id);
     const fEl = byId('ref-facets-list');
     if (fEl) {
-      fEl.innerHTML = facets
-        .map((f) => `<span class="lp-tag" data-facet-id="${esc(f.id)}"><span class="lp-tag-label">${esc(f.key || f.facet_type || 'topic')}: ${esc(f.value ?? f.facet_value)}</span></span>`)
+      fEl.innerHTML = visibleFacets
+        .map((f) => {
+          const cat = f.key || f.facet_type || 'topic';
+          const val = f.value ?? f.facet_value ?? '';
+          const id = f.id ?? '';
+          return `<span class="lp-tag" data-c="Tag" data-facet-id="${esc(id)}"><span class="lp-tag-label">${esc(cat)}: ${esc(val)}</span><button type="button" class="lp-tag-remove" data-remove-action="facet" data-remove-value="${esc(id)}" aria-label="Remove ${esc(val)}"><svg class="lp-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></span>`;
+        })
         .join('');
     }
     const cEl = byId('ref-claims-list');
@@ -376,16 +406,18 @@ function bootEditorPage(): void {
             .map((sp) => {
               const roleRaw = sp.suggested_role || sp.role || 'context';
               const roleLabel = formatRoleLabel(roleRaw);
-              const passage = sp.text || '';
+              const start = Number(sp.start_off ?? sp.start_offset ?? sp.start ?? 0);
+              const end = Number(sp.end_off ?? sp.end_offset ?? sp.end ?? 0);
+              const passage = sp.text || sp.text_exact || (end > start && bodyText ? bodyText.slice(start, end) : '');
               const meta = statusMeta(sp.status);
               const isAccepted = meta.st === 'accepted';
               const isRejected = meta.st === 'rejected';
-              return `<div class="lp-item lp-item-has-actions" data-span-id="${esc(sp.id)}" data-span-status="${esc(meta.st)}"><div class="lp-item-title"><span>${esc(roleLabel)}</span></div><div class="lp-item-status"><span class="lp-status-dot lp-status-${meta.tone}"><span class="lp-status-dot-circle" aria-hidden="true"></span><span>${esc(meta.label)}</span></span></div>${passage ? `<div class="lp-item-body lp-line-clamp-3" title="${esc(passage)}">${esc(passage)}</div>` : ''}<div class="lp-item-actions"><div class="lp-choice-list" role="group" aria-label="Role decision"><button type="button" class="lp-choice lp-choice-button${isAccepted ? ' is-selected' : ''}" data-span-action="accept" data-span-id="${esc(sp.id)}" data-span-role="${esc(roleRaw)}" aria-pressed="${isAccepted ? 'true' : 'false'}"><span class="lp-choice-btn-label">Accept</span></button><button type="button" class="lp-choice lp-choice-button${isRejected ? ' is-selected' : ''}" data-span-action="reject" data-span-id="${esc(sp.id)}" data-span-role="${esc(roleRaw)}" aria-pressed="${isRejected ? 'true' : 'false'}"><span class="lp-choice-btn-label">Ignore</span></button></div></div></div>`;
+              return `<div class="lp-item lp-item-has-actions" data-c="Item" data-span-id="${esc(sp.id)}" data-span-status="${esc(meta.st)}"><div class="lp-item-content"><div class="lp-item-title"><span>${esc(roleLabel)}</span></div><div class="lp-item-status"><span class="lp-status-dot lp-status-${meta.tone}"><span class="lp-status-dot-circle" aria-hidden="true"></span><span>${esc(meta.label)}</span></span></div>${passage ? `<div class="lp-item-body lp-line-clamp-3" data-rel="itembody" title="${esc(passage)}">${esc(passage)}</div>` : ''}</div><div class="lp-item-actions" data-rel="actions"><div class="lp-choice-list lp-choice-variant-segmented" data-c="Choice" data-deselectable="true" role="group" aria-label="Role decision"><button type="button" class="lp-choice lp-choice-button${isAccepted ? ' is-selected' : ''}" data-span-action="accept" data-span-id="${esc(sp.id)}" data-span-role="${esc(roleRaw)}" aria-pressed="${isAccepted ? 'true' : 'false'}"><span class="lp-choice-btn-label">Accept</span></button><button type="button" class="lp-choice lp-choice-button${isRejected ? ' is-selected' : ''}" data-span-action="reject" data-span-id="${esc(sp.id)}" data-span-role="${esc(roleRaw)}" aria-pressed="${isRejected ? 'true' : 'false'}"><span class="lp-choice-btn-label">Ignore</span></button></div></div></div>`;
             })
             .join('')
         : '<p class="lp-field-help">Save entry to detect suggested span roles.</p>';
     }
-    updateStructureLevel(facets.length, claims.length, evidence.length);
+    updateStructureLevel(visibleFacets.length, claims.length, evidence.length);
   };
 
   async function loadStructureData() {
@@ -401,6 +433,11 @@ function bootEditorPage(): void {
       entryRes.data?.revisions?.[0]?.id ??
       '';
     cachedRevId = revId;
+    const bodyText =
+      entryRes.data?.currentRevision?.body_md ??
+      entryRes.data?.revisions?.[0]?.body_md ??
+      (document.getElementById('ref-body') as HTMLTextAreaElement | null)?.value ??
+      '';
     let spans: any[] = [];
     if (revId) {
       const spansRes = await apiRequest<{ spans?: any[] }>(`/api/structure/revisions/${encodeURIComponent(revId)}/spans`);
@@ -409,8 +446,26 @@ function bootEditorPage(): void {
     const facets = facetsRes.data?.facets ?? [];
     const claims = claimsRes.data?.claims ?? [];
     const evidence = evRes.data?.evidence ?? [];
-    renderStructureLists(facets, claims, evidence, spans);
+    renderStructureLists(facets, claims, evidence, spans, bodyText);
   }
+
+  document.getElementById('ref-facets-list')?.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement | null)?.closest<HTMLElement>('button[data-remove-action="facet"]');
+    if (!btn) return;
+    const id = btn.getAttribute('data-remove-value') ?? '';
+    if (!id) return;
+    const res = await apiRequest(`/api/structure/facets/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'rejected' }),
+    });
+    if (res.ok) {
+      btn.closest('.lp-tag')?.remove();
+      const remaining = document.querySelectorAll('#ref-facets-list .lp-tag').length;
+      const claimsCount = document.querySelectorAll('#ref-claims-list .lp-item').length;
+      const evCount = document.querySelectorAll('#ref-evidence-list .lp-item').length;
+      updateStructureLevel(remaining, claimsCount, evCount);
+    }
+  });
 
   document.getElementById('ref-btn-add-facet')?.addEventListener('click', async () => {
     const typeEl = document.getElementById('ref-facet-type') as HTMLSelectElement | null;
@@ -1135,6 +1190,9 @@ function bootEditorPage(): void {
 
   document.getElementById('ref-btn-delete')?.addEventListener('click', () => {
     deleteCtrl?.open(document.getElementById('ref-btn-delete'));
+  });
+  document.getElementById('ref-btn-more')?.addEventListener('click', () => {
+    deleteCtrl?.open(document.getElementById('ref-btn-more'));
   });
 
   document.getElementById('ref-delete-confirm')?.addEventListener('click', async () => {

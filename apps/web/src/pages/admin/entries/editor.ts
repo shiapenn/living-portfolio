@@ -86,7 +86,8 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
     label: EDITOR_STRINGS.fields.profileLabel,
     value: selected.profile,
     optionGroups: profileGroups,
-  })}
+    help: `Publishes in ${resolvedTarget.label} at ${resolvedTarget.url}`,
+  }).replace('<div class="lp-field-help">', '<div id="ref-details-publish-target" class="lp-field-help">')}
   ${renderField({ kind: 'input', inputType: 'date', id: 'ref-field-date', name: 'date', label: EDITOR_STRINGS.fields.dateLabel, value: selected.date.slice(0, 10) })}
   ${renderField({
     kind: 'select',
@@ -96,7 +97,6 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
     value: selected.temporalConfidence,
     options: [...EDITOR_STRINGS.temporal],
   })}
-  <p id="ref-details-publish-target" class="lp-description">Publishes to ${escapeHtml(resolvedTarget.label)} at ${escapeHtml(resolvedTarget.url)}</p>
 </div>`;
 
   const isDraft = selected.visibility === 'draft';

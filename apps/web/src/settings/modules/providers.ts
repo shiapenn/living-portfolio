@@ -26,8 +26,8 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
   },
   schema: ProvidersConfigSchema,
   status: (_cfg, ctx) => {
-    const active = (ctx?.providers ?? []).find((p) => p.enabled);
-    return active ? `${active.name || active.id}` : 'Local only';
+    const active = (ctx?.providers ?? []).find((p) => p.enabled && p.id !== 'local') ?? (ctx?.settings?.activeProvider as any);
+    return active && active.enabled ? `${active.name || active.label || active.id}` : 'Local only';
   },
   render: (cfg, ctx) => {
     const liveProviders = ctx.providers ?? [];
@@ -36,7 +36,10 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
         ? ctx.settings.degradation_mode
         : cfg.degradationMode;
 
-    const active = liveProviders.find((p) => p.enabled && p.id !== 'local');
+    const savedProvider = ctx.settings?.activeProvider as any;
+    const active =
+      liveProviders.find((p) => p.enabled && p.id !== 'local') ??
+      (savedProvider && savedProvider.enabled && savedProvider.id !== 'local' ? savedProvider : undefined);
     const answeringItemHtml = `<div class="lp-list">
       ${renderItem({
         id: 'provider-role-answering',
@@ -77,14 +80,15 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
               { value: 'force_unavailable', label: 'Queue all questions to Inbox' },
             ],
           }),
-          actionBarHtml: renderActionBar({
-            primary: {
-              id: 'btn-save-settings-module',
-              label: 'Save',
-              variant: 'primary',
-              type: 'button',
-            },
-          }),
+        })}
+        ${renderActionBar({
+          pageLevel: true,
+          primary: {
+            id: 'btn-save-settings-module',
+            label: 'Save',
+            variant: 'primary',
+            type: 'button',
+          },
         })}
       </form>
     `;

@@ -34,9 +34,12 @@ export async function renderAdminStatusPage(
     typeof runtime.lastBackupDrill === 'string' && runtime.lastBackupDrill
       ? `Last drill passed ${runtime.lastBackupDrill}`
       : 'Not set up';
-  const activeProvider = providers.find((p: any) => p && p.configured);
+  const savedProvider = settings.activeProvider as any;
+  const activeProvider =
+    providers.find((p: any) => p && p.configured) ??
+    (savedProvider && savedProvider.configured && savedProvider.id !== 'local' ? savedProvider : undefined);
   const providerState = activeProvider
-    ? `${activeProvider.label || activeProvider.id}${activeProvider.model ? ` · ${activeProvider.model}` : ''}`
+    ? `Connected (${activeProvider.label || activeProvider.id}${activeProvider.model ? ` · ${activeProvider.model}` : ''})`
     : 'Local only';
 
   const listHtml = `<div class="lp-list">
@@ -68,14 +71,16 @@ export async function renderAdminStatusPage(
       id: 'status-backups-link',
       href: '/admin/settings/backups',
       title: 'Backups',
-      subtitle: backupState,
+      statusLabel: backupState,
+      statusTone: backupState === 'Not set up' ? 'neutral' : 'ok',
       showChevron: true,
     })}
     ${renderItem({
       id: 'status-providers-link',
       href: '/admin/settings/providers',
       title: 'Providers',
-      subtitle: providerState,
+      statusLabel: providerState,
+      statusTone: activeProvider ? 'ok' : 'neutral',
       showChevron: true,
     })}
   </div>`;
@@ -101,10 +106,11 @@ export async function renderAdminStatusPage(
           }
           var row = document.getElementById('status-answering-row');
           if (row) {
-            var badge = row.querySelector('.lp-badge');
-            if (badge) {
-              badge.textContent = enabled ? 'Active' : 'Paused';
-              badge.className = 'lp-badge ' + (enabled ? 'lp-badge-ok' : 'lp-badge-warn');
+            var dotCircle = row.querySelector('.lp-status-dot');
+            var labelEl = row.querySelector('.lp-status-label');
+            if (dotCircle && labelEl) {
+              dotCircle.className = 'lp-status-dot lp-status-dot-' + (enabled ? 'ok' : 'warn');
+              labelEl.textContent = enabled ? 'Active' : 'Paused';
             }
           }
         };
@@ -114,6 +120,17 @@ export async function renderAdminStatusPage(
         }).then(function (data) {
           if (data && data.runtime && typeof data.runtime.automatedAnsweringEnabled === 'boolean') {
             applyAnsweringState(data.runtime.automatedAnsweringEnabled);
+          }
+          if (data && data.activeProvider && data.activeProvider.configured && data.activeProvider.id !== 'local') {
+            var provLink = document.getElementById('status-providers-link');
+            if (provLink) {
+              var provDot = provLink.querySelector('.lp-status-dot');
+              var provLabel = provLink.querySelector('.lp-status-label');
+              if (provDot) provDot.className = 'lp-status-dot lp-status-dot-ok';
+              if (provLabel) {
+                provLabel.textContent = 'Connected (' + (data.activeProvider.label || data.activeProvider.id) + (data.activeProvider.model ? ' · ' + data.activeProvider.model : '') + ')';
+              }
+            }
           }
         }).catch(function () {});
         if (rebuildBtn) {

@@ -34,10 +34,11 @@ export const backupsModule: SettingsModuleManifest<BackupsConfig> = {
           title: 'Backup destination',
           description: `Current target: ${backupTarget}. Backups are encrypted before leaving the server.`,
           fieldsHtml: `<div id="backup-drill-result" class="lp-help-text"></div>`,
-          actionBarHtml: renderActionBar({
-            primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
-            secondary: { id: 'btn-run-backup-drill', label: 'Run restore drill', variant: 'secondary', type: 'button' },
-          }),
+        })}
+        ${renderActionBar({
+          pageLevel: true,
+          primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
+          secondary: { id: 'btn-run-backup-drill', label: 'Run restore drill', variant: 'secondary', type: 'button' },
         })}
       </form>
     `;

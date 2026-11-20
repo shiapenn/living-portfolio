@@ -14,7 +14,8 @@ export function renderAdminLoginPage(): string {
 
       <div id="login-error" class="lp-notice lp-notice-danger lp-is-hidden" role="alert"></div>
 
-      <form id="admin-login-form" class="lp-stack-md">
+      <form id="admin-login-form" class="lp-stack lp-gap-group">
+        <div class="lp-stack lp-gap-related">
         <div class="lp-field">
           <label class="lp-field-label" for="login-username">Username</label>
           <input id="login-username" type="text" class="lp-input" autocomplete="username" required />
@@ -30,9 +31,10 @@ export function renderAdminLoginPage(): string {
             Enter the 6-digit verification code from your authenticator app (Google Authenticator, 1Password, etc.).
           </p>
         </div>
+        </div>
         ${renderActionBar({
           primary: { label: 'Sign in', variant: 'primary', type: 'submit' },
-          textAction: { id: 'btn-toggle-recovery', label: 'Lost your authenticator device? Sign in with a recovery code', variant: 'quiet', className: 'lp-recovery-link' },
+          textAction: { id: 'btn-toggle-recovery', label: 'Lost your authenticator device? Sign in with a recovery code', variant: 'text', className: 'lp-recovery-link' },
         })}
       </form>
       <p class="lp-help-text">

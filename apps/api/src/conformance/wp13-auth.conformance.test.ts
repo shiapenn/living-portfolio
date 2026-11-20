@@ -769,11 +769,12 @@ describe('WP-13.4 Conformance: Persist Wizard Choices via Settings API', () => {
 });
 
 describe('WP-13.9 Conformance: Honest Wizard Controls in Default Install (UX-33, UX-09, CP-01)', () => {
-  it('Step 3: Providers table is read-only, badges lack button styles, and keys sentence is present', () => {
+  it('Step 3: Embeds shared ProviderFlow with plain description and no chip buttons', () => {
     const html = renderAdminSetupPage();
-    expect(html).toContain('Keys are added later in Settings > Providers; until then Ask shows direct quotes from entries.');
-    // Check that provider badges do not have button or interactive chip styling
+    expect(html).toContain('Without an external provider, Ask shows direct quotes from your entries.');
     const step3Section = html.slice(html.indexOf('id="wizard-step-3"'), html.indexOf('id="wizard-step-4"'));
+    expect(step3Section).toContain('id="setup-provider-flow-root"');
+    expect(step3Section).toContain('lp-choice');
     expect(step3Section).not.toContain('<span class="chip">');
   });
 

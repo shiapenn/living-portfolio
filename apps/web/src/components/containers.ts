@@ -79,11 +79,13 @@ export function renderDialog(props: DialogProps): string {
 
   return `<div id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}" role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}"${hiddenAttr}>
   <div class="lp-dialog-panel">
-    <div class="lp-dialog-header">
-      <h2 id="${escapeHtml(titleId)}" class="lp-dialog-title">${escapeHtml(props.title)}</h2>
-      ${closeBtn}
+    <div class="lp-stack lp-gap-related">
+      <div class="lp-dialog-header">
+        <h2 id="${escapeHtml(titleId)}" class="lp-dialog-title">${escapeHtml(props.title)}</h2>
+        ${closeBtn}
+      </div>
+      <div class="lp-dialog-body">${props.bodyHtml}</div>
     </div>
-    <div class="lp-dialog-body">${props.bodyHtml}</div>
     ${props.footerHtml ? `<div class="lp-dialog-footer">${props.footerHtml}</div>` : ''}
   </div>
 </div>`;

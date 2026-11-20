@@ -4587,7 +4587,28 @@ a.lp-item:hover {
 .lp-editor-drawer-header-stack {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  padding: 0 8px;
   gap: 8px;
+}
+.lp-editor-drawer .lp-section-header-title {
+  text-align: left;
+}
+.lp-item-has-actions {
+  display: flex !important;
+  flex-direction: column;
+  gap: 24px !important;
+}
+.lp-item-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 8px;
+}
+@container (min-width: 400px) {
+  .lp-item-content {
+    grid-template-columns: 1fr auto;
+    column-gap: 16px;
+  }
 }
 
 .lp-btn-as-link {
@@ -4950,6 +4971,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-page-header { display: flex; flex-direction: column; gap: 8px; margin: 0; }
 .lp-tabs { margin: 0; }
 .lp-form-section { display: flex; flex-direction: column; gap: 16px; margin: 0; }
+.lp-form-section.lp-gap-group { gap: 24px; }
 .lp-form-section + .lp-form-section { margin-top: 0; }
 .lp-form-section-header { display: flex; flex-direction: column; gap: 8px; }
 .lp-field { display: flex; flex-direction: column; gap: 8px; margin: 0; }
@@ -4986,11 +5008,11 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 .lp-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0; }
 .lp-dialog-body { padding: 0; }
-.lp-dialog-footer, .lp-dialog-panel .lp-action-bar { padding-top: 8px; display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.lp-dialog-footer, .lp-dialog-panel .lp-action-bar { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 .lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn { width: 100%; }
 
 /* SegmentedControl (D-FINAL #15) */
@@ -5185,7 +5207,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-item-subtitle { grid-column: 1 / -1; order: 3; }
 .lp-item-body, .lp-item-segments { grid-column: 1 / -1; order: 4; }
 .lp-item-meta { grid-column: 1 / -1; order: 5; }
-.lp-item-actions { grid-column: 1 / -1; order: 6; padding-top: 16px; }
+.lp-item-actions { grid-column: 1 / -1; order: 6; }
 
 .lp-item-segments { display: flex; flex-direction: column; gap: 16px; }
 .lp-item-segment { display: flex; flex-direction: column; gap: 4px; }
@@ -5323,7 +5345,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-launcher-panel,
 .lp-dialog-panel,
 .lp-overlay-sheet,
-.lp-entries-drawer,
+.lp-editor-drawer,
 .lp-format-bar {
   border: 1px solid var(--border-overlay);
 }
@@ -5331,7 +5353,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-launcher-panel {
   box-shadow: var(--shadow-e1);
 }
-.lp-entries-drawer {
+.lp-editor-drawer {
   box-shadow: var(--shadow-e1-right);
 }
 .lp-overlay-sheet,

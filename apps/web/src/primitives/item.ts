@@ -75,7 +75,10 @@ export function renderItem(props: ItemProps): string {
   const metaHtml = props.meta ? `<div class="lp-item-meta">${escapeHtml(props.meta)}</div>` : '';
   const actionsHtml = hasActions && props.actions ? `<div data-rel="actions" class="lp-item-actions">${renderActionBar(props.actions)}</div>` : '';
 
-  const inner = `${titleHtml}${statusHtml}${subtitleHtml}${bodyHtml}${metaHtml}${actionsHtml}`;
+  const contentInner = `${titleHtml}${statusHtml}${subtitleHtml}${bodyHtml}${metaHtml}`;
+  const inner = hasActions
+    ? `<div class="lp-item-content">${contentInner}</div>${actionsHtml}`
+    : `${contentInner}${actionsHtml}`;
 
   if (props.href && !hasActions) {
     return `<a href="${escapeHtml(props.href)}"${idAttr} data-c="Item" data-rel="item" class="${escapeHtml(classes)}"${extra}>${inner}</a>`;
