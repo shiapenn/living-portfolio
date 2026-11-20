@@ -1521,5 +1521,13 @@
     "path": "docs/execution-reports/A144-wp-16g-g0-contract-and-failing-census.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A145",
+    "title": "wp-16g-g1-primitives-and-patterns",
+    "class": "A",
+    "path": "docs/execution-reports/A145-wp-16g-g1-primitives-and-patterns.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
