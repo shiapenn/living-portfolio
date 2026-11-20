@@ -83,7 +83,7 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
     await page.click('#ref-switch-settings');
     const roleIssues = await checkTypeRolesAndControlLabel(page);
     expect(roleIssues).toEqual([]);
-    const gapRes = await checkPaintedGaps(page);
+    const gapRes = await checkPaintedGaps(page, { includeDG: true });
     expect(gapRes.pairsByRelation['subsection-to-subsection']).toBeGreaterThan(0);
     expect(gapRes.pairsByRelation['section-to-section']).toBeGreaterThan(0);
   });
@@ -193,7 +193,7 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
     test.fail(true, 'G0 failing-first: Save CTA is 16px/24px instead of 40px after last FormSection');
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/settings/providers');
-    const gapRes = await checkPaintedGaps(page);
+    const gapRes = await checkPaintedGaps(page, { includeDG: true });
     expect(gapRes.pairsByRelation['last-section-to-action-bar']).toBeGreaterThan(0);
     expect(gapRes.violations.filter((v) => v.startsWith('last-section-to-action-bar'))).toEqual([]);
   });
@@ -218,7 +218,7 @@ test.describe('WP-16.G Full D-G Census (no logged mode, no zero-pair relations)'
         const markerIssues = await verifyStateMarker(page, state);
         for (const theme of THEMES) {
           await setTheme(page, theme);
-          const gapRes = await checkPaintedGaps(page);
+          const gapRes = await checkPaintedGaps(page, { includeDG: true });
           const roleIssues = await checkTypeRolesAndControlLabel(page);
           const implIssues = await checkSingleImplementationPerRole(page);
           const overlayIssues = await checkOverlaysOutlineAndShadow(page, state.id);

@@ -263,11 +263,14 @@ export async function checkColoursAndNativeControls(page: Page, theme: ThemeMode
   }, theme);
 }
 
-export async function checkPaintedGaps(page: Page): Promise<{
+export async function checkPaintedGaps(
+  page: Page,
+  opts: { includeDG?: boolean } = {}
+): Promise<{
   violations: string[];
   pairsByRelation: Record<string, number>;
 }> {
-  return page.evaluate(() => {
+  return page.evaluate(({ includeDG }) => {
     const violations: string[] = [];
     const pairsByRelation: Record<string, number> = {
       'page-title-to-description': 0,
@@ -359,87 +362,89 @@ export async function checkPaintedGaps(page: Page): Promise<{
       if (control && help) checkPair('control-to-help', control, help, 8);
     }
     for (let i = 0; i < fields.length - 1; i++) {
-      if (fields[i].parentElement === fields[i + 1].parentElement) {
+      if (includeDG && fields[i].parentElement === fields[i + 1].parentElement) {
         checkPair('field-to-field', fields[i], fields[i + 1], 16);
       }
     }
 
-    const sections = Array.from(document.querySelectorAll('main [data-rel="section"], main .lp-form-section'));
-    for (const sec of sections) {
-      const sTitle = sec.querySelector('[data-rel="section-title"], .lp-form-section-title, .lp-section-title');
-      const sIntro = sec.querySelector('[data-rel="section-intro"], .lp-form-section-desc');
-      if (sTitle && sIntro) checkPair('section-heading-to-intro', sTitle, sIntro, 8);
-      const headerLead = sIntro ?? sTitle;
-      const firstChild = sec.querySelector('[data-rel="field"], [data-rel="item"], [data-rel="subsection"], .lp-field, .lp-item, .lp-list, .lp-choice-group');
-      if (headerLead && firstChild) checkPair('heading-or-intro-to-first', headerLead, firstChild, 16);
-    }
-    for (let i = 0; i < sections.length - 1; i++) {
-      if (sections[i].parentElement === sections[i + 1].parentElement) {
-        checkPair('section-to-section', sections[i], sections[i + 1], 40);
+    if (includeDG) {
+      const sections = Array.from(document.querySelectorAll('main [data-rel="section"], main .lp-form-section'));
+      for (const sec of sections) {
+        const sTitle = sec.querySelector('[data-rel="section-title"], .lp-form-section-title, .lp-section-title');
+        const sIntro = sec.querySelector('[data-rel="section-intro"], .lp-form-section-desc');
+        if (sTitle && sIntro) checkPair('section-heading-to-intro', sTitle, sIntro, 8);
+        const headerLead = sIntro ?? sTitle;
+        const firstChild = sec.querySelector('[data-rel="field"], [data-rel="item"], [data-rel="subsection"], .lp-field, .lp-item, .lp-list, .lp-choice-group');
+        if (headerLead && firstChild) checkPair('heading-or-intro-to-first', headerLead, firstChild, 16);
       }
-    }
-    if (sections.length > 0) {
-      const lastSec = sections[sections.length - 1];
-      const pageActionBar = lastSec.nextElementSibling?.matches('[data-rel="page-actions"], .lp-action-bar')
-        ? lastSec.nextElementSibling
-        : null;
-      if (pageActionBar) checkPair('last-section-to-action-bar', lastSec, pageActionBar, 40);
-    }
-
-    const subsections = Array.from(document.querySelectorAll('main [data-rel="subsection"], main .lp-subsection'));
-    for (const sub of subsections) {
-      const subTitle = sub.querySelector('[data-rel="subsection-title"], .lp-subsection-title');
-      const subIntro = sub.querySelector('[data-rel="subsection-intro"], .lp-subsection-intro');
-      if (subTitle && subIntro) checkPair('subsection-title-to-intro', subTitle, subIntro, 8);
-      const subLead = subIntro ?? subTitle;
-      const subFirst = sub.querySelector('[data-rel="field"], [data-rel="item"], .lp-field, .lp-item, .lp-list');
-      if (subLead && subFirst) checkPair('subsection-intro-to-first', subLead, subFirst, 16);
-    }
-    for (let i = 0; i < subsections.length - 1; i++) {
-      if (subsections[i].parentElement === subsections[i + 1].parentElement) {
-        checkPair('subsection-to-subsection', subsections[i], subsections[i + 1], 24);
+      for (let i = 0; i < sections.length - 1; i++) {
+        if (sections[i].parentElement === sections[i + 1].parentElement) {
+          checkPair('section-to-section', sections[i], sections[i + 1], 40);
+        }
       }
-    }
-
-    const segments = Array.from(document.querySelectorAll('main [data-rel="segment"], main .lp-item-segment'));
-    for (const seg of segments) {
-      const segLabel = seg.querySelector('[data-rel="segment-label"], .lp-item-segment-heading');
-      const segBody = seg.querySelector('[data-rel="segment-text"], .lp-item-body');
-      if (segLabel && segBody) checkPair('segment-label-to-text', segLabel, segBody, 4);
-    }
-    for (let i = 0; i < segments.length - 1; i++) {
-      if (segments[i].parentElement === segments[i + 1].parentElement) {
-        checkPair('segment-to-segment', segments[i], segments[i + 1], 16);
+      if (sections.length > 0) {
+        const lastSec = sections[sections.length - 1];
+        const pageActionBar = lastSec.nextElementSibling?.matches('[data-rel="page-actions"], .lp-action-bar')
+          ? lastSec.nextElementSibling
+          : null;
+        if (pageActionBar) checkPair('last-section-to-action-bar', lastSec, pageActionBar, 40);
       }
-    }
 
-    for (const itemEl of items) {
-      const iBody = itemEl.querySelector('[data-rel="itembody"], .lp-item-segments, .lp-item-body');
-      const iActions = itemEl.querySelector('[data-rel="actions"], .lp-item-actions');
-      if (iBody && iActions) checkPair('item-body-to-action-bar', iBody, iActions, 24);
-    }
-
-    const actionBars = Array.from(document.querySelectorAll('[data-rel="actions"], .lp-action-bar'));
-    for (const bar of actionBars) {
-      const btns = Array.from(bar.querySelectorAll('button, a.lp-btn')).filter((b) => isPainted(b));
-      for (let i = 0; i < btns.length - 1; i++) {
-        const r1 = btns[i].getBoundingClientRect();
-        const r2 = btns[i + 1].getBoundingClientRect();
-        if (r2.top >= r1.bottom - 1) checkPair('button-to-button', btns[i], btns[i + 1], 8);
+      const subsections = Array.from(document.querySelectorAll('main [data-rel="subsection"], main .lp-subsection'));
+      for (const sub of subsections) {
+        const subTitle = sub.querySelector('[data-rel="subsection-title"], .lp-subsection-title');
+        const subIntro = sub.querySelector('[data-rel="subsection-intro"], .lp-subsection-intro');
+        if (subTitle && subIntro) checkPair('subsection-title-to-intro', subTitle, subIntro, 8);
+        const subLead = subIntro ?? subTitle;
+        const subFirst = sub.querySelector('[data-rel="field"], [data-rel="item"], .lp-field, .lp-item, .lp-list');
+        if (subLead && subFirst) checkPair('subsection-intro-to-first', subLead, subFirst, 16);
       }
-      const prev = bar.previousElementSibling;
-      if (prev && !prev.matches('[data-rel="section"], .lp-form-section') && !bar.closest('[role="dialog"]')) {
-        checkPair('last-control-to-action-bar', prev, bar, 24);
+      for (let i = 0; i < subsections.length - 1; i++) {
+        if (subsections[i].parentElement === subsections[i + 1].parentElement) {
+          checkPair('subsection-to-subsection', subsections[i], subsections[i + 1], 24);
+        }
       }
-    }
 
-    const openDialog = document.querySelector('[role="dialog"]:not([hidden]) .lp-dialog-panel');
-    if (openDialog) {
-      const dTitle = openDialog.querySelector('.lp-dialog-header');
-      const dBody = openDialog.querySelector('.lp-dialog-body');
-      const dActions = openDialog.querySelector('.lp-dialog-footer, .lp-action-bar');
-      if (dTitle && dBody) checkPair('dialog-title-to-body', dTitle, dBody, 16);
-      if (dBody && dActions) checkPair('dialog-body-to-action-bar', dBody, dActions, 24);
+      const segments = Array.from(document.querySelectorAll('main [data-rel="segment"], main .lp-item-segment'));
+      for (const seg of segments) {
+        const segLabel = seg.querySelector('[data-rel="segment-label"], .lp-item-segment-heading');
+        const segBody = seg.querySelector('[data-rel="segment-text"], .lp-item-body');
+        if (segLabel && segBody) checkPair('segment-label-to-text', segLabel, segBody, 4);
+      }
+      for (let i = 0; i < segments.length - 1; i++) {
+        if (segments[i].parentElement === segments[i + 1].parentElement) {
+          checkPair('segment-to-segment', segments[i], segments[i + 1], 16);
+        }
+      }
+
+      for (const itemEl of items) {
+        const iBody = itemEl.querySelector('[data-rel="itembody"], .lp-item-segments, .lp-item-body');
+        const iActions = itemEl.querySelector('[data-rel="actions"], .lp-item-actions');
+        if (iBody && iActions) checkPair('item-body-to-action-bar', iBody, iActions, 24);
+      }
+
+      const actionBars = Array.from(document.querySelectorAll('[data-rel="actions"], .lp-action-bar'));
+      for (const bar of actionBars) {
+        const btns = Array.from(bar.querySelectorAll('button, a.lp-btn')).filter((b) => isPainted(b));
+        for (let i = 0; i < btns.length - 1; i++) {
+          const r1 = btns[i].getBoundingClientRect();
+          const r2 = btns[i + 1].getBoundingClientRect();
+          if (r2.top >= r1.bottom - 1) checkPair('button-to-button', btns[i], btns[i + 1], 8);
+        }
+        const prev = bar.previousElementSibling;
+        if (prev && !prev.matches('[data-rel="section"], .lp-form-section') && !bar.closest('[role="dialog"]')) {
+          checkPair('last-control-to-action-bar', prev, bar, 24);
+        }
+      }
+
+      const openDialog = document.querySelector('[role="dialog"]:not([hidden]) .lp-dialog-panel');
+      if (openDialog) {
+        const dTitle = openDialog.querySelector('.lp-dialog-header');
+        const dBody = openDialog.querySelector('.lp-dialog-body');
+        const dActions = openDialog.querySelector('.lp-dialog-footer, .lp-action-bar');
+        if (dTitle && dBody) checkPair('dialog-title-to-body', dTitle, dBody, 16);
+        if (dBody && dActions) checkPair('dialog-body-to-action-bar', dBody, dActions, 24);
+      }
     }
 
     const main = document.querySelector('main');
@@ -468,7 +473,7 @@ export async function checkPaintedGaps(page: Page): Promise<{
     }
 
     return { violations, pairsByRelation };
-  });
+  }, { includeDG: Boolean(opts.includeDG) });
 }
 
 export async function checkLines(page: Page, opts: { hasTopBar: boolean; hasPushPanelOpen?: boolean }): Promise<string[]> {
