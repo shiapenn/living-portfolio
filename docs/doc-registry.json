@@ -1529,5 +1529,13 @@
     "path": "docs/execution-reports/A145-wp-16g-g1-primitives-and-patterns.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A146",
+    "title": "wp-16g-g2-pages-and-flows",
+    "class": "A",
+    "path": "docs/execution-reports/A146-wp-16g-g2-pages-and-flows.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
