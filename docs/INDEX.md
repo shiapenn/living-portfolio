@@ -151,6 +151,7 @@
 | `A143` | wp-16f-f4-contact-sheets-and-closure | `active` | [A143-wp-16f-f4-contact-sheets-and-closure.md](execution-reports/A143-wp-16f-f4-contact-sheets-and-closure.md) | — |
 | `A144` | wp-16g-g0-contract-and-failing-census | `active` | [A144-wp-16g-g0-contract-and-failing-census.md](execution-reports/A144-wp-16g-g0-contract-and-failing-census.md) | — |
 | `A145` | wp-16g-g1-primitives-and-patterns | `active` | [A145-wp-16g-g1-primitives-and-patterns.md](execution-reports/A145-wp-16g-g1-primitives-and-patterns.md) | — |
+| `A146` | wp-16g-g2-pages-and-flows | `active` | [A146-wp-16g-g2-pages-and-flows.md](execution-reports/A146-wp-16g-g2-pages-and-flows.md) | — |
 
 ## Handover Snapshots (Class H)
 
