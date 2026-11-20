@@ -5287,6 +5287,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-choice-variant-segmented .lp-choice {
   height: 36px;
   min-height: 36px;
+  min-width: 36px;
   padding: 0 8px;
   border: 1px solid transparent;
   border-radius: 4px;
