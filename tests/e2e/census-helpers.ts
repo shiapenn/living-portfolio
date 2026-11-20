@@ -50,6 +50,7 @@ export async function navigateToState(
   await page.goto(route);
 
   switch (state.action) {
+    case 'setup-step-1':
     case 'setup-step-2':
     case 'setup-step-3':
     case 'setup-step-4':
@@ -138,6 +139,41 @@ export async function navigateToState(
       break;
   }
   return true;
+}
+
+export async function verifyStateMarker(page: Page, state: StateDefinition): Promise<string[]> {
+  const issues: string[] = [];
+  const { marker } = state;
+  if (marker.routePattern && !page.url().includes(marker.routePattern)) {
+    issues.push(`marker-route-mismatch: url="${page.url()}" expected to include "${marker.routePattern}"`);
+  }
+  const evalIssues = await page.evaluate(
+    ({ selector, text }) => {
+      const errs: string[] = [];
+      if (selector) {
+        const el = document.querySelector(selector);
+        if (!el) {
+          errs.push(`marker-selector-missing: "${selector}"`);
+        } else {
+          const cs = getComputedStyle(el);
+          const r = el.getBoundingClientRect();
+          if (cs.display === 'none' || cs.visibility === 'hidden' || (r.width === 0 && r.height === 0)) {
+            errs.push(`marker-selector-hidden: "${selector}"`);
+          }
+        }
+      }
+      if (text) {
+        const bodyText = document.body.innerText || '';
+        if (!bodyText.includes(text)) {
+          errs.push(`marker-text-missing: "${text}"`);
+        }
+      }
+      return errs;
+    },
+    { selector: marker.selector, text: marker.text }
+  );
+  issues.push(...evalIssues);
+  return issues;
 }
 
 export async function checkRenderedText(page: Page): Promise<string[]> {
@@ -239,11 +275,18 @@ export async function checkPaintedGaps(page: Page): Promise<{
       'tabs-to-content': 0,
       'section-heading-to-intro': 0,
       'heading-or-intro-to-first': 0,
+      'subsection-to-subsection': 0,
+      'subsection-title-to-intro': 0,
+      'subsection-intro-to-first': 0,
       'label-to-control': 0,
       'control-to-help': 0,
       'field-to-field': 0,
       'item-to-item': 0,
+      'segment-label-to-text': 0,
+      'segment-to-segment': 0,
+      'item-body-to-action-bar': 0,
       'section-to-section': 0,
+      'last-section-to-action-bar': 0,
       'last-control-to-action-bar': 0,
       'button-to-button': 0,
       'dialog-title-to-body': 0,
@@ -307,13 +350,96 @@ export async function checkPaintedGaps(page: Page): Promise<{
       }
     }
 
-    const fields = Array.from(document.querySelectorAll('main .lp-field'));
+    const fields = Array.from(document.querySelectorAll('main [data-rel="field"], main .lp-field'));
     for (const f of fields) {
-      const label = f.querySelector('label, .lp-field-label');
-      const control = f.querySelector('input, select, textarea, .lp-select-wrap');
-      const help = f.querySelector('.lp-field-help');
+      const label = f.querySelector('[data-rel="label"], label, .lp-field-label');
+      const control = f.querySelector('[data-rel="control"], input, select, textarea, .lp-select-wrap');
+      const help = f.querySelector('[data-rel="help"], .lp-field-help');
       if (label && control) checkPair('label-to-control', label, control, 8);
       if (control && help) checkPair('control-to-help', control, help, 8);
+    }
+    for (let i = 0; i < fields.length - 1; i++) {
+      if (fields[i].parentElement === fields[i + 1].parentElement) {
+        checkPair('field-to-field', fields[i], fields[i + 1], 16);
+      }
+    }
+
+    const sections = Array.from(document.querySelectorAll('main [data-rel="section"], main .lp-form-section'));
+    for (const sec of sections) {
+      const sTitle = sec.querySelector('[data-rel="section-title"], .lp-form-section-title, .lp-section-title');
+      const sIntro = sec.querySelector('[data-rel="section-intro"], .lp-form-section-desc');
+      if (sTitle && sIntro) checkPair('section-heading-to-intro', sTitle, sIntro, 8);
+      const headerLead = sIntro ?? sTitle;
+      const firstChild = sec.querySelector('[data-rel="field"], [data-rel="item"], [data-rel="subsection"], .lp-field, .lp-item, .lp-list, .lp-choice-group');
+      if (headerLead && firstChild) checkPair('heading-or-intro-to-first', headerLead, firstChild, 16);
+    }
+    for (let i = 0; i < sections.length - 1; i++) {
+      if (sections[i].parentElement === sections[i + 1].parentElement) {
+        checkPair('section-to-section', sections[i], sections[i + 1], 40);
+      }
+    }
+    if (sections.length > 0) {
+      const lastSec = sections[sections.length - 1];
+      const pageActionBar = lastSec.nextElementSibling?.matches('[data-rel="page-actions"], .lp-action-bar')
+        ? lastSec.nextElementSibling
+        : null;
+      if (pageActionBar) checkPair('last-section-to-action-bar', lastSec, pageActionBar, 40);
+    }
+
+    const subsections = Array.from(document.querySelectorAll('main [data-rel="subsection"], main .lp-subsection'));
+    for (const sub of subsections) {
+      const subTitle = sub.querySelector('[data-rel="subsection-title"], .lp-subsection-title');
+      const subIntro = sub.querySelector('[data-rel="subsection-intro"], .lp-subsection-intro');
+      if (subTitle && subIntro) checkPair('subsection-title-to-intro', subTitle, subIntro, 8);
+      const subLead = subIntro ?? subTitle;
+      const subFirst = sub.querySelector('[data-rel="field"], [data-rel="item"], .lp-field, .lp-item, .lp-list');
+      if (subLead && subFirst) checkPair('subsection-intro-to-first', subLead, subFirst, 16);
+    }
+    for (let i = 0; i < subsections.length - 1; i++) {
+      if (subsections[i].parentElement === subsections[i + 1].parentElement) {
+        checkPair('subsection-to-subsection', subsections[i], subsections[i + 1], 24);
+      }
+    }
+
+    const segments = Array.from(document.querySelectorAll('main [data-rel="segment"], main .lp-item-segment'));
+    for (const seg of segments) {
+      const segLabel = seg.querySelector('[data-rel="segment-label"], .lp-item-segment-heading');
+      const segBody = seg.querySelector('[data-rel="segment-text"], .lp-item-body');
+      if (segLabel && segBody) checkPair('segment-label-to-text', segLabel, segBody, 4);
+    }
+    for (let i = 0; i < segments.length - 1; i++) {
+      if (segments[i].parentElement === segments[i + 1].parentElement) {
+        checkPair('segment-to-segment', segments[i], segments[i + 1], 16);
+      }
+    }
+
+    for (const itemEl of items) {
+      const iBody = itemEl.querySelector('[data-rel="itembody"], .lp-item-segments, .lp-item-body');
+      const iActions = itemEl.querySelector('[data-rel="actions"], .lp-item-actions');
+      if (iBody && iActions) checkPair('item-body-to-action-bar', iBody, iActions, 24);
+    }
+
+    const actionBars = Array.from(document.querySelectorAll('[data-rel="actions"], .lp-action-bar'));
+    for (const bar of actionBars) {
+      const btns = Array.from(bar.querySelectorAll('button, a.lp-btn')).filter((b) => isPainted(b));
+      for (let i = 0; i < btns.length - 1; i++) {
+        const r1 = btns[i].getBoundingClientRect();
+        const r2 = btns[i + 1].getBoundingClientRect();
+        if (r2.top >= r1.bottom - 1) checkPair('button-to-button', btns[i], btns[i + 1], 8);
+      }
+      const prev = bar.previousElementSibling;
+      if (prev && !prev.matches('[data-rel="section"], .lp-form-section') && !bar.closest('[role="dialog"]')) {
+        checkPair('last-control-to-action-bar', prev, bar, 24);
+      }
+    }
+
+    const openDialog = document.querySelector('[role="dialog"]:not([hidden]) .lp-dialog-panel');
+    if (openDialog) {
+      const dTitle = openDialog.querySelector('.lp-dialog-header');
+      const dBody = openDialog.querySelector('.lp-dialog-body');
+      const dActions = openDialog.querySelector('.lp-dialog-footer, .lp-action-bar');
+      if (dTitle && dBody) checkPair('dialog-title-to-body', dTitle, dBody, 16);
+      if (dBody && dActions) checkPair('dialog-body-to-action-bar', dBody, dActions, 24);
     }
 
     const main = document.querySelector('main');
@@ -425,6 +551,131 @@ export async function checkEditorEdgeAlignment(page: Page): Promise<string[]> {
       const bottomDist = Math.round(window.innerHeight - r.bottom);
       if (Math.abs(bottomDist - 16) > 1) {
         issues.push(`format-bar-bottom-dist: expected 16px, got ${bottomDist}px`);
+      }
+    }
+    return issues;
+  });
+}
+
+
+export async function checkTypeRolesAndControlLabel(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const issues: string[] = [];
+    const tags = Array.from(document.querySelectorAll('.lp-tag'));
+    for (const tag of tags) {
+      const cs = getComputedStyle(tag);
+      const fs = Math.round(parseFloat(cs.fontSize) || 0);
+      if (fs !== 12) issues.push(`tag-font-size: expected 12px caption, got ${fs}px`);
+    }
+    const disabledEls = Array.from(document.querySelectorAll(':disabled'));
+    for (const el of disabledEls) {
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+      const isBtn = el.tagName === 'BUTTON' || el.classList.contains('lp-btn');
+      const expectedWeight = isBtn ? '600' : '400';
+      if (cs.fontWeight !== expectedWeight) {
+        issues.push(`disabled-weight: ${el.tagName} weight=${cs.fontWeight} expected ${expectedWeight}`);
+      }
+    }
+    return issues;
+  });
+}
+
+export async function checkSingleImplementationPerRole(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const issues: string[] = [];
+    const backCandidates = Array.from(document.querySelectorAll('a, button')).filter((el) => {
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+      const txt = (el.textContent || '').trim();
+      return /^back\b/i.test(txt);
+    });
+    for (const el of backCandidates) {
+      if (el.getAttribute('data-c') !== 'BackLink') {
+        issues.push(`back-outside-component: "${(el.textContent || '').trim()}" missing data-c="BackLink"`);
+      } else if ((el.textContent || '').trim() !== 'Back') {
+        issues.push(`back-text-not-exact: "${(el.textContent || '').trim()}" expected "Back"`);
+      }
+    }
+    const stepperCandidates = Array.from(document.querySelectorAll('div, p, span')).filter((el) => {
+      if (el.children.length > 0) return false;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+      return /step \d+ of \d+/i.test((el.textContent || '').trim());
+    });
+    for (const el of stepperCandidates) {
+      if (!el.closest('[data-c="Stepper"]')) {
+        issues.push(`stepper-outside-component: "${(el.textContent || '').trim()}"`);
+      }
+    }
+    const selects = Array.from(document.querySelectorAll('select')).filter((el) => getComputedStyle(el).display !== 'none');
+    for (const sel of selects) {
+      if (!sel.closest('[data-c="Select"]')) {
+        issues.push(`select-outside-component: #${sel.id || '(no-id)'}`);
+      } else {
+        const wrap = sel.closest('[data-c="Select"]')!;
+        const chev = wrap.querySelector('.lp-select-chevron');
+        if (chev) {
+          const wr = wrap.getBoundingClientRect();
+          const cr = chev.getBoundingClientRect();
+          const wMid = (wr.top + wr.bottom) / 2;
+          const cMid = (cr.top + cr.bottom) / 2;
+          if (Math.abs(wMid - cMid) > 2) {
+            issues.push(`select-chevron-not-centered: #${sel.id} wMid=${wMid.toFixed(1)} cMid=${cMid.toFixed(1)}`);
+          }
+          const rightDist = Math.round(wr.right - cr.right);
+          if (Math.abs(rightDist - 12) > 2) {
+            issues.push(`select-chevron-right-dist: #${sel.id} got ${rightDist}px expected 12px`);
+          }
+        }
+      }
+    }
+    return issues;
+  });
+}
+
+export async function checkOverlaysOutlineAndShadow(page: Page, stateId: string): Promise<string[]> {
+  return page.evaluate((sid) => {
+    const issues: string[] = [];
+    const overlays = Array.from(
+      document.querySelectorAll('.lp-popover-menu:not([hidden]), .lp-launcher-panel:not([hidden]), .lp-dialog-panel, .lp-overlay-sheet:not([hidden]), .lp-entries-drawer:not([hidden]), .lp-format-bar')
+    ).filter((el) => {
+      const cs = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return cs.display !== 'none' && cs.visibility !== 'hidden' && r.width > 0 && r.height > 0;
+    });
+    for (const el of overlays) {
+      const cs = getComputedStyle(el);
+      const bw = parseFloat(cs.borderTopWidth) || 0;
+      if (bw < 0.9) issues.push(`overlay-missing-1px-outline: ${el.className} border=${bw}`);
+      if (!cs.boxShadow || cs.boxShadow === 'none') {
+        issues.push(`overlay-missing-shadow: ${el.className}`);
+      } else if (sid === 'overlay-entries-panel') {
+        // Left panel shadow should point right (positive x offset)
+        const m = cs.boxShadow.match(/rgb[a]?\([^)]+\)\s+(-?\d+(?:\.\d+)?)px\s+(-?\d+(?:\.\d+)?)px/);
+        if (m && parseFloat(m[1]) <= 0) issues.push(`overlay-panel-shadow-direction: x=${m[1]} expected > 0`);
+      }
+    }
+    return issues;
+  }, stateId);
+}
+
+export async function checkPageContentEdgePadding(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const issues: string[] = [];
+    const main = document.querySelector('main');
+    if (!main) return issues;
+    const painted = Array.from(main.querySelectorAll('h1, h2, p, input, select, button, .lp-item, .lp-choice, .lp-list')).filter((el) => {
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || cs.position === 'fixed') return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    });
+    for (const el of painted) {
+      const r = el.getBoundingClientRect();
+      if (r.left < 15 || window.innerWidth - r.right < 15) {
+        issues.push(`edge-padding-violation: ${el.tagName.toLowerCase()}.${el.className} left=${Math.round(r.left)} rightGap=${Math.round(window.innerWidth - r.right)}`);
+        break;
       }
     }
     return issues;
