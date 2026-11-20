@@ -267,7 +267,8 @@ export function createWebApp(options?: WebAppOptions) {
     });
     app.get('/admin/_gallery', (c) => {
       const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';
-      return c.html(renderComponentGalleryPage({ theme }));
+      const outline = c.req.query('outline') === '1';
+      return c.html(renderComponentGalleryPage({ theme, outline }));
     });
     app.get('/admin/_fixture', (c) => {
       return c.html(renderFixturePatternPage());

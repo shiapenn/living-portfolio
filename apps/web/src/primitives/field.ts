@@ -63,7 +63,7 @@ export function renderField(props: FieldProps): string {
   let controlHtml = '';
   if (props.kind === 'textarea') {
     const rows = Math.max(6, props.rows ?? 6);
-    controlHtml = `<textarea id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-input lp-textarea" rows="${rows}" data-lp-autogrow="true"${placeholderAttr}${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}${extraAttrs}>${escapeHtml(props.value ?? '')}</textarea>`;
+    controlHtml = `<textarea id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" data-rel="control" class="lp-input lp-textarea" rows="${rows}" data-lp-autogrow="true"${placeholderAttr}${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}${extraAttrs}>${escapeHtml(props.value ?? '')}</textarea>`;
   } else if (props.kind === 'select') {
     const renderOpts = (list: SelectOption[]) =>
       list
@@ -77,17 +77,17 @@ export function renderField(props: FieldProps): string {
           .map((grp) => `<optgroup label="${escapeHtml(grp.label)}">${renderOpts(grp.options)}</optgroup>`)
           .join('')
       : renderOpts(props.options ?? []);
-    controlHtml = `<div class="lp-select-wrap"><select id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-input lp-select"${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}${extraAttrs}>${inner}</select>${renderIcon('chevron-down', 16, 'lp-select-chevron')}</div>`;
+    controlHtml = `<div data-c="Select" data-rel="control" class="lp-select-wrap"><select id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-input lp-select"${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}${extraAttrs}>${inner}</select><span class="lp-select-chevron" aria-hidden="true">${renderIcon('chevron-down', 16)}</span></div>`;
   } else {
     const type = props.inputType ?? 'text';
     const valAttr = props.value !== undefined ? ` value="${escapeHtml(props.value)}"` : '';
-    controlHtml = `<input type="${type}" id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-input"${valAttr}${placeholderAttr}${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}${extraAttrs} />`;
+    controlHtml = `<input type="${type}" id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" data-rel="control" class="lp-input"${valAttr}${placeholderAttr}${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}${extraAttrs} />`;
   }
 
-  return `<div class="${escapeHtml(wrapperClass)}">
-  <label class="lp-field-label" for="${escapeHtml(props.id)}">${escapeHtml(props.label)}${props.required ? ' <span class="lp-field-required" aria-hidden="true">*</span>' : ''}</label>
+  return `<div data-c="Field" data-rel="field" class="${escapeHtml(wrapperClass)}">
+  <label class="lp-field-label" for="${escapeHtml(props.id)}" data-rel="label">${escapeHtml(props.label)}${props.required ? ' <span class="lp-field-required" aria-hidden="true">*</span>' : ''}</label>
   ${controlHtml}
-  ${props.help ? `<p class="lp-field-help" id="${escapeHtml(helpId)}">${escapeHtml(props.help)}</p>` : ''}
+  ${props.help ? `<p data-rel="help" class="lp-field-help" id="${escapeHtml(helpId)}">${escapeHtml(props.help)}</p>` : ''}
   ${props.error ? `<p class="lp-field-error" id="${escapeHtml(errorId)}" role="alert">${escapeHtml(props.error)}</p>` : ''}
 </div>`;
 }

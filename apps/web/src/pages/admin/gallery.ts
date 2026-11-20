@@ -18,6 +18,7 @@ export interface GalleryOptions {
   theme?: 'light' | 'dark';
   nonce?: string;
   suite?: string;
+  outline?: boolean;
 }
 
 /**
@@ -47,7 +48,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
   ] as const;
 
   const bodyHtml = `
-    <div id="dcomp-gallery" class="lp-gallery-root">
+    <div id="dcomp-gallery" class="lp-gallery-root${options.outline ? ' lp-outline-mode' : ''}">
       <section id="gallery-icons" class="lp-gallery-section" data-component="Icon">
         <h2>Icons</h2>
         <div class="lp-gallery-row">
@@ -92,6 +93,8 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
 
       <section id="gallery-item" class="lp-gallery-section" data-component="Item">
         <h2>Item</h2>
+        <p class="lp-description">Parent: List container (.lp-list) · Children: Title, StatusLabel + Chevron, Subtitle, Body/Segments, Meta, ActionBar.</p>
+        <div class="lp-list">
         ${renderItem({
           id: 'gallery-item-link',
           href: '#gallery-item',
@@ -128,6 +131,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
             secondary: { label: 'Dismiss', variant: 'secondary' },
           },
         })}
+        </div>
       </section>
 
       <section id="gallery-action-bar" class="lp-gallery-section" data-component="ActionBar">
@@ -182,6 +186,8 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
 
       <section id="gallery-tabs-stepper" class="lp-gallery-section" data-component="TabsStepper">
         <h2>Tabs &amp; Stepper</h2>
+        <p class="lp-description">Parent: Page or Section · Children: Tablist (max 4, or Select when >=5), Stepper (Step N of M + 2px bar).</p>
+        <div class="lp-stack lp-gap-related">
         ${renderTabs({
           id: 'gallery-tabs-3',
           ariaLabel: 'Peer views',
@@ -202,6 +208,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
             { id: 't5', label: 'Five' },
           ],
         })}
+        </div>
         ${renderStepper({
           id: 'gallery-stepper-sample',
           currentStep: 2,

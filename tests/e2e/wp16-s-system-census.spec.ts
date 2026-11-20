@@ -188,7 +188,7 @@ async function scanDSysOnPage(
         const isHr = el.tagName === 'HR';
         if (!isHr && bt === 0 && bb === 0) continue;
 
-        const isControl = el.matches('input, textarea, select, button, .lp-btn, .lp-choice-card, .lp-choice-btn, .lp-popover, .lp-dialog, .lp-sheet, .lp-panel, [role="dialog"], [role="menu"]');
+        const isControl = el.matches('input, textarea, select, button, .lp-btn, .lp-choice-card, .lp-choice-btn, .lp-popover, .lp-popover-menu, .lp-launcher-panel, .lp-dialog, .lp-dialog-panel, .lp-sheet, .lp-overlay-sheet, .lp-panel, .lp-entries-drawer, .lp-format-bar, [role="dialog"], [role="menu"]');
         if (isControl) continue;
 
         const isActiveTabUnderline = el.matches('[role="tab"][aria-selected="true"]') && bb <= 2.5 && bt === 0;

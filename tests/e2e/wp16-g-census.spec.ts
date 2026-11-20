@@ -125,13 +125,11 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
   });
 
   test('20261106-UX-174: Item container stacking (<400px), gallery Confirm gap 24px, Status uses StatusLabel', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: Item uses @media not @container and Status lacks StatusLabel on rows');
     const stylesSrc = readFileSync(resolve(process.cwd(), 'apps/web/src/styles.ts'), 'utf8');
     expect(stylesSrc).toContain('@container');
   });
 
   test('20261106-UX-175: select chevron vertically centred (50%) and 12px from right edge', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: select chevron is top-aligned / lacks Select component wrapper');
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/settings/providers');
     await expect(page.locator('[data-c="Select"]').first()).toBeVisible();
@@ -150,7 +148,6 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
   });
 
   test('20261106-UX-177: segmented Edit/Settings equal width, 4px inset thumb, <640 icon-only, sticky top 48px', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: segmented Edit/Settings unequal width & not icon-only at 320');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 320, height: 640 });
@@ -172,7 +169,6 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
   });
 
   test('20261106-UX-179: overlays have 1px outline and directional elevation shadow', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: launcher/entries panel lack 1px outline or directional shadow');
     await ensureAdminLoggedIn(page);
     await page.goto('/admin');
     await page.click('#lp-launcher-btn');
@@ -181,7 +177,6 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
   });
 
   test('20261106-UX-180: fixture page (/admin/_fixture) uses Page template with >=16px edge padding', async ({ page }) => {
-    test.fail(true, 'G0 failing-first: /admin/_fixture is flush to viewport edge');
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 320, height: 640 });
     await page.goto('/admin/_fixture');

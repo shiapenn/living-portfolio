@@ -29,14 +29,14 @@ export function renderPageHeader(props: PageHeaderProps): string {
     : '';
 
   const descHtml = props.description
-    ? `<p class="lp-page-description">${escapeHtml(props.description)}</p>`
+    ? `<p data-rel="description" class="lp-page-description">${escapeHtml(props.description)}</p>`
     : '';
 
   const actionHtml = props.actionHtml
     ? `<div class="lp-page-header-action">${props.actionHtml}</div>`
     : '';
 
-  return `<header${idAttr} class="${escapeHtml(classes)}">
+  return `<header${idAttr} data-c="PageHeader" data-rel="header" class="${escapeHtml(classes)}">
   ${backHtml}
   <h1 class="lp-page-header-title">${escapeHtml(props.title)}</h1>
   ${descHtml}

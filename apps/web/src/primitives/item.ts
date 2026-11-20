@@ -47,21 +47,21 @@ export function renderItem(props: ItemProps): string {
     ? `<span class="lp-item-leading" aria-hidden="true">${renderIcon(props.leadingIcon, 16)}</span>`
     : '';
 
-  const titleHtml = `<div class="lp-item-title">${leadingHtml}<span>${escapeHtml(props.title)}</span></div>`;
+  const titleHtml = `<div data-rel="title" class="lp-item-title">${leadingHtml}<span>${escapeHtml(props.title)}</span></div>`;
   const subtitleHtml = props.subtitle ? `<div class="lp-item-subtitle">${escapeHtml(props.subtitle)}</div>` : '';
 
   let bodyHtml = '';
   if (props.segments && props.segments.length > 0) {
-    bodyHtml = `<div class="lp-item-segments">${props.segments
+    bodyHtml = `<div data-rel="itembody" class="lp-item-segments">${props.segments
       .map(
-        (seg) => `<div class="lp-item-segment">
-          ${seg.heading ? `<div class="lp-item-segment-heading">${escapeHtml(seg.heading)}</div>` : ''}
-          <div class="lp-item-body">${escapeHtml(seg.body)}</div>
+        (seg) => `<div data-rel="segment" class="lp-item-segment">
+          ${seg.heading ? `<div data-rel="segment-label" class="lp-item-segment-heading">${escapeHtml(seg.heading)}</div>` : ''}
+          <div data-rel="segment-text" class="lp-item-body">${escapeHtml(seg.body)}</div>
         </div>`
       )
       .join('')}</div>`;
   } else if (props.body) {
-    bodyHtml = `<div class="lp-item-body">${escapeHtml(props.body)}</div>`;
+    bodyHtml = `<div data-rel="itembody" class="lp-item-body">${escapeHtml(props.body)}</div>`;
   }
 
   const statusHtml = props.statusLabel
@@ -73,12 +73,12 @@ export function renderItem(props: ItemProps): string {
       : '';
 
   const metaHtml = props.meta ? `<div class="lp-item-meta">${escapeHtml(props.meta)}</div>` : '';
-  const actionsHtml = hasActions && props.actions ? `<div class="lp-item-actions">${renderActionBar(props.actions)}</div>` : '';
+  const actionsHtml = hasActions && props.actions ? `<div data-rel="actions" class="lp-item-actions">${renderActionBar(props.actions)}</div>` : '';
 
   const inner = `${titleHtml}${statusHtml}${subtitleHtml}${bodyHtml}${metaHtml}${actionsHtml}`;
 
   if (props.href && !hasActions) {
-    return `<a href="${escapeHtml(props.href)}"${idAttr} class="${escapeHtml(classes)}"${extra}>${inner}</a>`;
+    return `<a href="${escapeHtml(props.href)}"${idAttr} data-c="Item" data-rel="item" class="${escapeHtml(classes)}"${extra}>${inner}</a>`;
   }
-  return `<div${idAttr} class="${escapeHtml(classes)}"${extra}>${inner}</div>`;
+  return `<div${idAttr} data-c="Item" data-rel="item" class="${escapeHtml(classes)}"${extra}>${inner}</div>`;
 }
