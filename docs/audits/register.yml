@@ -7064,3 +7064,232 @@
       status: partial
       note: "awaiting L review"
   verified_by: null
+
+- id: 20261106-UX-170
+  audit: AUD-2026-11-06
+  title: 'Measurement integrity: 8 spacing relations measure 0 pairs, violations logged not failed, .lp-tag 14/400 variant, placeholder/disabled 14/600'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-g-census.spec.ts
+  history:
+    - date: 2026-11-20
+      status: open
+      note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-171
+  audit: AUD-2026-11-06
+  title: 'STATES manifest lacks per-state markers and setup steps 1-6 do not show their own step in sheets'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-g-census.spec.ts
+  history:
+    - date: 2026-11-20
+      status: open
+      note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-172
+  audit: AUD-2026-11-06
+  title: 'Setup step 3 regression against UX-09 (old read-only table), wrong stepper, step 6 "Back to Backups", 2-col Privacy Boundary box, repeated "Step N:" headings'
+  spec_sections:
+    - "4.4"
+    - "12.8"
+  severity: P0
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-g-census.spec.ts
+  history:
+    - date: 2026-11-20
+      status: open
+      note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-173
+  audit: AUD-2026-11-06
+  title: 'Editor Settings view: empty suggested role passage, clipped status under Accept at 320, Publishes line under Date precision, non-actionable level next step, tag asymmetric padding/no remove, inconsistent Structure spacing'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-g-census.spec.ts
+  history:
+    - date: 2026-11-20
+      status: open
+      note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-174
+  audit: AUD-2026-11-06
+  title: 'Item geometry & stacking: hover/selected tint extends past hairline, Confirm too close to body, gallery anatomy unclear, viewport stacking instead of container <400px, Status chevron on own row at 320'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-g-census.spec.ts
+  history:
+    - date: 2026-11-20
+      status: open
+      note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-175
+  audit: AUD-2026-11-06
+  title: 'Select chevron is not vertically centred (gallery, providers, dialogs)'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-g-census.spec.ts
+  history:
+    - date: 2026-11-20
+      status: open
+      note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-176
+  audit: AUD-2026-11-06
+  title: 'Entries panel header "Entries" is centred and inner alignment differs from top bar icon left edge (16)'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-g-census.spec.ts
+  history:
+    - date: 2026-11-20
+      status: open
+      note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-177
+  audit: AUD-2026-11-06
+  title: 'Segmented Edit/Settings unequal widths, selected thumb not inset, centring broken at 320 and in editor-tag-add (sticky header at top 48)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-g-census.spec.ts
+  history:
+    - date: 2026-11-20
+      status: open
+      note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-178
+  audit: AUD-2026-11-06
+  title: 'Login recovery text button has a filled background instead of transparent text-button styling'
+  spec_sections:
+    - "12.8"
+  severity: P2
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-g-census.spec.ts
+  history:
+    - date: 2026-11-20
+      status: open
+      note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-179
+  audit: AUD-2026-11-06
+  title: 'Overlays (popover, launcher, slash menu on mobile) lack 1px outline separable edge and directional elevation shadow'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-g-census.spec.ts
+  history:
+    - date: 2026-11-20
+      status: open
+      note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-180
+  audit: AUD-2026-11-06
+  title: 'Fixture page (/admin/_fixture) has no page padding (content flush to viewport edge) and must use the Page template'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-g-census.spec.ts
+  history:
+    - date: 2026-11-20
+      status: open
+      note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+  verified_by: null
+
+- id: 20261106-UX-181
+  audit: AUD-2026-11-06
+  title: 'Page-level CTA (Save) is too close to the last section (40px required after last FormSection on settings-providers and settings modules)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-g-census.spec.ts
+  history:
+    - date: 2026-11-20
+      status: open
+      note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+  verified_by: null

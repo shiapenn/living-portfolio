@@ -35,7 +35,7 @@ export const WIZARD_STRINGS = {
   },
   step1: {
     title: 'Owner Account Setup',
-    subtitle: 'Initialize your private administrative account. The first-run wizard walks you through account creation, hosting presets, model providers, alerts, backups, and initial profile authoring. You can change your username and password later in Settings › Account.',
+    subtitle: 'Initialize your private administrative account. The first-run wizard walks you through account creation, hosting presets, model providers, alerts, backups, and initial site authoring. You can change your username and password later in Settings › Account.',
     fields: {
       username: {
         label: 'Owner Username',
