@@ -11,7 +11,9 @@ export const SETUP_SCRIPT_PART_1 = `
 
         ${ADMIN_API_CLIENT_SCRIPT}
 
-        let currentActiveStep = 1;
+        const urlStepParam = parseInt(new URLSearchParams(window.location.search).get('step') || '', 10);
+        const hasExplicitStep = !isNaN(urlStepParam) && urlStepParam >= 1 && urlStepParam <= 6;
+        let currentActiveStep = hasExplicitStep ? urlStepParam : 1;
 
         async function saveStep(stepNum) {
           try {
@@ -54,12 +56,14 @@ export const SETUP_SCRIPT_PART_1 = `
             if (sessRes.ok) {
               const sessData = await sessRes.json();
               if (sessData.authenticated) {
-                const f = document.getElementById('admin-setup-form');
-                if (f) f.classList.add('lp-is-hidden');
-                const s = document.getElementById('setup-status');
-                if (s) s.classList.add('lp-is-hidden');
-                if (currentActiveStep === 1) {
-                  goToStep(2);
+                if (!hasExplicitStep) {
+                  const f = document.getElementById('admin-setup-form');
+                  if (f) f.classList.add('lp-is-hidden');
+                  const s = document.getElementById('setup-status');
+                  if (s) s.classList.add('lp-is-hidden');
+                  if (currentActiveStep === 1) {
+                    goToStep(2);
+                  }
                 }
               }
             }
@@ -138,7 +142,8 @@ export const SETUP_SCRIPT_PART_1 = `
         }
 
         document.querySelectorAll('.btn-nav-step').forEach(function(btn) {
-          btn.addEventListener('click', async function() {
+          btn.addEventListener('click', async function(e) {
+            if (e && typeof e.preventDefault === 'function') e.preventDefault();
             const target = parseInt(btn.getAttribute('data-target') || '1', 10);
             if (target > currentActiveStep) {
               await saveStep(currentActiveStep);
@@ -181,6 +186,9 @@ export const SETUP_SCRIPT_PART_1 = `
           });
         }
 
+        if (hasExplicitStep) {
+          goToStep(urlStepParam);
+        }
         restoreSettings();
 
         const continueBtn = document.getElementById('btn-continue-step2');

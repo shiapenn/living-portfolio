@@ -131,11 +131,11 @@ export function renderFixturePatternPage(): string {
           { value: 'a', label: 'Option A', description: 'First choice card.', checked: true },
           { value: 'b', label: 'Option B', description: 'Second choice card.' },
         ],
-      }) +
-      renderActionBar({
-        primary: { label: 'Save', variant: 'primary', type: 'button' },
-        secondary: { label: 'Cancel', variant: 'secondary', type: 'button' },
       }),
+    actionBarHtml: renderActionBar({
+      primary: { label: 'Save', variant: 'primary', type: 'button' },
+      secondary: { label: 'Cancel', variant: 'secondary', type: 'button' },
+    }),
   });
 
   const wizard = renderProviderFlow({

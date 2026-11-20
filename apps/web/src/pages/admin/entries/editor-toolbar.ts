@@ -87,9 +87,10 @@ export function renderEditorToolbar(
     ${renderSegmentedControl({
       id: 'ref-view-switch',
       ariaLabel: 'Editor view',
+      iconOnlyBelow640: true,
       options: [
-        { id: 'ref-switch-edit', value: 'edit', label: 'Edit' },
-        { id: 'ref-switch-settings', value: 'settings', label: 'Settings' },
+        { id: 'ref-switch-edit', value: 'edit', label: 'Edit', icon: 'edit' },
+        { id: 'ref-switch-settings', value: 'settings', label: 'Settings', icon: 'sliders' },
       ],
       selectedValue: 'edit',
     })}

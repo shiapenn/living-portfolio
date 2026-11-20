@@ -75,9 +75,10 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
             })}
             <div id="theme-conformance-box" class="lp-help-text"></div>
           `,
-          actionBarHtml: renderActionBar({
-            primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
-          }),
+        })}
+        ${renderActionBar({
+          pageLevel: true,
+          primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
         })}
       </form>
     `;

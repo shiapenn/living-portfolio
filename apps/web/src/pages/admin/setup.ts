@@ -1,14 +1,16 @@
 import { renderAdminShell } from "../../layouts/admin-shell.js";
-import { renderActionBar, renderButton, renderChip, renderChoiceGroup, renderIcon, renderItem } from "../../primitives/index.js";
-import { PROVIDERS_CATALOG } from "../../patterns/provider-flow.js";
+import { renderStatusLine } from "../../components/index.js";
+import { renderActionBar, renderBackLink, renderButton, renderChoiceGroup, renderField, renderIcon, renderItem } from "../../primitives/index.js";
+import { PROVIDERS_CATALOG, renderProviderFlow } from "../../patterns/provider-flow.js";
 import { WIZARD_STRINGS } from "../../strings.js";
 import { SETUP_SCRIPT_PART_1 } from './setup-script-part1.js';
 import { SETUP_SCRIPT_PART_2 } from './setup-script-part2.js';
 
 export function renderAdminSetupPage(): string {
+  const stepTitle = (raw: string) => raw.replace(/^Step \d+:\s*/, '');
   const content = `
     <div class="lp-page-column admin-setup-container lp-stack lp-gap-group">
-      <div class="lp-wizard-header">
+      <div class="lp-wizard-header" data-c="Stepper" data-rel="stepper">
         <p id="wizard-step-chip" class="lp-auth-step-text">Step 1 of 6 · Account</p>
         <div class="lp-auth-progress-track">
           <div id="wizard-progress-fill" class="lp-auth-progress-fill"></div>
@@ -18,10 +20,10 @@ export function renderAdminSetupPage(): string {
       <div id="setup-status" role="alert" class="lp-is-hidden"></div>
 
       <!-- Step 1: Owner Account Setup -->
-      <div id="wizard-step-1" class="wizard-step lp-stack-md">
-        <div>
-          <h1 class="lp-page-title">${WIZARD_STRINGS.step1.title}</h1>
-          <p class="lp-page-subtitle">${WIZARD_STRINGS.step1.subtitle}</p>
+      <div id="wizard-step-1" class="wizard-step lp-stack lp-gap-group">
+        <div class="lp-page-header" data-c="PageHeader">
+          <h1 class="lp-page-title" data-rel="title">${WIZARD_STRINGS.step1.title}</h1>
+          <p class="lp-page-description" data-rel="description">${WIZARD_STRINGS.step1.subtitle}</p>
         </div>
 
         <form id="admin-setup-form" class="lp-stack-md">
@@ -102,11 +104,11 @@ export function renderAdminSetupPage(): string {
       </div>
 
       <!-- Step 2: Hosting Option & Preset -->
-      <div id="wizard-step-2" class="wizard-step lp-stack-md lp-is-hidden">
-        <div class="lp-page-header-dcomp">
-          <button type="button" class="lp-page-header-back btn-nav-step lp-btn-as-link" data-target="1">${renderIcon('chevron-left', 16)}<span>${WIZARD_STRINGS.step2.backButton}</span></button>
-          <h2 class="lp-page-header-title">${WIZARD_STRINGS.step2.title}</h2>
-          <p class="lp-page-description">${WIZARD_STRINGS.step2.subtitle}</p>
+      <div id="wizard-step-2" class="wizard-step lp-stack lp-gap-group lp-is-hidden">
+        <div class="lp-page-header" data-c="PageHeader">
+          ${renderBackLink({ destination: 'Account', href: '/admin/setup?step=1', className: 'btn-nav-step', dataAttrs: { target: '1' } })}
+          <h1 class="lp-page-title" data-rel="title">${stepTitle(WIZARD_STRINGS.step2.title)}</h1>
+          <p class="lp-page-description" data-rel="description">${WIZARD_STRINGS.step2.subtitle}</p>
         </div>
 
         ${renderChoiceGroup({
@@ -128,54 +130,49 @@ export function renderAdminSetupPage(): string {
         </div>
 
         ${renderActionBar({
+          pageLevel: true,
           primary: { label: WIZARD_STRINGS.step2.nextButton, variant: 'primary', className: 'btn-nav-step', dataAttrs: { target: '3' } },
         })}
       </div>
 
       <!-- Step 3: Model Providers & Privacy Boundary -->
-      <div id="wizard-step-3" class="wizard-step lp-stack-md lp-is-hidden">
-        <div class="lp-page-header-dcomp">
-          <button type="button" class="lp-page-header-back btn-nav-step lp-btn-as-link" data-target="2">${renderIcon('chevron-left', 16)}<span>${WIZARD_STRINGS.step3.backButton}</span></button>
-          <h2 class="lp-page-header-title">${WIZARD_STRINGS.step3.title}</h2>
-          <p class="lp-page-description">${WIZARD_STRINGS.step3.subtitle}</p>
+      <div id="wizard-step-3" class="wizard-step lp-stack lp-gap-group lp-is-hidden">
+        <div class="lp-page-header" data-c="PageHeader">
+          ${renderBackLink({ destination: 'Hosting', href: '/admin/setup?step=2', className: 'btn-nav-step', dataAttrs: { target: '2' } })}
+          <h1 class="lp-page-title" data-rel="title">${stepTitle(WIZARD_STRINGS.step3.title)}</h1>
+          <p id="step3-keys-notice" class="lp-page-description" data-rel="description">Without an external provider, Ask shows direct quotes from your entries. You can add one later in Settings &gt; Providers.</p>
         </div>
 
-        <div class="lp-list">
-          ${PROVIDERS_CATALOG.map((p) =>
-            renderItem({
-              title: p.id === 'local' ? 'Local ONNX' : p.label,
-              subtitle: `${p.description} ${p.dataNote}`,
-              statusLabel: p.id === 'local' ? 'Configured' : 'Not configured',
-              statusTone: p.id === 'local' ? 'ok' : 'neutral',
-              attributes: `data-provider="${p.id}"`,
-            }).replace('<div class="lp-item-status">', `<div id="status-${p.id}" class="lp-item-status">`)
-          ).join('')}
+        <div id="setup-provider-flow-root">
+          ${renderProviderFlow({ step: 1, selectedProvider: 'local' }).replaceAll('lp-btn-primary', 'lp-btn-secondary')}
         </div>
-
-        <div class="lp-notice lp-notice-info">
-          <strong>${WIZARD_STRINGS.step3.boundaryNotice}</strong>
-          <p id="step3-keys-notice" class="lp-body-sm">${WIZARD_STRINGS.step3.keysNotice}</p>
+        ${renderStatusLine({ id: 'setup-provider-status' })}
+        <div class="lp-sr-only" aria-hidden="true">
+          ${PROVIDERS_CATALOG.map((p) => `<span id="status-${p.id}">${p.id === 'local' ? 'Configured' : 'Not configured'}</span>`).join('')}
         </div>
 
         ${renderActionBar({
+          pageLevel: true,
           primary: { label: WIZARD_STRINGS.step3.nextButton, variant: 'primary', className: 'btn-nav-step', dataAttrs: { target: '4' } },
         })}
       </div>
 
       <!-- Step 4: Notifications -->
-      <div id="wizard-step-4" class="wizard-step lp-stack-md lp-is-hidden">
-        <div class="lp-page-header-dcomp">
-          <button type="button" class="lp-page-header-back btn-nav-step lp-btn-as-link" data-target="3">${renderIcon('chevron-left', 16)}<span>${WIZARD_STRINGS.step4.backButton}</span></button>
-          <h2 class="lp-page-header-title">${WIZARD_STRINGS.step4.title}</h2>
-          <p class="lp-page-description">${WIZARD_STRINGS.step4.subtitle}</p>
+      <div id="wizard-step-4" class="wizard-step lp-stack lp-gap-group lp-is-hidden">
+        <div class="lp-page-header" data-c="PageHeader">
+          ${renderBackLink({ destination: 'Model Providers', href: '/admin/setup?step=3', className: 'btn-nav-step', dataAttrs: { target: '3' } })}
+          <h1 class="lp-page-title" data-rel="title">${stepTitle(WIZARD_STRINGS.step4.title)}</h1>
+          <p class="lp-page-description" data-rel="description">${WIZARD_STRINGS.step4.subtitle}</p>
         </div>
 
-        <div class="lp-field">
-          <label for="setup-notification-channel" class="lp-field-label">${WIZARD_STRINGS.step4.channel.label}</label>
-          <select id="setup-notification-channel" class="lp-select">
-            ${WIZARD_STRINGS.step4.channel.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
-          </select>
-        </div>
+        <div class="lp-stack lp-gap-related">
+        ${renderField({
+          kind: 'select',
+          id: 'setup-notification-channel',
+          name: 'notificationChannel',
+          label: WIZARD_STRINGS.step4.channel.label,
+          options: WIZARD_STRINGS.step4.channel.options.map(opt => ({ value: opt.value, label: opt.label })),
+        })}
 
         <div class="lp-field">
           <label for="setup-notification-target" class="lp-field-label">${WIZARD_STRINGS.step4.target.label}</label>
@@ -188,26 +185,30 @@ export function renderAdminSetupPage(): string {
           <div id="setup-alert-disabled-reason" class="lp-help-text">${WIZARD_STRINGS.step4.testDisabledReason}</div>
           <div id="setup-alert-result" class="lp-is-hidden" role="alert"></div>
         </div>
+        </div>
 
         ${renderActionBar({
+          pageLevel: true,
           primary: { label: WIZARD_STRINGS.step4.nextButton, variant: 'primary', className: 'btn-nav-step', dataAttrs: { target: '5' } },
         })}
       </div>
 
       <!-- Step 5: Backups -->
-      <div id="wizard-step-5" class="wizard-step lp-stack-md lp-is-hidden">
-        <div class="lp-page-header-dcomp">
-          <button type="button" class="lp-page-header-back btn-nav-step lp-btn-as-link" data-target="4">${renderIcon('chevron-left', 16)}<span>${WIZARD_STRINGS.step5.backButton}</span></button>
-          <h2 class="lp-page-header-title">${WIZARD_STRINGS.step5.title}</h2>
-          <p class="lp-page-description">${WIZARD_STRINGS.step5.subtitle}</p>
+      <div id="wizard-step-5" class="wizard-step lp-stack lp-gap-group lp-is-hidden">
+        <div class="lp-page-header" data-c="PageHeader">
+          ${renderBackLink({ destination: 'Notifications', href: '/admin/setup?step=4', className: 'btn-nav-step', dataAttrs: { target: '4' } })}
+          <h1 class="lp-page-title" data-rel="title">${stepTitle(WIZARD_STRINGS.step5.title)}</h1>
+          <p class="lp-page-description" data-rel="description">${WIZARD_STRINGS.step5.subtitle}</p>
         </div>
 
-        <div class="lp-field">
-          <label for="setup-backup-dest" class="lp-field-label">${WIZARD_STRINGS.step5.destination.label}</label>
-          <select id="setup-backup-dest" class="lp-select">
-            ${WIZARD_STRINGS.step5.destination.options.map(opt => `<option value="${opt.value}">${opt.label}</option>`).join('')}
-          </select>
-        </div>
+        <div class="lp-stack lp-gap-related">
+        ${renderField({
+          kind: 'select',
+          id: 'setup-backup-dest',
+          name: 'backupDest',
+          label: WIZARD_STRINGS.step5.destination.label,
+          options: WIZARD_STRINGS.step5.destination.options.map(opt => ({ value: opt.value, label: opt.label })),
+        })}
 
         <div class="lp-field">
           <label for="setup-backup-dir" class="lp-field-label">${WIZARD_STRINGS.step5.folder.label}</label>
@@ -225,18 +226,20 @@ export function renderAdminSetupPage(): string {
           ${renderButton({ label: WIZARD_STRINGS.step5.drillButton, id: 'btn-setup-test-drill', variant: 'secondary' })}
           <div id="setup-drill-result" class="lp-is-hidden" role="alert"></div>
         </div>
+        </div>
 
         ${renderActionBar({
+          pageLevel: true,
           primary: { label: WIZARD_STRINGS.step5.nextButton, variant: 'primary', className: 'btn-nav-step', dataAttrs: { target: '6' } },
         })}
       </div>
 
       <!-- Step 6: Theme Selection & First-Run Walkthrough -->
-      <div id="wizard-step-6" class="wizard-step lp-stack-md lp-is-hidden">
-        <div class="lp-page-header-dcomp">
-          <button type="button" class="lp-page-header-back btn-nav-step lp-btn-as-link" data-target="5">${renderIcon('chevron-left', 16)}<span>${WIZARD_STRINGS.step6.backButton}</span></button>
-          <h2 class="lp-page-header-title">${WIZARD_STRINGS.step6.title}</h2>
-          <p class="lp-page-description">${WIZARD_STRINGS.step6.subtitle}</p>
+      <div id="wizard-step-6" class="wizard-step lp-stack lp-gap-group lp-is-hidden">
+        <div class="lp-page-header" data-c="PageHeader">
+          ${renderBackLink({ destination: 'Backups', href: '/admin/setup?step=5', className: 'btn-nav-step', dataAttrs: { target: '5' } })}
+          <h1 class="lp-page-title" data-rel="title">${stepTitle(WIZARD_STRINGS.step6.title)}</h1>
+          <p class="lp-page-description" data-rel="description">${WIZARD_STRINGS.step6.subtitle}</p>
           <p id="step6-theme-notice" class="lp-help-text">${WIZARD_STRINGS.step6.themeAppliedNotice}</p>
         </div>
 

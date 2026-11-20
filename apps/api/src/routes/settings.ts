@@ -38,6 +38,15 @@ export interface RuntimeSettingsState {
   backupDestination?: string;
   backupAgePublicKey?: string;
   selectedThemePreset?: string;
+  activeProvider?: {
+    id: string;
+    name: string;
+    label: string;
+    model?: string;
+    enabled: boolean;
+    configured: boolean;
+    hasKey: boolean;
+  };
   calibration?: {
     suggestion_thresholds: boolean;
     routing_calibration: boolean;
@@ -180,6 +189,7 @@ export function createSettingsRoutes(
       theme: state.theme,
       themePreset: state.selectedThemePreset || 'editorial-classic',
       themeConformance: verifyThemeConformance(state.theme),
+      activeProvider: state.activeProvider ?? null,
       redaction: {
         exclusions: state.redactionExclusions ?? [],
       },
@@ -366,6 +376,42 @@ export function createSettingsRoutes(
       notifications: { channel: state.notificationChannel, target: state.notificationTarget },
       backups: { destination: state.backupDestination, agePublicKey: state.backupAgePublicKey },
       themePreset: state.selectedThemePreset,
+      activeProvider: state.activeProvider ?? null,
+    });
+  });
+
+  // Configure answering provider (write-only API key; never returned on GET)
+  router.put('/', async (c) => {
+    const body = await c.req.json();
+    const providerId = typeof body.provider === 'string' ? body.provider.trim() : '';
+    if (!providerId) {
+      return c.json({ error: 'Provider is required' }, 400);
+    }
+    const labels: Record<string, string> = {
+      local: 'Local only',
+      openai: 'OpenAI Compatible',
+      anthropic: 'Anthropic',
+      ollama: 'Ollama',
+    };
+    const label = labels[providerId] ?? providerId;
+    const requiresKey = providerId === 'openai' || providerId === 'anthropic';
+    const apiKey = typeof body.apiKey === 'string' ? body.apiKey.trim() : '';
+    if (requiresKey && !apiKey) {
+      return c.json({ error: 'API key is required for external provider' }, 400);
+    }
+    const model = typeof body.model === 'string' && body.model.trim() ? body.model.trim() : undefined;
+    state.activeProvider = {
+      id: providerId,
+      name: label,
+      label,
+      model,
+      enabled: providerId !== 'local',
+      configured: providerId !== 'local',
+      hasKey: Boolean(apiKey),
+    };
+    return c.json({
+      updated: true,
+      activeProvider: state.activeProvider,
     });
   });
 

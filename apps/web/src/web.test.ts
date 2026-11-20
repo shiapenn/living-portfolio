@@ -437,11 +437,11 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
 
       // Step 3: Model Providers & Privacy Router
       expect(html).toContain('id="wizard-step-3"');
-      expect(html).toContain('Local ONNX');
+      expect(html).toContain('Local only');
       expect(html).toContain('OpenAI Compatible');
       expect(html).toContain('Anthropic');
       expect(html).toContain('Ollama');
-      expect(html).toContain('Privacy Boundary:');
+      expect(html).toContain('Without an external provider, Ask shows direct quotes from your entries.');
 
       // Step 4: Notifications & Alerts
       expect(html).toContain('id="wizard-step-4"');

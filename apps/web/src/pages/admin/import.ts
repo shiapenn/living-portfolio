@@ -73,7 +73,7 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
 
         ${renderActionBar({
           primary: { id: 'btn-proceed-triage', label: 'Proceed to triage', variant: 'primary' },
-          secondary: { id: 'btn-back-add', label: 'Back', variant: 'secondary' },
+          secondary: { id: 'btn-back-add', label: 'Previous', variant: 'secondary' },
         })}
       </section>
     </div>

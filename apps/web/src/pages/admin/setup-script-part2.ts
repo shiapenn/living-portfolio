@@ -197,6 +197,106 @@ export const SETUP_SCRIPT_PART_2 = `              const qrBox = document.getElem
           });
         }
 
+        // Step 3: Embedded ProviderFlow interactive handler
+        const providerRoot = document.getElementById('setup-provider-flow-root');
+        const providerStatus = document.getElementById('setup-provider-status');
+        if (providerRoot) {
+          const catalog = {
+            local: { label: 'Local only', requiresKey: false, models: [] },
+            openai: { label: 'OpenAI Compatible', requiresKey: true, models: ['gpt-4o-mini', 'gpt-4o', 'gpt-4.1-mini'] },
+            anthropic: { label: 'Anthropic', requiresKey: true, models: ['claude-3-5-haiku-latest', 'claude-3-7-sonnet-latest'] },
+            ollama: { label: 'Ollama', requiresKey: false, models: ['llama3.2', 'qwen2.5', 'mistral'] },
+          };
+          let pfStep = 1;
+          let pfProvider = 'local';
+          let pfModel = '';
+          const escHtml = function(s) {
+            return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+          };
+          const renderSubstep = function(step) {
+            const meta = catalog[pfProvider] || catalog.local;
+            const total = meta.requiresKey ? 3 : 2;
+            const stepName = step === 2 ? 'Model' : 'Key';
+            const pct = Math.round((Math.min(step, total) / total) * 100);
+            const stepperHtml = '<div id="lp-provider-stepper" class="lp-stepper" data-c="Stepper" data-rel="stepper">' +
+              '<div class="lp-stepper-meta"><span class="lp-stepper-count">Step ' + Math.min(step, total) + ' of ' + total + ' · ' + stepName + '</span></div>' +
+              '<div class="lp-stepper-bar" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><div class="lp-stepper-fill"></div></div>' +
+              '</div>';
+            if (step === 2) {
+              const fieldHtml = meta.models.length > 0
+                ? '<div class="lp-field" data-c="Field" data-rel="field"><label for="lp-provider-model" class="lp-field-label">Model</label><div class="lp-select-wrap"><select id="lp-provider-model" name="model" class="lp-select">' +
+                  meta.models.map(function(m) { return '<option value="' + escHtml(m) + '"' + (m === pfModel ? ' selected' : '') + '>' + escHtml(m) + '</option>'; }).join('') +
+                  '</select><span class="lp-select-chevron" aria-hidden="true"><svg class="lp-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></span></div><div class="lp-field-help">Choose the model used for answering.</div></div>'
+                : '<div class="lp-field" data-c="Field" data-rel="field"><label for="lp-provider-model" class="lp-field-label">Model</label><input id="lp-provider-model" name="model" type="text" class="lp-input" value="' + escHtml(pfModel) + '" placeholder="Enter model name" /><div class="lp-field-help">Leave blank for extractive local quotes only.</div></div>';
+              const btnId = meta.requiresKey ? 'lp-provider-next' : 'lp-provider-save';
+              const btnLabel = meta.requiresKey ? 'Next' : 'Save';
+              providerRoot.innerHTML = '<div class="lp-stack lp-gap-group">' + stepperHtml + fieldHtml + '<div class="lp-action-bar" data-c="ActionBar" data-rel="actions"><button id="' + btnId + '" type="button" class="lp-btn lp-btn-secondary">' + btnLabel + '</button></div></div>';
+            } else if (step === 3) {
+              const keyHtml = '<div class="lp-field" data-c="Field" data-rel="field"><label for="lp-provider-key" class="lp-field-label">API key</label><input id="lp-provider-key" name="apiKey" type="password" class="lp-input" placeholder="Paste key" autocomplete="off" /><div class="lp-field-help">Write-only: stored encrypted and never shown again.</div></div>';
+              providerRoot.innerHTML = '<div class="lp-stack lp-gap-group">' + stepperHtml + keyHtml + '<div class="lp-action-bar" data-c="ActionBar" data-rel="actions"><button id="lp-provider-test-save" type="button" class="lp-btn lp-btn-secondary">Test and save</button></div></div>';
+            }
+            const fillEl = providerRoot.querySelector('.lp-stepper-fill');
+            if (fillEl) fillEl.style.width = pct + '%';
+          };
+          providerRoot.addEventListener('click', async function(e) {
+            const target = e.target;
+            if (!(target instanceof Element)) return;
+            const nextBtn = target.closest('#lp-provider-next');
+            if (nextBtn) {
+              if (pfStep === 1) {
+                const checked = providerRoot.querySelector('input[name="provider"]:checked');
+                if (checked) pfProvider = checked.value;
+                const meta = catalog[pfProvider] || catalog.local;
+                pfModel = meta.models[0] || '';
+                pfStep = 2;
+                renderSubstep(2);
+              } else if (pfStep === 2) {
+                const modelEl = document.getElementById('lp-provider-model');
+                if (modelEl) pfModel = modelEl.value || '';
+                pfStep = 3;
+                renderSubstep(3);
+              }
+              return;
+            }
+            const saveBtn = target.closest('#lp-provider-save, #lp-provider-test-save');
+            if (saveBtn) {
+              const modelEl2 = document.getElementById('lp-provider-model');
+              if (modelEl2) pfModel = modelEl2.value || pfModel;
+              const keyEl = document.getElementById('lp-provider-key');
+              const apiKey = keyEl ? keyEl.value.trim() : '';
+              if (saveBtn.id === 'lp-provider-test-save' && !apiKey) {
+                if (providerStatus) {
+                  providerStatus.hidden = false;
+                  providerStatus.textContent = 'Enter an API key to test and save.';
+                }
+                return;
+              }
+              try {
+                const res = await apiClient('/api/settings', {
+                  method: 'PUT',
+                  body: JSON.stringify({ provider: pfProvider, model: pfModel || undefined, apiKey: apiKey || undefined })
+                });
+                if (res.ok) {
+                  const stEl = document.getElementById('status-' + pfProvider);
+                  if (stEl) stEl.textContent = 'Connected';
+                  if (providerStatus) {
+                    providerStatus.hidden = false;
+                    providerStatus.textContent = 'Saved ' + ((catalog[pfProvider] && catalog[pfProvider].label) || pfProvider) + (pfModel ? ' · ' + pfModel : '') + '.';
+                  }
+                } else if (providerStatus) {
+                  providerStatus.hidden = false;
+                  providerStatus.textContent = 'Could not verify provider key. Nothing was saved.';
+                }
+              } catch (_) {
+                if (providerStatus) {
+                  providerStatus.hidden = false;
+                  providerStatus.textContent = 'Network error. Nothing was saved.';
+                }
+              }
+            }
+          });
+        }
+
         // Step 6: Trigger static deploy on finish
         const finishBtn = document.getElementById('btn-setup-finish-login');
         if (finishBtn) {

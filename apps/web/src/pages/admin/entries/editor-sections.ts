@@ -5,8 +5,10 @@ import {
   renderButton,
   renderField,
   renderFormSection,
+  renderIcon,
   renderItem,
   renderLevel,
+  renderSubsection,
   renderTabs,
   renderTag,
   type StructureStage,
@@ -171,16 +173,30 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
           ? 'Attach evidence to reach Grounded.'
           : 'All structure levels complete.';
 
+  const nextTargetId =
+    currentIdx === 0
+      ? 'ref-facet-value'
+      : currentIdx === 1
+        ? 'ref-btn-open-claim'
+        : currentIdx === 2
+          ? 'ref-btn-open-evidence'
+          : '';
   const levelHtml = renderLevel({
     id: 'ref-structure-level',
     current: currentLevel,
     nextStep,
-  }).replace('<p class="lp-level-next', '<p id="ref-structure-next-step" class="lp-level-next');
+  }).replace(
+    /<p class="lp-level-next[^"]*">[\s\S]*?<\/p>/,
+    currentIdx < 3
+      ? `<button type="button" id="ref-structure-next-step" class="lp-btn lp-btn-text lp-level-next" data-next-target="${nextTargetId}"><span>${escapeHtml(nextStep)}</span>${renderIcon('chevron-down', 16)}</button>`
+      : `<p id="ref-structure-next-step" class="lp-level-next">${escapeHtml(nextStep)}</p>`
+  );
 
-  const tagsHtml = `<div class="lp-stack lp-gap-related">
-    <h3 class="lp-section-title">Tags</h3>
-    <div id="ref-facets-list" class="lp-row lp-gap-8 lp-row-wrap">
+  const tagsHtml = renderSubsection({
+    title: 'Tags',
+    bodyHtml: `<div id="ref-facets-list" class="lp-row lp-gap-8 lp-row-wrap">
       ${facets
+        .filter((f: any) => f?.status !== 'rejected')
         .map((f: any) =>
           renderTag({
             label: String(f.value ?? f.facet_value ?? ''),
@@ -213,24 +229,22 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
         label: 'Tag',
         placeholder: 'Add a tag',
       })}
-      ${renderActionBar({
-        secondary: { id: 'ref-btn-add-facet', label: 'Add tag', variant: 'secondary', type: 'button' },
-      })}
-    </div>
-  </div>`;
+    </div>`,
+    actionBarHtml: renderActionBar({
+      secondary: { id: 'ref-btn-add-facet', label: 'Add tag', variant: 'secondary', type: 'button' },
+    }),
+  });
 
-  const spansHtml = `<div class="lp-stack lp-gap-related">
-    <div class="lp-stack lp-gap-tight">
-      <h3 class="lp-section-title">Suggested roles</h3>
-      <p class="lp-description">Passages that may play a role in your story. Accept to label one, or ignore it.</p>
-    </div>
-    <div id="ref-spans-feedback" class="lp-sr-only" aria-live="polite"></div>
-    <div id="ref-spans-list" class="lp-list"></div>
-  </div>`;
+  const spansHtml = renderSubsection({
+    title: 'Suggested roles',
+    intro: 'Passages that may play a role in your story. Accept to label one, or ignore it.',
+    bodyHtml: `<div id="ref-spans-list" class="lp-list"></div>
+    <div id="ref-spans-feedback" class="lp-sr-only" aria-live="polite"></div>`,
+  });
 
-  const claimsHtml = `<div class="lp-stack lp-gap-related">
-    <h3 class="lp-section-title">Claims</h3>
-    <div id="ref-claims-list" class="lp-list">
+  const claimsHtml = renderSubsection({
+    title: 'Claims',
+    bodyHtml: `<div id="ref-claims-list" class="lp-list">
       ${claims
         .map((c: any) =>
           renderItem({
@@ -247,15 +261,15 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
         primary: { id: 'ref-btn-add-claim', label: 'Add', variant: 'primary', type: 'button' },
         secondary: { id: 'ref-btn-cancel-claim', label: 'Cancel', variant: 'secondary', type: 'button' },
       })}
-    </div>
-    ${renderActionBar({
+    </div>`,
+    actionBarHtml: renderActionBar({
       secondary: { id: 'ref-btn-open-claim', label: 'Add claim', variant: 'secondary', type: 'button' },
-    })}
-  </div>`;
+    }),
+  });
 
-  const evidenceHtml = `<div class="lp-stack lp-gap-related">
-    <h3 class="lp-section-title">Evidence</h3>
-    <div id="ref-evidence-list" class="lp-list">
+  const evidenceHtml = renderSubsection({
+    title: 'Evidence',
+    bodyHtml: `<div id="ref-evidence-list" class="lp-list">
       ${evidence
         .map((ev: any) =>
           renderItem({
@@ -274,11 +288,11 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
         primary: { id: 'ref-btn-add-evidence', label: 'Add', variant: 'primary', type: 'button' },
         secondary: { id: 'ref-btn-cancel-evidence', label: 'Cancel', variant: 'secondary', type: 'button' },
       })}
-    </div>
-    ${renderActionBar({
+    </div>`,
+    actionBarHtml: renderActionBar({
       secondary: { id: 'ref-btn-open-evidence', label: 'Attach evidence', variant: 'secondary', type: 'button' },
-    })}
-  </div>`;
+    }),
+  });
 
   return renderFormSection({
     id: 'ref-structure-section',
