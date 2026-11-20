@@ -223,6 +223,29 @@ test.describe('WP-16.G Full D-G Census (no logged mode, no zero-pair relations)'
     const zeroRelations = Object.entries(totalPairs)
       .filter(([, count]) => count === 0)
       .map(([rel]) => rel);
+    console.log(
+      '=== WP-16.G FULL D-G CENSUS REPORT ===\n' +
+        JSON.stringify(
+          {
+            statesCount: STATES.length,
+            totalCapturesEvaluated: STATES.length * VIEWPORTS.length * THEMES.length,
+            pairsByRelation: totalPairs,
+            zeroPairRelations: zeroRelations,
+            totalViolations: allViolations.length,
+            perRoleSignatures: {
+              'page-title': '24px/600 text-1',
+              'section-title': '16px/600 text-1',
+              'item-title / field-label / subsection-title / control-label': '14px/600 text-1',
+              body: '14px/400 text-1',
+              description: '14px/400 text-2',
+              'caption / tag': '12px/400 text-2',
+              'placeholder / disabled': '14px/400 text-3 (disabled button 14/600 text-3)',
+            },
+          },
+          null,
+          2
+        )
+    );
     expect(zeroRelations).toEqual([]);
     expect(allViolations).toEqual([]);
   });
