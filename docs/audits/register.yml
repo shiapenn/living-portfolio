@@ -7071,7 +7071,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7082,6 +7082,9 @@
     - date: 2026-11-20
       status: open
       note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+    - date: 2026-11-20
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-171
@@ -7090,7 +7093,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7101,6 +7104,9 @@
     - date: 2026-11-20
       status: open
       note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+    - date: 2026-11-20
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-172
@@ -7110,7 +7116,7 @@
     - "4.4"
     - "12.8"
   severity: P0
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7121,6 +7127,9 @@
     - date: 2026-11-20
       status: open
       note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+    - date: 2026-11-20
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-173
@@ -7129,7 +7138,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7140,6 +7149,9 @@
     - date: 2026-11-20
       status: open
       note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+    - date: 2026-11-20
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-174
@@ -7148,7 +7160,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7159,6 +7171,9 @@
     - date: 2026-11-20
       status: open
       note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+    - date: 2026-11-20
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-175
@@ -7167,7 +7182,7 @@
   spec_sections:
     - "12.8"
   severity: P2
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7178,6 +7193,9 @@
     - date: 2026-11-20
       status: open
       note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+    - date: 2026-11-20
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-176
@@ -7186,7 +7204,7 @@
   spec_sections:
     - "12.8"
   severity: P2
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7197,6 +7215,9 @@
     - date: 2026-11-20
       status: open
       note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+    - date: 2026-11-20
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-177
@@ -7205,7 +7226,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7216,6 +7237,9 @@
     - date: 2026-11-20
       status: open
       note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+    - date: 2026-11-20
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-178
@@ -7224,7 +7248,7 @@
   spec_sections:
     - "12.8"
   severity: P2
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7235,6 +7259,9 @@
     - date: 2026-11-20
       status: open
       note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+    - date: 2026-11-20
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-179
@@ -7243,7 +7270,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7254,6 +7281,9 @@
     - date: 2026-11-20
       status: open
       note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+    - date: 2026-11-20
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-180
@@ -7262,7 +7292,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7273,6 +7303,9 @@
     - date: 2026-11-20
       status: open
       note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+    - date: 2026-11-20
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-181
@@ -7281,7 +7314,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7292,4 +7325,7 @@
     - date: 2026-11-20
       status: open
       note: "Registered in WP-16.G G0 from owner review of WP-16.F contact sheets."
+    - date: 2026-11-20
+      status: partial
+      note: "awaiting L review"
   verified_by: null
