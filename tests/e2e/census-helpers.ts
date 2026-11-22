@@ -78,6 +78,7 @@ export async function navigateToState(
       if (await input.isVisible()) {
         await input.fill('architecture');
         await input.press('Enter');
+        await page.evaluate(() => window.scrollTo(0, 0));
       }
       break;
     }

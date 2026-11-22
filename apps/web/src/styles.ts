@@ -3830,7 +3830,7 @@ a.lp-admin-header-brand {
   top: 60px;
   bottom: 0;
   left: 0;
-  z-index: 60;
+  z-index: 210;
   width: 260px;
   background: var(--surface-overlay);
   padding: 16px 12px;

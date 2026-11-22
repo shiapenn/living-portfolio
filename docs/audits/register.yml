@@ -7336,7 +7336,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7347,6 +7347,9 @@
     - date: 2026-11-22
       status: open
       note: "Registered in WP-16.H H0 from owner hardening review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-183
@@ -7355,7 +7358,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7366,6 +7369,9 @@
     - date: 2026-11-22
       status: open
       note: "Registered in WP-16.H H0 from owner hardening review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-184
@@ -7374,7 +7380,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7385,6 +7391,9 @@
     - date: 2026-11-22
       status: open
       note: "Registered in WP-16.H H0 from owner hardening review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-185
@@ -7393,7 +7402,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7404,6 +7413,9 @@
     - date: 2026-11-22
       status: open
       note: "Registered in WP-16.H H0 from owner hardening review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-186
@@ -7412,7 +7424,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7423,6 +7435,9 @@
     - date: 2026-11-22
       status: open
       note: "Registered in WP-16.H H0 from owner hardening review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-187
@@ -7431,7 +7446,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7442,6 +7457,9 @@
     - date: 2026-11-22
       status: open
       note: "Registered in WP-16.H H0 from owner hardening review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-188
@@ -7450,7 +7468,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7461,6 +7479,9 @@
     - date: 2026-11-22
       status: open
       note: "Registered in WP-16.H H0 from owner hardening review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-189
@@ -7469,7 +7490,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7480,6 +7501,9 @@
     - date: 2026-11-22
       status: open
       note: "Registered in WP-16.H H0 from owner hardening review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-190
@@ -7488,7 +7512,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7499,6 +7523,9 @@
     - date: 2026-11-22
       status: open
       note: "Registered in WP-16.H H0 from owner hardening review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-191
@@ -7507,7 +7534,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7518,6 +7545,9 @@
     - date: 2026-11-22
       status: open
       note: "Registered in WP-16.H H0 from owner hardening review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-192
@@ -7526,7 +7556,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7537,6 +7567,9 @@
     - date: 2026-11-22
       status: open
       note: "Registered in WP-16.H H0 from owner hardening review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-193
@@ -7545,7 +7578,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7556,4 +7589,7 @@
     - date: 2026-11-22
       status: open
       note: "Registered in WP-16.H H0 from owner hardening review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
