@@ -384,8 +384,9 @@ function bootEditorPage(): void {
       cEl.innerHTML = claims.length
         ? claims
             .map((c) => {
-              const stLabel = c.status || 'Claim';
-              const tone = stLabel === 'accepted' ? 'ok' : 'neutral';
+              const rawStatus = String(c.status || 'accepted');
+              const stLabel = rawStatus.charAt(0).toUpperCase() + rawStatus.slice(1);
+              const tone = rawStatus === 'accepted' ? 'ok' : 'neutral';
               return `<div class="lp-item" data-c="Item"><div class="lp-item-title"><span>${esc(c.text ?? c.claim_text)}</span></div><div class="lp-item-status"><span data-c="StatusLabel" class="lp-status-indicator"><span class="lp-status-dot lp-status-dot-${tone}" aria-hidden="true"></span><span class="lp-status-label">${esc(stLabel)}</span></span></div></div>`;
             })
             .join('')
@@ -418,7 +419,8 @@ function bootEditorPage(): void {
         const end = Number(sp.end_off ?? sp.end_offset ?? sp.end ?? 0);
         let raw = String(sp.text || sp.text_exact || (end > start && body ? body.slice(start, end) : ''));
         if (!raw && body) raw = body;
-        const paras = raw.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+        const bodyOnly = raw.replace(/^#{1,6}\s+.*$/gm, '').trim();
+        const paras = (bodyOnly || raw).split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
         const nonHeading = paras.find((p) => !/^#{1,6}\s/.test(p)) ?? paras[0] ?? '';
         return nonHeading
           .replace(/^#{1,6}\s+/gm, '')
@@ -429,6 +431,15 @@ function bootEditorPage(): void {
           .replace(/\s+/g, ' ')
           .trim();
       };
+      const renderSpanActionsHtml = (spanId: string, roleRaw: string, status: string) => {
+        if (status === 'accepted') {
+          return `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-md" data-span-action="undo" data-span-id="${esc(spanId)}" data-span-role="${esc(roleRaw)}"><span>Undo</span></button></div>`;
+        }
+        if (status === 'rejected') {
+          return `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-md" data-span-action="restore" data-span-id="${esc(spanId)}" data-span-role="${esc(roleRaw)}"><span>Restore</span></button></div>`;
+        }
+        return `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-md" data-span-action="accept" data-span-id="${esc(spanId)}" data-span-role="${esc(roleRaw)}"><span>Accept</span></button><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-md" data-span-action="reject" data-span-id="${esc(spanId)}" data-span-role="${esc(roleRaw)}"><span>Ignore</span></button></div>`;
+      };
       sEl.innerHTML = spans.length
         ? spans
             .map((sp) => {
@@ -436,9 +447,7 @@ function bootEditorPage(): void {
               const roleLabel = formatRoleLabel(roleRaw);
               const passage = extractCleanPassage(sp, bodyText);
               const meta = statusMeta(sp.status);
-              const isAccepted = meta.st === 'accepted';
-              const isRejected = meta.st === 'rejected';
-              return `<div class="lp-item lp-item-has-actions" data-c="Item" data-span-id="${esc(sp.id)}" data-span-status="${esc(meta.st)}"><div class="lp-item-content"><div class="lp-item-title"><span>${esc(roleLabel)}</span></div><div class="lp-item-status"><span data-c="StatusLabel" class="lp-status-indicator"><span class="lp-status-dot lp-status-dot-${meta.tone}" aria-hidden="true"></span><span class="lp-status-label">${esc(meta.label)}</span></span></div>${passage ? `<div class="lp-item-body lp-line-clamp-3" data-rel="itembody" title="${esc(passage)}">${esc(passage)}</div>` : ''}</div><div class="lp-item-actions" data-rel="actions"><div class="lp-choice-group lp-choice-variant-segmented" data-c="Choice" role="group" aria-label="Role decision"><div class="lp-choice-list" data-deselectable="true"><button type="button" class="lp-choice lp-choice-button${isAccepted ? ' is-selected' : ''}" data-span-action="accept" data-span-id="${esc(sp.id)}" data-span-role="${esc(roleRaw)}" aria-pressed="${isAccepted ? 'true' : 'false'}"><span class="lp-choice-btn-label">Accept</span></button><button type="button" class="lp-choice lp-choice-button${isRejected ? ' is-selected' : ''}" data-span-action="reject" data-span-id="${esc(sp.id)}" data-span-role="${esc(roleRaw)}" aria-pressed="${isRejected ? 'true' : 'false'}"><span class="lp-choice-btn-label">Ignore</span></button></div></div></div></div>`;
+              return `<div class="lp-item lp-item-has-actions" data-c="Item" data-span-id="${esc(sp.id)}" data-span-status="${esc(meta.st)}"><div class="lp-item-content"><div class="lp-item-title"><span>${esc(roleLabel)}</span></div><div class="lp-item-status"><span data-c="StatusLabel" class="lp-status-indicator"><span class="lp-status-dot lp-status-dot-${meta.tone}" aria-hidden="true"></span><span class="lp-status-label">${esc(meta.label)}</span></span></div>${passage ? `<div class="lp-item-body lp-line-clamp-3" data-rel="itembody" title="${esc(passage)}">${esc(passage)}</div>` : ''}</div><div class="lp-item-actions" data-rel="actions">${renderSpanActionsHtml(String(sp.id), roleRaw, meta.st)}</div></div>`;
             })
             .join('')
         : '<p class="lp-field-help">Save entry to detect suggested span roles.</p>';
@@ -564,9 +573,7 @@ function bootEditorPage(): void {
     const role = btn.getAttribute('data-span-role') ?? 'context';
     if (!span_id) return;
     const row = btn.closest('[data-span-id]');
-    const currentStatus = row?.getAttribute('data-span-status') || 'suggested';
-    const targetStatus = action === 'accept' ? 'accepted' : 'rejected';
-    const nextStatus = currentStatus === targetStatus ? 'suggested' : targetStatus;
+    const nextStatus = action === 'accept' ? 'accepted' : action === 'reject' ? 'rejected' : 'suggested';
     const res = await apiRequest('/api/structure/annotations', {
       method: 'POST',
       body: JSON.stringify({ span_id, role, status: nextStatus }),
@@ -579,12 +586,16 @@ function bootEditorPage(): void {
       if (dotEl) dotEl.className = `lp-status-dot lp-status-dot-${tone}`;
       const labelEl = row.querySelector('.lp-item-status .lp-status-label');
       if (labelEl) labelEl.textContent = label;
-      row.querySelectorAll<HTMLButtonElement>('button[data-span-action]').forEach((b) => {
-        const bAction = b.getAttribute('data-span-action');
-        const active = (nextStatus === 'accepted' && bAction === 'accept') || (nextStatus === 'rejected' && bAction === 'reject');
-        b.classList.toggle('is-selected', active);
-        b.setAttribute('aria-pressed', active ? 'true' : 'false');
-      });
+      const actionsEl = row.querySelector('.lp-item-actions');
+      if (actionsEl) {
+        if (nextStatus === 'accepted') {
+          actionsEl.innerHTML = `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-md" data-span-action="undo" data-span-id="${esc(span_id)}" data-span-role="${esc(role)}"><span>Undo</span></button></div>`;
+        } else if (nextStatus === 'rejected') {
+          actionsEl.innerHTML = `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-md" data-span-action="restore" data-span-id="${esc(span_id)}" data-span-role="${esc(role)}"><span>Restore</span></button></div>`;
+        } else {
+          actionsEl.innerHTML = `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-md" data-span-action="accept" data-span-id="${esc(span_id)}" data-span-role="${esc(role)}"><span>Accept</span></button><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-md" data-span-action="reject" data-span-id="${esc(span_id)}" data-span-role="${esc(role)}"><span>Ignore</span></button></div>`;
+        }
+      }
     }
   });
 

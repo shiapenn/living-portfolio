@@ -80,6 +80,7 @@ export async function renderAdminInboxPage(
           <input id="inbox-decline-reason" type="text" class="lp-input" placeholder="${escapeHtml(INBOX_STRINGS.inbox.declinePlaceholder)}" />
         </div>
         ${renderActionBar({
+          level: 'page',
           primary: { id: 'inbox-btn-reply', label: INBOX_STRINGS.inbox.sendReply, variant: 'primary', size: 'sm' },
           secondary: { id: 'inbox-btn-decline', label: INBOX_STRINGS.inbox.declineButton, variant: 'secondary', size: 'sm' },
         })}
@@ -88,6 +89,7 @@ export async function renderAdminInboxPage(
           <p class="lp-help-text">${escapeHtml(INBOX_STRINGS.inbox.makeRuleBody)}</p>
           <input id="inbox-rule-text" type="text" class="lp-input" placeholder="${escapeHtml(INBOX_STRINGS.inbox.makeRulePlaceholder)}" value="${escapeHtml(String(selectedItem.question || ''))}" />
           ${renderActionBar({
+            level: 'page',
             primary: { id: 'inbox-btn-make-rule', label: INBOX_STRINGS.inbox.makeRuleConfirm, variant: 'primary', size: 'sm' },
             textAction: { id: 'inbox-btn-dismiss-rule', label: INBOX_STRINGS.inbox.makeRuleDismiss, variant: 'quiet', size: 'sm' },
           })}

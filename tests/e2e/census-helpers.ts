@@ -1038,7 +1038,7 @@ export async function checkStatusVocabularyI5(page: Page, stateId = ''): Promise
     ({ sid, vocab }) => {
       const allowed = new Set(vocab);
       const issues: string[] = [];
-      for (const el of Array.from(document.querySelectorAll<HTMLElement>('.lp-status-label, [data-c="StatusLabel"]'))) {
+      for (const el of Array.from(document.querySelectorAll<HTMLElement>('[data-c="StatusLabel"]'))) {
         const cs = getComputedStyle(el);
         if (cs.display === 'none' || cs.visibility === 'hidden') continue;
         const label = el.classList.contains('lp-status-label')

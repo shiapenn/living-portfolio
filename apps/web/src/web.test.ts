@@ -954,7 +954,7 @@ console.log(x);
       const res = await app.fetch(new Request('http://localhost/admin/setup'));
       expect(res.status).toBe(200);
       const text = await res.text();
-      expect(text).toContain('Create Owner Account');
+      expect(text).toContain('Create account');
     });
   });
 

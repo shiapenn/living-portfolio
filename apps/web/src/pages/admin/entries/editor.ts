@@ -181,7 +181,7 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
         : isPlaceholder
           ? '/admin?new=1'
           : `/admin?entry=${escapeHtml(e.id)}`;
-      const stateLabel = isPlaceholder ? EDITOR_STRINGS.sidebar.unsavedBadge : formatVisibilityLabel(e.visibility);
+      const stateLabel = isPlaceholder ? 'Draft' : formatVisibilityLabel(e.visibility);
       const stateTone = isPlaceholder ? 'warn' : visibilityTone(e.visibility);
       return renderItem({
         href: rowHref,

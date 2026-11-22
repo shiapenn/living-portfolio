@@ -26,23 +26,28 @@ export function renderAdminSetupPage(): string {
           <p class="lp-page-description" data-rel="description">${WIZARD_STRINGS.step1.subtitle}</p>
         </div>
 
-        <form id="admin-setup-form" class="lp-stack-md">
-          <div class="lp-field">
-            <label for="setup-username" class="lp-field-label">${WIZARD_STRINGS.step1.fields.username.label}</label>
-            <input id="setup-username" type="text" class="lp-input" required />
-            <div class="lp-help-text">${WIZARD_STRINGS.step1.fields.username.help}</div>
+        <form id="admin-setup-form" class="lp-stack lp-gap-group">
+          <div class="lp-stack lp-gap-related">
+            <div class="lp-field">
+              <label for="setup-username" class="lp-field-label">${WIZARD_STRINGS.step1.fields.username.label}</label>
+              <input id="setup-username" type="text" class="lp-input" required />
+              <div class="lp-help-text">${WIZARD_STRINGS.step1.fields.username.help}</div>
+            </div>
+            <div class="lp-field">
+              <label for="setup-password" class="lp-field-label">${WIZARD_STRINGS.step1.fields.password.label}</label>
+              <input id="setup-password" type="password" minlength="12" class="lp-input" required />
+              <div class="lp-help-text">${WIZARD_STRINGS.step1.fields.password.help}</div>
+            </div>
+            <div class="lp-field">
+              <label for="setup-totp-secret" class="lp-field-label">${WIZARD_STRINGS.step1.fields.totpSecret.label}</label>
+              <input id="setup-totp-secret" type="text" class="lp-input" placeholder="Generated if blank" />
+              <div class="lp-help-text">${WIZARD_STRINGS.step1.fields.totpSecret.help}</div>
+            </div>
           </div>
-          <div class="lp-field">
-            <label for="setup-password" class="lp-field-label">${WIZARD_STRINGS.step1.fields.password.label}</label>
-            <input id="setup-password" type="password" minlength="12" class="lp-input" required />
-            <div class="lp-help-text">${WIZARD_STRINGS.step1.fields.password.help}</div>
-          </div>
-          <div class="lp-field">
-            <label for="setup-totp-secret" class="lp-field-label">${WIZARD_STRINGS.step1.fields.totpSecret.label}</label>
-            <input id="setup-totp-secret" type="text" class="lp-input lp-input-code" placeholder="Leave blank to generate random secret" />
-            <div class="lp-help-text">${WIZARD_STRINGS.step1.fields.totpSecret.help}</div>
-          </div>
-          ${renderButton({ label: WIZARD_STRINGS.step1.submitButton, type: 'submit', variant: 'secondary', className: 'lp-btn-full' })}
+          ${renderActionBar({
+            level: 'page',
+            primary: { label: WIZARD_STRINGS.step1.submitButton, type: 'submit', variant: 'primary' },
+          })}
         </form>
 
         <div id="totp-enrolment-container" class="lp-wizard-panel lp-stack-md lp-is-hidden">
@@ -99,7 +104,10 @@ export function renderAdminSetupPage(): string {
             options: [{ id: 'setup-saved-credentials-gate', value: 'confirmed', label: WIZARD_STRINGS.step1.credentials.gateLabel }],
           })}
 
-          ${renderButton({ label: WIZARD_STRINGS.step1.credentials.continueButton, id: 'btn-continue-step2', variant: 'primary', className: 'lp-btn-full', disabled: true })}
+          ${renderActionBar({
+            level: 'page',
+            secondary: { label: WIZARD_STRINGS.step1.credentials.continueButton, id: 'btn-continue-step2', variant: 'secondary', disabled: true },
+          })}
         </div>
       </div>
 
@@ -266,10 +274,11 @@ export function renderAdminSetupPage(): string {
 
         <p class="lp-help-text">${WIZARD_STRINGS.step6.deployNotice}</p>
 
-        <div class="lp-action-bar">
-          <a href="/admin" class="lp-btn lp-btn-primary" id="btn-setup-finish-login">${WIZARD_STRINGS.step6.finishButton}</a>
-          <a href="/admin/import" class="lp-btn lp-btn-secondary" id="btn-setup-launch-import">${WIZARD_STRINGS.step6.importButton}</a>
-        </div>
+        ${renderActionBar({
+          level: 'page',
+          primary: { id: 'btn-setup-finish-login', href: '/admin', label: WIZARD_STRINGS.step6.finishButton, variant: 'primary' },
+          secondary: { id: 'btn-setup-launch-import', href: '/admin/import', label: WIZARD_STRINGS.step6.importButton, variant: 'secondary' },
+        })}
       </div>
     </div>
 ${SETUP_SCRIPT_PART_1}

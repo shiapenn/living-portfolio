@@ -103,6 +103,7 @@ export function renderProviderFlow(props: ProviderFlowProps): string {
       props.hidePrimaryWhenLocal && props.selectedProvider === 'local'
         ? ''
         : renderActionBar({
+            level: 'page',
             primary: { id: 'lp-provider-next', label: 'Next', variant: 'primary', type: 'button' },
           });
     return renderStack({ gap: 'group', childrenHtml: `${stepperHtml}${choiceHtml}${actionsHtml}` });
@@ -131,6 +132,7 @@ export function renderProviderFlow(props: ProviderFlowProps): string {
           });
 
     const actionsHtml = renderActionBar({
+      level: 'page',
       primary: {
         id: provider.requiresKey ? 'lp-provider-next' : 'lp-provider-save',
         label: provider.requiresKey ? 'Next' : 'Save',
@@ -153,6 +155,7 @@ export function renderProviderFlow(props: ProviderFlowProps): string {
     attributes: 'autocomplete="off"',
   });
   const actionsHtml = renderActionBar({
+    level: 'page',
     primary: { id: 'lp-provider-test-save', label: 'Test and save', variant: 'primary', type: 'button' },
   });
   return renderStack({ gap: 'group', childrenHtml: `${stepperHtml}${keyField}${actionsHtml}` });

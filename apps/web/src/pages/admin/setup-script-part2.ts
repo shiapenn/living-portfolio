@@ -224,10 +224,10 @@ export const SETUP_SCRIPT_PART_2 = `              const qrBox = document.getElem
                 : '<div class="lp-field" data-c="Field" data-rel="field"><label for="lp-provider-model" class="lp-field-label">Model</label><input id="lp-provider-model" name="model" type="text" class="lp-input" value="' + escHtml(pfModel) + '" placeholder="Enter model name" /><div class="lp-field-help">Leave blank for extractive local quotes only.</div></div>';
               const btnId = meta.requiresKey ? 'lp-provider-next' : 'lp-provider-save';
               const btnLabel = meta.requiresKey ? 'Next' : 'Save';
-              providerRoot.innerHTML = '<div class="lp-stack lp-gap-group">' + stepperHtml + fieldHtml + '<div class="lp-action-bar" data-c="ActionBar" data-rel="actions"><button id="' + btnId + '" type="button" class="lp-btn lp-btn-secondary">' + btnLabel + '</button></div></div>';
+              providerRoot.innerHTML = '<div class="lp-stack lp-gap-section">' + stepperHtml + fieldHtml + '<div class="lp-action-bar lp-action-bar-page" data-c="ActionBar" data-level="page" data-rel="page-actions"><button id="' + btnId + '" type="button" class="lp-btn lp-btn-primary">' + btnLabel + '</button></div></div>';
             } else if (step === 3) {
               const keyHtml = '<div class="lp-field" data-c="Field" data-rel="field"><label for="lp-provider-key" class="lp-field-label">API key</label><input id="lp-provider-key" name="apiKey" type="password" class="lp-input" placeholder="Paste key" autocomplete="off" /><div class="lp-field-help">Write-only: stored encrypted and never shown again.</div></div>';
-              providerRoot.innerHTML = '<div class="lp-stack lp-gap-group">' + stepperHtml + keyHtml + '<div class="lp-action-bar" data-c="ActionBar" data-rel="actions"><button id="lp-provider-test-save" type="button" class="lp-btn lp-btn-secondary">Test and save</button></div></div>';
+              providerRoot.innerHTML = '<div class="lp-stack lp-gap-section">' + stepperHtml + keyHtml + '<div class="lp-action-bar lp-action-bar-page" data-c="ActionBar" data-level="page" data-rel="page-actions"><button id="lp-provider-test-save" type="button" class="lp-btn lp-btn-primary">Test and save</button></div></div>';
             }
             const fillEl = providerRoot.querySelector('.lp-stepper-fill');
             if (fillEl) fillEl.style.width = pct + '%';
@@ -242,10 +242,11 @@ export const SETUP_SCRIPT_PART_2 = `              const qrBox = document.getElem
               if (existingBar) existingBar.remove();
             } else if (!existingBar && stack) {
               const bar = document.createElement('div');
-              bar.className = 'lp-action-bar';
+              bar.className = 'lp-action-bar lp-action-bar-page';
               bar.setAttribute('data-c', 'ActionBar');
-              bar.setAttribute('data-rel', 'actions');
-              bar.innerHTML = '<button id="lp-provider-next" type="button" class="lp-btn lp-btn-secondary">Next</button>';
+              bar.setAttribute('data-level', 'page');
+              bar.setAttribute('data-rel', 'page-actions');
+              bar.innerHTML = '<button id="lp-provider-next" type="button" class="lp-btn lp-btn-primary">Next</button>';
               stack.appendChild(bar);
             }
           });

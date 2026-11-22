@@ -15,6 +15,7 @@ import {
   renderAdminSettingsPage,
   renderAdminSettingsModulePage,
   renderAdminSetupPage,
+  renderAdminStatusPage,
   renderNotFoundPage,
 } from '@living-portfolio/web';
 import type { AuthManager } from '../auth/security.js';
@@ -114,6 +115,14 @@ export function mountBundledWeb(
     );
     app.get('/admin/import', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminImportPage(repo))
+    );
+    app.get('/admin/status', auth.requireAdminMiddleware(), async (c) =>
+      c.html(
+        await renderAdminStatusPage(repo, {
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+          initialSettings: runtimeState,
+        })
+      )
     );
     app.get('/admin/settings', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminSettingsPage(repo, runtimeState))

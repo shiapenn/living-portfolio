@@ -146,7 +146,7 @@ Follow each wizard step sequentially:
 
 1. **Step 1: Owner Account Setup**
    - Enter your chosen administrator username and strong password (min 12 characters).
-   - Click **Create Owner Account & Show Authenticator QR**.
+   - Click **Create account**.
    - Scan the SVG QR code in your authenticator app (or copy the base32 key).
    - Enter the current 6-digit verification code into the code input.
    - Click **Verify Code & Complete Setup**.

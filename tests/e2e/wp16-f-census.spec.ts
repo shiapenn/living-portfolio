@@ -160,12 +160,12 @@ test.describe('WP-16.F F0 Named Failing-First Defect Tests (UX-157..UX-169)', ()
     await expect(page.locator('.lp-back-link')).toHaveCount(0);
   });
 
-  test('20261106-UX-165: Providers D-PROV journey (single Answering model Item + /admin/settings/providers/change)', async ({ page }) => {
+  test('20261106-UX-165: Providers D-PROV journey (Answering model FormSection + /admin/settings/providers/change)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/admin/settings/providers');
-    await expect(page.locator('main .lp-item')).toHaveCount(1);
-    await expect(page.locator('main .lp-item-title')).toContainText('Answering model');
+    await expect(page.locator('#provider-role-answering')).toBeVisible();
+    await expect(page.locator('#provider-role-answering')).toContainText('Answering model');
   });
 
   test('20261106-UX-166: Status single 4-Item list with no section headings & Local counts as configured', async ({ page }) => {

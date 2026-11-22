@@ -39,6 +39,7 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
           </div>
 
           ${renderActionBar({
+            level: 'page',
             primary: { id: 'btn-generate-plan', label: 'Generate plan', variant: 'primary' },
             secondary: { id: 'btn-load-sample', label: 'Load sample entries', variant: 'secondary' },
           })}
@@ -72,6 +73,7 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
         </div>
 
         ${renderActionBar({
+          level: 'page',
           primary: { id: 'btn-proceed-triage', label: 'Proceed to triage', variant: 'primary' },
           secondary: { id: 'btn-back-add', label: 'Previous', variant: 'secondary' },
         })}

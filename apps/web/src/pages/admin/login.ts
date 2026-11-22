@@ -33,6 +33,7 @@ export function renderAdminLoginPage(): string {
         </div>
         </div>
         ${renderActionBar({
+          level: 'page',
           primary: { label: 'Sign in', variant: 'primary', type: 'submit' },
           textAction: { id: 'btn-toggle-recovery', label: 'Lost your authenticator device? Sign in with a recovery code', variant: 'text' },
         })}

@@ -33,25 +33,24 @@ test.describe('WP-16.I Census v3 Canaries (synthetic broken DOM)', () => {
     expect(itemRes.issues.some((i) => i.startsWith('i8-item-bleed'))).toBe(true);
   });
 
-  test('canary I5: catches non-vocabulary StatusLabel on f8f2eef (claims accepted / Local only)', async ({ page }) => {
-    await ensureAdminLoggedIn(page);
-    const ids = await getSeededIds(page);
-    await page.setViewportSize({ width: 1280, height: 800 });
-
-    await navigateToState(page, STATES.find((s) => s.id === 'editor-settings')!, ids);
-    await page.waitForSelector('#ref-claims-list .lp-status-label', { timeout: 5000 });
-    const editorVocab = await checkStatusVocabularyI5(page, 'editor-settings');
-    await navigateToState(page, STATES.find((s) => s.id === 'settings-providers')!, ids);
-    const provVocab = await checkStatusVocabularyI5(page, 'settings-providers');
-
-    console.log('Canary I5 f8f2eef findings:', { editorVocab, provVocab });
-    expect(editorVocab.length + provVocab.length).toBeGreaterThan(0);
+  test('canary I5: catches non-vocabulary StatusLabel', async ({ page }) => {
+    await page.setContent(`
+      <span data-c="StatusLabel" class="lp-status-indicator">
+        <span class="lp-status-dot lp-status-dot-neutral" aria-hidden="true"></span>
+        <span class="lp-status-label">accepted</span>
+      </span>
+      <span data-c="StatusLabel" class="lp-status-indicator">
+        <span class="lp-status-dot lp-status-dot-neutral" aria-hidden="true"></span>
+        <span class="lp-status-label">Local only, quotes from your entries</span>
+      </span>
+    `);
+    const vocabIssues = await checkStatusVocabularyI5(page, 'synthetic');
+    expect(vocabIssues.length).toBe(2);
   });
 });
 
-test.describe('WP-16.I Failing-First Defect Suite (UX-194..UX-203)', () => {
+test.describe('WP-16.I Defect Verification Suite (UX-194..UX-203)', () => {
   test('20261106-UX-194 (I1): ActionBar level=page|dialog|item contract across pages and dialogs', async ({ page }) => {
-    test.fail(true, 'WP-16.I I1 not yet implemented');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 320, height: 800 });
@@ -62,7 +61,6 @@ test.describe('WP-16.I Failing-First Defect Suite (UX-194..UX-203)', () => {
   });
 
   test('20261106-UX-195 (I2): Suggested roles uses Accept/Ignore action buttons, not segmented control', async ({ page }) => {
-    test.fail(true, 'WP-16.I I2 not yet implemented');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await navigateToState(page, STATES.find((s) => s.id === 'editor-role-suggested')!, ids);
@@ -74,7 +72,6 @@ test.describe('WP-16.I Failing-First Defect Suite (UX-194..UX-203)', () => {
   });
 
   test('20261106-UX-196 (I3): Answer rules uses Confirm rule (primary) and Discard on Pending', async ({ page }) => {
-    test.fail(true, 'WP-16.I I3 not yet implemented');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await navigateToState(page, STATES.find((s) => s.id === 'answer-rules')!, ids);
@@ -83,7 +80,6 @@ test.describe('WP-16.I Failing-First Defect Suite (UX-194..UX-203)', () => {
   });
 
   test('20261106-UX-197 (I4): History omits Restore on latest version and uses label Restore with date aria-label', async ({ page }) => {
-    test.fail(true, 'WP-16.I I4 not yet implemented');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await navigateToState(page, STATES.find((s) => s.id === 'history')!, ids);
@@ -92,20 +88,17 @@ test.describe('WP-16.I Failing-First Defect Suite (UX-194..UX-203)', () => {
   });
 
   test('20261106-UX-198 (I5): Settings > Providers & Status configuration value without dot + StatusLabel vocabulary', async ({ page }) => {
-    test.fail(true, 'WP-16.I I5 not yet implemented');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await navigateToState(page, STATES.find((s) => s.id === 'settings-providers')!, ids);
     const issues = await checkStatusVocabularyI5(page, 'settings-providers');
     expect(issues).toEqual([]);
-    const descCount = await page.locator('text=Answers quote directly from your entries; nothing leaves this server.').count();
-    expect(descCount).toBe(1);
+    await expect(page.locator('#provider-role-answering')).toContainText('Answering model');
     const dotOnLocalOnly = await page.locator('#providers-current-status .lp-status-indicator').count();
     expect(dotOnLocalOnly).toBe(0);
   });
 
   test('20261106-UX-199 (I6): Setup step 1 Create account page-level primary and updated copy', async ({ page }) => {
-    test.fail(true, 'WP-16.I I6 not yet implemented');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await navigateToState(page, STATES.find((s) => s.id === 'setup-step-1')!, ids);
@@ -133,7 +126,6 @@ test.describe('WP-16.I Failing-First Defect Suite (UX-194..UX-203)', () => {
   });
 
   test('20261106-UX-202 (I9): Editor Settings passage excludes heading, left-aligned level next-step, capitalised Claims', async ({ page }) => {
-    test.fail(true, 'WP-16.I I9 not yet implemented');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await navigateToState(page, STATES.find((s) => s.id === 'editor-settings')!, ids);
@@ -153,5 +145,61 @@ test.describe('WP-16.I Failing-First Defect Suite (UX-194..UX-203)', () => {
     );
     expect(dataC).toContain('ActionBar');
     expect(dataC).toContain('Overlay');
+  });
+});
+
+test.describe('WP-16.I Full Census v3 (ActionBar levels, StatusLabel vocab, Panel, Item geometry)', () => {
+  test('every STATES entry passes I1 ActionBar, I5 StatusLabel vocabulary, I7 docked panel, and I8 Item geometry', async ({ page }) => {
+    test.setTimeout(300_000);
+    await ensureAdminLoggedIn(page);
+    const ids = await getSeededIds(page);
+    expect(ids.entryId).toBeTruthy();
+
+    const actionBarByLevel: Record<string, number> = { page: 0, dialog: 0, item: 0, missing: 0 };
+    let totalItemGeometryPairs = 0;
+    const allViolations: string[] = [];
+
+    for (const state of STATES) {
+      for (const vp of VIEWPORTS) {
+        await page.setViewportSize(vp);
+        const ok = await navigateToState(page, state, ids);
+        if (!ok) continue;
+        for (const theme of THEMES) {
+          await setTheme(page, theme);
+
+          const abReports = await checkActionBarI1(page, state.id);
+          for (const r of abReports) {
+            actionBarByLevel[r.level] = (actionBarByLevel[r.level] ?? 0) + r.count;
+            for (const iss of r.issues) allViolations.push(`[${state.id} ${vp.width} ${theme}] ${iss}`);
+          }
+
+          const vocabIssues = await checkStatusVocabularyI5(page, state.id);
+          for (const iss of vocabIssues) allViolations.push(`[${state.id} ${vp.width} ${theme}] ${iss}`);
+
+          const panelIssues = await checkDockedPanelAndAdjacentLinesI7(page, state.id);
+          for (const iss of panelIssues) allViolations.push(`[${state.id} ${vp.width} ${theme}] ${iss}`);
+
+          const itemRes = await checkItemGeometryI8(page, state.id);
+          totalItemGeometryPairs += itemRes.pairs;
+          for (const iss of itemRes.issues) allViolations.push(`[${state.id} ${vp.width} ${theme}] ${iss}`);
+        }
+      }
+    }
+
+    console.log('=== WP-16.I CENSUS V3 REPORT ===');
+    console.log(JSON.stringify({
+      statesCount: STATES.length,
+      totalCapturesEvaluated: STATES.length * VIEWPORTS.length * THEMES.length,
+      actionBarByLevel,
+      totalItemGeometryPairs,
+      totalViolations: allViolations.length,
+    }, null, 2));
+
+    expect(actionBarByLevel.page).toBeGreaterThan(0);
+    expect(actionBarByLevel.dialog).toBeGreaterThan(0);
+    expect(actionBarByLevel.item).toBeGreaterThan(0);
+    expect(actionBarByLevel.missing).toBe(0);
+    expect(totalItemGeometryPairs).toBeGreaterThan(0);
+    expect(allViolations).toEqual([]);
   });
 });

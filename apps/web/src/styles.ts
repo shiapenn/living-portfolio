@@ -5581,4 +5581,14 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   border-right: 1px solid var(--border-overlay);
   padding: 16px 12px;
 }
+.lp-level-next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  width: auto;
+  align-self: flex-start;
+  padding-left: 0;
+  padding-right: 0;
+}
 `;
