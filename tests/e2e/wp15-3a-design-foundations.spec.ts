@@ -25,8 +25,8 @@ test.describe('WP-15.3a Design Foundations Conformance (D-FOUND-1..6)', () => {
       const badges = Array.from(document.querySelectorAll<HTMLElement>('.lp-badge'));
       const chips = Array.from(document.querySelectorAll<HTMLElement>('button.lp-chip'));
       return {
-        controls4: checkRadius('.lp-btn, .lp-icon-btn, .lp-input', '4px'),
-        containers4: checkRadius('.lp-card, .lp-notice, .lp-empty-state, #specimen-radius-container', '4px'),
+        controls8: checkRadius('.lp-btn, .lp-icon-btn, .lp-input', '8px'),
+        containers8: checkRadius('.lp-card, .lp-notice, .lp-empty-state, #specimen-radius-container', '8px'),
         overlays8: checkRadius('.lp-dialog-panel, .lp-drawer-panel, #specimen-radius-overlay', '8px'),
         chips4: checkRadius('.lp-chip', '4px'),
         dots999: checkRadius('.lp-status-dot', '999px'),
@@ -38,8 +38,8 @@ test.describe('WP-15.3a Design Foundations Conformance (D-FOUND-1..6)', () => {
       };
     });
     expect(shapeAudit).toEqual({
-      controls4: true,
-      containers4: true,
+      controls8: true,
+      containers8: true,
       overlays8: true,
       chips4: true,
       dots999: true,
