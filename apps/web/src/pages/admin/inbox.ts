@@ -1,7 +1,7 @@
 import { escapeHtml } from '../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
-import { renderActionBar, renderItem, renderStatusDot } from '../../primitives/index.js';
+import { renderActionBar, renderItem, renderSectionHeader, renderStatusDot, renderText } from '../../primitives/index.js';
 import { renderEmptyState, renderStatusLine } from '../../components/index.js';
 import { INBOX_STRINGS } from '../../strings/admin/inbox.js';
 
@@ -68,14 +68,14 @@ export async function renderAdminInboxPage(
   const detailHtml = selectedItem
     ? `<section id="inbox-detail-card" class="lp-stack-md" data-escalation-id="${escapeHtml(String(selectedItem.id))}">
         <div>${renderStatusDot({ label: getDueBadge(selectedItem).label, tone: getDueBadge(selectedItem).tone === 'danger' ? 'danger' : getDueBadge(selectedItem).tone === 'warn' ? 'warn' : getDueBadge(selectedItem).tone === 'ok' ? 'ok' : 'neutral' })}</div>
-        <h2 class="lp-section-title">${escapeHtml(INBOX_STRINGS.inbox.questionHeading)}</h2>
-        <p class="lp-type-body">${escapeHtml(String(selectedItem.question || ''))}</p>
-        ${selectedItem.draft ? `<p class="lp-help-text"><strong>${escapeHtml(INBOX_STRINGS.inbox.draftHeading)}:</strong> ${escapeHtml(String(selectedItem.draft))}</p>` : ''}
-        <div class="lp-field">
+        ${renderSectionHeader({ title: INBOX_STRINGS.inbox.questionHeading })}
+        ${renderText({ variant: 'body', text: String(selectedItem.question || '') })}
+        ${selectedItem.draft ? renderText({ variant: 'caption', className: 'lp-help-text', html: `<strong>${escapeHtml(INBOX_STRINGS.inbox.draftHeading)}:</strong> ${escapeHtml(String(selectedItem.draft))}` }) : ''}
+        <div data-c="Field" data-rel="field" class="lp-field">
           <label for="inbox-reply-text" class="lp-field-label">${escapeHtml(INBOX_STRINGS.inbox.replyLabel)}</label>
           <textarea id="inbox-reply-text" class="lp-input lp-textarea" rows="4" placeholder="${escapeHtml(INBOX_STRINGS.inbox.replyPlaceholder)}">${escapeHtml(String(selectedItem.final || selectedItem.draft || ''))}</textarea>
         </div>
-        <div class="lp-field">
+        <div data-c="Field" data-rel="field" class="lp-field">
           <label for="inbox-decline-reason" class="lp-field-label">${escapeHtml(INBOX_STRINGS.inbox.declineLabel)}</label>
           <input id="inbox-decline-reason" type="text" class="lp-input" placeholder="${escapeHtml(INBOX_STRINGS.inbox.declinePlaceholder)}" />
         </div>
@@ -85,8 +85,8 @@ export async function renderAdminInboxPage(
           secondary: { id: 'inbox-btn-decline', label: INBOX_STRINGS.inbox.declineButton, variant: 'secondary', size: 'sm' },
         })}
         <div id="inbox-make-rule-card" class="lp-stack-sm" hidden>
-          <h3 class="lp-section-title">${escapeHtml(INBOX_STRINGS.inbox.makeRuleTitle)}</h3>
-          <p class="lp-help-text">${escapeHtml(INBOX_STRINGS.inbox.makeRuleBody)}</p>
+          ${renderSectionHeader({ title: INBOX_STRINGS.inbox.makeRuleTitle, headingTag: 'h3' })}
+          ${renderText({ variant: 'caption', className: 'lp-help-text', text: INBOX_STRINGS.inbox.makeRuleBody })}
           <input id="inbox-rule-text" type="text" class="lp-input" placeholder="${escapeHtml(INBOX_STRINGS.inbox.makeRulePlaceholder)}" value="${escapeHtml(String(selectedItem.question || ''))}" />
           ${renderActionBar({
             level: 'page',
