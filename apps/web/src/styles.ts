@@ -4850,6 +4850,10 @@ a.lp-item:hover {
   background: var(--surface-control-selected);
   color: var(--accent);
 }
+#theme-toggle.lp-icon-btn[aria-pressed="true"] {
+  background: var(--surface-control);
+  color: var(--text);
+}
 .lp-icon-toggle svg { transition: opacity 120ms ease, transform 120ms ease; }
 @media (min-width: 768px) {
   .lp-admin-header-menu-btn,

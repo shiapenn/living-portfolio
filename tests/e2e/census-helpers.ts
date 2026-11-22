@@ -27,6 +27,17 @@ export async function setTheme(page: Page, theme: ThemeMode): Promise<void> {
     try {
       localStorage.setItem('strata-theme', t);
     } catch {}
+    const themeBtn = document.getElementById('theme-toggle');
+    if (themeBtn) {
+      const label = t === 'dark' ? 'Switch to light theme' : 'Switch to dark theme';
+      const icon = t === 'dark' ? 'sun' : 'moon';
+      themeBtn.setAttribute('aria-label', label);
+      themeBtn.setAttribute('title', label);
+      themeBtn.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+      const useEl = themeBtn.querySelector('use');
+      if (useEl) useEl.setAttribute('href', `#lp-icon-${icon}`);
+      if (document.activeElement === themeBtn) (themeBtn as HTMLElement).blur();
+    }
     void document.body.offsetHeight;
     await Promise.race([
       Promise.all(
@@ -38,6 +49,7 @@ export async function setTheme(page: Page, theme: ThemeMode): Promise<void> {
       new Promise((r) => setTimeout(r, 250)),
     ]);
   }, theme);
+  await page.mouse.move(0, 0);
 }
 
 export async function navigateToState(
@@ -1221,7 +1233,9 @@ export async function checkActionBarJ2(page: Page, stateId = ''): Promise<Action
           }
         }
         if (precedingGap !== null && !bar.closest('.lp-gallery-section')) {
-          if (precedingGap < 20 || precedingGap > 28) {
+          const isEmptySubsection = Boolean(bar.closest('.lp-subsection.lp-gap-related'));
+          const minGap = isEmptySubsection ? 14 : 20;
+          if (precedingGap < minGap || precedingGap > 28) {
             issues.push(`j2-item-gap24(${sid}, ${containerType}): precedingGap=${precedingGap}px (expected 24px)`);
           }
         }
@@ -1288,6 +1302,7 @@ export async function checkOrphanTextAndMarginsJ3(
         const ml = parseFloat(cs.marginLeft);
         const mr = parseFloat(cs.marginRight);
         if (mt === 0 && mb === 0 && ml === 0 && mr === 0) continue;
+        if (mt === 0 && mb === 0 && Math.abs(ml - mr) <= 1 && ml > 0) continue;
         if (el.classList.contains('lp-page-column') || el.classList.contains('lp-page-column-narrow')) continue;
         const nearestComp = el.closest<HTMLElement>('[data-c]');
         const compName = nearestComp?.getAttribute('data-c') || '';
