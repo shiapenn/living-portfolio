@@ -2,7 +2,7 @@ export { renderIcon, renderIconSprite, isKnownIconName, LUCIDE_ICON_NAMES, DCOMP
 export type { IconName, IconProps, IconSize } from './icons.js';
 export { renderButton, renderIconButton } from './button.js';
 export type { ButtonProps, ButtonSize, ButtonVariant, IconButtonProps } from './button.js';
-export { renderChip, renderBadge, renderStatusDot } from './chip.js';
+export { renderChip, renderBadge, renderStatusDot, STATUS_VOCABULARY } from './chip.js';
 export type { BadgeProps, ChipProps, ChipState, StatusDotProps, StatusTone } from './chip.js';
 export { renderSwitch } from './switch.js';
 export type { SwitchProps } from './switch.js';
@@ -13,7 +13,7 @@ export type { PageHeaderProps } from './page-header.js';
 export { renderItem } from './item.js';
 export type { ItemBodySegment, ItemProps } from './item.js';
 export { renderActionBar } from './action-bar.js';
-export type { ActionBarProps } from './action-bar.js';
+export type { ActionBarLevel, ActionBarProps } from './action-bar.js';
 export { renderChoiceGroup } from './choice.js';
 export type { ChoiceGroupProps, ChoiceOption } from './choice.js';
 export { renderTabs, renderStepper } from './tabs-stepper.js';

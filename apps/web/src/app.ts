@@ -39,7 +39,8 @@ import {
 } from './renderer.js';
 import { renderPrimitivesGalleryPage } from './primitives/gallery.js';
 import { renderFoundationsGalleryPage } from './primitives/foundations-gallery.js';
-import { renderComponentGalleryPage, renderCensusCanaryPage } from './pages/admin/gallery.js';
+import { renderComponentGalleryPage } from './pages/admin/gallery.js';
+import { renderCensusCanaryPage } from './pages/admin/gallery-canary.js';
 import { renderFixturePatternPage } from './pages/admin/fixture.js';
 import { renderReferenceEditorPage, type ReferenceEditorEntry } from './pages/admin/entries/editor.js';
 

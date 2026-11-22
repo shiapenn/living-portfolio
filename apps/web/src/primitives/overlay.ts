@@ -29,7 +29,7 @@ export function renderOverlay(props: OverlayProps): string {
   const titleId = props.labelledBy ?? `${props.id}-title`;
   const classes = ['lp-overlay', kindClass, props.className].filter(Boolean).join(' ');
 
-  return `<div id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}" role="${roleAttr}" aria-modal="${modalAttr}" aria-labelledby="${escapeHtml(titleId)}" data-overlay-kind="${escapeHtml(props.kind)}"${hiddenAttr}>
+  return `<div id="${escapeHtml(props.id)}" data-c="Overlay" class="${escapeHtml(classes)}" role="${roleAttr}" aria-modal="${modalAttr}" aria-labelledby="${escapeHtml(titleId)}" data-overlay-kind="${escapeHtml(props.kind)}"${hiddenAttr}>
   <div class="lp-overlay-backdrop" data-overlay-close="true"></div>
   <div class="lp-overlay-surface">
     <div class="lp-overlay-header">

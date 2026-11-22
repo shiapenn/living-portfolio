@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import {
+  renderActionBar,
   renderButton,
   renderIconButton,
   renderChip,
@@ -8,6 +11,7 @@ import {
   renderSwitch,
   renderField,
 } from './index.js';
+import { renderComponentGalleryPage } from '../pages/admin/gallery.js';
 
 describe('WP-15.2 Shared Primitives', () => {
   it('renders Button with variants, sizes, disabled, loading, and type', () => {
@@ -113,5 +117,28 @@ describe('WP-15.2 Shared Primitives', () => {
 
     const radio = renderField({ kind: 'radio', id: 'field-mode', name: 'mode', label: 'Decision', value: 'decision' });
     expect(radio).toContain('type="radio"');
+  });
+
+  it('I1: ActionBar emits data-level=page|dialog|item and level classes', () => {
+    expect(renderActionBar({ level: 'page', primary: { label: 'Save' } })).toContain('data-level="page"');
+    expect(renderActionBar({ level: 'dialog', primary: { label: 'Confirm' } })).toContain('data-level="dialog"');
+    expect(renderActionBar({ level: 'item', secondary: { label: 'Restore' } })).toContain('data-level="item"');
+  });
+
+  it('I10: every data-c name emitted by primitives/components appears in /admin/_gallery', () => {
+    const galleryHtml = renderComponentGalleryPage();
+    const emitted = new Set<string>();
+    for (const dir of ['primitives', 'components']) {
+      const fullDir = resolve(process.cwd(), 'src', dir);
+      for (const file of readdirSync(fullDir)) {
+        if (!file.endsWith('.ts') || file.endsWith('.test.ts')) continue;
+        const src = readFileSync(join(fullDir, file), 'utf8');
+        for (const m of src.matchAll(/data-c="([^"]+)"/g)) {
+          emitted.add(m[1]);
+        }
+      }
+    }
+    const missing = [...emitted].filter((name) => !galleryHtml.includes(`data-c="${name}"`));
+    expect(missing).toEqual([]);
   });
 });

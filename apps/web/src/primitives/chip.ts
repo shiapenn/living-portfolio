@@ -3,6 +3,25 @@ import { escapeHtml } from '../lib/html.js';
 export type ChipState = 'confirmed' | 'suggested';
 export type StatusTone = 'neutral' | 'ok' | 'warn' | 'danger' | 'info' | 'action';
 
+export const STATUS_VOCABULARY = [
+  'Active',
+  'Idle',
+  'Pending',
+  'Connected',
+  'Error',
+  'Not set up',
+  'Accepted',
+  'Ignored',
+  'Suggested',
+  'Latest',
+  'Paused',
+  'Draft',
+  'Public',
+  'Unlisted',
+  'Key invalid',
+  'Unreachable',
+] as const;
+
 export interface ChipProps {
   label: string;
   state?: ChipState;

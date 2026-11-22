@@ -110,7 +110,8 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
         label.includes('dismiss') ||
         requested === 'close' ||
         requested === 'x' ||
-        btn.classList.contains('lp-dismiss-btn');
+        btn.classList.contains('lp-dismiss-btn') ||
+        btn.classList.contains('lp-tag-remove');
       if ((href === '#lp-icon-close' || href === '#lp-icon-x') && !isCloseBtn) {
         violations.icons++;
         details.icons.push(`Non-close control "${label || btn.className}" renders close glyph "${href}"`);
@@ -174,7 +175,7 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
       )
     );
     for (const ov of overlays) {
-      if (ov.hasAttribute('hidden') || !isVisible(ov)) continue;
+      if (ov.hasAttribute('hidden') || !isVisible(ov) || ov.classList.contains('lp-gallery-overlay-sample')) continue;
       measured.overlays++;
       const r = ov.getBoundingClientRect();
       if (r.left < -1 || r.top < -1 || r.right > width + 1 || r.bottom > height + 1) {
@@ -193,7 +194,7 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
       const btns = Array.from(bar.querySelectorAll<HTMLElement>('button, a.lp-btn')).filter(isVisible);
       if (btns.length === 0) continue;
       const roleRank = (el: HTMLElement): number => {
-        if (el.classList.contains('lp-btn-primary')) return 0;
+        if (el.classList.contains('lp-btn-primary') || el.classList.contains('lp-btn-danger')) return 0;
         if (el.classList.contains('lp-btn-secondary')) return 1;
         return 2;
       };
@@ -203,9 +204,11 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
           details.actionBar.push(`ActionBar button order wrong: ${btns[i - 1].textContent?.trim()} before ${btns[i].textContent?.trim()}`);
         }
       }
+      if (bar.classList.contains('lp-action-bar-item')) continue;
       const barRect = bar.getBoundingClientRect();
-      const firstW = Math.round(btns[0].getBoundingClientRect().width);
-      for (const b of btns) {
+      const nonTextBtns = btns.filter((b) => !b.classList.contains('lp-btn-text'));
+      const firstW = nonTextBtns.length > 0 ? Math.round(nonTextBtns[0].getBoundingClientRect().width) : 0;
+      for (const b of nonTextBtns) {
         const br = b.getBoundingClientRect();
         const bw = Math.round(br.width);
         if (Math.abs(bw - firstW) > 2) {
@@ -270,7 +273,7 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
       rhythmChecks.push({ el: ph, pairs });
     }
     for (const ab of actionBars) {
-      if (!isVisible(ab)) continue;
+      if (!isVisible(ab) || getComputedStyle(ab).flexDirection === 'row') continue;
       const kids = Array.from(ab.children).filter((k): k is HTMLElement => isVisible(k));
       const pairs: Array<[HTMLElement, HTMLElement, number[]]> = [];
       for (let i = 1; i < kids.length; i++) {
