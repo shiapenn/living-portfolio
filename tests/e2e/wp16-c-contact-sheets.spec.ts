@@ -185,6 +185,106 @@ print(f"G3 selective capture: {len(results)} / 252 sheets included.")
       execSync(`rm -f "${zipPath}" && cd "${G_DIR}" && zip -rq "${zipPath}" .`);
       expect(existsSync(zipPath)).toBe(true);
     });
+  } else if (process.env.CAPTURE_H3_SHEETS === '1') {
+    test('captures selective H3 contact sheets (named defect states + top bar states + pixel diff > 0.5% vs WP-16.G) and zips to ~/Desktop/wp16h-contact-sheets.zip', async ({ page }) => {
+      test.setTimeout(600_000);
+      const ALL_DIR = resolve(process.cwd(), 'test-results/wp16h-all-sheets');
+      const G_ALL_DIR = existsSync('/tmp/wp16g-all-sheets')
+        ? '/tmp/wp16g-all-sheets'
+        : resolve(process.cwd(), 'test-results/wp16g-all-sheets');
+      const H_DIR = resolve(process.cwd(), 'test-results/wp16h-contact-sheets');
+      mkdirSync(ALL_DIR, { recursive: true });
+      mkdirSync(H_DIR, { recursive: true });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+
+      await ensureAdminLoggedIn(page);
+      const ids = await getSeededIds(page);
+      expect(ids.entryId).toBeTruthy();
+
+      const namedDefectStates = new Set([
+        'answer-rules',
+        'history',
+        'settings-providers',
+        'status',
+        'editor-role-suggested',
+        'editor-role-accepted',
+        'editor-role-ignored',
+        'editor-settings',
+        'editor-tag-add',
+        'login-recovery',
+        'overlay-entries-panel',
+        'setup-step-3',
+        'setup-step-6',
+        // Two additional states that show the top bar (H6)
+        'today',
+        'inbox',
+      ]);
+
+      for (const vp of VIEWPORTS) {
+        await page.setViewportSize(vp);
+        for (const theme of THEMES) {
+          for (const state of STATES) {
+            await navigateToState(page, state, ids);
+            await setTheme(page, theme);
+            const file = sheetFileName(state.id, vp.width, theme);
+            await page.screenshot({
+              path: resolve(ALL_DIR, file),
+              fullPage: state.fullPage ?? true,
+            });
+          }
+        }
+      }
+
+      const pyScript = `
+import json, shutil
+from pathlib import Path
+from PIL import Image, ImageChops
+
+all_dir = Path(${JSON.stringify(ALL_DIR)})
+g_dir = Path(${JSON.stringify(G_ALL_DIR)})
+h_dir = Path(${JSON.stringify(H_DIR)})
+named = set(${JSON.stringify(Array.from(namedDefectStates))})
+
+results = []
+excluded = []
+for h_png in sorted(all_dir.glob("*.png")):
+    name = h_png.name
+    state_id = name.rsplit("-", 2)[0]
+    g_png = g_dir / name
+    diff_pct = 100.0
+    if g_png.exists():
+        im_h = Image.open(h_png).convert("RGBA")
+        im_g = Image.open(g_png).convert("RGBA")
+        if im_h.size == im_g.size:
+            diff = ImageChops.difference(im_h, im_g)
+            px = diff.getdata()
+            changed = sum(1 for r, g, b, a in px if r > 4 or g > 4 or b > 4 or a > 4)
+            diff_pct = round((changed / max(1, len(px))) * 100.0, 2)
+        else:
+            diff_pct = 100.0
+    reasons = []
+    if state_id in named:
+        reasons.append("named-defect")
+    if diff_pct > 0.5:
+        reasons.append(f"pixel-diff={diff_pct}%")
+    if reasons:
+        shutil.copy2(h_png, h_dir / name)
+        results.append({"file": name, "stateId": state_id, "diffPct": diff_pct, "reason": ", ".join(reasons)})
+    else:
+        excluded.append({"file": name, "stateId": state_id, "diffPct": diff_pct})
+
+(h_dir / "index.json").write_text(json.dumps({"included": results, "excludedCount": len(excluded)}, indent=2))
+lines = [f"{r['file']}\\t{r['diffPct']}%\\t{r['reason']}" for r in results]
+(h_dir / "index.txt").write_text("\\n".join(lines) + "\\n")
+print(f"H3 selective capture: {len(results)} / {len(results) + len(excluded)} sheets included ({len(excluded)} unchanged excluded).")
+`;
+      const summary = execSync('python3 -', { input: pyScript, encoding: 'utf8' });
+      console.log(summary.trim());
+
+      const zipPath = resolve(process.env.HOME || '~', 'Desktop/wp16h-contact-sheets.zip');
+      execSync(`rm -f "${zipPath}" && cd "${H_DIR}" && zip -rq "${zipPath}" .`);
+      expect(existsSync(zipPath)).toBe(true);
+    });
   } else {
     test('STATES manifest parity guard (set CAPTURE_CONTACT_SHEETS=1 to capture)', () => {
       expect(expectedSheetFiles().length).toBe(STATES.length * THEMES.length * VIEWPORTS.length);
