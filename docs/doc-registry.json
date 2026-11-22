@@ -1681,5 +1681,13 @@
     "path": "docs/execution-reports/A163-wp-16k-k3-full-tokenization.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A164",
+    "title": "wp-16k-k4-pixel-diff-and-closure",
+    "class": "A",
+    "path": "docs/execution-reports/A164-wp-16k-k4-pixel-diff-and-closure.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
