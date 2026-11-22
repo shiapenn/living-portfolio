@@ -1,5 +1,5 @@
 import { z } from '@living-portfolio/core';
-import { renderActionBar, renderField, renderFormSection } from '../../primitives/index.js';
+import { renderActionBar, renderField, renderFormSection, renderSectionHeader } from '../../primitives/index.js';
 import { renderStatusLine } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 import { BUILTIN_THEME_PACKS } from '../theme-packs.js';
@@ -37,7 +37,7 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
         ${renderStatusLine({ id: 'settings-status-banner' })}
 
         <section class="lp-stack-md">
-          <h2 class="lp-section-title">Theme pack</h2>
+          ${renderSectionHeader({ title: 'Theme pack' })}
           ${renderField({
             kind: 'select',
             id: 'setting-theme-pack',

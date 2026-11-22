@@ -77,7 +77,7 @@ export function renderDialog(props: DialogProps): string {
     dataAttrs: { 'lp-dialog-close': 'true' },
   });
 
-  return `<div id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}" role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}"${hiddenAttr}>
+  return `<div id="${escapeHtml(props.id)}" data-c="Overlay" class="${escapeHtml(classes)}" role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}"${hiddenAttr}>
   <div class="lp-dialog-panel">
     <div class="lp-stack lp-gap-related">
       <div class="lp-dialog-header">
@@ -110,7 +110,7 @@ export function renderDrawer(props: DrawerProps): string {
     dataAttrs: { 'lp-dialog-close': 'true' },
   });
 
-  return `<div id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}" role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}"${hiddenAttr}>
+  return `<div id="${escapeHtml(props.id)}" data-c="EdgePanel" class="${escapeHtml(classes)}" role="dialog" aria-modal="true" aria-labelledby="${escapeHtml(titleId)}"${hiddenAttr}>
   <div class="lp-drawer-panel">
     <div class="lp-dialog-header">
       <h2 id="${escapeHtml(titleId)}" class="lp-dialog-title">${escapeHtml(props.title)}</h2>

@@ -40,7 +40,7 @@ export async function renderAdminInboxPage(
 
   const tabsHtml = selectedItem
     ? undefined
-    : `<div class="lp-tabs" role="tablist" aria-label="Inbox status filters">
+    : `<div data-c="Tabs" data-rel="tabs" class="lp-tabs" role="tablist" aria-label="Inbox status filters">
         <a id="inbox-filter-pending" href="/admin/inbox?status=pending" role="tab" aria-selected="${activeStatus === 'pending' ? 'true' : 'false'}" class="lp-tab${activeStatus === 'pending' ? ' lp-tab-active' : ''}">${escapeHtml(INBOX_STRINGS.inbox.filters.pending)}</a>
         <a id="inbox-filter-approved" href="/admin/inbox?status=approved" role="tab" aria-selected="${activeStatus === 'approved' ? 'true' : 'false'}" class="lp-tab${activeStatus === 'approved' ? ' lp-tab-active' : ''}">${escapeHtml(INBOX_STRINGS.inbox.filters.approved)}</a>
         <a id="inbox-filter-rejected" href="/admin/inbox?status=rejected" role="tab" aria-selected="${activeStatus === 'rejected' ? 'true' : 'false'}" class="lp-tab${activeStatus === 'rejected' ? ' lp-tab-active' : ''}">${escapeHtml(INBOX_STRINGS.inbox.filters.rejected)}</a>

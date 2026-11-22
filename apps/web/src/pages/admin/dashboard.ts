@@ -143,7 +143,7 @@ ${items
 
   const bodyHtml = `
   <section aria-labelledby="today-attention-heading">
-    <h2 id="today-attention-heading" class="lp-section-title">${escapeHtml(DASHBOARD_STRINGS.attention.heading)}</h2>
+    ${renderSectionHeader({ id: 'today-attention-heading', title: DASHBOARD_STRINGS.attention.heading })}
     ${attentionHtml}
   </section>
 

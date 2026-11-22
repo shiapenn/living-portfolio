@@ -97,7 +97,6 @@ test.describe('WP-16.K Defect Verification (UX-209..UX-211)', () => {
   });
 
   test('20261106-UX-211 (K3): zero orphanTextCountAllStates and zero unownedMarginCountAllStates across all 42 states', async ({ page }) => {
-    test.fail(true, 'K0 failing-first against cfdca95: 1008 orphan texts and 90 unowned margins remain');
     test.setTimeout(300_000);
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);

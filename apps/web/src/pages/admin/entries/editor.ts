@@ -132,14 +132,14 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
   ${renderEditorToolbar(selected, options.statusMessage ?? '', options.statusTone ?? 'info')}
   <div id="ref-writing-view" class="lp-editor-writing-view">
     <div class="lp-editor-writing-col">
-      <div class="lp-editor-title-wrap">
+      <div data-c="Field" data-rel="field" class="lp-editor-title-wrap">
         <textarea id="ref-field-title" name="title" rows="1" data-lp-autogrow="true" class="lp-editor-title-input" placeholder="${escapeHtml(EDITOR_STRINGS.fields.titlePlaceholder)}" aria-label="${escapeHtml(EDITOR_STRINGS.fields.titleLabel)}" required>${escapeHtml(selected.title)}</textarea>
-        <a href="#settings" id="ref-details-line" class="lp-editor-details-line">${escapeHtml(formatVisibilityLabel(selected.visibility))}, ${escapeHtml(formatDetailsMeta(selected))}</a>
+        <a href="#settings" id="ref-details-line" data-c="Text" data-variant="caption" class="lp-editor-details-line">${escapeHtml(formatVisibilityLabel(selected.visibility))}, ${escapeHtml(formatDetailsMeta(selected))}</a>
         ${options.titleError ? `<p id="ref-field-title-error" class="lp-field-error">${escapeHtml(options.titleError)}</p>` : '<p id="ref-field-title-error" class="lp-field-error lp-is-hidden"></p>'}
       </div>
-      <div class="lp-editor-surface-wrap">
+      <div data-c="Text" data-variant="prose" class="lp-editor-surface-wrap">
         <div id="ref-tiptap-editor" class="lp-tiptap-mount lp-prose"></div>
-        <div id="ref-slash-menu" class="lp-popover-menu lp-slash-menu" data-overlay="true" role="menu" aria-label="Insert block" hidden></div>
+        <div id="ref-slash-menu" data-c="Overlay" class="lp-popover-menu lp-slash-menu" data-overlay="true" role="menu" aria-label="Insert block" hidden></div>
         <textarea id="ref-field-body" name="body" class="lp-input lp-textarea lp-editor-source-textarea lp-is-hidden" rows="16" placeholder="${escapeHtml(EDITOR_STRINGS.fields.bodyPlaceholder)}" aria-label="${escapeHtml(EDITOR_STRINGS.fields.bodyLabel)}" hidden>${escapeHtml(selected.body)}</textarea>
       </div>
       ${renderEditorFormattingBar()}
@@ -247,10 +247,10 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
     </div>
   </div>
   <div id="ref-main" class="lp-editor-shell-fullscreen">
-    <aside id="ref-entries-drawer" class="lp-editor-drawer lp-editor-drawer-left" aria-label="${escapeHtml(EDITOR_STRINGS.sidebar.heading)}" hidden>
+    <aside id="ref-entries-drawer" data-c="EdgePanel" class="lp-editor-drawer lp-editor-drawer-left" aria-label="${escapeHtml(EDITOR_STRINGS.sidebar.heading)}" hidden>
       <div class="lp-editor-drawer-header lp-editor-drawer-header-stack">
-        <div class="lp-section-header">
-          <h2 class="lp-section-header-title">${escapeHtml(EDITOR_STRINGS.sidebar.heading)}</h2>
+        <div data-c="SectionHeader" class="lp-section-header">
+          <h2 data-rel="section-title" class="lp-section-header-title">${escapeHtml(EDITOR_STRINGS.sidebar.heading)}</h2>
         </div>
         ${entries.length > 0 ? renderButton({ id: 'ref-btn-new-entry', label: EDITOR_STRINGS.sidebar.newEntry, variant: 'primary', size: 'sm', className: 'lp-btn-full' }) : ''}
         <input type="search" id="ref-entries-search" class="lp-input" placeholder="Search entries…" aria-label="Search entries" />

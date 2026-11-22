@@ -34,4 +34,6 @@ export { renderTag } from './tag.js';
 export type { TagProps } from './tag.js';
 export { renderLevel, STRUCTURE_STAGES } from './level.js';
 export type { LevelProps, StructureStage } from './level.js';
+export { renderText } from './text.js';
+export type { TextProps, TextVariant } from './text.js';
 export { renderFoundationsGalleryPage } from './foundations-gallery.js';

@@ -1,5 +1,5 @@
 import { renderAdminShell, renderPageTemplate } from '../../../layouts/admin-shell.js';
-import { renderButton, renderField, renderIcon, renderItem } from '../../../primitives/index.js';
+import { renderButton, renderField, renderIcon, renderItem, renderText } from '../../../primitives/index.js';
 import { renderDialog, renderEmptyState, renderPageNotice } from '../../../components/index.js';
 import { adaptDataSource, type WebDataClient } from '../../../lib/data-source.js';
 import { escapeHtml } from '../../../lib/html.js';
@@ -104,8 +104,13 @@ ${renderButton({ id: 'btn-entries-delete-confirm', label: ENTRIES_LIST_STRINGS.d
       })}
     </div>
     <div class="lp-entries-search-group">
-      <label class="lp-field-label" for="entries-search">${escapeHtml(ENTRIES_LIST_STRINGS.filters.searchLabel)}</label>
-      <input type="search" id="entries-search" class="lp-input" placeholder="${escapeHtml(ENTRIES_LIST_STRINGS.filters.searchPlaceholder)}" />
+      ${renderField({
+        kind: 'input',
+        id: 'entries-search',
+        name: 'search',
+        label: ENTRIES_LIST_STRINGS.filters.searchLabel,
+        placeholder: ENTRIES_LIST_STRINGS.filters.searchPlaceholder,
+      })}
     </div>
   </div>
 
@@ -114,7 +119,7 @@ ${renderButton({ id: 'btn-entries-delete-confirm', label: ENTRIES_LIST_STRINGS.d
 
   <div id="entries-pagination" class="lp-entries-pagination">
     ${renderButton({ id: 'btn-entries-prev', label: ENTRIES_LIST_STRINGS.pagination.prev, variant: 'secondary', size: 'sm', disabled: page <= 1 })}
-    <span id="entries-page-summary" class="lp-field-help">${escapeHtml(ENTRIES_LIST_STRINGS.pagination.summary(page, totalPages, total))}</span>
+    ${renderText({ id: 'entries-page-summary', variant: 'caption', tag: 'span', className: 'lp-field-help', text: ENTRIES_LIST_STRINGS.pagination.summary(page, totalPages, total) })}
     ${renderButton({ id: 'btn-entries-next', label: ENTRIES_LIST_STRINGS.pagination.next, variant: 'secondary', size: 'sm', disabled: page >= totalPages })}
   </div>
 

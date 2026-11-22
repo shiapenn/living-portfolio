@@ -1,6 +1,6 @@
 import { renderAdminShell } from "../../layouts/admin-shell.js";
 import { renderStatusLine } from "../../components/index.js";
-import { renderActionBar, renderBackLink, renderButton, renderChoiceGroup, renderField, renderIcon, renderItem } from "../../primitives/index.js";
+import { renderActionBar, renderBackLink, renderButton, renderChoiceGroup, renderField, renderIcon, renderItem, renderSectionHeader, renderText } from "../../primitives/index.js";
 import { PROVIDERS_CATALOG, renderProviderFlow } from "../../patterns/provider-flow.js";
 import { WIZARD_STRINGS } from "../../strings.js";
 import { SETUP_SCRIPT_PART_1 } from './setup-script-part1.js';
@@ -28,17 +28,17 @@ export function renderAdminSetupPage(): string {
 
         <form id="admin-setup-form" class="lp-stack lp-gap-group">
           <div class="lp-stack lp-gap-related">
-            <div class="lp-field">
+            <div data-c="Field" data-rel="field" class="lp-field">
               <label for="setup-username" class="lp-field-label">${WIZARD_STRINGS.step1.fields.username.label}</label>
               <input id="setup-username" type="text" class="lp-input" required />
               <div class="lp-help-text">${WIZARD_STRINGS.step1.fields.username.help}</div>
             </div>
-            <div class="lp-field">
+            <div data-c="Field" data-rel="field" class="lp-field">
               <label for="setup-password" class="lp-field-label">${WIZARD_STRINGS.step1.fields.password.label}</label>
               <input id="setup-password" type="password" minlength="12" class="lp-input" required />
               <div class="lp-help-text">${WIZARD_STRINGS.step1.fields.password.help}</div>
             </div>
-            <div class="lp-field">
+            <div data-c="Field" data-rel="field" class="lp-field">
               <label for="setup-totp-secret" class="lp-field-label">${WIZARD_STRINGS.step1.fields.totpSecret.label}</label>
               <input id="setup-totp-secret" type="text" class="lp-input" placeholder="Generated if blank" />
               <div class="lp-help-text">${WIZARD_STRINGS.step1.fields.totpSecret.help}</div>
@@ -61,7 +61,7 @@ export function renderAdminSetupPage(): string {
             <code id="setup-manual-key"></code>
           </div>
           <form id="totp-confirm-form" class="lp-stack-md">
-            <div class="lp-field">
+            <div data-c="Field" data-rel="field" class="lp-field">
               <label for="confirm-totp-code" class="lp-field-label">${WIZARD_STRINGS.step1.enrolment.codeLabel}</label>
               <input id="confirm-totp-code" type="text" maxlength="6" pattern="[0-9]{6}" class="lp-input lp-input-code" placeholder="000000" required />
             </div>
@@ -131,7 +131,7 @@ export function renderAdminSetupPage(): string {
           })),
         })}
 
-        <div class="lp-field">
+        <div data-c="Field" data-rel="field" class="lp-field">
           <label for="setup-origin-url" class="lp-field-label">${WIZARD_STRINGS.step2.originUrl.label}</label>
           <input type="text" id="setup-origin-url" class="lp-input" placeholder="${WIZARD_STRINGS.step2.originUrl.placeholder}" />
           <div class="lp-help-text">${WIZARD_STRINGS.step2.originUrl.help}</div>
@@ -182,7 +182,7 @@ export function renderAdminSetupPage(): string {
           options: WIZARD_STRINGS.step4.channel.options.map(opt => ({ value: opt.value, label: opt.label })),
         })}
 
-        <div class="lp-field">
+        <div data-c="Field" data-rel="field" class="lp-field">
           <label for="setup-notification-target" class="lp-field-label">${WIZARD_STRINGS.step4.target.label}</label>
           <input type="text" id="setup-notification-target" class="lp-input" placeholder="${WIZARD_STRINGS.step4.target.placeholder}" />
           <div class="lp-help-text">${WIZARD_STRINGS.step4.target.help}</div>
@@ -190,7 +190,7 @@ export function renderAdminSetupPage(): string {
 
         <div class="lp-stack-sm">
           ${renderButton({ label: WIZARD_STRINGS.step4.testButton, id: 'btn-setup-test-alert', variant: 'secondary', disabled: true, title: WIZARD_STRINGS.step4.testDisabledReason })}
-          <div id="setup-alert-disabled-reason" class="lp-help-text">${WIZARD_STRINGS.step4.testDisabledReason}</div>
+          ${renderText({ id: 'setup-alert-disabled-reason', variant: 'caption', tag: 'div', className: 'lp-help-text', text: WIZARD_STRINGS.step4.testDisabledReason })}
           <div id="setup-alert-result" class="lp-is-hidden" role="alert"></div>
         </div>
         </div>
@@ -218,13 +218,13 @@ export function renderAdminSetupPage(): string {
           options: WIZARD_STRINGS.step5.destination.options.map(opt => ({ value: opt.value, label: opt.label })),
         })}
 
-        <div class="lp-field">
+        <div data-c="Field" data-rel="field" class="lp-field">
           <label for="setup-backup-dir" class="lp-field-label">${WIZARD_STRINGS.step5.folder.label}</label>
           <input type="text" id="setup-backup-dir" class="lp-input" value="./data/backups" placeholder="${WIZARD_STRINGS.step5.folder.placeholder}" />
           <div class="lp-help-text">${WIZARD_STRINGS.step5.folder.help}</div>
         </div>
 
-        <div class="lp-field">
+        <div data-c="Field" data-rel="field" class="lp-field">
           <label for="setup-age-key" class="lp-field-label">${WIZARD_STRINGS.step5.ageKey.label}</label>
           <input type="text" id="setup-age-key" class="lp-input lp-input-code" placeholder="${WIZARD_STRINGS.step5.ageKey.placeholder}" />
           <div class="lp-help-text">${WIZARD_STRINGS.step5.ageKey.help}</div>
@@ -264,15 +264,18 @@ export function renderAdminSetupPage(): string {
         })}
 
         <div class="lp-stack-sm">
-          <h3 class="lp-section-title">${WIZARD_STRINGS.step6.workedExample.title}</h3>
-          <p class="lp-page-description">${WIZARD_STRINGS.step6.workedExample.lead}</p>
-          <ul class="lp-inline-list lp-page-description">
-            ${WIZARD_STRINGS.step6.workedExample.claims.map(c => `<li><strong>${c.label}:</strong> ${c.text}</li>`).join('')}
-          </ul>
-          <p class="lp-page-description">"${WIZARD_STRINGS.step6.workedExample.closing}"</p>
+          ${renderSectionHeader({ title: WIZARD_STRINGS.step6.workedExample.title, headingTag: 'h3' })}
+          ${renderText({
+            variant: 'prose',
+            html: `<p class="lp-page-description">${WIZARD_STRINGS.step6.workedExample.lead}</p>
+              <ul class="lp-inline-list lp-page-description">
+                ${WIZARD_STRINGS.step6.workedExample.claims.map(c => `<li><strong>${c.label}:</strong> ${c.text}</li>`).join('')}
+              </ul>
+              <p class="lp-page-description">"${WIZARD_STRINGS.step6.workedExample.closing}"</p>`,
+          })}
         </div>
 
-        <p class="lp-help-text">${WIZARD_STRINGS.step6.deployNotice}</p>
+        ${renderText({ variant: 'caption', className: 'lp-help-text', text: WIZARD_STRINGS.step6.deployNotice })}
 
         ${renderActionBar({
           level: 'page',
