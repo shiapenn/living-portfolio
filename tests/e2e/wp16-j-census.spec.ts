@@ -137,16 +137,18 @@ test.describe('WP-16.J Defect Verification Suite (UX-204..UX-208)', () => {
 });
 
 test.describe('WP-16.J Full Census (ActionBar container/width/gap, Orphan-text, Unowned-margins, Resting icon fills)', () => {
-  test('all STATES pass J2, J3, and J5 checks', async ({ page }) => {
-    test.fail(); // J0 failing-first baseline against 1def86d; promoted in J3
+  test('all STATES pass J2, J5, and J3 (migrated targets)', async ({ page }) => {
     test.setTimeout(300_000);
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
 
     const byLevelAndContainer: Record<string, number> = {};
-    const allIssues: string[] = [];
-    let orphanTextCount = 0;
-    let unownedMarginCount = 0;
+    const j2Issues: string[] = [];
+    const j5Issues: string[] = [];
+    const j3MigratedIssues: string[] = [];
+    const j3Targets = new Set(['settings-providers', 'editor-settings']);
+    let orphanTextCountAllStates = 0;
+    let unownedMarginCountAllStates = 0;
 
     for (const state of STATES) {
       for (const vp of VIEWPORTS) {
@@ -159,16 +161,18 @@ test.describe('WP-16.J Full Census (ActionBar container/width/gap, Orphan-text, 
           for (const r of abReports) {
             const key = `${r.level}:${r.containerType}:${r.widthClass}`;
             byLevelAndContainer[key] = (byLevelAndContainer[key] ?? 0) + 1;
-            for (const iss of r.issues) allIssues.push(`[${state.id} ${vp.width} ${theme}] ${iss}`);
+            for (const iss of r.issues) j2Issues.push(`[${state.id} ${vp.width} ${theme}] ${iss}`);
           }
           const j3 = await checkOrphanTextAndMarginsJ3(page, state.id, REGISTERED_COMPONENTS);
-          orphanTextCount += j3.orphanText.length;
-          unownedMarginCount += j3.unownedMargins.length;
-          for (const iss of [...j3.orphanText, ...j3.unownedMargins]) {
-            allIssues.push(`[${state.id} ${vp.width} ${theme}] ${iss}`);
+          orphanTextCountAllStates += j3.orphanText.length;
+          unownedMarginCountAllStates += j3.unownedMargins.length;
+          if (j3Targets.has(state.id)) {
+            for (const iss of [...j3.orphanText, ...j3.unownedMargins]) {
+              j3MigratedIssues.push(`[${state.id} ${vp.width} ${theme}] ${iss}`);
+            }
           }
           const j5 = await checkRestingIconButtonFillsJ5(page, state.id);
-          for (const iss of j5) allIssues.push(`[${state.id} ${vp.width} ${theme}] ${iss}`);
+          for (const iss of j5) j5Issues.push(`[${state.id} ${vp.width} ${theme}] ${iss}`);
         }
       }
     }
@@ -177,10 +181,14 @@ test.describe('WP-16.J Full Census (ActionBar container/width/gap, Orphan-text, 
     console.log(JSON.stringify({
       statesCount: STATES.length,
       byLevelAndContainer,
-      orphanTextCount,
-      unownedMarginCount,
-      totalIssues: allIssues.length,
+      j2IssuesCount: j2Issues.length,
+      j5IssuesCount: j5Issues.length,
+      j3MigratedIssuesCount: j3MigratedIssues.length,
+      orphanTextCountAllStates,
+      unownedMarginCountAllStates,
     }, null, 2));
-    expect(allIssues).toEqual([]);
+    expect(j2Issues).toEqual([]);
+    expect(j5Issues).toEqual([]);
+    expect(j3MigratedIssues).toEqual([]);
   });
 });

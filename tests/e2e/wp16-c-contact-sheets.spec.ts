@@ -391,6 +391,97 @@ print(f"I3 selective capture: {len(results)} / {len(results) + len(excluded)} sh
       execSync(`rm -f "${zipPath}" && cd "${I_DIR}" && zip -rq "${zipPath}" .`);
       expect(existsSync(zipPath)).toBe(true);
     });
+  } else if (process.env.CAPTURE_J3_SHEETS === '1') {
+    test('captures selective J3 contact sheets (named defect states + pixel diff > 0.5% vs WP-16.I) and zips to ~/Desktop/wp16j-contact-sheets.zip', async ({ page }) => {
+      test.setTimeout(600_000);
+      const ALL_DIR = resolve(process.cwd(), 'test-results/wp16j-all-sheets');
+      const I_ALL_DIR = existsSync('/tmp/wp16i-all-sheets')
+        ? '/tmp/wp16i-all-sheets'
+        : resolve(process.cwd(), 'test-results/wp16i-all-sheets');
+      const J_DIR = resolve(process.cwd(), 'test-results/wp16j-contact-sheets');
+      mkdirSync(ALL_DIR, { recursive: true });
+      mkdirSync(J_DIR, { recursive: true });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+
+      await ensureAdminLoggedIn(page);
+      const ids = await getSeededIds(page);
+      expect(ids.entryId).toBeTruthy();
+
+      const namedDefectStates = new Set([
+        'settings-providers',
+        'editor-settings',
+        'editor-tag-add',
+        'editor-role-accepted',
+        'editor-role-ignored',
+        'editor-role-suggested',
+      ]);
+
+      for (const state of STATES) {
+        for (const vp of VIEWPORTS) {
+          await page.setViewportSize(vp);
+          const ok = await navigateToState(page, state, ids);
+          if (!ok) continue;
+          for (const theme of THEMES) {
+            await setTheme(page, theme);
+            const file = sheetFileName(state.id, vp.width, theme);
+            await page.screenshot({
+              path: resolve(ALL_DIR, file),
+              fullPage: state.fullPage ?? true,
+            });
+          }
+        }
+      }
+
+      const pyScript = `
+import json, shutil
+from pathlib import Path
+from PIL import Image, ImageChops
+
+all_dir = Path(${JSON.stringify(ALL_DIR)})
+i_dir = Path(${JSON.stringify(I_ALL_DIR)})
+j_dir = Path(${JSON.stringify(J_DIR)})
+named = set(${JSON.stringify(Array.from(namedDefectStates))})
+
+results = []
+excluded = []
+for j_png in sorted(all_dir.glob("*.png")):
+    name = j_png.name
+    state_id = name.rsplit("-", 2)[0]
+    i_png = i_dir / name
+    diff_pct = 100.0
+    if i_png.exists():
+        im_j = Image.open(j_png).convert("RGBA")
+        im_i = Image.open(i_png).convert("RGBA")
+        if im_j.size == im_i.size:
+            diff = ImageChops.difference(im_j, im_i)
+            px = diff.getdata()
+            changed = sum(1 for r, g, b, a in px if r > 4 or g > 4 or b > 4 or a > 4)
+            diff_pct = round((changed / max(1, len(px))) * 100.0, 2)
+        else:
+            diff_pct = 100.0
+    reasons = []
+    if state_id in named:
+        reasons.append("named-defect")
+    if diff_pct > 0.5:
+        reasons.append(f"pixel-diff={diff_pct}%")
+    if reasons:
+        shutil.copy2(j_png, j_dir / name)
+        results.append({"file": name, "stateId": state_id, "diffPct": diff_pct, "reason": ", ".join(reasons)})
+    else:
+        excluded.append({"file": name, "stateId": state_id, "diffPct": diff_pct})
+
+(j_dir / "index.json").write_text(json.dumps({"included": results, "excludedCount": len(excluded)}, indent=2))
+lines = [f"{r['file']}\\t{r['diffPct']}%\\t{r['reason']}" for r in results]
+(j_dir / "index.txt").write_text("\\n".join(lines) + "\\n")
+print(f"J3 selective capture: {len(results)} / {len(results) + len(excluded)} sheets included ({len(excluded)} unchanged excluded).")
+`;
+      const summary = execSync('python3 -', { input: pyScript, encoding: 'utf8' });
+      console.log(summary.trim());
+
+      const zipPath = resolve(process.env.HOME || '~', 'Desktop/wp16j-contact-sheets.zip');
+      execSync(`rm -f "${zipPath}" && cd "${J_DIR}" && zip -rq "${zipPath}" .`);
+      expect(existsSync(zipPath)).toBe(true);
+    });
   } else {
     test('STATES manifest parity guard (set CAPTURE_CONTACT_SHEETS=1 to capture)', () => {
       expect(expectedSheetFiles().length).toBe(STATES.length * THEMES.length * VIEWPORTS.length);
