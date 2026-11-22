@@ -96,7 +96,7 @@ export function renderEntryRow(entry: any, opts?: EntryRowOptions): string {
 
   let facetChips = '';
   if (opts?.facets && opts.facets.length > 0) {
-    facetChips = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">${opts.facets
+    facetChips = `<div style="display:flex;gap:var(--lp-size-6);flex-wrap:wrap;margin-top:var(--lp-space-4)">${opts.facets
       .map((f) => `<span class="chip">${escapeHtml(f.key)}: ${escapeHtml(String(f.value))}</span>`)
       .join(' ')}</div>`;
   }
@@ -104,7 +104,7 @@ export function renderEntryRow(entry: any, opts?: EntryRowOptions): string {
   let summaryHtml = '';
   const summaryText = opts?.summary !== undefined ? opts.summary : entry.summary;
   if (opts?.showSummary !== false && summaryText) {
-    summaryHtml = `<div style="color:var(--text-muted);max-width:68ch;margin-top:4px">${escapeHtml(summaryText)}</div>`;
+    summaryHtml = `<div style="color:var(--lp-color-text-2);max-width:var(--lp-measure-reading);margin-top:var(--lp-space-4)">${escapeHtml(summaryText)}</div>`;
   }
 
   const tag = opts?.asArticle ? 'article' : 'li';

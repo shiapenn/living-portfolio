@@ -174,7 +174,7 @@ Always use transaction-scoped locks with pooling.`;
       // Active months have height scaled with Math.min(120, Math.round(52 + Math.sqrt(count) * 28))
       expect(html).toContain('style="height:80px"'); // count=1 -> 52 + 28 = 80px
       // Empty months have fixed 44px touch-accessible height with hairline
-      expect(html).toContain('style="height:44px"');
+      expect(html).toContain('style="height:var(--lp-size-strata-band-min)"');
     });
 
     it('4. As-of cursor renders slider semantics and labeled handle', async () => {
@@ -286,11 +286,11 @@ Always use transaction-scoped locks with pooling.`;
     });
 
     it('5. Micro-transitions answer actions and respect prefers-reduced-motion', () => {
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('transition: transform var(--duration-fast, 120ms)');
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('transition: left var(--duration-base, 160ms)');
+      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('transition: transform var(--duration-fast, var(--lp-motion-duration-item))');
+      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('transition: left var(--duration-base, var(--lp-motion-duration-base))');
       expect(STRATA_DESIGN_SYSTEM_CSS).toContain('@media (prefers-reduced-motion: reduce)');
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('animation-duration: 0.01ms !important');
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('transition-duration: 0.01ms !important');
+      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('animation-duration: var(--lp-motion-duration-instant) !important');
+      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('transition-duration: var(--lp-motion-duration-instant) !important');
     });
   });
 });

@@ -77,7 +77,7 @@ export async function renderEntryDetailPage(
   const confirmedFacets = facets.filter((f) => f.status === 'confirmed');
   const contextStripHtml =
     confirmedFacets.length > 0
-      ? `<div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0" aria-label="Confirmed context conditions">
+      ? `<div style="display:flex;flex-wrap:wrap;gap:var(--lp-space-8);margin:var(--lp-space-12) 0" aria-label="Confirmed context conditions">
           ${confirmedFacets.map((f) => `<span class="chip"><strong>${escapeHtml(f.key)}:</strong> ${escapeHtml(String(f.value))}</span>`).join('\n          ')}
          </div>`
       : '';
@@ -94,7 +94,7 @@ export async function renderEntryDetailPage(
     .map(
       (a) => `<div class="later-thinking-banner" role="note">
         <strong>${escapeHtml(a.message)}</strong>
-        <a href="/work/${a.newer_entry_slug}${asOfQueryPart}" style="margin-left:8px">Read "${escapeHtml(a.newer_entry_title)}" →</a>
+        <a href="/work/${a.newer_entry_slug}${asOfQueryPart}" style="margin-left:var(--lp-space-8)">Read "${escapeHtml(a.newer_entry_title)}" →</a>
       </div>`
     )
     .join('\n');
@@ -154,7 +154,7 @@ export async function renderEntryDetailPage(
             <div class="reading-column">${combinedText}</div>
           </section>`;
         }
-        return `<div class="unlabeled-span reading-column" style="margin-bottom:24px">${combinedText}</div>`;
+        return `<div class="unlabeled-span reading-column" style="margin-bottom:var(--lp-space-24)">${combinedText}</div>`;
       });
 
       bodyHtml = renderedSections.join('\n');
@@ -182,11 +182,11 @@ export async function renderEntryDetailPage(
             const safeUrl = sanitizeHttpUrl(ev.url);
             if (!safeUrl) return '';
             const linkMarkup = `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">${escapeHtml(ev.url || ev.kind)}</a>`;
-            return `<div style="margin-bottom:8px">
+            return `<div style="margin-bottom:var(--lp-space-8)">
               ${linkMarkup}
               ${
                 ev.verified_at
-                  ? `<div class="chip" style="margin-top:4px;border-color:var(--role-outcome)" title="Verification proves the artifact exists and who authored it; it does not prove the surrounding narrative fits your situation.">✓ Verified (${escapeHtml(ev.verification?.label || 'artifact')})</div>`
+                  ? `<div class="chip" style="margin-top:var(--lp-space-4);border-color:var(--role-outcome)" title="Verification proves the artifact exists and who authored it; it does not prove the surrounding narrative fits your situation.">✓ Verified (${escapeHtml(ev.verification?.label || 'artifact')})</div>`
                   : ''
               }
             </div>`;
@@ -211,22 +211,22 @@ export async function renderEntryDetailPage(
   let asOfBannerHtml = '';
   if (asOfInfo) {
     if (!asOfInfo.valid) {
-      asOfBannerHtml = `<div class="as-of-banner" role="alert" style="position:sticky;top:0;z-index:10;margin-bottom:16px;border-left-color:var(--role-challenge,#f59e0b);background:var(--surface-raised)">
+      asOfBannerHtml = `<div class="as-of-banner" role="alert" style="position:sticky;top:0;z-index: var(--lp-z-10);margin-bottom:var(--lp-space-16);border-left-color:var(--role-challenge,var(--lp-color-role-friction));background:var(--surface-raised)">
         <span><strong>Invalid as-of date ("${escapeHtml(asOfInfo.raw)}")</strong> — Showing present revision.</span>
         <a href="/work/${entry.slug}">Reset to present</a>
       </div>`;
     } else if (notYetWritten) {
-      asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index:10;margin-bottom:16px;background:var(--surface-raised);border-left:4px solid var(--accent)">
+      asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index: var(--lp-z-10);margin-bottom:var(--lp-space-16);background:var(--surface-raised);border-left:var(--lp-space-4) solid var(--accent)">
         <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}</strong> — This entry had not yet been recorded as of this date. Showing original revision from ${escapeHtml(result.currentRevision.written_at.slice(0, 10))}.</span>
-        <div style="display:flex;gap:12px;margin-top:4px">
+        <div style="display:flex;gap:var(--lp-space-12);margin-top:var(--lp-space-4)">
           <a href="/work/${entry.slug}">View present revision</a>
           <a href="/timeline?as_of=${encodeURIComponent(asOfInfo.raw)}">Back to timeline</a>
         </div>
       </div>`;
     } else {
-      asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index:10;margin-bottom:16px;background:var(--surface-raised);border-left:4px solid var(--accent)">
+      asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index: var(--lp-z-10);margin-bottom:var(--lp-space-16);background:var(--surface-raised);border-left:var(--lp-space-4) solid var(--accent)">
         <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}</strong> — Showing the revision active as of this date${isHistoricalRevision ? ' (historical revision)' : ' (latest revision)'}.</span>
-        <div style="display:flex;gap:12px;margin-top:4px">
+        <div style="display:flex;gap:var(--lp-space-12);margin-top:var(--lp-space-4)">
           <a href="/work/${entry.slug}">View present revision</a>
           <a href="/timeline?as_of=${encodeURIComponent(asOfInfo.raw)}">Back to timeline</a>
         </div>
@@ -237,19 +237,19 @@ export async function renderEntryDetailPage(
   const content = `
     <article${(entry as any).lang ? ` lang="${escapeHtml((entry as any).lang)}"` : ''}>
       ${asOfBannerHtml}
-      <header style="margin-bottom:var(--space-6);border-bottom:1px solid var(--rule);padding-bottom:var(--space-4)">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px">
-          <h1 style="font-family:var(--font-reading);font-size:30px;margin:0">${escapeHtml(entry.title)}</h1>
-          <div style="display:flex;gap:8px">
+      <header style="margin-bottom:var(--space-6);border-bottom:var(--lp-border-hairline) solid var(--rule);padding-bottom:var(--space-4)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:var(--lp-space-12)">
+          <h1 style="font-family:var(--font-reading);font-size:var(--lp-size-30);margin:0">${escapeHtml(entry.title)}</h1>
+          <div style="display:flex;gap:var(--lp-space-8)">
             ${qualifiesForStructured ? `<span class="chip">Structured</span>` : ''}
             ${
               qualifiesForStructured
-                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}${asOfAndPart}" class="btn btn-secondary" data-action="view-switch" style="padding:6px 14px;min-height:44px;display:inline-flex;align-items:center;font-size:14px;text-decoration:none">${activeView === 'structured' ? 'Read as one article' : 'Read by section'}</a>`
+                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}${asOfAndPart}" class="btn btn-secondary" data-action="view-switch" style="padding:var(--lp-size-6) var(--lp-size-14);min-height:var(--lp-size-hit-area);display:inline-flex;align-items:center;font-size:var(--lp-size-14);text-decoration:none">${activeView === 'structured' ? 'Read as one article' : 'Read by section'}</a>`
                 : ''
             }
           </div>
         </div>
-        <p class="entry-date-line tabular-nums" style="color:var(--text-muted);margin:var(--space-2) 0 var(--space-3);font-size:var(--font-size-1,14px);display:flex;align-items:center;gap:var(--space-1)">${dateGlyphHtml}<span>${escapeHtml(dateDisplay)}</span></p>
+        <p class="entry-date-line tabular-nums" style="color:var(--text-muted);margin:var(--space-2) 0 var(--space-3);font-size:var(--lp-font-size-14);display:flex;align-items:center;gap:var(--space-1)">${dateGlyphHtml}<span>${escapeHtml(dateDisplay)}</span></p>
         ${contextStripHtml}
       </header>
 
@@ -260,17 +260,17 @@ export async function renderEntryDetailPage(
           ${bodyHtml}
         </div>
         <aside class="margin-rail" aria-label="Entry evidence, claims, and scoped ask">
-          <h3 style="margin:0 0 var(--space-2);font-size:var(--font-size-2,15px);font-family:var(--font-reading)">Evidence</h3>
+          <h3 style="margin:0 0 var(--space-2);font-size:var(--lp-font-size-14);font-family:var(--font-reading)">Evidence</h3>
           ${evidenceHtml}
 
-          ${claimsHtml ? `<h3 style="margin:var(--space-6) 0 var(--space-2);font-size:var(--font-size-2,15px);font-family:var(--font-reading)">Conclusions</h3>${claimsHtml}` : ''}
+          ${claimsHtml ? `<h3 style="margin:var(--space-6) 0 var(--space-2);font-size:var(--lp-font-size-14);font-family:var(--font-reading)">Conclusions</h3>${claimsHtml}` : ''}
 
-          <div style="margin-top:var(--space-6);padding-top:var(--space-4);border-top:1px solid var(--rule)">
-            <h3 style="margin:0 0 var(--space-2);font-size:var(--font-size-2,15px);font-family:var(--font-reading)">Ask about this entry</h3>
+          <div style="margin-top:var(--space-6);padding-top:var(--space-4);border-top:var(--lp-border-hairline) solid var(--rule)">
+            <h3 style="margin:0 0 var(--space-2);font-size:var(--lp-font-size-14);font-family:var(--font-reading)">Ask about this entry</h3>
             <form action="/ask" method="GET">
               <input type="hidden" name="scope" value="${escapeHtml(entry.slug)}" />
               ${asOfInfo && asOfInfo.valid ? `<input type="hidden" name="as_of" value="${escapeHtml(asOfInfo.raw)}" />` : ''}
-              <input type="text" name="q" class="ask-input" style="width:100%;margin-bottom:8px" placeholder="What would you like to know?" aria-label="Ask about this entry" required />
+              <input type="text" name="q" class="ask-input" style="width:100%;margin-bottom:var(--lp-space-8)" placeholder="What would you like to know?" aria-label="Ask about this entry" required />
               <button type="submit" class="btn" style="width:100%">Ask</button>
             </form>
           </div>

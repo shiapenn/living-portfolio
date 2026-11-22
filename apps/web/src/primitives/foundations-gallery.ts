@@ -1,8 +1,18 @@
 import { STRATA_DESIGN_SYSTEM_CSS } from '../styles.js';
+import {
+  COMPONENT_TOKEN_VALUES,
+  PRIMITIVE_VALUES,
+  SEMANTIC_DARK_VALUES,
+  SEMANTIC_LIGHT_VALUES,
+  TYPE_ROLES,
+} from '../tokens/index.js';
 import { LUCIDE_ICON_NAMES, renderIcon, renderIconSprite } from './icons.js';
 import { renderButton, renderIconButton } from './button.js';
 import { renderBadge, renderChip, renderStatusDot } from './chip.js';
 import { renderField } from './field.js';
+import { renderItem } from './item.js';
+import { renderSectionHeader } from './section-header.js';
+import { renderText } from './text.js';
 import { renderSwitch } from './switch.js';
 import { renderPageNotice, renderStatusLine } from '../components/feedback.js';
 import {
@@ -38,31 +48,31 @@ export function computeHexContrastRatio(fgHex: string, bgHex: string): string {
 
 const ROLE_PALETTES = {
   light: {
-    surface: '#FFFFFF',
-    text: '#14202A',
-    borderControl: '#6B7B88',
-    focusRing: '#3A4FD0',
+    surface: SEMANTIC_LIGHT_VALUES['--lp-color-surface-page'],
+    text: SEMANTIC_LIGHT_VALUES['--lp-color-text-1'],
+    borderControl: SEMANTIC_LIGHT_VALUES['--lp-color-border-control'],
+    focusRing: SEMANTIC_LIGHT_VALUES['--lp-color-accent-focus-ring'],
     roles: {
-      action: { label: 'Action Role (fg on bg)', fg: '#1E329E', bg: '#EEF1FF' },
-      neutral: { label: 'Neutral Role (fg on bg)', fg: '#2D3B45', bg: '#EEF1F3' },
-      success: { label: 'Success Role (fg on bg)', fg: '#145940', bg: '#E8F5E9' },
-      warning: { label: 'Warning Role (fg on bg)', fg: '#6E4700', bg: '#FFF8E1' },
-      danger: { label: 'Danger Role (fg on bg)', fg: '#8E1B12', bg: '#FFEBEE' },
-      info: { label: 'Info Role (fg on bg)', fg: '#1D437A', bg: '#EAF2FC' },
+      action: { label: 'Action Role (fg on bg)', fg: SEMANTIC_LIGHT_VALUES['--lp-color-role-action-fg'], bg: SEMANTIC_LIGHT_VALUES['--lp-color-role-action-bg'] },
+      neutral: { label: 'Neutral Role (fg on bg)', fg: SEMANTIC_LIGHT_VALUES['--lp-color-role-neutral-fg'], bg: SEMANTIC_LIGHT_VALUES['--lp-color-role-neutral-bg'] },
+      success: { label: 'Success Role (fg on bg)', fg: SEMANTIC_LIGHT_VALUES['--lp-color-role-success-fg'], bg: SEMANTIC_LIGHT_VALUES['--lp-color-role-success-bg'] },
+      warning: { label: 'Warning Role (fg on bg)', fg: SEMANTIC_LIGHT_VALUES['--lp-color-role-warning-fg'], bg: SEMANTIC_LIGHT_VALUES['--lp-color-role-warning-bg'] },
+      danger: { label: 'Danger Role (fg on bg)', fg: SEMANTIC_LIGHT_VALUES['--lp-color-role-danger-fg'], bg: SEMANTIC_LIGHT_VALUES['--lp-color-role-danger-bg'] },
+      info: { label: 'Info Role (fg on bg)', fg: SEMANTIC_LIGHT_VALUES['--lp-color-role-info-fg'], bg: SEMANTIC_LIGHT_VALUES['--lp-color-role-info-bg'] },
     },
   },
   dark: {
-    surface: '#16232D',
-    text: '#E6ECEF',
-    borderControl: '#7E8F9C',
-    focusRing: '#9AA8FF',
+    surface: SEMANTIC_DARK_VALUES['--lp-color-surface-l1'],
+    text: SEMANTIC_DARK_VALUES['--lp-color-text-1'],
+    borderControl: SEMANTIC_DARK_VALUES['--lp-color-border-control'],
+    focusRing: SEMANTIC_DARK_VALUES['--lp-color-accent-focus-ring'],
     roles: {
-      action: { label: 'Action Role (fg on bg)', fg: '#C5CEFF', bg: '#1A244D' },
-      neutral: { label: 'Neutral Role (fg on bg)', fg: '#D5DEE4', bg: '#1E2C38' },
-      success: { label: 'Success Role (fg on bg)', fg: '#8CE0BC', bg: '#122B22' },
-      warning: { label: 'Warning Role (fg on bg)', fg: '#F7D070', bg: '#2B210D' },
-      danger: { label: 'Danger Role (fg on bg)', fg: '#FDA29B', bg: '#2E1515' },
-      info: { label: 'Info Role (fg on bg)', fg: '#A9CBF4', bg: '#15263D' },
+      action: { label: 'Action Role (fg on bg)', fg: SEMANTIC_DARK_VALUES['--lp-color-role-action-fg'], bg: SEMANTIC_DARK_VALUES['--lp-color-role-action-bg'] },
+      neutral: { label: 'Neutral Role (fg on bg)', fg: SEMANTIC_DARK_VALUES['--lp-color-role-neutral-fg'], bg: SEMANTIC_DARK_VALUES['--lp-color-role-neutral-bg'] },
+      success: { label: 'Success Role (fg on bg)', fg: SEMANTIC_DARK_VALUES['--lp-color-role-success-fg'], bg: SEMANTIC_DARK_VALUES['--lp-color-role-success-bg'] },
+      warning: { label: 'Warning Role (fg on bg)', fg: SEMANTIC_DARK_VALUES['--lp-color-role-warning-fg'], bg: SEMANTIC_DARK_VALUES['--lp-color-role-warning-bg'] },
+      danger: { label: 'Danger Role (fg on bg)', fg: SEMANTIC_DARK_VALUES['--lp-color-role-danger-fg'], bg: SEMANTIC_DARK_VALUES['--lp-color-role-danger-bg'] },
+      info: { label: 'Info Role (fg on bg)', fg: SEMANTIC_DARK_VALUES['--lp-color-role-info-fg'], bg: SEMANTIC_DARK_VALUES['--lp-color-role-info-bg'] },
     },
   },
 } as const;
@@ -837,4 +847,43 @@ export function renderFoundationsGalleryPage(theme: 'light' | 'dark' = 'light'):
   ${clientScript}
 </body>
 </html>`;
+}
+
+export function renderFoundationsTokensSection(): string {
+  return `<section id="gallery-foundations-tokens" class="lp-gallery-section" data-component="FoundationsTokens">
+    ${renderSectionHeader({ title: 'Foundations: Design Tokens' })}
+    ${renderText({ variant: 'description', text: 'Primitive scale, Semantic Light and Dark themes, and Component defaults.' })}
+    <div class="lp-list">
+      ${renderItem({
+        id: 'gallery-tokens-colors',
+        title: 'Semantic Colours (Light / Dark)',
+        subtitle: `surface-l0: ${SEMANTIC_LIGHT_VALUES['--lp-color-surface-l0']} / ${SEMANTIC_DARK_VALUES['--lp-color-surface-l0']} · text-1: ${SEMANTIC_LIGHT_VALUES['--lp-color-text-1']} / ${SEMANTIC_DARK_VALUES['--lp-color-text-1']} · accent: ${SEMANTIC_LIGHT_VALUES['--lp-color-accent-default']} / ${SEMANTIC_DARK_VALUES['--lp-color-accent-default']}`,
+      })}
+      ${renderItem({
+        id: 'gallery-tokens-space',
+        title: 'Space Scale',
+        subtitle: Object.entries(PRIMITIVE_VALUES)
+          .filter(([k]) => k.startsWith('--lp-prim-space-'))
+          .map(([k, v]) => `${k.replace('--lp-prim-space-', '')}: ${v}`)
+          .join(' · '),
+      })}
+      ${renderItem({
+        id: 'gallery-tokens-type',
+        title: 'Typography Roles (7 + control-label)',
+        subtitle: Object.entries(TYPE_ROLES)
+          .map(([role, spec]) => `${role}: ${spec.size}/${spec.weight} (${spec.lineHeight})`)
+          .join(' · '),
+      })}
+      ${renderItem({
+        id: 'gallery-tokens-radii',
+        title: 'Radii & Elevations',
+        subtitle: `r1: ${COMPONENT_TOKEN_VALUES['--lp-radius-r1']} · r2: ${COMPONENT_TOKEN_VALUES['--lp-radius-r2']} · e0: ${SEMANTIC_LIGHT_VALUES['--lp-elevation-e0']} · e1: ${SEMANTIC_LIGHT_VALUES['--lp-elevation-e1']} · e2: ${SEMANTIC_LIGHT_VALUES['--lp-elevation-e2']}`,
+      })}
+      ${renderItem({
+        id: 'gallery-tokens-motion',
+        title: 'Motion Durations',
+        subtitle: `fast: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-fast']} · item: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-item']} · base: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-base']} · slow: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-slow']}`,
+      })}
+    </div>
+  </section>`;
 }

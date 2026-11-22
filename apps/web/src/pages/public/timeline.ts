@@ -21,9 +21,9 @@ export async function renderTimelinePage(
   let listContentHtml = '';
   if (filtered.length === 0) {
     listContentHtml = `
-      <div class="empty-state" style="padding:32px;text-align:center;border:1px dashed var(--rule);border-radius:var(--radius-card);margin-top:16px">
-        <p style="font-size:16px;font-weight:600;margin:0 0 8px 0">No records active as of this date</p>
-        <p style="color:var(--text-muted);margin:0 0 16px 0">All published entries were recorded after this point in time, or retrospective hindsight has been filtered out.</p>
+      <div class="empty-state" style="padding:var(--lp-size-32);text-align:center;border:var(--lp-border-hairline) dashed var(--rule);border-radius:var(--radius-card);margin-top:var(--lp-space-16)">
+        <p style="font-size:var(--lp-space-16);font-weight:600;margin:0 0 var(--lp-space-8) 0">No records active as of this date</p>
+        <p style="color:var(--text-muted);margin:0 0 var(--lp-space-16) 0">All published entries were recorded after this point in time, or retrospective hindsight has been filtered out.</p>
         <a href="/timeline" class="btn btn-secondary">Reset to present</a>
       </div>
     `;
@@ -44,13 +44,13 @@ export async function renderTimelinePage(
   const hiddenText = excludedCount > 0 ? `. ${excludedCount} are hidden because they were written later.` : '';
 
   const content = `
-    <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">Timeline</h1>
-    <p style="color:var(--text-muted);margin:0 0 24px 0">
+    <h1 style="font-family:var(--font-reading);font-size:var(--lp-size-30);margin:0 0 var(--lp-space-8) 0">Timeline</h1>
+    <p style="color:var(--text-muted);margin:0 0 var(--lp-space-24) 0">
       Move the cursor to see what I had written by that date. Later entries, and entries written looking back, are hidden.
     </p>
     ${strataHtml}
     <section>
-      <h2 style="font-family:var(--font-reading);font-size:21px;margin:0 0 12px 0">
+      <h2 style="font-family:var(--font-reading);font-size:var(--lp-size-21);margin:0 0 var(--lp-space-12) 0">
         ${entryCountText} as of ${activeDateLabel}${hiddenText}
       </h2>
       ${listContentHtml}

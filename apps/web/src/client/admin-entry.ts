@@ -112,23 +112,23 @@ export async function refreshEntriesList(selectedId?: string): Promise<void> {
         .map((e: any) => {
           const isCurrent = selectedId && (e.id === selectedId || e.slug === selectedId);
           const selStyle = isCurrent
-            ? 'background:var(--surface-raised,#f8fafc);border-left:3px solid var(--indigo-600,#3b82f6);'
+            ? 'background:var(--surface-raised,var(--lp-color-surface-l1));border-left:var(--lp-border-role-rule) solid var(--lp-color-accent-default);'
             : '';
-          let badgeColor = '#475569';
-          let badgeBg = '#f1f5f9';
+          let badgeColor = 'var(--lp-color-role-neutral-fg)';
+          let badgeBg = 'var(--lp-color-role-neutral-bg)';
           if (e.visibility === 'public') {
-            badgeColor = '#166534';
-            badgeBg = '#dcfce7';
+            badgeColor = 'var(--lp-color-role-success-fg)';
+            badgeBg = 'var(--lp-color-role-success-bg)';
           } else if (e.visibility === 'unlisted') {
-            badgeColor = '#92400e';
-            badgeBg = '#fef3c7';
+            badgeColor = 'var(--lp-color-role-warning-fg)';
+            badgeBg = 'var(--lp-color-role-warning-bg)';
           }
-          const visibilityBadge = `<span class="chip" style="font-size:10px;padding:1px 5px;background:${badgeBg};color:${badgeColor}">${escapeClientHtml(
+          const visibilityBadge = `<span class="chip" style="font-size:var(--lp-size-10);padding:var(--lp-border-hairline) var(--lp-size-5);background:${badgeBg};color:${badgeColor}">${escapeClientHtml(
             e.visibility
           )}</span>`;
           return `
-          <li data-entry-id="${escapeClientHtml(e.id)}" style="display:flex;align-items:center;justify-content:space-between;padding:8px 6px;border-bottom:1px solid var(--rule);font-size:13px;cursor:pointer;${selStyle}" class="admin-entry-item" role="button" tabindex="0">
-            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${escapeClientHtml(e.title || 'Untitled')}</span>
+          <li data-entry-id="${escapeClientHtml(e.id)}" style="display:flex;align-items:center;justify-content:space-between;padding:var(--lp-space-8) var(--lp-size-6);border-bottom:var(--lp-border-hairline) solid var(--rule);font-size:var(--lp-size-13);cursor:pointer;${selStyle}" class="admin-entry-item" role="button" tabindex="0">
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:var(--lp-size-140)">${escapeClientHtml(e.title || 'Untitled')}</span>
             ${visibilityBadge}
           </li>`;
         })

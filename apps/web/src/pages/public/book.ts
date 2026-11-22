@@ -13,56 +13,56 @@ export function renderBookPage(queryParam?: string, facetsParam?: string): strin
       <p>If your situation differs from what I've written about, a conversation will serve you better than a guess.</p>
 
       ${(defaultTopic || defaultFacets) ? `
-      <div style="padding:10px 14px;background:var(--surface-raised);border:1px solid var(--rule);border-radius:var(--radius-control);margin-bottom:16px;font-size:13px">
+      <div style="padding:var(--lp-size-10) var(--lp-size-14);background:var(--surface-raised);border:var(--lp-border-hairline) solid var(--rule);border-radius:var(--radius-control);margin-bottom:var(--lp-space-16);font-size:var(--lp-size-13)">
         <strong>Carried Context from Ask:</strong>
-        ${defaultTopic ? `<div style="margin-top:4px"><em>Topic:</em> "${escapeHtml(defaultTopic)}"</div>` : ''}
-        ${defaultFacets ? `<div style="margin-top:2px;color:var(--text-muted)"><em>Facets:</em> ${escapeHtml(defaultFacets)}</div>` : ''}
+        ${defaultTopic ? `<div style="margin-top:var(--lp-space-4)"><em>Topic:</em> "${escapeHtml(defaultTopic)}"</div>` : ''}
+        ${defaultFacets ? `<div style="margin-top:var(--lp-space-2);color:var(--text-muted)"><em>Facets:</em> ${escapeHtml(defaultFacets)}</div>` : ''}
       </div>` : ''}
 
-      <div id="booking-confirmation" style="display:none;padding:16px;border:1px solid var(--accent);background:var(--surface-raised);border-radius:var(--radius-control);margin-bottom:16px" role="region" aria-label="Booking Confirmation">
-        <span class="chip" style="background:#d1fae5;color:#065f46;font-weight:600;margin-bottom:8px;display:inline-block">✓ Request Confirmed</span>
-        <h2 style="font-size:18px;margin:8px 0 4px 0">Consultation Request Received</h2>
-        <p style="margin:0 0 10px 0;font-size:14px">
+      <div id="booking-confirmation" style="display:none;padding:var(--lp-space-16);border:var(--lp-border-hairline) solid var(--accent);background:var(--surface-raised);border-radius:var(--radius-control);margin-bottom:var(--lp-space-16)" role="region" aria-label="Booking Confirmation">
+        <span class="chip" style="background:var(--lp-color-role-success-bg);color:var(--lp-color-role-success-fg);font-weight:600;margin-bottom:var(--lp-space-8);display:inline-block">✓ Request Confirmed</span>
+        <h2 style="font-size:var(--lp-size-18);margin:var(--lp-space-8) 0 var(--lp-space-4) 0">Consultation Request Received</h2>
+        <p style="margin:0 0 var(--lp-size-10) 0;font-size:var(--lp-size-14)">
           We've received your request for: <strong id="conf-topic"></strong>
         </p>
-        <p style="margin:0 0 12px 0;font-size:13px;color:var(--text-muted)">
+        <p style="margin:0 0 var(--lp-space-12) 0;font-size:var(--lp-size-13);color:var(--text-muted)">
           The owner will review your architectural context and reach out at <strong id="conf-contact"></strong> within 24 hours to coordinate scheduling.
         </p>
         <a href="/work" class="btn btn-secondary" style="text-decoration:none;display:inline-block">Explore Portfolio Records →</a>
       </div>
 
-      <form id="booking-form" class="strata-section" style="border:1px solid var(--rule);padding:16px;border-radius:var(--radius-control)">
-        <div id="booking-error" style="display:none;color:var(--status-warn,#d97706);font-size:13px;margin-bottom:12px" role="alert"></div>
+      <form id="booking-form" class="strata-section" style="border:var(--lp-border-hairline) solid var(--rule);padding:var(--lp-space-16);border-radius:var(--radius-control)">
+        <div id="booking-error" style="display:none;color:var(--status-warn,var(--lp-color-role-warning-border));font-size:var(--lp-size-13);margin-bottom:var(--lp-space-12)" role="alert"></div>
 
-        <div style="margin-bottom:12px">
-          <label for="book-topic" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Topic / Architecture Question <span style="color:var(--status-warn,#d97706)">*</span></label>
+        <div style="margin-bottom:var(--lp-space-12)">
+          <label for="book-topic" style="display:block;font-weight:600;margin-bottom:var(--lp-space-4);font-size:var(--lp-size-14)">Topic / Architecture Question <span style="color:var(--status-warn,var(--lp-color-role-warning-border))">*</span></label>
           <input id="book-topic" name="topic" type="text" class="ask-input" style="width:100%" value="${escapeHtml(defaultTopic)}" placeholder="Describe your architecture constraint or review topic..." required />
         </div>
 
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:12px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(var(--lp-size-220),1fr));gap:var(--lp-space-12);margin-bottom:var(--lp-space-12)">
           <div>
-            <label for="book-name" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Your Name / Organization</label>
+            <label for="book-name" style="display:block;font-weight:600;margin-bottom:var(--lp-space-4);font-size:var(--lp-size-14)">Your Name / Organization</label>
             <input id="book-name" name="visitor_name" type="text" class="ask-input" style="width:100%" placeholder="e.g. Your Name or Engineering Lead" />
           </div>
           <div>
-            <label for="book-contact" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Contact Email or Handle <span style="color:var(--status-warn,#d97706)">*</span></label>
+            <label for="book-contact" style="display:block;font-weight:600;margin-bottom:var(--lp-space-4);font-size:var(--lp-size-14)">Contact Email or Handle <span style="color:var(--status-warn,var(--lp-color-role-warning-border))">*</span></label>
             <input id="book-contact" name="visitor_contact" type="text" class="ask-input" style="width:100%" placeholder="e.g. alex@example.com or @handle" required />
           </div>
         </div>
 
-        <div style="margin-bottom:12px">
-          <label for="book-facets" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Context Facets / Production Constraints</label>
+        <div style="margin-bottom:var(--lp-space-12)">
+          <label for="book-facets" style="display:block;font-weight:600;margin-bottom:var(--lp-space-4);font-size:var(--lp-size-14)">Context Facets / Production Constraints</label>
           <input id="book-facets" name="facets" type="text" class="ask-input" style="width:100%" value="${escapeHtml(defaultFacets)}" placeholder="e.g. scale: high_volume, stack: postgres, cloud: aws" />
         </div>
 
-        <div style="margin-bottom:12px">
-          <label for="book-time" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Preferred Times / Format</label>
+        <div style="margin-bottom:var(--lp-space-12)">
+          <label for="book-time" style="display:block;font-weight:600;margin-bottom:var(--lp-space-4);font-size:var(--lp-size-14)">Preferred Times / Format</label>
           <input id="book-time" name="preferred_time" type="text" class="ask-input" style="width:100%" placeholder="e.g. Weekday mornings (UTC+8), 30 min video call" />
         </div>
 
-        <div style="margin-bottom:16px">
-          <label for="book-notes" style="display:block;font-weight:600;margin-bottom:4px;font-size:14px">Additional Background Notes</label>
-          <textarea id="book-notes" name="notes" class="ask-input" style="width:100%;min-height:70px;line-height:1.4" placeholder="Optional notes or links to relevant repos..."></textarea>
+        <div style="margin-bottom:var(--lp-space-16)">
+          <label for="book-notes" style="display:block;font-weight:600;margin-bottom:var(--lp-space-4);font-size:var(--lp-size-14)">Additional Background Notes</label>
+          <textarea id="book-notes" name="notes" class="ask-input" style="width:100%;min-height:var(--lp-size-70);line-height:1.4" placeholder="Optional notes or links to relevant repos..."></textarea>
         </div>
 
         <button type="submit" id="btn-submit-booking" class="btn">Send request</button>

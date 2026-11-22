@@ -22,6 +22,7 @@
     "@living-portfolio/client": "workspace:*",
     "@living-portfolio/config": "workspace:*",
     "@living-portfolio/core": "workspace:*",
+    "@living-portfolio/design-tokens": "workspace:*",
     "@tiptap/core": "^3.34.0",
     "@tiptap/extension-link": "^3.34.0",
     "@tiptap/pm": "^3.34.0",

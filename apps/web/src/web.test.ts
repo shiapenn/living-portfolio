@@ -1,5 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { readFileSync } from 'node:fs';
+import {
+  PRIMITIVE_VALUES,
+  SEMANTIC_LIGHT_VALUES,
+  SEMANTIC_DARK_VALUES,
+  COMPONENT_TOKEN_VALUES,
+  BREAKPOINTS,
+  TYPE_ROLES,
+} from './tokens/index.js';
 import { createTestClient } from './test-client.js';
 import {
   createWebApp,
@@ -20,10 +28,6 @@ import {
   renderMarkdown,
   sanitizeHtml,
   renderInlineMarkdown,
-  PRIMITIVE_TOKENS,
-  SEMANTIC_TOKENS_LIGHT,
-  SEMANTIC_TOKENS_DARK,
-  COMPONENT_TOKENS,
   renderField,
   renderButton,
   renderChip,
@@ -54,8 +58,8 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     const html = await renderHomePage(repo);
     expect(html).toContain('Strata timeline');
     expect(html).toContain('Advisory Locks, Revisited: Dropping Redis for Postgres 15');
-    expect(html).toContain('--surface-page: #FFFFFF');
-    expect(html).toContain('--surface-page: #0F1A22');
+    expect(html).toContain('--lp-prim-color-white: #FFFFFF');
+    expect(html).toContain('--lp-prim-color-dark-950: #0F1A22');
     // Private entry must never appear on public home page
     expect(html).not.toContain('Private NDA Architecture Notes');
   });
@@ -349,8 +353,8 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
       const askHtml = await renderAskPage('How do locks work?', 'redis-distributed-locks-2021', asOf);
       expect(askHtml).toContain('Time-travel query active:');
       expect(askHtml).toContain('2022-06-01');
-      expect(askHtml).toContain('id="facet-asof" type="date" class="ask-input" style="width:100%;padding:6px" value="2022-06-01"');
-      expect(askHtml).toContain('<details style="margin-top:16px" open>');
+      expect(askHtml).toContain('id="facet-asof" type="date" class="ask-input" style="width:100%;padding:var(--lp-size-6)" value="2022-06-01"');
+      expect(askHtml).toContain('<details style="margin-top:var(--lp-space-16)" open>');
     });
 
     it('serves historical revision active as of query date on entry detail page', async () => {
@@ -587,35 +591,33 @@ console.log(x);
 
     it('2. Multi-tier design tokens define D-MIN primitives, semantics, scale, and layout-max (20261020-UI-02, D-MIN)', () => {
       // D-MIN 8 Scale {12, 14, 16, 24}
-      expect(PRIMITIVE_TOKENS).toContain('--type-caption-size: 12px;');
-      expect(PRIMITIVE_TOKENS).toContain('--type-body-sm-size: 14px;');
-      expect(PRIMITIVE_TOKENS).toContain('--type-body-size: 16px;');
-      expect(PRIMITIVE_TOKENS).toContain('--type-page-title-size: 24px;');
-      expect(PRIMITIVE_TOKENS).toContain('--radius-control: 4px;');
-      expect(PRIMITIVE_TOKENS).toContain('--radius-overlay: 8px;');
+      expect(TYPE_ROLES.caption.size).toBe(12);
+      expect(TYPE_ROLES.body.size).toBe(14);
+      expect(TYPE_ROLES['section-title'].size).toBe(16);
+      expect(TYPE_ROLES['page-title'].size).toBe(24);
+      expect(COMPONENT_TOKEN_VALUES['--lp-radius-r1']).toBe('4px');
+      expect(COMPONENT_TOKEN_VALUES['--lp-radius-r2']).toBe('8px');
 
       // Breakpoints
-      expect(PRIMITIVE_TOKENS).toContain('--bp-sm: 480px;');
-      expect(PRIMITIVE_TOKENS).toContain('--bp-md: 768px;');
-      expect(PRIMITIVE_TOKENS).toContain('--bp-lg: 1024px;');
-      expect(PRIMITIVE_TOKENS).toContain('--bp-xl: 1280px;');
+      expect(BREAKPOINTS.viewport.sm).toBe(640);
+      expect(BREAKPOINTS.viewport.md).toBe(768);
+      expect(BREAKPOINTS.container.compact).toBe(400);
 
       // Semantic tokens
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--surface-page: #FFFFFF;');
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--surface-raised: #FFFFFF;');
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--border-control: #6B7B88;');
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--layout-max: 1180px;');
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--size-layout-max: 1180px;');
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--measure-reading: 68ch;');
+      expect(SEMANTIC_LIGHT_VALUES['--lp-color-surface-page']).toBe('#FFFFFF');
+      expect(SEMANTIC_LIGHT_VALUES['--lp-color-surface-raised']).toBe('#FFFFFF');
+      expect(SEMANTIC_LIGHT_VALUES['--lp-color-border-control']).toBe('#6B7B88');
+      expect(COMPONENT_TOKEN_VALUES['--lp-size-layout-max']).toBe('1180px');
+      expect(PRIMITIVE_VALUES['--lp-prim-size-measure-reading']).toBe('68ch');
 
       // Dark semantic tokens
-      expect(SEMANTIC_TOKENS_DARK).toContain('--surface-page: #0F1A22;');
-      expect(SEMANTIC_TOKENS_DARK).toContain('--surface-raised: #16232D;');
+      expect(SEMANTIC_DARK_VALUES['--lp-color-surface-page']).toBe('#0F1A22');
+      expect(SEMANTIC_DARK_VALUES['--lp-color-surface-raised']).toBe('#16232D');
 
       // Component tokens
-      expect(COMPONENT_TOKENS).toContain('--admin-nav-width: 240px;');
-      expect(COMPONENT_TOKENS).toContain('--admin-inspector-width: 340px;');
-      expect(COMPONENT_TOKENS).toContain('--editor-min-height: 60vh;');
+      expect(COMPONENT_TOKEN_VALUES['--lp-size-admin-nav-width']).toBe('240px');
+      expect(COMPONENT_TOKEN_VALUES['--lp-size-admin-inspector-width']).toBe('340px');
+      expect(PRIMITIVE_VALUES['--lp-prim-size-editor-min-h']).toBe('60vh');
     });
 
     it('3. Component layer: Field, Button, Chip, and EntryRow abstractions (20261020-UI-04, D-MIN)', () => {

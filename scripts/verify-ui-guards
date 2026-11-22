@@ -192,7 +192,7 @@ export function evaluateUiGuards({ rootDir = DEFAULT_ROOT, allowlist } = {}) {
           );
         }
       }
-      const lpMatches = content.matchAll(/\blp-[a-z0-9]+(?:-[a-z0-9]+)*/g);
+      const lpMatches = content.matchAll(/(?<!--)\blp-[a-z0-9]+(?:-[a-z0-9]+)*/g);
       for (const m of lpMatches) {
         const cls = m[0];
         if (cls.endsWith('-')) continue;
@@ -203,6 +203,92 @@ export function evaluateUiGuards({ rootDir = DEFAULT_ROOT, allowlist } = {}) {
           );
         }
       }
+    }
+  }
+
+  // 9. K4 Design Tokenization Guards (literal values, primitive-tier isolation, token usage)
+  const exceptionsPath = join(rootDir, 'docs/design/tokens-exceptions.json');
+  const tokenExceptions = new Set(
+    existsSync(exceptionsPath)
+      ? (JSON.parse(readFileSync(exceptionsPath, 'utf8')).exceptions ?? []).map((e) => e.file)
+      : []
+  );
+  const tokensCssPath = join(rootDir, 'packages/design-tokens/src/tokens.css');
+  const definedLpTokens = new Set();
+  const usedLpTokens = new Set();
+  if (existsSync(tokensCssPath)) {
+    const css = readFileSync(tokensCssPath, 'utf8');
+    for (const m of css.matchAll(/(--lp-[a-z0-9-]+)\s*:/g)) {
+      definedLpTokens.add(m[1]);
+    }
+    for (const m of css.matchAll(/var\(\s*(--lp-[a-z0-9-]+)/g)) {
+      usedLpTokens.add(m[1]);
+    }
+  }
+
+  for (const fullPath of files) {
+    const relPath = relative(rootDir, fullPath).replace(/\\/g, '/');
+    if (relPath.startsWith('apps/web/src/tokens/')) continue;
+    const content = readFileSync(fullPath, 'utf8');
+
+    for (const m of content.matchAll(/var\(\s*(--lp-[a-z0-9-]+)/g)) {
+      const tok = m[1];
+      usedLpTokens.add(tok);
+      if (definedLpTokens.size > 0 && !definedLpTokens.has(tok)) {
+        errors.push(`[TOKEN-UNDEFINED] ${relPath}: used undefined token "${tok}".`);
+      }
+    }
+    for (const m of content.matchAll(/['"](--lp-[a-z0-9-]+)['"]/g)) {
+      usedLpTokens.add(m[1]);
+    }
+
+    if (tokenExceptions.has(relPath)) continue;
+
+    const lines = content.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+      if (trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) continue;
+      if (line.includes('BREAKPOINTS.')) continue;
+
+      if (/--lp-prim-[a-z0-9-]+/.test(line)) {
+        errors.push(`[PRIMITIVE-TOKEN-LEAK] ${relPath}:${i + 1}: primitive token referenced outside semantic/component tier.`);
+      }
+      const pxHits = (line.match(/(?<![a-zA-Z0-9_$-])\d+(?:\.\d+)?px\b/g) || []).filter((v) => v !== '0px');
+      if (pxHits.length > 0) {
+        errors.push(`[TOKEN-LITERAL-PX] ${relPath}:${i + 1}: literal px (${pxHits.join(', ')}).`);
+      }
+      const remHits = line.match(/(?<![a-zA-Z0-9_-])\d+(?:\.\d+)?rem\b/g) || [];
+      if (remHits.length > 0) {
+        errors.push(`[TOKEN-LITERAL-REM] ${relPath}:${i + 1}: literal rem (${remHits.join(', ')}).`);
+      }
+      const hexHits = line.match(/(:\s*|,\s*|['"])#[0-9a-fA-F]{3,8}\b/g) || [];
+      if (hexHits.length > 0) {
+        errors.push(`[TOKEN-LITERAL-HEX] ${relPath}:${i + 1}: literal hex colour.`);
+      }
+      const fnColorHits = line.match(/\b(?:rgba?|hsla?)\([^)]+\)/g) || [];
+      if (fnColorHits.length > 0) {
+        errors.push(`[TOKEN-LITERAL-COLOR] ${relPath}:${i + 1}: literal rgb/hsl colour.`);
+      }
+      const msHits = line.match(/(?<![a-zA-Z0-9_-])\d+(?:\.\d+)?ms\b/g) || [];
+      if (msHits.length > 0) {
+        errors.push(`[TOKEN-LITERAL-MS] ${relPath}:${i + 1}: literal ms (${msHits.join(', ')}).`);
+      }
+      if (/z-index\s*:\s*-?\d+/.test(line)) {
+        errors.push(`[TOKEN-LITERAL-ZINDEX] ${relPath}:${i + 1}: literal z-index number.`);
+      }
+    }
+  }
+
+  const tokensJsonPath = join(rootDir, 'packages/design-tokens/tokens.json');
+  const reservedTokens = existsSync(tokensJsonPath)
+    ? JSON.parse(readFileSync(tokensJsonPath, 'utf8')).reserved ?? {}
+    : {};
+  for (const tok of definedLpTokens) {
+    if (tok.startsWith('--lp-prim-')) continue;
+    if (tok.startsWith('--lp-rel-') || tok.startsWith('--lp-type-')) continue;
+    if (!usedLpTokens.has(tok) && !reservedTokens[tok]) {
+      errors.push(`[TOKEN-UNUSED] ${tok}: defined in tokens.css but never used and not listed in tokens.json reserved.`);
     }
   }
 
