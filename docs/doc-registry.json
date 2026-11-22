@@ -1657,5 +1657,13 @@
     "path": "docs/execution-reports/A161-wp-16k-k1-actionbar-and-list-absorption.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A162",
+    "title": "wp-16k-k2-legacy-migration-and-lists",
+    "class": "A",
+    "path": "docs/execution-reports/A162-wp-16k-k2-legacy-migration-and-lists.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
