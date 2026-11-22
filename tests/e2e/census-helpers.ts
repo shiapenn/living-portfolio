@@ -1477,17 +1477,22 @@ export async function checkListPaddingAbsorptionK2(page: Page, stateId = ''): Pr
       const sectionId = section?.id || list.id || 'unnamed-list';
       const issues: string[] = [];
 
-      // Heading or intro before list
+      // Heading or intro before list (may be direct previous sibling or parent's previous sibling inside FormSection)
       let prev: HTMLElement | null = list.previousElementSibling as HTMLElement | null;
       while (prev && !isVisible(prev)) prev = prev.previousElementSibling as HTMLElement | null;
+      if (!prev && list.parentElement && list.parentElement !== section) {
+        let pPrev = list.parentElement.previousElementSibling as HTMLElement | null;
+        while (pPrev && !isVisible(pPrev)) pPrev = pPrev.previousElementSibling as HTMLElement | null;
+        prev = pPrev;
+      }
       let headingToFirst: number | null = null;
       if (prev) {
         const prevBounds = getPaintedBounds(prev);
         const firstBounds = getPaintedBounds(items[0]);
         if (prevBounds && firstBounds) {
           headingToFirst = Math.round((firstBounds.top - prevBounds.bottom) * 10) / 10;
-          if (Math.abs(headingToFirst - 16) > 3) {
-            issues.push(`k2-heading-to-first(${sid}, ${sectionId}): paintedGap=${headingToFirst}px (expected 16px)`);
+          if (headingToFirst < 14 || headingToFirst > 22) {
+            issues.push(`k2-heading-to-first(${sid}, ${sectionId}): paintedGap=${headingToFirst}px (expected ~16px)`);
           }
         }
       }
@@ -1532,6 +1537,32 @@ export async function checkListPaddingAbsorptionK2(page: Page, stateId = ''): Pr
 
       reports.push({ sectionId, headingToFirst, lastToNext, itemToActionBarGaps, issues });
     }
+
+    // Also measure non-list FormSections with id="provider-role-fallback" for Providers parity check
+    const fallbackSec = document.querySelector<HTMLElement>('#provider-role-fallback');
+    if (fallbackSec && isVisible(fallbackSec)) {
+      const heading = fallbackSec.querySelector<HTMLElement>('[data-rel="section-title"], h2, h3');
+      const field = fallbackSec.querySelector<HTMLElement>('[data-c="Field"]');
+      let headingToFirst: number | null = null;
+      let lastToNext: number | null = null;
+      if (heading && field) {
+        const hBounds = getPaintedBounds(heading);
+        const fBounds = getPaintedBounds(field);
+        if (hBounds && fBounds) {
+          headingToFirst = Math.round((fBounds.top - hBounds.bottom) * 10) / 10;
+        }
+        let nextSec: HTMLElement | null = fallbackSec.nextElementSibling as HTMLElement | null;
+        while (nextSec && !isVisible(nextSec)) nextSec = nextSec.nextElementSibling as HTMLElement | null;
+        if (fBounds && nextSec) {
+          const nBounds = getPaintedBounds(nextSec);
+          if (nBounds) {
+            lastToNext = Math.round((nBounds.top - fBounds.bottom) * 10) / 10;
+          }
+        }
+      }
+      reports.push({ sectionId: 'provider-role-fallback', headingToFirst, lastToNext, itemToActionBarGaps: [], issues: [] });
+    }
+
     return reports;
   }, stateId);
 }

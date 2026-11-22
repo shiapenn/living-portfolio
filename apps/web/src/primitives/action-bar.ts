@@ -19,10 +19,10 @@ function renderActionSlot(item: ButtonProps | string, defaultVariant: 'primary' 
 }
 
 /**
- * Unified ActionBar primitive (D-COMP #4, D-G #10):
- * - Vertical stack in order: primary, secondary, optional text button
- * - >= 400px container: same width (min 160px, max 240px), left-aligned; < 400px: full width
- * - 40px above pageLevel bar, 24px above subsection/dialog/item bar, 8px between buttons
+ * Unified ActionBar primitive (D-COMP #4, D-I1, D-K1):
+ * - page / dialog levels: full width, stacked
+ * - item level: always compact, auto width (min 96px), left-aligned flex-wrap row (gap 8px),
+ *   wrapping only when buttons do not fit; touch size from 44px control height < 640px.
  */
 export function renderActionBar(props: ActionBarProps): string {
   const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
