@@ -1,6 +1,6 @@
 import { z } from '@living-portfolio/core';
 import { escapeHtml } from '../../lib/html.js';
-import { renderActionBar, renderField, renderFormSection, renderStatusDot } from '../../primitives/index.js';
+import { renderActionBar, renderField, renderFormSection, renderItem } from '../../primitives/index.js';
 import { renderStatusLine } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 
@@ -53,23 +53,24 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
     const answeringSectionHtml = renderFormSection({
       id: 'provider-role-answering',
       title: 'Answering model',
-      fieldsHtml: `
-        <div class="lp-stack lp-gap-tight" data-role-id="answering">
-          <p id="providers-current-status" class="lp-body">${escapeHtml(activeValueText)}</p>
-          <p class="lp-description">${escapeHtml(activeDescText)}</p>
-          ${active ? `<div>${renderStatusDot({ label: healthLabel, tone: healthLabel === 'Connected' ? 'ok' : 'danger' })}</div>` : ''}
-        </div>
-      `,
-      actionBarHtml: renderActionBar({
-        level: 'item',
-        secondary: {
-          id: 'btn-change-provider',
-          label: 'Change',
-          href: '/admin/settings/providers/change',
-          variant: 'secondary',
-          size: 'sm',
+      fieldsHtml: `<div class="lp-list" data-role-id="answering">${renderItem({
+        id: 'providers-current-status',
+        className: active ? 'lp-item-trailing-status' : undefined,
+        title: activeValueText,
+        subtitle: activeDescText,
+        statusLabel: active ? healthLabel : undefined,
+        statusTone: active ? (healthLabel === 'Connected' ? 'ok' : 'danger') : undefined,
+        actions: {
+          level: 'item',
+          secondary: {
+            id: 'btn-change-provider',
+            label: 'Change',
+            href: '/admin/settings/providers/change',
+            variant: 'secondary',
+            size: 'sm',
+          },
         },
-      }),
+      })}</div>`,
     });
 
     return `

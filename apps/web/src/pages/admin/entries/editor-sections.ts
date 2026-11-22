@@ -190,7 +190,7 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
   }).replace(
     /<p class="lp-level-next[^"]*">[\s\S]*?<\/p>/,
     currentIdx < 3
-      ? `<button type="button" id="ref-structure-next-step" class="lp-btn lp-btn-text lp-level-next" data-next-target="${nextTargetId}"><span>${escapeHtml(nextStep)}</span>${renderIcon('chevron-down', 16)}</button>`
+      ? `<button type="button" data-c="Button" id="ref-structure-next-step" class="lp-btn lp-btn-text lp-level-next" data-next-target="${nextTargetId}"><span>${escapeHtml(nextStep)}</span>${renderIcon('chevron-down', 16)}</button>`
       : `<p id="ref-structure-next-step" class="lp-level-next">${escapeHtml(nextStep)}</p>`
   );
 
@@ -233,7 +233,7 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
       })}
     </div>`,
     actionBarHtml: renderActionBar({
-      level: 'page',
+      level: 'item',
       secondary: { id: 'ref-btn-add-facet', label: 'Add tag', variant: 'secondary', type: 'button' },
     }),
   });
@@ -261,13 +261,13 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
     <div id="ref-claim-form-wrap" class="lp-stack lp-gap-related lp-is-hidden">
       ${renderField({ kind: 'input', id: 'ref-claim-input', name: 'claimText', label: 'Claim', placeholder: 'Add a claim' })}
       ${renderActionBar({
-        level: 'page',
+        level: 'item',
         primary: { id: 'ref-btn-add-claim', label: 'Add', variant: 'primary', type: 'button' },
         secondary: { id: 'ref-btn-cancel-claim', label: 'Cancel', variant: 'secondary', type: 'button' },
       })}
     </div>`,
     actionBarHtml: renderActionBar({
-      level: 'page',
+      level: 'item',
       secondary: { id: 'ref-btn-open-claim', label: 'Add claim', variant: 'secondary', type: 'button' },
     }),
   });
@@ -291,13 +291,13 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
       ${renderField({ kind: 'input', id: 'ref-evidence-title', name: 'evidenceTitle', label: 'Evidence title', placeholder: 'Evidence title' })}
       ${renderField({ kind: 'input', inputType: 'url', id: 'ref-evidence-url', name: 'evidenceUrl', label: 'Evidence URL', placeholder: 'https://example.com' })}
       ${renderActionBar({
-        level: 'page',
+        level: 'item',
         primary: { id: 'ref-btn-add-evidence', label: 'Add', variant: 'primary', type: 'button' },
         secondary: { id: 'ref-btn-cancel-evidence', label: 'Cancel', variant: 'secondary', type: 'button' },
       })}
     </div>`,
     actionBarHtml: renderActionBar({
-      level: 'page',
+      level: 'item',
       secondary: { id: 'ref-btn-open-evidence', label: 'Attach evidence', variant: 'secondary', type: 'button' },
     }),
   });
