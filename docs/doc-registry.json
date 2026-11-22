@@ -1577,5 +1577,13 @@
     "path": "docs/execution-reports/A151-wp-16h-h3-pixel-diff-and-closure.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A152",
+    "title": "wp-16i-i0-contract-and-failing-census",
+    "class": "A",
+    "path": "docs/execution-reports/A152-wp-16i-i0-contract-and-failing-census.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
