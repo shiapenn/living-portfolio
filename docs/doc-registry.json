@@ -1617,5 +1617,13 @@
     "path": "docs/execution-reports/A156-wp-16j-j0-contract-and-failing-census.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A157",
+    "title": "wp-16j-j1-actionbar-and-registry-guards",
+    "class": "A",
+    "path": "docs/execution-reports/A157-wp-16j-j1-actionbar-and-registry-guards.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
