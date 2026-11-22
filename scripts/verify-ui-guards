@@ -69,6 +69,14 @@ export function evaluateUiGuards({ rootDir = DEFAULT_ROOT, allowlist } = {}) {
   const webSrc = join(rootDir, 'apps/web/src');
   const files = walkTsFiles(webSrc);
   const errors = [];
+  const componentsRegistryPath = join(rootDir, 'docs/design/components.json');
+  let allowedComponentNames = null;
+  let allowedClassFamilies = null;
+  if (existsSync(componentsRegistryPath)) {
+    const reg = JSON.parse(readFileSync(componentsRegistryPath, 'utf8'));
+    allowedComponentNames = new Set((reg.components ?? []).map((c) => c.name));
+    allowedClassFamilies = reg.allowedClassFamilies ?? [];
+  }
 
   for (const fullPath of files) {
     const relPath = relative(rootDir, fullPath).replace(/\\/g, '/');
@@ -170,6 +178,30 @@ export function evaluateUiGuards({ rootDir = DEFAULT_ROOT, allowlist } = {}) {
         errors.push(
           `[COMPONENT-MARGIN] ${relPath}: found ${marginViolations} non-zero/non-auto margin declaration(s), max allowed is ${allowedMargin}.`
         );
+      }
+    }
+
+    // 8. Design-review component registry guard (D-J / J4: docs/design/components.json)
+    if (allowedComponentNames && allowedClassFamilies) {
+      const dataCMatches = content.matchAll(/data-c="([A-Za-z][A-Za-z0-9_-]*)"/g);
+      for (const m of dataCMatches) {
+        const comp = m[1];
+        if (!allowedComponentNames.has(comp)) {
+          errors.push(
+            `[COMPONENT-REGISTRY] ${relPath}: emitted data-c="${comp}" is not registered in docs/design/components.json.`
+          );
+        }
+      }
+      const lpMatches = content.matchAll(/\blp-[a-z0-9]+(?:-[a-z0-9]+)*/g);
+      for (const m of lpMatches) {
+        const cls = m[0];
+        if (cls.endsWith('-')) continue;
+        const known = allowedClassFamilies.some((fam) => cls === fam || cls.startsWith(`${fam}-`));
+        if (!known) {
+          errors.push(
+            `[COMPONENT-REGISTRY] ${relPath}: class "${cls}" does not belong to any family in docs/design/components.json.`
+          );
+        }
       }
     }
   }
