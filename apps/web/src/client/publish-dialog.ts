@@ -131,7 +131,7 @@ async function runDialogAutoScan(text: string, entryId?: string): Promise<void> 
 
     if (currentDialogWarnings.length === 0) {
       if (scanStatusEl) {
-        scanStatusEl.innerHTML = '<span class="chip" data-state="clean" style="border-color:var(--role-outcome,#166534);background:#dcfce7;color:#166534;font-weight:600">✓ Nothing found (0 confidential findings)</span>';
+        scanStatusEl.innerHTML = '<span class="chip" data-state="clean" style="border-color:var(--role-outcome,var(--lp-color-role-success-fg));background:var(--lp-color-role-success-bg);color:var(--lp-color-role-success-fg);font-weight:600">✓ Nothing found (0 confidential findings)</span>';
       }
       if (ndaSection) ndaSection.style.display = 'none';
       if (matchesDetail) matchesDetail.style.display = 'none';
@@ -156,12 +156,12 @@ export function showPublishSuccessToast(title: string, slug: string): void {
   if (!toast) return;
 
   toast.innerHTML =
-    `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px">` +
+    `<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--lp-space-12)">` +
     `<div>` +
     `<strong>Published "${escapeClientHtml(title)}"</strong><br/>` +
-    `<a href="/work/${escapeClientHtml(slug)}" style="font-size:13px;color:var(--indigo-600,#3b82f6)">View page</a>` +
+    `<a href="/work/${escapeClientHtml(slug)}" style="font-size:var(--lp-size-13);color:var(--lp-color-accent-default))">View page</a>` +
     `</div>` +
-    `<button type="button" class="btn btn-secondary" id="btn-toast-unpublish" style="font-size:12px;padding:3px 8px">Unpublish</button>` +
+    `<button type="button" class="btn btn-secondary" id="btn-toast-unpublish" style="font-size:var(--lp-space-12);padding:var(--lp-border-role-rule) var(--lp-space-8)">Unpublish</button>` +
     `</div>`;
 
   toast.style.display = 'block';

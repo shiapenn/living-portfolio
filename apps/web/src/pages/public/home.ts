@@ -69,19 +69,19 @@ export async function renderHomePage(repo: WebDataClient): Promise<string> {
     ${strataHtml}
 
     <section aria-labelledby="featured-heading">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-        <h2 id="featured-heading" style="font-family:var(--font-reading);font-size:21px;margin:0">Recent work</h2>
-        <a href="/work" style="font-size:14px;color:var(--accent);text-decoration:none">View all work (${publicEntries.length}) →</a>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--lp-space-12);flex-wrap:wrap;gap:var(--lp-space-8)">
+        <h2 id="featured-heading" style="font-family:var(--font-reading);font-size:var(--lp-size-21);margin:0">Recent work</h2>
+        <a href="/work" style="font-size:var(--lp-size-14);color:var(--accent);text-decoration:none">View all work (${publicEntries.length}) →</a>
       </div>
       ${rowsHtml.length > 0 ? `
         <ul class="entry-list">
           ${rowsHtml.join('\n')}
         </ul>
       ` : `
-        <div class="empty-state" style="padding:40px 16px;text-align:center;border:1px dashed var(--rule);border-radius:var(--radius-card);margin-top:16px">
-          <p style="font-weight:600;font-size:18px;margin:0 0 8px 0">No entries published yet</p>
-          <p style="color:var(--text-muted);font-size:15px;margin:0 0 20px 0">Technical case studies and architectural decisions will appear here as they are published.</p>
-          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <div class="empty-state" style="padding:var(--lp-space-40) var(--lp-space-16);text-align:center;border:var(--lp-border-hairline) dashed var(--rule);border-radius:var(--radius-card);margin-top:var(--lp-space-16)">
+          <p style="font-weight:600;font-size:var(--lp-size-18);margin:0 0 var(--lp-space-8) 0">No entries published yet</p>
+          <p style="color:var(--text-muted);font-size:var(--lp-size-15);margin:0 0 var(--lp-size-icon-md) 0">Technical case studies and architectural decisions will appear here as they are published.</p>
+          <div style="display:flex;gap:var(--lp-space-12);justify-content:center;flex-wrap:wrap">
             <a href="/timeline" class="btn btn-secondary">Explore Timeline</a>
             <a href="/ask" class="btn">Ask Questions</a>
           </div>
@@ -90,8 +90,8 @@ export async function renderHomePage(repo: WebDataClient): Promise<string> {
     </section>
 
     <section class="ask-box" aria-labelledby="home-ask-heading">
-      <h2 id="home-ask-heading" style="margin:0;font-family:var(--font-reading);font-size:21px">Ask about my work</h2>
-      <p style="margin:4px 0 0;color:var(--text-muted);font-size:15px">
+      <h2 id="home-ask-heading" style="margin:0;font-family:var(--font-reading);font-size:var(--lp-size-21)">Ask about my work</h2>
+      <p style="margin:var(--lp-space-4) 0 0;color:var(--text-muted);font-size:var(--lp-size-15)">
         Answers come from my own entries, with sources you can open. If I can't back something up, I'll say so.
       </p>
       <form action="/ask" method="GET" class="ask-input-row">

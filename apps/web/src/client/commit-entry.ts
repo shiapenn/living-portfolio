@@ -77,16 +77,16 @@ export function updateStateChip(visibility: Visibility, isUnpublished = false) {
   chip.setAttribute('data-status', visibility);
   if (visibility === 'public') {
     chip.textContent = 'State: PUBLIC';
-    chip.style.background = '#dcfce7';
-    chip.style.color = '#166534';
+    chip.style.background = 'var(--lp-color-role-success-bg)';
+    chip.style.color = 'var(--lp-color-role-success-fg)';
   } else if (visibility === 'unlisted') {
     chip.textContent = 'State: UNLISTED';
-    chip.style.background = '#fef3c7';
-    chip.style.color = '#92400e';
+    chip.style.background = 'var(--lp-color-role-warning-bg)';
+    chip.style.color = 'var(--lp-color-role-warning-fg)';
   } else {
     chip.textContent = isUnpublished ? 'State: PRIVATE (Unpublished)' : 'State: PRIVATE (Draft)';
-    chip.style.background = '#f1f5f9';
-    chip.style.color = '#475569';
+    chip.style.background = 'var(--lp-color-role-neutral-bg)';
+    chip.style.color = 'var(--lp-color-role-neutral-fg)';
   }
 }
 
@@ -190,19 +190,19 @@ export function showUndoBanner(message: string, onUndo: () => Promise<void>) {
   clearUndoTimers();
 
   const statusLineHtml =
-    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:12px">` +
+    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-12)">` +
     `<span>${message}</span>` +
-    `<button type="button" class="btn btn-secondary" id="btn-undo-status-line" data-undo-action="true" style="padding:2px 8px;font-size:12px;margin-left:8px">Undo (30s)</button>` +
+    `<button type="button" class="btn btn-secondary" id="btn-undo-status-line" data-undo-action="true" style="padding:var(--lp-space-2) var(--lp-space-8);font-size:var(--lp-space-12);margin-left:var(--lp-space-8)">Undo (30s)</button>` +
     `</div>`;
 
   const toastHtml =
-    `<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">` +
+    `<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-12)">` +
     `<span>${message}</span>` +
-    `<button type="button" class="btn btn-secondary" id="btn-undo-toast" data-undo-action="true" style="padding:2px 8px;font-size:12px;margin-left:8px">Undo (30s)</button>` +
+    `<button type="button" class="btn btn-secondary" id="btn-undo-toast" data-undo-action="true" style="padding:var(--lp-space-2) var(--lp-space-8);font-size:var(--lp-space-12);margin-left:var(--lp-space-8)">Undo (30s)</button>` +
     `</div>`;
 
   const bannerHtml =
-    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:12px">` +
+    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-12)">` +
     `<span>${message}</span>` +
     `</div>`;
 
@@ -226,7 +226,7 @@ export function showUndoBanner(message: string, onUndo: () => Promise<void>) {
     banner.innerHTML =
       `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center">` +
       `<span>${message}</span>` +
-      `<button type="button" class="btn btn-secondary" id="btn-undo-action-banner" data-undo-action="true" style="padding:2px 8px;font-size:12px;margin-left:8px">Undo (30s)</button>` +
+      `<button type="button" class="btn btn-secondary" id="btn-undo-action-banner" data-undo-action="true" style="padding:var(--lp-space-2) var(--lp-space-8);font-size:var(--lp-space-12);margin-left:var(--lp-space-8)">Undo (30s)</button>` +
       `</div>`;
   }
 

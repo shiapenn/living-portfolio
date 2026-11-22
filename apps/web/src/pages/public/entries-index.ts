@@ -70,8 +70,8 @@ export async function renderWorkOrWritingPage(
 
   const filterBar =
     mode === 'work'
-      ? `<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-          <span style="font-size:14px;color:var(--text-muted)">Outcome:</span>
+      ? `<div style="display:flex;gap:var(--lp-space-8);margin-bottom:var(--lp-space-16);flex-wrap:wrap;align-items:center">
+          <span style="font-size:var(--lp-size-14);color:var(--text-muted)">Outcome:</span>
           <a href="/work${asOfPrefixQuery}" class="chip${!filterOutcome ? ' active' : ''}">All</a>
           <a href="/work?outcome=worked${asOfParamQuery}" class="chip${filterOutcome === 'worked' ? ' active' : ''}">Worked</a>
           <a href="/work?outcome=partly${asOfParamQuery}" class="chip${filterOutcome === 'partly' ? ' active' : ''}">Partly worked</a>
@@ -81,15 +81,15 @@ export async function renderWorkOrWritingPage(
       : '';
 
   const asOfBanner = asOfInfo && asOfInfo.valid
-    ? `<div class="as-of-banner" role="status" style="margin-bottom:16px">
+    ? `<div class="as-of-banner" role="status" style="margin-bottom:var(--lp-space-16)">
          <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}</strong> — Entries written after this date are excluded.</span>
          <a href="${mode === 'work' ? '/work' : '/writing'}">Reset to present</a>
        </div>`
     : '';
 
   const content = `
-    <h1 style="font-family:var(--font-reading);font-size:30px;margin:0 0 8px 0">${title}</h1>
-    <p style="color:var(--text-muted);margin:0 0 24px 0">
+    <h1 style="font-family:var(--font-reading);font-size:var(--lp-size-30);margin:0 0 var(--lp-space-8) 0">${title}</h1>
+    <p style="color:var(--text-muted);margin:0 0 var(--lp-space-24) 0">
       ${mode === 'work' ? 'Case studies, decisions and design projects, with the evidence behind them.' : "Everything I've published, newest first."}
     </p>
     ${filterBar}
@@ -99,12 +99,12 @@ export async function renderWorkOrWritingPage(
         ${rows.join('\n')}
       </ul>
     ` : `
-      <div class="empty-state" style="padding:48px 16px;text-align:center;border:1px dashed var(--rule);border-radius:var(--radius-card);margin:24px 0">
-        <p style="font-weight:600;font-size:18px;margin:0 0 8px 0">${filterOutcome ? 'No entries match the selected filters' : (mode === 'work' ? 'No matching case studies found' : 'No writing entries found')}</p>
-        <p style="color:var(--text-muted);font-size:14px;margin:0 0 20px 0">
+      <div class="empty-state" style="padding:var(--lp-size-48) var(--lp-space-16);text-align:center;border:var(--lp-border-hairline) dashed var(--rule);border-radius:var(--radius-card);margin:var(--lp-space-24) 0">
+        <p style="font-weight:600;font-size:var(--lp-size-18);margin:0 0 var(--lp-space-8) 0">${filterOutcome ? 'No entries match the selected filters' : (mode === 'work' ? 'No matching case studies found' : 'No writing entries found')}</p>
+        <p style="color:var(--text-muted);font-size:var(--lp-size-14);margin:0 0 var(--lp-size-icon-md) 0">
           ${filterOutcome ? `No public case studies match the outcome filter "${escapeHtml(filterOutcome)}".` : (asOfInfo && asOfInfo.valid ? 'No public entries were recorded on or before this as-of date.' : 'No public entries have been published yet.')}
         </p>
-        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <div style="display:flex;gap:var(--lp-space-12);justify-content:center;flex-wrap:wrap">
           ${filterOutcome ? `<a href="/work${asOfPrefixQuery}" class="btn btn-secondary">Reset all filters</a>` : ''}
           ${asOfInfo && asOfInfo.valid ? `<a href="/${mode}" class="btn btn-secondary">Reset to present</a>` : ''}
           <a href="/ask" class="btn">Ask</a>

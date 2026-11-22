@@ -6,18 +6,18 @@ export function renderNotFoundPage(
   activePath: string = '/'
 ): string {
   const content = `
-    <div class="empty-state" style="padding:48px 16px;text-align:center;max-width:640px;margin:40px auto">
-      <h1 style="font-family:var(--font-reading);font-size:32px;margin:0 0 12px 0">404 — Page Not Found</h1>
-      <p style="color:var(--text-muted);font-size:16px;margin:0 0 24px 0">
+    <div class="empty-state" style="padding:var(--lp-size-48) var(--lp-space-16);text-align:center;max-width:var(--lp-size-640);margin:var(--lp-space-40) auto">
+      <h1 style="font-family:var(--font-reading);font-size:var(--lp-size-32);margin:0 0 var(--lp-space-12) 0">404 — Page Not Found</h1>
+      <p style="color:var(--text-muted);font-size:var(--lp-space-16);margin:0 0 var(--lp-space-24) 0">
         ${escapeHtml(message || 'The page or record you requested does not exist or may have been moved.')}
       </p>
-      <div style="margin-bottom:28px">
-        <form action="/ask" method="GET" style="display:flex;gap:8px;max-width:440px;margin:0 auto">
+      <div style="margin-bottom:var(--lp-size-28)">
+        <form action="/ask" method="GET" style="display:flex;gap:var(--lp-space-8);max-width:var(--lp-size-440);margin:0 auto">
           <input type="text" name="q" class="ask-input" placeholder="Search records or ask a question..." aria-label="Search records" style="flex:1" required />
           <button type="submit" class="btn">Search</button>
         </form>
       </div>
-      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <div style="display:flex;gap:var(--lp-space-12);justify-content:center;flex-wrap:wrap">
         <a href="/work" class="btn btn-secondary">Explore Work</a>
         <a href="/writing" class="btn btn-secondary">Browse Writing</a>
         <a href="/timeline" class="btn btn-secondary">View Timeline</a>

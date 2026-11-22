@@ -32,6 +32,7 @@ function findFiles(dir, extensions) {
 const definedVariables = new Set();
 
 const tokenFiles = [
+  resolve(ROOT, 'packages/design-tokens/src/tokens.css'),
   resolve(WEB_SRC, 'tokens/index.ts'),
   resolve(WEB_SRC, 'styles.ts'),
 ];

@@ -22,6 +22,7 @@ import {
   STATUS_VOCABULARY,
 } from '../../primitives/index.js';
 import { renderPageNotice } from '../../components/index.js';
+import { renderFoundationsTokensSection } from '../../primitives/foundations-gallery.js';
 
 export interface GalleryOptions {
   theme?: 'light' | 'dark';
@@ -371,6 +372,8 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
           bodyHtml: renderText({ variant: 'body', text: 'Subsection body content.' }),
         })}
       </section>
+
+      ${renderFoundationsTokensSection()}
     </div>
   `;
 

@@ -1,5 +1,27 @@
 import { type Page } from '@playwright/test';
+import {
+  BREAKPOINTS,
+  COMPONENT_TOKEN_VALUES,
+  RELATIONS,
+  TYPE_ROLES,
+} from '../../packages/design-tokens/src/index.js';
 import { type StateDefinition, type ThemeMode } from './states-manifest.js';
+
+export const TOKEN_SPEC = {
+  breakpoints: BREAKPOINTS,
+  relations: RELATIONS,
+  typeRoles: TYPE_ROLES,
+  controlHeightMobile: parseFloat(COMPONENT_TOKEN_VALUES['--lp-size-control-height']),
+  controlHeightDesktop: parseFloat(COMPONENT_TOKEN_VALUES['--lp-size-control-height-desktop']),
+  btnItemMinWidth: parseFloat(COMPONENT_TOKEN_VALUES['--lp-size-btn-item-min']),
+  barTopHeight: parseFloat(COMPONENT_TOKEN_VALUES['--lp-size-bar-top-height']),
+  barEditorHeight: parseFloat(COMPONENT_TOKEN_VALUES['--lp-size-bar-editor-height']),
+  radii: [
+    0,
+    parseFloat(COMPONENT_TOKEN_VALUES['--lp-radius-r1']),
+    parseFloat(COMPONENT_TOKEN_VALUES['--lp-radius-r2']),
+  ],
+};
 
 export interface SeededIds {
   entryId: string;
@@ -172,6 +194,8 @@ export async function navigateToState(
       const pm = page.locator('#ref-tiptap-editor .ProseMirror');
       await pm.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
       await pm.click();
+      await page.keyboard.press('ControlOrMeta+a');
+      await page.keyboard.press('Backspace');
       await page.keyboard.type('/');
       await page.locator('#ref-slash-menu').waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
       break;
@@ -311,7 +335,7 @@ export async function checkPaintedGaps(
   violations: string[];
   pairsByRelation: Record<string, number>;
 }> {
-  return page.evaluate(({ includeDG }) => {
+  return page.evaluate(({ includeDG, rel }) => {
     const violations: string[] = [];
     const pairsByRelation: Record<string, number> = {
       'page-title-to-description': 0,
@@ -372,25 +396,25 @@ export async function checkPaintedGaps(
 
     const h1 = document.querySelector('main h1');
     const desc = document.querySelector('main .lp-page-description');
-    if (h1 && desc) checkPair('page-title-to-description', h1, desc, 8);
+    if (h1 && desc) checkPair('page-title-to-description', h1, desc, rel['page-title-to-description']);
 
     const header = document.querySelector('main .lp-page-header');
     if (header && header.nextElementSibling) {
       const next = header.nextElementSibling;
       if (isPainted(next) || next.querySelector('*')) {
-        checkPair('header-to-content', header, next, 24);
+        checkPair('header-to-content', header, next, rel['header-to-content']);
       }
     }
 
     const tabs = document.querySelector('main [role="tablist"], main .lp-tabs');
     if (tabs && tabs.nextElementSibling) {
-      checkPair('tabs-to-content', tabs, tabs.nextElementSibling, 16);
+      checkPair('tabs-to-content', tabs, tabs.nextElementSibling, rel['tabs-to-content']);
     }
 
     const items = Array.from(document.querySelectorAll('main .lp-item'));
     for (let i = 0; i < items.length - 1; i++) {
       if (items[i].parentElement === items[i + 1].parentElement) {
-        checkPair('item-to-item', items[i], items[i + 1], 0);
+        checkPair('item-to-item', items[i], items[i + 1], rel['item-to-item']);
       }
     }
 
@@ -399,12 +423,12 @@ export async function checkPaintedGaps(
       const label = f.querySelector('[data-rel="label"], label, .lp-field-label');
       const control = f.querySelector('[data-rel="control"], input, select, textarea, .lp-select-wrap');
       const help = f.querySelector('[data-rel="help"], .lp-field-help');
-      if (label && control) checkPair('label-to-control', label, control, 8);
-      if (control && help) checkPair('control-to-help', control, help, 8);
+      if (label && control) checkPair('label-to-control', label, control, rel['label-to-control']);
+      if (control && help) checkPair('control-to-help', control, help, rel['label-to-control']);
     }
     for (let i = 0; i < fields.length - 1; i++) {
       if (includeDG && fields[i].parentElement === fields[i + 1].parentElement) {
-        checkPair('field-to-field', fields[i], fields[i + 1], 16);
+        checkPair('field-to-field', fields[i], fields[i + 1], rel['field-to-field']);
       }
     }
 
@@ -413,14 +437,14 @@ export async function checkPaintedGaps(
       for (const sec of sections) {
         const sTitle = sec.querySelector('[data-rel="section-title"], .lp-form-section-title, .lp-section-title');
         const sIntro = sec.querySelector('[data-rel="section-intro"], .lp-form-section-desc');
-        if (sTitle && sIntro) checkPair('section-heading-to-intro', sTitle, sIntro, 8);
+        if (sTitle && sIntro) checkPair('section-heading-to-intro', sTitle, sIntro, rel['section-heading-to-intro']);
         const headerLead = sIntro ?? sTitle;
         const firstChild = sec.querySelector('.lp-level, [data-rel="field"], [data-rel="item"], [data-rel="subsection"], .lp-field, .lp-item, .lp-list, .lp-choice-group');
-        if (headerLead && firstChild) checkPair('heading-or-intro-to-first', headerLead, firstChild, 16);
+        if (headerLead && firstChild) checkPair('heading-or-intro-to-first', headerLead, firstChild, rel['heading-to-first']);
       }
       for (let i = 0; i < sections.length - 1; i++) {
         if (sections[i].parentElement === sections[i + 1].parentElement) {
-          checkPair('section-to-section', sections[i], sections[i + 1], 40);
+          checkPair('section-to-section', sections[i], sections[i + 1], rel['section-to-section']);
         }
       }
       if (sections.length > 0) {
@@ -428,7 +452,7 @@ export async function checkPaintedGaps(
         const pageActionBar = lastSec.nextElementSibling?.matches('[data-rel="page-actions"], .lp-action-bar')
           ? lastSec.nextElementSibling
           : null;
-        if (pageActionBar) checkPair('last-section-to-action-bar', lastSec, pageActionBar, 40);
+        if (pageActionBar) checkPair('last-section-to-action-bar', lastSec, pageActionBar, rel['action-bar-after-section']);
       }
 
       const subsections = Array.from(document.querySelectorAll('main [data-rel="subsection"], main .lp-subsection'));
@@ -524,7 +548,7 @@ export async function checkPaintedGaps(
     }
 
     return { violations, pairsByRelation };
-  }, { includeDG: Boolean(opts.includeDG) });
+  }, { includeDG: Boolean(opts.includeDG), rel: RELATIONS });
 }
 
 export async function checkLines(page: Page, opts: { hasTopBar: boolean; hasPushPanelOpen?: boolean }): Promise<string[]> {
@@ -825,9 +849,9 @@ export async function checkContainmentAndOverlap(page: Page): Promise<string[]> 
  * - Legacy status guard (H2): no .lp-status-dot-circle or legacy .lp-status-dot without .lp-status-indicator
  */
 export async function checkControlsRadiusTextButtonsSrOnly(page: Page): Promise<string[]> {
-  return page.evaluate(() => {
+  return page.evaluate((spec) => {
     const issues: string[] = [];
-    const expectedH = window.innerWidth < 640 ? 44 : 40;
+    const expectedH = window.innerWidth < spec.breakpoints.viewport.sm ? spec.controlHeightMobile : spec.controlHeightDesktop;
     const isVis = (el: Element): boolean => {
       const cs = getComputedStyle(el);
       if (cs.display === 'none' || cs.visibility === 'hidden') return false;
@@ -896,7 +920,7 @@ export async function checkControlsRadiusTextButtonsSrOnly(page: Page): Promise<
       }
     }
     return issues;
-  });
+  }, TOKEN_SPEC);
 }
 
 /**
@@ -1357,7 +1381,7 @@ export interface ActionBarK1Report {
 }
 
 export async function checkActionBarK1(page: Page, stateId = ''): Promise<ActionBarK1Report[]> {
-  return page.evaluate((sid) => {
+  return page.evaluate(({ sid, spec }) => {
     const isVisible = (el: HTMLElement | null): boolean => {
       if (!el) return false;
       const cs = getComputedStyle(el);
@@ -1408,11 +1432,11 @@ export async function checkActionBarK1(page: Page, stateId = ''): Promise<Action
             issues.push(`k1-item-btn-full-class(${sid}, ${containerType}): button "${(b.textContent || '').trim()}" has .lp-btn-full`);
           }
           const br = b.getBoundingClientRect();
-          if (br.width < 95.5) {
-            issues.push(`k1-item-min96(${sid}, ${containerType}): button width ${br.width.toFixed(1)} < 96`);
+          if (br.width < spec.btnItemMinWidth - 0.5) {
+            issues.push(`k1-item-min96(${sid}, ${containerType}): button width ${br.width.toFixed(1)} < ${spec.btnItemMinWidth}`);
           }
-          if (window.innerWidth < 640 && br.height < 43.5) {
-            issues.push(`k1-item-touch44(${sid}, ${containerType}): button height ${br.height.toFixed(1)} < 44 below 640px`);
+          if (window.innerWidth < spec.breakpoints.viewport.sm && br.height < spec.controlHeightMobile - 0.5) {
+            issues.push(`k1-item-touch44(${sid}, ${containerType}): button height ${br.height.toFixed(1)} < ${spec.controlHeightMobile} below ${spec.breakpoints.viewport.sm}px`);
           }
         }
       }
@@ -1420,7 +1444,7 @@ export async function checkActionBarK1(page: Page, stateId = ''): Promise<Action
       reports.push({ level, containerType, widthClass, issues });
     }
     return reports;
-  }, stateId);
+  }, { sid: stateId, spec: TOKEN_SPEC });
 }
 
 export interface ListPaintedGapReport {
@@ -1432,7 +1456,7 @@ export interface ListPaintedGapReport {
 }
 
 export async function checkListPaddingAbsorptionK2(page: Page, stateId = ''): Promise<ListPaintedGapReport[]> {
-  return page.evaluate((sid) => {
+  return page.evaluate(({ sid, spec }) => {
     const isVisible = (el: HTMLElement | null): boolean => {
       if (!el) return false;
       const cs = getComputedStyle(el);
@@ -1494,8 +1518,9 @@ export async function checkListPaddingAbsorptionK2(page: Page, stateId = ''): Pr
         const firstBounds = getPaintedBounds(items[0]);
         if (prevBounds && firstBounds) {
           headingToFirst = Math.round((firstBounds.top - prevBounds.bottom) * 10) / 10;
-          if (headingToFirst < 14 || headingToFirst > 22) {
-            issues.push(`k2-heading-to-first(${sid}, ${sectionId}): paintedGap=${headingToFirst}px (expected ~16px)`);
+          const expectedH2F = spec.relations['heading-to-first'];
+          if (headingToFirst < expectedH2F - 2 || headingToFirst > expectedH2F + 6) {
+            issues.push(`k2-heading-to-first(${sid}, ${sectionId}): paintedGap=${headingToFirst}px (expected ~${expectedH2F}px)`);
           }
         }
       }
@@ -1513,8 +1538,9 @@ export async function checkListPaddingAbsorptionK2(page: Page, stateId = ''): Pr
           const nextBounds = getPaintedBounds(nextSec);
           if (lastBounds && nextBounds) {
             lastToNext = Math.round((nextBounds.top - lastBounds.bottom) * 10) / 10;
-            if (Math.abs(lastToNext - 40) > 3) {
-              issues.push(`k2-last-to-next(${sid}, ${sectionId}): paintedGap=${lastToNext}px (expected 40px)`);
+            const expectedL2N = spec.relations['section-to-section'];
+            if (Math.abs(lastToNext - expectedL2N) > 3) {
+              issues.push(`k2-last-to-next(${sid}, ${sectionId}): paintedGap=${lastToNext}px (expected ${expectedL2N}px)`);
             }
           }
         }
@@ -1532,8 +1558,9 @@ export async function checkListPaddingAbsorptionK2(page: Page, stateId = ''): Pr
         if (contentBounds && actionBounds) {
           const gap = Math.round((actionBounds.top - contentBounds.bottom) * 10) / 10;
           itemToActionBarGaps.push(gap);
-          if (Math.abs(gap - 24) > 3) {
-            issues.push(`k2-item-to-actionbar(${sid}, ${sectionId}): paintedGap=${gap}px (expected 24px)`);
+          const expectedI2A = spec.relations['item-body-to-actionbar'];
+          if (Math.abs(gap - expectedI2A) > 3) {
+            issues.push(`k2-item-to-actionbar(${sid}, ${sectionId}): paintedGap=${gap}px (expected ${expectedI2A}px)`);
           }
         }
       }
@@ -1567,5 +1594,5 @@ export async function checkListPaddingAbsorptionK2(page: Page, stateId = ''): Pr
     }
 
     return reports;
-  }, stateId);
+  }, { sid: stateId, spec: TOKEN_SPEC });
 }

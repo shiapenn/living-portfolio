@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Living Portfolio Design Tokens",
+  "type": "object",
+  "required": ["$schema", "version", "naming", "primitive", "semantic", "component", "breakpoints", "relations", "typographyRoles", "reserved"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "type": "string" },
+    "naming": { "type": "string" },
+    "primitive": {
+      "type": "object",
+      "required": ["color", "space", "size", "radius", "border", "font", "motion", "zIndex", "opacity", "elevation"],
+      "additionalProperties": true
+    },
+    "semantic": {
+      "type": "object",
+      "required": ["light", "dark"],
+      "properties": {
+        "light": { "type": "object" },
+        "dark": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "breakpoints": {
+      "type": "object",
+      "required": ["viewport", "container"],
+      "properties": {
+        "viewport": {
+          "type": "object",
+          "required": ["sm", "md"],
+          "properties": {
+            "sm": { "type": "number" },
+            "md": { "type": "number" }
+          }
+        },
+        "container": {
+          "type": "object",
+          "required": ["compact"],
+          "properties": {
+            "compact": { "type": "number" }
+          }
+        }
+      }
+    },
+    "relations": { "type": "object" },
+    "typographyRoles": { "type": "object" },
+    "reserved": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    }
+  }
+}
