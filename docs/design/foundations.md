@@ -358,3 +358,22 @@ Where `D-FINAL` conflicts with `D-SYS`, `D-COMP`, `D-LAYOUT`, `D-MIN`, or `D-FOU
 17. **Editor Settings View**: Under `Type` select, help line `"Publishes in Work at /work/<real slug>"` (mapped section + real slug); `Type` select groups options by section (`Work`, `Writing`, `Build`); remove loose line under `Date precision`. Level next-step sentence is a text button with down icon scrolling to & focusing the matching control. `Suggested roles`: `Item` title=role, body=passage derived from revision body by span offsets (3-line clamp), status label per Item contract, segmented `Accept`/`Ignore` with `24 px` above.
 18. **Entries Panel, Status, Page Padding**: Entries panel header text left-aligned. All pages (including fixture and gallery) wrap content in `Page` template with padding (`24 px`, `16 px` below `768 px`); census fails if any page content box is within `16 px` of viewport edge.
 19. **Appearance v2 (Recorded in P004 WP-17)**: Theme pack format (typed token schema across primitive, semantic, and component tiers, one tokens source file generated to CSS), selectable packs with live preview and contrast validation, constrained customisation, import/export. Not built in WP-16.G.
+
+---
+
+## D-H (WP-16.H Hardening; amends D-G)
+
+1. **Amends D-G 7 (Entries panel inset)**: The entries panel's inner left edge is `12px` (aligned to the top bar icon's left edge); `Items` still inset `8px`.
+2. **Amends D-G A6 (Overlay shadows)**: Shadows only for popover, menu, dialog, and sheets detached from an edge. Edge-docked panels (entries panel `#ref-entries-drawer`) use `1px` outline (`var(--border-overlay)`) and `box-shadow: none`.
+3. **H1 Control-height token**: `--control-height` is `44px` below `640px` and `40px` from `640px` up. Every `.lp-btn` (except `.lp-btn-text`), `input`, `select`, and segmented track equals `--control-height`. Buttons inside an `Item` or `Dialog`: full container width below `400px`, otherwise `min-width: 160px`.
+4. **H2 Legacy status removal**: Remove all `.lp-status-dot-circle` and legacy `.lp-status-dot` wrapper markup/CSS; `Suggested roles`, `Claims`, and `Status` use `StatusLabel` (`data-c="StatusLabel"`, `.lp-status-indicator` + `.lp-status-label`) in the trailing title-row slot (`showChevron` only on navigating rows).
+5. **H3 Suggested roles**: `Item` uses full list width and `8px` content inset; span passage covers one paragraph with Markdown markers/headings stripped (`no '#'`), clamped to 3 lines; `Accept`/`Ignore` use `.lp-choice-group.lp-choice-variant-segmented`.
+6. **H4 Tag ink symmetry**: Left edge to text `8px`; remove glyph ink right edge to chip edge `8px`; same chip height in every state.
+7. **H5 Edit/Settings bar**: `grid-template-columns: 1fr auto 1fr` with toggle centred in column 2 (`<= 0.5px` tolerance at 320/1280/1920 top & scrolled, including `editor-tag-add`); height `56px`, toggle track `36px` (`10px` above/below), horizontal inset `12px`, sticky `top: 60px`. Collapse History and Delete into More at `320px`.
+8. **H6 Top bar**: Height `60px`; icon buttons `36px` with `12px` inset on all four sides.
+9. **H7 Radius scale**: Two tokens only: `--r1: 4px` (tags, segmented thumb, small chips) and `--r2: 8px` (buttons, inputs, selects, segmented track, overlays, dialogs, Items hover tint). Segmented thumb = `r2 - 4px = r1`. Every element radius in `{0, r1, r2, full}`.
+10. **H8 Text buttons**: Zero fill (`rgba(0,0,0,0)`) and zero border at rest in both themes; delete `.lp-recovery-link` and use `.lp-btn-text`.
+11. **H9 Entries panel**: `z-index` above entry content, floating format bar, and sticky editor bar; `<768px` overlays without reflowing content; `>=768px` pushes and reflows; floating format bar centred on `#ref-editor-main` (`editor` column) whether panel is open or closed.
+12. **H10 Setup Step 3 & Wizard**: Step-level primary CTA is always `"Continue"`; Sub-step 1 `"Local only"` -> `"Continue"` (to step 4), external -> `"Next"` (to sub-step 2); Sub-step 2 model/key + `"Test and save"` -> `"Continue"` after save; no inner stepper inside Setup Step 3; header order `Back` (steps 2–6), `Stepper` (`Step N of 6` + `2px` bar visible on `?step=N`), `h1`, description; `.lp-sr-only` clipped to `<= 1px × 1px`; Step 6 worked example uses plain description text (no `.lp-notice-info`).
+13. **H11 Empty Claims/Evidence**: Empty list/container has `0px` height; gap from heading/intro to `ActionBar` button is `16px`.
+14. **H12 StatusItem consistency**: Identical title, trailing status, and chevron alignment across Status, Providers, and Backups.

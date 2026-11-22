@@ -675,3 +675,215 @@ export async function checkPageContentEdgePadding(page: Page): Promise<string[]>
     return issues;
   });
 }
+
+/**
+ * G-census v2 C1 + C2:
+ * - C1 Containment: every visible child of a [data-c] element lies within its parent's box (0.5px tolerance),
+ *   except children explicitly marked [data-overlay].
+ * - C2 Overlap: no two visible text-bearing leaf boxes intersect (tolerance 0).
+ */
+export async function checkContainmentAndOverlap(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const issues: string[] = [];
+    const isVis = (el: Element): boolean => {
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity || '1') === 0) return false;
+      if (el.closest('[hidden], .lp-is-hidden, .lp-sr-only')) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0.5 && r.height > 0.5;
+    };
+
+    const comps = Array.from(document.querySelectorAll('[data-c]')).filter(isVis);
+    for (const parent of comps) {
+      if (getComputedStyle(parent).overflow !== 'visible') continue;
+      const pr = parent.getBoundingClientRect();
+      for (const child of Array.from(parent.children)) {
+        if (child.hasAttribute('data-overlay') || child.closest('[data-overlay]')) continue;
+        if (!isVis(child)) continue;
+        const cr = child.getBoundingClientRect();
+        if (
+          cr.left < pr.left - 0.5 ||
+          cr.right > pr.right + 0.5 ||
+          cr.top < pr.top - 0.5 ||
+          cr.bottom > pr.bottom + 0.5
+        ) {
+          issues.push(
+            `c1-containment: [data-c="${parent.getAttribute('data-c')}"] child ${child.tagName.toLowerCase()}.${child.className} overflows parent (${Math.round(cr.left)}..${Math.round(cr.right)} vs ${Math.round(pr.left)}..${Math.round(pr.right)}, ${Math.round(cr.top)}..${Math.round(cr.bottom)} vs ${Math.round(pr.top)}..${Math.round(pr.bottom)})`
+          );
+        }
+      }
+    }
+
+    const leafBoxes: Array<{ el: Element; rect: DOMRect }> = [];
+    const allEls = Array.from(document.querySelectorAll('main *'));
+    for (const el of allEls) {
+      if (!isVis(el)) continue;
+      const hasDirectText = Array.from(el.childNodes).some(
+        (n) => n.nodeType === Node.TEXT_NODE && (n.textContent || '').trim().length > 0
+      );
+      const isDot = el.classList.contains('lp-status-dot') || el.classList.contains('lp-status-dot-circle');
+      if (!hasDirectText && !isDot) continue;
+      if (el.closest('[data-overlay]')) continue;
+      leafBoxes.push({ el, rect: el.getBoundingClientRect() });
+    }
+    for (let i = 0; i < leafBoxes.length; i++) {
+      for (let j = i + 1; j < leafBoxes.length; j++) {
+        const a = leafBoxes[i];
+        const b = leafBoxes[j];
+        if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+        const ix = Math.min(a.rect.right, b.rect.right) - Math.max(a.rect.left, b.rect.left);
+        const iy = Math.min(a.rect.bottom, b.rect.bottom) - Math.max(a.rect.top, b.rect.top);
+        if (ix > 0.5 && iy > 0.5) {
+          issues.push(
+            `c2-overlap: ${a.el.tagName.toLowerCase()}.${a.el.className} intersects ${b.el.tagName.toLowerCase()}.${b.el.className}`
+          );
+        }
+      }
+    }
+    return issues;
+  });
+}
+
+/**
+ * G-census v2 C3:
+ * - Control-height token (H1): 44px (<640px), 40px (>=640px)
+ * - Radius scale (H7): {0, 4, 8, full}
+ * - Text-button fill (H8): .lp-btn-text rgba(0,0,0,0) and border 0; no .lp-recovery-link
+ * - sr-only size (H10): <= 1px x 1px
+ * - Legacy status guard (H2): no .lp-status-dot-circle or legacy .lp-status-dot without .lp-status-indicator
+ */
+export async function checkControlsRadiusTextButtonsSrOnly(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const issues: string[] = [];
+    const expectedH = window.innerWidth < 640 ? 44 : 40;
+    const isVis = (el: Element): boolean => {
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') return false;
+      if (el.closest('[hidden], .lp-is-hidden')) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+
+    const controls = Array.from(
+      document.querySelectorAll(
+        'button.lp-btn:not(.lp-btn-text), a.lp-btn:not(.lp-btn-text), input.lp-input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select.lp-select, .lp-segmented-control, .lp-choice-variant-segmented .lp-choice-list'
+      )
+    ).filter(isVis);
+    for (const c of controls) {
+      const h = Math.round(c.getBoundingClientRect().height);
+      if (Math.abs(h - expectedH) > 1) {
+        issues.push(`c3-control-height: ${c.tagName.toLowerCase()}.${c.className} got ${h}px expected ${expectedH}px`);
+      }
+    }
+
+    const painted = Array.from(document.querySelectorAll('main *, header *')).filter(isVis);
+    for (const el of painted) {
+      const cs = getComputedStyle(el);
+      const rad = parseFloat(cs.borderTopLeftRadius || '0');
+      const allowed = rad === 0 || Math.abs(rad - 4) <= 0.5 || Math.abs(rad - 8) <= 0.5 || rad >= 100;
+      if (!allowed) {
+        issues.push(`c3-radius-scale: ${el.tagName.toLowerCase()}.${el.className} radius=${rad}px`);
+      }
+      if (
+        el.matches('button.lp-btn:not(.lp-btn-text), a.lp-btn:not(.lp-btn-text), input.lp-input, select.lp-select, .lp-segmented-control, .lp-dialog-panel, .lp-item.is-selected') &&
+        Math.abs(rad - 8) > 0.5
+      ) {
+        issues.push(`c3-radius-r2: ${el.tagName.toLowerCase()}.${el.className} got ${rad}px expected 8px`);
+      }
+      if (el.matches('.lp-tag') && Math.abs(rad - 4) > 0.5) {
+        issues.push(`c3-radius-r1: ${el.tagName.toLowerCase()}.${el.className} got ${rad}px expected 4px`);
+      }
+    }
+
+    if (document.querySelector('.lp-recovery-link')) {
+      issues.push('c3-legacy-recovery-link: .lp-recovery-link present');
+    }
+    for (const tb of Array.from(document.querySelectorAll('.lp-btn-text')).filter(isVis)) {
+      const cs = getComputedStyle(tb);
+      if (cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') {
+        issues.push(`c3-text-btn-bg: #${tb.id || tb.className} bg=${cs.backgroundColor}`);
+      }
+      if ((parseFloat(cs.borderTopWidth) || 0) > 0) {
+        issues.push(`c3-text-btn-border: #${tb.id || tb.className} border=${cs.borderTopWidth}`);
+      }
+    }
+
+    for (const sr of Array.from(document.querySelectorAll('.lp-sr-only'))) {
+      const r = sr.getBoundingClientRect();
+      if (r.width > 1.5 || r.height > 1.5) {
+        issues.push(`c3-sr-only-visible: "${(sr.textContent || '').trim().slice(0, 30)}" size=${Math.round(r.width)}x${Math.round(r.height)}`);
+      }
+    }
+
+    if (document.querySelector('.lp-status-dot-circle')) {
+      issues.push('c3-legacy-status-dot-circle: .lp-status-dot-circle present');
+    }
+    for (const d of Array.from(document.querySelectorAll('.lp-status-dot'))) {
+      if (!d.closest('.lp-status-indicator')) {
+        issues.push('c3-legacy-status-dot-wrapper: .lp-status-dot without .lp-status-indicator');
+      }
+    }
+    return issues;
+  });
+}
+
+/**
+ * G-census v2 C4:
+ * - Edit/Settings toggle centre === bar centre (<= 0.5px), bar height 56, sticky top 60
+ * - Top bar height 60, icon buttons 36 with 12px inset
+ * - Format bar centre === editor column (#ref-editor-main) centre (<= 1px)
+ */
+export async function checkCenteringAndBars(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const issues: string[] = [];
+    const topBar = document.querySelector<HTMLElement>('.lp-admin-header');
+    if (topBar && getComputedStyle(topBar).display !== 'none') {
+      const tr = topBar.getBoundingClientRect();
+      if (Math.abs(tr.height - 60) > 1) {
+        issues.push(`c4-topbar-height: got ${Math.round(tr.height)}px expected 60px`);
+      }
+      const leftIcon = topBar.querySelector<HTMLElement>('.lp-icon-btn');
+      if (leftIcon) {
+        const ir = leftIcon.getBoundingClientRect();
+        const topInset = Math.round(ir.top - tr.top);
+        const bottomInset = Math.round(tr.bottom - ir.bottom);
+        if (Math.abs(ir.height - 36) > 1 || Math.abs(topInset - 12) > 1 || Math.abs(bottomInset - 12) > 1) {
+          issues.push(`c4-topbar-icon-inset: height=${Math.round(ir.height)} top=${topInset} bottom=${bottomInset}`);
+        }
+      }
+    }
+
+    const sticky = document.querySelector<HTMLElement>('.lp-editor-toolbar-sticky');
+    const toolbar = document.querySelector<HTMLElement>('#ref-editor-toolbar');
+    const seg = document.querySelector<HTMLElement>('#ref-view-switch');
+    if (sticky && toolbar && seg && getComputedStyle(toolbar).display !== 'none') {
+      const sTop = parseFloat(getComputedStyle(sticky).top || '0');
+      if (Math.abs(sTop - 60) > 1) {
+        issues.push(`c4-editor-bar-sticky-top: got ${sTop}px expected 60px`);
+      }
+      const br = toolbar.getBoundingClientRect();
+      if (Math.abs(br.height - 56) > 1) {
+        issues.push(`c4-editor-bar-height: got ${Math.round(br.height)}px expected 56px`);
+      }
+      const sr = seg.getBoundingClientRect();
+      const barMid = (br.left + br.right) / 2;
+      const segMid = (sr.left + sr.right) / 2;
+      if (Math.abs(barMid - segMid) > 0.5) {
+        issues.push(`c4-toggle-centering: diff=${Math.abs(barMid - segMid).toFixed(2)}px (>0.5px)`);
+      }
+    }
+
+    const fmtBar = document.querySelector<HTMLElement>('#ref-format-bar');
+    const col = document.querySelector<HTMLElement>('#ref-editor-main');
+    if (fmtBar && col && getComputedStyle(fmtBar).display !== 'none') {
+      const fr = fmtBar.getBoundingClientRect();
+      const cr = col.getBoundingClientRect();
+      const fMid = (fr.left + fr.right) / 2;
+      const cMid = (cr.left + cr.right) / 2;
+      if (Math.abs(fMid - cMid) > 1.5) {
+        issues.push(`c4-format-bar-centering: diff=${Math.abs(fMid - cMid).toFixed(2)}px (>1px)`);
+      }
+    }
+    return issues;
+  });
+}

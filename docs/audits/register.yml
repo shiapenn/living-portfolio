@@ -7329,3 +7329,231 @@
       status: partial
       note: "awaiting L review"
   verified_by: null
+
+- id: 20261106-UX-182
+  audit: AUD-2026-11-06
+  title: 'H1 Button height regression (36px on Item/ActionBar buttons); adopt responsive control-height token (44px <640px, 40px >=640px) and Item/Dialog >=160px / <400px full-width buttons'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-h-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.H H0 from owner hardening review."
+  verified_by: null
+
+- id: 20261106-UX-183
+  audit: AUD-2026-11-06
+  title: 'H2 Remove legacy .lp-status-dot and .lp-status-dot-circle markup/CSS; use StatusLabel across Suggested roles, Claims, and Status trailing title row'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-h-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.H H0 from owner hardening review."
+  verified_by: null
+
+- id: 20261106-UX-184
+  audit: AUD-2026-11-06
+  title: 'H3 Suggested roles Item geometry, clean single-paragraph Markdown-stripped 3-line passage (no #), and real segmented Choice group wrapper'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-h-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.H H0 from owner hardening review."
+  verified_by: null
+
+- id: 20261106-UX-185
+  audit: AUD-2026-11-06
+  title: 'H4 Tags visible ink symmetric (8px left text inset, 8px right remove-glyph ink inset, uniform chip height)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-h-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.H H0 from owner hardening review."
+  verified_by: null
+
+- id: 20261106-UX-186
+  audit: AUD-2026-11-06
+  title: 'H5 Edit/Settings bar 1fr auto 1fr grid centring (<=0.5px tolerance at 320/1280/1920, scrolled, editor-tag-add), 56px height, top 60px'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-h-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.H H0 from owner hardening review."
+  verified_by: null
+
+- id: 20261106-UX-187
+  audit: AUD-2026-11-06
+  title: 'H6 Top bar 60px height with 36px icon buttons and 12px inset on all four sides; entries drawer inner left edge 12px'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-h-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.H H0 from owner hardening review."
+  verified_by: null
+
+- id: 20261106-UX-188
+  audit: AUD-2026-11-06
+  title: 'H7 Radius scale restricted to two tokens: r1=4px and r2=8px (plus 0 and full)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-h-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.H H0 from owner hardening review."
+  verified_by: null
+
+- id: 20261106-UX-189
+  audit: AUD-2026-11-06
+  title: 'H8 Login recovery and all text buttons (.lp-btn-text) have transparent background and zero border at rest; delete .lp-recovery-link'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-h-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.H H0 from owner hardening review."
+  verified_by: null
+
+- id: 20261106-UX-190
+  audit: AUD-2026-11-06
+  title: 'H9 Entries panel z-order above content/format-bar/sticky-bar, <768px overlay vs >=768px push, format bar centred on editor column, no drop shadow on edge-docked panel'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-h-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.H H0 from owner hardening review."
+  verified_by: null
+
+- id: 20261106-UX-191
+  audit: AUD-2026-11-06
+  title: 'H10 Setup step 3 progressive disclosure, Continue CTA, no inner stepper, header order with visible progress fill, 1px .lp-sr-only clip, Step 6 plain text'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-h-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.H H0 from owner hardening review."
+  verified_by: null
+
+- id: 20261106-UX-192
+  audit: AUD-2026-11-06
+  title: 'H11 Empty Claims and Evidence regions have zero height with 16px gap from heading/intro to ActionBar'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-h-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.H H0 from owner hardening review."
+  verified_by: null
+
+- id: 20261106-UX-193
+  audit: AUD-2026-11-06
+  title: 'H12 Same-row StatusItem consistency across Status, Providers, and Backups'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-h-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.H H0 from owner hardening review."
+  verified_by: null
