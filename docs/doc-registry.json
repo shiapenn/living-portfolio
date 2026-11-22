@@ -1601,5 +1601,13 @@
     "path": "docs/execution-reports/A154-wp-16i-i2-pages.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A155",
+    "title": "wp-16i-i3-pixel-diff-and-closure",
+    "class": "A",
+    "path": "docs/execution-reports/A155-wp-16i-i3-pixel-diff-and-closure.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
