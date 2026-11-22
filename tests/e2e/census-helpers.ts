@@ -82,10 +82,36 @@ export async function navigateToState(
       }
       break;
     }
-    case 'editor-role-suggested':
-    case 'editor-role-accepted':
+    case 'editor-role-suggested': {
+      await page.click('#ref-switch-settings');
+      break;
+    }
+    case 'editor-role-accepted': {
+      await page.click('#ref-switch-settings');
+      await page.waitForSelector('#ref-spans-list .lp-item', { timeout: 5000 }).catch(() => {});
+      const undoCount = await page.locator('#ref-spans-list [data-span-action="undo"]').count();
+      if (undoCount === 0) {
+        const acceptBtn = page.locator('#ref-spans-list [data-span-action="accept"]').first();
+        if (await acceptBtn.isVisible()) {
+          await acceptBtn.click();
+          await page.waitForSelector('#ref-spans-list [data-span-action="undo"]', { timeout: 3000 }).catch(() => {});
+          await page.evaluate(() => window.scrollTo(0, 0));
+        }
+      }
+      break;
+    }
     case 'editor-role-ignored': {
       await page.click('#ref-switch-settings');
+      await page.waitForSelector('#ref-spans-list .lp-item', { timeout: 5000 }).catch(() => {});
+      const restoreCount = await page.locator('#ref-spans-list [data-span-action="restore"]').count();
+      if (restoreCount === 0) {
+        const rejectBtn = page.locator('#ref-spans-list [data-span-action="reject"]').first();
+        if (await rejectBtn.isVisible()) {
+          await rejectBtn.click();
+          await page.waitForSelector('#ref-spans-list [data-span-action="restore"]', { timeout: 3000 }).catch(() => {});
+          await page.evaluate(() => window.scrollTo(0, 0));
+        }
+      }
       break;
     }
     case 'login-recovery': {
