@@ -165,6 +165,7 @@
 | `A157` | wp-16j-j1-actionbar-and-registry-guards | `active` | [A157-wp-16j-j1-actionbar-and-registry-guards.md](execution-reports/A157-wp-16j-j1-actionbar-and-registry-guards.md) | — |
 | `A158` | wp-16j-j2-pages-and-theme-toggle | `active` | [A158-wp-16j-j2-pages-and-theme-toggle.md](execution-reports/A158-wp-16j-j2-pages-and-theme-toggle.md) | — |
 | `A159` | wp-16j-j3-pixel-diff-and-closure | `active` | [A159-wp-16j-j3-pixel-diff-and-closure.md](execution-reports/A159-wp-16j-j3-pixel-diff-and-closure.md) | — |
+| `A160` | wp-16k-k0-docs-and-canaries | `active` | [A160-wp-16k-k0-docs-and-canaries.md](execution-reports/A160-wp-16k-k0-docs-and-canaries.md) | — |
 
 ## Handover Snapshots (Class H)
 
