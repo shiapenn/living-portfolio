@@ -924,3 +924,197 @@ export async function checkCenteringAndBars(page: Page): Promise<string[]> {
     return issues;
   });
 }
+
+export interface ActionBarReport {
+  level: string;
+  count: number;
+  issues: string[];
+}
+
+export async function checkActionBarI1(page: Page, stateId = ''): Promise<ActionBarReport[]> {
+  return page.evaluate((sid) => {
+    const allowedPrimaryItemStates = new Set(['answer-rules', 'inbox', 'inbox-detail']);
+    const bars = Array.from(document.querySelectorAll<HTMLElement>('.lp-action-bar, [data-c="ActionBar"]'));
+    const results: { level: string; count: number; issues: string[] }[] = [];
+
+    for (const bar of bars) {
+      const style = getComputedStyle(bar);
+      if (style.display === 'none' || style.visibility === 'hidden') continue;
+      const br = bar.getBoundingClientRect();
+      if (br.width === 0 || br.height === 0) continue;
+
+      const level = bar.getAttribute('data-level') || '';
+      const issues: string[] = [];
+      if (!level || !['page', 'dialog', 'item'].includes(level)) {
+        issues.push(`i1-missing-level(${sid}): got="${level}"`);
+      }
+
+      const btns = Array.from(bar.querySelectorAll<HTMLElement>('button, a.lp-btn')).filter((b) => {
+        const bs = getComputedStyle(b);
+        return bs.display !== 'none' && bs.visibility !== 'hidden' && b.getBoundingClientRect().width > 0;
+      });
+      if (btns.length === 0) continue;
+
+      const roleOf = (b: HTMLElement) => {
+        if (b.classList.contains('lp-btn-text')) return 2;
+        if (b.classList.contains('lp-btn-primary') || b.classList.contains('lp-btn-danger')) return 0;
+        return 1;
+      };
+
+      for (let i = 1; i < btns.length; i++) {
+        if (roleOf(btns[i]) < roleOf(btns[i - 1])) {
+          issues.push(`i1-order(${sid},level=${level}): primary must precede secondary which must precede text`);
+        }
+      }
+
+      if (level === 'page') {
+        if (btns.length > 3) issues.push(`i1-page-max-3(${sid}): count=${btns.length}`);
+        const parent = bar.parentElement;
+        if (parent) {
+          const ps = getComputedStyle(parent);
+          const pr = parent.getBoundingClientRect();
+          const avail = pr.width - parseFloat(ps.paddingLeft) - parseFloat(ps.paddingRight);
+          if (Math.abs(br.width - avail) > 4) {
+            issues.push(`i1-page-width(${sid}): bar=${Math.round(br.width)} avail=${Math.round(avail)}`);
+          }
+        }
+      } else if (level === 'dialog') {
+        const container = bar.closest<HTMLElement>('.lp-dialog-panel, .lp-overlay-sheet');
+        if (container) {
+          const cs = getComputedStyle(container);
+          const cr = container.getBoundingClientRect();
+          const avail = cr.width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+          for (const b of btns) {
+            const bRect = b.getBoundingClientRect();
+            if (Math.abs(bRect.width - avail) > 4) {
+              issues.push(`i1-dialog-btn-width(${sid}): btn=${Math.round(bRect.width)} avail=${Math.round(avail)}`);
+            }
+          }
+        }
+      } else if (level === 'item') {
+        const nonText = btns.filter((b) => !b.classList.contains('lp-btn-text'));
+        const textBtns = btns.filter((b) => b.classList.contains('lp-btn-text'));
+        if (nonText.length > 2 || textBtns.length > 1) {
+          issues.push(`i1-item-max-btns(${sid}): nonText=${nonText.length} text=${textBtns.length}`);
+        }
+        for (const b of nonText) {
+          const words = (b.textContent || '').trim().split(/\s+/).filter(Boolean).length;
+          if (words > 2) {
+            issues.push(`i1-item-max-2-words(${sid}): "${(b.textContent || '').trim()}"`);
+          }
+          if (b.classList.contains('lp-btn-primary') && sid && !allowedPrimaryItemStates.has(sid)) {
+            issues.push(`i1-item-primary-disallowed(${sid}): "${(b.textContent || '').trim()}"`);
+          }
+        }
+      }
+
+      results.push({ level: level || 'missing', count: 1, issues });
+    }
+    return results;
+  }, stateId);
+}
+
+export const STATUS_VOCABULARY = [
+  'Active',
+  'Idle',
+  'Pending',
+  'Connected',
+  'Error',
+  'Not set up',
+  'Accepted',
+  'Ignored',
+  'Suggested',
+  'Latest',
+  'Paused',
+  'Draft',
+  'Public',
+  'Unlisted',
+  'Key invalid',
+  'Unreachable',
+] as const;
+
+export async function checkStatusVocabularyI5(page: Page, stateId = ''): Promise<string[]> {
+  return page.evaluate(
+    ({ sid, vocab }) => {
+      const allowed = new Set(vocab);
+      const issues: string[] = [];
+      for (const el of Array.from(document.querySelectorAll<HTMLElement>('.lp-status-label, [data-c="StatusLabel"]'))) {
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+        const label = el.classList.contains('lp-status-label')
+          ? el
+          : el.querySelector<HTMLElement>('.lp-status-label');
+        const txt = (label?.textContent || el.textContent || '').trim();
+        if (txt && !allowed.has(txt)) {
+          issues.push(`i5-status-vocab(${sid}): "${txt}" not in StatusLabel vocabulary`);
+        }
+      }
+      return issues;
+    },
+    { sid: stateId, vocab: [...STATUS_VOCABULARY] },
+  );
+}
+
+export async function checkDockedPanelAndAdjacentLinesI7(page: Page, stateId = ''): Promise<string[]> {
+  return page.evaluate((sid) => {
+    const issues: string[] = [];
+    const drawer = document.querySelector<HTMLElement>('#ref-entries-drawer, .lp-editor-drawer');
+    if (drawer && !drawer.hasAttribute('hidden') && getComputedStyle(drawer).display !== 'none') {
+      const ds = getComputedStyle(drawer);
+      if (parseFloat(ds.borderTopWidth) > 0) issues.push(`i7-panel-border-top(${sid}): ${ds.borderTopWidth}`);
+      if (parseFloat(ds.borderLeftWidth) > 0) issues.push(`i7-panel-border-left(${sid}): ${ds.borderLeftWidth}`);
+      if (parseFloat(ds.borderBottomWidth) > 0) issues.push(`i7-panel-border-bottom(${sid}): ${ds.borderBottomWidth}`);
+      if (Math.abs(parseFloat(ds.borderRightWidth) - 1) > 0.5) {
+        issues.push(`i7-panel-border-right(${sid}): ${ds.borderRightWidth}`);
+      }
+      if (ds.boxShadow !== 'none') issues.push(`i7-panel-shadow(${sid}): ${ds.boxShadow}`);
+    }
+
+    const lineYs: number[] = [];
+    for (const el of Array.from(document.querySelectorAll<HTMLElement>('.lp-admin-header, .lp-editor-toolbar-sticky, .lp-editor-drawer'))) {
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) continue;
+      if (parseFloat(cs.borderTopWidth) > 0) lineYs.push(Math.round(r.top * 10) / 10);
+      if (parseFloat(cs.borderBottomWidth) > 0) lineYs.push(Math.round(r.bottom * 10) / 10);
+    }
+    lineYs.sort((a, b) => a - b);
+    for (let i = 1; i < lineYs.length; i++) {
+      const diff = lineYs[i] - lineYs[i - 1];
+      if (diff > 0 && diff < 3) {
+        issues.push(`i7-adjacent-lines(${sid}): y=${lineYs[i - 1]} and y=${lineYs[i]} (${diff.toFixed(1)}px apart)`);
+      }
+    }
+    return issues;
+  }, stateId);
+}
+
+export async function checkItemGeometryI8(page: Page, stateId = ''): Promise<{ pairs: number; issues: string[] }> {
+  return page.evaluate((sid) => {
+    const issues: string[] = [];
+    let pairs = 0;
+    const items = Array.from(document.querySelectorAll<HTMLElement>('.lp-item'));
+    for (const item of items) {
+      const list = item.closest<HTMLElement>('.lp-list, .lp-item-list');
+      if (!list) continue;
+      const isHidden = getComputedStyle(item).display === 'none' || getComputedStyle(list).display === 'none';
+      if (isHidden) continue;
+      const ir = item.getBoundingClientRect();
+      const lr = list.getBoundingClientRect();
+      if (ir.width === 0 || lr.width === 0) continue;
+      pairs++;
+      if (Math.abs(ir.left - lr.left) > 1 || Math.abs(ir.right - lr.right) > 1) {
+        issues.push(`i8-item-bleed(${sid}): item=[${Math.round(ir.left)}..${Math.round(ir.right)}] list=[${Math.round(lr.left)}..${Math.round(lr.right)}]`);
+      }
+      const title = item.querySelector<HTMLElement>('.lp-item-title');
+      if (title) {
+        const tr = title.getBoundingClientRect();
+        if (Math.abs(tr.left - (lr.left + 8)) > 1.5) {
+          issues.push(`i8-title-inset(${sid}): titleLeft=${Math.round(tr.left)} expected=${Math.round(lr.left + 8)}`);
+        }
+      }
+    }
+    return { pairs, issues };
+  }, stateId);
+}
