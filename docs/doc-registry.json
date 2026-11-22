@@ -1561,5 +1561,13 @@
     "path": "docs/execution-reports/A149-wp-16h-h1-primitives-and-tokens.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A150",
+    "title": "wp-16h-h2-pages-and-census",
+    "class": "A",
+    "path": "docs/execution-reports/A150-wp-16h-h2-pages-and-census.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
