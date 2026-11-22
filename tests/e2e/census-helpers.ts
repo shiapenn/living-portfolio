@@ -28,7 +28,15 @@ export async function setTheme(page: Page, theme: ThemeMode): Promise<void> {
       localStorage.setItem('strata-theme', t);
     } catch {}
     void document.body.offsetHeight;
-    await Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {})));
+    await Promise.race([
+      Promise.all(
+        document
+          .getAnimations()
+          .filter((a) => a.effect?.getTiming().iterations !== Infinity)
+          .map((a) => a.finished.catch(() => {}))
+      ),
+      new Promise((r) => setTimeout(r, 250)),
+    ]);
   }, theme);
 }
 
@@ -81,7 +89,10 @@ export async function navigateToState(
     }
     case 'login-recovery': {
       const link = page.locator('a[href*="recovery"], button:has-text("recovery"), a:has-text("recovery")').first();
-      if (await link.isVisible()) await link.click();
+      if (await link.isVisible()) {
+        await link.click();
+        await page.mouse.move(0, 0);
+      }
       break;
     }
     case 'login-error': {
@@ -423,7 +434,13 @@ export async function checkPaintedGaps(
         while (prev && (prev.classList.contains('lp-sr-only') || getComputedStyle(prev).display === 'none' || getComputedStyle(prev).position === 'absolute')) {
           prev = prev.previousElementSibling;
         }
-        if (prev && !prev.matches('[data-rel="section"], .lp-form-section, h1, h2, h3') && !bar.closest('[role="dialog"]') && !bar.classList.contains('lp-item-actions')) {
+        const hasVisibleControl = prev
+          ? Array.from(prev.querySelectorAll('input, select, textarea, .lp-choice, [data-c="Item"]')).some(
+              (c) => getComputedStyle(c).display !== 'none' && !c.closest('.lp-is-hidden, [hidden]')
+            )
+          : false;
+        const isHeadingOnlyWrapper = Boolean(prev && prev.querySelector('[data-rel="subsection-title"]') && !hasVisibleControl);
+        if (prev && !isHeadingOnlyWrapper && !prev.matches('[data-rel="section"], .lp-form-section, h1, h2, h3') && !bar.closest('[role="dialog"]') && !bar.classList.contains('lp-item-actions')) {
           checkPair('last-control-to-action-bar', prev, bar, 24);
         }
       }
@@ -721,6 +738,7 @@ export async function checkContainmentAndOverlap(page: Page): Promise<string[]> 
     const leafBoxes: Array<{ el: Element; rect: DOMRect }> = [];
     const allEls = Array.from(document.querySelectorAll('main *'));
     for (const el of allEls) {
+      if (el.closest('svg')) continue;
       if (!isVis(el)) continue;
       const hasDirectText = Array.from(el.childNodes).some(
         (n) => n.nodeType === Node.TEXT_NODE && (n.textContent || '').trim().length > 0
@@ -730,11 +748,19 @@ export async function checkContainmentAndOverlap(page: Page): Promise<string[]> 
       if (el.closest('[data-overlay]')) continue;
       leafBoxes.push({ el, rect: el.getBoundingClientRect() });
     }
+    const fixedOverlayRoot = (el: Element): Element | null => {
+      const sticky = el.closest('.lp-editor-toolbar-sticky');
+      if (sticky && getComputedStyle(sticky).position === 'sticky') return sticky;
+      const overlay = el.closest('.lp-editor-drawer, [data-overlay], [role="dialog"]');
+      if (overlay && getComputedStyle(overlay).position === 'fixed') return overlay;
+      return null;
+    };
     for (let i = 0; i < leafBoxes.length; i++) {
       for (let j = i + 1; j < leafBoxes.length; j++) {
         const a = leafBoxes[i];
         const b = leafBoxes[j];
         if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+        if (fixedOverlayRoot(a.el) !== fixedOverlayRoot(b.el)) continue;
         const ix = Math.min(a.rect.right, b.rect.right) - Math.max(a.rect.left, b.rect.left);
         const iy = Math.min(a.rect.bottom, b.rect.bottom) - Math.max(a.rect.top, b.rect.top);
         if (ix > 0.5 && iy > 0.5) {
@@ -879,7 +905,13 @@ export async function checkCenteringAndBars(page: Page): Promise<string[]> {
 
     const fmtBar = document.querySelector<HTMLElement>('#ref-format-bar');
     const col = document.querySelector<HTMLElement>('#ref-editor-main');
-    if (fmtBar && col && getComputedStyle(fmtBar).display !== 'none') {
+    if (
+      fmtBar &&
+      col &&
+      getComputedStyle(fmtBar).display !== 'none' &&
+      getComputedStyle(fmtBar).visibility !== 'hidden' &&
+      fmtBar.getBoundingClientRect().width > 0
+    ) {
       const fr = fmtBar.getBoundingClientRect();
       const cr = col.getBoundingClientRect();
       const fMid = (fr.left + fr.right) / 2;

@@ -132,6 +132,12 @@ export const SETUP_SCRIPT_PART_1 = `
               lblEl.classList.toggle('is-done', i < stepNum);
             }
           }
+          const wizardHeader = document.querySelector('.lp-wizard-header');
+          const activeHeader = document.querySelector('#wizard-step-' + stepNum + ' .lp-page-header');
+          if (wizardHeader && activeHeader) {
+            const titleEl = activeHeader.querySelector('[data-rel="title"]');
+            if (titleEl) activeHeader.insertBefore(wizardHeader, titleEl);
+          }
           if (progressFill) {
             progressFill.setAttribute('data-step', String(stepNum));
           }
@@ -186,9 +192,7 @@ export const SETUP_SCRIPT_PART_1 = `
           });
         }
 
-        if (hasExplicitStep) {
-          goToStep(urlStepParam);
-        }
+        goToStep(hasExplicitStep ? urlStepParam : 1);
         restoreSettings();
 
         const continueBtn = document.getElementById('btn-continue-step2');

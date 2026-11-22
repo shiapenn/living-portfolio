@@ -45,6 +45,7 @@ export async function renderAdminStatusPage(
   const listHtml = `<div class="lp-list">
     ${renderItem({
       id: 'status-build-row',
+      className: 'lp-item-trailing-status',
       title: 'Site',
       statusLabel: 'Idle (ready)',
       statusTone: 'ok',
@@ -54,6 +55,7 @@ export async function renderAdminStatusPage(
     })}
     ${renderItem({
       id: 'status-answering-row',
+      className: 'lp-item-trailing-status',
       title: 'Automated answering',
       statusLabel: answeringOn ? 'Active' : 'Paused',
       statusTone: answeringOn ? 'ok' : 'warn',
@@ -69,6 +71,7 @@ export async function renderAdminStatusPage(
     })}
     ${renderItem({
       id: 'status-backups-link',
+      className: 'lp-item-trailing-status',
       href: '/admin/settings/backups',
       title: 'Backups',
       statusLabel: backupState,
@@ -77,6 +80,7 @@ export async function renderAdminStatusPage(
     })}
     ${renderItem({
       id: 'status-providers-link',
+      className: 'lp-item-trailing-status',
       href: '/admin/settings/providers',
       title: 'Providers',
       statusLabel: providerState,

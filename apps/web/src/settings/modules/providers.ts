@@ -43,6 +43,7 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
     const answeringItemHtml = `<div class="lp-list">
       ${renderItem({
         id: 'provider-role-answering',
+        className: 'lp-item-trailing-status',
         title: 'Answering model',
         subtitle: active ? `${active.name || active.id}${active.model ? ` · ${active.model}` : ''}` : undefined,
         statusLabel: active ? 'Connected' : 'Local only, quotes from your entries',

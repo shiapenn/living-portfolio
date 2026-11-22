@@ -70,7 +70,6 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
   });
 
   test('20261106-UX-183 (H2): zero legacy .lp-status-dot-circle / un-wrapped .lp-status-dot and trailing StatusLabel on Status & Claims', async ({ page }) => {
-    test.fail(true, 'H0 failing-first: Suggested roles and Claims still use legacy .lp-status-dot / .lp-badge');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.goto(`/admin/entries/${encodeURIComponent(ids.entryId)}`);
@@ -81,7 +80,6 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
   });
 
   test('20261106-UX-184 (H3): Suggested roles clean single-paragraph passage (no #) and real .lp-choice-group.lp-choice-variant-segmented', async ({ page }) => {
-    test.fail(true, 'H0 failing-first: Suggested roles passage has ## headings and missing .lp-choice-group wrapper');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.goto(`/admin/entries/${encodeURIComponent(ids.entryId)}`);
@@ -142,7 +140,6 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
   });
 
   test('20261106-UX-190 (H9): Entries panel z-order above format/sticky bar, <768px overlay vs >=768px push, format bar centred on editor column, no drop shadow', async ({ page }) => {
-    test.fail(true, 'H0 failing-first: entries drawer has drop shadow and format bar is viewport-centred');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -155,7 +152,7 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
   });
 
   test('20261106-UX-191 (H10): Setup step 3 progressive disclosure + Continue CTA, no inner stepper, 1px .lp-sr-only, Step 6 plain text', async ({ page }) => {
-    test.fail(true, 'H0 failing-first: Setup uses Next: Alerts & Notifications, inner stepper, visible .lp-sr-only, and notice-info on Step 6');
+    await ensureAdminLoggedIn(page);
     await page.goto('/admin/setup?step=3');
     const c3 = await checkControlsRadiusTextButtonsSrOnly(page);
     expect(c3.filter((i) => i.startsWith('c3-sr-only-'))).toEqual([]);
@@ -164,7 +161,6 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
   });
 
   test('20261106-UX-192 (H11): Empty Claims/Evidence lists have 0 height and 16px gap from heading to ActionBar', async ({ page }) => {
-    test.fail(true, 'H0 failing-first: Empty Evidence/Claims list adds extra gap before ActionBar');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.goto(`/admin/entries/${encodeURIComponent(ids.entryId)}`);
@@ -184,7 +180,6 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
   });
 
   test('20261106-UX-193 (H12): StatusItem consistency across Status, Providers, Backups', async ({ page }) => {
-    test.fail(true, 'H0 failing-first: Status rows wrap status below title at 320px instead of trailing title-row alignment');
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 320, height: 640 });
     await page.goto('/admin/status');
@@ -195,5 +190,37 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
       }))
     );
     for (const r of rows) expect(Math.abs(r.titleTop - r.statusTop)).toBeLessThanOrEqual(4);
+  });
+});
+
+test.describe('WP-16.H Full G-Census v2 (C1-C4 across all STATES x 3 viewports x 2 themes)', () => {
+  test('every STATES entry passes C1 containment, C2 overlap, C3 controls/radius/text-btn/sr-only/status, and C4 centering/bars', async ({ page }) => {
+    test.setTimeout(180000);
+    await ensureAdminLoggedIn(page);
+    const ids = await getSeededIds(page);
+    const allViolations: string[] = [];
+
+    for (const state of STATES) {
+      for (const vp of VIEWPORTS) {
+        if (state.viewports && !state.viewports.includes(vp.width as 320 | 1280 | 1920)) continue;
+        await page.setViewportSize({ width: vp.width, height: vp.height });
+        const ok = await navigateToState(page, state, ids);
+        if (!ok) continue;
+        const c12 = await checkContainmentAndOverlap(page);
+        const c4 = await checkCenteringAndBars(page);
+        for (const v of [...c12, ...c4]) {
+          allViolations.push(`[${state.id} ${vp.width}] ${v}`);
+        }
+        for (const theme of THEMES) {
+          await setTheme(page, theme);
+          const c3 = await checkControlsRadiusTextButtonsSrOnly(page);
+          for (const v of c3) {
+            allViolations.push(`[${state.id} ${vp.width} ${theme}] ${v}`);
+          }
+        }
+      }
+    }
+
+    expect(allViolations).toEqual([]);
   });
 });

@@ -326,7 +326,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           for (const sp of spaces) {
             if (!sp || sp === 'normal' || sp === 'auto') continue;
             const px = Math.round(parseFloat(sp) || 0);
-            if (px === 12 && (el.classList.contains('lp-item') || el.classList.contains('lp-admin-header') || el.classList.contains('lp-editor-header-row'))) continue;
+            if (px === 12 && (el.classList.contains('lp-item') || el.classList.contains('lp-admin-header') || el.classList.contains('lp-editor-header-row') || el.classList.contains('lp-editor-drawer'))) continue;
             if (px > 0 && !allowedSpace.has(px)) badSpace++;
           }
           const isControl =

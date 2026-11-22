@@ -139,7 +139,7 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
       </div>
       <div class="lp-editor-surface-wrap">
         <div id="ref-tiptap-editor" class="lp-tiptap-mount lp-prose"></div>
-        <div id="ref-slash-menu" class="lp-popover-menu lp-slash-menu" role="menu" aria-label="Insert block" hidden></div>
+        <div id="ref-slash-menu" class="lp-popover-menu lp-slash-menu" data-overlay="true" role="menu" aria-label="Insert block" hidden></div>
         <textarea id="ref-field-body" name="body" class="lp-input lp-textarea lp-editor-source-textarea lp-is-hidden" rows="16" placeholder="${escapeHtml(EDITOR_STRINGS.fields.bodyPlaceholder)}" aria-label="${escapeHtml(EDITOR_STRINGS.fields.bodyLabel)}" hidden>${escapeHtml(selected.body)}</textarea>
       </div>
       ${renderEditorFormattingBar()}
