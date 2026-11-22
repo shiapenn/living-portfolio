@@ -76,6 +76,15 @@
       "variantOf": null
     },
     {
+      "name": "Notice",
+      "variants": ["info", "ok", "warn", "danger"],
+      "gallerySampleId": "gallery-notice-sample",
+      "parent": ["Page", "FormSection", "Overlay"],
+      "children": ["Button"],
+      "classFamilies": ["lp-notice", "lp-status-line"],
+      "variantOf": null
+    },
+    {
       "name": "Overlay",
       "variants": ["dialog", "sheet", "popover", "panel"],
       "gallerySampleId": "gallery-overlay-dialog-sample",
@@ -91,6 +100,15 @@
       "parent": ["Page"],
       "children": ["BackLink", "Stepper", "Button"],
       "classFamilies": ["lp-page-header", "lp-page-title", "lp-page-description"],
+      "variantOf": null
+    },
+    {
+      "name": "SectionHeader",
+      "variants": ["default"],
+      "gallerySampleId": "gallery-section-header-sample",
+      "parent": ["FormSection", "Page", "EdgePanel", "Overlay"],
+      "children": ["Button"],
+      "classFamilies": ["lp-section-header"],
       "variantOf": null
     },
     {
@@ -154,6 +172,15 @@
       "parent": ["FormSection", "Subsection", "Item"],
       "children": ["Button"],
       "classFamilies": ["lp-tag", "lp-chip"],
+      "variantOf": null
+    },
+    {
+      "name": "Text",
+      "variants": ["body", "description", "caption", "prose"],
+      "gallerySampleId": "gallery-text-sample",
+      "parent": ["Page", "FormSection", "Subsection", "Item", "Overlay", "EdgePanel"],
+      "children": [],
+      "classFamilies": ["lp-body", "lp-description", "lp-caption", "lp-prose"],
       "variantOf": null
     }
   ],

@@ -7923,3 +7923,79 @@
       status: partial
       note: "awaiting L review"
   verified_by: null
+
+- id: 20261106-UX-209
+  audit: AUD-2026-11-06
+  title: 'K1 Item-level ActionBar always compact at every width (remove <400px full-width branch; auto width min 96, flex-wrap row, 44px touch height <640px)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-k-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.K K0."
+  verified_by: null
+
+- id: 20261106-UX-210
+  audit: AUD-2026-11-06
+  title: 'K2 List vertical padding absorption (first/last Item padding absorbed so painted gaps equal 16px heading-to-first, 40px last-to-next, 24px item-to-ActionBar)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-k-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.K K0."
+  verified_by: null
+
+- id: 20261106-UX-211
+  audit: AUD-2026-11-06
+  title: 'K3 Legacy migration to zero orphanTextCountAllStates (0/1008) and zero unownedMarginCountAllStates (0/90) across all 42 states'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-k-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.K K0."
+  verified_by: null
+
+- id: 20261106-UX-212
+  audit: AUD-2026-11-06
+  title: 'K4 Full three-tier design tokenization (single source, generator, drift test, verify-ui-guards literal/tier/usage guards, census reads tokens, gallery tokens view, pixel-neutral)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-k-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.K K0."
+  verified_by: null

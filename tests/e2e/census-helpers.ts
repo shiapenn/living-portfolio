@@ -1345,3 +1345,193 @@ export async function checkRestingIconButtonFillsJ5(page: Page, stateId = ''): P
     return issues;
   }, stateId);
 }
+
+export interface ActionBarK1Report {
+  level: string;
+  containerType: string;
+  widthClass: 'compact' | 'full';
+  issues: string[];
+}
+
+export async function checkActionBarK1(page: Page, stateId = ''): Promise<ActionBarK1Report[]> {
+  return page.evaluate((sid) => {
+    const isVisible = (el: HTMLElement | null): boolean => {
+      if (!el) return false;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+
+    const reports: ActionBarK1Report[] = [];
+    const bars = Array.from(document.querySelectorAll<HTMLElement>('[data-c="ActionBar"]'));
+    for (const bar of bars) {
+      if (!isVisible(bar)) continue;
+      const level = bar.getAttribute('data-level') || 'missing';
+      const inDialog = bar.closest<HTMLElement>('[role="dialog"], .lp-overlay-dialog, .lp-overlay-sheet');
+      const inItem = bar.closest<HTMLElement>('[data-c="Item"]');
+      const inSubsection = bar.closest<HTMLElement>('[data-c="Subsection"]');
+      const inSection = bar.closest<HTMLElement>('[data-c="FormSection"]');
+      const containerType = inDialog
+        ? 'dialog'
+        : inItem
+          ? 'item'
+          : inSubsection
+            ? 'subsection'
+            : inSection
+              ? 'section'
+              : 'page';
+
+      const containerEl =
+        inDialog || inItem || inSubsection || inSection || bar.closest<HTMLElement>('.lp-page-column, main') || bar.parentElement!;
+      const containerW = containerEl ? containerEl.getBoundingClientRect().width : bar.getBoundingClientRect().width;
+      const btns = Array.from(bar.querySelectorAll<HTMLElement>('.lp-btn')).filter(isVisible);
+      const nonTextBtns = btns.filter((b) => !b.classList.contains('lp-btn-text'));
+      const allFullWidth =
+        nonTextBtns.length > 0 && nonTextBtns.every((b) => Math.abs(b.getBoundingClientRect().width - containerW) <= 4);
+      const widthClass: 'compact' | 'full' = allFullWidth ? 'full' : 'compact';
+
+      const issues: string[] = [];
+      if (level === 'item') {
+        if (widthClass === 'full') {
+          issues.push(`k1-item-full-width(${sid}, ${containerType}): item ActionBar is full-width (containerW=${Math.round(containerW)})`);
+        }
+        const csBar = getComputedStyle(bar);
+        if (csBar.flexDirection !== 'row' || csBar.flexWrap !== 'wrap') {
+          issues.push(`k1-item-not-flex-wrap-row(${sid}, ${containerType}): flexDirection=${csBar.flexDirection}, flexWrap=${csBar.flexWrap}`);
+        }
+        for (const b of nonTextBtns) {
+          if (b.classList.contains('lp-btn-full')) {
+            issues.push(`k1-item-btn-full-class(${sid}, ${containerType}): button "${(b.textContent || '').trim()}" has .lp-btn-full`);
+          }
+          const br = b.getBoundingClientRect();
+          if (br.width < 95.5) {
+            issues.push(`k1-item-min96(${sid}, ${containerType}): button width ${br.width.toFixed(1)} < 96`);
+          }
+          if (window.innerWidth < 640 && br.height < 43.5) {
+            issues.push(`k1-item-touch44(${sid}, ${containerType}): button height ${br.height.toFixed(1)} < 44 below 640px`);
+          }
+        }
+      }
+
+      reports.push({ level, containerType, widthClass, issues });
+    }
+    return reports;
+  }, stateId);
+}
+
+export interface ListPaintedGapReport {
+  sectionId: string;
+  headingToFirst: number | null;
+  lastToNext: number | null;
+  itemToActionBarGaps: number[];
+  issues: string[];
+}
+
+export async function checkListPaddingAbsorptionK2(page: Page, stateId = ''): Promise<ListPaintedGapReport[]> {
+  return page.evaluate((sid) => {
+    const isVisible = (el: HTMLElement | null): boolean => {
+      if (!el) return false;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+
+    // Measure painted ink bounds (text Ranges + buttons/controls/inputs) inside an element
+    const getPaintedBounds = (el: HTMLElement): { top: number; bottom: number } | null => {
+      let top = Infinity;
+      let bottom = -Infinity;
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let node: Node | null;
+      while ((node = walker.nextNode())) {
+        if (!node.textContent || !node.textContent.trim()) continue;
+        const parent = node.parentElement;
+        if (!parent || !isVisible(parent) || parent.closest('.lp-sr-only')) continue;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const rect = range.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          if (rect.top < top) top = rect.top;
+          if (rect.bottom > bottom) bottom = rect.bottom;
+        }
+      }
+      for (const ctrl of Array.from(el.querySelectorAll<HTMLElement>('button, a.lp-btn, input, select, textarea, [data-c="StatusLabel"]'))) {
+        if (!isVisible(ctrl)) continue;
+        const r = ctrl.getBoundingClientRect();
+        if (r.top < top) top = r.top;
+        if (r.bottom > bottom) bottom = r.bottom;
+      }
+      return top < Infinity ? { top, bottom } : null;
+    };
+
+    const reports: ListPaintedGapReport[] = [];
+    const lists = Array.from(document.querySelectorAll<HTMLElement>('.lp-list, .lp-item-list'));
+    for (const list of lists) {
+      if (!isVisible(list)) continue;
+      if (list.closest('.lp-gallery-section')) continue;
+      const items = Array.from(list.querySelectorAll<HTMLElement>(':scope > [data-c="Item"]')).filter(isVisible);
+      if (items.length === 0) continue;
+
+      const section = list.closest<HTMLElement>('[data-c="FormSection"], [data-c="Subsection"]');
+      const sectionId = section?.id || list.id || 'unnamed-list';
+      const issues: string[] = [];
+
+      // Heading or intro before list
+      let prev: HTMLElement | null = list.previousElementSibling as HTMLElement | null;
+      while (prev && !isVisible(prev)) prev = prev.previousElementSibling as HTMLElement | null;
+      let headingToFirst: number | null = null;
+      if (prev) {
+        const prevBounds = getPaintedBounds(prev);
+        const firstBounds = getPaintedBounds(items[0]);
+        if (prevBounds && firstBounds) {
+          headingToFirst = Math.round((firstBounds.top - prevBounds.bottom) * 10) / 10;
+          if (Math.abs(headingToFirst - 16) > 3) {
+            issues.push(`k2-heading-to-first(${sid}, ${sectionId}): paintedGap=${headingToFirst}px (expected 16px)`);
+          }
+        }
+      }
+
+      // Last item painted content to next section
+      let lastToNext: number | null = null;
+      if (section) {
+        let nextSec: HTMLElement | null = section.nextElementSibling as HTMLElement | null;
+        while (nextSec && !isVisible(nextSec)) nextSec = nextSec.nextElementSibling as HTMLElement | null;
+        // Only check if list is the last visible child of section
+        let afterList: HTMLElement | null = list.nextElementSibling as HTMLElement | null;
+        while (afterList && !isVisible(afterList)) afterList = afterList.nextElementSibling as HTMLElement | null;
+        if (!afterList && nextSec) {
+          const lastBounds = getPaintedBounds(items[items.length - 1]);
+          const nextBounds = getPaintedBounds(nextSec);
+          if (lastBounds && nextBounds) {
+            lastToNext = Math.round((nextBounds.top - lastBounds.bottom) * 10) / 10;
+            if (Math.abs(lastToNext - 40) > 3) {
+              issues.push(`k2-last-to-next(${sid}, ${sectionId}): paintedGap=${lastToNext}px (expected 40px)`);
+            }
+          }
+        }
+      }
+
+      // Item content to ActionBar
+      const itemToActionBarGaps: number[] = [];
+      for (const item of items) {
+        const actions = item.querySelector<HTMLElement>('[data-rel="actions"], [data-c="ActionBar"]');
+        if (!actions || !isVisible(actions)) continue;
+        const content = item.querySelector<HTMLElement>('.lp-item-content');
+        if (!content) continue;
+        const contentBounds = getPaintedBounds(content);
+        const actionBounds = getPaintedBounds(actions);
+        if (contentBounds && actionBounds) {
+          const gap = Math.round((actionBounds.top - contentBounds.bottom) * 10) / 10;
+          itemToActionBarGaps.push(gap);
+          if (Math.abs(gap - 24) > 3) {
+            issues.push(`k2-item-to-actionbar(${sid}, ${sectionId}): paintedGap=${gap}px (expected 24px)`);
+          }
+        }
+      }
+
+      reports.push({ sectionId, headingToFirst, lastToNext, itemToActionBarGaps, issues });
+    }
+    return reports;
+  }, stateId);
+}
