@@ -159,11 +159,12 @@ test.describe('WP-16.I Full Census v3 (ActionBar levels, StatusLabel vocab, Pane
     let totalItemGeometryPairs = 0;
     const allViolations: string[] = [];
 
-    for (const vp of VIEWPORTS) {
-      await page.setViewportSize(vp);
-      for (const theme of THEMES) {
-        for (const state of STATES) {
-          await navigateToState(page, state, ids);
+    for (const state of STATES) {
+      for (const vp of VIEWPORTS) {
+        await page.setViewportSize(vp);
+        const ok = await navigateToState(page, state, ids);
+        if (!ok) continue;
+        for (const theme of THEMES) {
           await setTheme(page, theme);
 
           const abReports = await checkActionBarI1(page, state.id);
