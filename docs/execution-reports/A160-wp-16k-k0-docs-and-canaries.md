@@ -79,8 +79,8 @@ Found 0 section(s) marked verbatim.
 ```
 
 ## 9. Handover Decision
-- Decision: NOT REQUIRED
-- Rule(s): HO-R5
+- Decision: RECOMMENDED
+- Rule(s): HO-R3
 - Receipts since last handover: 144 (per triage counter); work packages since: 0
 - Clean-boundary preconditions: not met (`WP-16.K K1`–`K4` remaining)
 - Next action: execute `WP-16.K K1`.
