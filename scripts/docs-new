@@ -137,7 +137,7 @@ export function allocateDoc(cls, title, options = {}) {
 
 ### Component statement (required when touching UI; D-J)
 
-- `<element>`: `data-c="<Component>"`, variant `<variant>` (registered in `docs/design/components.json`)
+- \`<element>\`: \`data-c="<Component>"\`, variant \`<variant>\` (registered in \`docs/design/components.json\`)
 
 ## 2. CI Evidence
 
