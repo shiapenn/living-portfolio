@@ -1,30 +1,30 @@
 import { renderAdminShell } from "../../layouts/admin-shell.js";
 import { ADMIN_API_CLIENT_SCRIPT } from "../../lib/admin-api-client.js";
-import { renderActionBar } from "../../primitives/index.js";
+import { renderActionBar, renderText } from "../../primitives/index.js";
 
 export function renderAdminLoginPage(): string {
   const content = `
     <div class="lp-page-column lp-page-column-narrow lp-auth-column lp-stack lp-gap-group">
-      <div class="lp-page-header">
+      <div data-c="PageHeader" data-rel="header" class="lp-page-header">
         <h1 class="lp-page-title">Owner Sign in</h1>
         <p class="lp-page-description">
           Enter your admin credentials and 6-digit TOTP code to access the workspace.
         </p>
       </div>
 
-      <div id="login-error" class="lp-notice lp-notice-danger lp-is-hidden" role="alert"></div>
+      <div id="login-error" data-c="Notice" class="lp-notice lp-notice-danger lp-is-hidden" role="alert"></div>
 
       <form id="admin-login-form" class="lp-stack lp-gap-group">
         <div class="lp-stack lp-gap-related">
-        <div class="lp-field">
+        <div data-c="Field" data-rel="field" class="lp-field">
           <label class="lp-field-label" for="login-username">Username</label>
           <input id="login-username" type="text" class="lp-input" autocomplete="username" required />
         </div>
-        <div class="lp-field">
+        <div data-c="Field" data-rel="field" class="lp-field">
           <label class="lp-field-label" for="login-password">Password</label>
           <input id="login-password" type="password" class="lp-input" autocomplete="current-password" required />
         </div>
-        <div class="lp-field">
+        <div data-c="Field" data-rel="field" class="lp-field">
           <label id="login-code-label" class="lp-field-label" for="login-totp">6-Digit Authenticator Code</label>
           <input id="login-totp" type="text" class="lp-input lp-input-code" placeholder="000000" autocomplete="one-time-code" required />
           <p id="login-code-help" class="lp-field-help">
@@ -38,9 +38,11 @@ export function renderAdminLoginPage(): string {
           textAction: { id: 'btn-toggle-recovery', label: 'Lost your authenticator device? Sign in with a recovery code', variant: 'text' },
         })}
       </form>
-      <p class="lp-help-text">
-        Login attempts are rate-limited to 5 per 15 minutes. If throttled: "Too many failed login attempts. Try again later."
-      </p>
+      ${renderText({
+        variant: 'caption',
+        className: 'lp-help-text',
+        text: 'Login attempts are rate-limited to 5 per 15 minutes. If throttled: "Too many failed login attempts. Try again later."',
+      })}
     </div>
     <script>
       (function() {

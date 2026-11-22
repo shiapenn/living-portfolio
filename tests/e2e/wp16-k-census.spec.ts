@@ -97,13 +97,12 @@ test.describe('WP-16.K Defect Verification (UX-209..UX-211)', () => {
   });
 
   test('20261106-UX-211 (K3): zero orphanTextCountAllStates and zero unownedMarginCountAllStates across all 42 states', async ({ page }) => {
-    test.fail(true, 'K0 failing-first against cfdca95: 1008 orphan texts and 90 unowned margins remain');
     test.setTimeout(300_000);
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
 
-    let orphanTextCountAllStates = 0;
-    let unownedMarginCountAllStates = 0;
+    const orphanFailures: string[] = [];
+    const marginFailures: string[] = [];
 
     for (const state of STATES) {
       for (const vp of VIEWPORTS) {
@@ -113,14 +112,14 @@ test.describe('WP-16.K Defect Verification (UX-209..UX-211)', () => {
         for (const theme of THEMES) {
           await setTheme(page, theme);
           const j3 = await checkOrphanTextAndMarginsJ3(page, state.id, REGISTERED_COMPONENTS);
-          orphanTextCountAllStates += j3.orphanText.length;
-          unownedMarginCountAllStates += j3.unownedMargins.length;
+          for (const o of j3.orphanText) orphanFailures.push(`[${vp.width} ${theme}] ${o}`);
+          for (const m of j3.unownedMargins) marginFailures.push(`[${vp.width} ${theme}] ${m}`);
         }
       }
     }
 
-    expect(orphanTextCountAllStates).toBe(0);
-    expect(unownedMarginCountAllStates).toBe(0);
+    expect(orphanFailures).toEqual([]);
+    expect(marginFailures).toEqual([]);
   });
 
   test('K1 Full 42-state ActionBar census: zero full-width item bars at every viewport and container', async ({ page }) => {

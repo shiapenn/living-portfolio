@@ -17,5 +17,5 @@ export function renderSectionHeader(props: SectionHeaderProps): string {
   const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
   const classes = ['lp-section-header', props.className].filter(Boolean).join(' ');
   const action = props.actionHtml ? `<div class="lp-section-header-action">${props.actionHtml}</div>` : '';
-  return `<div${idAttr} class="${escapeHtml(classes)}"><${tag} class="lp-section-header-title">${escapeHtml(props.title)}</${tag}>${action}</div>`;
+  return `<div${idAttr} data-c="SectionHeader" class="${escapeHtml(classes)}"><${tag} data-rel="section-title" class="lp-section-header-title">${escapeHtml(props.title)}</${tag}>${action}</div>`;
 }

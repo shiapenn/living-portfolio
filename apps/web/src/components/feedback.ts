@@ -61,7 +61,7 @@ export function renderPageNotice(props: PageNoticeProps): string {
       })
     : '';
 
-  return `<div class="${escapeHtml(classes)}" role="${role}" aria-live="${role === 'alert' ? 'assertive' : 'polite'}"${idAttr}${hiddenAttr}>
+  return `<div data-c="Notice" class="${escapeHtml(classes)}" role="${role}" aria-live="${role === 'alert' ? 'assertive' : 'polite'}"${idAttr}${hiddenAttr}>
   <div class="lp-notice-main">
     ${toneIcon}
     <div class="lp-notice-content">

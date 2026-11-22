@@ -169,8 +169,11 @@ export async function navigateToState(
       break;
     }
     case 'open-slash-menu': {
-      await page.click('#ref-tiptap-editor .ProseMirror');
+      const pm = page.locator('#ref-tiptap-editor .ProseMirror');
+      await pm.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await pm.click();
       await page.keyboard.type('/');
+      await page.locator('#ref-slash-menu').waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
       break;
     }
     default:

@@ -21,14 +21,14 @@ import { type StructureInspectorData } from '../../../patterns/structure-panel.j
 import { EDITOR_STRINGS } from '../../../strings/admin/editor.js';
 
 export function renderDraftAndOfflineBanners(): string {
-  return `<div id="admin-offline-banner" class="lp-notice lp-notice-warn" hidden>
+  return `<div id="admin-offline-banner" data-c="Notice" class="lp-notice lp-notice-warn" hidden>
   <div class="lp-notice-main">
     <div class="lp-notice-content">
       <span class="lp-notice-text">${escapeHtml(EDITOR_STRINGS.safety.offlineBanner)}</span>
     </div>
   </div>
 </div>
-<div id="draft-restore-notice" class="lp-notice lp-notice-info" hidden>
+<div id="draft-restore-notice" data-c="Notice" class="lp-notice lp-notice-info" hidden>
   <div class="lp-notice-main">
     <div class="lp-notice-content">
       <span class="lp-notice-text">${escapeHtml(EDITOR_STRINGS.safety.draftRestored)}</span>
@@ -138,7 +138,7 @@ ${renderTabs({
   ${renderDialog({
     id: 'ref-delete-dialog',
     title: EDITOR_STRINGS.deleteDialog.title,
-    bodyHtml: `<p>${escapeHtml(EDITOR_STRINGS.deleteDialog.body)}</p>`,
+    bodyHtml: `<p class="lp-body">${escapeHtml(EDITOR_STRINGS.deleteDialog.body)}</p>`,
     footerHtml: renderActionBar({
       level: 'dialog',
       primary: { id: 'ref-delete-confirm', label: EDITOR_STRINGS.deleteDialog.confirm, variant: 'danger', className: 'lp-btn-danger-confirm' },

@@ -18,6 +18,7 @@ import {
   renderSubsection,
   renderTabs,
   renderTag,
+  renderText,
   STATUS_VOCABULARY,
 } from '../../primitives/index.js';
 import { renderPageNotice } from '../../components/index.js';
@@ -58,7 +59,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
   const bodyHtml = `
     <div id="dcomp-gallery" class="lp-gallery-root${options.outline ? ' lp-outline-mode' : ''}">
       <section id="gallery-icons" class="lp-gallery-section" data-component="Icon">
-        <h2>Icons</h2>
+        ${renderSectionHeader({ title: 'Icons' })}
         <div class="lp-gallery-row">
           ${requiredIcons
             .map(
@@ -68,14 +69,14 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
                   icon: name,
                   iconSize: 20,
                   variant: 'quiet',
-                })}<span>${name}</span></span>`
+                })}${renderText({ variant: 'caption', tag: 'span', text: name })}</span>`
             )
             .join('')}
         </div>
       </section>
 
       <section id="gallery-buttons" class="lp-gallery-section" data-component="Button">
-        <h2>Buttons</h2>
+        ${renderSectionHeader({ title: 'Buttons' })}
         <div class="lp-gallery-row">
           ${renderButton({ label: 'Primary', variant: 'primary' })}
           ${renderButton({ label: 'Secondary', variant: 'secondary' })}
@@ -88,7 +89,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
       </section>
 
       <section id="gallery-page-header" class="lp-gallery-section" data-component="PageHeader">
-        <h2>PageHeader</h2>
+        ${renderSectionHeader({ title: 'PageHeader' })}
         ${renderPageHeader({
           id: 'gallery-ph-sample',
           backHref: '/admin',
@@ -100,8 +101,8 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
       </section>
 
       <section id="gallery-item" class="lp-gallery-section" data-component="Item">
-        <h2>Item</h2>
-        <p class="lp-description">Parent: List container (.lp-list) · Children: Title, StatusLabel + Chevron, Subtitle, Body/Segments, Meta, ActionBar.</p>
+        ${renderSectionHeader({ title: 'Item' })}
+        ${renderText({ variant: 'description', text: 'Parent: List container (.lp-list) · Children: Title, StatusLabel + Chevron, Subtitle, Body/Segments, Meta, ActionBar.' })}
         <div class="lp-list">
         ${renderItem({
           id: 'gallery-item-link',
@@ -144,10 +145,10 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
       </section>
 
       <section id="gallery-action-bar" class="lp-gallery-section" data-component="ActionBar">
-        <h2>ActionBar (page | dialog | item)</h2>
+        ${renderSectionHeader({ title: 'ActionBar (page | dialog | item)' })}
         <div class="lp-stack lp-gap-section">
-          <div class="lp-stack lp-gap-section">
-            <h3 class="lp-subsection-title">Level: page (full column width, stacked)</h3>
+          <div class="lp-stack lp-gap-group">
+            ${renderSectionHeader({ title: 'Level: page (full column width, stacked)', headingTag: 'h3' })}
             ${renderActionBar({
               id: 'gallery-ab-page',
               level: 'page',
@@ -156,8 +157,8 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
               textAction: { label: 'Reset defaults', variant: 'text' },
             })}
           </div>
-          <div class="lp-dialog-panel lp-stack lp-gap-section">
-            <h3 class="lp-subsection-title">Level: dialog (full dialog/sheet width at every viewport)</h3>
+          <div class="lp-dialog-panel lp-stack lp-gap-group">
+            ${renderSectionHeader({ title: 'Level: dialog (full dialog/sheet width at every viewport)', headingTag: 'h3' })}
             ${renderActionBar({
               id: 'gallery-ab-dialog',
               level: 'dialog',
@@ -165,8 +166,8 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
               secondary: { label: 'Cancel', variant: 'secondary' },
             })}
           </div>
-          <div class="lp-stack lp-gap-section">
-            <h3 class="lp-subsection-title">Level: item (compact min 96px flex-wrap row at every width)</h3>
+          <div class="lp-stack lp-gap-group">
+            ${renderSectionHeader({ title: 'Level: item (compact min 96px flex-wrap row at every width)', headingTag: 'h3' })}
             ${renderActionBar({
               id: 'gallery-ab-item',
               level: 'item',
@@ -178,10 +179,10 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
       </section>
 
       <section id="gallery-segmented-tags-status" class="lp-gallery-section">
-        <h2>Segmented, Tags, StatusLabel, Notice &amp; Select</h2>
+        ${renderSectionHeader({ title: 'Segmented, Tags, StatusLabel, Notice & Select' })}
         <div class="lp-stack lp-gap-group">
           <div>
-            <p class="lp-description">SegmentedControl (mode switches only, e.g. Edit / Settings)</p>
+            ${renderText({ variant: 'description', text: 'SegmentedControl (mode switches only, e.g. Edit / Settings)' })}
             ${renderSegmentedControl({
               id: 'gallery-segmented',
               ariaLabel: 'Mode switch',
@@ -210,7 +211,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
               }),
             ).join('')}
           </div>
-          ${renderPageNotice({ id: 'gallery-notice-warn', tone: 'warn', message: 'Warning: backup destination is not configured.' })}
+          ${renderPageNotice({ id: 'gallery-notice-sample', tone: 'warn', message: 'Warning: backup destination is not configured.' })}
           ${renderPageNotice({ id: 'gallery-notice-error', tone: 'danger', message: 'Error: provider API key check failed.' })}
           ${renderField({
             id: 'gallery-select',
@@ -224,12 +225,22 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
             ],
           })}
           ${renderBackLink({ href: '/admin', destination: 'Today' })}
-          ${renderSectionHeader({ title: 'SectionHeader' })}
+          ${renderSectionHeader({ id: 'gallery-section-header-sample', title: 'SectionHeader' })}
+        </div>
+      </section>
+
+      <section id="gallery-text" class="lp-gallery-section" data-component="Text">
+        ${renderSectionHeader({ title: 'Text' })}
+        <div id="gallery-text-sample" class="lp-stack lp-gap-related">
+          ${renderText({ variant: 'body', text: 'Body text role (14px/20px, text-1).' })}
+          ${renderText({ variant: 'description', text: 'Description text role (14px/20px, text-2).' })}
+          ${renderText({ variant: 'caption', text: 'Caption text role (12px/16px, text-2).' })}
+          ${renderText({ variant: 'prose', text: 'Prose text role for structured multi-paragraph copy.' })}
         </div>
       </section>
 
       <section id="gallery-choice" class="lp-gallery-section" data-component="Choice">
-        <h2>Choice</h2>
+        ${renderSectionHeader({ title: 'Choice' })}
         ${renderChoiceGroup({
           id: 'gallery-choice-btn-single',
           name: 'gallery-btn-single',
@@ -269,8 +280,8 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
       </section>
 
       <section id="gallery-tabs-stepper" class="lp-gallery-section" data-component="TabsStepper">
-        <h2>Tabs &amp; Stepper</h2>
-        <p class="lp-description">Parent: Page or Section · Children: Tablist (max 4, or Select when >=5), Stepper (Step N of M + 2px bar).</p>
+        ${renderSectionHeader({ title: 'Tabs & Stepper' })}
+        ${renderText({ variant: 'description', text: 'Parent: Page or Section · Children: Tablist (max 4, or Select when >=5), Stepper (Step N of M + 2px bar).' })}
         <div class="lp-stack lp-gap-related">
         ${renderTabs({
           id: 'gallery-tabs-3',
@@ -302,14 +313,14 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
       </section>
 
       <section id="gallery-overlay" class="lp-gallery-section" data-component="Overlay">
-        <h2>Overlay (static anchored samples)</h2>
-        <p class="lp-description">Popover, bottom sheet, edge-docked panel (border-right only, no shadow), and modal dialog.</p>
+        ${renderSectionHeader({ title: 'Overlay (static anchored samples)' })}
+        ${renderText({ variant: 'description', text: 'Popover, bottom sheet, edge-docked panel (border-right only, no shadow), and modal dialog.' })}
         <div class="lp-stack lp-gap-group">
           ${renderOverlay({
             id: 'gallery-overlay-popover',
             kind: 'actions',
             title: 'Popover / Sheet',
-            bodyHtml: '<p class="lp-body">Compact menu actions anchored to a trigger or bottom sheet.</p>',
+            bodyHtml: renderText({ variant: 'body', text: 'Compact menu actions anchored to a trigger or bottom sheet.' }),
             footerHtml: renderActionBar({
               level: 'dialog',
               secondary: { label: 'Close', variant: 'secondary' },
@@ -318,14 +329,14 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
             className: 'lp-gallery-overlay-sample',
           })}
           <div class="lp-gallery-panel-sample" data-c="EdgePanel">
-            <h3 class="lp-subsection-title">Edge-docked panel</h3>
-            <p class="lp-description">Border-right 1px outline only, zero shadow.</p>
+            ${renderSectionHeader({ title: 'Edge-docked panel', headingTag: 'h3' })}
+            ${renderText({ variant: 'description', text: 'Border-right 1px outline only, zero shadow.' })}
           </div>
           ${renderOverlay({
             id: 'gallery-overlay-dialog',
             kind: 'dialog',
             title: 'Confirm action',
-            bodyHtml: '<p class="lp-body">Dialog body content.</p>',
+            bodyHtml: renderText({ variant: 'body', text: 'Dialog body content.' }),
             footerHtml: renderActionBar({
               level: 'dialog',
               primary: { label: 'Confirm', variant: 'primary' },
@@ -338,7 +349,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
       </section>
 
       <section id="gallery-form-section" class="lp-gallery-section" data-component="FormSection">
-        <h2>FormSection</h2>
+        ${renderSectionHeader({ title: 'FormSection' })}
         ${renderFormSection({
           id: 'gallery-fs-sample',
           title: 'Section heading',
@@ -357,7 +368,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
           id: 'gallery-subsection',
           title: 'Subsection heading',
           intro: 'Optional intro inside FormSection.',
-          bodyHtml: '<p class="lp-body">Subsection body content.</p>',
+          bodyHtml: renderText({ variant: 'body', text: 'Subsection body content.' }),
         })}
       </section>
     </div>
