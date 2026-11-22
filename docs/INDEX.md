@@ -168,6 +168,7 @@
 | `A160` | wp-16k-k0-docs-and-canaries | `active` | [A160-wp-16k-k0-docs-and-canaries.md](execution-reports/A160-wp-16k-k0-docs-and-canaries.md) | — |
 | `A161` | wp-16k-k1-actionbar-and-list-absorption | `active` | [A161-wp-16k-k1-actionbar-and-list-absorption.md](execution-reports/A161-wp-16k-k1-actionbar-and-list-absorption.md) | — |
 | `A162` | wp-16k-k2-legacy-migration-and-lists | `active` | [A162-wp-16k-k2-legacy-migration-and-lists.md](execution-reports/A162-wp-16k-k2-legacy-migration-and-lists.md) | — |
+| `A163` | wp-16k-k3-full-tokenization | `active` | [A163-wp-16k-k3-full-tokenization.md](execution-reports/A163-wp-16k-k3-full-tokenization.md) | — |
 
 ## Handover Snapshots (Class H)
 
