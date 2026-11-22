@@ -59,6 +59,8 @@ export interface ProviderFlowProps {
   selectedModel?: string;
   errorMessage?: string;
   stepPrefix?: string;
+  hideStepper?: boolean;
+  hidePrimaryWhenLocal?: boolean;
 }
 
 /**
@@ -73,12 +75,14 @@ export function renderProviderFlow(props: ProviderFlowProps): string {
     3: 'Key',
   };
 
-  const stepperHtml = renderStepper({
-    id: 'lp-provider-stepper',
-    currentStep: Math.min(props.step, totalSteps),
-    totalSteps,
-    stepTitle: stepNames[props.step],
-  });
+  const stepperHtml = props.hideStepper
+    ? ''
+    : renderStepper({
+        id: 'lp-provider-stepper',
+        currentStep: Math.min(props.step, totalSteps),
+        totalSteps,
+        stepTitle: stepNames[props.step],
+      });
 
   if (props.step === 1) {
     const options: ChoiceOption[] = PROVIDERS_CATALOG.map((p) => ({
@@ -95,9 +99,12 @@ export function renderProviderFlow(props: ProviderFlowProps): string {
       variant: 'card',
       options,
     });
-    const actionsHtml = renderActionBar({
-      primary: { id: 'lp-provider-next', label: 'Next', variant: 'primary', type: 'button' },
-    });
+    const actionsHtml =
+      props.hidePrimaryWhenLocal && props.selectedProvider === 'local'
+        ? ''
+        : renderActionBar({
+            primary: { id: 'lp-provider-next', label: 'Next', variant: 'primary', type: 'button' },
+          });
     return renderStack({ gap: 'group', childrenHtml: `${stepperHtml}${choiceHtml}${actionsHtml}` });
   }
 

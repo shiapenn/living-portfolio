@@ -244,17 +244,17 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
 
   const claimsHtml = renderSubsection({
     title: 'Claims',
-    bodyHtml: `<div id="ref-claims-list" class="lp-list">
-      ${claims
-        .map((c: any) =>
-          renderItem({
-            title: String(c.text ?? c.claim_text ?? ''),
-            statusLabel: c.status ? String(c.status) : 'Claim',
-            statusTone: 'neutral',
-          })
-        )
-        .join('')}
-    </div>
+    bodyHtml: `<div id="ref-claims-list" class="lp-list${claims.length ? '' : ' lp-is-empty'}">${claims.length
+        ? claims
+            .map((c: any) =>
+              renderItem({
+                title: String(c.text ?? c.claim_text ?? ''),
+                statusLabel: c.status ? String(c.status) : 'Claim',
+                statusTone: c.status === 'accepted' ? 'ok' : 'neutral',
+              })
+            )
+            .join('')
+        : ''}</div>
     <div id="ref-claim-form-wrap" class="lp-stack lp-gap-related lp-is-hidden">
       ${renderField({ kind: 'input', id: 'ref-claim-input', name: 'claimText', label: 'Claim', placeholder: 'Add a claim' })}
       ${renderActionBar({
@@ -269,18 +269,19 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
 
   const evidenceHtml = renderSubsection({
     title: 'Evidence',
-    bodyHtml: `<div id="ref-evidence-list" class="lp-list">
-      ${evidence
-        .map((ev: any) =>
-          renderItem({
-            title: String(ev.verification?.title ?? ev.title ?? ev.url ?? 'Evidence'),
-            subtitle: ev.url ? String(ev.url) : undefined,
-            statusLabel: ev.kind ? String(ev.kind) : 'url',
-            statusTone: 'ok',
-          })
-        )
-        .join('')}
-    </div>
+    className: evidence.length ? undefined : 'lp-gap-related',
+    bodyHtml: `<div id="ref-evidence-list" class="lp-list${evidence.length ? '' : ' lp-is-empty'}">${evidence.length
+        ? evidence
+            .map((ev: any) =>
+              renderItem({
+                title: String(ev.verification?.title ?? ev.title ?? ev.url ?? 'Evidence'),
+                subtitle: ev.url ? String(ev.url) : undefined,
+                statusLabel: ev.kind ? String(ev.kind) : 'url',
+                statusTone: 'ok',
+              })
+            )
+            .join('')
+        : ''}</div>
     <div id="ref-evidence-form-wrap" class="lp-stack lp-gap-related lp-is-hidden">
       ${renderField({ kind: 'input', id: 'ref-evidence-title', name: 'evidenceTitle', label: 'Evidence title', placeholder: 'Evidence title' })}
       ${renderField({ kind: 'input', inputType: 'url', id: 'ref-evidence-url', name: 'evidenceUrl', label: 'Evidence URL', placeholder: 'https://example.com' })}

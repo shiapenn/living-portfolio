@@ -953,7 +953,7 @@ button.chip {
 .btn,
 .theme-toggle-btn,
 button[type="submit"] {
-  min-height: 44px;
+  min-height: var(--control-height);
 }
 
 @media (pointer: coarse) {
@@ -3237,6 +3237,8 @@ a.lp-admin-header-brand {
 
 .lp-btn-full {
   width: 100%;
+  white-space: normal;
+  text-align: center;
 }
 
 .lp-btn-as-link {
@@ -3824,15 +3826,28 @@ a.lp-admin-header-brand {
 }
 
 .lp-editor-drawer {
-  flex: 0 0 260px;
+  position: fixed;
+  top: 60px;
+  bottom: 0;
+  left: 0;
+  z-index: 60;
   width: 260px;
   background: var(--surface-overlay);
-  padding: 16px 8px;
+  padding: 16px 12px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
   transition: width 240ms var(--ease-out), flex-basis 240ms var(--ease-out);
+}
+@media (min-width: 768px) {
+  .lp-editor-drawer {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
+    flex: 0 0 260px;
+  }
 }
 
 .lp-editor-drawer[hidden] {
@@ -3840,11 +3855,11 @@ a.lp-admin-header-brand {
 }
 
 .lp-editor-drawer-left {
-  border: 0;
+  border: 1px solid var(--border-overlay);
 }
 
 #ref-entry-list {
-  padding: 0 8px;
+  padding: 0;
 }
 
 .lp-editor-drawer-header {
@@ -4070,6 +4085,7 @@ a.lp-item:hover {
 
 .lp-item.is-selected {
   background: var(--role-action-bg);
+  border-radius: var(--r2);
 }
 
 .lp-item-title {
@@ -4290,7 +4306,7 @@ a.lp-item:hover {
 .lp-choice-radio-dot {
   width: 16px;
   height: 16px;
-  border-radius: 50%;
+  border-radius: 999px;
   border: 1px solid var(--border-control);
   background: var(--surface);
   flex-shrink: 0;
@@ -4593,7 +4609,7 @@ a.lp-item:hover {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  padding: 0 8px;
+  padding: 0;
   gap: 8px;
 }
 .lp-editor-drawer .lp-section-header-title {
@@ -4874,6 +4890,7 @@ a.lp-item:hover {
 .lp-item:hover::before,
 .lp-item.is-selected::before {
   background: var(--surface-control);
+  border-radius: var(--r2);
 }
 
 /* D-SYS #2: Empty message regions take 0 height and 0 margin; remove stray hairlines */
@@ -5103,7 +5120,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 /* D-FINAL #15, #16, D-H H5: Editor header row (1fr auto 1fr), Edit prose, details line, format bar */
 .lp-editor-header-row {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   min-height: 56px;
   height: 56px;
@@ -5127,6 +5144,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 }
 @media (max-width: 639px) {
   .lp-editor-desktop-only { display: none; }
+  .lp-editor-toolbar-right .lp-btn { padding: 0 8px; }
 }
 .lp-editor-title-input {
   width: 100%;
@@ -5178,6 +5196,11 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+@media (min-width: 768px) {
+  .lp-editor-drawer:not([hidden]) + .lp-editor-main-fullscreen .lp-format-bar {
+    left: 260px;
+  }
 }
 
 .lp-canary-center { text-align: center; }
@@ -5239,11 +5262,25 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
     justify-self: stretch;
     justify-content: space-between;
   }
+  .lp-item.lp-item-trailing-status,
+  .lp-item.lp-item-trailing-status .lp-item-content {
+    grid-template-columns: 1fr auto;
+    column-gap: 16px;
+  }
+  .lp-item.lp-item-trailing-status .lp-item-status {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    justify-content: flex-end;
+  }
 }
 
 /* Subsection & ActionBar spacing (D-G #10) */
 .lp-subsection-title { font-size: 14px; font-weight: 600; color: var(--text-1); line-height: 20px; margin: 0; }
 .lp-subsection-intro { font-size: 14px; font-weight: 400; color: var(--text-2); line-height: 20px; margin: 0; }
+#ref-claims-list.lp-is-empty, #ref-evidence-list.lp-is-empty { display: none; }
+.lp-subsection.lp-stack.lp-gap-group { gap: 24px; }
+.lp-subsection.lp-stack.lp-gap-group.lp-gap-related { gap: 16px; }
 
 /* Select chevron vertically centred at 12px from right (D-G #11) */
 .lp-select-wrap { position: relative; width: 100%; }
@@ -5276,7 +5313,9 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   border: 0;
   color: var(--accent);
   padding: 0 8px;
-  height: var(--control-height);
+  white-space: normal;
+  text-align: left;
+  height: auto;
   min-height: var(--control-height);
   font-weight: 600;
 }
@@ -5379,7 +5418,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   box-shadow: var(--shadow-e1);
 }
 .lp-editor-drawer {
-  box-shadow: var(--shadow-e1-right);
+  box-shadow: none;
 }
 .lp-overlay-sheet,
 .lp-format-bar {
@@ -5406,6 +5445,26 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   white-space: nowrap;
   border: 0;
 }
+
+/* Setup wizard 2px progress bar (D-H H10) */
+.lp-auth-progress-track {
+  height: 2px;
+  width: 100%;
+  background: var(--surface-l2);
+  overflow: hidden;
+}
+.lp-auth-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  width: 16.667%;
+  transition: width 160ms var(--ease-out);
+}
+.lp-auth-progress-fill[data-step="1"] { width: 16.667%; }
+.lp-auth-progress-fill[data-step="2"] { width: 33.333%; }
+.lp-auth-progress-fill[data-step="3"] { width: 50%; }
+.lp-auth-progress-fill[data-step="4"] { width: 66.667%; }
+.lp-auth-progress-fill[data-step="5"] { width: 83.333%; }
+.lp-auth-progress-fill[data-step="6"] { width: 100%; }
 
 /* Gallery outline mode (?outline=1, D-G #9) */
 .lp-outline-mode [data-c] {

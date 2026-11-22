@@ -98,7 +98,7 @@ export const WIZARD_STRINGS = {
       help: 'The address people will visit, for example https://yourname.com. Skip to try it on this computer. Sets your canonical URLs and security origin checks.',
     },
     backButton: 'Back',
-    nextButton: 'Next: Model Providers',
+    nextButton: 'Continue',
   },
   step3: {
     title: 'Step 3: Model Providers & Privacy Boundary',
@@ -143,7 +143,7 @@ export const WIZARD_STRINGS = {
       ],
     },
     backButton: 'Back',
-    nextButton: 'Next: Alerts & Notifications',
+    nextButton: 'Continue',
   },
   step4: {
     title: 'Step 4: Notifications & Alerts',
@@ -165,7 +165,7 @@ export const WIZARD_STRINGS = {
     testButton: 'Test Delivery Notification',
     testDisabledReason: "Test alerts aren't available in this version yet.",
     backButton: 'Back',
-    nextButton: 'Next: Encrypted Backups',
+    nextButton: 'Continue',
   },
   step5: {
     title: 'Step 5: Encrypted Backup Destination',
@@ -191,7 +191,7 @@ export const WIZARD_STRINGS = {
     drillButton: 'Run Restore Verification Drill',
     drillDisabledReason: 'Not available until a backup folder is set',
     backButton: 'Back',
-    nextButton: 'Next: Theme & Walkthrough',
+    nextButton: 'Continue',
   },
   step6: {
     title: 'Step 6: Theme & First-Run Walkthrough',

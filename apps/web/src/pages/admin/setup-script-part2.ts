@@ -215,13 +215,7 @@ export const SETUP_SCRIPT_PART_2 = `              const qrBox = document.getElem
           };
           const renderSubstep = function(step) {
             const meta = catalog[pfProvider] || catalog.local;
-            const total = meta.requiresKey ? 3 : 2;
-            const stepName = step === 2 ? 'Model' : 'Key';
-            const pct = Math.round((Math.min(step, total) / total) * 100);
-            const stepperHtml = '<div id="lp-provider-stepper" class="lp-stepper" data-c="Stepper" data-rel="stepper">' +
-              '<div class="lp-stepper-meta"><span class="lp-stepper-count">Step ' + Math.min(step, total) + ' of ' + total + ' · ' + stepName + '</span></div>' +
-              '<div class="lp-stepper-bar" role="progressbar" aria-valuenow="' + pct + '" aria-valuemin="0" aria-valuemax="100"><div class="lp-stepper-fill"></div></div>' +
-              '</div>';
+            const stepperHtml = '';
             if (step === 2) {
               const fieldHtml = meta.models.length > 0
                 ? '<div class="lp-field" data-c="Field" data-rel="field"><label for="lp-provider-model" class="lp-field-label">Model</label><div class="lp-select-wrap"><select id="lp-provider-model" name="model" class="lp-select">' +
@@ -238,6 +232,23 @@ export const SETUP_SCRIPT_PART_2 = `              const qrBox = document.getElem
             const fillEl = providerRoot.querySelector('.lp-stepper-fill');
             if (fillEl) fillEl.style.width = pct + '%';
           };
+          providerRoot.addEventListener('change', function(e) {
+            const target = e.target;
+            if (!(target instanceof HTMLInputElement) || target.name !== 'provider') return;
+            pfProvider = target.value || 'local';
+            const stack = providerRoot.querySelector('.lp-stack');
+            const existingBar = providerRoot.querySelector('.lp-action-bar');
+            if (pfProvider === 'local') {
+              if (existingBar) existingBar.remove();
+            } else if (!existingBar && stack) {
+              const bar = document.createElement('div');
+              bar.className = 'lp-action-bar';
+              bar.setAttribute('data-c', 'ActionBar');
+              bar.setAttribute('data-rel', 'actions');
+              bar.innerHTML = '<button id="lp-provider-next" type="button" class="lp-btn lp-btn-secondary">Next</button>';
+              stack.appendChild(bar);
+            }
+          });
           providerRoot.addEventListener('click', async function(e) {
             const target = e.target;
             if (!(target instanceof Element)) return;

@@ -144,7 +144,7 @@ export function renderAdminSetupPage(): string {
         </div>
 
         <div id="setup-provider-flow-root">
-          ${renderProviderFlow({ step: 1, selectedProvider: 'local' }).replaceAll('lp-btn-primary', 'lp-btn-secondary')}
+          ${renderProviderFlow({ step: 1, selectedProvider: 'local', hideStepper: true, hidePrimaryWhenLocal: true }).replaceAll('lp-btn-primary', 'lp-btn-secondary')}
         </div>
         ${renderStatusLine({ id: 'setup-provider-status' })}
         <div class="lp-sr-only" aria-hidden="true">
@@ -255,13 +255,13 @@ export function renderAdminSetupPage(): string {
           })),
         })}
 
-        <div class="lp-notice lp-notice-info lp-stack-sm">
+        <div class="lp-stack-sm">
           <h3 class="lp-section-title">${WIZARD_STRINGS.step6.workedExample.title}</h3>
-          <p class="lp-body-sm">${WIZARD_STRINGS.step6.workedExample.lead}</p>
-          <ul class="lp-inline-list">
+          <p class="lp-page-description">${WIZARD_STRINGS.step6.workedExample.lead}</p>
+          <ul class="lp-inline-list lp-page-description">
             ${WIZARD_STRINGS.step6.workedExample.claims.map(c => `<li><strong>${c.label}:</strong> ${c.text}</li>`).join('')}
           </ul>
-          <p class="lp-body-sm">"${WIZARD_STRINGS.step6.workedExample.closing}"</p>
+          <p class="lp-page-description">"${WIZARD_STRINGS.step6.workedExample.closing}"</p>
         </div>
 
         <p class="lp-help-text">${WIZARD_STRINGS.step6.deployNotice}</p>
