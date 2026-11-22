@@ -1673,5 +1673,13 @@
     "path": "docs/design/tokens.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A163",
+    "title": "wp-16k-k3-full-tokenization",
+    "class": "A",
+    "path": "docs/execution-reports/A163-wp-16k-k3-full-tokenization.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
