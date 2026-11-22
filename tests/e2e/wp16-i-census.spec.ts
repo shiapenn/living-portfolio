@@ -11,20 +11,26 @@ import {
   setTheme,
 } from './census-helpers.js';
 
-test.describe('WP-16.I Census v3 Canaries (run against WP-16.H commit f8f2eef)', () => {
-  test('canary I1+I7+I8: catches missing ActionBar data-level, docked panel 4-sided border, and Item bleed on f8f2eef', async ({ page }) => {
-    await ensureAdminLoggedIn(page);
-    const ids = await getSeededIds(page);
+test.describe('WP-16.I Census v3 Canaries (synthetic broken DOM)', () => {
+  test('canary I1+I7+I8: catches missing ActionBar data-level, docked panel 4-sided border, and Item bleed', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
+    await page.setContent(`
+      <div class="lp-editor-drawer" style="border: 1px solid #ccc; width: 260px;">
+        <div class="lp-list" style="padding: 8px; width: 240px;">
+          <div class="lp-item" style="width: 224px;">
+            <div class="lp-item-title">Item</div>
+          </div>
+        </div>
+      </div>
+      <div class="lp-action-bar"><button class="lp-btn">Save</button></div>
+    `);
+    const abIssues = (await checkActionBarI1(page, 'synthetic')).flatMap((r) => r.issues);
+    const panelIssues = await checkDockedPanelAndAdjacentLinesI7(page, 'synthetic');
+    const itemRes = await checkItemGeometryI8(page, 'synthetic');
 
-    await navigateToState(page, STATES.find((s) => s.id === 'overlay-entries-panel')!, ids);
-    const abIssues = (await checkActionBarI1(page, 'overlay-entries-panel')).flatMap((r) => r.issues);
-    const panelIssues = await checkDockedPanelAndAdjacentLinesI7(page, 'overlay-entries-panel');
-    const itemRes = await checkItemGeometryI8(page, 'overlay-entries-panel');
-
-    console.log('Canary f8f2eef findings:', { abIssues, panelIssues, itemIssues: itemRes.issues });
+    expect(abIssues.some((i) => i.startsWith('i1-missing-level'))).toBe(true);
     expect(panelIssues.some((i) => i.startsWith('i7-panel-border-'))).toBe(true);
-    expect(abIssues.length + panelIssues.length + itemRes.issues.length).toBeGreaterThan(0);
+    expect(itemRes.issues.some((i) => i.startsWith('i8-item-bleed'))).toBe(true);
   });
 
   test('canary I5: catches non-vocabulary StatusLabel on f8f2eef (claims accepted / Local only)', async ({ page }) => {
@@ -108,7 +114,6 @@ test.describe('WP-16.I Failing-First Defect Suite (UX-194..UX-203)', () => {
   });
 
   test('20261106-UX-200 (I7): Edge-docked panel border-right only and adjacent-lines check', async ({ page }) => {
-    test.fail(true, 'WP-16.I I7 not yet implemented');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -118,7 +123,6 @@ test.describe('WP-16.I Failing-First Defect Suite (UX-194..UX-203)', () => {
   });
 
   test('20261106-UX-201 (I8): Item rectangle equals list column with 8px content inset', async ({ page }) => {
-    test.fail(true, 'WP-16.I I8 not yet implemented');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -141,7 +145,6 @@ test.describe('WP-16.I Failing-First Defect Suite (UX-194..UX-203)', () => {
   });
 
   test('20261106-UX-203 (I10): Gallery completeness and data-c registry check', async ({ page }) => {
-    test.fail(true, 'WP-16.I I10 not yet implemented');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await navigateToState(page, STATES.find((s) => s.id === 'gallery')!, ids);

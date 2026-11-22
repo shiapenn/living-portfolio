@@ -3855,7 +3855,8 @@ a.lp-admin-header-brand {
 }
 
 .lp-editor-drawer-left {
-  border: 1px solid var(--border-overlay);
+  border: 0;
+  border-right: 1px solid var(--border-overlay);
 }
 
 #ref-entry-list {
@@ -4863,8 +4864,12 @@ a.lp-item:hover {
   }
 }
 
-/* D-SYS #12: Item 8px bleed + container 8px padding + 12px vertical padding */
+/* D-I1 I8: List container has 0 horizontal padding; Item rectangle equals list column */
 .lp-list,
+.lp-item-list {
+  padding: 0;
+  border-top: 0;
+}
 .lp-popover-menu,
 .lp-launcher-panel,
 .lp-overlay-body {
@@ -4873,14 +4878,14 @@ a.lp-item:hover {
 }
 .lp-item {
   position: relative;
-  padding: 12px 0;
+  padding: 12px 8px;
   border: 0;
 }
 .lp-item::before {
   content: '';
   position: absolute;
-  inset: 0 -8px;
-  border-radius: 4px;
+  inset: 0;
+  border-radius: var(--r2);
   background: transparent;
   z-index: 0;
   pointer-events: none;
@@ -5409,7 +5414,6 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-launcher-panel,
 .lp-dialog-panel,
 .lp-overlay-sheet,
-.lp-editor-drawer,
 .lp-format-bar {
   border: 1px solid var(--border-overlay);
 }
@@ -5418,6 +5422,8 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   box-shadow: var(--shadow-e1);
 }
 .lp-editor-drawer {
+  border: 0;
+  border-right: 1px solid var(--border-overlay);
   box-shadow: none;
 }
 .lp-overlay-sheet,
@@ -5470,5 +5476,109 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-outline-mode [data-c] {
   outline: 1px dashed var(--accent);
   outline-offset: 2px;
+}
+
+/* =========================================================
+ * WP-16.I D-I1 ActionBar (page | dialog | item) & Gallery Overlays
+ * ========================================================= */
+
+.lp-action-bar-page,
+.lp-action-bar-dialog,
+.lp-dialog-footer,
+.lp-dialog-panel .lp-action-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+.lp-action-bar-page .lp-btn:not(.lp-btn-text),
+.lp-action-bar-dialog .lp-btn:not(.lp-btn-text),
+.lp-dialog-footer .lp-btn:not(.lp-btn-text),
+.lp-dialog-panel .lp-action-bar .lp-btn:not(.lp-btn-text) {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+.lp-action-bar-page .lp-btn-text,
+.lp-action-bar-dialog .lp-btn-text,
+.lp-dialog-footer .lp-btn-text,
+.lp-dialog-panel .lp-action-bar .lp-btn-text {
+  width: auto;
+  min-width: 0;
+  align-self: center;
+}
+
+.lp-action-bar-item,
+.lp-item-actions .lp-action-bar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.lp-action-bar-item .lp-btn:not(.lp-btn-text),
+.lp-item-actions .lp-action-bar .lp-btn:not(.lp-btn-text) {
+  width: auto;
+  min-width: 96px;
+  max-width: none;
+}
+
+.lp-action-bar-item .lp-btn-text,
+.lp-item-actions .lp-action-bar .lp-btn-text {
+  width: auto;
+  min-width: 0;
+  align-self: center;
+}
+
+@container (max-width: 399px) {
+  .lp-action-bar-item,
+  .lp-item-actions .lp-action-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .lp-action-bar-item .lp-btn:not(.lp-btn-text),
+  .lp-item-actions .lp-action-bar .lp-btn:not(.lp-btn-text) {
+    width: 100%;
+    min-width: 0;
+  }
+  .lp-action-bar-item .lp-btn-text,
+  .lp-item-actions .lp-action-bar .lp-btn-text {
+    width: auto;
+    min-width: 0;
+    align-self: flex-start;
+  }
+}
+
+.lp-gallery-overlay-sample {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  inset: auto;
+  z-index: 1;
+}
+.lp-gallery-overlay-sample .lp-overlay-backdrop {
+  display: none;
+}
+.lp-gallery-overlay-sample .lp-overlay-surface,
+.lp-gallery-panel-sample {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  inset: auto;
+  transform: none;
+}
+.lp-gallery-panel-sample {
+  max-width: 280px;
+  background: var(--surface-overlay);
+  border: 0;
+  border-right: 1px solid var(--border-overlay);
+  padding: 16px 12px;
 }
 `;
