@@ -1593,5 +1593,13 @@
     "path": "docs/execution-reports/A153-wp-16i-i1-primitives-and-gallery.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A154",
+    "title": "wp-16i-i2-pages",
+    "class": "A",
+    "path": "docs/execution-reports/A154-wp-16i-i2-pages.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
