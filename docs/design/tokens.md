@@ -6,8 +6,8 @@
 
 ## Summary
 
-- Primitive tokens: **215**
-- Semantic tokens (per theme): **62**
+- Primitive tokens: **216**
+- Semantic tokens (per theme): **63**
 - Component, relation & typography tokens: **198**
 - Reserved tokens: **31**
 
@@ -72,6 +72,7 @@
 | `--lp-color-surface-control-active` | `#D2D9DF` | `#314557` |
 | `--lp-color-surface-control-selected` | `#EEF1FF` | `#1A244D` |
 | `--lp-color-surface-backdrop` | `rgba(15, 26, 34, 0.45)` | `rgba(0, 0, 0, 0.6)` |
+| `--lp-color-surface-modal-backdrop` | `rgba(0, 0, 0, 0.5)` | `rgba(0, 0, 0, 0.5)` |
 | `--lp-color-text-1` | `#14202A` | `#E6ECEF` |
 | `--lp-color-text-2` | `#4B5A66` | `#A3B2BD` |
 | `--lp-color-text-3` | `#63727E` | `#8A99A6` |

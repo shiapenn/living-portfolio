@@ -482,6 +482,33 @@ print(f"J3 selective capture: {len(results)} / {len(results) + len(excluded)} sh
       execSync(`rm -f "${zipPath}" && cd "${J_DIR}" && zip -rq "${zipPath}" .`);
       expect(existsSync(zipPath)).toBe(true);
     });
+  } else if (process.env.CAPTURE_K_ALL === '1') {
+    test('captures all 252 STATES PNGs into K_OUT_DIR', async ({ page }) => {
+      test.setTimeout(600_000);
+      const kOut = resolve(process.env.K_OUT_DIR || '/tmp/wp16k-sheets/k4');
+      mkdirSync(kOut, { recursive: true });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await ensureAdminLoggedIn(page);
+      const ids = await getSeededIds(page);
+      expect(ids.entryId).toBeTruthy();
+
+      for (const vp of VIEWPORTS) {
+        await page.setViewportSize(vp);
+        for (const theme of THEMES) {
+          for (const state of STATES) {
+            await navigateToState(page, state, ids);
+            await setTheme(page, theme);
+            const file = sheetFileName(state.id, vp.width, theme);
+            await page.screenshot({
+              path: resolve(kOut, file),
+              fullPage: state.fullPage ?? true,
+            });
+          }
+        }
+      }
+      const actualFiles = readdirSync(kOut).filter((f) => f.endsWith('.png')).sort();
+      expect(actualFiles).toEqual(expectedSheetFiles().sort());
+    });
   } else {
     test('STATES manifest parity guard (set CAPTURE_CONTACT_SHEETS=1 to capture)', () => {
       expect(expectedSheetFiles().length).toBe(STATES.length * THEMES.length * VIEWPORTS.length);

@@ -1788,7 +1788,7 @@ input[type="date"].lp-input {
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay, 200);
-  background: var(--lp-color-surface-backdrop);
+  background: var(--lp-color-surface-modal-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
