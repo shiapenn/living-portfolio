@@ -57,8 +57,45 @@ Executed `WP-16.I I2` (Page Migrations, Copy/Semantics & Census v3 0-Violation C
 - `apps/web/src/strings/en.ts`
 - `apps/web/src/styles.ts`
 - `apps/web/src/web.test.ts`
+- `docs/INDEX.md`
 - `docs/START-HERE.md`
+- `docs/doc-registry.json`
+- `docs/execution-reports/A153-wp-16i-i1-primitives-and-gallery.md`
 - `tests/e2e/census-helpers.ts`
 - `tests/e2e/wp16-f-census.spec.ts`
 - `tests/e2e/wp16-h-census.spec.ts`
 - `tests/e2e/wp16-i-census.spec.ts`
+
+## 5. Register and Backlog Changes
+
+- None (`20261106-UX-194`..`UX-203` updated to `partial` `"awaiting L review"` in `WP-16.I I3`).
+
+## 6. Not Done (Tagged)
+
+- `[not-started]` `WP-16.I I3`: pixel diff vs `WP-16.H` sheets, visual inspection of captured sheets, Census v3 closure, and register update.
+
+## 7. Changes to Earlier Reports
+
+None.
+
+## 8. Receipt Gate Self-Validation
+
+```
+$ pnpm receipt:check A154
+=== Validating Receipt A154-wp-16i-i2-pages.md ===
+
+✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
+✓ [ANCESTOR-CHECK] Evidence SHA 'a70809dc879ac5d60d8736ff75be23b2b4a52ea5' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 608117a3972c7d865e3dc8bba7a28582d10e8f48..a70809dc879ac5d60d8736ff75be23b2b4a52ea5 (29 files verified).
+✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A154-wp-16i-i2-pages.md.
+Found 0 section(s) marked verbatim.
+
+🎉 All receipt checks PASSED for A154-wp-16i-i2-pages.md.
+```
+
+## 9. Handover Decision
+- Decision: RECOMMENDED
+- Rule(s): HO-R3
+- Receipts since last handover: 138 (per triage counter); work packages since: 0
+- Clean-boundary preconditions: not met (`WP-16.I I3` remaining)
+- Next action: execute `WP-16.I I3` pixel diff, visual inspection, and closure.
