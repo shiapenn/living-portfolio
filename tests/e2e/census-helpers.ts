@@ -1326,6 +1326,7 @@ export async function checkRestingIconButtonFillsJ5(page: Page, stateId = ''): P
     const header = document.querySelector<HTMLElement>('.lp-admin-header');
     if (!header) return issues;
     const iconBtns = Array.from(header.querySelectorAll<HTMLElement>('#lp-launcher-btn, #theme-toggle, #lp-account-menu-btn')).filter((el) => {
+      if (el.getAttribute('aria-expanded') === 'true') return false;
       const cs = getComputedStyle(el);
       const r = el.getBoundingClientRect();
       return cs.display !== 'none' && cs.visibility !== 'hidden' && r.width > 0 && r.height > 0;

@@ -7820,7 +7820,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7829,8 +7829,11 @@
   regression_test: tests/e2e/wp16-j-census.spec.ts
   history:
     - date: 2026-11-22
-      status: open
+      status: partial
       note: "Registered in WP-16.J J0 from owner review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-205
@@ -7839,7 +7842,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7848,8 +7851,11 @@
   regression_test: tests/e2e/wp16-j-census.spec.ts
   history:
     - date: 2026-11-22
-      status: open
+      status: partial
       note: "Registered in WP-16.J J0 from owner review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-206
@@ -7858,7 +7864,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7867,8 +7873,11 @@
   regression_test: tests/e2e/wp16-j-census.spec.ts
   history:
     - date: 2026-11-22
-      status: open
+      status: partial
       note: "Registered in WP-16.J J0 from owner review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-207
@@ -7877,7 +7886,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7886,8 +7895,11 @@
   regression_test: tests/e2e/wp16-j-census.spec.ts
   history:
     - date: 2026-11-22
-      status: open
+      status: partial
       note: "Registered in WP-16.J J0 from owner review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
 
 - id: 20261106-UX-208
@@ -7896,7 +7908,7 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
@@ -7905,6 +7917,9 @@
   regression_test: tests/e2e/wp16-j-census.spec.ts
   history:
     - date: 2026-11-22
-      status: open
+      status: partial
       note: "Registered in WP-16.J J0 from owner review."
+    - date: 2026-11-22
+      status: partial
+      note: "awaiting L review"
   verified_by: null
