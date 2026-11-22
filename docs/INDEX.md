@@ -153,6 +153,7 @@
 | `A145` | wp-16g-g1-primitives-and-patterns | `active` | [A145-wp-16g-g1-primitives-and-patterns.md](execution-reports/A145-wp-16g-g1-primitives-and-patterns.md) | — |
 | `A146` | wp-16g-g2-pages-and-flows | `active` | [A146-wp-16g-g2-pages-and-flows.md](execution-reports/A146-wp-16g-g2-pages-and-flows.md) | — |
 | `A147` | wp-16g-g3-pixel-diff-and-closure | `active` | [A147-wp-16g-g3-pixel-diff-and-closure.md](execution-reports/A147-wp-16g-g3-pixel-diff-and-closure.md) | — |
+| `A148` | wp-16h-h0-contract-and-failing-census | `active` | [A148-wp-16h-h0-contract-and-failing-census.md](execution-reports/A148-wp-16h-h0-contract-and-failing-census.md) | — |
 
 ## Handover Snapshots (Class H)
 
