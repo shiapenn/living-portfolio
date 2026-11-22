@@ -58,26 +58,43 @@ export async function renderAdminAuditRulesPage(
             title: String(summary),
             subtitle: scopeText,
             segments: quote && quote.trim() !== String(summary).trim() ? [{ heading: 'From your reply', body: quote }] : undefined,
-            statusLabel,
+            statusLabel: activeStatus === 'confirmed' ? 'Active' : activeStatus === 'revoked' ? 'Ignored' : 'Pending',
             statusTone: tone,
             actions: activeStatus === 'revoked'
-              ? undefined
-              : {
-                  primary: activeStatus === 'proposed'
-                    ? {
-                        label: INBOX_STRINGS.audit.confirmRule,
-                        variant: 'primary',
-                        size: 'sm',
-                        dataAttrs: { 'rule-id': id, 'rule-action': 'confirmed' },
-                      }
-                    : undefined,
+              ? {
+                  level: 'item',
                   secondary: {
-                    label: INBOX_STRINGS.audit.revokeRule,
+                    label: 'Restore',
                     variant: 'secondary',
                     size: 'sm',
-                    dataAttrs: { 'rule-id': id, 'rule-action': 'revoked' },
+                    dataAttrs: { 'rule-id': id, 'rule-action': 'confirmed' },
                   },
-                },
+                }
+              : activeStatus === 'proposed'
+                ? {
+                    level: 'item',
+                    primary: {
+                      label: INBOX_STRINGS.audit.confirmRule,
+                      variant: 'primary',
+                      size: 'sm',
+                      dataAttrs: { 'rule-id': id, 'rule-action': 'confirmed' },
+                    },
+                    secondary: {
+                      label: 'Discard',
+                      variant: 'secondary',
+                      size: 'sm',
+                      dataAttrs: { 'rule-id': id, 'rule-action': 'revoked' },
+                    },
+                  }
+                : {
+                    level: 'item',
+                    secondary: {
+                      label: INBOX_STRINGS.audit.revokeRule,
+                      variant: 'secondary',
+                      size: 'sm',
+                      dataAttrs: { 'rule-id': id, 'rule-action': 'revoked' },
+                    },
+                  },
             attributes: `data-rule-row="${escapeHtml(id)}"`,
           });
         })

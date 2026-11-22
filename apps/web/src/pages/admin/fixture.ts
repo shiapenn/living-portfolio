@@ -133,6 +133,7 @@ export function renderFixturePatternPage(): string {
         ],
       }),
     actionBarHtml: renderActionBar({
+      level: 'page',
       primary: { label: 'Save', variant: 'primary', type: 'button' },
       secondary: { label: 'Cancel', variant: 'secondary', type: 'button' },
     }),

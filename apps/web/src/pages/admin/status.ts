@@ -47,9 +47,10 @@ export async function renderAdminStatusPage(
       id: 'status-build-row',
       className: 'lp-item-trailing-status',
       title: 'Site',
-      statusLabel: 'Idle (ready)',
+      statusLabel: 'Idle',
       statusTone: 'ok',
       actions: {
+        level: 'item',
         secondary: { id: 'status-rebuild-btn', label: 'Rebuild site', variant: 'secondary', size: 'sm' },
       },
     })}
@@ -60,6 +61,7 @@ export async function renderAdminStatusPage(
       statusLabel: answeringOn ? 'Active' : 'Paused',
       statusTone: answeringOn ? 'ok' : 'warn',
       actions: {
+        level: 'item',
         secondary: {
           id: 'status-answering-toggle',
           label: answeringOn ? 'Pause' : 'Resume',
@@ -74,7 +76,7 @@ export async function renderAdminStatusPage(
       className: 'lp-item-trailing-status',
       href: '/admin/settings/backups',
       title: 'Backups',
-      statusLabel: backupState,
+      statusLabel: backupState === 'Not set up' ? 'Not set up' : 'Active',
       statusTone: backupState === 'Not set up' ? 'neutral' : 'ok',
       showChevron: true,
     })}
@@ -83,8 +85,7 @@ export async function renderAdminStatusPage(
       className: 'lp-item-trailing-status',
       href: '/admin/settings/providers',
       title: 'Providers',
-      statusLabel: providerState,
-      statusTone: activeProvider ? 'ok' : 'neutral',
+      trailingValue: providerState,
       showChevron: true,
     })}
   </div>`;

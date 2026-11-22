@@ -35,22 +35,22 @@ export const WIZARD_STRINGS = {
   },
   step1: {
     title: 'Owner Account Setup',
-    subtitle: 'Initialize your private administrative account. The first-run wizard walks you through account creation, hosting presets, model providers, alerts, backups, and initial site authoring. You can change your username and password later in Settings › Account.',
+    subtitle: 'Initialize your private administrative account. The next screen shows the authenticator QR code. You can change your username and password later in Settings › Account.',
     fields: {
       username: {
         label: 'Owner Username',
         help: 'The administrative username for logging into your portfolio. Used to authenticate to the admin workspace.',
       },
       password: {
-        label: 'Master Password (min 12 chars)',
-        help: 'Your master passphrase. Required alongside your authenticator code at sign in. Stored using argon2id.',
+        label: 'Password',
+        help: 'At least 12 characters.',
       },
       totpSecret: {
-        label: 'Two-Factor Authenticator Seed (optional, generated if blank)',
-        help: 'Optional base32 seed for your authenticator app. Leave blank to generate a secure random key automatically.',
+        label: 'Authenticator seed (optional)',
+        help: 'Leave blank to generate one automatically.',
       },
     },
-    submitButton: 'Create Owner Account & Show Authenticator QR',
+    submitButton: 'Create account',
     enrolment: {
       title: 'Enrol Authenticator App',
       instructions: 'Scan this QR code with Google Authenticator, 1Password, or any standard authenticator app. Or enter the manual key below.',

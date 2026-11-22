@@ -1,5 +1,6 @@
 import { z } from '@living-portfolio/core';
-import { renderActionBar, renderField, renderFormSection, renderItem } from '../../primitives/index.js';
+import { escapeHtml } from '../../lib/html.js';
+import { renderActionBar, renderField, renderFormSection, renderStatusDot } from '../../primitives/index.js';
 import { renderStatusLine } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 
@@ -40,31 +41,41 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
     const active =
       liveProviders.find((p) => p.enabled && p.id !== 'local') ??
       (savedProvider && savedProvider.enabled && savedProvider.id !== 'local' ? savedProvider : undefined);
-    const answeringItemHtml = `<div class="lp-list">
-      ${renderItem({
-        id: 'provider-role-answering',
-        className: 'lp-item-trailing-status',
-        title: 'Answering model',
-        subtitle: active ? `${active.name || active.id}${active.model ? ` · ${active.model}` : ''}` : undefined,
-        statusLabel: active ? 'Connected' : 'Local only, quotes from your entries',
-        statusTone: active ? 'ok' : 'neutral',
-        actions: {
-          secondary: {
-            id: 'btn-change-provider',
-            label: 'Change',
-            href: '/admin/settings/providers/change',
-            variant: 'secondary',
-            size: 'sm',
-          },
+    const activeValueText = active
+      ? `${active.name || active.id}${active.model ? ` · ${active.model}` : ''}`
+      : 'Local only';
+    const activeDescText = active
+      ? 'Answers use your configured external provider.'
+      : 'Answers quote directly from your entries; nothing leaves this server.';
+    const healthLabel = active?.healthStatus === 'Key invalid' || active?.healthStatus === 'Unreachable'
+      ? active.healthStatus
+      : 'Connected';
+    const answeringSectionHtml = renderFormSection({
+      id: 'provider-role-answering',
+      title: 'Answering model',
+      fieldsHtml: `
+        <div class="lp-stack lp-gap-tight" data-role-id="answering">
+          <p id="providers-current-status" class="lp-body">${escapeHtml(activeValueText)}</p>
+          <p class="lp-description">${escapeHtml(activeDescText)}</p>
+          ${active ? `<div>${renderStatusDot({ label: healthLabel, tone: healthLabel === 'Connected' ? 'ok' : 'danger' })}</div>` : ''}
+        </div>
+      `,
+      actionBarHtml: renderActionBar({
+        level: 'item',
+        secondary: {
+          id: 'btn-change-provider',
+          label: 'Change',
+          href: '/admin/settings/providers/change',
+          variant: 'secondary',
+          size: 'sm',
         },
-        attributes: 'data-role-id="answering"',
-      })}
-    </div>`;
+      }),
+    });
 
     return `
       <form id="settings-module-form" data-settings-module="providers" class="lp-stack lp-gap-section">
         ${renderStatusLine({ id: 'settings-status-banner' })}
-        ${answeringItemHtml}
+        ${answeringSectionHtml}
 
         ${renderFormSection({
           title: 'Fallback behaviour',

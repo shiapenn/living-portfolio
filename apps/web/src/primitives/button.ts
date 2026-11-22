@@ -6,6 +6,7 @@ export type ButtonSize = 'sm' | 'md';
 
 export interface ButtonProps {
   label: string;
+  ariaLabel?: string;
   variant?: ButtonVariant;
   size?: ButtonSize;
   type?: 'button' | 'submit' | 'reset';
@@ -87,13 +88,14 @@ export function renderButton(props: ButtonProps): string {
   const tooltip = props.disabledReason || props.title || (props.disabled ? `${props.label} (unavailable)` : '');
   const titleAttr = tooltip ? ` title="${escapeHtml(tooltip)}" data-tooltip="${escapeHtml(tooltip)}"` : '';
   const busyAttr = props.loading ? ' aria-busy="true"' : '';
+  const ariaLabelAttr = props.ariaLabel ? ` aria-label="${escapeHtml(props.ariaLabel)}"` : '';
   const disabledAttr = isDisabled ? ' disabled' : '';
   const data = formatDataAttrs(props.dataAttrs);
   const spinner = props.loading ? `${renderIcon({ name: 'loader', size: 16, className: 'lp-icon-spin' })} ` : '';
   if (props.href && !isDisabled) {
-    return `<a href="${escapeHtml(props.href)}" data-c="Button" class="${escapeHtml(classes)}"${idAttr}${titleAttr}${data}>${spinner}<span>${escapeHtml(props.label)}</span></a>`;
+    return `<a href="${escapeHtml(props.href)}" data-c="Button" class="${escapeHtml(classes)}"${idAttr}${ariaLabelAttr}${titleAttr}${data}>${spinner}<span>${escapeHtml(props.label)}</span></a>`;
   }
-  return `<button type="${type}" data-c="Button" class="${escapeHtml(classes)}"${idAttr}${nameAttr}${valueAttr}${titleAttr}${busyAttr}${disabledAttr}${data}>${spinner}<span>${escapeHtml(props.label)}</span></button>`;
+  return `<button type="${type}" data-c="Button" class="${escapeHtml(classes)}"${idAttr}${nameAttr}${valueAttr}${ariaLabelAttr}${titleAttr}${busyAttr}${disabledAttr}${data}>${spinner}<span>${escapeHtml(props.label)}</span></button>`;
 }
 
 /**

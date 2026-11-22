@@ -130,6 +130,7 @@ ${renderTabs({
     title: EDITOR_STRINGS.publishDialog.title,
     bodyHtml: publishDialogBody,
     footerHtml: renderActionBar({
+      level: 'dialog',
       primary: { id: 'ref-publish-confirm', label: EDITOR_STRINGS.publishDialog.confirm, variant: 'primary' },
       secondary: { id: 'ref-publish-cancel', label: EDITOR_STRINGS.publishDialog.cancel, variant: 'secondary', dataAttrs: { 'lp-dialog-close': 'true' } },
     }),
@@ -139,6 +140,7 @@ ${renderTabs({
     title: EDITOR_STRINGS.deleteDialog.title,
     bodyHtml: `<p>${escapeHtml(EDITOR_STRINGS.deleteDialog.body)}</p>`,
     footerHtml: renderActionBar({
+      level: 'dialog',
       primary: { id: 'ref-delete-confirm', label: EDITOR_STRINGS.deleteDialog.confirm, variant: 'danger', className: 'lp-btn-danger-confirm' },
       secondary: { id: 'ref-delete-cancel', label: EDITOR_STRINGS.deleteDialog.cancel, variant: 'secondary', dataAttrs: { 'lp-dialog-close': 'true' } },
     }),
@@ -231,6 +233,7 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
       })}
     </div>`,
     actionBarHtml: renderActionBar({
+      level: 'page',
       secondary: { id: 'ref-btn-add-facet', label: 'Add tag', variant: 'secondary', type: 'button' },
     }),
   });
@@ -249,7 +252,7 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
             .map((c: any) =>
               renderItem({
                 title: String(c.text ?? c.claim_text ?? ''),
-                statusLabel: c.status ? String(c.status) : 'Claim',
+                statusLabel: c.status ? String(c.status).charAt(0).toUpperCase() + String(c.status).slice(1) : 'Accepted',
                 statusTone: c.status === 'accepted' ? 'ok' : 'neutral',
               })
             )
@@ -258,11 +261,13 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
     <div id="ref-claim-form-wrap" class="lp-stack lp-gap-related lp-is-hidden">
       ${renderField({ kind: 'input', id: 'ref-claim-input', name: 'claimText', label: 'Claim', placeholder: 'Add a claim' })}
       ${renderActionBar({
+        level: 'page',
         primary: { id: 'ref-btn-add-claim', label: 'Add', variant: 'primary', type: 'button' },
         secondary: { id: 'ref-btn-cancel-claim', label: 'Cancel', variant: 'secondary', type: 'button' },
       })}
     </div>`,
     actionBarHtml: renderActionBar({
+      level: 'page',
       secondary: { id: 'ref-btn-open-claim', label: 'Add claim', variant: 'secondary', type: 'button' },
     }),
   });
@@ -286,11 +291,13 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
       ${renderField({ kind: 'input', id: 'ref-evidence-title', name: 'evidenceTitle', label: 'Evidence title', placeholder: 'Evidence title' })}
       ${renderField({ kind: 'input', inputType: 'url', id: 'ref-evidence-url', name: 'evidenceUrl', label: 'Evidence URL', placeholder: 'https://example.com' })}
       ${renderActionBar({
+        level: 'page',
         primary: { id: 'ref-btn-add-evidence', label: 'Add', variant: 'primary', type: 'button' },
         secondary: { id: 'ref-btn-cancel-evidence', label: 'Cancel', variant: 'secondary', type: 'button' },
       })}
     </div>`,
     actionBarHtml: renderActionBar({
+      level: 'page',
       secondary: { id: 'ref-btn-open-evidence', label: 'Attach evidence', variant: 'secondary', type: 'button' },
     }),
   });

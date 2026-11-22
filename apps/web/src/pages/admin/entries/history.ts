@@ -1,7 +1,7 @@
 import { escapeHtml } from '../../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../../layouts/admin-shell.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../../lib/admin-api-client.js';
-import { renderButton, renderItem, renderOverlay } from '../../../primitives/index.js';
+import { renderActionBar, renderItem, renderOverlay } from '../../../primitives/index.js';
 import { renderEmptyState, renderStatusLine } from '../../../components/index.js';
 import { INSPECTOR_STRINGS } from '../../../strings/admin/inspector.js';
 
@@ -70,19 +70,23 @@ export async function renderEntryHistoryPage(
             subtitle: preview || '(Empty body)',
             statusLabel: stateLabel,
             statusTone: idx === 0 ? 'ok' : 'neutral',
-            actions: {
-              secondary: {
-                label: INSPECTOR_STRINGS.historyPage.restoreButton,
-                variant: 'secondary',
-                size: 'sm',
-                dataAttrs: {
-                  'restore-rev': revId,
-                  'body-md': bodyMd,
-                  'valid-from': rawValidFrom,
-                  'temporal-level': temporalLevel,
+            actions: idx === 0
+              ? undefined
+              : {
+                  level: 'item',
+                  secondary: {
+                    label: 'Restore',
+                    ariaLabel: `Restore version from ${dateLabel}`,
+                    variant: 'secondary',
+                    size: 'sm',
+                    dataAttrs: {
+                      'restore-rev': revId,
+                      'body-md': bodyMd,
+                      'valid-from': rawValidFrom,
+                      'temporal-level': temporalLevel,
+                    },
+                  },
                 },
-              },
-            },
             attributes: `data-revision-row="${escapeHtml(revId)}"`,
           });
         })
@@ -99,8 +103,11 @@ export async function renderEntryHistoryPage(
     title: 'Restore revision',
     open: false,
     bodyHtml: '<p>Restore this revision as a new draft revision? Your previous revisions remain in history.</p>',
-    footerHtml: `${renderButton({ id: 'history-restore-cancel', label: 'Cancel', variant: 'secondary', size: 'sm', dataAttrs: { 'overlay-close': 'true' } })}
-${renderButton({ id: 'history-restore-confirm', label: INSPECTOR_STRINGS.historyPage.restoreButton, variant: 'primary', size: 'sm' })}`,
+    footerHtml: renderActionBar({
+      level: 'dialog',
+      primary: { id: 'history-restore-confirm', label: 'Restore', variant: 'primary', size: 'sm' },
+      secondary: { id: 'history-restore-cancel', label: 'Cancel', variant: 'secondary', size: 'sm', dataAttrs: { 'overlay-close': 'true' } },
+    }),
   });
 
   const bodyHtml = `

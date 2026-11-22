@@ -19,6 +19,7 @@ export interface ItemProps {
   meta?: string;
   statusLabel?: string;
   statusTone?: StatusTone;
+  trailingValue?: string;
   showChevron?: boolean;
   actions?: ActionBarProps;
   selected?: boolean;
@@ -68,9 +69,13 @@ export function renderItem(props: ItemProps): string {
     ? `<div class="lp-item-status">${renderStatusDot({ label: props.statusLabel, tone: props.statusTone ?? 'neutral' })}${
         props.showChevron ? `<span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span>` : ''
       }</div>`
-    : props.showChevron
-      ? `<div class="lp-item-status"><span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span></div>`
-      : '';
+    : props.trailingValue
+      ? `<div class="lp-item-status"><span class="lp-body">${escapeHtml(props.trailingValue)}</span>${
+          props.showChevron ? `<span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span>` : ''
+        }</div>`
+      : props.showChevron
+        ? `<div class="lp-item-status"><span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span></div>`
+        : '';
 
   const metaHtml = props.meta ? `<div class="lp-item-meta">${escapeHtml(props.meta)}</div>` : '';
   const actionsHtml = hasActions && props.actions ? `<div data-rel="actions" class="lp-item-actions">${renderActionBar(props.actions)}</div>` : '';
