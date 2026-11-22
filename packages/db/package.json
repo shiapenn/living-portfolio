@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc",
     "migrate": "node dist/bin/migrate.js",
-    "test": "vitest run",
+    "test": "vitest run --no-file-parallelism",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
