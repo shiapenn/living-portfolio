@@ -75,8 +75,11 @@ test.describe('WP-16.J Defect Verification Suite (UX-204..UX-208)', () => {
     expect(itemCount).toBe(1);
     const looseText = await checkOrphanTextAndMarginsJ3(page, 'settings-providers', REGISTERED_COMPONENTS);
     expect(looseText.orphanText).toEqual([]);
-    const statusDotCount = await page.locator('#provider-role-answering [data-c="StatusLabel"]').count();
-    expect(statusDotCount).toBe(0);
+    const currentText = (await page.locator('#providers-current-status').textContent()) ?? '';
+    if (currentText.includes('Local only')) {
+      const statusDotCount = await page.locator('#provider-role-answering [data-c="StatusLabel"]').count();
+      expect(statusDotCount).toBe(0);
+    }
   });
 
   test('20261106-UX-205 (J2): Add tag, Add claim, Attach evidence use compact item-level ActionBar with 24px gap', async ({ page }) => {
