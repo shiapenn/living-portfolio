@@ -159,6 +159,7 @@
 | `A151` | wp-16h-h3-pixel-diff-and-closure | `active` | [A151-wp-16h-h3-pixel-diff-and-closure.md](execution-reports/A151-wp-16h-h3-pixel-diff-and-closure.md) | — |
 | `A152` | wp-16i-i0-contract-and-failing-census | `active` | [A152-wp-16i-i0-contract-and-failing-census.md](execution-reports/A152-wp-16i-i0-contract-and-failing-census.md) | — |
 | `A153` | wp-16i-i1-primitives-and-gallery | `active` | [A153-wp-16i-i1-primitives-and-gallery.md](execution-reports/A153-wp-16i-i1-primitives-and-gallery.md) | — |
+| `A154` | wp-16i-i2-pages | `active` | [A154-wp-16i-i2-pages.md](execution-reports/A154-wp-16i-i2-pages.md) | — |
 
 ## Handover Snapshots (Class H)
 
