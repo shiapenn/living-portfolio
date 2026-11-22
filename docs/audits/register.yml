@@ -7593,3 +7593,193 @@
       status: partial
       note: "awaiting L review"
   verified_by: null
+
+- id: 20261106-UX-194
+  audit: AUD-2026-11-06
+  title: 'I1 ActionBar level=page|dialog|item contract (width, order, gap, preceding spacing) across all pages and dialogs'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-i-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.I I0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-195
+  audit: AUD-2026-11-06
+  title: 'I2 Suggested roles actions (Accept item secondary + Ignore text; Accepted + Undo; Ignored + Restore); Segmented reserved for mode switches'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-i-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.I I0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-196
+  audit: AUD-2026-11-06
+  title: 'I3 Answer rules labels (Confirm rule primary + Discard, Revoke, Restore)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-i-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.I I0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-197
+  audit: AUD-2026-11-06
+  title: 'I4 History: no Restore on latest version; label Restore with aria-label including version date, item secondary'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-i-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.I I0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-198
+  audit: AUD-2026-11-06
+  title: 'I5 Settings > Providers & Status labelled configuration value (not dot), single StatusLabel vocabulary + guard'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-i-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.I I0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-199
+  audit: AUD-2026-11-06
+  title: 'I6 Setup step 1 page-level Create account CTA, QR description, seed & password copy/help, 24px last-control-to-action-bar'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-i-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.I I0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-200
+  audit: AUD-2026-11-06
+  title: 'I7 Edge-docked panels border-right only (no top/left/bottom border, no shadow) and adjacent-lines check (>=3px apart vertically)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-i-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.I I0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-201
+  audit: AUD-2026-11-06
+  title: 'I8 Item rectangle equals list column (tint, hairline, selected state start/end at column edges; content inset 8px inside)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-i-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.I I0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-202
+  audit: AUD-2026-11-06
+  title: 'I9 Editor Settings: Suggested passage excludes heading text, left-aligned level next-step button, capitalised Claims StatusLabel'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-i-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.I I0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-203
+  audit: AUD-2026-11-06
+  title: 'I10 Gallery completeness (Segmented, Tag with remove, StatusLabel vocabulary, Notice, Select, Stepper, ActionBar 3 levels, Overlay static samples) + data-c registry test'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-i-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.I I0 from owner review."
+  verified_by: null
