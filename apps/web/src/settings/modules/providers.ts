@@ -79,6 +79,7 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
         ${answeringSectionHtml}
 
         ${renderFormSection({
+          id: 'provider-role-fallback',
           title: 'Fallback behaviour',
           fieldsHtml: renderField({
             kind: 'select',

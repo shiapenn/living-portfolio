@@ -166,7 +166,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
             })}
           </div>
           <div class="lp-stack lp-gap-section">
-            <h3 class="lp-subsection-title">Level: item (compact min 96px row &gt;=400px, stacked &lt;400px)</h3>
+            <h3 class="lp-subsection-title">Level: item (compact min 96px flex-wrap row at every width)</h3>
             ${renderActionBar({
               id: 'gallery-ab-item',
               level: 'item',

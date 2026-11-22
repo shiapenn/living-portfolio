@@ -4868,11 +4868,28 @@ a.lp-item:hover {
   }
 }
 
-/* D-I1 I8: List container has 0 horizontal padding; Item rectangle equals list column */
+/* D-I1 I8 & D-K2: List container has 0 horizontal padding and absorbs first/last Item vertical padding */
 .lp-list,
 .lp-item-list {
+  --item-pad-y: 12px;
   padding: 0;
   border-top: 0;
+}
+.lp-list > .lp-item:first-child,
+.lp-item-list > .lp-item:first-child {
+  padding-top: 0;
+}
+.lp-list > .lp-item:last-child,
+.lp-item-list > .lp-item:last-child {
+  padding-bottom: 0;
+}
+.lp-list > .lp-item:first-child::before,
+.lp-item-list > .lp-item:first-child::before {
+  top: calc(-1 * var(--item-pad-y, 12px));
+}
+.lp-list > .lp-item:last-child::before,
+.lp-item-list > .lp-item:last-child::before {
+  bottom: calc(-1 * var(--item-pad-y, 12px));
 }
 .lp-popover-menu,
 .lp-launcher-panel,
@@ -4882,7 +4899,7 @@ a.lp-item:hover {
 }
 .lp-item {
   position: relative;
-  padding: 12px 8px;
+  padding: var(--item-pad-y, 12px) 8px;
   border: 0;
 }
 .lp-item::before {
@@ -5045,13 +5062,13 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0; }
 .lp-dialog-body { padding: 0; }
 .lp-dialog-footer, .lp-dialog-panel .lp-action-bar { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; }
-.lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn, .lp-item-actions .lp-btn {
+.lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn {
   width: auto;
   min-width: 160px;
 }
 @container (max-width: 399px) {
   .lp-dialog-footer, .lp-dialog-panel .lp-action-bar { align-items: stretch; }
-  .lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn, .lp-item-actions .lp-btn {
+  .lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn {
     width: 100%;
     min-width: 0;
   }
@@ -5243,7 +5260,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   width: 100%;
   box-sizing: border-box;
   margin: 0;
-  padding: 12px 8px;
+  padding: var(--item-pad-y, 12px) 8px;
   display: grid;
   grid-template-columns: 1fr auto;
   row-gap: 8px;
@@ -5542,25 +5559,6 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   width: auto;
   min-width: 0;
   align-self: center;
-}
-
-@container (max-width: 399px) {
-  .lp-action-bar-item,
-  .lp-item-actions .lp-action-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .lp-action-bar-item .lp-btn:not(.lp-btn-text),
-  .lp-item-actions .lp-action-bar .lp-btn:not(.lp-btn-text) {
-    width: 100%;
-    min-width: 0;
-  }
-  .lp-action-bar-item .lp-btn-text,
-  .lp-item-actions .lp-action-bar .lp-btn-text {
-    width: auto;
-    min-width: 0;
-    align-self: flex-start;
-  }
 }
 
 .lp-gallery-overlay-sample {
