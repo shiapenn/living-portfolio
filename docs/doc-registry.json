@@ -1585,5 +1585,13 @@
     "path": "docs/execution-reports/A152-wp-16i-i0-contract-and-failing-census.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A153",
+    "title": "wp-16i-i1-primitives-and-gallery",
+    "class": "A",
+    "path": "docs/execution-reports/A153-wp-16i-i1-primitives-and-gallery.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
