@@ -92,6 +92,8 @@ test.describe('WP-16.I Failing-First Defect Suite (UX-194..UX-203)', () => {
     await navigateToState(page, STATES.find((s) => s.id === 'settings-providers')!, ids);
     const issues = await checkStatusVocabularyI5(page, 'settings-providers');
     expect(issues).toEqual([]);
+    const descCount = await page.locator('text=Answers quote directly from your entries; nothing leaves this server.').count();
+    expect(descCount).toBe(1);
     const dotOnLocalOnly = await page.locator('#providers-current-status .lp-status-indicator').count();
     expect(dotOnLocalOnly).toBe(0);
   });
