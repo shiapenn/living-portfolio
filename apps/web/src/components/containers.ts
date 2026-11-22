@@ -169,7 +169,7 @@ export function renderEmptyState(props: EmptyStateProps): string {
   const classes = ['lp-empty-state', props.className].filter(Boolean).join(' ');
   const guideHtml =
     props.guideSteps && props.guideSteps.length > 0
-      ? `<div class="lp-empty-guide"><ol class="lp-empty-guide-steps">${props.guideSteps
+      ? `<div data-c="Text" data-variant="prose" class="lp-empty-guide"><ol class="lp-empty-guide-steps">${props.guideSteps
           .map((step) => {
             const cleanTitle = step.title.replace(/^\d+\.\s*/, '');
             return `<li><strong>${escapeHtml(cleanTitle)}</strong> — ${escapeHtml(step.body)}</li>`;
@@ -181,8 +181,8 @@ export function renderEmptyState(props: EmptyStateProps): string {
   const headingTag = props.headingTag ?? 'h3';
   return `<div class="${escapeHtml(classes)}"${idAttr}${hiddenAttr}>
   ${props.dismissHtml ? `<div class="lp-empty-dismiss">${props.dismissHtml}</div>` : ''}
-  <${headingTag} class="lp-empty-title">${escapeHtml(props.title)}</${headingTag}>
-  <p class="lp-empty-body">${escapeHtml(props.body)}</p>
+  <${headingTag} data-c="SectionHeader" class="lp-empty-title">${escapeHtml(props.title)}</${headingTag}>
+  <p data-c="Text" data-variant="description" class="lp-empty-body">${escapeHtml(props.body)}</p>
   ${guideHtml}
   ${props.actionHtml ? `<div class="lp-empty-action">${props.actionHtml}</div>` : ''}
 </div>`;
