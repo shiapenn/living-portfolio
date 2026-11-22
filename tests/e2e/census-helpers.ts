@@ -171,6 +171,7 @@ export async function navigateToState(
     case 'open-slash-menu': {
       await page.click('#ref-tiptap-editor .ProseMirror');
       await page.keyboard.type('/');
+      await page.locator('#ref-slash-menu').waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
       break;
     }
     default:
