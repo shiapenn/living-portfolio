@@ -285,6 +285,112 @@ print(f"H3 selective capture: {len(results)} / {len(results) + len(excluded)} sh
       execSync(`rm -f "${zipPath}" && cd "${H_DIR}" && zip -rq "${zipPath}" .`);
       expect(existsSync(zipPath)).toBe(true);
     });
+  } else if (process.env.CAPTURE_I3_SHEETS === '1') {
+    test('captures selective I3 contact sheets (named defect states + pixel diff > 0.5% vs WP-16.H) and zips to ~/Desktop/wp16i-contact-sheets.zip', async ({ page }) => {
+      test.setTimeout(600_000);
+      const ALL_DIR = resolve(process.cwd(), 'test-results/wp16i-all-sheets');
+      const H_ALL_DIR = existsSync('/tmp/wp16h-all-sheets')
+        ? '/tmp/wp16h-all-sheets'
+        : resolve(process.cwd(), 'test-results/wp16h-all-sheets');
+      const I_DIR = resolve(process.cwd(), 'test-results/wp16i-contact-sheets');
+      mkdirSync(ALL_DIR, { recursive: true });
+      mkdirSync(I_DIR, { recursive: true });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+
+      await ensureAdminLoggedIn(page);
+      const ids = await getSeededIds(page);
+      expect(ids.entryId).toBeTruthy();
+
+      const namedDefectStates = new Set([
+        'overlay-delete-dialog',
+        'overlay-publish-dialog',
+        'answer-rules',
+        'history',
+        'settings-providers',
+        'status',
+        'editor-role-accepted',
+        'editor-role-ignored',
+        'editor-role-suggested',
+        'editor-settings',
+        'editor-tag-add',
+        'setup-step-1',
+        'setup-step-2',
+        'setup-step-3',
+        'setup-step-4',
+        'setup-step-5',
+        'setup-step-6',
+        'overlay-entries-panel',
+        'gallery',
+        'fixture-pattern',
+        'login-recovery',
+      ]);
+
+      for (const state of STATES) {
+        for (const vp of VIEWPORTS) {
+          await page.setViewportSize(vp);
+          const ok = await navigateToState(page, state, ids);
+          if (!ok) continue;
+          for (const theme of THEMES) {
+            await setTheme(page, theme);
+            const file = sheetFileName(state.id, vp.width, theme);
+            await page.screenshot({
+              path: resolve(ALL_DIR, file),
+              fullPage: state.fullPage ?? true,
+            });
+          }
+        }
+      }
+
+      const pyScript = `
+import json, shutil
+from pathlib import Path
+from PIL import Image, ImageChops
+
+all_dir = Path(${JSON.stringify(ALL_DIR)})
+h_dir = Path(${JSON.stringify(H_ALL_DIR)})
+i_dir = Path(${JSON.stringify(I_DIR)})
+named = set(${JSON.stringify(Array.from(namedDefectStates))})
+
+results = []
+excluded = []
+for i_png in sorted(all_dir.glob("*.png")):
+    name = i_png.name
+    state_id = name.rsplit("-", 2)[0]
+    h_png = h_dir / name
+    diff_pct = 100.0
+    if h_png.exists():
+        im_i = Image.open(i_png).convert("RGBA")
+        im_h = Image.open(h_png).convert("RGBA")
+        if im_i.size == im_h.size:
+            diff = ImageChops.difference(im_i, im_h)
+            px = diff.getdata()
+            changed = sum(1 for r, g, b, a in px if r > 4 or g > 4 or b > 4 or a > 4)
+            diff_pct = round((changed / max(1, len(px))) * 100.0, 2)
+        else:
+            diff_pct = 100.0
+    reasons = []
+    if state_id in named:
+        reasons.append("named-defect")
+    if diff_pct > 0.5:
+        reasons.append(f"pixel-diff={diff_pct}%")
+    if reasons:
+        shutil.copy2(i_png, i_dir / name)
+        results.append({"file": name, "stateId": state_id, "diffPct": diff_pct, "reason": ", ".join(reasons)})
+    else:
+        excluded.append({"file": name, "stateId": state_id, "diffPct": diff_pct})
+
+(i_dir / "index.json").write_text(json.dumps({"included": results, "excludedCount": len(excluded)}, indent=2))
+lines = [f"{r['file']}\\t{r['diffPct']}%\\t{r['reason']}" for r in results]
+(i_dir / "index.txt").write_text("\\n".join(lines) + "\\n")
+print(f"I3 selective capture: {len(results)} / {len(results) + len(excluded)} sheets included ({len(excluded)} unchanged excluded).")
+`;
+      const summary = execSync('python3 -', { input: pyScript, encoding: 'utf8' });
+      console.log(summary.trim());
+
+      const zipPath = resolve(process.env.HOME || '~', 'Desktop/wp16i-contact-sheets.zip');
+      execSync(`rm -f "${zipPath}" && cd "${I_DIR}" && zip -rq "${zipPath}" .`);
+      expect(existsSync(zipPath)).toBe(true);
+    });
   } else {
     test('STATES manifest parity guard (set CAPTURE_CONTACT_SHEETS=1 to capture)', () => {
       expect(expectedSheetFiles().length).toBe(STATES.length * THEMES.length * VIEWPORTS.length);

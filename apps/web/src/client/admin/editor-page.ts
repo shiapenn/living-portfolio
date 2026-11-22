@@ -572,7 +572,7 @@ function bootEditorPage(): void {
     const span_id = btn.getAttribute('data-span-id') ?? '';
     const role = btn.getAttribute('data-span-role') ?? 'context';
     if (!span_id) return;
-    const row = btn.closest('[data-span-id]');
+    const row = btn.closest('.lp-item[data-span-id]');
     const nextStatus = action === 'accept' ? 'accepted' : action === 'reject' ? 'rejected' : 'suggested';
     const res = await apiRequest('/api/structure/annotations', {
       method: 'POST',
