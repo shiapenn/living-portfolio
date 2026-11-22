@@ -1144,3 +1144,188 @@ export async function checkItemGeometryI8(page: Page, stateId = ''): Promise<{ p
     return { pairs, issues };
   }, stateId);
 }
+
+export interface ActionBarJ2Report {
+  level: string;
+  containerType: string;
+  widthClass: string;
+  precedingGap: number | null;
+  issues: string[];
+}
+
+export async function checkActionBarJ2(page: Page, stateId = ''): Promise<ActionBarJ2Report[]> {
+  return page.evaluate((sid) => {
+    const isVisible = (el: HTMLElement | null): boolean => {
+      if (!el) return false;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+
+    const reports: ActionBarJ2Report[] = [];
+    const bars = Array.from(document.querySelectorAll<HTMLElement>('[data-c="ActionBar"]'));
+    for (const bar of bars) {
+      if (!isVisible(bar)) continue;
+      if (bar.closest('[data-c="Gallery"], .lp-gallery-root, .lp-gallery-section')) {
+        // Gallery samples are inspected separately; check container rules on live pages
+      }
+      const level = bar.getAttribute('data-level') || 'missing';
+      const inDialog = bar.closest<HTMLElement>('[role="dialog"], .lp-overlay-dialog, .lp-overlay-sheet');
+      const inItem = bar.closest<HTMLElement>('[data-c="Item"]');
+      const inSubsection = bar.closest<HTMLElement>('[data-c="Subsection"]');
+      const inSection = bar.closest<HTMLElement>('[data-c="FormSection"]');
+      const containerType = inDialog
+        ? 'dialog'
+        : inItem
+          ? 'item'
+          : inSubsection
+            ? 'subsection'
+            : inSection
+              ? 'section'
+              : 'page';
+
+      const containerEl =
+        inDialog || inItem || inSubsection || inSection || bar.closest<HTMLElement>('.lp-page-column, main') || bar.parentElement!;
+      const containerW = containerEl ? containerEl.getBoundingClientRect().width : bar.getBoundingClientRect().width;
+      const btns = Array.from(bar.querySelectorAll<HTMLElement>('.lp-btn')).filter(isVisible);
+      const barR = bar.getBoundingClientRect();
+      const allFullWidth = btns.length > 0 && btns.every((b) => Math.abs(b.getBoundingClientRect().width - containerW) <= 4);
+      const widthClass = allFullWidth ? 'full' : 'compact';
+
+      const issues: string[] = [];
+
+      // Preceding element gap check
+      let prevEl: HTMLElement | null = bar.previousElementSibling as HTMLElement | null;
+      while (prevEl && !isVisible(prevEl)) {
+        prevEl = prevEl.previousElementSibling as HTMLElement | null;
+      }
+      if (!prevEl && bar.parentElement?.classList.contains('lp-item-actions')) {
+        prevEl = bar.parentElement.previousElementSibling as HTMLElement | null;
+      }
+      let precedingGap: number | null = null;
+      if (prevEl && isVisible(prevEl)) {
+        precedingGap = Math.round((barR.top - prevEl.getBoundingClientRect().bottom) * 10) / 10;
+      }
+
+      if (level === 'item') {
+        if (containerW >= 400) {
+          for (const b of btns) {
+            if (b.classList.contains('lp-btn-full')) {
+              issues.push(`j2-item-full-width(${sid}, ${containerType}): button "${(b.textContent || '').trim()}" is full width inside >=400px container`);
+            }
+            const bw = b.getBoundingClientRect().width;
+            if (!b.classList.contains('lp-btn-text') && bw < 95.5) {
+              issues.push(`j2-item-min96(${sid}, ${containerType}): button width ${bw.toFixed(1)} < 96`);
+            }
+          }
+        }
+        if (precedingGap !== null && !bar.closest('.lp-gallery-section')) {
+          if (precedingGap < 20 || precedingGap > 28) {
+            issues.push(`j2-item-gap24(${sid}, ${containerType}): precedingGap=${precedingGap}px (expected 24px)`);
+          }
+        }
+      }
+
+      reports.push({ level, containerType, widthClass, precedingGap, issues });
+    }
+    return reports;
+  }, stateId);
+}
+
+export async function checkOrphanTextAndMarginsJ3(
+  page: Page,
+  stateId = '',
+  registeredComponents?: string[],
+): Promise<{ orphanText: string[]; unownedMargins: string[] }> {
+  return page.evaluate(
+    ({ sid, allowedComps }) => {
+      const orphanText: string[] = [];
+      const unownedMargins: string[] = [];
+      const registered = new Set(allowedComps);
+      const containerOnly = new Set(['Page', 'Shell', 'Section']);
+      const sectionContainers = new Set(['FormSection', 'Subsection']);
+
+      const root = document.querySelector<HTMLElement>('.lp-page-column, main');
+      if (!root) return { orphanText, unownedMargins };
+
+      const isVisible = (el: HTMLElement): boolean => {
+        if (el.closest('.lp-sr-only, [hidden], .lp-is-hidden')) return false;
+        const cs = getComputedStyle(el);
+        if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return false;
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      };
+
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      let node: Node | null;
+      const checkedLeaves = new Set<HTMLElement>();
+      while ((node = walker.nextNode())) {
+        if (!node.textContent || !node.textContent.trim()) continue;
+        const leaf = node.parentElement;
+        if (!leaf || checkedLeaves.has(leaf)) continue;
+        checkedLeaves.add(leaf);
+        if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'CODE'].includes(leaf.tagName)) continue;
+        if (!isVisible(leaf)) continue;
+
+        const nearestComp = leaf.closest<HTMLElement>('[data-c]');
+        const compName = nearestComp?.getAttribute('data-c') || '';
+        const isSectionTitleOrIntro = Boolean(
+          leaf.closest('[data-rel="section-title"], [data-rel="section-intro"], [data-rel="subsection-title"], [data-rel="subsection-intro"]'),
+        );
+        if (!compName || containerOnly.has(compName) || (sectionContainers.has(compName) && !isSectionTitleOrIntro)) {
+          orphanText.push(
+            `j3-orphan-text(${sid}): "${leaf.textContent.trim().slice(0, 48)}" under data-c="${compName || 'none'}" (<${leaf.tagName.toLowerCase()}${leaf.id ? '#' + leaf.id : ''}>)`,
+          );
+        }
+      }
+
+      for (const el of Array.from(root.querySelectorAll<HTMLElement>('*'))) {
+        if (!isVisible(el)) continue;
+        const cs = getComputedStyle(el);
+        const mt = parseFloat(cs.marginTop);
+        const mb = parseFloat(cs.marginBottom);
+        const ml = parseFloat(cs.marginLeft);
+        const mr = parseFloat(cs.marginRight);
+        if (mt === 0 && mb === 0 && ml === 0 && mr === 0) continue;
+        if (el.classList.contains('lp-page-column') || el.classList.contains('lp-page-column-narrow')) continue;
+        const nearestComp = el.closest<HTMLElement>('[data-c]');
+        const compName = nearestComp?.getAttribute('data-c') || '';
+        const hasRegisteredClass = Array.from(el.classList).some((c) => c.startsWith('lp-'));
+        if (!compName || (registered.size > 0 && !registered.has(compName)) || (!el.hasAttribute('data-c') && !hasRegisteredClass)) {
+          unownedMargins.push(
+            `j3-unowned-margin(${sid}): <${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}> margin=[${mt},${mr},${mb},${ml}] data-c="${compName || 'none'}"`,
+          );
+        }
+      }
+
+      return { orphanText, unownedMargins };
+    },
+    { sid: stateId, allowedComps: registeredComponents ?? [] },
+  );
+}
+
+export async function checkRestingIconButtonFillsJ5(page: Page, stateId = ''): Promise<string[]> {
+  return page.evaluate((sid) => {
+    const issues: string[] = [];
+    const header = document.querySelector<HTMLElement>('.lp-admin-header');
+    if (!header) return issues;
+    const iconBtns = Array.from(header.querySelectorAll<HTMLElement>('#lp-launcher-btn, #theme-toggle, #lp-account-menu-btn')).filter((el) => {
+      const cs = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      return cs.display !== 'none' && cs.visibility !== 'hidden' && r.width > 0 && r.height > 0;
+    });
+    const fills = new Map<string, string>();
+    for (const btn of iconBtns) {
+      fills.set(btn.id || btn.className, getComputedStyle(btn).backgroundColor);
+    }
+    const uniqueFills = new Set(fills.values());
+    if (uniqueFills.size > 1) {
+      const detail = Array.from(fills.entries())
+        .map(([k, v]) => `${k}=${v}`)
+        .join(', ');
+      issues.push(`j5-icon-fill-mismatch(${sid}): ${detail}`);
+    }
+    return issues;
+  }, stateId);
+}
