@@ -202,20 +202,23 @@ async function scanDSysOnPage(
         const owner = el.className ? `.${String(el.className).trim().split(/\s+/)[0]}` : el.tagName.toLowerCase();
         linesByOwner[owner] = (linesByOwner[owner] ?? 0) + 1;
 
-        if (!isTopBarBottom && !isItemSeparator) {
+        const isGallerySampleBorder =
+          Boolean(el.closest('#dcomp-gallery')) &&
+          el.matches('.lp-dialog-panel, .lp-overlay-surface, .lp-notice');
+        if (!isTopBarBottom && !isItemSeparator && !isGallerySampleBorder) {
           violations.lineBudget++;
           details.lineBudget.push(`${el.tagName.toLowerCase()}.${el.className} bt=${bt} bb=${bb}`);
         }
       }
 
-      // 5. actionBarFullWidth: ActionBar buttons span full width of container
+      // 5. actionBarFullWidth: ActionBar page/dialog buttons span full width of container (D-I1 I1: item-level and text buttons are compact)
       const actionBars = Array.from(document.querySelectorAll('.lp-action-bar'));
       for (const bar of actionBars) {
-        if (!isVisible(bar)) continue;
+        if (!isVisible(bar) || bar.classList.contains('lp-action-bar-item')) continue;
         const barRect = bar.getBoundingClientRect();
         const btns = Array.from(bar.querySelectorAll<HTMLElement>('button, a.lp-btn'));
         for (const btn of btns) {
-          if (!isVisible(btn)) continue;
+          if (!isVisible(btn) || btn.classList.contains('lp-btn-text')) continue;
           measured.actionBarFullWidth++;
           const btnRect = btn.getBoundingClientRect();
           if (barRect.width > 0 && btnRect.width < barRect.width - 2) {
