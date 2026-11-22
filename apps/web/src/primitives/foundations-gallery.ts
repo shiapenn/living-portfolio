@@ -851,8 +851,8 @@ export function renderFoundationsGalleryPage(theme: 'light' | 'dark' = 'light'):
 
 export function renderFoundationsTokensSection(): string {
   return `<section id="gallery-foundations-tokens" class="lp-gallery-section" data-component="FoundationsTokens">
-    ${renderSectionHeader({ title: 'Foundations: Design Token Tiers' })}
-    ${renderText({ variant: 'description', text: 'Single-source three-tier tokens (Primitive, Semantic Light/Dark, Component) from packages/design-tokens/tokens.json.' })}
+    ${renderSectionHeader({ title: 'Foundations: Design Tokens' })}
+    ${renderText({ variant: 'description', text: 'Primitive scale, Semantic Light and Dark themes, and Component defaults.' })}
     <div class="lp-list">
       ${renderItem({
         id: 'gallery-tokens-colors',

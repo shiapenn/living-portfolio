@@ -8,11 +8,11 @@ import {
   renderMarkdown,
   renderInlineMarkdown,
   sanitizeHtml,
-  PRIMITIVE_TOKENS,
-  SEMANTIC_TOKENS_LIGHT,
-  SEMANTIC_TOKENS_DARK,
-  COMPONENT_TOKENS,
-  FONTS_CSS,
+  PRIMITIVE_VALUES,
+  SEMANTIC_LIGHT_VALUES,
+  SEMANTIC_DARK_VALUES,
+  COMPONENT_TOKEN_VALUES,
+  BREAKPOINTS,
   THEME_CSS,
   STRATA_DESIGN_SYSTEM_CSS,
   renderField,
@@ -140,52 +140,51 @@ Safe text before
       expect(html).toContain('id="ref-field-body"');
       expect(html).toContain('id="ref-tiptap-editor"');
       expect(html).toContain('lp-tiptap-mount');
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('--editor-min-height: 60vh');
+      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('min-height: var(--editor-min-height, 60vh)');
     });
   });
 
   describe('20261020-UI-02 & 20261020-UI-03: Multi-Tier Design Tokens & Typography Craft', () => {
     it('defines 3-tier token hierarchy with complete primitives, semantics, and component tokens', () => {
       // Tier 1: Primitives (D-MIN 8: {12, 14, 16, 24})
-      expect(PRIMITIVE_TOKENS).toContain('--type-caption-size: 12px');
-      expect(PRIMITIVE_TOKENS).toContain('--type-body-sm-size: 14px');
-      expect(PRIMITIVE_TOKENS).toContain('--type-body-size: 16px');
-      expect(PRIMITIVE_TOKENS).toContain('--type-page-title-size: 24px');
-      expect(PRIMITIVE_TOKENS).toContain('--radius-control: 4px');
-      expect(PRIMITIVE_TOKENS).toContain('--radius-overlay: 8px');
+      expect(PRIMITIVE_VALUES['--lp-prim-font-size-12']).toBe('12px');
+      expect(PRIMITIVE_VALUES['--lp-prim-font-size-14']).toBe('14px');
+      expect(PRIMITIVE_VALUES['--lp-prim-font-size-16']).toBe('16px');
+      expect(PRIMITIVE_VALUES['--lp-prim-font-size-24']).toBe('24px');
+      expect(PRIMITIVE_VALUES['--lp-prim-radius-4']).toBe('4px');
+      expect(PRIMITIVE_VALUES['--lp-prim-radius-8']).toBe('8px');
 
       // Breakpoints
-      expect(PRIMITIVE_TOKENS).toContain('--bp-sm: 480px');
-      expect(PRIMITIVE_TOKENS).toContain('--bp-md: 768px');
-      expect(PRIMITIVE_TOKENS).toContain('--bp-lg: 1024px');
-      expect(PRIMITIVE_TOKENS).toContain('--bp-xl: 1280px');
+      expect(BREAKPOINTS.viewport.sm).toBe(640);
+      expect(BREAKPOINTS.viewport.md).toBe(768);
+      expect(BREAKPOINTS.container.compact).toBe(400);
 
       // Tier 2: Semantics
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--surface-page: #FFFFFF');
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--surface-raised: #FFFFFF');
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--border-control: #6B7B88');
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--layout-max: 1180px');
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--size-layout-max: 1180px');
-      expect(SEMANTIC_TOKENS_LIGHT).toContain('--measure-reading: 68ch');
+      expect(SEMANTIC_LIGHT_VALUES['--lp-color-surface-page']).toBe('#FFFFFF');
+      expect(SEMANTIC_LIGHT_VALUES['--lp-color-surface-raised']).toBe('#FFFFFF');
+      expect(SEMANTIC_LIGHT_VALUES['--lp-color-border-control']).toBe('#6B7B88');
+      expect(COMPONENT_TOKEN_VALUES['--lp-size-layout-max']).toBe('1180px');
+      expect(COMPONENT_TOKEN_VALUES['--lp-measure-reading']).toBe('68ch');
 
       // Tier 3: Component tokens
-      expect(COMPONENT_TOKENS).toContain('--admin-nav-width: 240px');
-      expect(COMPONENT_TOKENS).toContain('--admin-inspector-width: 340px');
-      expect(COMPONENT_TOKENS).toContain('--strata-band-min: 44px');
-      expect(COMPONENT_TOKENS).toContain('--strata-band-max: 120px');
+      expect(COMPONENT_TOKEN_VALUES['--lp-size-admin-nav-width']).toBe('240px');
+      expect(COMPONENT_TOKEN_VALUES['--lp-size-admin-inspector-width']).toBe('340px');
+      expect(COMPONENT_TOKEN_VALUES['--lp-size-strata-band-min']).toBe('44px');
+      expect(COMPONENT_TOKEN_VALUES['--lp-size-strata-band-max']).toBe('120px');
     });
 
     it('declares self-hosted font-face rules with font-display: swap for Literata, Atkinson Hyperlegible, and JetBrains Mono', () => {
-      expect(FONTS_CSS).toContain("font-family: 'Literata'");
-      expect(FONTS_CSS).toContain("font-family: 'Atkinson Hyperlegible Next'");
-      expect(FONTS_CSS).toContain("font-family: 'JetBrains Mono'");
-      expect(FONTS_CSS).toContain('font-display: swap');
+      expect(THEME_CSS).toContain("font-family: 'Literata'");
+      expect(THEME_CSS).toContain("font-family: 'Atkinson Hyperlegible Next'");
+      expect(THEME_CSS).toContain("font-family: 'JetBrains Mono'");
+      expect(THEME_CSS).toContain('font-display: swap');
     });
 
     it('STRATA_DESIGN_SYSTEM_CSS embeds unified dark theme eliminating drift', () => {
       expect(STRATA_DESIGN_SYSTEM_CSS).toContain(':root[data-theme="dark"]');
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('--surface-page: #0F1A22');
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('--surface-raised: #16232D');
+      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('--lp-color-surface-page: var(--lp-prim-color-dark-950)');
+      expect(SEMANTIC_DARK_VALUES['--lp-color-surface-page']).toBe('#0F1A22');
+      expect(SEMANTIC_DARK_VALUES['--lp-color-surface-raised']).toBe('#16232D');
     });
   });
 
@@ -259,7 +258,7 @@ Safe text before
       expect(STRATA_DESIGN_SYSTEM_CSS).toContain('@media (min-width: 768px) and (max-width: 1279px)');
       expect(STRATA_DESIGN_SYSTEM_CSS).toContain('@media (min-width: 1280px)');
       expect(STRATA_DESIGN_SYSTEM_CSS).toContain('@media (pointer: coarse)');
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('min-height: 44px');
+      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('min-height: var(--lp-size-hit-area)');
     });
 
     it('conforms to core REQUIRED_THEME_SLOTS and passes verifyThemeConformance', () => {

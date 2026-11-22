@@ -154,7 +154,7 @@ Use Redis distributed locks when you already run Redis at scale, but always pair
       const homeHtml = await renderHomePage(repo as any);
       expect(homeHtml).toContain('id="theme-toggle"');
       expect(homeHtml).toContain('aria-pressed="false"');
-      expect(homeHtml).toContain('min-height:44px');
+      expect(homeHtml).toContain('min-height:var(--lp-size-hit-area)');
       // Script includes window.matchMedia check for prefers-color-scheme: dark
       expect(homeHtml).toContain("prefers-color-scheme: dark");
       // Script guards localStorage in try/catch
@@ -183,12 +183,12 @@ Use Redis distributed locks when you already run Redis at scale, but always pair
 
     it('interactive controls enforce minimum 44px touch target size', async () => {
       const { html: timelineHtml } = await renderStrataTimelineSection(repo as any);
-      expect(timelineHtml).toContain('min-height:44px');
+      expect(timelineHtml).toContain('min-height:var(--lp-size-hit-area)');
 
       const entryRes = await renderEntryDetailPage(repo as any, 'redis-distributed-locks-2021');
-      expect(entryRes.html).toContain('min-height:44px');
+      expect(entryRes.html).toContain('min-height:var(--lp-size-hit-area)');
 
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('min-height: 44px');
+      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('min-height: var(--lp-size-hit-area)');
       expect(STRATA_DESIGN_SYSTEM_CSS).toContain('@media (pointer: coarse)');
     });
 
