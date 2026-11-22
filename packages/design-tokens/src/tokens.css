@@ -237,6 +237,7 @@
   --lp-prim-elevation-e2-dark: 0 12px 36px rgba(0, 0, 0, 0.65);
   --lp-prim-elevation-scrim-light: rgba(15, 26, 34, 0.45);
   --lp-prim-elevation-scrim-dark: rgba(0, 0, 0, 0.6);
+  --lp-prim-elevation-scrim-modal: rgba(0, 0, 0, 0.5);
   --lp-prim-elevation-subtle-ring: rgba(0, 0, 0, 0.1);
 
   /* Tier 2: Semantic (Light Default) */
@@ -255,6 +256,7 @@
   --lp-color-surface-control-active: var(--lp-prim-color-neutral-250);
   --lp-color-surface-control-selected: var(--lp-prim-color-indigo-50);
   --lp-color-surface-backdrop: var(--lp-prim-elevation-scrim-light);
+  --lp-color-surface-modal-backdrop: var(--lp-prim-elevation-scrim-modal);
   --lp-color-text-1: var(--lp-prim-color-neutral-900);
   --lp-color-text-2: var(--lp-prim-color-neutral-600);
   --lp-color-text-3: var(--lp-prim-color-neutral-500);
@@ -674,6 +676,7 @@ color-scheme: light;
     --lp-color-surface-control-active: var(--lp-prim-color-dark-650);
     --lp-color-surface-control-selected: var(--lp-prim-color-indigo-900);
     --lp-color-surface-backdrop: var(--lp-prim-elevation-scrim-dark);
+    --lp-color-surface-modal-backdrop: var(--lp-prim-elevation-scrim-modal);
     --lp-color-text-1: var(--lp-prim-color-dark-100);
     --lp-color-text-2: var(--lp-prim-color-dark-300);
     --lp-color-text-3: var(--lp-prim-color-dark-400);
@@ -741,6 +744,7 @@ color-scheme: light;
   --lp-color-surface-control-active: var(--lp-prim-color-dark-650);
   --lp-color-surface-control-selected: var(--lp-prim-color-indigo-900);
   --lp-color-surface-backdrop: var(--lp-prim-elevation-scrim-dark);
+  --lp-color-surface-modal-backdrop: var(--lp-prim-elevation-scrim-modal);
   --lp-color-text-1: var(--lp-prim-color-dark-100);
   --lp-color-text-2: var(--lp-prim-color-dark-300);
   --lp-color-text-3: var(--lp-prim-color-dark-400);
