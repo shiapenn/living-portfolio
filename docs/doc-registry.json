@@ -1649,5 +1649,13 @@
     "path": "docs/execution-reports/A160-wp-16k-k0-docs-and-canaries.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A161",
+    "title": "wp-16k-k1-actionbar-and-list-absorption",
+    "class": "A",
+    "path": "docs/execution-reports/A161-wp-16k-k1-actionbar-and-list-absorption.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
