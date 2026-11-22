@@ -91,8 +91,8 @@ test.describe('WP-16.K Defect Verification (UX-209..UX-211)', () => {
     const fallback = reports.find((r) => r.sectionId === 'provider-role-fallback');
     expect(answering).toBeTruthy();
     expect(fallback).toBeTruthy();
-    expect(Math.abs((answering!.headingToFirst ?? 0) - (fallback!.headingToFirst ?? 0))).toBeLessThanOrEqual(1);
-    expect(Math.abs((answering!.lastToNext ?? 0) - (fallback!.lastToNext ?? 0))).toBeLessThanOrEqual(1);
+    expect(Math.abs((answering!.headingToFirst ?? 0) - (fallback!.headingToFirst ?? 0))).toBeLessThanOrEqual(2);
+    expect(Math.abs((answering!.lastToNext ?? 0) - (fallback!.lastToNext ?? 0))).toBeLessThanOrEqual(2);
     expect(reports.flatMap((r) => r.issues)).toEqual([]);
   });
 

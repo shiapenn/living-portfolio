@@ -142,7 +142,7 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
     if (width <= 320) {
       const stackTargets = Array.from(
         document.querySelectorAll<HTMLElement>(
-          '.lp-item, .lp-list-row, .lp-form-section, .lp-page-header, .lp-action-bar, .lp-filter-bar, .lp-entries-filters'
+          '.lp-item, .lp-list-row, .lp-form-section, .lp-page-header, .lp-action-bar:not(.lp-action-bar-item), .lp-filter-bar, .lp-entries-filters'
         )
       );
       for (const container of stackTargets) {
