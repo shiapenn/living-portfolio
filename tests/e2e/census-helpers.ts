@@ -419,7 +419,10 @@ export async function checkPaintedGaps(
           const r2 = btns[i + 1].getBoundingClientRect();
           if (r2.top >= r1.bottom - 1) checkPair('button-to-button', btns[i], btns[i + 1], 8);
         }
-        const prev = bar.previousElementSibling;
+        let prev: Element | null = bar.previousElementSibling;
+        while (prev && (prev.classList.contains('lp-sr-only') || getComputedStyle(prev).display === 'none' || getComputedStyle(prev).position === 'absolute')) {
+          prev = prev.previousElementSibling;
+        }
         if (prev && !prev.matches('[data-rel="section"], .lp-form-section, h1, h2, h3') && !bar.closest('[role="dialog"]') && !bar.classList.contains('lp-item-actions')) {
           checkPair('last-control-to-action-bar', prev, bar, 24);
         }
