@@ -7813,3 +7813,98 @@
       status: partial
       note: "awaiting L review"
   verified_by: null
+
+- id: 20261106-UX-204
+  audit: AUD-2026-11-06
+  title: 'J1 Settings > Providers Answering model FormSection + single Item (no loose elements, no StatusLabel on Local only)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-j-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.J J0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-205
+  audit: AUD-2026-11-06
+  title: 'J2 ActionBar item level redefined (compact auto width min 96, left-aligned row >=400px, 24px gap; Add tag/Add claim/Attach evidence)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-j-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.J J0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-206
+  audit: AUD-2026-11-06
+  title: 'J3 Orphan-text check (non-Page/Shell/Section data-c ancestor) and unowned-margin check'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-j-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.J J0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-207
+  audit: AUD-2026-11-06
+  title: 'J4 Design-review gate: docs/design/components.json registry, Component statement in receipts, verify-ui-guards enforcement'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-j-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.J J0 from owner review."
+  verified_by: null
+
+- id: 20261106-UX-208
+  audit: AUD-2026-11-06
+  title: 'J5 Resting icon-button fill consistency (theme toggle matches account button neutral fill at rest)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-j-census.spec.ts
+  history:
+    - date: 2026-11-22
+      status: open
+      note: "Registered in WP-16.J J0 from owner review."
+  verified_by: null

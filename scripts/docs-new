@@ -135,6 +135,10 @@ export function allocateDoc(cls, title, options = {}) {
 
 ## 1. Scope
 
+### Component statement (required when touching UI; D-J)
+
+- `<element>`: `data-c="<Component>"`, variant `<variant>` (registered in `docs/design/components.json`)
+
 ## 2. CI Evidence
 
 ## 3. Tests Added and Count Change
