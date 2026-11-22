@@ -1641,5 +1641,13 @@
     "path": "docs/execution-reports/A159-wp-16j-j3-pixel-diff-and-closure.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A160",
+    "title": "wp-16k-k0-docs-and-canaries",
+    "class": "A",
+    "path": "docs/execution-reports/A160-wp-16k-k0-docs-and-canaries.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
