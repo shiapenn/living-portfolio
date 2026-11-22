@@ -34,7 +34,7 @@ export function renderAdminLoginPage(): string {
         </div>
         ${renderActionBar({
           primary: { label: 'Sign in', variant: 'primary', type: 'submit' },
-          textAction: { id: 'btn-toggle-recovery', label: 'Lost your authenticator device? Sign in with a recovery code', variant: 'text', className: 'lp-recovery-link' },
+          textAction: { id: 'btn-toggle-recovery', label: 'Lost your authenticator device? Sign in with a recovery code', variant: 'text' },
         })}
       </form>
       <p class="lp-help-text">

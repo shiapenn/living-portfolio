@@ -16,14 +16,15 @@ import {
   setTheme,
 } from './census-helpers.js';
 
-test.describe('WP-16.H H0 G-census v2 Canaries (C1-C5, fail on WP-16.G build)', () => {
-  test('canary C1+C2+C3: catches Suggested roles legacy .lp-status-dot overlap/legacy-class on WP-16.G editor-settings', async ({ page }) => {
-    await ensureAdminLoggedIn(page);
-    const ids = await getSeededIds(page);
+test.describe('WP-16.H G-census v2 Canaries (C1-C5, synthetic broken DOM)', () => {
+  test('canary C1+C2+C3: catches legacy .lp-status-dot, 36px control height, and overflow/overlap', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(`/admin/entries/${encodeURIComponent(ids.entryId)}`);
-    await page.click('#ref-switch-settings');
-    await page.waitForSelector('#ref-spans-list .lp-item');
+    await page.setContent(`
+      <div class="lp-item" style="width:200px;position:relative;">
+        <span class="lp-status-dot"><span class="lp-status-dot-circle"></span></span>
+        <button class="lp-btn" style="height:36px;">Confirm</button>
+      </div>
+    `);
     const c1c2 = await checkContainmentAndOverlap(page);
     const c3 = await checkControlsRadiusTextButtonsSrOnly(page);
     expect(c3.some((i) => i.startsWith('c3-legacy-status-dot-'))).toBe(true);
@@ -31,24 +32,25 @@ test.describe('WP-16.H H0 G-census v2 Canaries (C1-C5, fail on WP-16.G build)', 
     expect(c1c2.length + c3.length).toBeGreaterThan(0);
   });
 
-  test('canary C3-H8+H10: catches .lp-recovery-link / bg on login and visible .lp-sr-only on setup-step-3 in WP-16.G', async ({ page }) => {
-    await page.goto('/admin/login');
-    await page.click('#btn-toggle-recovery');
-    const loginC3 = await checkControlsRadiusTextButtonsSrOnly(page);
-    expect(loginC3.some((i) => i.includes('c3-legacy-recovery-link') || i.includes('c3-text-btn-bg'))).toBe(true);
-
-    await ensureAdminLoggedIn(page);
-    await page.goto('/admin/setup?step=3');
-    await page.waitForSelector('#wizard-step-3:not(.lp-is-hidden)');
-    const setupC3 = await checkControlsRadiusTextButtonsSrOnly(page);
-    expect(setupC3.some((i) => i.startsWith('c3-sr-only-visible:'))).toBe(true);
+  test('canary C3-H8+H10: catches .lp-recovery-link / bg and visible .lp-sr-only', async ({ page }) => {
+    await page.setContent(`
+      <button class="lp-btn lp-btn-text lp-recovery-link" style="background:rgb(240,240,240);border:1px solid #000;">Recover</button>
+      <span class="lp-sr-only" style="display:inline-block;width:80px;height:20px;">Visible SR</span>
+    `);
+    const c3 = await checkControlsRadiusTextButtonsSrOnly(page);
+    expect(c3.some((i) => i.includes('c3-legacy-recovery-link'))).toBe(true);
+    expect(c3.some((i) => i.includes('c3-text-btn-bg'))).toBe(true);
+    expect(c3.some((i) => i.startsWith('c3-sr-only-visible:'))).toBe(true);
   });
 
-  test('canary C4: catches 48px topbar and uncentred format/editor bar on WP-16.G', async ({ page }) => {
-    await ensureAdminLoggedIn(page);
-    const ids = await getSeededIds(page);
+  test('canary C4: catches 48px topbar and sticky top 48px editor bar', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto(`/admin/entries/${encodeURIComponent(ids.entryId)}`);
+    await page.setContent(`
+      <header class="lp-admin-header" style="height:48px;"></header>
+      <div id="ref-editor-toolbar" class="lp-editor-toolbar-sticky" style="position:sticky;top:48px;height:36px;">
+        <div id="ref-view-switch">Edit</div>
+      </div>
+    `);
     const c4 = await checkCenteringAndBars(page);
     expect(c4.some((i) => i.startsWith('c4-topbar-height:'))).toBe(true);
     expect(c4.some((i) => i.startsWith('c4-editor-bar-sticky-top:'))).toBe(true);
@@ -57,7 +59,6 @@ test.describe('WP-16.H H0 G-census v2 Canaries (C1-C5, fail on WP-16.G build)', 
 
 test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)', () => {
   test('20261106-UX-182 (H1): control-height token 44px (<640) / 40px (>=640), Item/Dialog <400px full width & >=160px wide', async ({ page }) => {
-    test.fail(true, 'H0 failing-first: buttons and inputs are 36px instead of 44px/40px token');
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 320, height: 640 });
     await page.goto('/admin/status');
@@ -92,7 +93,6 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
   });
 
   test('20261106-UX-185 (H4): Tags visible ink symmetric (8px left text, 8px right remove glyph) and uniform height', async ({ page }) => {
-    test.fail(true, 'H0 failing-first: Tag right remove ink inset and chip height not enforced');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.goto(`/admin/entries/${encodeURIComponent(ids.entryId)}`);
@@ -108,7 +108,6 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
   });
 
   test('20261106-UX-186 (H5): Edit/Settings bar 1fr auto 1fr centred (<=0.5px), 56px height, sticky top 60px', async ({ page }) => {
-    test.fail(true, 'H0 failing-first: Editor toolbar is sticky top 48px and not 56px 1fr auto 1fr');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -118,7 +117,6 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
   });
 
   test('20261106-UX-187 (H6): Top bar 60px height, 36px icons with 12px inset, entries drawer 12px left edge', async ({ page }) => {
-    test.fail(true, 'H0 failing-first: Top bar is 48px instead of 60px');
     await ensureAdminLoggedIn(page);
     await page.goto('/admin');
     const c4 = await checkCenteringAndBars(page);
@@ -126,7 +124,6 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
   });
 
   test('20261106-UX-188 (H7): Radius scale restricted to {0, 4, 8, full} and r2=8px on buttons/inputs/selects/tracks', async ({ page }) => {
-    test.fail(true, 'H0 failing-first: --r1 and --r2 radius tokens not yet defined');
     const tokensSrc = readFileSync(resolve(process.cwd(), 'apps/web/src/tokens/index.ts'), 'utf8');
     expect(tokensSrc).toContain('--r1:');
     expect(tokensSrc).toContain('--r2:');
@@ -137,9 +134,9 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
   });
 
   test('20261106-UX-189 (H8): Login recovery and all .lp-btn-text have transparent bg and 0 border at rest; no .lp-recovery-link', async ({ page }) => {
-    test.fail(true, 'H0 failing-first: .lp-recovery-link still exists and overrides background');
     await page.goto('/admin/login');
     await page.click('#btn-toggle-recovery');
+    await page.mouse.move(0, 0);
     const c3 = await checkControlsRadiusTextButtonsSrOnly(page);
     expect(c3.filter((i) => i.includes('recovery-link') || i.includes('text-btn'))).toEqual([]);
   });

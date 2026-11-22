@@ -1157,11 +1157,11 @@ button[type="submit"] {
   line-height: var(--type-body-sm-line, 20px);
   font-weight: 600;
   white-space: nowrap;
-  border-radius: 4px;
+  border-radius: var(--r2);
   border: 1px solid var(--border-control);
   padding: 0 var(--space-4);
-  height: 36px;
-  min-height: 36px;
+  height: var(--control-height);
+  min-height: var(--control-height);
   min-width: 36px;
   cursor: pointer;
   text-decoration: none;
@@ -1189,8 +1189,8 @@ button[type="submit"] {
 }
 
 .lp-btn-sm {
-  height: 36px;
-  min-height: 36px;
+  height: var(--control-height);
+  min-height: var(--control-height);
   padding: 0 var(--space-4);
   font-size: var(--type-body-sm-size, 14px);
 }
@@ -1286,7 +1286,7 @@ button[type="submit"] {
   min-width: 36px;
   min-height: 36px;
   padding: 0;
-  border-radius: 4px;
+  border-radius: var(--r2);
   border: 1px solid var(--border-control);
   background: var(--surface-raised);
   color: var(--text);
@@ -1508,8 +1508,8 @@ button.lp-chip.is-hover {
 
 .lp-input {
   width: 100%;
-  height: 36px;
-  min-height: 36px;
+  height: var(--control-height);
+  min-height: var(--control-height);
   padding: 0 var(--space-2);
   font-family: var(--font-ui);
   font-size: 14px;
@@ -1517,7 +1517,7 @@ button.lp-chip.is-hover {
   color: var(--text);
   background: var(--surface-input);
   border: 1px solid var(--field-border, var(--border-control, var(--rule)));
-  border-radius: 4px;
+  border-radius: var(--r2);
 }
 
 .lp-textarea {
@@ -1541,8 +1541,9 @@ button.lp-chip.is-hover {
 .lp-select {
   appearance: none;
   -webkit-appearance: none;
-  height: 36px;
-  min-height: 36px;
+  height: var(--control-height);
+  min-height: var(--control-height);
+  border-radius: var(--r2);
   padding: 0 36px 0 var(--space-2);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2055,11 +2056,21 @@ input[type="date"].lp-input {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  height: 48px;
-  min-height: 48px;
-  padding: 0 var(--space-4);
+  height: 60px;
+  min-height: 60px;
+  max-height: 60px;
+  padding: 12px;
   background: var(--surface-page);
   border-bottom: 1px solid var(--border-subtle);
+}
+
+.lp-admin-header .lp-icon-btn,
+.lp-admin-header .lp-icon-btn-ghost {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: var(--r2);
 }
 
 .lp-admin-header-brand {
@@ -2109,9 +2120,10 @@ input[type="date"].lp-input {
 
 @media (max-width: 767px) {
   .lp-admin-header {
-    min-height: 48px;
-    max-height: 56px;
-    padding: var(--space-1) var(--space-4);
+    height: 60px;
+    min-height: 60px;
+    max-height: 60px;
+    padding: 12px;
   }
   .lp-admin-header-desktop-only,
   .lp-admin-header-nav {
@@ -3617,13 +3629,6 @@ a.lp-admin-header-brand {
   flex-shrink: 0;
 }
 
-.lp-recovery-link {
-  white-space: normal;
-  text-align: left;
-  height: auto;
-  min-height: 36px;
-}
-
 .lp-section-title {
   margin: 0;
 }
@@ -4800,7 +4805,7 @@ a.lp-item:hover {
   min-height: 36px;
   padding: 0;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--r2);
   background: var(--surface-control);
   color: var(--text);
   display: inline-flex;
@@ -5003,8 +5008,9 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   .lp-item-subtitle, .lp-item-body, .lp-item-segments, .lp-item-meta, .lp-item-actions { grid-column: 1 / -1; }
 }
 
-/* Dialogs (D-FINAL #11) */
+/* Dialogs (D-FINAL #11, D-H H1) */
 .lp-dialog-panel {
+  container-type: inline-size;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -5012,8 +5018,18 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 }
 .lp-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0; }
 .lp-dialog-body { padding: 0; }
-.lp-dialog-footer, .lp-dialog-panel .lp-action-bar { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-.lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn { width: 100%; }
+.lp-dialog-footer, .lp-dialog-panel .lp-action-bar { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; width: 100%; }
+.lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn, .lp-item-actions .lp-btn {
+  width: auto;
+  min-width: 160px;
+}
+@container (max-width: 399px) {
+  .lp-dialog-footer, .lp-dialog-panel .lp-action-bar { align-items: stretch; }
+  .lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn, .lp-item-actions .lp-btn {
+    width: 100%;
+    min-width: 0;
+  }
+}
 
 /* SegmentedControl (D-FINAL #15) */
 .lp-segmented-control {
@@ -5084,21 +5100,21 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-level-label { font-size: 12px; font-weight: 400; color: var(--text-2); line-height: 16px; }
 .lp-level-segment.is-current .lp-level-label { font-weight: 600; color: var(--text-1); }
 
-/* D-FINAL #15, #16: Editor header row (1fr auto 1fr), Edit prose, details line, format bar */
+/* D-FINAL #15, #16, D-H H5: Editor header row (1fr auto 1fr), Edit prose, details line, format bar */
 .lp-editor-header-row {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  min-height: 36px;
-  height: 36px;
-  padding: 0 var(--space-4);
+  min-height: 56px;
+  height: 56px;
+  padding: 0 12px;
   background: var(--surface-l0);
   border-bottom: 0;
   gap: 4px;
 }
 .lp-editor-toolbar-sticky {
   position: sticky;
-  top: 56px;
+  top: 60px;
   z-index: var(--z-sticky);
   background: var(--surface-l0);
 }
@@ -5252,15 +5268,19 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   color: var(--text-2);
 }
 
-/* Text button & Disabled button weight (D-G #3, #11) */
+/* Text button & Disabled button weight (D-G #3, #11, D-H H8) */
+.lp-btn.lp-btn-text,
 .lp-btn-text {
   background: transparent;
+  background-color: transparent;
   border: 0;
   color: var(--accent);
   padding: 0 8px;
-  min-height: 36px;
+  height: var(--control-height);
+  min-height: var(--control-height);
   font-weight: 600;
 }
+.lp-btn.lp-btn-text:hover:not(:disabled),
 .lp-btn-text:hover:not(:disabled) {
   background: var(--surface-l2);
 }
@@ -5269,28 +5289,29 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   color: var(--text-3);
 }
 
-/* Segmented track & 4px inset thumb + responsive icons (D-G #12) */
+/* Segmented track & 4px inset thumb + responsive icons (D-G #12, D-H H1, H7) */
 .lp-segmented-control,
 .lp-choice-variant-segmented .lp-choice-list {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
   padding: 4px;
-  border-radius: 8px;
+  border-radius: var(--r2);
   background: var(--surface-l2);
   gap: 4px;
-  height: 44px;
+  height: var(--control-height);
+  min-height: var(--control-height);
   box-sizing: border-box;
   align-items: center;
 }
 .lp-segment-btn,
 .lp-choice-variant-segmented .lp-choice {
-  height: 36px;
-  min-height: 36px;
+  height: calc(var(--control-height) - 8px);
+  min-height: calc(var(--control-height) - 8px);
   min-width: 36px;
   padding: 0 8px;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: var(--r1);
   background: transparent;
   color: var(--text-2);
   font-family: var(--font-sans);
@@ -5319,23 +5340,26 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   .lp-segmented-responsive-icons .lp-segment-icon { display: none; }
 }
 
-/* Tag symmetric padding + 36px hit-area remove (D-G #14) */
+/* Tag symmetric ink inset (D-H H4) */
 .lp-tag {
   padding: 0 8px;
   font-size: 12px;
   font-weight: 400;
   height: 28px;
+  border-radius: var(--r1);
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
+.lp-tag:has(.lp-tag-remove),
 .lp-tag.lp-tag-removable {
   padding: 0 4px 0 8px;
 }
 .lp-tag-remove {
-  width: 36px;
-  height: 36px;
-  padding: 0;
+  width: auto;
+  min-width: 0;
+  height: 28px;
+  padding: 0 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -5365,9 +5389,22 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   box-shadow: var(--shadow-e2);
 }
 
-/* Sticky editor header at top 48px (D-G #12) */
+/* Sticky editor header at top 60px (D-H H5) */
 .lp-editor-toolbar-sticky {
-  top: 48px;
+  top: 60px;
+}
+
+/* Visually-hidden screen-reader-only utility (D-H H10, zero margin) */
+.lp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Gallery outline mode (?outline=1, D-G #9) */

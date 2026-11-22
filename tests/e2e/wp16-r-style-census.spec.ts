@@ -326,7 +326,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           for (const sp of spaces) {
             if (!sp || sp === 'normal' || sp === 'auto') continue;
             const px = Math.round(parseFloat(sp) || 0);
-            if (px === 12 && el.classList.contains('lp-item')) continue;
+            if (px === 12 && (el.classList.contains('lp-item') || el.classList.contains('lp-admin-header') || el.classList.contains('lp-editor-header-row'))) continue;
             if (px > 0 && !allowedSpace.has(px)) badSpace++;
           }
           const isControl =
@@ -340,7 +340,13 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
             ctrls++;
             const h = Math.round(rect.height);
             heightsSeen.push(h);
-            if (h !== 36) badHeights++;
+            const isSegmentThumb = el.classList.contains('lp-segment-btn') || (el.classList.contains('lp-choice') && !!el.closest('.lp-choice-variant-segmented'));
+            const expectedH = el.classList.contains('lp-icon-btn')
+              ? 36
+              : isSegmentThumb
+                ? (window.innerWidth < 640 ? 36 : 32)
+                : (window.innerWidth < 640 ? 44 : 40);
+            if (h !== expectedH) badHeights++;
           }
 
           // (e) Select chevron & right padding check
@@ -361,13 +367,20 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
             sigs.iconButton.push(`${Math.round(rect.width)}x${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}`);
             borderColors.iconButton.push(cs.borderTopColor);
           } else if (tag === 'button' || el.classList.contains('lp-btn')) {
-            sigs.button.push(`${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
-            borderColors.button.push(cs.borderTopColor);
+            if (el.classList.contains('lp-segment-btn') || (el.classList.contains('lp-choice') && !!el.closest('.lp-choice-variant-segmented'))) {
+              // Segmented thumbs are tracked by C3/C4; keep button signature focused on .lp-btn / action buttons
+            } else {
+              const normH = Math.round(rect.height) === (window.innerWidth < 640 ? 44 : 40) ? 'token' : Math.round(rect.height);
+              sigs.button.push(`${normH}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
+              borderColors.button.push(cs.borderTopColor);
+            }
           } else if (tag === 'input' && !['checkbox', 'radio', 'hidden'].includes((el as HTMLInputElement).type) && !el.classList.contains('lp-editor-title-input')) {
-            sigs.input.push(`${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
+            const normH = Math.round(rect.height) === (window.innerWidth < 640 ? 44 : 40) ? 'token' : Math.round(rect.height);
+            sigs.input.push(`${normH}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
             borderColors.input.push(cs.borderTopColor);
           } else if (tag === 'select') {
-            sigs.select.push(`${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}|${cs.paddingRight}`);
+            const normH = Math.round(rect.height) === (window.innerWidth < 640 ? 44 : 40) ? 'token' : Math.round(rect.height);
+            sigs.select.push(`${normH}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}|${cs.paddingRight}`);
             borderColors.select.push(cs.borderTopColor);
           }
         }

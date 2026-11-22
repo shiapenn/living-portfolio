@@ -113,7 +113,9 @@ export const PRIMITIVE_TOKENS = `
   --font-size-7: 24px;
   --font-size-8: 24px;
 
-  /* Radii scale (D-MIN 2: 4px controls/containers, 8px overlays) */
+  /* Radii scale (D-H H7: two tokens r1=4px, r2=8px) */
+  --r1: 4px;
+  --r2: 8px;
   --radius-2: 4px;
   --radius-6: 4px;
   --radius-8: 8px;
@@ -331,16 +333,16 @@ export const SEMANTIC_TOKENS_DARK = `
 `;
 
 export const COMPONENT_TOKENS = `
-  /* === Tier 3: Component Tokens (D-MIN 2, D-MIN 3) === */
-  --radius-chip: 4px;
-  --radius-control: 4px;
-  --radius-container: 4px;
-  --radius-overlay: 8px;
-  --radius-pill: 4px;
-  --radius-card: 4px;
-  --control-height: 36px;
-  --button-height-md: 36px;
-  --button-height-sm: 36px;
+  /* === Tier 3: Component Tokens (D-H H1, H7) === */
+  --radius-chip: var(--r1);
+  --radius-control: var(--r2);
+  --radius-container: var(--r2);
+  --radius-overlay: var(--r2);
+  --radius-pill: var(--r1);
+  --radius-card: var(--r2);
+  --control-height: 44px;
+  --button-height-md: var(--control-height);
+  --button-height-sm: var(--control-height);
   --button-bg: var(--accent);
   --button-fg: var(--text-on-accent);
   --button-radius: var(--radius-control);
@@ -477,6 +479,12 @@ ${FONTS_CSS}
   a:focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
+  }
+}
+
+@media (min-width: 640px) {
+  :root {
+    --control-height: 40px;
   }
 }
 `;

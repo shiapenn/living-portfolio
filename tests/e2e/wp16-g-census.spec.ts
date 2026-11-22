@@ -148,7 +148,7 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
     await page.setViewportSize({ width: 320, height: 640 });
     await page.goto(`/admin/entries/${encodeURIComponent(ids.entryId)}`);
     const stickyTop = await page.locator('.lp-editor-toolbar-sticky').evaluate((el) => getComputedStyle(el).top);
-    expect(stickyTop).toBe('48px');
+    expect(stickyTop).toBe('60px');
   });
 
   test('20261106-UX-178: login recovery text button has transparent background and zero border', async ({ page }) => {

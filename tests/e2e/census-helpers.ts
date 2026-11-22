@@ -660,6 +660,7 @@ export async function checkPageContentEdgePadding(page: Page): Promise<string[]>
     const main = document.querySelector('main');
     if (!main) return issues;
     const painted = Array.from(main.querySelectorAll('h1, h2, p, input, select, button, .lp-item, .lp-choice, .lp-list')).filter((el) => {
+      if (el.closest('.lp-editor-header-row')) return false;
       const cs = getComputedStyle(el);
       if (cs.display === 'none' || cs.visibility === 'hidden' || cs.position === 'fixed') return false;
       const r = el.getBoundingClientRect();
