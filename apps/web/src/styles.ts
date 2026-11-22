@@ -5511,6 +5511,10 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   align-self: center;
 }
 
+.lp-form-section,
+.lp-subsection {
+  container-type: inline-size;
+}
 .lp-action-bar-item,
 .lp-item-actions .lp-action-bar {
   display: flex;
