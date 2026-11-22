@@ -52,6 +52,13 @@ export async function renderEntryHistoryPage(
   if (revisions.length === 0 && clientOrRepo?.getRevisions) {
     revisions = (await clientOrRepo.getRevisions(entryId)) ?? [];
   }
+  if (revisions.length > 1) {
+    const firstTs = String(revisions[0]?.created_at ?? revisions[0]?.valid_from ?? '');
+    const lastTs = String(revisions[revisions.length - 1]?.created_at ?? revisions[revisions.length - 1]?.valid_from ?? '');
+    if (firstTs <= lastTs) {
+      revisions = [...revisions].reverse();
+    }
+  }
 
   const rowsHtml = revisions.length > 0
     ? `<div class="lp-list">${revisions

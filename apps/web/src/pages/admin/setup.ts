@@ -26,8 +26,8 @@ export function renderAdminSetupPage(): string {
           <p class="lp-page-description" data-rel="description">${WIZARD_STRINGS.step1.subtitle}</p>
         </div>
 
-        <form id="admin-setup-form" class="lp-stack lp-gap-section">
-          <div class="lp-stack lp-gap-group">
+        <form id="admin-setup-form" class="lp-stack lp-gap-group">
+          <div class="lp-stack lp-gap-related">
             <div class="lp-field">
               <label for="setup-username" class="lp-field-label">${WIZARD_STRINGS.step1.fields.username.label}</label>
               <input id="setup-username" type="text" class="lp-input" required />

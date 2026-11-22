@@ -87,7 +87,7 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
     await page.waitForSelector('#ref-spans-list .lp-item');
     const passages = await page.locator('#ref-spans-list .lp-item-body').allInnerTexts();
     for (const txt of passages) expect(txt).not.toContain('#');
-    await expect(page.locator('#ref-spans-list .lp-choice-group.lp-choice-variant-segmented').first()).toBeVisible();
+    await expect(page.locator('#ref-spans-list [data-c="ActionBar"]').first()).toBeVisible();
   });
 
   test('20261106-UX-185 (H4): Tags visible ink symmetric (8px left text, 8px right remove glyph) and uniform height', async ({ page }) => {
