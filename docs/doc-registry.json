@@ -1569,5 +1569,13 @@
     "path": "docs/execution-reports/A150-wp-16h-h2-pages-and-census.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A151",
+    "title": "wp-16h-h3-pixel-diff-and-closure",
+    "class": "A",
+    "path": "docs/execution-reports/A151-wp-16h-h3-pixel-diff-and-closure.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
