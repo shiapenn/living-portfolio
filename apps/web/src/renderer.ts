@@ -46,3 +46,4 @@ export { renderAdminSettingsPage, renderAdminSettingsModulePage } from "./pages/
 export { renderAdminLoginPage } from "./pages/admin/login.js";
 export { renderAdminSetupPage } from "./pages/admin/setup.js";
 export { renderAdminImportPage } from "./pages/admin/import.js";
+export { renderAdminStatusPage, type StatusPageOptions } from "./pages/admin/status.js";

@@ -10,6 +10,7 @@ export interface StatusPageOptions {
   nonce?: string;
   siteName?: string;
   answeringEnabled?: boolean;
+  initialSettings?: Record<string, unknown>;
 }
 
 export async function renderAdminStatusPage(
@@ -18,7 +19,7 @@ export async function renderAdminStatusPage(
 ): Promise<string> {
   const ds = adaptDataSource(client);
   const cfg = loadConfig();
-  const settings = ((await (ds as any).settings?.get?.()) ?? {}) as Record<string, unknown>;
+  const settings = options.initialSettings ?? (((await (ds as any).settings?.get?.()) ?? {}) as Record<string, unknown>);
   const runtime = (settings.runtime && typeof settings.runtime === 'object' ? settings.runtime : settings) as Record<string, unknown>;
   const providersRes = (await (ds as any).system?.getProviders?.()) ?? { providers: [] };
   const providers = Array.isArray((providersRes as any).providers) ? (providersRes as any).providers : [];
@@ -36,8 +37,8 @@ export async function renderAdminStatusPage(
       : 'Not set up';
   const savedProvider = settings.activeProvider as any;
   const activeProvider =
-    providers.find((p: any) => p && p.configured) ??
-    (savedProvider && savedProvider.configured && savedProvider.id !== 'local' ? savedProvider : undefined);
+    providers.find((p: any) => p && (p.configured || p.enabled) && p.id !== 'local') ??
+    (savedProvider && (savedProvider.configured || savedProvider.enabled) && savedProvider.id !== 'local' ? savedProvider : undefined);
   const providerState = activeProvider
     ? `Connected (${activeProvider.label || activeProvider.id}${activeProvider.model ? ` · ${activeProvider.model}` : ''})`
     : 'Local only';

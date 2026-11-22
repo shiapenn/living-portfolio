@@ -104,7 +104,10 @@ export function renderAdminSetupPage(): string {
             options: [{ id: 'setup-saved-credentials-gate', value: 'confirmed', label: WIZARD_STRINGS.step1.credentials.gateLabel }],
           })}
 
-          ${renderButton({ label: WIZARD_STRINGS.step1.credentials.continueButton, id: 'btn-continue-step2', variant: 'primary', className: 'lp-btn-full', disabled: true })}
+          ${renderActionBar({
+            level: 'page',
+            secondary: { label: WIZARD_STRINGS.step1.credentials.continueButton, id: 'btn-continue-step2', variant: 'secondary', disabled: true },
+          })}
         </div>
       </div>
 

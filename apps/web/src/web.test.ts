@@ -861,7 +861,7 @@ console.log(x);
         expect(stepMatch).toBeTruthy();
         const stepHtml = stepMatch![0];
         const primaryMatches = stepHtml.match(/class="[^"]*btn-primary[^"]*"/g) || [];
-        expect(primaryMatches.length).toBe(step === 1 ? 2 : 1);
+        expect(primaryMatches.length).toBe(1);
       }
     });
 
