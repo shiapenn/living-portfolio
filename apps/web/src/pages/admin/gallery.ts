@@ -147,7 +147,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
       <section id="gallery-action-bar" class="lp-gallery-section" data-component="ActionBar">
         ${renderSectionHeader({ title: 'ActionBar (page | dialog | item)' })}
         <div class="lp-stack lp-gap-section">
-          <div class="lp-stack lp-gap-section">
+          <div class="lp-stack lp-gap-group">
             ${renderSectionHeader({ title: 'Level: page (full column width, stacked)', headingTag: 'h3' })}
             ${renderActionBar({
               id: 'gallery-ab-page',
@@ -157,7 +157,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
               textAction: { label: 'Reset defaults', variant: 'text' },
             })}
           </div>
-          <div class="lp-dialog-panel lp-stack lp-gap-section">
+          <div class="lp-dialog-panel lp-stack lp-gap-group">
             ${renderSectionHeader({ title: 'Level: dialog (full dialog/sheet width at every viewport)', headingTag: 'h3' })}
             ${renderActionBar({
               id: 'gallery-ab-dialog',
@@ -166,7 +166,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
               secondary: { label: 'Cancel', variant: 'secondary' },
             })}
           </div>
-          <div class="lp-stack lp-gap-section">
+          <div class="lp-stack lp-gap-group">
             ${renderSectionHeader({ title: 'Level: item (compact min 96px flex-wrap row at every width)', headingTag: 'h3' })}
             ${renderActionBar({
               id: 'gallery-ab-item',
