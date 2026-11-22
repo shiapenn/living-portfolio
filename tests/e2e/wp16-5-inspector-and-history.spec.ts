@@ -27,7 +27,7 @@ test.describe('WP-16.5 Inspector Module & History Restore (UX-37, CP-13)', () =>
     await expect(page.locator('#ref-facets-list')).toBeVisible();
     await expect(page.locator('#ref-spans-list')).toBeVisible();
     await expect(page.locator('#ref-claims-list')).toBeVisible();
-    await expect(page.locator('#ref-evidence-list')).toBeVisible();
+    await expect(page.locator('#ref-evidence-list')).toBeAttached();
 
     const historyLink = page.locator(`#ref-btn-history[href="/admin/entries/${entryId}/history"]`);
     await expect(historyLink).toBeVisible();

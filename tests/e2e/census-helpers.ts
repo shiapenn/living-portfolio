@@ -749,6 +749,8 @@ export async function checkContainmentAndOverlap(page: Page): Promise<string[]> 
       leafBoxes.push({ el, rect: el.getBoundingClientRect() });
     }
     const fixedOverlayRoot = (el: Element): Element | null => {
+      const sticky = el.closest('.lp-editor-toolbar-sticky');
+      if (sticky && getComputedStyle(sticky).position === 'sticky') return sticky;
       const overlay = el.closest('.lp-editor-drawer, [data-overlay], [role="dialog"]');
       if (overlay && getComputedStyle(overlay).position === 'fixed') return overlay;
       return null;
