@@ -1625,5 +1625,13 @@
     "path": "docs/execution-reports/A157-wp-16j-j1-actionbar-and-registry-guards.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A158",
+    "title": "wp-16j-j2-pages-and-theme-toggle",
+    "class": "A",
+    "path": "docs/execution-reports/A158-wp-16j-j2-pages-and-theme-toggle.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
