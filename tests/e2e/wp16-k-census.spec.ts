@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ensureAdminLoggedIn } from './helpers.js';
-import { STATES, THEMES, VIEWPORTS } from './states-manifest.js';
+import { activeStates, STATES, THEMES, VIEWPORTS } from './states-manifest.js';
 import {
   getSeededIds,
   navigateToState,
@@ -104,7 +104,7 @@ test.describe('WP-16.K Defect Verification (UX-209..UX-211)', () => {
     const orphanFailures: string[] = [];
     const marginFailures: string[] = [];
 
-    for (const state of STATES) {
+    for (const state of activeStates()) {
       for (const vp of VIEWPORTS) {
         await page.setViewportSize(vp);
         const ok = await navigateToState(page, state, ids);
@@ -130,7 +130,7 @@ test.describe('WP-16.K Defect Verification (UX-209..UX-211)', () => {
     const byLevelAndContainer: Record<string, number> = {};
     const k1Issues: string[] = [];
 
-    for (const state of STATES) {
+    for (const state of activeStates()) {
       for (const vp of VIEWPORTS) {
         await page.setViewportSize(vp);
         const ok = await navigateToState(page, state, ids);

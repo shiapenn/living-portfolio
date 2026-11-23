@@ -90,6 +90,19 @@ export const STATES: readonly StateDefinition[] = [
   { id: 'fixture-pattern', kind: 'page', route: '/admin/_fixture', fullPage: true, marker: { routePattern: '/admin/_fixture', selector: 'h1' }, pendingUntil: 'F1' },
 ];
 
+export function activeStates(): readonly StateDefinition[] {
+  const raw = process.env.CENSUS_STATES?.trim();
+  if (!raw || raw.toUpperCase() === 'ALL') return STATES;
+  const allow = new Set(
+    raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+  );
+  const filtered = STATES.filter((s) => allow.has(s.id));
+  return filtered.length > 0 ? filtered : STATES;
+}
+
 export function sheetFileName(stateId: string, width: number, theme: ThemeMode): string {
   return `${stateId}-${width}px-${theme}.png`;
 }

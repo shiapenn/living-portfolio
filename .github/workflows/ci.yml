@@ -6,6 +6,14 @@ on:
     tags: ["v*"]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      full_census:
+        description: "Run full STATES census across all 42 states"
+        type: boolean
+        default: true
+  schedule:
+    - cron: "0 2 * * *"
 
 permissions:
   contents: read
@@ -22,6 +30,8 @@ jobs:
     timeout-minutes: 5
     outputs:
       docs_only: ${{ steps.changes.outputs.docs_only }}
+      census_states: ${{ steps.states.outputs.census_states }}
+      census_mode: ${{ steps.states.outputs.census_mode }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -34,7 +44,56 @@ jobs:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
-          node scripts/changed-scope --base "$BASE_SHA" --head "$HEAD_SHA"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+          else
+            node scripts/changed-scope --base "$BASE_SHA" --head "$HEAD_SHA"
+          fi
+
+      - name: Map changed files to STATES census subset
+        id: states
+        env:
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          CENSUS_FULL: ${{ (github.event_name == 'workflow_dispatch' && inputs.full_census != false) || github.event_name == 'schedule' && '1' || '0' }}
+        run: |
+          node scripts/changed-states --base "$BASE_SHA" --head "$HEAD_SHA"
+
+  build-artifact:
+    name: Build Shared Artifact
+    needs: [detect-changes]
+    if: ${{ needs.detect-changes.outputs.docs_only != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 12.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Upload built dist artifacts
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          name: workspace-dist-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            packages/*/dist/
+            apps/*/dist/
+          retention-days: 1
 
   ci-and-audit-gate:
     name: Typecheck, Unit, Security Regression, DCO & Audit Gate
@@ -69,7 +128,11 @@ jobs:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
-          node scripts/changed-scope --base "$BASE_SHA" --head "$HEAD_SHA"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+          else
+            node scripts/changed-scope --base "$BASE_SHA" --head "$HEAD_SHA"
+          fi
 
       - name: Setup pnpm
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
@@ -137,17 +200,19 @@ jobs:
         if: steps.changes.outputs.docs_only == 'true'
         run: pnpm --filter @living-portfolio/api test src/conformance/docs-identity.conformance.test.ts src/conformance/receipt-check.conformance.test.ts src/conformance/handover.conformance.test.ts src/conformance/changed-scope.conformance.test.ts
 
-  playwright-e2e:
-    name: Playwright End-to-End Suite
-    needs: [detect-changes]
+  playwright-e2e-shard:
+    name: Playwright E2E Shard ${{ matrix.shard }}/4
+    needs: [detect-changes, build-artifact]
     if: ${{ needs.detect-changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
@@ -163,21 +228,52 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Playwright Chromium with system dependencies
+      - name: Download built dist artifacts
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        with:
+          name: workspace-dist-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Cache Playwright Chromium browser
+        id: pw-cache
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright Chromium (cache miss)
+        if: steps.pw-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Build packages
-        run: pnpm build
+      - name: Install Playwright Chromium system deps (cache hit)
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
 
-      - name: Run Playwright E2E Tests
-        run: pnpm test:e2e
+      - name: Run Playwright E2E Tests (shard ${{ matrix.shard }}/4)
+        env:
+          CENSUS_STATES: ${{ needs.detect-changes.outputs.census_states }}
+        run: pnpm exec playwright test --shard=${{ matrix.shard }}/4
 
       - name: Upload Playwright Report & Traces on Failure
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         if: ${{ failure() }}
         with:
-          name: playwright-report
+          name: playwright-report-shard-${{ matrix.shard }}
           path: |
             playwright-report/
             test-results/
           retention-days: 14
+
+  playwright-e2e:
+    name: Playwright End-to-End Suite
+    needs: [detect-changes, playwright-e2e-shard]
+    if: ${{ always() && needs.detect-changes.outputs.docs_only != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify all Playwright shards passed
+        run: |
+          if [ "${{ needs.playwright-e2e-shard.result }}" != "success" ]; then
+            echo "One or more Playwright E2E shards failed (result=${{ needs.playwright-e2e-shard.result }})."
+            exit 1
+          fi
+          echo "All 4 Playwright E2E shards passed (census_mode=${{ needs.detect-changes.outputs.census_mode }})."

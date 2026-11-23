@@ -19,6 +19,7 @@ import {
   closeDbPool,
   runMigrations,
 } from './index.js';
+import { createIsolatedTestDatabase, type IsolatedTestDatabase } from './test-db.js';
 
 describe('DualWritePortfolioRepository Unit & Parity Verification (Fix 8, Fix 10)', () => {
   let primary: InMemoryPortfolioRepository;
@@ -270,20 +271,18 @@ const isDatabaseConfigured = Boolean(process.env.DATABASE_URL);
 describe.skipIf(!isDatabaseConfigured)(
   'Postgres Live Dual-Write Integration Suite (CI Service Container, Fix 8, Fix 10, OSR-15)',
   () => {
+    let isolated: IsolatedTestDatabase;
     let pool: ReturnType<typeof createDbPool>;
     let primary: InMemoryPortfolioRepository;
     let postgresRepo: PostgresPortfolioRepository;
     let dualRepo: DualWritePortfolioRepository;
 
     beforeAll(async () => {
-      pool = createDbPool();
+      isolated = await createIsolatedTestDatabase('dual_write');
+      pool = isolated.pool;
       await runMigrations(pool);
-      // Clean previous test data to ensure clean slate for live dual-write verification
-      await pool.query(
-        'TRUNCATE ventures, entries, entry_revisions, spans, annotations, facets, claims, relations, evidence, media_assets, escalations, correction_log, calibration_changes, scoped_constraints, chunk_vectors CASCADE;'
-      );
       primary = new InMemoryPortfolioRepository();
-      postgresRepo = new PostgresPortfolioRepository();
+      postgresRepo = new PostgresPortfolioRepository(isolated.db);
       dualRepo = new DualWritePortfolioRepository({
         primary,
         shadow: postgresRepo,
@@ -294,8 +293,8 @@ describe.skipIf(!isDatabaseConfigured)(
     });
 
     afterAll(async () => {
-      if (pool) {
-        await closeDbPool(pool);
+      if (isolated) {
+        await isolated.cleanup();
       }
     });
 

@@ -136,6 +136,10 @@ export function mountTiptapEditor(opts: {
       opts.onMarkdownChange?.(md);
       updateSlashMenu(ed);
     },
+    onSelectionUpdate: ({ editor: ed }) => {
+      if (suppressUpdate) return;
+      updateSlashMenu(ed);
+    },
   });
 
   const updateSlashMenu = (ed: Editor) => {

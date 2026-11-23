@@ -14,6 +14,7 @@ import {
   closeDbPool,
   checkDbHealth,
 } from './connection.js';
+import { createIsolatedTestDatabase, type IsolatedTestDatabase } from './test-db.js';
 import {
   QRXP_SCHEMA_VERSION,
   MIGRATIONS,
@@ -111,17 +112,19 @@ const isDatabaseConfigured = Boolean(process.env.DATABASE_URL);
 describe.skipIf(!isDatabaseConfigured)(
   'Postgres + pgvector Live Integration Suite (CI Service Container, Fix 7, Fix 10, OSR-15)',
   () => {
+    let isolated: IsolatedTestDatabase;
     let pool: ReturnType<typeof createDbPool>;
     let db: ReturnType<typeof createDrizzleDb>;
 
-    beforeAll(() => {
-      pool = createDbPool();
-      db = createDrizzleDb(pool);
+    beforeAll(async () => {
+      isolated = await createIsolatedTestDatabase('postgres');
+      pool = isolated.pool;
+      db = isolated.db;
     });
 
     afterAll(async () => {
-      if (pool) {
-        await closeDbPool(pool);
+      if (isolated) {
+        await isolated.cleanup();
       }
     });
 

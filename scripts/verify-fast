@@ -1,0 +1,67 @@
+#!/usr/bin/env node
+/**
+ * Fast Local Verification (`pnpm verify:fast`, WP-16.M M0)
+ * Runs typecheck, unit tests for changed packages only, and fast static guards.
+ */
+import { execSync } from 'node:child_process';
+import { resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+
+function getChangedFiles() {
+  try {
+    const base = execSync('git merge-base HEAD origin/main', { cwd: ROOT, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] }).trim();
+    const committed = execSync(`git diff --name-only ${base}..HEAD`, { cwd: ROOT, encoding: 'utf8' }).trim();
+    const working = execSync('git diff --name-only', { cwd: ROOT, encoding: 'utf8' }).trim();
+    const staged = execSync('git diff --name-only --cached', { cwd: ROOT, encoding: 'utf8' }).trim();
+    return Array.from(new Set([...committed.split('\n'), ...working.split('\n'), ...staged.split('\n')].map((s) => s.trim()).filter(Boolean)));
+  } catch {
+    return [];
+  }
+}
+
+function mapFilesToFilters(files) {
+  const filters = new Set();
+  for (const f of files) {
+    const m = f.match(/^(packages|apps)\/([^/]+)\//);
+    if (m) {
+      filters.add(`@living-portfolio/${m[2]}`);
+    }
+  }
+  return Array.from(filters);
+}
+
+const t0 = Date.now();
+const changed = getChangedFiles();
+const filters = mapFilesToFilters(changed);
+
+console.log('=== Living Portfolio Fast Verification (pnpm verify:fast) ===');
+console.log(`Changed files: ${changed.length}; affected packages: ${filters.length ? filters.join(', ') : '(none — running guards + build)'}\n`);
+
+const steps = [
+  { name: 'Build & Typecheck', command: 'pnpm build' },
+  { name: 'Hard-Code Inventory Scan', command: 'node scripts/hardcode-check' },
+  { name: 'CSS Custom Property Check', command: 'node scripts/verify-css-variables' },
+  { name: 'UI Contract & Size-Budget Guards', command: 'node scripts/verify-ui-guards' },
+  { name: 'Dependency Rules Check', command: 'node scripts/verify-dependency-rules' },
+  { name: 'DCO Sign-off Check', command: 'node scripts/dco-check' },
+];
+
+if (filters.length > 0) {
+  const filterFlags = filters.map((pkg) => `--filter ${pkg}`).join(' ');
+  steps.push({ name: `Unit Tests (${filters.join(', ')})`, command: `pnpm ${filterFlags} test` });
+}
+
+for (let i = 0; i < steps.length; i++) {
+  const step = steps[i];
+  console.log(`[${i + 1}/${steps.length}] ${step.name}...`);
+  try {
+    execSync(step.command, { cwd: ROOT, stdio: 'inherit' });
+  } catch {
+    console.error(`\n✗ [${i + 1}/${steps.length}] ${step.name} FAILED.`);
+    process.exit(1);
+  }
+}
+
+const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+console.log(`\n✓ verify:fast PASSED in ${elapsed}s.`);

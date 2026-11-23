@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { ensureAdminLoggedIn } from './helpers.js';
-import { STATES } from './states-manifest.js';
+import { activeStates, STATES } from './states-manifest.js';
 import {
   getSeededIds,
   navigateToState,
@@ -184,7 +184,7 @@ test.describe('WP-16.L Live Verification & 42-State Census (UX-213..UX-215)', ()
 
     const allIssues: string[] = [];
     const edgesByState: Record<string, { pageColumnEdges: number[]; plainShared: number[]; listEdges: Record<string, number[]> }> = {};
-    for (const st of STATES) {
+    for (const st of activeStates()) {
       await navigateToState(page, st, ids);
       const l1 = await checkItemButtonGrammarL1(page, st.id);
       const l2 = await checkListVariantsAndTextEdgesL2(page, st.id);

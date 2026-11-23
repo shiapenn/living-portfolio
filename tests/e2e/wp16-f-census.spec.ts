@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { ensureAdminLoggedIn } from './helpers.js';
-import { STATES, THEMES, VIEWPORTS } from './states-manifest.js';
+import { activeStates, STATES, THEMES, VIEWPORTS } from './states-manifest.js';
 import {
   checkColoursAndNativeControls,
   checkEditorEdgeAlignment,
@@ -221,7 +221,7 @@ test.describe('WP-16.F Full STATES Manifest Census', () => {
       'placeholder-or-disabled': new Set(),
     };
 
-    for (const state of STATES) {
+    for (const state of activeStates()) {
       for (const vp of VIEWPORTS) {
         await page.setViewportSize(vp);
         const ok = await navigateToState(page, state, ids);

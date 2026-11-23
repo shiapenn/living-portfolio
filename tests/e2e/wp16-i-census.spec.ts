@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { ensureAdminLoggedIn } from './helpers.js';
-import { STATES, THEMES, VIEWPORTS } from './states-manifest.js';
+import { activeStates, STATES, THEMES, VIEWPORTS } from './states-manifest.js';
 import {
   checkActionBarI1,
   checkDockedPanelAndAdjacentLinesI7,
@@ -162,7 +162,7 @@ test.describe('WP-16.I Full Census v3 (ActionBar levels, StatusLabel vocab, Pane
     let totalItemGeometryPairs = 0;
     const allViolations: string[] = [];
 
-    for (const state of STATES) {
+    for (const state of activeStates()) {
       for (const vp of VIEWPORTS) {
         await page.setViewportSize(vp);
         const ok = await navigateToState(page, state, ids);

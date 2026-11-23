@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+set -e
+if [ "${SKIP_PRE_PUSH:-0}" = "1" ]; then
+  exit 0
+fi
+echo "[pre-push] Running pnpm verify:fast..."
+pnpm verify:fast

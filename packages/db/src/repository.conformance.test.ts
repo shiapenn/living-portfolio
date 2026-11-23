@@ -18,6 +18,7 @@ import type { IPortfolioRepository } from './repository.js';
 import { InMemoryPortfolioRepository } from './repository.js';
 import { PostgresPortfolioRepository } from './postgres-repository.js';
 import { createDbPool, closeDbPool, createDrizzleDb } from './connection.js';
+import { createIsolatedTestDatabase, type IsolatedTestDatabase } from './test-db.js';
 import { runMigrations } from './migrate.js';
 
 export function defineRepositoryConformanceTests(
@@ -630,20 +631,20 @@ defineRepositoryConformanceTests('InMemoryPortfolioRepository', () => {
 const isPostgresConfigured = Boolean(process.env.DATABASE_URL);
 
 if (isPostgresConfigured) {
-  let pool: ReturnType<typeof createDbPool>;
+  let isolated: IsolatedTestDatabase;
   let pgRepo: PostgresPortfolioRepository;
 
   defineRepositoryConformanceTests(
     'PostgresPortfolioRepository',
     async () => {
-      pool = createDbPool();
-      await runMigrations(pool);
-      pgRepo = new PostgresPortfolioRepository(createDrizzleDb(pool));
+      isolated = await createIsolatedTestDatabase('conformance');
+      await runMigrations(isolated.pool);
+      pgRepo = new PostgresPortfolioRepository(isolated.db);
       return pgRepo;
     },
     async () => {
-      if (pool) {
-        await closeDbPool(pool);
+      if (isolated) {
+        await isolated.cleanup();
       }
     }
   );
