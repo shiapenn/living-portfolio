@@ -1,3 +1,14 @@
+.lp-undo-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--lp-space-inset-item-y);
+}
+.lp-undo-btn {
+  padding: var(--lp-space-inset-tag-y) var(--lp-space-inset-item-x);
+  font-size: var(--lp-font-size-12);
+}
+
 /* WP-15.3 & WP-15.3a Feedback, Containers & Design Foundations */
 .lp-card {
   background: var(--surface-raised);

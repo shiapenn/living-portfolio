@@ -245,7 +245,9 @@
 .lp-popover-menu,
 .lp-launcher-panel,
 .lp-dialog-panel,
-.lp-overlay-sheet,
+.lp-overlay-sheet {
+  border: var(--lp-border-hairline) solid var(--border-overlay);
+}
 .lp-popover-menu,
 .lp-launcher-panel {
   box-shadow: var(--lp-elevation-e1);

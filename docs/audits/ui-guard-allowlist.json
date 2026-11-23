@@ -31,7 +31,8 @@
   },
   "liveRegion": {
     "apps/web/src/client/admin-entry.ts": 2,
-    "apps/web/src/client/commit-entry.ts": 15,
+    "apps/web/src/client/commit-entry.ts": 12,
+    "apps/web/src/client/commit-entry-state.ts": 3,
     "apps/web/src/client/publish-dialog.ts": 5,
     "apps/web/src/components/strata-timeline.ts": 2,
     "apps/web/src/layouts/public-shell.ts": 1,

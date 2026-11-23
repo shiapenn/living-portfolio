@@ -595,6 +595,7 @@
     "lp-topbar",
     "lp-triage",
     "lp-type",
+    "lp-undo",
     "lp-wizard",
     "lp-workspace",
     "lp-writing"
