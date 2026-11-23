@@ -5638,6 +5638,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 }
 /* Component-local derived dimensions (D-M2, underscore prefix) */
 .lp-admin-layout { --_bar-legacy-offset: calc(var(--lp-size-bar-editor-height) + var(--lp-border-hairline)); }
-.lp-canary-gap-80, .lp-editor-drag-handle { --_canary-probe: calc(var(--lp-space-proximity-5) * 2); }
+.lp-canary-gap-80, .lp-canary-overlay, .lp-editor-drag-handle { --_canary-probe: calc(var(--lp-space-proximity-5) * 2); }
+.lp-dialog { z-index: var(--lp-z-modal); }
 .strata-band { --_hatch-step: var(--lp-space-inset-tag-y); }
 `;

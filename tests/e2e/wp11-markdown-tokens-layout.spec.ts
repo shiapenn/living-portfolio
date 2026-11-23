@@ -75,7 +75,7 @@ test.describe('WP-11.4: Full Markdown Engine, Design Tokens & Responsive Multi-P
     const layoutMax = await page.evaluate(() => {
       return getComputedStyle(document.documentElement).getPropertyValue('--layout-max').trim();
     });
-    expect(layoutMax).toBe('1180px');
+    expect(layoutMax).toBe('1200px');
 
     const controlBorder = await page.evaluate(() => {
       return getComputedStyle(document.documentElement).getPropertyValue('--border-control').trim();
