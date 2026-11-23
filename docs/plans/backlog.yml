@@ -11,7 +11,7 @@ items:
     expected_minutes: 90
     gate: owner-direction
     acceptance: M0..M6 merged, CI Playwright <= 4m, admin pixel diff zero on public-only change, contact sheets zip delivered
-    status: in-progress
+    status: done
 
   - id: WP-16.N
     title: Consolidation and acceptance (Quiet Editorial neutral, tokens, admin CSS migration, governance, performance)
@@ -22,7 +22,7 @@ items:
     expected_minutes: 90
     gate: owner-direction
     acceptance: D-N5 definition of done holds; owner reviews public sheets once; at most one fix round. WP-17 is unblocked only when this item is done
-    status: in-progress
+    status: done
 
   - id: WP-17.1
     title: Settings templates & Routing page (/admin/settings, /admin/routing)

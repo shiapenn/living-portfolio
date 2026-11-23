@@ -135,8 +135,13 @@ runCheck('S4-COMPONENTS', 'UI packages have component sources, CSS, tests, and g
   return `${(compReg.components || []).length} registered components with gallery samples & tests`;
 });
 
-// 5. S5 checks: budgets + backlog consistency
-runCheck('S5-BACKLOG', 'Backlog schema valid and WP-17 blocked until WP-16.N done', () => {
+// 5. S5 checks: delivery headers + budgets + backlog consistency
+runCheck('S5-DELIVERY-HEADERS', 'HTTP delivery middleware (ETag, 304, brotli/gzip, Vary) verified', () => {
+  execCmd('pnpm --filter @living-portfolio/web test src/middleware/delivery.test.ts');
+  return 'ETag/304 + brotli/gzip + immutable headers verified';
+});
+
+runCheck('S5-BACKLOG', 'Backlog schema valid and WP-16.N/WP-17 dependency order consistent', () => {
   execCmd('node scripts/backlog-next');
   return 'backlog schema valid';
 });
