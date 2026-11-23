@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ensureAdminLoggedIn } from './helpers.js';
-import { STATES, THEMES, VIEWPORTS } from './states-manifest.js';
+import { activeStates, STATES, THEMES, VIEWPORTS } from './states-manifest.js';
 import {
   getSeededIds,
   navigateToState,
@@ -150,7 +150,7 @@ test.describe('WP-16.J Full Census (ActionBar container/width/gap, Orphan-text, 
     let orphanTextCountAllStates = 0;
     let unownedMarginCountAllStates = 0;
 
-    for (const state of STATES) {
+    for (const state of activeStates()) {
       for (const vp of VIEWPORTS) {
         await page.setViewportSize(vp);
         const ok = await navigateToState(page, state, ids);

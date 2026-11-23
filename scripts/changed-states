@@ -1,0 +1,157 @@
+#!/usr/bin/env node
+/**
+ * Maps changed files in git diff to a STATES subset for PR census runs (WP-16.M M0).
+ * Full census (`ALL`) runs on workflow_dispatch, schedule (nightly), or when CENSUS_FULL=1.
+ * Outputs `census_states=<csv|ALL>` and `census_mode=<subset|full>` to stdout and $GITHUB_OUTPUT.
+ */
+import { execSync } from 'node:child_process';
+import { appendFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const ZERO_SHA = '0000000000000000000000000000000000000000';
+
+// Representative smoke subset across every admin surface, overlay, auth, and gallery (11 of 42 states)
+const CORE_SUBSET = [
+  'today',
+  'entries-list',
+  'entries-detail',
+  'editor-settings',
+  'inbox',
+  'settings-providers',
+  'login',
+  'setup-step-1',
+  'overlay-launcher',
+  'overlay-slash-menu',
+  'gallery',
+];
+
+const FILE_TO_STATES = [
+  { pattern: /pages\/admin\/dashboard/, states: ['today', 'today-empty', 'overlay-launcher', 'overlay-account'] },
+  { pattern: /pages\/admin\/entries\/list/, states: ['entries-list', 'entries-list-empty'] },
+  {
+    pattern: /pages\/admin\/entries\/(editor|index)|client\/admin\/(editor|tiptap)|editor\//,
+    states: [
+      'entries-new',
+      'entries-detail',
+      'editor-settings',
+      'editor-tag-add',
+      'editor-role-suggested',
+      'overlay-entries-panel',
+      'overlay-delete-dialog',
+      'overlay-publish-dialog',
+      'overlay-slash-menu',
+    ],
+  },
+  { pattern: /pages\/admin\/entries\/history/, states: ['history'] },
+  { pattern: /pages\/admin\/inbox/, states: ['inbox', 'inbox-detail'] },
+  { pattern: /pages\/admin\/audit/, states: ['answer-rules'] },
+  { pattern: /pages\/admin\/import|client\/admin\/import/, states: ['import'] },
+  { pattern: /pages\/admin\/status/, states: ['status'] },
+  {
+    pattern: /pages\/admin\/(settings|providers)|settings\//,
+    states: [
+      'settings-answering',
+      'settings-providers',
+      'providers-change-step-1',
+      'settings-appearance',
+      'settings-notifications',
+      'settings-backups',
+    ],
+  },
+  { pattern: /pages\/admin\/login/, states: ['login', 'login-recovery', 'login-error'] },
+  { pattern: /pages\/admin\/setup/, states: ['setup-step-1', 'setup-step-3', 'setup-step-6'] },
+  { pattern: /pages\/admin\/gallery|primitives\/.*gallery/, states: ['gallery'] },
+  { pattern: /pages\/admin\/fixture/, states: ['fixture-pattern'] },
+  { pattern: /pages\/public\/|layouts\/public-shell|packages\/ui-public/, states: ['today', 'entries-list', 'gallery'] },
+];
+
+export function resolveChangedStates(options = {}) {
+  const root = options.root || ROOT;
+  const fullRequested =
+    options.full === true ||
+    process.env.CENSUS_FULL === '1' ||
+    process.env.GITHUB_EVENT_NAME === 'workflow_dispatch' ||
+    process.env.GITHUB_EVENT_NAME === 'schedule';
+
+  if (fullRequested) {
+    return { mode: 'full', states: 'ALL', changedFiles: [] };
+  }
+
+  const base = (options.base || process.env.BASE_SHA || '').trim();
+  const head = (options.head || process.env.HEAD_SHA || 'HEAD').trim();
+
+  if (!base || base === ZERO_SHA) {
+    return { mode: 'subset', states: CORE_SUBSET.join(','), changedFiles: [] };
+  }
+
+  let changedFiles = [];
+  try {
+    const out = execSync(`git diff --name-only --no-renames ${base} ${head}`, {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+    changedFiles = out
+      .trim()
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  } catch {
+    return { mode: 'subset', states: CORE_SUBSET.join(','), changedFiles: [] };
+  }
+
+  const selected = new Set();
+  let touchesSharedUi = false;
+
+  for (const file of changedFiles) {
+    let matchedSpecific = false;
+    for (const rule of FILE_TO_STATES) {
+      if (rule.pattern.test(file)) {
+        rule.states.forEach((s) => selected.add(s));
+        matchedSpecific = true;
+      }
+    }
+    if (
+      !matchedSpecific &&
+      /(styles\.ts|packages\/design-tokens|packages\/ui-core|packages\/ui-admin|primitives\/|components\/|layouts\/admin-shell|tests\/e2e\/)/.test(
+        file
+      )
+    ) {
+      touchesSharedUi = true;
+    }
+  }
+
+  if (touchesSharedUi || selected.size === 0) {
+    CORE_SUBSET.forEach((s) => selected.add(s));
+  }
+
+  return {
+    mode: 'subset',
+    states: Array.from(selected).join(','),
+    changedFiles,
+  };
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) {
+  const args = process.argv.slice(2);
+  let base = process.env.BASE_SHA;
+  let head = process.env.HEAD_SHA || 'HEAD';
+  let full = process.env.CENSUS_FULL === '1';
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--base' && args[i + 1]) base = args[++i];
+    else if (args[i] === '--head' && args[i + 1]) head = args[++i];
+    else if (args[i] === '--full') full = true;
+  }
+
+  const res = resolveChangedStates({ base, head, full });
+  console.log(`census_mode=${res.mode}`);
+  console.log(`census_states=${res.states}`);
+
+  if (process.env.GITHUB_OUTPUT) {
+    try {
+      appendFileSync(process.env.GITHUB_OUTPUT, `census_mode=${res.mode}\ncensus_states=${res.states}\n`);
+    } catch {}
+  }
+}

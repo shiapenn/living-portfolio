@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ensureAdminLoggedIn } from './helpers.js';
 import {
+  activeStates,
   STATES,
   THEMES,
   VIEWPORTS,
@@ -200,7 +201,7 @@ test.describe('WP-16.H Full G-Census v2 (C1-C4 across all STATES x 3 viewports x
     const ids = await getSeededIds(page);
     const allViolations: string[] = [];
 
-    for (const state of STATES) {
+    for (const state of activeStates()) {
       for (const vp of VIEWPORTS) {
         if (state.viewports && !state.viewports.includes(vp.width as 320 | 1280 | 1920)) continue;
         await page.setViewportSize({ width: vp.width, height: vp.height });

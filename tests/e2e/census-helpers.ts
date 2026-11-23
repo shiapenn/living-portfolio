@@ -193,12 +193,17 @@ export async function navigateToState(
     }
     case 'open-slash-menu': {
       const pm = page.locator('#ref-tiptap-editor .ProseMirror');
-      await pm.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+      await pm.waitFor({ state: 'visible', timeout: 5000 });
+      await pm.scrollIntoViewIfNeeded();
       await pm.click();
-      await page.keyboard.press('ControlOrMeta+a');
-      await page.keyboard.press('Backspace');
-      await page.keyboard.type('/');
-      await page.locator('#ref-slash-menu').waitFor({ state: 'visible', timeout: 3000 }).catch(() => {});
+      await pm.evaluate((el) => (el as HTMLElement).focus());
+      const existing = (await pm.textContent())?.trim() ?? '';
+      if (existing.length > 0) {
+        await page.keyboard.press('ControlOrMeta+a');
+        await page.keyboard.press('Backspace');
+      }
+      await pm.pressSequentially('/');
+      await page.locator('#ref-slash-menu').waitFor({ state: 'visible', timeout: 5000 });
       break;
     }
     default:

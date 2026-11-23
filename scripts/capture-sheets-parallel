@@ -1,0 +1,48 @@
+#!/usr/bin/env node
+/**
+ * Parallel Contact Sheet Capture & Pixel Diff Runner (WP-16.M M0)
+ * Splits STATES across N parallel Playwright workers (default 4) for fast local sheet capture and pixel diff.
+ */
+import { spawn } from 'node:child_process';
+import { existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const args = process.argv.slice(2);
+const workersArg = args.find((a) => a.startsWith('--workers='));
+const specArg = args.find((a) => a.startsWith('--spec='));
+const workers = Math.max(1, Math.min(8, Number(workersArg?.split('=')[1] || 4)));
+const spec = specArg?.split('=')[1] || 'tests/e2e/wp16-c-contact-sheets.spec.ts';
+
+const t0 = Date.now();
+console.log(`=== Parallel Sheet Capture (${workers} shards, spec=${spec}) ===`);
+
+const procs = [];
+for (let shard = 1; shard <= workers; shard++) {
+  const child = spawn(
+    'pnpm',
+    ['exec', 'playwright', 'test', spec, `--shard=${shard}/${workers}`],
+    {
+      cwd: ROOT,
+      stdio: 'inherit',
+      env: { ...process.env },
+    }
+  );
+  procs.push(
+    new Promise((resolvePromise, rejectPromise) => {
+      child.on('exit', (code) => {
+        if (code === 0) resolvePromise();
+        else rejectPromise(new Error(`Shard ${shard}/${workers} exited with code ${code}`));
+      });
+    })
+  );
+}
+
+try {
+  await Promise.all(procs);
+  const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
+  console.log(`\n✓ Parallel capture completed in ${elapsed}s.`);
+} catch (err) {
+  console.error(`\n✗ Parallel capture failed: ${err.message}`);
+  process.exit(1);
+}
