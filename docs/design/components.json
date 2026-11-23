@@ -1,195 +1,490 @@
 {
   "$schema": "./components.schema.json",
-  "version": "1.0.0",
-  "amendment": "D-L (WP-16.L)",
+  "version": "2.0.0",
+  "amendment": "D-M1 (WP-16.M)",
   "components": [
     {
       "name": "ActionBar",
-      "variants": ["page", "dialog", "item"],
+      "variants": [
+        "page",
+        "dialog",
+        "item"
+      ],
       "gallerySampleId": "gallery-action-bar-sample",
-      "parent": ["Page", "FormSection", "Subsection", "Item", "Overlay", "FieldGroup"],
-      "children": ["Button"],
-      "classFamilies": ["lp-action-bar"],
+      "parent": [
+        "Page",
+        "FormSection",
+        "Subsection",
+        "Item",
+        "Overlay",
+        "FieldGroup"
+      ],
+      "children": [
+        "Button"
+      ],
+      "classFamilies": [
+        "lp-action-bar"
+      ],
       "variantOf": null
     },
     {
       "name": "BackLink",
-      "variants": ["default"],
+      "variants": [
+        "default"
+      ],
       "gallerySampleId": "gallery-page-header-sample",
-      "parent": ["PageHeader", "EdgePanel"],
+      "parent": [
+        "PageHeader",
+        "EdgePanel"
+      ],
       "children": [],
-      "classFamilies": ["lp-back-link"],
+      "classFamilies": [
+        "lp-back-link"
+      ],
       "variantOf": null
     },
     {
       "name": "Button",
-      "variants": ["primary", "secondary", "quiet", "text", "text-danger", "danger", "danger-confirm"],
+      "variants": [
+        "primary",
+        "secondary",
+        "quiet",
+        "text",
+        "text-danger",
+        "danger",
+        "danger-confirm"
+      ],
       "gallerySampleId": "gallery-buttons-sample",
-      "parent": ["ActionBar", "PageHeader", "SectionHeader", "Overlay", "Shell", "EditorToolbar"],
+      "parent": [
+        "ActionBar",
+        "PageHeader",
+        "SectionHeader",
+        "Overlay",
+        "Shell",
+        "EditorToolbar"
+      ],
       "children": [],
-      "classFamilies": ["lp-btn"],
+      "classFamilies": [
+        "lp-btn"
+      ],
       "variantOf": null
     },
     {
       "name": "Choice",
-      "variants": ["button", "card", "single", "multiple", "segmented"],
+      "variants": [
+        "button",
+        "card",
+        "single",
+        "multiple",
+        "segmented"
+      ],
       "gallerySampleId": "gallery-choice-sample",
-      "parent": ["FormSection", "Subsection", "Page", "WizardStep"],
+      "parent": [
+        "FormSection",
+        "Subsection",
+        "Page",
+        "WizardStep"
+      ],
       "children": [],
-      "classFamilies": ["lp-choice", "lp-radio", "lp-checkbox"],
+      "classFamilies": [
+        "lp-choice",
+        "lp-radio",
+        "lp-checkbox"
+      ],
       "variantOf": null
     },
     {
       "name": "EdgePanel",
-      "variants": ["left", "push"],
+      "variants": [
+        "left",
+        "push"
+      ],
       "gallerySampleId": "gallery-overlay-panel-sample",
-      "parent": ["Shell", "EditorShell"],
-      "children": ["ActionBar", "Field", "List"],
-      "classFamilies": ["lp-drawer", "lp-editor-drawer", "lp-entries-drawer", "lp-overlay-push-panel"],
+      "parent": [
+        "Shell",
+        "EditorShell"
+      ],
+      "children": [
+        "ActionBar",
+        "Field",
+        "List"
+      ],
+      "classFamilies": [
+        "lp-drawer",
+        "lp-editor-drawer",
+        "lp-entries-drawer",
+        "lp-overlay-push-panel"
+      ],
       "variantOf": "Overlay"
     },
     {
       "name": "Field",
-      "variants": ["text", "textarea", "select", "date", "password", "code", "error"],
+      "variants": [
+        "text",
+        "textarea",
+        "select",
+        "date",
+        "password",
+        "code",
+        "error"
+      ],
       "gallerySampleId": "gallery-form-section-sample",
-      "parent": ["FormSection", "Subsection", "Overlay", "Page"],
-      "children": ["Select"],
-      "classFamilies": ["lp-field", "lp-input", "lp-textarea", "lp-help", "lp-autogrow"],
+      "parent": [
+        "FormSection",
+        "Subsection",
+        "Overlay",
+        "Page"
+      ],
+      "children": [
+        "Select"
+      ],
+      "classFamilies": [
+        "lp-field",
+        "lp-input",
+        "lp-textarea",
+        "lp-help",
+        "lp-autogrow"
+      ],
       "variantOf": null
     },
     {
       "name": "FormSection",
-      "variants": ["default"],
+      "variants": [
+        "default"
+      ],
       "gallerySampleId": "gallery-form-section-sample",
-      "parent": ["Page", "Section"],
-      "children": ["SectionHeader", "Subsection", "Field", "Choice", "Item", "List", "Tag", "ActionBar", "StatusLabel"],
-      "classFamilies": ["lp-form-section", "lp-section"],
+      "parent": [
+        "Page",
+        "Section"
+      ],
+      "children": [
+        "SectionHeader",
+        "Subsection",
+        "Field",
+        "Choice",
+        "Item",
+        "List",
+        "Tag",
+        "ActionBar",
+        "StatusLabel"
+      ],
+      "classFamilies": [
+        "lp-form-section",
+        "lp-section"
+      ],
       "variantOf": null
     },
     {
       "name": "Item",
-      "variants": ["default", "has-actions", "selected", "trailing-status"],
+      "variants": [
+        "default",
+        "has-actions",
+        "selected",
+        "trailing-status"
+      ],
       "gallerySampleId": "gallery-item-sample",
-      "parent": ["List", "FormSection", "Subsection"],
-      "children": ["StatusLabel", "ActionBar"],
-      "classFamilies": ["lp-item", "lp-list", "lp-item-list"],
+      "parent": [
+        "List",
+        "FormSection",
+        "Subsection"
+      ],
+      "children": [
+        "StatusLabel",
+        "ActionBar"
+      ],
+      "classFamilies": [
+        "lp-item",
+        "lp-list",
+        "lp-item-list"
+      ],
       "variantOf": null
     },
     {
       "name": "List",
-      "variants": ["plain", "interactive"],
+      "variants": [
+        "plain",
+        "interactive"
+      ],
       "gallerySampleId": "gallery-item",
-      "parent": ["Page", "FormSection", "Subsection", "EdgePanel", "Overlay"],
-      "children": ["Item"],
-      "classFamilies": ["lp-list", "lp-item-list"],
+      "parent": [
+        "Page",
+        "FormSection",
+        "Subsection",
+        "EdgePanel",
+        "Overlay"
+      ],
+      "children": [
+        "Item"
+      ],
+      "classFamilies": [
+        "lp-list",
+        "lp-item-list"
+      ],
       "variantOf": "Item"
     },
     {
       "name": "Notice",
-      "variants": ["info", "ok", "warn", "danger"],
+      "variants": [
+        "info",
+        "ok",
+        "warn",
+        "danger"
+      ],
       "gallerySampleId": "gallery-notice-sample",
-      "parent": ["Page", "FormSection", "Overlay"],
-      "children": ["Button"],
-      "classFamilies": ["lp-notice", "lp-status-line"],
+      "parent": [
+        "Page",
+        "FormSection",
+        "Overlay"
+      ],
+      "children": [
+        "Button"
+      ],
+      "classFamilies": [
+        "lp-notice",
+        "lp-status-line"
+      ],
       "variantOf": null
     },
     {
       "name": "Overlay",
-      "variants": ["dialog", "sheet", "popover", "panel"],
+      "variants": [
+        "dialog",
+        "sheet",
+        "popover",
+        "panel"
+      ],
       "gallerySampleId": "gallery-overlay-dialog-sample",
-      "parent": ["Shell", "Page"],
-      "children": ["ActionBar", "Field", "Button"],
-      "classFamilies": ["lp-overlay", "lp-dialog", "lp-popover", "lp-modal", "lp-menu", "lp-tooltip"],
+      "parent": [
+        "Shell",
+        "Page"
+      ],
+      "children": [
+        "ActionBar",
+        "Field",
+        "Button"
+      ],
+      "classFamilies": [
+        "lp-overlay",
+        "lp-dialog",
+        "lp-popover",
+        "lp-modal",
+        "lp-menu",
+        "lp-tooltip"
+      ],
       "variantOf": null
     },
     {
       "name": "PageHeader",
-      "variants": ["default"],
+      "variants": [
+        "default"
+      ],
       "gallerySampleId": "gallery-page-header-sample",
-      "parent": ["Page"],
-      "children": ["BackLink", "Stepper", "Button"],
-      "classFamilies": ["lp-page-header", "lp-page-title", "lp-page-description"],
+      "parent": [
+        "Page"
+      ],
+      "children": [
+        "BackLink",
+        "Stepper",
+        "Button"
+      ],
+      "classFamilies": [
+        "lp-page-header",
+        "lp-page-title",
+        "lp-page-description"
+      ],
       "variantOf": null
     },
     {
       "name": "SectionHeader",
-      "variants": ["default"],
+      "variants": [
+        "default"
+      ],
       "gallerySampleId": "gallery-section-header-sample",
-      "parent": ["FormSection", "Page", "EdgePanel", "Overlay"],
-      "children": ["Button"],
-      "classFamilies": ["lp-section-header"],
+      "parent": [
+        "FormSection",
+        "Page",
+        "EdgePanel",
+        "Overlay"
+      ],
+      "children": [
+        "Button"
+      ],
+      "classFamilies": [
+        "lp-section-header"
+      ],
       "variantOf": null
     },
     {
       "name": "SegmentedControl",
-      "variants": ["mode-switch", "responsive-icons"],
+      "variants": [
+        "mode-switch",
+        "responsive-icons"
+      ],
       "gallerySampleId": "gallery-segmented-sample",
-      "parent": ["EditorToolbar", "Gallery"],
+      "parent": [
+        "EditorToolbar",
+        "Gallery"
+      ],
       "children": [],
-      "classFamilies": ["lp-segmented", "lp-segment"],
+      "classFamilies": [
+        "lp-segmented",
+        "lp-segment"
+      ],
       "variantOf": "Choice"
     },
     {
       "name": "Select",
-      "variants": ["default"],
+      "variants": [
+        "default"
+      ],
       "gallerySampleId": "gallery-select-sample",
-      "parent": ["Field", "Tabs"],
+      "parent": [
+        "Field",
+        "Tabs"
+      ],
       "children": [],
-      "classFamilies": ["lp-select"],
+      "classFamilies": [
+        "lp-select"
+      ],
       "variantOf": "Field"
     },
     {
       "name": "StatusLabel",
-      "variants": ["ok", "neutral", "warn", "danger", "muted"],
+      "variants": [
+        "ok",
+        "neutral",
+        "warn",
+        "danger",
+        "muted"
+      ],
       "gallerySampleId": "gallery-status-label-sample",
-      "parent": ["Item", "FormSection", "Page"],
+      "parent": [
+        "Item",
+        "FormSection",
+        "Page"
+      ],
       "children": [],
-      "classFamilies": ["lp-status-indicator", "lp-status-dot", "lp-status-label", "lp-badge"],
+      "classFamilies": [
+        "lp-status-indicator",
+        "lp-status-dot",
+        "lp-status-label",
+        "lp-badge"
+      ],
       "variantOf": null
     },
     {
       "name": "Stepper",
-      "variants": ["wizard"],
+      "variants": [
+        "wizard"
+      ],
       "gallerySampleId": "gallery-stepper-sample",
-      "parent": ["PageHeader", "WizardHeader"],
+      "parent": [
+        "PageHeader",
+        "WizardHeader"
+      ],
       "children": [],
-      "classFamilies": ["lp-stepper", "lp-wizard-progress", "lp-wizard-step", "lp-auth-progress"],
+      "classFamilies": [
+        "lp-stepper",
+        "lp-wizard-progress",
+        "lp-wizard-step",
+        "lp-auth-progress"
+      ],
       "variantOf": null
     },
     {
       "name": "Subsection",
-      "variants": ["default"],
+      "variants": [
+        "default"
+      ],
       "gallerySampleId": "gallery-subsection-sample",
-      "parent": ["FormSection", "Page"],
-      "children": ["Field", "Choice", "Item", "List", "Tag", "ActionBar", "StatusLabel"],
-      "classFamilies": ["lp-subsection"],
+      "parent": [
+        "FormSection",
+        "Page"
+      ],
+      "children": [
+        "Field",
+        "Choice",
+        "Item",
+        "List",
+        "Tag",
+        "ActionBar",
+        "StatusLabel"
+      ],
+      "classFamilies": [
+        "lp-subsection"
+      ],
       "variantOf": null
     },
     {
       "name": "Tabs",
-      "variants": ["tablist", "select-fallback"],
+      "variants": [
+        "tablist",
+        "select-fallback"
+      ],
       "gallerySampleId": "gallery-tabs-sample",
-      "parent": ["Page", "FormSection"],
-      "children": ["Select"],
-      "classFamilies": ["lp-tabs", "lp-tablist", "lp-tab", "lp-page-tabs-wrap"],
+      "parent": [
+        "Page",
+        "FormSection"
+      ],
+      "children": [
+        "Select"
+      ],
+      "classFamilies": [
+        "lp-tabs",
+        "lp-tablist",
+        "lp-tab",
+        "lp-page-tabs-wrap"
+      ],
       "variantOf": null
     },
     {
       "name": "Tag",
-      "variants": ["default", "removable", "confirmed", "suggested", "selected"],
+      "variants": [
+        "default",
+        "removable",
+        "confirmed",
+        "suggested",
+        "selected"
+      ],
       "gallerySampleId": "gallery-tag-sample",
-      "parent": ["FormSection", "Subsection", "Item"],
-      "children": ["Button"],
-      "classFamilies": ["lp-tag", "lp-chip"],
+      "parent": [
+        "FormSection",
+        "Subsection",
+        "Item"
+      ],
+      "children": [
+        "Button"
+      ],
+      "classFamilies": [
+        "lp-tag",
+        "lp-chip"
+      ],
       "variantOf": null
     },
     {
       "name": "Text",
-      "variants": ["body", "description", "caption", "prose"],
+      "variants": [
+        "body",
+        "description",
+        "caption",
+        "prose"
+      ],
       "gallerySampleId": "gallery-text-sample",
-      "parent": ["Page", "FormSection", "Subsection", "Item", "Overlay", "EdgePanel"],
+      "parent": [
+        "Page",
+        "FormSection",
+        "Subsection",
+        "Item",
+        "Overlay",
+        "EdgePanel"
+      ],
       "children": [],
-      "classFamilies": ["lp-body", "lp-description", "lp-caption", "lp-prose"],
+      "classFamilies": [
+        "lp-body",
+        "lp-description",
+        "lp-caption",
+        "lp-prose"
+      ],
       "variantOf": null
     }
   ],
@@ -303,5 +598,11 @@
     "lp-wizard",
     "lp-workspace",
     "lp-writing"
+  ],
+  "generatedFrom": [
+    "packages/ui-core/src/primitives/accessibility/accessibility.gallery.ts",
+    "packages/ui-core/src/primitives/layout/layout.gallery.ts",
+    "packages/ui-admin/src/primitives/button/button.gallery.ts",
+    "packages/ui-public/src/components/shell/shell.gallery.ts"
   ]
 }

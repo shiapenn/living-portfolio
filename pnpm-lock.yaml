@@ -259,6 +259,15 @@ importers:
       '@living-portfolio/design-tokens':
         specifier: workspace:*
         version: link:../../packages/design-tokens
+      '@living-portfolio/ui-admin':
+        specifier: workspace:*
+        version: link:../../packages/ui-admin
+      '@living-portfolio/ui-core':
+        specifier: workspace:*
+        version: link:../../packages/ui-core
+      '@living-portfolio/ui-public':
+        specifier: workspace:*
+        version: link:../../packages/ui-public
       '@tiptap/core':
         specifier: ^3.34.0
         version: 3.34.0(@tiptap/pm@3.34.0)
@@ -418,6 +427,60 @@ importers:
         version: 4.1.12(@types/node@22.20.5)(vite@7.3.7(@types/node@22.20.5)(tsx@4.23.15)(yaml@2.9.1))
 
   packages/design-tokens:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.13.4
+        version: 22.20.5
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.12
+        version: 4.1.12(@types/node@22.20.5)(vite@7.3.7(@types/node@22.20.5)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/ui-admin:
+    dependencies:
+      '@living-portfolio/design-tokens':
+        specifier: workspace:*
+        version: link:../design-tokens
+      '@living-portfolio/ui-core':
+        specifier: workspace:*
+        version: link:../ui-core
+    devDependencies:
+      '@types/node':
+        specifier: ^22.13.4
+        version: 22.20.5
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.12
+        version: 4.1.12(@types/node@22.20.5)(vite@7.3.7(@types/node@22.20.5)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/ui-core:
+    dependencies:
+      '@living-portfolio/design-tokens':
+        specifier: workspace:*
+        version: link:../design-tokens
+    devDependencies:
+      '@types/node':
+        specifier: ^22.13.4
+        version: 22.20.5
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vitest:
+        specifier: ^4.1.12
+        version: 4.1.12(@types/node@22.20.5)(vite@7.3.7(@types/node@22.20.5)(tsx@4.23.15)(yaml@2.9.1))
+
+  packages/ui-public:
+    dependencies:
+      '@living-portfolio/design-tokens':
+        specifier: workspace:*
+        version: link:../design-tokens
+      '@living-portfolio/ui-core':
+        specifier: workspace:*
+        version: link:../ui-core
     devDependencies:
       '@types/node':
         specifier: ^22.13.4

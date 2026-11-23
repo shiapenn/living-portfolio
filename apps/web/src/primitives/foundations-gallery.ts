@@ -237,11 +237,11 @@ export function renderFoundationsGalleryPage(theme: 'light' | 'dark' = 'light'):
   <div class="lp-card">
     <h2>Shape, Radii, Elevation &amp; Borders (D-FOUND-2)</h2>
     <div class="lp-gallery-row">
-      ${renderButton({ label: 'Control 8px', variant: 'secondary', size: 'sm' })}
-      <span id="specimen-radius-container" class="lp-specimen-box-container">Container 12px (Flat)</span>
-      <span id="specimen-radius-overlay" class="lp-specimen-box-overlay">Overlay 16px (Raised)</span>
-      ${renderBadge({ label: 'Pill 999px (0px border)', tone: 'action' })}
-      ${renderChip({ label: 'Chip 999px (1px border)', interactive: true, selected: true })}
+      ${renderButton({ label: `Control ${COMPONENT_TOKEN_VALUES['--lp-radius-control']}`, variant: 'secondary', size: 'sm' })}
+      <span id="specimen-radius-container" class="lp-specimen-box-container">Container ${COMPONENT_TOKEN_VALUES['--lp-radius-container']} (Flat)</span>
+      <span id="specimen-radius-overlay" class="lp-specimen-box-overlay">Overlay ${COMPONENT_TOKEN_VALUES['--lp-radius-overlay']} (Raised)</span>
+      ${renderBadge({ label: `Pill ${COMPONENT_TOKEN_VALUES['--lp-radius-full']} (borderless)`, tone: 'action' })}
+      ${renderChip({ label: `Chip ${COMPONENT_TOKEN_VALUES['--lp-radius-chip']} (hairline border)`, interactive: true, selected: true })}
     </div>
     <div class="lp-card-section">
       <h3>Surface &amp; Border Tokens</h3>
@@ -255,9 +255,9 @@ export function renderFoundationsGalleryPage(theme: 'light' | 'dark' = 'light'):
     <div class="lp-card-section">
       <h3>Icon Sizes (16 / 20 / 24 px) &amp; Sprite Inventory (D-FOUND-1)</h3>
       <div class="lp-gallery-row">
-        <span>16px ${renderIcon({ name: 'info', size: 16 })}</span>
-        <span>20px ${renderIcon({ name: 'moon', size: 20 })}</span>
-        <span>24px ${renderIcon({ name: 'layers', size: 24 })}</span>
+        <span>${COMPONENT_TOKEN_VALUES['--lp-size-icon-sm']} ${renderIcon({ name: 'info', size: 16 })}</span>
+        <span>${COMPONENT_TOKEN_VALUES['--lp-size-icon-md']} ${renderIcon({ name: 'moon', size: 20 })}</span>
+        <span>${COMPONENT_TOKEN_VALUES['--lp-size-icon-lg']} ${renderIcon({ name: 'layers', size: 24 })}</span>
       </div>
       <div id="foundations-icon-inventory" class="lp-icon-inventory-grid">
         ${iconInventoryHtml}
@@ -855,22 +855,17 @@ export function renderFoundationsGalleryPage(theme: 'light' | 'dark' = 'light'):
 }
 
 export function renderFoundationsTokensSection(): string {
-  const spaceSummary = Object.entries(PRIMITIVE_VALUES)
-    .filter(([k]) => k.startsWith('--lp-prim-space-'))
-    .map(([k, v]) => {
-      const px = parseFloat(v);
-      const mult = px / PACK_RULES.admin.spaceBase;
-      return `${k.replace('--lp-prim-space-', '')} (${mult}x = ${v})`;
-    })
+  const spaceSummary = PACK_RULES.admin.spaceAllowed
+    .map((px) => `${px} (${px / PACK_RULES.admin.spaceBase}x)`)
     .join(' · ');
 
   const proximitySummary = Object.entries(PROXIMITY_TIERS)
-    .map(([tier, px]) => `tier-${tier}: ${px}px`)
+    .map(([tier, px]) => `tier-${tier}: ${px}`)
     .join(' < ');
 
   const relationsSummary = Object.entries(RELATIONS)
     .slice(0, 8)
-    .map(([rel, px]) => `${rel}: ${px}px`)
+    .map(([rel, px]) => `${rel}: ${px}`)
     .join(' · ');
 
   const lightContrast = computeHexContrastRatio(
@@ -921,17 +916,17 @@ export function renderFoundationsTokensSection(): string {
       ${renderItem({
         id: 'gallery-tokens-radii',
         title: 'Admin Radii, Borders & Elevations',
-        subtitle: `r1: ${COMPONENT_TOKEN_VALUES['--lp-radius-r1']} · r2: ${COMPONENT_TOKEN_VALUES['--lp-radius-r2']} · borders: 1/2/4px · e0: ${SEMANTIC_LIGHT_VALUES['--lp-elevation-e0']} · e1: ${COMPONENT_TOKEN_VALUES['--lp-elevation-e1-offset-y']}/16px · e2: ${COMPONENT_TOKEN_VALUES['--lp-elevation-e2-offset-y']}/32px`,
+        subtitle: `r1: ${COMPONENT_TOKEN_VALUES['--lp-radius-r1']} · r2: ${COMPONENT_TOKEN_VALUES['--lp-radius-r2']} · borders: ${PACK_RULES.admin.borderAllowed.join('/')} · e0: ${SEMANTIC_LIGHT_VALUES['--lp-elevation-e0']} · e1: ${COMPONENT_TOKEN_VALUES['--lp-elevation-e1-offset-y']}/${SEMANTIC_LIGHT_VALUES['--lp-elevation-e1-blur']} · e2: ${COMPONENT_TOKEN_VALUES['--lp-elevation-e2-offset-y']}/${SEMANTIC_LIGHT_VALUES['--lp-elevation-e2-blur']}`,
       })}
       ${renderItem({
         id: 'gallery-tokens-motion',
         title: 'Admin Motion Durations & Easings',
-        subtitle: `fast: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-fast']} · base: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-base']} · slow: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-slow']} · pulse: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-pulse']} · easings: standard, out`,
+        subtitle: `fast: ${COMPONENT_TOKEN_VALUES['--lp-motion-duration-fast']} · base: ${COMPONENT_TOKEN_VALUES['--lp-motion-duration-base']} · slow: ${COMPONENT_TOKEN_VALUES['--lp-motion-duration-slow']} · pulse: ${COMPONENT_TOKEN_VALUES['--lp-motion-duration-pulse']} · easings: ${PACK_RULES.admin.motionEasingsAllowed.join(', ')}`,
       })}
       ${renderItem({
         id: 'gallery-tokens-public-pack',
         title: 'Public Pack Summary (Fluid Type + Light/Dark Moods)',
-        subtitle: `ratio ${PACK_RULES.public.typeScale.ratio} · max space ${PACK_RULES.public.spaceMax}px · light ${PUBLIC_LIGHT_VALUES['--pub-color-text-primary']} on ${PUBLIC_LIGHT_VALUES['--pub-color-surface-canvas']} (${pubLightContrast}) · dark ${PUBLIC_DARK_VALUES['--pub-color-text-primary']} on ${PUBLIC_DARK_VALUES['--pub-color-surface-canvas']} (${pubDarkContrast})`,
+        subtitle: `ratio ${PACK_RULES.public.typeScale.ratio} · max space ${PACK_RULES.public.spaceMax} · light ${PUBLIC_LIGHT_VALUES['--pub-color-text-primary']} on ${PUBLIC_LIGHT_VALUES['--pub-color-surface-canvas']} (${pubLightContrast}) · dark ${PUBLIC_DARK_VALUES['--pub-color-text-primary']} on ${PUBLIC_DARK_VALUES['--pub-color-surface-canvas']} (${pubDarkContrast})`,
       })}`,
     })}
   </section>`;

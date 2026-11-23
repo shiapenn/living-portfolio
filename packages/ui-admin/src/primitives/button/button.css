@@ -1,0 +1,8 @@
+@layer primitives {
+  .lp-btn {
+    border-radius: var(--lp-radius-control);
+    font-family: var(--lp-font-family-ui);
+    font-weight: var(--lp-font-weight-600);
+    min-height: var(--lp-size-control-height);
+  }
+}

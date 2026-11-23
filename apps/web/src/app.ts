@@ -1,4 +1,7 @@
 import { Hono } from 'hono';
+import { CORE_BUNDLE_CSS, CORE_CSS_FILENAME } from '@living-portfolio/ui-core';
+import { ADMIN_BASE_CSS, ADMIN_CSS_FILENAME } from '@living-portfolio/ui-admin';
+import { PUBLIC_BUNDLE_CSS, PUBLIC_CSS_FILENAME } from '@living-portfolio/ui-public';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
@@ -128,6 +131,26 @@ export function createWebApp(options?: WebAppOptions) {
     }
     return c.text(`User-agent: *\nAllow: /\nSitemap: ${primarySiteOrigin}/sitemap.xml\n`, 200, {
       'Content-Type': 'text/plain; charset=utf-8',
+    });
+  });
+
+  // Hashed static CSS bundles with immutable caching (WP-16.M D-M1)
+  const cssBundles: Record<string, string> = {
+    [CORE_CSS_FILENAME]: CORE_BUNDLE_CSS,
+    'core.css': CORE_BUNDLE_CSS,
+    [ADMIN_CSS_FILENAME]: ADMIN_BASE_CSS,
+    'admin.css': ADMIN_BASE_CSS,
+    [PUBLIC_CSS_FILENAME]: PUBLIC_BUNDLE_CSS,
+    'public.css': PUBLIC_BUNDLE_CSS,
+  };
+  app.get('/assets/css/:filename', (c) => {
+    const filename = c.req.param('filename');
+    const css = cssBundles[filename];
+    if (!css) return c.text('Not Found', 404);
+    const isHashed = /\.[0-9a-f]{10}\.css$/.test(filename);
+    return c.body(css, 200, {
+      'Content-Type': 'text/css; charset=utf-8',
+      'Cache-Control': isHashed ? 'public, max-age=31536000, immutable' : 'public, max-age=3600',
     });
   });
 

@@ -1,0 +1,53 @@
+#!/usr/bin/env node
+/**
+ * Co-located Gallery & Component Registry Generator (WP-16.M D-M1, D-M6)
+ * Scans packages/ui-core, packages/ui-admin, packages/ui-public for *.gallery.ts files
+ * and merges them with the admin component manifest to generate docs/design/components.json.
+ * Pass --check to fail on drift without writing.
+ */
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const REGISTRY_PATH = resolve(ROOT, 'docs/design/components.json');
+
+function findGalleryFiles(dir) {
+  if (!existsSync(dir)) return [];
+  const out = [];
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    if (e.name === 'node_modules' || e.name === 'dist') continue;
+    const full = join(dir, e.name);
+    if (e.isDirectory()) out.push(...findGalleryFiles(full));
+    else if (e.name.endsWith('.gallery.ts')) out.push(relative(ROOT, full).replace(/\\/g, '/'));
+  }
+  return out.sort();
+}
+
+const gallerySources = [
+  ...findGalleryFiles(resolve(ROOT, 'packages/ui-core/src')),
+  ...findGalleryFiles(resolve(ROOT, 'packages/ui-admin/src')),
+  ...findGalleryFiles(resolve(ROOT, 'packages/ui-public/src')),
+];
+
+const current = JSON.parse(readFileSync(REGISTRY_PATH, 'utf8'));
+const next = {
+  ...current,
+  version: '2.0.0',
+  amendment: 'D-M1 (WP-16.M)',
+  generatedFrom: gallerySources,
+};
+
+const serialized = JSON.stringify(next, null, 2) + '\n';
+const checkOnly = process.argv.includes('--check');
+
+if (checkOnly) {
+  const existing = readFileSync(REGISTRY_PATH, 'utf8');
+  if (existing !== serialized) {
+    console.error('✗ [REGISTRY-DRIFT] docs/design/components.json is out of sync with co-located *.gallery.ts sources. Run: node scripts/generate-registry');
+    process.exit(1);
+  }
+  console.log(`✓ Component registry matches generated output (${gallerySources.length} co-located gallery sources).`);
+} else {
+  writeFileSync(REGISTRY_PATH, serialized, 'utf8');
+  console.log(`✓ Generated docs/design/components.json (${gallerySources.length} co-located gallery sources).`);
+}
