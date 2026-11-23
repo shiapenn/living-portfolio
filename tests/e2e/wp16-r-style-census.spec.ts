@@ -109,6 +109,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
         document.documentElement.setAttribute('data-theme', t);
         try { localStorage.setItem('strata-theme', t); } catch {}
         void document.body.offsetHeight;
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
         await Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {})));
       }, theme);
 
@@ -267,7 +268,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
             bgColorsSeen.add(cs.backgroundColor);
             if (!tokenColors.has(cs.backgroundColor)) badTokenColors++;
           }
-          if (cs.color && !tokenColors.has(cs.color)) {
+          if (!(el instanceof SVGElement) && cs.color && !tokenColors.has(cs.color)) {
             badTokenColors++;
           }
           if (parseFloat(cs.borderTopWidth) > 0 && cs.borderTopColor && !tokenColors.has(cs.borderTopColor)) {

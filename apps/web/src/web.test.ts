@@ -58,8 +58,8 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     const html = await renderHomePage(repo);
     expect(html).toContain('Strata timeline');
     expect(html).toContain('Advisory Locks, Revisited: Dropping Redis for Postgres 15');
-    expect(html).toContain('--lp-prim-color-white: #FFFFFF');
-    expect(html).toContain('--lp-prim-color-dark-950: #0F1A22');
+    expect(html).toContain('--lp-color-surface-l0: #FFFFFF');
+    expect(html).toContain('--lp-color-surface-l0: #0F1A22');
     // Private entry must never appear on public home page
     expect(html).not.toContain('Private NDA Architecture Notes');
   });
@@ -353,8 +353,8 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
       const askHtml = await renderAskPage('How do locks work?', 'redis-distributed-locks-2021', asOf);
       expect(askHtml).toContain('Time-travel query active:');
       expect(askHtml).toContain('2022-06-01');
-      expect(askHtml).toContain('id="facet-asof" type="date" class="ask-input" style="width:100%;padding:var(--lp-size-6)" value="2022-06-01"');
-      expect(askHtml).toContain('<details style="margin-top:var(--lp-space-16)" open>');
+      expect(askHtml).toContain('id="facet-asof" type="date" class="ask-input" style="width:100%;padding:var(--lp-space-inset-compact)" value="2022-06-01"');
+      expect(askHtml).toContain('<details style="margin-top:var(--lp-space-stack-field-to-field)" open>');
     });
 
     it('serves historical revision active as of query date on entry detail page', async () => {

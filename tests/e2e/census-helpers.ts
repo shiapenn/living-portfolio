@@ -3,6 +3,7 @@ import {
   BREAKPOINTS,
   COMPONENT_TOKEN_VALUES,
   RELATIONS,
+  RESPONSIVE_TOKEN_VALUES,
   TYPE_ROLES,
 } from '../../packages/design-tokens/src/index.js';
 import { type StateDefinition, type ThemeMode } from './states-manifest.js';
@@ -12,7 +13,7 @@ export const TOKEN_SPEC = {
   relations: RELATIONS,
   typeRoles: TYPE_ROLES,
   controlHeightMobile: parseFloat(COMPONENT_TOKEN_VALUES['--lp-size-control-height']),
-  controlHeightDesktop: parseFloat(COMPONENT_TOKEN_VALUES['--lp-size-control-height-desktop']),
+  controlHeightDesktop: parseFloat(RESPONSIVE_TOKEN_VALUES.sm['--lp-size-control-height']),
   btnItemMinWidth: parseFloat(COMPONENT_TOKEN_VALUES['--lp-size-btn-item-min']),
   barTopHeight: parseFloat(COMPONENT_TOKEN_VALUES['--lp-size-bar-top-height']),
   barEditorHeight: parseFloat(COMPONENT_TOKEN_VALUES['--lp-size-bar-editor-height']),

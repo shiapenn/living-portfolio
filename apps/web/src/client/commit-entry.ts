@@ -190,19 +190,19 @@ export function showUndoBanner(message: string, onUndo: () => Promise<void>) {
   clearUndoTimers();
 
   const statusLineHtml =
-    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-12)">` +
+    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-stack-snug)">` +
     `<span>${message}</span>` +
-    `<button type="button" class="btn btn-secondary" id="btn-undo-status-line" data-undo-action="true" style="padding:var(--lp-space-2) var(--lp-space-8);font-size:var(--lp-space-12);margin-left:var(--lp-space-8)">Undo (30s)</button>` +
+    `<button type="button" class="btn btn-secondary" id="btn-undo-status-line" data-undo-action="true" style="padding:var(--lp-space-inset-tag-y) var(--lp-space-inset-item-x);font-size:var(--lp-font-size-12);margin-left:var(--lp-space-inline-icon-text)">Undo (30s)</button>` +
     `</div>`;
 
   const toastHtml =
-    `<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-12)">` +
+    `<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-stack-snug)">` +
     `<span>${message}</span>` +
-    `<button type="button" class="btn btn-secondary" id="btn-undo-toast" data-undo-action="true" style="padding:var(--lp-space-2) var(--lp-space-8);font-size:var(--lp-space-12);margin-left:var(--lp-space-8)">Undo (30s)</button>` +
+    `<button type="button" class="btn btn-secondary" id="btn-undo-toast" data-undo-action="true" style="padding:var(--lp-space-inset-tag-y) var(--lp-space-inset-item-x);font-size:var(--lp-font-size-12);margin-left:var(--lp-space-inline-icon-text)">Undo (30s)</button>` +
     `</div>`;
 
   const bannerHtml =
-    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-12)">` +
+    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-stack-snug)">` +
     `<span>${message}</span>` +
     `</div>`;
 
@@ -226,7 +226,7 @@ export function showUndoBanner(message: string, onUndo: () => Promise<void>) {
     banner.innerHTML =
       `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center">` +
       `<span>${message}</span>` +
-      `<button type="button" class="btn btn-secondary" id="btn-undo-action-banner" data-undo-action="true" style="padding:var(--lp-space-2) var(--lp-space-8);font-size:var(--lp-space-12);margin-left:var(--lp-space-8)">Undo (30s)</button>` +
+      `<button type="button" class="btn btn-secondary" id="btn-undo-action-banner" data-undo-action="true" style="padding:var(--lp-space-inset-tag-y) var(--lp-space-inset-item-x);font-size:var(--lp-font-size-12);margin-left:var(--lp-space-inline-icon-text)">Undo (30s)</button>` +
       `</div>`;
   }
 

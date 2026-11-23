@@ -2,47 +2,82 @@
 
 > **Source of truth:** `packages/design-tokens/tokens.json` (schema: `packages/design-tokens/tokens.schema.json`).
 > **Naming convention:** `--lp-<category>-<role>[-<variant>][-<state>]`
-> **Architecture:** Three tiers — **Primitive** (raw scales), **Semantic** (theme-switched roles: light & dark), **Component** (dimensions, radii, relations, typography roles).
+> **Version:** `2.0.0`
+
+## Architecture (D-L4 & D-L5)
+
+### 1. Three-Tier Hierarchy
+- **Tier 1 — Primitive (`primitive.*`)**: Raw scales (`color`, `space 0..64`, `size`, `radius`, `border`, `font`, `motion`, `zIndex`, `opacity`, `elevation`). Never emitted as `--lp-prim-*` custom properties into shipped CSS and never referenced directly by component CSS.
+- **Tier 2 — Semantic (`semantic.light.*`, `semantic.dark.*`)**: Theme-switched roles (`color.surface.l0..l2`, `color.surface.control*`, `color.surface.scrim`, `color.text.1..3`, `color.border.*`, `color.accent.*`, `color.role.*`, `color.passage.*`, `elevation.e0..e2`, `opacity.disabled`). Emitted as CSS custom properties on `:root` and switched in `:root[data-theme="dark"]` / `@media (prefers-color-scheme: dark)`.
+- **Tier 3 — Component & Spacing Taxonomy (`component.*`, `responsive.*`)**:
+  - **Stack relations (`--lp-space-stack-<relation>`)**: Vertical gaps between stacked elements (monotonic proximity: `label-to-control (8px) < field-to-field (16px) < subsection-to-subsection (24px) < section-to-section (40px)`).
+  - **Inline relations (`--lp-space-inline-<relation>`)**: Horizontal gaps between inline peers (`segment: 4px`, `dot-text: 6px`, `icon-text: 8px`, `button-button: 8px`, `tag-tag: 8px`).
+  - **Insets (`--lp-space-inset-<container>`)**: Internal container padding (`page-gutter: 16px -> 24px @ 768px`, `panel: 12px`, `dialog: 24px`, `item-x: 8px`, `item-y: 12px`, `control-x: 12px`, `tag-x: 8px`, `tag-y: 2px`, `track: 4px`).
+  - **Sizes, Radii, Borders, Z-Index, Motion, Typography**: Semantic component dimensions (`--lp-size-*`), radii (`--lp-radius-r1`, `--lp-radius-r2`, plus semantic aliases), named z-index layers (`base`, `raised`, `sticky`, `overlay`, `popover`, `modal`, `toast`, `skip`), motion tokens, and font tokens.
+
+### 2. Rules & Guards
+1. **No numeral-named tokens**: Component and semantic token names may not be a bare number (e.g. `--lp-size-14`, `--lp-space-8`, `--lp-z-10` are forbidden).
+2. **No reserved list / arithmetic closure**: Every token emitted into `tokens.css` must be used (`defined = used`, `0` unused). Any unused or unresolved token fails `scripts/verify-ui-guards`.
+3. **Single-token responsive switching**: Responsive tokens (`--lp-size-control-height`, `--lp-space-inset-page-gutter`) keep one token name whose value switches at the `breakpoints` media query.
+4. **Build-time primitive resolution**: Non-theme primitive references resolve at build time in `generate.mjs` so shipped CSS carries zero `--lp-prim-*` declarations.
+
+### 3. How to Add a Token
+1. Check if an existing semantic, relation (`space.stack.*`, `space.inline.*`, `space.inset.*`), or component token already expresses the role.
+2. Add the raw value to `primitive` in `packages/design-tokens/tokens.json` if not already on the scale.
+3. Add the semantic or component token referencing `{primitive.*}` (or `{semantic.*}` / `{component.*}`).
+4. Run `node packages/design-tokens/generate.mjs` and verify `./scripts/verify-ui-guards` and `pnpm --filter @living-portfolio/design-tokens test`.
+
+### 4. How to Choose a Token (Decision List)
+1. **Vertical gap between stacked blocks, fields, headings, or lists?** -> Use `--lp-space-stack-<relation>` (`label-to-control`, `field-to-field`, `heading-to-list-plain`, `heading-to-list-interactive`, `control-to-list`, `subsection-to-subsection`, `section-to-section`, `header-to-content`).
+2. **Horizontal gap between inline icon, text, dot, tag, or button peers?** -> Use `--lp-space-inline-<relation>` (`icon-text`, `button-button`, `dot-text`, `tag-tag`, `segment`).
+3. **Internal padding of a page, panel, dialog, item, control, or tag?** -> Use `--lp-space-inset-<container>` (`page-gutter`, `panel`, `dialog`, `item-x`, `item-y`, `control-x`, `tag-x`, `tag-y`, `track`).
+4. **Surface background?** -> Use `--lp-color-surface-l0` (page canvas), `--lp-color-surface-l1` (bars, panels, overlays), `--lp-color-surface-l2` (resting controls/chips), `--lp-color-surface-control-hover|active|selected`, or `--lp-color-surface-scrim` (modal/sheet backdrop).
+5. **Text or icon colour?** -> Use `--lp-color-text-1` (primary), `--lp-color-text-2` (secondary/description/caption), `--lp-color-text-3` (placeholder/disabled), or `--lp-color-role-<tone>-fg`.
+6. **Border or divider?** -> Use `--lp-border-hairline` with `--lp-color-border-subtle` (dividers), `--lp-color-border-control` (inputs/buttons), or `--lp-color-border-overlay` (panels/popovers/dialogs).
+7. **Corner radius?** -> Use `--lp-radius-r1` / `--lp-radius-chip` (`4px`), `--lp-radius-r2` / `--lp-radius-control|container|overlay|card` (`8px`), or `--lp-radius-full` (`9999px` circular dots/radios).
+8. **Stacking layer (`z-index`)?** -> Use a named layer only: `--lp-z-base` (`0`), `--lp-z-raised` (`1`), `--lp-z-sticky` (`100`), `--lp-z-overlay` (`200`), `--lp-z-popover` (`300`), `--lp-z-modal` (`400`), `--lp-z-toast` (`500`), `--lp-z-skip` (`1000`).
 
 ## Summary
 
-- Primitive tokens: **216**
-- Semantic tokens (per theme): **63**
-- Component, relation & typography tokens: **208**
-- Reserved tokens: **31**
+- Primitive scale entries (build-time resolved, not emitted to CSS): **219**
+- Semantic tokens (per theme): **52**
+- Component, spacing (`stack`, `inline`, `inset`) & typography tokens: **173**
+- Responsive breakpoint overrides: **2**
 
 ## Breakpoints
 
 | Token | Value | Usage |
 | --- | --- | --- |
 | `breakpoints.viewport.sm` | `640px` | Mobile-to-desktop control height (`44px` -> `40px`), Item grid |
-| `breakpoints.viewport.md` | `768px` | Gutter (`16px` -> `24px`), push-panel vs overlay |
+| `breakpoints.viewport.md` | `768px` | Page gutter (`16px` -> `24px`), push-panel vs overlay |
+| `breakpoints.viewport.lg` | `1024px` | Wide desktop split layout (`1024px`) |
+| `breakpoints.viewport.xl` | `1280px` | 3-pane desktop layout (`1280px`) |
 | `breakpoints.container.compact` | `400px` | Container query threshold (`< 400px`) |
 
-## D-FINAL Spacing Relations
+## D-FINAL & D-L4 Spacing Relations
 
-| Relation | Token | Value |
+| Relation | Stack Token | Value |
 | --- | --- | --- |
-| `page-title-to-description` | `--lp-rel-page-title-to-description` | `8px` |
-| `header-to-content` | `--lp-rel-header-to-content` | `24px` |
-| `tabs-to-content` | `--lp-rel-tabs-to-content` | `16px` |
-| `section-heading-to-intro` | `--lp-rel-section-heading-to-intro` | `8px` |
-| `heading-to-first` | `--lp-rel-heading-to-first` | `16px` |
-| `heading-to-list-plain` | `--lp-rel-heading-to-list-plain` | `16px` |
-| `heading-to-list-interactive` | `--lp-rel-heading-to-list-interactive` | `16px` |
-| `control-to-list` | `--lp-rel-control-to-list` | `16px` |
-| `tint-clearance` | `--lp-rel-tint-clearance` | `8px` |
-| `subsection-to-subsection` | `--lp-rel-subsection-to-subsection` | `24px` |
-| `label-to-control` | `--lp-rel-label-to-control` | `8px` |
-| `field-to-field` | `--lp-rel-field-to-field` | `16px` |
-| `item-to-item` | `--lp-rel-item-to-item` | `0px` |
-| `item-body-to-actionbar` | `--lp-rel-item-body-to-actionbar` | `24px` |
-| `section-to-section` | `--lp-rel-section-to-section` | `40px` |
-| `action-bar-after-section` | `--lp-rel-action-bar-after-section` | `40px` |
-| `action-bar-after-control` | `--lp-rel-action-bar-after-control` | `24px` |
-| `button-to-button` | `--lp-rel-button-to-button` | `8px` |
-| `dialog-title-to-body` | `--lp-rel-dialog-title-to-body` | `16px` |
-| `dialog-body-to-actionbar` | `--lp-rel-dialog-body-to-actionbar` | `24px` |
+| `page-title-to-description` | `--lp-space-stack-page-title-to-description` | `8px` |
+| `header-to-content` | `--lp-space-stack-header-to-content` | `24px` |
+| `tabs-to-content` | `--lp-space-stack-tabs-to-content` | `16px` |
+| `section-heading-to-intro` | `--lp-space-stack-section-heading-to-intro` | `8px` |
+| `heading-to-first` | `--lp-space-stack-heading-to-first` | `16px` |
+| `heading-to-list-plain` | `--lp-space-stack-heading-to-list-plain` | `16px` |
+| `heading-to-list-interactive` | `--lp-space-stack-heading-to-list-interactive` | `16px` |
+| `control-to-list` | `--lp-space-stack-control-to-list` | `16px` |
+| `tint-clearance` | `--lp-space-stack-tint-clearance` | `8px` |
+| `subsection-to-subsection` | `--lp-space-stack-subsection-to-subsection` | `24px` |
+| `label-to-control` | `--lp-space-stack-label-to-control` | `8px` |
+| `field-to-field` | `--lp-space-stack-field-to-field` | `16px` |
+| `item-to-item` | `--lp-space-stack-item-to-item` | `0px` |
+| `item-body-to-actionbar` | `--lp-space-stack-item-body-to-actionbar` | `24px` |
+| `section-to-section` | `--lp-space-stack-section-to-section` | `40px` |
+| `action-bar-after-section` | `--lp-space-stack-action-bar-after-section` | `40px` |
+| `action-bar-after-control` | `--lp-space-stack-action-bar-after-control` | `24px` |
+| `button-to-button` | `--lp-space-stack-button-to-button` | `8px` |
+| `dialog-title-to-body` | `--lp-space-stack-dialog-title-to-body` | `16px` |
+| `dialog-body-to-actionbar` | `--lp-space-stack-dialog-body-to-actionbar` | `24px` |
 
 ## Typography Roles (7 Roles + control-label)
 
@@ -64,28 +99,19 @@
 | `--lp-color-surface-l0` | `#FFFFFF` | `#0F1A22` |
 | `--lp-color-surface-l1` | `#F5F6F7` | `#16232D` |
 | `--lp-color-surface-l2` | `#EBEFF2` | `#1E2E3B` |
-| `--lp-color-surface-page` | `#FFFFFF` | `#0F1A22` |
-| `--lp-color-surface-raised` | `#FFFFFF` | `#16232D` |
-| `--lp-color-surface-overlay` | `#F5F6F7` | `#16232D` |
-| `--lp-color-surface-sunken` | `#F3F5F4` | `#121C24` |
-| `--lp-color-surface-subtle` | `#F3F5F4` | `#16232D` |
-| `--lp-color-surface-panel` | `#F5F6F7` | `#16232D` |
-| `--lp-color-surface-input` | `#FFFFFF` | `#16232D` |
 | `--lp-color-surface-control` | `#EBEFF2` | `#1E2E3B` |
 | `--lp-color-surface-control-hover` | `#E1E6EA` | `#273847` |
 | `--lp-color-surface-control-active` | `#D2D9DF` | `#314557` |
 | `--lp-color-surface-control-selected` | `#EEF1FF` | `#1A244D` |
-| `--lp-color-surface-backdrop` | `rgba(15, 26, 34, 0.45)` | `rgba(0, 0, 0, 0.6)` |
-| `--lp-color-surface-modal-backdrop` | `rgba(0, 0, 0, 0.5)` | `rgba(0, 0, 0, 0.5)` |
+| `--lp-color-surface-scrim` | `rgba(15, 26, 34, 0.45)` | `rgba(0, 0, 0, 0.6)` |
 | `--lp-color-text-1` | `#14202A` | `#E6ECEF` |
 | `--lp-color-text-2` | `#4B5A66` | `#A3B2BD` |
 | `--lp-color-text-3` | `#63727E` | `#8A99A6` |
 | `--lp-color-text-on-accent` | `#FFFFFF` | `#0F1A22` |
-| `--lp-color-text-future` | `#4B5A66` | `#A3B2BD` |
 | `--lp-color-border-subtle` | `#CBD3D8` | `#2A3946` |
 | `--lp-color-border-control` | `#6B7B88` | `#7E8F9C` |
 | `--lp-color-border-overlay` | `#CBD3D8` | `#334656` |
-| `--lp-color-border-provisional` | `#4B5A66` | `#A3B2BD` |
+| `--lp-color-border-subtle-ring` | `rgba(0, 0, 0, 0.1)` | `rgba(0, 0, 0, 0.1)` |
 | `--lp-color-accent-default` | `#3A4FD0` | `#9AA8FF` |
 | `--lp-color-accent-focus-ring` | `#3A4FD0` | `#9AA8FF` |
 | `--lp-color-role-action-fg` | `#1E329E` | `#C5CEFF` |
@@ -106,88 +132,164 @@
 | `--lp-color-role-info-fg` | `#1D437A` | `#A9CBF4` |
 | `--lp-color-role-info-bg` | `#EAF2FC` | `#15263D` |
 | `--lp-color-role-info-border` | `#2F5FA8` | `#8DB4EA` |
-| `--lp-color-role-goal` | `#2F5FA8` | `#8DB4EA` |
-| `--lp-color-role-approach` | `#5A5F6B` | `#B4B9C4` |
-| `--lp-color-role-friction` | `#9A6A00` | `#E2B34A` |
-| `--lp-color-role-decision` | `#5B3FA0` | `#B9A4EE` |
-| `--lp-color-role-outcome` | `#1F7A5A` | `#6FCBA3` |
-| `--lp-color-role-lesson` | `#A13A6B` | `#EE9CC2` |
-| `--lp-color-role-neutral` | `#5A5F6B` | `#B4B9C4` |
-| `--lp-color-status-ok` | `#145940` | `#8CE0BC` |
-| `--lp-color-status-warn` | `#6E4700` | `#F7D070` |
-| `--lp-color-status-error` | `#8E1B12` | `#FDA29B` |
+| `--lp-color-passage-goal` | `#2F5FA8` | `#8DB4EA` |
+| `--lp-color-passage-approach` | `#5A5F6B` | `#B4B9C4` |
+| `--lp-color-passage-friction` | `#9A6A00` | `#E2B34A` |
+| `--lp-color-passage-decision` | `#5B3FA0` | `#B9A4EE` |
+| `--lp-color-passage-outcome` | `#1F7A5A` | `#6FCBA3` |
+| `--lp-color-passage-lesson` | `#A13A6B` | `#EE9CC2` |
+| `--lp-color-passage-neutral` | `#5A5F6B` | `#B4B9C4` |
+| `--lp-color-elevation-shadow-e1` | `rgba(20, 32, 42, 0.14)` | `rgba(0, 0, 0, 0.55)` |
+| `--lp-color-elevation-shadow-e2` | `rgba(20, 32, 42, 0.18)` | `rgba(0, 0, 0, 0.65)` |
+| `--lp-elevation-e1-blur` | `16px` | `18px` |
+| `--lp-elevation-e2-blur` | `32px` | `36px` |
 | `--lp-elevation-e0` | `none` | `none` |
 | `--lp-elevation-e1` | `0 6px 16px rgba(20, 32, 42, 0.14)` | `0 6px 18px rgba(0, 0, 0, 0.55)` |
-| `--lp-elevation-e1-up` | `0 -6px 16px rgba(20, 32, 42, 0.14)` | `0 -6px 18px rgba(0, 0, 0, 0.55)` |
-| `--lp-elevation-e1-right` | `6px 0 16px rgba(20, 32, 42, 0.14)` | `6px 0 18px rgba(0, 0, 0, 0.55)` |
+| `--lp-elevation-e1-up` | `0 calc(-1 * 6px) 16px rgba(20, 32, 42, 0.14)` | `0 calc(-1 * 6px) 18px rgba(0, 0, 0, 0.55)` |
 | `--lp-elevation-e2` | `0 12px 32px rgba(20, 32, 42, 0.18)` | `0 12px 36px rgba(0, 0, 0, 0.65)` |
 | `--lp-opacity-disabled` | `0.5` | `0.5` |
-| `--lp-opacity-scrim` | `0.45` | `0.6` |
-| `--lp-color-accent-subtle-ring` | `rgba(0, 0, 0, 0.1)` | `rgba(0, 0, 0, 0.1)` |
 
-## Tier 3: Component Tokens
+## Tier 3: Component & Spacing Taxonomy Tokens
 
 | Token | Value |
 | --- | --- |
-| `--lp-space-0` | `0px` |
-| `--lp-space-2` | `2px` |
-| `--lp-space-4` | `4px` |
-| `--lp-space-8` | `8px` |
-| `--lp-space-12` | `12px` |
-| `--lp-space-16` | `16px` |
-| `--lp-space-24` | `24px` |
-| `--lp-space-32` | `32px` |
-| `--lp-space-40` | `40px` |
-| `--lp-space-48` | `48px` |
-| `--lp-space-64` | `64px` |
+| `--lp-color-surface-page` | `#FFFFFF` |
+| `--lp-color-surface-overlay` | `#F5F6F7` |
+| `--lp-color-surface-subtle` | `#F5F6F7` |
+| `--lp-space-stack-none` | `0px` |
+| `--lp-space-stack-hairline` | `2px` |
+| `--lp-space-stack-compact` | `4px` |
+| `--lp-space-stack-sub-compact` | `6px` |
+| `--lp-space-stack-label-to-control` | `8px` |
+| `--lp-space-stack-tight` | `8px` |
+| `--lp-space-stack-tint-clearance` | `8px` |
+| `--lp-space-stack-page-title-to-description` | `8px` |
+| `--lp-space-stack-section-heading-to-intro` | `8px` |
+| `--lp-space-stack-note` | `10px` |
+| `--lp-space-stack-snug` | `12px` |
+| `--lp-space-stack-field-to-field` | `16px` |
+| `--lp-space-stack-related` | `16px` |
+| `--lp-space-stack-heading-to-first` | `16px` |
+| `--lp-space-stack-heading-to-list-plain` | `16px` |
+| `--lp-space-stack-heading-to-list-interactive` | `16px` |
+| `--lp-space-stack-control-to-list` | `16px` |
+| `--lp-space-stack-tabs-to-content` | `16px` |
+| `--lp-space-stack-dialog-title-to-body` | `16px` |
+| `--lp-space-stack-group` | `24px` |
+| `--lp-space-stack-subsection-to-subsection` | `24px` |
+| `--lp-space-stack-header-to-content` | `24px` |
+| `--lp-space-stack-item-body-to-actionbar` | `24px` |
+| `--lp-space-stack-action-bar-after-control` | `24px` |
+| `--lp-space-stack-dialog-body-to-actionbar` | `24px` |
+| `--lp-space-stack-display` | `28px` |
+| `--lp-space-stack-section` | `40px` |
+| `--lp-space-stack-section-to-section` | `40px` |
+| `--lp-space-stack-action-bar-after-section` | `40px` |
+| `--lp-space-stack-block` | `48px` |
+| `--lp-space-stack-page` | `64px` |
+| `--lp-space-inline-hairline` | `2px` |
+| `--lp-space-inline-segment` | `4px` |
+| `--lp-space-inline-dot-text` | `6px` |
+| `--lp-space-inline-icon-text` | `8px` |
+| `--lp-space-inline-button-button` | `8px` |
+| `--lp-space-inline-tag-tag` | `8px` |
+| `--lp-space-inline-snug` | `12px` |
+| `--lp-space-inline-related` | `16px` |
+| `--lp-space-inline-group` | `24px` |
+| `--lp-space-inset-tag-y` | `2px` |
+| `--lp-space-inset-track` | `4px` |
+| `--lp-space-inset-badge-x` | `5px` |
+| `--lp-space-inset-compact` | `6px` |
+| `--lp-space-inset-item-x` | `8px` |
+| `--lp-space-inset-tag-x` | `8px` |
+| `--lp-space-inset-control-sm` | `10px` |
+| `--lp-space-inset-item-y` | `12px` |
+| `--lp-space-inset-control-x` | `12px` |
+| `--lp-space-inset-panel` | `12px` |
+| `--lp-space-inset-card-sm` | `14px` |
+| `--lp-space-inset-page-gutter` | `16px` |
+| `--lp-space-inset-section` | `16px` |
+| `--lp-space-inset-dialog` | `24px` |
+| `--lp-space-inset-empty` | `32px` |
+| `--lp-space-inset-page-y` | `40px` |
+| `--lp-space-inset-hero-y` | `48px` |
+| `--lp-space-inset-stage-y` | `64px` |
 | `--lp-size-control-height` | `44px` |
-| `--lp-size-control-height-desktop` | `40px` |
+| `--lp-size-control-xs` | `32px` |
 | `--lp-size-hit-area` | `44px` |
 | `--lp-size-target-min` | `36px` |
-| `--lp-size-bar-top-height` | `60px` |
+| `--lp-size-bar-compact-height` | `48px` |
 | `--lp-size-bar-editor-height` | `56px` |
-| `--lp-size-bar-inset` | `12px` |
+| `--lp-size-bar-legacy-offset` | `57px` |
+| `--lp-size-bar-top-height` | `60px` |
 | `--lp-size-icon-sm` | `16px` |
 | `--lp-size-icon-md` | `20px` |
-| `--lp-size-item-pad-y` | `12px` |
-| `--lp-size-item-pad-x` | `8px` |
-| `--lp-size-tag-pad-y` | `2px` |
-| `--lp-size-tag-pad-x` | `8px` |
+| `--lp-size-icon-lg` | `24px` |
+| `--lp-size-status-dot` | `6px` |
+| `--lp-size-notch-width` | `9px` |
+| `--lp-size-indicator-md` | `10px` |
+| `--lp-size-checkbox-sm` | `14px` |
+| `--lp-size-switch-thumb` | `18px` |
+| `--lp-size-tag-height` | `28px` |
 | `--lp-size-track-height` | `2px` |
-| `--lp-size-track-pad` | `4px` |
-| `--lp-size-layout-main-max` | `720px` |
-| `--lp-size-layout-narrow-max` | `400px` |
-| `--lp-size-layout-rail-width` | `320px` |
-| `--lp-size-layout-max` | `1180px` |
+| `--lp-size-hatch-step` | `1.5px` |
+| `--lp-size-progress-track-w` | `100px` |
+| `--lp-size-canary-probe` | `80px` |
+| `--lp-size-textarea-compact-min-h` | `70px` |
+| `--lp-size-textarea-min-h` | `144px` |
+| `--lp-size-card-min-h` | `140px` |
+| `--lp-size-col-min-xs` | `130px` |
+| `--lp-size-menu-min-w` | `148px` |
+| `--lp-size-grid-card-min` | `180px` |
+| `--lp-size-popover-min-w` | `200px` |
+| `--lp-size-grid-field-min` | `220px` |
+| `--lp-size-popover-max-w` | `280px` |
+| `--lp-size-editor-canvas-min-h` | `360px` |
+| `--lp-size-overlay-sample-max` | `420px` |
+| `--lp-size-form-compact-max` | `440px` |
+| `--lp-size-dialog-max-w` | `480px` |
+| `--lp-size-card-max-w` | `520px` |
 | `--lp-size-layout-list-col` | `260px` |
+| `--lp-size-layout-nav-compact` | `230px` |
+| `--lp-size-layout-inspector-compact` | `310px` |
+| `--lp-size-layout-rail-width` | `320px` |
 | `--lp-size-admin-nav-width` | `240px` |
 | `--lp-size-admin-inspector-width` | `340px` |
+| `--lp-size-layout-narrow-max` | `400px` |
+| `--lp-size-layout-reading-col` | `640px` |
+| `--lp-size-layout-main-max` | `720px` |
+| `--lp-size-layout-medium-max` | `760px` |
+| `--lp-size-layout-wide-col` | `840px` |
+| `--lp-size-layout-dashboard-max` | `920px` |
+| `--lp-size-layout-max` | `1180px` |
 | `--lp-size-strata-band-min` | `44px` |
 | `--lp-size-strata-band-max` | `120px` |
 | `--lp-size-btn-item-min` | `96px` |
 | `--lp-size-btn-action-min` | `160px` |
 | `--lp-size-btn-action-max` | `240px` |
-| `--lp-size-gutter` | `16px` |
-| `--lp-size-gutter-desktop` | `24px` |
+| `--lp-measure-reading` | `68ch` |
+| `--lp-editor-min-h` | `60vh` |
+| `--lp-elevation-e1-offset-y` | `6px` |
+| `--lp-elevation-e2-offset-y` | `12px` |
 | `--lp-radius-r1` | `4px` |
 | `--lp-radius-r2` | `8px` |
 | `--lp-radius-control` | `8px` |
 | `--lp-radius-container` | `8px` |
 | `--lp-radius-overlay` | `8px` |
 | `--lp-radius-chip` | `4px` |
-| `--lp-radius-pill` | `4px` |
 | `--lp-radius-card` | `8px` |
+| `--lp-radius-full` | `999px` |
 | `--lp-border-hairline` | `1px` |
 | `--lp-border-focus` | `2px` |
 | `--lp-border-role-rule` | `3px` |
 | `--lp-border-banner-rule` | `4px` |
-| `--lp-z-base` | `{primitive.zIndex.0}` |
+| `--lp-z-base` | `0` |
 | `--lp-z-raised` | `1` |
 | `--lp-z-sticky` | `100` |
 | `--lp-z-overlay` | `200` |
-| `--lp-z-popover` | `210` |
-| `--lp-z-toast` | `300` |
-| `--lp-z-modal` | `999` |
+| `--lp-z-popover` | `300` |
+| `--lp-z-modal` | `400` |
+| `--lp-z-toast` | `500` |
 | `--lp-z-skip` | `1000` |
 | `--lp-motion-duration-instant` | `0.01ms` |
 | `--lp-motion-duration-fast` | `100ms` |
@@ -200,108 +302,27 @@
 | `--lp-font-family-ui` | `'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif` |
 | `--lp-font-family-reading` | `'Literata', Georgia, 'Times New Roman', serif` |
 | `--lp-font-family-code` | `'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace` |
+| `--lp-font-size-10` | `10px` |
+| `--lp-font-size-11` | `11px` |
 | `--lp-font-size-12` | `12px` |
+| `--lp-font-size-13` | `13px` |
 | `--lp-font-size-14` | `14px` |
+| `--lp-font-size-15` | `15px` |
 | `--lp-font-size-16` | `16px` |
+| `--lp-font-size-17` | `17px` |
+| `--lp-font-size-18` | `18px` |
+| `--lp-font-size-21` | `21px` |
 | `--lp-font-size-24` | `24px` |
+| `--lp-font-size-30` | `30px` |
+| `--lp-font-size-32` | `32px` |
+| `--lp-font-weight-400` | `400` |
+| `--lp-font-weight-500` | `500` |
+| `--lp-font-weight-600` | `600` |
+| `--lp-font-weight-700` | `700` |
 | `--lp-font-line-16` | `16px` |
 | `--lp-font-line-20` | `20px` |
 | `--lp-font-line-24` | `24px` |
 | `--lp-font-line-32` | `32px` |
 | `--lp-font-line-reading` | `1.65` |
-| `--lp-measure-reading` | `68ch` |
-| `--lp-editor-min-h` | `60vh` |
-| `--lp-size-5` | `5px` |
-| `--lp-size-6` | `6px` |
-| `--lp-size-9` | `9px` |
-| `--lp-size-10` | `10px` |
-| `--lp-size-11` | `11px` |
-| `--lp-size-13` | `13px` |
-| `--lp-size-14` | `14px` |
-| `--lp-size-15` | `15px` |
-| `--lp-size-18` | `18px` |
-| `--lp-size-21` | `21px` |
-| `--lp-size-25` | `25px` |
-| `--lp-size-28` | `28px` |
-| `--lp-size-30` | `30px` |
-| `--lp-size-48` | `48px` |
-| `--lp-size-52` | `52px` |
-| `--lp-size-57` | `57px` |
-| `--lp-size-70` | `70px` |
-| `--lp-size-80` | `80px` |
-| `--lp-size-100` | `100px` |
-| `--lp-size-130` | `130px` |
-| `--lp-size-140` | `140px` |
-| `--lp-size-144` | `144px` |
-| `--lp-size-148` | `148px` |
-| `--lp-size-230` | `230px` |
-| `--lp-size-310` | `310px` |
-| `--lp-size-360` | `360px` |
-| `--lp-size-420` | `420px` |
-| `--lp-size-440` | `440px` |
-| `--lp-size-480` | `480px` |
-| `--lp-size-520` | `520px` |
-| `--lp-size-760` | `760px` |
-| `--lp-size-840` | `840px` |
-| `--lp-size-920` | `920px` |
-| `--lp-size-999` | `999px` |
-| `--lp-size-1080` | `1080px` |
-| `--lp-size-1280` | `1280px` |
-| `--lp-size-0-5` | `0.5px` |
-| `--lp-size-1-5` | `1.5px` |
-| `--lp-size-32` | `32px` |
-| `--lp-size-180` | `180px` |
-| `--lp-size-200` | `200px` |
-| `--lp-size-220` | `220px` |
-| `--lp-size-280` | `280px` |
-| `--lp-size-400` | `400px` |
-| `--lp-z-3` | `3` |
-| `--lp-z-4` | `4` |
-| `--lp-z-10` | `10` |
-| `--lp-z-20` | `20` |
-| `--lp-z-50` | `50` |
-| `--lp-elevation-subtle-ring` | `rgba(0, 0, 0, 0.1)` |
-| `--lp-size-17` | `17px` |
-| `--lp-size-640` | `640px` |
-| `--lp-space-stack-control-to-list` | `16px` |
-| `--lp-space-stack-heading-to-list-plain` | `16px` |
-| `--lp-space-stack-heading-to-list-interactive` | `16px` |
-| `--lp-space-stack-tint-clearance` | `8px` |
-| `--lp-space-inset-item-x` | `8px` |
-| `--lp-space-inset-item-y` | `12px` |
-
-## Reserved Tokens
-
-| Token | Reason |
-| --- | --- |
-| `--lp-opacity-disabled` | Reserved semantic disabled opacity (0.45) for disabled interactive states |
-| `--lp-opacity-scrim` | Reserved semantic scrim opacity (0.45) for overlay backdrops |
-| `--lp-space-0` | Reserved in spacing scale (0px) for zero-spacing utility parity |
-| `--lp-space-32` | Reserved in raw spacing scale (0,2,4,8,12,16,24,32,40,48,64) for future layout gutters |
-| `--lp-space-48` | Reserved in raw spacing scale (0,2,4,8,12,16,24,32,40,48,64) for future section breaks |
-| `--lp-size-bar-inset` | Reserved bar inset padding (2px) for dense segmented controls |
-| `--lp-size-icon-sm` | Reserved small icon size (14px) for inline status indicators |
-| `--lp-size-item-pad-y` | Reserved component token (12px) mirroring item vertical padding |
-| `--lp-size-item-pad-x` | Reserved component token (16px) mirroring item horizontal padding |
-| `--lp-size-tag-pad-y` | Reserved component token (4px) mirroring tag vertical padding |
-| `--lp-size-tag-pad-x` | Reserved component token (8px) mirroring tag horizontal padding |
-| `--lp-size-track-height` | Reserved switch track height (24px) |
-| `--lp-size-track-pad` | Reserved switch track padding (2px) |
-| `--lp-border-focus` | Reserved focus outline width (2px) for high-contrast focus rings |
-| `--lp-motion-easing-out` | Reserved motion easing curve (ease-out) for exit transitions |
-| `--lp-motion-easing-ease` | Reserved motion easing curve (ease) for general transitions |
-| `--lp-font-family-code` | Reserved monospace font stack for code/technical previews |
-| `--lp-font-size-12` | Reserved 12px font size token for caption/meta parity |
-| `--lp-font-line-16` | Reserved 16px line-height token for compact metadata |
-| `--lp-font-line-20` | Reserved 20px line-height token for body copy |
-| `--lp-font-line-24` | Reserved 24px line-height token for section headings |
-| `--lp-font-line-32` | Reserved 32px line-height token for page titles |
-| `--lp-font-line-reading` | Reserved 1.65 reading line-height for longform public prose |
-| `--lp-editor-min-h` | Reserved editor textarea minimum height (140px) |
-| `--lp-size-25` | Reserved 25px layout dimension token |
-| `--lp-size-52` | Reserved 52px layout dimension token |
-| `--lp-size-1280` | Reserved 1280px max-viewport container width token |
-| `--lp-size-400` | Reserved 400px narrow container width token |
-| `--lp-elevation-subtle-ring` | Reserved subtle border-ring elevation for flat cards |
-| `--lp-radius-pill` | Reserved pill radius (9999px) for future circular badges |
-| `--lp-z-toast` | Reserved z-index layer for toast notifications above overlays |
+| `--lp-font-letter-normal` | `0em` |
+| `--lp-font-letter-wide` | `0.5px` |

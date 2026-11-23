@@ -236,15 +236,15 @@ Always use transaction-scoped locks with pooling.`;
       expect(res.status).toBe(200);
 
       // Header padding and margin tokens
-      expect(res.html).toContain('margin-bottom:var(--space-6)');
-      expect(res.html).toContain('padding-bottom:var(--space-4)');
+      expect(res.html).toContain('margin-bottom:var(--lp-space-stack-group)');
+      expect(res.html).toContain('padding-bottom:var(--lp-space-inset-section)');
 
       // Date line margin tokens
-      expect(res.html).toContain('margin:var(--space-2) 0 var(--space-3)');
+      expect(res.html).toContain('margin:var(--lp-space-stack-label-to-control) 0 var(--lp-space-stack-label-to-control)');
 
       // Rail section margins
-      expect(res.html).toContain('margin-top:var(--space-6)');
-      expect(res.html).toContain('padding-top:var(--space-4)');
+      expect(res.html).toContain('margin-top:var(--lp-space-stack-group)');
+      expect(res.html).toContain('padding-top:var(--lp-space-inset-section)');
     });
   });
 
@@ -286,8 +286,8 @@ Always use transaction-scoped locks with pooling.`;
     });
 
     it('5. Micro-transitions answer actions and respect prefers-reduced-motion', () => {
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('transition: transform var(--duration-fast, var(--lp-motion-duration-item))');
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('transition: left var(--duration-base, var(--lp-motion-duration-base))');
+      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('transition: transform var(--lp-motion-duration-fast)');
+      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('transition: left var(--lp-motion-duration-base)');
       expect(STRATA_DESIGN_SYSTEM_CSS).toContain('@media (prefers-reduced-motion: reduce)');
       expect(STRATA_DESIGN_SYSTEM_CSS).toContain('animation-duration: var(--lp-motion-duration-instant) !important');
       expect(STRATA_DESIGN_SYSTEM_CSS).toContain('transition-duration: var(--lp-motion-duration-instant) !important');

@@ -29,32 +29,79 @@ function componentToCssVar(key) {
   return `--lp-${parts.join('-')}`;
 }
 
-function resolveRef(ref, tokens, mode = 'light') {
-  if (typeof ref !== 'string' || !ref.startsWith('{') || !ref.endsWith('}')) return ref;
-  const path = ref.slice(1, -1).split('.');
-  if (path[0] === 'primitive') {
-    const [, cat, ...rest] = path;
-    return tokens.primitive?.[cat]?.[rest.join('.')] ?? ref;
+/**
+ * Recursively resolve {primitive.*}, {semantic.*}, and {component.*} references to concrete values.
+ * Throws an error on any unresolved {…} reference (D-L5 unresolved alias guard).
+ */
+export function resolveRef(ref, tokens, mode = 'light', depth = 0) {
+  if (typeof ref !== 'string') return ref;
+  if (depth > 12) {
+    throw new Error(`Circular token reference detected while resolving "${ref}"`);
   }
-  if (path[0] === 'semantic') {
-    const semKey = path.slice(1).join('.');
-    const raw = tokens.semantic?.[mode]?.[semKey];
-    return raw ? resolveRef(raw, tokens, mode) : ref;
+  const resolved = ref.replace(/\{([a-zA-Z0-9_.-]+)\}/g, (full, pathStr) => {
+    const path = pathStr.split('.');
+    if (path[0] === 'primitive') {
+      const [, cat, ...rest] = path;
+      const val = tokens.primitive?.[cat]?.[rest.join('.')];
+      if (val === undefined) {
+        throw new Error(`Unresolved primitive token reference: ${full}`);
+      }
+      return resolveRef(val, tokens, mode, depth + 1);
+    }
+    if (path[0] === 'semantic') {
+      const semKey = path.slice(1).join('.');
+      const val = tokens.semantic?.[mode]?.[semKey];
+      if (val === undefined) {
+        throw new Error(`Unresolved semantic token reference: ${full} (mode=${mode})`);
+      }
+      return resolveRef(val, tokens, mode, depth + 1);
+    }
+    if (path[0] === 'component') {
+      const compKey = path.slice(1).join('.');
+      const val = tokens.component?.[compKey];
+      if (val === undefined) {
+        throw new Error(`Unresolved component token reference: ${full}`);
+      }
+      return resolveRef(val, tokens, mode, depth + 1);
+    }
+    throw new Error(`Unknown token tier in reference: ${full}`);
+  });
+  if (/\{[^}]+\}/.test(resolved)) {
+    throw new Error(`Unresolved token reference remaining in "${resolved}"`);
   }
-  return ref;
+  return resolved;
 }
 
-function refToVar(ref) {
-  if (typeof ref !== 'string' || !ref.startsWith('{') || !ref.endsWith('}')) return ref;
-  const path = ref.slice(1, -1).split('.');
-  if (path[0] === 'primitive') {
-    const [, cat, ...rest] = path;
-    return `var(${primitiveToCssVar(cat, rest.join('.'))})`;
+/**
+ * Resolve token value for shipped CSS (D-L5 performance):
+ * - Primitive references ({primitive.*}) are resolved directly at build time (no --lp-prim-* emitted).
+ * - Non-theme component references ({component.*}) are resolved at build time, except structured elevation offsets.
+ * - Theme-switched semantic references ({semantic.*}) emit var(--lp-*) so light/dark theme switching works at runtime.
+ */
+function resolveForCss(ref, tokens, mode = 'light', preserveComponentVars = false) {
+  if (typeof ref !== 'string') return ref;
+  const out = ref.replace(/\{([a-zA-Z0-9_.-]+)\}/g, (full, pathStr) => {
+    const path = pathStr.split('.');
+    if (path[0] === 'primitive') {
+      return resolveRef(full, tokens, mode);
+    }
+    if (path[0] === 'component') {
+      const compKey = path.slice(1).join('.');
+      if (preserveComponentVars || compKey.startsWith('elevation.')) {
+        return `var(${componentToCssVar(compKey)})`;
+      }
+      return resolveRef(full, tokens, mode);
+    }
+    if (path[0] === 'semantic') {
+      const semKey = path.slice(1).join('.');
+      return `var(${semanticToCssVar(semKey)})`;
+    }
+    throw new Error(`Unresolved token reference: ${full}`);
+  });
+  if (/\{[^}]+\}/.test(out)) {
+    throw new Error(`Unresolved token reference in CSS output: ${out}`);
   }
-  if (path[0] === 'semantic') {
-    return `var(${semanticToCssVar(path.slice(1).join('.'))})`;
-  }
-  return ref;
+  return out;
 }
 
 export function generateOutputs() {
@@ -63,7 +110,7 @@ export function generateOutputs() {
   const primitiveVars = {};
   for (const [cat, entries] of Object.entries(tokens.primitive)) {
     for (const [k, v] of Object.entries(entries)) {
-      primitiveVars[primitiveToCssVar(cat, k)] = v;
+      primitiveVars[primitiveToCssVar(cat, k)] = resolveRef(v, tokens, 'light');
     }
   }
 
@@ -71,7 +118,7 @@ export function generateOutputs() {
   const semanticLightResolved = {};
   for (const [k, v] of Object.entries(tokens.semantic.light)) {
     const cssName = semanticToCssVar(k);
-    semanticLightVars[cssName] = refToVar(v);
+    semanticLightVars[cssName] = resolveForCss(v, tokens, 'light');
     semanticLightResolved[cssName] = resolveRef(v, tokens, 'light');
   }
 
@@ -79,36 +126,51 @@ export function generateOutputs() {
   const semanticDarkResolved = {};
   for (const [k, v] of Object.entries(tokens.semantic.dark)) {
     const cssName = semanticToCssVar(k);
-    semanticDarkVars[cssName] = refToVar(v);
+    semanticDarkVars[cssName] = resolveForCss(v, tokens, 'dark');
     semanticDarkResolved[cssName] = resolveRef(v, tokens, 'dark');
   }
+
+  // Component-derived surface aliases for backwards compatibility in SEMANTIC_*_VALUES
+  semanticLightResolved['--lp-color-surface-page'] = semanticLightResolved['--lp-color-surface-l0'];
+  semanticLightResolved['--lp-color-surface-raised'] = semanticLightResolved['--lp-color-surface-l0'];
+  semanticLightResolved['--lp-color-surface-input'] = semanticLightResolved['--lp-color-surface-l0'];
+  semanticLightResolved['--lp-color-surface-overlay'] = semanticLightResolved['--lp-color-surface-l1'];
+  semanticLightResolved['--lp-color-surface-subtle'] = semanticLightResolved['--lp-color-surface-l1'];
+
+  semanticDarkResolved['--lp-color-surface-page'] = semanticDarkResolved['--lp-color-surface-l0'];
+  semanticDarkResolved['--lp-color-surface-raised'] = semanticDarkResolved['--lp-color-surface-l1'];
+  semanticDarkResolved['--lp-color-surface-input'] = semanticDarkResolved['--lp-color-surface-l1'];
+  semanticDarkResolved['--lp-color-surface-overlay'] = semanticDarkResolved['--lp-color-surface-l1'];
+  semanticDarkResolved['--lp-color-surface-subtle'] = semanticDarkResolved['--lp-color-surface-l1'];
 
   const componentVars = {};
   const componentResolved = {};
   for (const [k, v] of Object.entries(tokens.component)) {
     const cssName = componentToCssVar(k);
-    componentVars[cssName] = refToVar(v);
+    componentVars[cssName] = resolveForCss(v, tokens, 'light');
     componentResolved[cssName] = resolveRef(v, tokens, 'light');
   }
 
-  const relationVars = {};
+  const responsiveVars = {};
+  const responsiveResolved = {};
+  for (const [bpKey, entries] of Object.entries(tokens.responsive ?? {})) {
+    responsiveVars[bpKey] = {};
+    responsiveResolved[bpKey] = {};
+    for (const [k, v] of Object.entries(entries)) {
+      const cssName = componentToCssVar(k);
+      responsiveVars[bpKey][cssName] = resolveForCss(v, tokens, 'light');
+      responsiveResolved[bpKey][cssName] = resolveRef(v, tokens, 'light');
+    }
+  }
+
   const relationsResolved = {};
   for (const [k, v] of Object.entries(tokens.relations)) {
-    const cssName = `--lp-rel-${k}`;
-    relationVars[cssName] = refToVar(v);
     const res = resolveRef(v, tokens, 'light');
     relationsResolved[k] = typeof res === 'string' && res.endsWith('px') ? parseFloat(res) : res;
   }
 
-  const typeRoleVars = {};
   const typeRolesResolved = {};
   for (const [role, spec] of Object.entries(tokens.typographyRoles)) {
-    typeRoleVars[`--lp-type-${role}-family`] = refToVar(spec.family);
-    typeRoleVars[`--lp-type-${role}-size`] = refToVar(spec.size);
-    typeRoleVars[`--lp-type-${role}-weight`] = refToVar(spec.weight);
-    typeRoleVars[`--lp-type-${role}-line`] = refToVar(spec.lineHeight);
-    typeRoleVars[`--lp-type-${role}-letter`] = refToVar(spec.letterSpacing);
-    typeRoleVars[`--lp-type-${role}-color`] = refToVar(spec.color);
     typeRolesResolved[role] = {
       family: resolveRef(spec.family, tokens, 'light'),
       size: parseFloat(resolveRef(spec.size, tokens, 'light')),
@@ -119,18 +181,18 @@ export function generateOutputs() {
     };
   }
 
-  // Legacy semantic aliases for smooth transition & runtime theme overrides
+  // Shorthand aliases for runtime theme pack overrides and component CSS
   const legacyAliasesLight = `
   color-scheme: light;
+  --lp-color-surface-raised: var(--lp-color-surface-l0);
+  --lp-color-surface-input: var(--lp-color-surface-l0);
   --surface-l0: var(--lp-color-surface-l0);
   --surface-l1: var(--lp-color-surface-l1);
   --surface-l2: var(--lp-color-surface-l2);
   --surface-page: var(--lp-color-surface-page);
   --surface-raised: var(--lp-color-surface-raised);
   --surface-overlay: var(--lp-color-surface-overlay);
-  --surface-sunken: var(--lp-color-surface-sunken);
   --surface-subtle: var(--lp-color-surface-subtle);
-  --surface-panel: var(--lp-color-surface-panel);
   --surface: var(--lp-color-surface-l0);
   --surface-input: var(--lp-color-surface-input);
   --surface-control: var(--lp-color-surface-control);
@@ -154,7 +216,6 @@ export function generateOutputs() {
   --role-action-border: var(--lp-color-role-action-border);
   --role-neutral-fg: var(--lp-color-role-neutral-fg);
   --role-neutral-bg: var(--lp-color-role-neutral-bg);
-  --role-neutral-border: var(--lp-color-role-neutral-border);
   --role-success-fg: var(--lp-color-role-success-fg);
   --role-success-bg: var(--lp-color-role-success-bg);
   --role-success-border: var(--lp-color-role-success-border);
@@ -167,109 +228,8 @@ export function generateOutputs() {
   --role-info-fg: var(--lp-color-role-info-fg);
   --role-info-bg: var(--lp-color-role-info-bg);
   --role-info-border: var(--lp-color-role-info-border);
-  --role-goal: var(--lp-color-role-goal);
-  --role-approach: var(--lp-color-role-approach);
-  --role-friction: var(--lp-color-role-friction);
-  --role-challenge: var(--lp-color-role-friction);
-  --role-decision: var(--lp-color-role-decision);
-  --role-outcome: var(--lp-color-role-outcome);
-  --role-lesson: var(--lp-color-role-lesson);
-  --role-neutral: var(--lp-color-role-neutral);
-  --status-warn: var(--lp-color-status-warn);
-  --status-error: var(--lp-color-status-error);
-  --status-ok: var(--lp-color-status-ok);
-  --status-success-bg: var(--lp-color-role-success-bg);
-  --status-success-fg: var(--lp-color-role-success-fg);
-  --status-success-border: var(--lp-color-role-success-border);
-  --status-warn-bg: var(--lp-color-role-warning-bg);
-  --status-warn-fg: var(--lp-color-role-warning-fg);
-  --status-warn-border: var(--lp-color-role-warning-border);
-  --status-danger-bg: var(--lp-color-role-danger-bg);
-  --status-danger-fg: var(--lp-color-role-danger-fg);
-  --status-danger-border: var(--lp-color-role-danger-border);
-  --state-future-text: var(--lp-color-text-future);
-  --state-provisional-border: var(--lp-color-border-provisional);
-  --shadow-e1: var(--lp-elevation-e1);
-  --shadow-e1-up: var(--lp-elevation-e1-up);
-  --shadow-e1-right: var(--lp-elevation-e1-right);
-  --shadow-e2: var(--lp-elevation-e2);
-  --shadow-overlay: var(--lp-elevation-e2);
-  --backdrop: var(--lp-color-surface-backdrop);
-  --z-base: var(--lp-z-base);
-  --z-sticky: var(--lp-z-sticky);
-  --z-overlay: var(--lp-z-overlay);
-  --z-toast: var(--lp-z-toast);
-  --vv-bottom: 0px;
-  --space-1: var(--lp-space-4);
-  --space-2: var(--lp-space-8);
-  --space-3: var(--lp-space-8);
-  --space-4: var(--lp-space-16);
-  --space-6: var(--lp-space-24);
-  --space-8: var(--lp-space-24);
-  --space-12: var(--lp-space-40);
-  --space-16: var(--lp-space-64);
-  --space-18: var(--lp-space-64);
-  --space-inline: var(--lp-space-8);
-  --space-field: var(--lp-space-16);
-  --space-section: var(--lp-space-40);
-  --gutter: var(--lp-size-gutter);
-  --gap-tight: var(--lp-space-8);
-  --gap-related: var(--lp-space-16);
-  --gap-group: var(--lp-space-24);
-  --gap-section: var(--lp-space-40);
-  --r1: var(--lp-radius-r1);
-  --r2: var(--lp-radius-r2);
-  --radius-control: var(--lp-radius-control);
-  --radius-container: var(--lp-radius-container);
-  --radius-overlay: var(--lp-radius-overlay);
-  --radius-pill: var(--lp-radius-pill);
-  --radius-chip: var(--lp-radius-chip);
-  --radius-card: var(--lp-radius-card);
-  --control-height: var(--lp-size-control-height);
-  --button-height-md: var(--lp-size-control-height);
-  --button-height-sm: var(--lp-size-control-height);
-  --button-bg: var(--lp-color-accent-default);
-  --button-fg: var(--lp-color-text-on-accent);
-  --button-radius: var(--lp-radius-control);
-  --chip-radius: var(--lp-radius-pill);
-  --chip-border: var(--lp-color-border-control);
-  --field-border: var(--lp-color-border-control);
-  --field-radius: var(--lp-radius-control);
-  --layout-list-col: var(--lp-size-layout-list-col);
-  --layout-main-max: var(--lp-size-layout-main-max);
-  --size-layout-max: var(--lp-size-layout-max);
   --layout-max: var(--lp-size-layout-max);
-  --measure-reading: var(--lp-prim-size-measure-reading);
-  --rail-width: var(--lp-size-layout-rail-width);
-  --size-target-min: var(--lp-size-target-min);
-  --admin-nav-width: var(--lp-size-admin-nav-width);
-  --admin-inspector-width: var(--lp-size-admin-inspector-width);
-  --strata-band-min: var(--lp-size-strata-band-min);
-  --strata-band-max: var(--lp-size-strata-band-max);
-  --role-section-rule-width: var(--lp-border-role-rule);
-  --banner-rule-width: var(--lp-border-banner-rule);
-  --editor-min-height: var(--lp-prim-size-editor-min-h);
-  --duration-fast: var(--lp-prim-motion-duration-fast);
-  --duration-base: var(--lp-prim-motion-duration-base);
-  --duration-slow: var(--lp-prim-motion-duration-slow);
-  --ease-out: var(--lp-prim-motion-easing-out);
-  --font-reading: var(--lp-prim-font-family-reading);
-  --font-ui: var(--lp-prim-font-family-ui);
-  --font-sans: var(--lp-prim-font-family-ui);
-  --font-code: var(--lp-prim-font-family-code);
-  --text-body-size: var(--lp-prim-font-size-16);
-  --text-body-leading: var(--lp-prim-font-line-reading);
-  --text-ui-size: var(--lp-prim-font-size-14);
-  --type-caption-size: var(--lp-prim-font-size-12);
-  --type-caption-line: var(--lp-prim-font-line-16);
-  --type-body-sm-size: var(--lp-prim-font-size-14);
-  --type-body-sm-line: var(--lp-prim-font-line-20);
-  --type-body-size: var(--lp-prim-font-size-16);
-  --type-body-line: var(--lp-prim-font-line-24);
-  --type-title-size: var(--lp-prim-font-size-16);
-  --type-title-line: var(--lp-prim-font-line-24);
-  --type-page-title-size: var(--lp-prim-font-size-24);
-  --type-page-title-line: var(--lp-prim-font-line-32);`.trim();
+  --vv-bottom: 0px;`.trim();
 
   const fmtBlock = (obj) =>
     Object.entries(obj)
@@ -278,6 +238,12 @@ export function generateOutputs() {
 
   const bpSm = tokens.breakpoints.viewport.sm;
   const bpMd = tokens.breakpoints.viewport.md;
+
+  const darkOverrides = {
+    ...semanticDarkVars,
+    '--lp-color-surface-raised': 'var(--lp-color-surface-l1)',
+    '--lp-color-surface-input': 'var(--lp-color-surface-l1)',
+  };
 
   const cssOut = `/* AUTO-GENERATED FROM packages/design-tokens/tokens.json — DO NOT EDIT BY HAND */
 @font-face {
@@ -303,73 +269,66 @@ export function generateOutputs() {
 }
 
 :root {
-  /* Tier 1: Primitives */
-${fmtBlock(primitiveVars)}
-
-  /* Tier 2: Semantic (Light Default) */
+  /* Tier 2: Semantic (Light Default, primitives resolved at build) */
 ${fmtBlock(semanticLightVars)}
 
-  /* Tier 3: Component & Relation Tokens */
+  /* Tier 3: Component, Spacing (stack, inline, inset) & Typography Tokens */
 ${fmtBlock(componentVars)}
-${fmtBlock(relationVars)}
-${fmtBlock(typeRoleVars)}
 
-  /* Legacy Aliases */
-${legacyAliasesLight}
+  /* Shorthand Aliases */
+  ${legacyAliasesLight}
 }
 
 :root[data-theme="dark"],
 :root:not([data-theme="light"]) {
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
-${fmtBlock(semanticDarkVars).replace(/^  /gm, '    ')}
+${fmtBlock(darkOverrides).replace(/^  /gm, '    ')}
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-${fmtBlock(semanticDarkVars)}
+${fmtBlock(darkOverrides)}
 }
 
 @media (min-width: ${bpSm}px) {
   :root {
-    --lp-size-control-height: var(--lp-size-control-height-desktop);
-    --control-height: var(--lp-size-control-height-desktop);
+${fmtBlock(responsiveVars.sm ?? {}).replace(/^  /gm, '    ')}
   }
 }
 
 @media (min-width: ${bpMd}px) {
   :root {
-    --lp-size-gutter: var(--lp-size-gutter-desktop);
-    --gutter: var(--lp-size-gutter-desktop);
+${fmtBlock(responsiveVars.md ?? {}).replace(/^  /gm, '    ')}
   }
 }
 
 @media (prefers-contrast: more) {
   :root {
-    --rule: var(--lp-prim-color-neutral-600);
-    --border-control: var(--lp-prim-color-neutral-900);
-    --text-muted: var(--lp-prim-color-neutral-900);
+    --rule: ${tokens.primitive.color['neutral-600']};
+    --border-control: ${tokens.primitive.color['neutral-900']};
+    --text-muted: ${tokens.primitive.color['neutral-900']};
   }
 }
 
 :root[data-contrast="more"] {
-  --rule: var(--lp-prim-color-neutral-600);
-  --border-control: var(--lp-prim-color-neutral-900);
-  --text-muted: var(--lp-prim-color-neutral-900);
+  --rule: ${tokens.primitive.color['neutral-600']};
+  --border-control: ${tokens.primitive.color['neutral-900']};
+  --text-muted: ${tokens.primitive.color['neutral-900']};
 }
 
 :root[data-theme="dark"][data-contrast="more"] {
-  --rule: var(--lp-prim-color-hc-dark-rule);
-  --border-control: var(--lp-prim-color-hc-dark-border);
-  --text-muted: var(--lp-prim-color-hc-dark-text);
+  --rule: ${tokens.primitive.color['hc-dark-rule']};
+  --border-control: ${tokens.primitive.color['hc-dark-border']};
+  --text-muted: ${tokens.primitive.color['hc-dark-text']};
 }
 
 @media (prefers-contrast: more) {
   :root[data-theme="dark"] {
-    --rule: var(--lp-prim-color-hc-dark-rule);
-    --border-control: var(--lp-prim-color-hc-dark-border);
-    --text-muted: var(--lp-prim-color-hc-dark-text);
+    --rule: ${tokens.primitive.color['hc-dark-rule']};
+    --border-control: ${tokens.primitive.color['hc-dark-border']};
+    --text-muted: ${tokens.primitive.color['hc-dark-text']};
   }
 }
 
@@ -430,12 +389,8 @@ ${fmtBlock(semanticDarkVars)}
   const allDefinedTokens = {
     primitive: Object.keys(primitiveVars),
     semantic: Object.keys(semanticLightVars),
-    component: [
-      ...Object.keys(componentVars),
-      ...Object.keys(relationVars),
-      ...Object.keys(typeRoleVars),
-    ],
-    reserved: tokens.reserved,
+    component: Object.keys(componentVars),
+    responsive: responsiveResolved,
   };
 
   const tsOut = `/* AUTO-GENERATED FROM packages/design-tokens/tokens.json — DO NOT EDIT BY HAND */
@@ -449,6 +404,8 @@ export const RELATIONS = ${JSON.stringify(relationsResolved, null, 2)} as const;
 export const TYPE_ROLES = ${JSON.stringify(typeRolesResolved, null, 2)} as const;
 
 export const COMPONENT_TOKEN_VALUES = ${JSON.stringify(componentResolved, null, 2)} as const;
+
+export const RESPONSIVE_TOKEN_VALUES = ${JSON.stringify(responsiveResolved, null, 2)} as const;
 
 export const SEMANTIC_LIGHT_VALUES = ${JSON.stringify(semanticLightResolved, null, 2)} as const;
 
@@ -469,29 +426,64 @@ export const THEME_CSS = ${JSON.stringify(cssOut)};
 
 > **Source of truth:** \`packages/design-tokens/tokens.json\` (schema: \`packages/design-tokens/tokens.schema.json\`).
 > **Naming convention:** \`${tokens.naming}\`
-> **Architecture:** Three tiers — **Primitive** (raw scales), **Semantic** (theme-switched roles: light & dark), **Component** (dimensions, radii, relations, typography roles).
+> **Version:** \`${tokens.version}\`
+
+## Architecture (D-L4 & D-L5)
+
+### 1. Three-Tier Hierarchy
+- **Tier 1 — Primitive (\`primitive.*\`)**: Raw scales (\`color\`, \`space 0..64\`, \`size\`, \`radius\`, \`border\`, \`font\`, \`motion\`, \`zIndex\`, \`opacity\`, \`elevation\`). Never emitted as \`--lp-prim-*\` custom properties into shipped CSS and never referenced directly by component CSS.
+- **Tier 2 — Semantic (\`semantic.light.*\`, \`semantic.dark.*\`)**: Theme-switched roles (\`color.surface.l0..l2\`, \`color.surface.control*\`, \`color.surface.scrim\`, \`color.text.1..3\`, \`color.border.*\`, \`color.accent.*\`, \`color.role.*\`, \`color.passage.*\`, \`elevation.e0..e2\`, \`opacity.disabled\`). Emitted as CSS custom properties on \`:root\` and switched in \`:root[data-theme="dark"]\` / \`@media (prefers-color-scheme: dark)\`.
+- **Tier 3 — Component & Spacing Taxonomy (\`component.*\`, \`responsive.*\`)**:
+  - **Stack relations (\`--lp-space-stack-<relation>\`)**: Vertical gaps between stacked elements (monotonic proximity: \`label-to-control (8px) < field-to-field (16px) < subsection-to-subsection (24px) < section-to-section (40px)\`).
+  - **Inline relations (\`--lp-space-inline-<relation>\`)**: Horizontal gaps between inline peers (\`segment: 4px\`, \`dot-text: 6px\`, \`icon-text: 8px\`, \`button-button: 8px\`, \`tag-tag: 8px\`).
+  - **Insets (\`--lp-space-inset-<container>\`)**: Internal container padding (\`page-gutter: 16px -> 24px @ 768px\`, \`panel: 12px\`, \`dialog: 24px\`, \`item-x: 8px\`, \`item-y: 12px\`, \`control-x: 12px\`, \`tag-x: 8px\`, \`tag-y: 2px\`, \`track: 4px\`).
+  - **Sizes, Radii, Borders, Z-Index, Motion, Typography**: Semantic component dimensions (\`--lp-size-*\`), radii (\`--lp-radius-r1\`, \`--lp-radius-r2\`, plus semantic aliases), named z-index layers (\`base\`, \`raised\`, \`sticky\`, \`overlay\`, \`popover\`, \`modal\`, \`toast\`, \`skip\`), motion tokens, and font tokens.
+
+### 2. Rules & Guards
+1. **No numeral-named tokens**: Component and semantic token names may not be a bare number (e.g. \`--lp-size-14\`, \`--lp-space-8\`, \`--lp-z-10\` are forbidden).
+2. **No reserved list / arithmetic closure**: Every token emitted into \`tokens.css\` must be used (\`defined = used\`, \`0\` unused). Any unused or unresolved token fails \`scripts/verify-ui-guards\`.
+3. **Single-token responsive switching**: Responsive tokens (\`--lp-size-control-height\`, \`--lp-space-inset-page-gutter\`) keep one token name whose value switches at the \`breakpoints\` media query.
+4. **Build-time primitive resolution**: Non-theme primitive references resolve at build time in \`generate.mjs\` so shipped CSS carries zero \`--lp-prim-*\` declarations.
+
+### 3. How to Add a Token
+1. Check if an existing semantic, relation (\`space.stack.*\`, \`space.inline.*\`, \`space.inset.*\`), or component token already expresses the role.
+2. Add the raw value to \`primitive\` in \`packages/design-tokens/tokens.json\` if not already on the scale.
+3. Add the semantic or component token referencing \`{primitive.*}\` (or \`{semantic.*}\` / \`{component.*}\`).
+4. Run \`node packages/design-tokens/generate.mjs\` and verify \`./scripts/verify-ui-guards\` and \`pnpm --filter @living-portfolio/design-tokens test\`.
+
+### 4. How to Choose a Token (Decision List)
+1. **Vertical gap between stacked blocks, fields, headings, or lists?** -> Use \`--lp-space-stack-<relation>\` (\`label-to-control\`, \`field-to-field\`, \`heading-to-list-plain\`, \`heading-to-list-interactive\`, \`control-to-list\`, \`subsection-to-subsection\`, \`section-to-section\`, \`header-to-content\`).
+2. **Horizontal gap between inline icon, text, dot, tag, or button peers?** -> Use \`--lp-space-inline-<relation>\` (\`icon-text\`, \`button-button\`, \`dot-text\`, \`tag-tag\`, \`segment\`).
+3. **Internal padding of a page, panel, dialog, item, control, or tag?** -> Use \`--lp-space-inset-<container>\` (\`page-gutter\`, \`panel\`, \`dialog\`, \`item-x\`, \`item-y\`, \`control-x\`, \`tag-x\`, \`tag-y\`, \`track\`).
+4. **Surface background?** -> Use \`--lp-color-surface-l0\` (page canvas), \`--lp-color-surface-l1\` (bars, panels, overlays), \`--lp-color-surface-l2\` (resting controls/chips), \`--lp-color-surface-control-hover|active|selected\`, or \`--lp-color-surface-scrim\` (modal/sheet backdrop).
+5. **Text or icon colour?** -> Use \`--lp-color-text-1\` (primary), \`--lp-color-text-2\` (secondary/description/caption), \`--lp-color-text-3\` (placeholder/disabled), or \`--lp-color-role-<tone>-fg\`.
+6. **Border or divider?** -> Use \`--lp-border-hairline\` with \`--lp-color-border-subtle\` (dividers), \`--lp-color-border-control\` (inputs/buttons), or \`--lp-color-border-overlay\` (panels/popovers/dialogs).
+7. **Corner radius?** -> Use \`--lp-radius-r1\` / \`--lp-radius-chip\` (\`4px\`), \`--lp-radius-r2\` / \`--lp-radius-control|container|overlay|card\` (\`8px\`), or \`--lp-radius-full\` (\`9999px\` circular dots/radios).
+8. **Stacking layer (\`z-index\`)?** -> Use a named layer only: \`--lp-z-base\` (\`0\`), \`--lp-z-raised\` (\`1\`), \`--lp-z-sticky\` (\`100\`), \`--lp-z-overlay\` (\`200\`), \`--lp-z-popover\` (\`300\`), \`--lp-z-modal\` (\`400\`), \`--lp-z-toast\` (\`500\`), \`--lp-z-skip\` (\`1000\`).
 
 ## Summary
 
-- Primitive tokens: **${Object.keys(primitiveVars).length}**
+- Primitive scale entries (build-time resolved, not emitted to CSS): **${Object.keys(primitiveVars).length}**
 - Semantic tokens (per theme): **${Object.keys(semanticLightVars).length}**
-- Component, relation & typography tokens: **${Object.keys(componentVars).length + Object.keys(relationVars).length + Object.keys(typeRoleVars).length}**
-- Reserved tokens: **${Object.keys(tokens.reserved).length}**
+- Component, spacing (\`stack\`, \`inline\`, \`inset\`) & typography tokens: **${Object.keys(componentVars).length}**
+- Responsive breakpoint overrides: **${Object.values(responsiveVars).reduce((acc, o) => acc + Object.keys(o).length, 0)}**
 
 ## Breakpoints
 
 | Token | Value | Usage |
 | --- | --- | --- |
 | \`breakpoints.viewport.sm\` | \`${tokens.breakpoints.viewport.sm}px\` | Mobile-to-desktop control height (\`44px\` -> \`40px\`), Item grid |
-| \`breakpoints.viewport.md\` | \`${tokens.breakpoints.viewport.md}px\` | Gutter (\`16px\` -> \`24px\`), push-panel vs overlay |
+| \`breakpoints.viewport.md\` | \`${tokens.breakpoints.viewport.md}px\` | Page gutter (\`16px\` -> \`24px\`), push-panel vs overlay |
+| \`breakpoints.viewport.lg\` | \`${tokens.breakpoints.viewport.lg}px\` | Wide desktop split layout (\`1024px\`) |
+| \`breakpoints.viewport.xl\` | \`${tokens.breakpoints.viewport.xl}px\` | 3-pane desktop layout (\`1280px\`) |
 | \`breakpoints.container.compact\` | \`${tokens.breakpoints.container.compact}px\` | Container query threshold (\`< 400px\`) |
 
-## D-FINAL Spacing Relations
+## D-FINAL & D-L4 Spacing Relations
 
-| Relation | Token | Value |
+| Relation | Stack Token | Value |
 | --- | --- | --- |
 ${Object.entries(relationsResolved)
-  .map(([k, v]) => `| \`${k}\` | \`--lp-rel-${k}\` | \`${v}px\` |`)
+  .map(([k, v]) => `| \`${k}\` | \`--lp-space-stack-${k}\` | \`${v}px\` |`)
   .join('\n')}
 
 ## Typography Roles (7 Roles + control-label)
@@ -506,24 +498,16 @@ ${Object.entries(typeRolesResolved)
 
 | Token | Light | Dark |
 | --- | --- | --- |
-${Object.keys(semanticLightResolved)
+${Object.keys(semanticLightVars)
   .map((k) => `| \`${k}\` | \`${semanticLightResolved[k]}\` | \`${semanticDarkResolved[k]}\` |`)
   .join('\n')}
 
-## Tier 3: Component Tokens
+## Tier 3: Component & Spacing Taxonomy Tokens
 
 | Token | Value |
 | --- | --- |
 ${Object.entries(componentResolved)
   .map(([k, v]) => `| \`${k}\` | \`${v}\` |`)
-  .join('\n')}
-
-## Reserved Tokens
-
-| Token | Reason |
-| --- | --- |
-${Object.entries(tokens.reserved)
-  .map(([k, r]) => `| \`${k}\` | ${r} |`)
   .join('\n')}
 `;
 

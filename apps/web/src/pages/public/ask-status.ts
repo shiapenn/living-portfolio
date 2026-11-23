@@ -34,51 +34,51 @@ export async function renderAskStatusPage(repo: WebDataClient, statusToken: stri
     : 'within 24 hours of submission';
 
   const facetsHtml = escalation.facets && Object.keys(escalation.facets).length > 0
-    ? Object.entries(escalation.facets).map(([k, v]) => `<span class="chip" style="font-size:var(--lp-space-12)">${escapeHtml(k)}: ${escapeHtml(String(v))}</span>`).join(' ')
+    ? Object.entries(escalation.facets).map(([k, v]) => `<span class="chip" style="font-size:var(--lp-font-size-12)">${escapeHtml(k)}: ${escapeHtml(String(v))}</span>`).join(' ')
     : '';
 
   return renderLayout(
     'Question Status & Receipt',
     '/ask',
     `<div class="reading-column">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--lp-space-8);margin-bottom:var(--lp-space-12)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--lp-space-stack-label-to-control);margin-bottom:var(--lp-space-stack-snug)">
         <h1 style="margin:0">Escalation Receipt</h1>
         ${statusBadge}
       </div>
 
-      <div class="strata-section" style="border:var(--lp-border-hairline) solid var(--rule);padding:var(--lp-space-16);border-radius:var(--radius-control);margin-bottom:var(--lp-space-16)">
-        <div style="font-size:var(--lp-space-12);color:var(--text-muted);margin-bottom:var(--lp-size-6)">
+      <div class="strata-section" style="border:var(--lp-border-hairline) solid var(--rule);padding:var(--lp-space-inset-section);border-radius:var(--lp-radius-control);margin-bottom:var(--lp-space-stack-field-to-field)">
+        <div style="font-size:var(--lp-font-size-12);color:var(--text-muted);margin-bottom:var(--lp-space-stack-sub-compact)">
           Submitted: ${new Date(escalation.at).toLocaleString()} · Class: ${escapeHtml(escalation.query_class)}
         </div>
-        <p style="font-size:var(--lp-space-16);font-weight:600;margin:0 0 var(--lp-space-8) 0">${escapeHtml(escalation.question)}</p>
-        ${facetsHtml ? `<div style="margin-bottom:var(--lp-space-8)">${facetsHtml}</div>` : ''}
+        <p style="font-size:var(--lp-font-size-16);font-weight:600;margin:0 0 var(--lp-space-stack-label-to-control) 0">${escapeHtml(escalation.question)}</p>
+        ${facetsHtml ? `<div style="margin-bottom:var(--lp-space-stack-label-to-control)">${facetsHtml}</div>` : ''}
       </div>
 
       ${isPending ? `
-      <div class="strata-section" style="border:var(--lp-border-hairline) solid var(--lp-color-role-warning-bg);background:var(--surface-raised);padding:var(--lp-space-16);border-radius:var(--radius-control);margin-bottom:var(--lp-space-16)">
-        <h2 style="font-size:var(--lp-space-16);margin:0 0 var(--lp-size-6) 0">Pending Owner Review</h2>
-        <p style="margin:0 0 var(--lp-space-8) 0;font-size:var(--lp-size-14)">
+      <div class="strata-section" style="border:var(--lp-border-hairline) solid var(--lp-color-role-warning-bg);background:var(--surface-raised);padding:var(--lp-space-inset-section);border-radius:var(--lp-radius-control);margin-bottom:var(--lp-space-stack-field-to-field)">
+        <h2 style="font-size:var(--lp-font-size-16);margin:0 0 var(--lp-space-stack-sub-compact) 0">Pending Owner Review</h2>
+        <p style="margin:0 0 var(--lp-space-stack-label-to-control) 0;font-size:var(--lp-font-size-14)">
           The owner typically reviews and answers pending queries within 24 hours (due by <strong>${escapeHtml(dueLabel)}</strong>).
         </p>
-        <p style="margin:0 0 var(--lp-space-12) 0;font-size:var(--lp-size-13);color:var(--text-muted)">
+        <p style="margin:0 0 var(--lp-space-stack-snug) 0;font-size:var(--lp-font-size-13);color:var(--text-muted)">
           Bookmark this link or refresh to see the reply. You can also provide an email or handle below to be notified directly.
         </p>
 
         ${escalation.draft ? `
-        <div style="margin:var(--lp-space-12) 0;padding:var(--lp-size-10) var(--lp-space-12);background:var(--surface-page);border:var(--lp-border-hairline) solid var(--rule);border-radius:var(--radius-control);font-size:var(--lp-size-13)">
+        <div style="margin:var(--lp-space-stack-snug) 0;padding:var(--lp-space-inset-control-sm) var(--lp-space-inset-item-y);background:var(--surface-page);border:var(--lp-border-hairline) solid var(--rule);border-radius:var(--lp-radius-control);font-size:var(--lp-font-size-13)">
           <strong>Draft Under Review (Private to Visitor):</strong>
-          <p style="margin:var(--lp-space-4) 0 0 0;font-style:italic;color:var(--text-muted)">${escapeHtml(escalation.draft)}</p>
+          <p style="margin:var(--lp-space-stack-compact) 0 0 0;font-style:italic;color:var(--text-muted)">${escapeHtml(escalation.draft)}</p>
         </div>` : ''}
 
-        <div id="contact-feedback" style="display:none;margin-bottom:var(--lp-space-8);font-size:var(--lp-size-13);color:var(--accent)"></div>
+        <div id="contact-feedback" style="display:none;margin-bottom:var(--lp-space-stack-label-to-control);font-size:var(--lp-font-size-13);color:var(--accent)"></div>
 
-        <form id="contact-form" style="display:flex;gap:var(--lp-space-8);flex-wrap:wrap">
+        <form id="contact-form" style="display:flex;gap:var(--lp-space-stack-label-to-control);flex-wrap:wrap">
           <label for="contact-input" class="visually-hidden">Notification Email</label>
-          <input id="contact-input" type="text" class="ask-input" style="flex:1;min-width:var(--lp-size-200)" value="${escapeHtml(escalation.visitor_contact || '')}" placeholder="you@example.com (optional notification)" />
+          <input id="contact-input" type="text" class="ask-input" style="flex:1;min-width:var(--lp-size-popover-min-w)" value="${escapeHtml(escalation.visitor_contact || '')}" placeholder="you@example.com (optional notification)" />
           <button type="submit" id="btn-save-contact" class="btn btn-secondary">Save Notification Contact</button>
         </form>
 
-        <div style="margin-top:var(--lp-space-16);padding-top:var(--lp-space-12);border-top:var(--lp-border-hairline) solid var(--rule);font-size:var(--lp-size-13)">
+        <div style="margin-top:var(--lp-space-stack-field-to-field);padding-top:var(--lp-space-inset-item-y);border-top:var(--lp-border-hairline) solid var(--rule);font-size:var(--lp-font-size-13)">
           Need an immediate live discussion instead? <a href="/book?q=${encodeURIComponent(escalation.question)}">Book a 30-minute consultation →</a>
         </div>
       </div>
@@ -113,22 +113,22 @@ export async function renderAskStatusPage(repo: WebDataClient, statusToken: stri
       </script>` : ''}
 
       ${isApproved ? `
-      <div class="strata-section" style="border:var(--lp-border-hairline) solid var(--lp-color-role-success-bg);background:var(--surface-raised);padding:var(--lp-space-16);border-radius:var(--radius-control);margin-bottom:var(--lp-space-16)">
-        <h2 style="font-size:var(--lp-space-16);margin:0 0 var(--lp-space-8) 0;color:var(--lp-color-role-success-fg)">Owner's Verified Reply</h2>
-        <div style="font-size:var(--lp-size-15);line-height:1.6;white-space:pre-wrap;margin-bottom:var(--lp-space-12)">${escapeHtml(escalation.final || escalation.draft || '')}</div>
-        <div style="font-size:var(--lp-space-12);color:var(--text-muted);border-top:var(--lp-border-hairline) solid var(--rule);padding-top:var(--lp-space-8)">
+      <div class="strata-section" style="border:var(--lp-border-hairline) solid var(--lp-color-role-success-bg);background:var(--surface-raised);padding:var(--lp-space-inset-section);border-radius:var(--lp-radius-control);margin-bottom:var(--lp-space-stack-field-to-field)">
+        <h2 style="font-size:var(--lp-font-size-16);margin:0 0 var(--lp-space-stack-label-to-control) 0;color:var(--lp-color-role-success-fg)">Owner's Verified Reply</h2>
+        <div style="font-size:var(--lp-font-size-15);line-height:1.6;white-space:pre-wrap;margin-bottom:var(--lp-space-stack-snug)">${escapeHtml(escalation.final || escalation.draft || '')}</div>
+        <div style="font-size:var(--lp-font-size-12);color:var(--text-muted);border-top:var(--lp-border-hairline) solid var(--rule);padding-top:var(--lp-space-inset-item-x)">
           Verified and approved by the owner directly from personal records.
         </div>
       </div>
       <p><a href="/ask" class="btn">Ask Another Question</a></p>` : ''}
 
       ${isRejected ? `
-      <div class="strata-section" style="border:var(--lp-border-hairline) solid var(--lp-color-role-danger-bg);background:var(--surface-raised);padding:var(--lp-space-16);border-radius:var(--radius-control);margin-bottom:var(--lp-space-16)">
-        <h2 style="font-size:var(--lp-space-16);margin:0 0 var(--lp-space-8) 0;color:var(--lp-color-role-danger-fg)">Question Declined</h2>
-        <p style="margin:0 0 var(--lp-size-10) 0;font-size:var(--lp-size-14)">
+      <div class="strata-section" style="border:var(--lp-border-hairline) solid var(--lp-color-role-danger-bg);background:var(--surface-raised);padding:var(--lp-space-inset-section);border-radius:var(--lp-radius-control);margin-bottom:var(--lp-space-stack-field-to-field)">
+        <h2 style="font-size:var(--lp-font-size-16);margin:0 0 var(--lp-space-stack-label-to-control) 0;color:var(--lp-color-role-danger-fg)">Question Declined</h2>
+        <p style="margin:0 0 var(--lp-space-stack-note) 0;font-size:var(--lp-font-size-14)">
           ${escapeHtml(escalation.rejection_reason || 'The owner reviewed this question and indicated it cannot be answered reliably from currently published records.')}
         </p>
-        <p style="margin:0;font-size:var(--lp-size-13);color:var(--text-muted)">
+        <p style="margin:0;font-size:var(--lp-font-size-13);color:var(--text-muted)">
           If this involves specific non-public architectural constraints, consider <a href="/book?q=${encodeURIComponent(escalation.question)}">booking a live architecture conversation</a>.
         </p>
       </div>
