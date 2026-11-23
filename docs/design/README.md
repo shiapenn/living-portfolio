@@ -8,7 +8,7 @@
 | --- | --- | --- | --- | --- |
 | Shared core floor (a11y, theme, layout, icons) | `@living-portfolio/ui-core` | `packs/core.json` | `lp-core-*` / `--lp-core-*` | Semver-versioned; requires both regression suites green |
 | Admin workspace (`/admin/*`) | `@living-portfolio/ui-admin` | `packs/admin.json` | `lp-*` / `--lp-*` | **System mode (`D-J`)**: no new component without L approval |
-| Public site (`/`, `/work`, `/writing`, `/build`, `/timeline`, `/ask`, `/book`, `/_lab/public/*`) | `@living-portfolio/ui-public` | `packs/public.json` | `pub-*` / `--pub-*` | **Expressive mode (`D-M3`)**: new components/tokens allowed with a PR brief; reviewed at sheet time |
+| Public site (`/`, `/work`, `/writing`, `/build`, `/timeline`, `/ask`, `/book`) | `@living-portfolio/ui-public` | `packs/public.json` | `pub-*` / `--pub-*` | **Expressive mode (`D-M3`)**: new components/tokens allowed with a PR brief; reviewed at sheet time |
 
 ## 2. How to Choose a Token, Component, and Template
 

@@ -13,11 +13,22 @@ items:
     acceptance: M0..M6 merged, CI Playwright <= 4m, admin pixel diff zero on public-only change, contact sheets zip delivered
     status: in-progress
 
+  - id: WP-16.N
+    title: Consolidation and acceptance (Quiet Editorial neutral, tokens, admin CSS migration, governance, performance)
+    track: core
+    type: infra
+    depends_on: [WP-16.M]
+    size: L
+    expected_minutes: 90
+    gate: owner-direction
+    acceptance: D-N5 definition of done holds; owner reviews public sheets once; at most one fix round. WP-17 is unblocked only when this item is done
+    status: in-progress
+
   - id: WP-17.1
     title: Settings templates & Routing page (/admin/settings, /admin/routing)
     track: admin
     type: visual
-    depends_on: [WP-16.M]
+    depends_on: [WP-16.N]
     size: M
     expected_minutes: 45
     gate: none
@@ -47,14 +58,14 @@ items:
     status: ready
 
   - id: WP-17.4
-    title: Appearance v2 (theme packs, density tier table, live preview)
+    title: Appearance v2 (theme packs, density tier table, live preview, accent seed for both languages)
     track: admin
     type: visual
     depends_on: [WP-17.1]
     size: M
     expected_minutes: 45
     gate: L-review
-    acceptance: Appearance settings drive density & theme packs cleanly
+    acceptance: Appearance settings drive density & theme packs cleanly; configures the core accent.seed (D-N2) for both languages through the accent.<hash>.css user-theme contract
     status: ready
 
   - id: WP-18.1
@@ -80,21 +91,21 @@ items:
     status: ready
 
   - id: P-1
-    title: Build chosen public direction from WP-16.M exploration lab
+    title: Build chosen public direction (decided in ADR-007; delivered by WP-16.N N3)
     track: public
     type: visual
     depends_on: [WP-16.M]
     size: L
     expected_minutes: 75
     gate: owner-direction
-    acceptance: Owner selects direction (or mix) from /_lab/public/*; wire into packages/ui-public and public routes
-    status: blocked-on-owner
+    acceptance: Direction decided as Quiet Editorial, neutral (ADR-007); realised by WP-16.N N3 on ui-public
+    status: done
 
   - id: P-2
     title: Public components, templates, and Strata time-travel polish (WP-19 Public Frame)
     track: public
     type: visual
-    depends_on: [P-1]
+    depends_on: [WP-16.N]
     size: L
     expected_minutes: 75
     gate: L-review
@@ -111,6 +122,28 @@ items:
     gate: L-review
     acceptance: Non-blocking public budget report promoted to blocking CI gate after L approval
     status: ready
+
+  - id: P-4
+    title: Time travel component (the timeline) - design and build
+    track: public
+    type: visual
+    depends_on: [WP-16.N]
+    size: L
+    expected_minutes: 90
+    gate: owner-direction
+    acceptance: Not in scope for WP-16. Owner direction gate before design; component delivered on ui-public with census and UX-44 fixed
+    status: blocked-on-owner
+
+  - id: P-5
+    title: Three-column public frame (time travel left collapsed by default, content centre, Ask right)
+    track: public
+    type: visual
+    depends_on: [P-4]
+    size: L
+    expected_minutes: 90
+    gate: owner-direction
+    acceptance: Not in scope for WP-16. Frame built on ui-public once P-4 exists; current public pages keep their structure until then
+    status: blocked-on-owner
 
   - id: GATE-GFE
     title: Milestone Gate GFE — Owner Front-End Acceptance Walkthrough (J1-J11)

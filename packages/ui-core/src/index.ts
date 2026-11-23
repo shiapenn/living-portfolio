@@ -15,3 +15,19 @@ import { buildCoreBundleCss, hashCss } from './theme/theme.js';
 export const CORE_BUNDLE_CSS = buildCoreBundleCss();
 export const CORE_CSS_HASH = hashCss(CORE_BUNDLE_CSS);
 export const CORE_CSS_FILENAME = `core.${CORE_CSS_HASH}.css`;
+
+export {
+  ACCENT_STEPS,
+  ACCENT_VAR_PREFIX,
+  accentCssFilename,
+  buildAccentCss,
+  generateAccentRamp,
+  validateAccentSeed,
+  deltaE2000,
+  contrastRatio,
+  type AccentSeed,
+  type AccentRamp,
+  type AccentStep,
+  type AccentValidation,
+  type BuildAccentCssInput,
+} from './accent/accent.js';

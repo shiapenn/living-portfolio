@@ -249,4 +249,8 @@
 | `L026` | ADR-004: Spacing Taxonomy and Monotonic Proximity (D-L4) | `active` | [ADR-004-spacing-taxonomy-and-tiers.md](adr/ADR-004-spacing-taxonomy-and-tiers.md) | — |
 | `L027` | ADR-005: Three-Tier Tokens and Arithmetic Closure (D-L5) | `active` | [ADR-005-token-tiers-and-closure.md](adr/ADR-005-token-tiers-and-closure.md) | — |
 | `L028` | ADR-006: Self-Selecting Backlog and Owner Gates (D-M7) | `active` | [ADR-006-self-selecting-backlog.md](adr/ADR-006-self-selecting-backlog.md) | — |
+| `L029` | ADR-007: Public Direction - Quiet Editorial, Made Neutral (D-N1) | `active` | [ADR-007-public-direction-quiet-editorial-neutral.md](adr/ADR-007-public-direction-quiet-editorial-neutral.md) | — |
+| `L030` | Accent Seed Contract (D-N2) | `active` | [accent-contract.md](design/accent-contract.md) | — |
+| `L031` | WP-16.N Audit Delta (baseline) | `active` | [audit-delta-wp16n.md](design/audit-delta-wp16n.md) | — |
+| `L032` | Public Direction Exploration Index | `active` | [index.md](design/explorations/index.md) | — |
 
