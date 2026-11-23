@@ -48,6 +48,7 @@ import {
 } from './renderer.js';
 import { registerAdminDevRoutes } from './routes/admin-dev-routes.js';
 import { registerPublicRoutes } from './routes/public-routes.js';
+import { deliveryMiddleware } from './middleware/delivery.js';
 
 export interface WebAppOptions {
   client?: LivingPortfolioClient | WebDataClient;
@@ -61,6 +62,7 @@ export interface WebAppOptions {
  */
 export function createWebApp(options?: WebAppOptions) {
   const app = new Hono();
+  app.use('*', deliveryMiddleware);
   const cfg = loadConfig();
   const primarySiteOrigin = cfg.SITE_ORIGIN.split(',')[0].trim();
 
