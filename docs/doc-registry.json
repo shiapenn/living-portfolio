@@ -1873,5 +1873,13 @@
     "path": "docs/plans/wp16n-progress.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A171",
+    "title": "wp-16n-s1-tokens-accent-docs-guards",
+    "class": "A",
+    "path": "docs/execution-reports/A171-wp-16n-s1-tokens-accent-docs-guards.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
