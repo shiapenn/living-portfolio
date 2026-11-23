@@ -1833,5 +1833,13 @@
     "path": "docs/design/explorations/index.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A170",
+    "title": "wp-16n-n1-slice-direction-and-accent-seed",
+    "class": "A",
+    "path": "docs/execution-reports/A170-wp-16n-n1-slice-direction-and-accent-seed.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
