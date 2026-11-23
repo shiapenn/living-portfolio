@@ -55,13 +55,15 @@ runCheck('S2-NO-STYLES-TS', 'apps/web/src/styles.ts deleted (zero CSS-in-TS)', (
   return 'styles.ts absent';
 });
 
-runCheck('S2-FILE-SIZE-400', 'No non-exempt source file over 400 lines', () => {
+runCheck('S2-FILE-SIZE-400', 'No non-exempt source file over 400 lines (exemptions shrinking-only)', () => {
   const exemptionsPath = resolve(ROOT, 'docs/design/file-size-exemptions.json');
-  const exemptions = new Set(
-    existsSync(exemptionsPath)
-      ? (JSON.parse(readFileSync(exemptionsPath, 'utf8')).exemptions ?? []).map((e) => e.file)
-      : []
-  );
+  const exemptionMap = new Map();
+  if (existsSync(exemptionsPath)) {
+    for (const e of JSON.parse(readFileSync(exemptionsPath, 'utf8')).exemptions ?? []) {
+      if (!e.reason || !e.maxLines) throw new Error(`Exemption for ${e.file} missing reason or maxLines`);
+      exemptionMap.set(e.file, e.maxLines);
+    }
+  }
   const offenders = [];
   function walk(dir) {
     if (!existsSync(dir)) return;
@@ -71,18 +73,18 @@ runCheck('S2-FILE-SIZE-400', 'No non-exempt source file over 400 lines', () => {
       if (e.isDirectory()) walk(full);
       else if (e.name.endsWith('.ts') && !e.name.endsWith('.test.ts') && !e.name.endsWith('.spec.ts') && !e.name.endsWith('generated.ts')) {
         const rel = relative(ROOT, full).replace(/\\/g, '/');
-        if (exemptions.has(rel)) continue;
         const count = readFileSync(full, 'utf8').split('\n').length;
-        if (count > 400) offenders.push(`${rel} (${count})`);
+        const limit = exemptionMap.get(rel) ?? 400;
+        if (count > limit) offenders.push(`${rel} (${count} > ${limit})`);
       }
     }
   }
   walk(resolve(ROOT, 'apps'));
   walk(resolve(ROOT, 'packages'));
   if (offenders.length > 0) {
-    throw new Error(`${offenders.length} file(s) > 400 lines: ${offenders.slice(0, 5).join(', ')}`);
+    throw new Error(`${offenders.length} file(s) exceed line limit: ${offenders.slice(0, 5).join(', ')}`);
   }
-  return '0 offenders';
+  return `0 offenders (${exemptionMap.size} shrinking-only exemptions)`;
 });
 
 // 3. S3 checks: zero inline style= across admin and public

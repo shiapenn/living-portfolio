@@ -1,0 +1,24 @@
+/* ActionBar (D-COMP #4) */
+.lp-action-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-label-to-control);
+  margin: 0;
+  align-items: stretch;
+}
+
+.lp-action-bar .lp-btn {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .lp-action-bar {
+    align-items: flex-start;
+  }
+
+  .lp-action-bar .lp-btn {
+    width: var(--lp-size-btn-action-max);
+    min-width: var(--lp-size-btn-action-min);
+    max-width: var(--lp-size-btn-action-max);
+  }
+}

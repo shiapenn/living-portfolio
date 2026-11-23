@@ -1,6 +1,10 @@
 import { loadConfig } from '@living-portfolio/config';
-import { DEFAULT_ACCENT_CSS_FILENAME } from '@living-portfolio/ui-core';
-import { STRATA_DESIGN_SYSTEM_CSS } from '../styles.js';
+import { CORE_CSS_FILENAME, DEFAULT_ACCENT_CSS_FILENAME } from '@living-portfolio/ui-core';
+import {
+  ADMIN_CSS_FILENAME,
+  ADMIN_EDITOR_CSS_FILENAME,
+  ADMIN_GALLERY_CSS_FILENAME,
+} from '@living-portfolio/ui-admin';
 import { escapeHtml } from '../lib/html.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../lib/admin-api-client.js';
 import { renderButton, renderIcon, renderIconButton, renderIconSprite, renderPageHeader, type IconName } from '../primitives/index.js';
@@ -331,14 +335,30 @@ export function renderAdminShell(
       </div>`
     : '';
 
+  const isGalleryRoute = activePath.startsWith('/admin/dev/') || activePath.startsWith('/admin/_');
+  const isEditorRoute =
+    options?.template === 'editor' ||
+    activePath === '/admin/entries/new' ||
+    activePath === '/admin/entries/editor' ||
+    /^\/admin\/entries\/[^/]+$/.test(activePath) ||
+    isGalleryRoute;
+  const routeCssLinks = [
+    `<link rel="stylesheet" href="/assets/css/${CORE_CSS_FILENAME}" />`,
+    `<link rel="stylesheet" href="/assets/css/${ADMIN_CSS_FILENAME}" />`,
+    isEditorRoute ? `<link rel="stylesheet" href="/assets/css/${ADMIN_EDITOR_CSS_FILENAME}" />` : '',
+    isGalleryRoute ? `<link rel="stylesheet" href="/assets/css/${ADMIN_GALLERY_CSS_FILENAME}" />` : '',
+    `<link rel="stylesheet" href="/assets/css/${DEFAULT_ACCENT_CSS_FILENAME}" />`,
+  ]
+    .filter(Boolean)
+    .join('\n  ');
+
   return `<!DOCTYPE html>
 <html lang="en" data-theme="${theme}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(title)} — ${escapeHtml(siteName)}</title>
-  <link rel="stylesheet" href="/assets/css/${DEFAULT_ACCENT_CSS_FILENAME}" />
-  <style${nonceAttr}>${STRATA_DESIGN_SYSTEM_CSS}</style>
+  ${routeCssLinks}
 </head>
 <body class="lp-admin-body">
   ${renderIconSprite()}

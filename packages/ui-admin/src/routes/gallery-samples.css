@@ -1,0 +1,111 @@
+/* Gallery outline mode (?outline=1, D-G #9) */
+.lp-outline-mode [data-c] {
+  outline: var(--lp-border-hairline) dashed var(--accent);
+  outline-offset: var(--lp-border-focus);
+}
+
+/* =========================================================
+ * WP-16.I D-I1 ActionBar (page | dialog | item) & Gallery Overlays
+ * ========================================================= */
+
+.lp-action-bar-page,
+.lp-action-bar-dialog,
+.lp-dialog-footer,
+.lp-dialog-panel .lp-action-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--lp-space-stack-label-to-control);
+  width: 100%;
+}
+
+.lp-action-bar-page .lp-btn:not(.lp-btn-text),
+.lp-action-bar-dialog .lp-btn:not(.lp-btn-text),
+.lp-dialog-footer .lp-btn:not(.lp-btn-text),
+.lp-dialog-panel .lp-action-bar .lp-btn:not(.lp-btn-text) {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+.lp-action-bar-page .lp-btn-text,
+.lp-action-bar-dialog .lp-btn-text,
+.lp-dialog-footer .lp-btn-text,
+.lp-dialog-panel .lp-action-bar .lp-btn-text {
+  width: auto;
+  min-width: 0;
+  align-self: center;
+}
+
+.lp-form-section,
+.lp-subsection {
+  container-type: inline-size;
+}
+.lp-action-bar-item,
+.lp-item-actions .lp-action-bar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--lp-space-stack-label-to-control);
+  width: 100%;
+}
+
+.lp-action-bar-item .lp-btn:not(.lp-btn-text),
+.lp-item-actions .lp-action-bar .lp-btn:not(.lp-btn-text) {
+  width: auto;
+  min-width: var(--lp-size-btn-item-min);
+  max-width: none;
+}
+
+.lp-action-bar-item .lp-btn-text,
+.lp-item-actions .lp-action-bar .lp-btn-text {
+  width: auto;
+  min-width: 0;
+  align-self: center;
+}
+
+.lp-gallery-overlay-sample {
+  position: relative;
+  display: block;
+  width: 100%;
+  --_overlay-sample-max: calc(var(--lp-size-icon-md) * 21);
+  max-width: var(--_overlay-sample-max);
+  inset: auto;
+  z-index: var(--lp-z-raised);
+}
+.lp-gallery-overlay-sample .lp-overlay-backdrop {
+  display: none;
+}
+.lp-gallery-overlay-sample .lp-overlay-surface,
+.lp-gallery-panel-sample {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  inset: auto;
+  transform: none;
+}
+.lp-gallery-panel-sample {
+  --_popover-max-w: calc(var(--lp-space-proximity-5) * 7);
+  max-width: var(--_popover-max-w);
+  background: var(--surface-overlay);
+  border: 0;
+  border-right: var(--lp-border-hairline) solid var(--border-overlay);
+  padding: var(--lp-space-inset-section) var(--lp-space-inset-item-y);
+}
+.lp-level-next {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--lp-space-proximity-1);
+  width: auto;
+  align-self: flex-start;
+  padding-left: 0;
+  padding-right: 0;
+}
+/* Component-local derived dimensions (D-M2, underscore prefix) */
+.lp-admin-layout { --_bar-legacy-offset: calc(var(--lp-size-bar-editor-height) + var(--lp-border-hairline)); }
+.lp-canary-gap-80, .lp-canary-overlay, .lp-editor-drag-handle { --_canary-probe: calc(var(--lp-space-proximity-5) * 2); }
+.lp-dialog { z-index: var(--lp-z-modal); }
+.strata-band { --_hatch-step: var(--lp-space-inset-tag-y); }

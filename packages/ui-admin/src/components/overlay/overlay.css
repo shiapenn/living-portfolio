@@ -1,0 +1,91 @@
+/* Overlay (D-COMP #7) */
+.lp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--lp-z-overlay);
+}
+
+.lp-overlay[hidden] {
+  display: none;
+}
+
+.lp-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--lp-color-surface-scrim);
+}
+
+.lp-overlay-surface {
+  position: fixed;
+  background: var(--surface-overlay);
+  border: var(--lp-border-hairline) solid var(--border-subtle);
+  border-radius: var(--lp-radius-overlay);
+  box-shadow: var(--lp-elevation-e2);
+  padding: var(--lp-space-inset-section);
+  max-height: calc(100vh - var(--lp-size-control-xs));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-field-to-field);
+  transition: opacity var(--lp-motion-duration-base) var(--lp-motion-easing-out), transform var(--lp-motion-duration-base) var(--lp-motion-easing-out);
+}
+
+.lp-overlay-actions .lp-overlay-surface {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  border-radius: var(--lp-radius-overlay) var(--lp-radius-overlay) 0 0;
+}
+
+@media (min-width: 640px) {
+  .lp-overlay-actions .lp-overlay-backdrop {
+    background: transparent;
+  }
+
+  .lp-overlay-actions .lp-overlay-surface {
+    left: auto;
+    right: var(--lp-space-proximity-4);
+    bottom: auto;
+    top: var(--lp-size-bar-editor-height);
+    --_popover-max-w: calc(var(--lp-space-proximity-5) * 7);
+  width: var(--_popover-max-w);
+    border-radius: var(--lp-radius-overlay);
+  }
+}
+
+.lp-overlay-panel .lp-overlay-surface {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: 100vh;
+  border-radius: 0;
+}
+
+.lp-overlay-dialog .lp-overlay-surface {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(var(--lp-size-dialog-max-w), calc(100vw - var(--lp-size-control-xs)));
+}
+
+.lp-overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-overlay-title {
+  font-size: var(--lp-font-size-16);
+  line-height: var(--lp-font-line-24);
+  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+}
+
+.lp-overlay-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-label-to-control);
+}

@@ -1,0 +1,86 @@
+/* WP-16.C Gallery & Canary Fixtures */
+.lp-gallery-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-section-to-section);
+}
+
+.lp-gallery-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-gallery-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-stack-field-to-field);
+  align-items: center;
+}
+
+.lp-gallery-icon-sample {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lp-space-stack-label-to-control);
+  font-size: var(--lp-font-size-12);
+}
+
+.lp-canary-stacking {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-canary-small-h1 {
+  font-size: var(--lp-font-size-14);
+  margin: 0;
+}
+
+.lp-canary-zero-margin {
+  margin: 0;
+  padding: 0;
+}
+
+.lp-canary-overlay {
+  position: fixed;
+  left: calc(-1 * var(--_canary-probe));
+  top: var(--lp-space-stack-section-to-section);
+  --_popover-min-w: calc(var(--lp-space-proximity-5) * 5);
+  width: var(--_popover-min-w);
+  height: var(--_canary-probe);
+  display: block;
+}
+
+.lp-canary-action-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-label-to-control);
+  align-items: flex-end;
+}
+
+.lp-canary-btn-sm {
+  --_progress-track-w: calc(var(--lp-size-icon-md) * 5);
+  width: var(--_progress-track-w);
+}
+
+.lp-canary-btn-md {
+  width: var(--lp-size-strata-band-max);
+}
+
+.lp-canary-rhythm {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.lp-canary-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  --_popover-max-w: calc(var(--lp-space-proximity-5) * 7);
+  width: var(--_popover-max-w);
+}
+
+.lp-canary-tab {
+  width: var(--lp-size-btn-action-min);
+}

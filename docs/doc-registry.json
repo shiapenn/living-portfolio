@@ -1881,5 +1881,13 @@
     "path": "docs/execution-reports/A171-wp-16n-s1-tokens-accent-docs-guards.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A172",
+    "title": "wp-16n-s2-admin-css-migration",
+    "class": "A",
+    "path": "docs/execution-reports/A172-wp-16n-s2-admin-css-migration.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

@@ -5,7 +5,14 @@ import {
   DEFAULT_ACCENT_CSS,
   DEFAULT_ACCENT_CSS_FILENAME,
 } from '@living-portfolio/ui-core';
-import { ADMIN_BASE_CSS, ADMIN_CSS_FILENAME } from '@living-portfolio/ui-admin';
+import {
+  ADMIN_BASE_CSS,
+  ADMIN_CSS_FILENAME,
+  ADMIN_EDITOR_CSS,
+  ADMIN_EDITOR_CSS_FILENAME,
+  ADMIN_GALLERY_CSS,
+  ADMIN_GALLERY_CSS_FILENAME,
+} from '@living-portfolio/ui-admin';
 import {
   PUBLIC_BUNDLE_CSS,
   PUBLIC_CSS_FILENAME,
@@ -34,26 +41,12 @@ import {
   renderAdminSettingsPage,
   renderAdminSettingsModulePage,
   renderAdminSetupPage,
-  renderAskPage,
-  renderAskStatusPage,
-  renderBookPage,
-  renderBuildPage,
-  renderBuildVenturePage,
-  renderEntryDetailPage,
-  renderHomePage,
   renderNotFoundPage,
-  renderStaticPage,
-  renderTimelinePage,
-  renderWorkOrWritingPage,
   adaptDataSource,
   type WebDataClient,
 } from './renderer.js';
-import { renderPrimitivesGalleryPage } from './primitives/gallery.js';
-import { renderFoundationsGalleryPage } from './primitives/foundations-gallery.js';
-import { renderComponentGalleryPage } from './pages/admin/gallery.js';
-import { renderCensusCanaryPage } from './pages/admin/gallery-canary.js';
-import { renderFixturePatternPage } from './pages/admin/fixture.js';
-import { renderReferenceEditorPage, type ReferenceEditorEntry } from './pages/admin/entries/editor.js';
+import { registerAdminDevRoutes } from './routes/admin-dev-routes.js';
+import { registerPublicRoutes } from './routes/public-routes.js';
 
 export interface WebAppOptions {
   client?: LivingPortfolioClient | WebDataClient;
@@ -150,6 +143,10 @@ export function createWebApp(options?: WebAppOptions) {
     'accent.css': DEFAULT_ACCENT_CSS,
     [ADMIN_CSS_FILENAME]: ADMIN_BASE_CSS,
     'admin.css': ADMIN_BASE_CSS,
+    [ADMIN_EDITOR_CSS_FILENAME]: ADMIN_EDITOR_CSS,
+    'admin-editor.css': ADMIN_EDITOR_CSS,
+    [ADMIN_GALLERY_CSS_FILENAME]: ADMIN_GALLERY_CSS,
+    'admin-gallery.css': ADMIN_GALLERY_CSS,
     [PUBLIC_CSS_FILENAME]: PUBLIC_BUNDLE_CSS,
     'public.css': PUBLIC_BUNDLE_CSS,
   };
@@ -293,239 +290,8 @@ export function createWebApp(options?: WebAppOptions) {
   for (const routePath of adminSectionRoutes) {
     app.get(routePath, async (c) => c.html(renderAdminSectionPage(c.req.path)));
   }
-  if (process.env.NODE_ENV !== 'production') {
-    app.get('/admin/dev/primitives', (c) => c.html(renderPrimitivesGalleryPage()));
-    app.get('/admin/dev/foundations', (c) => {
-      const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';
-      return c.html(renderFoundationsGalleryPage(theme));
-    });
-    app.get('/admin/_gallery', (c) => {
-      const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';
-      const outline = c.req.query('outline') === '1';
-      return c.html(renderComponentGalleryPage({ theme, outline }));
-    });
-    app.get('/admin/_fixture', (c) => {
-      return c.html(renderFixturePatternPage());
-    });
-    app.get('/admin/_canary', (c) => {
-      const theme = c.req.query('theme') === 'dark' ? 'dark' : 'light';
-      const suite = c.req.query('suite');
-      return c.html(renderCensusCanaryPage({ theme, suite }));
-    });
-
-    const handleReferenceEditor = async (c: any, selectedId?: string) => {
-      const session = await checkSession(c.req.header('cookie'));
-      if (session.setupRequired) return c.redirect('/admin/setup');
-      if (!session.authenticated) return c.redirect('/admin/login');
-      const fixture = c.req.query('fixture');
-      const themeParam = c.req.query('theme') === 'dark' ? 'dark' : c.req.query('theme') === 'light' ? 'light' : undefined;
-    const baseDraft: ReferenceEditorEntry = {
-      id: 'fixture-draft',
-      slug: 'deterministic-sqlite-migrations',
-      title: 'Deterministic SQLite migrations',
-      body: 'We replaced ad-hoc schema patches with a linear migration journal verified in CI.',
-      visibility: 'draft',
-      date: '2026-11-14',
-      temporalConfidence: 'exact',
-      profile: 'case-study',
-    };
-    const secondDraft: ReferenceEditorEntry = {
-      id: 'fixture-second',
-      slug: 'zero-downtime-queue-consumer',
-      title: 'Zero-downtime queue consumer',
-      body: 'Draining in-flight leases cleanly before rotating worker processes.',
-      visibility: 'draft',
-      date: '2026-11-12',
-      temporalConfidence: 'exact',
-      profile: 'decision',
-    };
-    if (fixture === 'first-run' || fixture === 'empty') {
-      return c.html(
-        renderReferenceEditorPage({
-          entries: [],
-          siteName: cfg.PUBLIC_SITE_NAME,
-          showWalkthrough: fixture === 'first-run',
-          initialTheme: themeParam,
-        })
-      );
-    }
-    if (fixture === 'new-draft') {
-      return c.html(
-        renderReferenceEditorPage({
-          entries: [{ ...baseDraft, id: 'fixture-new', slug: 'new-entry', title: '', body: '' }],
-          selectedId: 'fixture-new',
-          siteName: cfg.PUBLIC_SITE_NAME,
-          initialTheme: themeParam,
-        })
-      );
-    }
-    if (fixture === 'draft') {
-      return c.html(
-        renderReferenceEditorPage({
-          entries: [baseDraft],
-          selectedId: baseDraft.id,
-          siteName: cfg.PUBLIC_SITE_NAME,
-          statusMessage: 'Draft saved just now.',
-          statusTone: 'info',
-          initialTheme: themeParam,
-        })
-      );
-    }
-    if (fixture === 'error') {
-      return c.html(
-        renderReferenceEditorPage({
-          entries: [{ ...baseDraft, title: '' }],
-          selectedId: baseDraft.id,
-          siteName: cfg.PUBLIC_SITE_NAME,
-          titleError: 'Add a title.',
-          statusMessage: 'Enter a title to save this entry.',
-          statusTone: 'danger',
-          initialTheme: themeParam,
-        })
-      );
-    }
-    if (fixture === 'unlisted') {
-      const unlistedEntry: ReferenceEditorEntry = {
-        ...baseDraft,
-        id: 'fixture-unlisted',
-        slug: 'zero-downtime-queue-consumer',
-        title: 'Zero-downtime queue consumer',
-        body: 'Draining in-flight leases cleanly before rotating worker processes.',
-        visibility: 'unlisted',
-      };
-      return c.html(
-        renderReferenceEditorPage({
-          entries: [unlistedEntry, secondDraft],
-          selectedId: unlistedEntry.id,
-          siteName: cfg.PUBLIC_SITE_NAME,
-          statusMessage: 'Entry is now unlisted.',
-          statusTone: 'ok',
-          initialTheme: themeParam,
-        })
-      );
-    }
-    if (fixture === 'public') {
-      const publicEntry: ReferenceEditorEntry = {
-        ...baseDraft,
-        id: 'fixture-public',
-        slug: 'designing-resilient-webhook-retries',
-        title: 'Designing resilient webhook retries',
-        body: 'Idempotency keys and dead-letter replay controls kept delivery above 99.98%.',
-        visibility: 'public',
-      };
-      return c.html(
-        renderReferenceEditorPage({
-          entries: [publicEntry, { ...secondDraft, visibility: 'unlisted' }],
-          selectedId: publicEntry.id,
-          siteName: cfg.PUBLIC_SITE_NAME,
-          statusMessage: 'Entry is now public.',
-          statusTone: 'ok',
-          initialTheme: themeParam,
-        })
-      );
-    }
-    const listRes = await (client.entries?.list() || client.listEntries().then((entries) => ({ entries })));
-    const rawEntries = (listRes as any)?.entries ?? [];
-    const mapped: ReferenceEditorEntry[] = rawEntries.map((e: any) => ({
-      id: e.id,
-      slug: e.slug,
-      title: e.title,
-      body: e.body ?? '',
-      visibility: e.visibility === 'public' ? 'public' : e.visibility === 'unlisted' ? 'unlisted' : 'draft',
-      date: e.created_at ?? new Date().toISOString().slice(0, 10),
-      temporalConfidence: e.temporal_confidence ?? 'exact',
-      profile: e.profile ?? 'freeform',
-    }));
-    return c.html(
-      renderReferenceEditorPage({
-        entries: mapped,
-        selectedId: selectedId ?? mapped[0]?.id,
-        siteName: cfg.PUBLIC_SITE_NAME,
-        showWalkthrough: mapped.length === 0,
-        initialTheme: themeParam,
-      })
-    );
-  };
-
-    app.get('/admin/entries/editor', (c) => handleReferenceEditor(c));
-  }
-
-  // Public visitor booking & escalation status routes
-  // Public visitor booking & escalation status routes
-  app.get('/book', (c) => c.html(renderBookPage(c.req.query('q'), c.req.query('facets'))));
-  app.get('/ask/status/:token', async (c) => c.html(await renderAskStatusPage(client, c.req.param('token'))));
-
-  // Strata Public Site & Content Routes
-  app.get('/home', async (c) => c.html(await renderHomePage(client)));
-  app.get('/work', async (c) =>
-    c.html(await renderWorkOrWritingPage(client, 'work', c.req.query('outcome'), c.req.query('as_of')))
-  );
-  app.get('/work/:slug', async (c) => {
-    const res = await renderEntryDetailPage(client, c.req.param('slug'), c.req.query('view'), c.req.query('as_of'), '/work');
-    return c.html(res.html, res.status as any);
-  });
-  app.get('/writing', async (c) =>
-    c.html(await renderWorkOrWritingPage(client, 'writing', undefined, c.req.query('as_of')))
-  );
-  app.get('/writing/:slug', async (c) => {
-    const slug = c.req.param('slug');
-    const res = await renderEntryDetailPage(client, slug, 'article', c.req.query('as_of'), '/writing');
-    if (res.status === 200 && res.entry && res.entry.profile && res.entry.profile !== 'freeform') {
-      const asOf = c.req.query('as_of');
-      const target = `/work/${slug}${asOf ? `?as_of=${encodeURIComponent(asOf)}` : ''}`;
-      return c.redirect(target, 301);
-    }
-    return c.html(res.html, res.status as any);
-  });
-  app.get('/build', async (c) => c.html(await renderBuildPage(client)));
-  app.get('/build/:slug', async (c) => {
-    const res = await renderBuildVenturePage(client, c.req.param('slug'));
-    return c.html(res.html, res.status as any);
-  });
-  app.get('/timeline', async (c) => c.html(await renderTimelinePage(client, c.req.query('as_of'))));
-  app.get('/ask', async (c) =>
-    c.html(await renderAskPage(client, c.req.query('q'), c.req.query('scope') || c.req.query('entry'), c.req.query('as_of')))
-  );
-  app.get('/now', (c) => c.html(renderStaticPage('now')));
-  app.get('/about', (c) => c.html(renderStaticPage('about')));
-  app.get('/uses', (c) => c.html(renderStaticPage('uses')));
-
-  // RSS Feed (§5.1)
-  app.get('/rss.xml', async (c) => {
-    const res = await (client.entries?.list({ visibility: 'public' }) || client.listEntries({ visibility: ['public'] }).then((entries) => ({ entries })));
-    const entries = res.entries || [];
-    const items = entries
-      .map(
-        (e: any) =>
-          `    <item>\n      <title>${e.title}</title>\n      <link>${primarySiteOrigin}/writing/${e.slug}</link>\n      <pubDate>${new Date(e.created_at).toUTCString()}</pubDate>\n    </item>`
-      )
-      .join('\n');
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0">\n  <channel>\n    <title>${cfg.PUBLIC_SITE_NAME}</title>\n    <link>${primarySiteOrigin}</link>\n    <description>Time-aware personal portfolio and engineering log</description>\n${items}\n  </channel>\n</rss>`;
-    return c.text(xml, 200, { 'Content-Type': 'application/rss+xml; charset=utf-8' });
-  });
-
-  // Sitemap XML (§5.1)
-  app.get('/sitemap.xml', async (c) => {
-    const res = await (client.entries?.list({ visibility: 'public' }) || client.listEntries({ visibility: ['public'] }).then((entries) => ({ entries })));
-    const entries = res.entries || [];
-    const urls = entries
-      .map((e: any) => `  <url><loc>${primarySiteOrigin}/work/${e.slug}</loc></url>`)
-      .join('\n');
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${primarySiteOrigin}/</loc></url>\n  <url><loc>${primarySiteOrigin}/work</loc></url>\n  <url><loc>${primarySiteOrigin}/writing</loc></url>\n  <url><loc>${primarySiteOrigin}/build</loc></url>\n  <url><loc>${primarySiteOrigin}/timeline</loc></url>\n  <url><loc>${primarySiteOrigin}/ask</loc></url>\n${urls}\n</urlset>`;
-    return c.text(xml, 200, { 'Content-Type': 'application/xml; charset=utf-8' });
-  });
-
-  // Root welcome with content negotiation support
-  app.get('/', async (c, next) => {
-    const accept = c.req.header('accept') || '';
-    if (accept.includes('application/json')) {
-      return next ? next() : c.json({ name: `${cfg.PUBLIC_SITE_NAME} Web`, status: 'online' });
-    }
-    return c.html(await renderHomePage(client));
-  });
-
-  // 404 Not Found handler
-  app.notFound((c) => c.html(renderNotFoundPage('Page not found', c.req.path), 404));
+  registerAdminDevRoutes(app, { client, siteName: cfg.PUBLIC_SITE_NAME, checkSession });
+  registerPublicRoutes(app, { client, siteName: cfg.PUBLIC_SITE_NAME, primarySiteOrigin });
 
   return { app, client };
 }

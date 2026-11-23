@@ -1,0 +1,67 @@
+/* C3 Editor D-COMP #10 fixes */
+.lp-admin-shell-main-full .lp-page-notice-slot {
+  min-height: 0;
+}
+
+#ref-field-title.lp-editor-title-input {
+  font-size: var(--lp-font-size-24);
+  line-height: var(--lp-font-line-32);
+  height: auto;
+  min-height: var(--lp-size-target-min);
+  border: 0;
+}
+
+@media (max-width: 639px) {
+  .lp-editor-toolbar {
+    flex-wrap: nowrap;
+    padding: var(--lp-space-inset-item-x) var(--lp-space-inset-track);
+    gap: var(--lp-space-proximity-1);
+  }
+
+  .lp-editor-view-switch .lp-tab {
+    padding-left: var(--lp-space-inset-item-x);
+    padding-right: var(--lp-space-inset-item-x);
+  }
+
+  .lp-editor-toolbar-status {
+    display: none;
+  }
+
+  .lp-editor-toolbar-center {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: var(--vv-bottom, 0);
+    z-index: var(--lp-z-sticky);
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: var(--lp-space-proximity-1);
+    padding: var(--lp-space-inset-item-x) var(--lp-space-inset-section);
+    background: var(--surface-page);
+    border-radius: 0;
+    box-shadow: var(--lp-elevation-e2);
+  }
+
+  .lp-editor-toolbar-center #ref-btn-source-toggle {
+    display: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .lp-popover-menu,
+  .lp-launcher-panel,
+  .lp-status-popover {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100vh - var(--lp-size-control-xs));
+    overflow-y: auto;
+    border-radius: var(--lp-radius-overlay) var(--lp-radius-overlay) 0 0;
+    z-index: var(--lp-z-overlay);
+  }
+}

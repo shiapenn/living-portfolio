@@ -1,0 +1,25 @@
+{
+  "$schema": "./file-size-exemptions.schema.json",
+  "version": "1.0.0",
+  "policy": "Shrinking-only exemption list for pre-existing backend/data/fixture/monolithic-client files over 400 lines. Every entry must carry a reason and a maxLines cap that cannot increase.",
+  "exemptions": [
+    { "file": "apps/web/src/test-client.ts", "maxLines": 495, "reason": "In-memory test fixture client used exclusively by unit and web tests" },
+    { "file": "apps/web/src/client/admin/editor-page.ts", "maxLines": 1277, "reason": "Single-closure browser client bundle for TipTap editor (bundled by esbuild; scheduled for modular split in WP-18.1)" },
+    { "file": "packages/core/src/openapi/index.ts", "maxLines": 1369, "reason": "Declarative OpenAPI 3.1 specification schema object" },
+    { "file": "packages/core/src/types/index.ts", "maxLines": 451, "reason": "Shared TypeScript domain type definitions barrel" },
+    { "file": "packages/core/src/algorithms/calibration.ts", "maxLines": 522, "reason": "Pre-existing backend calibration algorithm (out of WP-16.N design-system scope)" },
+    { "file": "packages/config/src/index.ts", "maxLines": 612, "reason": "Central Zod environment configuration schema" },
+    { "file": "packages/client/src/client.ts", "maxLines": 557, "reason": "Typed HTTP client covering all /api/v1 endpoints" },
+    { "file": "packages/ai/src/governor/index.ts", "maxLines": 542, "reason": "Pre-existing AI grounding governor (out of WP-16.N design-system scope)" },
+    { "file": "packages/db/src/postgres-repository.ts", "maxLines": 1497, "reason": "Pre-existing PostgreSQL repository implementation (out of WP-16.N design-system scope)" },
+    { "file": "packages/db/src/dual-write-repository.ts", "maxLines": 1008, "reason": "Pre-existing dual-write migration repository (out of WP-16.N design-system scope)" },
+    { "file": "packages/db/src/repository.ts", "maxLines": 924, "reason": "Pre-existing in-memory repository implementation (out of WP-16.N design-system scope)" },
+    { "file": "packages/db/src/backup/engine.ts", "maxLines": 468, "reason": "Pre-existing encrypted backup/restore engine (out of WP-16.N design-system scope)" },
+    { "file": "packages/db/src/seed.ts", "maxLines": 450, "reason": "Demo seed dataset fixtures" },
+    { "file": "apps/api/src/auth/security.ts", "maxLines": 822, "reason": "Pre-existing auth/session/TOTP security module (out of WP-16.N design-system scope)" },
+    { "file": "apps/api/src/routes/ask.ts", "maxLines": 654, "reason": "Pre-existing Ask API route handler (out of WP-16.N design-system scope)" },
+    { "file": "apps/api/src/routes/settings.ts", "maxLines": 645, "reason": "Pre-existing Settings API route handler (out of WP-16.N design-system scope)" },
+    { "file": "apps/api/src/routes/entries.ts", "maxLines": 625, "reason": "Pre-existing Entries API route handler (out of WP-16.N design-system scope)" },
+    { "file": "apps/worker/src/worker.ts", "maxLines": 700, "reason": "Pre-existing static export & background worker (out of WP-16.N design-system scope)" }
+  ]
+}

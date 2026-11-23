@@ -1,4 +1,4 @@
-@layer primitives {
+@layer reset {
   .lp-btn {
     border-radius: var(--lp-radius-control);
     font-family: var(--lp-font-family-ui);
