@@ -2033,5 +2033,13 @@
     "path": "docs/execution-reports/A173-wp-16n-s3-public-editorial-fonts.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A174",
+    "title": "wp-16n-s4-governance-adrs-health",
+    "class": "A",
+    "path": "docs/execution-reports/A174-wp-16n-s4-governance-adrs-health.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
