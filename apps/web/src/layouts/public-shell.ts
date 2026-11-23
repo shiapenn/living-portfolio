@@ -1,5 +1,6 @@
 import { loadConfig } from "@living-portfolio/config";
-import { STRATA_DESIGN_SYSTEM_CSS } from "../styles.js";
+import { CORE_CSS_FILENAME } from "@living-portfolio/ui-core";
+import { PUBLIC_CSS_FILENAME } from "@living-portfolio/ui-public";
 import { escapeHtml, sanitizeHttpUrl } from "../lib/html.js";
 
 export interface RenderLayoutOptions {
@@ -34,12 +35,12 @@ export function renderLayout(
 
   const safeLogoUrl = sanitizeHttpUrl(cfg.PUBLIC_SITE_LOGO_URL);
   const brandHtml = safeLogoUrl
-    ? `<img src="${escapeHtml(safeLogoUrl)}" alt="${escapeHtml(cfg.PUBLIC_OWNER_NAME)}" style="height:var(--lp-size-icon-lg);vertical-align:middle;margin-right:var(--lp-space-inline-icon-text)" />${escapeHtml(cfg.PUBLIC_OWNER_NAME)}`
+    ? `<img src="${escapeHtml(safeLogoUrl)}" alt="${escapeHtml(cfg.PUBLIC_OWNER_NAME)}" width="24" height="24" class="pub-brand-logo" />${escapeHtml(cfg.PUBLIC_OWNER_NAME)}`
     : escapeHtml(cfg.PUBLIC_OWNER_NAME);
 
   const stagingBannerHtml =
     cfg.DEPLOYMENT_CLASS === 'staging'
-      ? `<div class="as-of-banner" data-banner="staging-synthetic-only" role="status" style="position:sticky;top:0;z-index: var(--lp-z-modal);margin:0;border-radius:0;justify-content:center;background:var(--surface-raised);border-bottom:var(--lp-border-focus) solid var(--lp-color-passage-friction)"><strong>Staging: synthetic data only.</strong></div>`
+      ? `<div class="as-of-banner pub-staging-banner" data-banner="staging-synthetic-only" role="status"><strong>Staging: synthetic data only.</strong></div>`
       : '';
 
   const robotsMetaHtml =
@@ -48,12 +49,11 @@ export function renderLayout(
       : '';
 
   const unofficialForkSlotHtml = cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE
-    ? `<div class="unofficial-fork-slot" data-slot="unofficial-fork-notice" style="margin-top:var(--lp-space-proximity-2);font-size:var(--lp-font-size-12);color:var(--text-muted)">${escapeHtml(cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE)}</div>`
+    ? `<div class="unofficial-fork-slot" data-slot="unofficial-fork-notice" style="margin-top:var(--pub-space-stack-sm);font-size:var(--pub-font-size-caption);color:var(--pub-color-text-secondary)">${escapeHtml(cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE)}</div>`
     : '';
 
   const nonceAttr = options?.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : '';
 
-  // Inject nonce into any <script> tags inside mainContentHtml if specified
   let safeMainContent = mainContentHtml;
   if (options?.nonce) {
     safeMainContent = safeMainContent.replace(
@@ -69,32 +69,33 @@ export function renderLayout(
   const isAdmin = activePath.startsWith('/admin') && activePath !== '/admin/login' && activePath !== '/admin/setup';
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-lang="public">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 ${robotsMetaHtml}${headSlotHtml}  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_NAME)}</title>
-  <style${nonceAttr}>${STRATA_DESIGN_SYSTEM_CSS}</style>
-</head>
+  <link rel="stylesheet" href="/assets/css/${CORE_CSS_FILENAME}" />
+  <link rel="stylesheet" href="/assets/css/${PUBLIC_CSS_FILENAME}" />
+${options?.nonce ? `  <style${nonceAttr}>/* public-pack-csp-nonce */</style>\n` : ''}</head>
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
   ${stagingBannerHtml}
-  <header class="site-header">
-${headerSlotHtml}    <nav class="site-nav" aria-label="Primary navigation">
+  <header class="site-header pub-header">
+${headerSlotHtml}    <nav class="site-nav pub-nav" aria-label="Primary navigation">
       <a href="/" class="site-brand"${activePath === '/' ? ' aria-current="page"' : ''}>${brandHtml}</a>
       <div class="nav-links">
         ${navHtml}
-        ${isAdmin ? `<button type="button" class="btn btn-secondary" id="btn-admin-logout" style="font-size:var(--lp-font-size-12);padding:var(--lp-space-inset-track) var(--lp-space-inset-control-sm);margin-left:var(--lp-space-inline-icon-text);cursor:pointer">Sign out</button>` : ''}
-        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-pressed="false" style="min-height:var(--lp-size-hit-area)"><span aria-hidden="true">◐</span> <span class="theme-label">Dark theme</span></button>
+        ${isAdmin ? `<button type="button" class="btn btn-secondary" id="btn-admin-logout">Sign out</button>` : ''}
+        <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-pressed="false"><span aria-hidden="true">◐</span> <span class="theme-label">Dark theme</span></button>
       </div>
     </nav>
   </header>
-  <main class="site-main" id="main-content">
+  <main class="site-main pub-main" id="main-content">
     ${safeMainContent}
   </main>
-  <footer class="site-footer" style="max-width:var(--lp-size-layout-max);margin:var(--lp-space-inset-hero-y) auto var(--lp-space-proximity-4);padding:var(--lp-space-inset-section) var(--lp-space-inset-dialog);border-top:var(--lp-border-hairline) solid var(--rule);font-size:var(--lp-font-size-14);color:var(--text-muted)">
-${footerSlotHtml}    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--lp-space-inset-item-y);margin-bottom:var(--lp-space-inset-item-y)">
-      <nav aria-label="Secondary navigation" style="display:flex;gap:var(--lp-space-stack-field-to-field);flex-wrap:wrap">
+  <footer class="site-footer pub-footer">
+${footerSlotHtml}    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--pub-space-stack-md);margin-bottom:var(--pub-space-stack-sm)">
+      <nav aria-label="Secondary navigation" style="display:flex;gap:var(--pub-space-stack-md);flex-wrap:wrap">
         <a href="/about">About</a>
         <a href="/now">Now</a>
         <a href="/uses">Uses</a>

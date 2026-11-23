@@ -58,8 +58,9 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     const html = await renderHomePage(repo);
     expect(html).toContain('Strata timeline');
     expect(html).toContain('Advisory Locks, Revisited: Dropping Redis for Postgres 15');
-    expect(html).toContain('--lp-color-surface-l0: #FFFFFF');
-    expect(html).toContain('--lp-color-surface-l0: #0F1A22');
+    expect(html).toContain('/assets/css/core.');
+    expect(html).toContain('/assets/css/public.');
+    expect(html).not.toContain('--lp-color-surface-l0');
     // Private entry must never appear on public home page
     expect(html).not.toContain('Private NDA Architecture Notes');
   });
