@@ -1,0 +1,193 @@
+#!/usr/bin/env node
+/**
+ * Effective Design & Architecture Rules Generator (WP-16.N S4)
+ * Reads docs/adr/ADR-*.md front matter and generates docs/design/rules.md.
+ * - Includes ONLY status: accepted ADRs (excludes superseded rules).
+ * - Groups rules by `area`, linking each rule to its ADR and enforcing guard/test (or `manual review`).
+ * - Pass `--check` to fail on:
+ *   1. Drift between generated and committed docs/design/rules.md
+ *   2. Any accepted ADR missing `area` or `rules`
+ *   3. Any rule missing `enforced_by` or pointing to a non-existent file (unless `manual review`)
+ *   4. Any active design guard script not referenced by at least one accepted ADR rule
+ */
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const ADR_DIR = resolve(ROOT, 'docs/adr');
+const OUT_PATH = resolve(ROOT, 'docs/design/rules.md');
+
+const REQUIRED_GUARD_SCRIPTS = [
+  'scripts/verify-design-boundaries',
+  'scripts/verify-ui-guards',
+  'scripts/verify-css-variables',
+  'scripts/verify-dependency-rules',
+  'scripts/generate-registry',
+  'scripts/generate-decisions',
+  'scripts/generate-rules',
+  'scripts/ds-health',
+  'scripts/verify-changeset',
+  'scripts/wp16n-verify',
+];
+
+function parseAdrFrontMatter(text) {
+  const m = text.match(/^---\n([\s\S]*?)\n---/);
+  if (!m) return {};
+  const lines = m[1].split('\n');
+  const out = { rules: [] };
+  let inRules = false;
+  let currentRule = null;
+
+  for (const rawLine of lines) {
+    if (/^rules:\s*$/.test(rawLine)) {
+      inRules = true;
+      continue;
+    }
+    if (inRules) {
+      if (/^\s+-\s+id:\s*/.test(rawLine)) {
+        if (currentRule) out.rules.push(currentRule);
+        currentRule = { id: rawLine.replace(/^\s+-\s+id:\s*/, '').trim(), text: '', enforced_by: '' };
+        continue;
+      }
+      if (currentRule && /^\s+text:\s*/.test(rawLine)) {
+        currentRule.text = rawLine.replace(/^\s+text:\s*/, '').trim().replace(/^["']|["']$/g, '');
+        continue;
+      }
+      if (currentRule && /^\s+enforced_by:\s*/.test(rawLine)) {
+        currentRule.enforced_by = rawLine.replace(/^\s+enforced_by:\s*/, '').trim().replace(/^["']|["']$/g, '');
+        continue;
+      }
+      if (!/^\s/.test(rawLine) && rawLine.trim()) {
+        if (currentRule) {
+          out.rules.push(currentRule);
+          currentRule = null;
+        }
+        inRules = false;
+      } else {
+        continue;
+      }
+    }
+    const idx = rawLine.indexOf(':');
+    if (idx === -1) continue;
+    const k = rawLine.slice(0, idx).trim();
+    const v = rawLine.slice(idx + 1).trim();
+    out[k] = v === 'null' ? null : v;
+  }
+  if (currentRule) out.rules.push(currentRule);
+  return out;
+}
+
+const files = existsSync(ADR_DIR)
+  ? readdirSync(ADR_DIR)
+      .filter((f) => /^ADR-\d+.*\.md$/.test(f))
+      .sort()
+  : [];
+
+const errors = [];
+const byArea = new Map();
+const referencedGuards = new Set();
+let acceptedCount = 0;
+let supersededCount = 0;
+let totalRules = 0;
+
+for (const f of files) {
+  const fm = parseAdrFrontMatter(readFileSync(resolve(ADR_DIR, f), 'utf8'));
+  const id = fm.id || f.replace(/\.md$/, '');
+  const status = fm.status || 'accepted';
+
+  if (status === 'superseded') {
+    supersededCount++;
+    continue;
+  }
+  acceptedCount++;
+
+  const area = fm.area;
+  if (!area) {
+    errors.push(`${f}: accepted ADR missing 'area' in front matter`);
+    continue;
+  }
+  if (!Array.isArray(fm.rules) || fm.rules.length === 0) {
+    errors.push(`${f}: accepted ADR missing 'rules' list in front matter`);
+    continue;
+  }
+
+  for (const rule of fm.rules) {
+    if (!rule.id || !rule.text) {
+      errors.push(`${f}: rule missing id or text`);
+      continue;
+    }
+    if (!rule.enforced_by) {
+      errors.push(`${f} (${rule.id}): missing enforced_by`);
+      continue;
+    }
+    if (rule.enforced_by !== 'manual review') {
+      const targetPath = rule.enforced_by.split(/\s+/)[0];
+      if (!existsSync(resolve(ROOT, targetPath))) {
+        errors.push(`${f} (${rule.id}): enforced_by target '${targetPath}' does not exist`);
+      }
+      referencedGuards.add(targetPath);
+    }
+    if (!byArea.has(area)) byArea.set(area, []);
+    byArea.get(area).push({
+      ruleId: rule.id,
+      text: rule.text,
+      adrId: id,
+      adrFile: `../adr/${f}`,
+      enforcedBy: rule.enforced_by,
+    });
+    totalRules++;
+  }
+}
+
+for (const guard of REQUIRED_GUARD_SCRIPTS) {
+  if (!referencedGuards.has(guard)) {
+    errors.push(`Enforcement script '${guard}' is not linked by any accepted ADR rule`);
+  }
+}
+
+const sortedAreas = Array.from(byArea.keys()).sort();
+const sections = sortedAreas
+  .map((area) => {
+    const rows = byArea
+      .get(area)
+      .map(
+        (r) =>
+          `| \`${r.ruleId}\` | ${r.text} | [${r.adrId}](${r.adrFile}) | \`${r.enforcedBy}\` |`
+      )
+      .join('\n');
+    return `## ${area}\n\n| Rule | Requirement | Source ADR | Enforced By |\n| --- | --- | --- | --- |\n${rows}`;
+  })
+  .join('\n\n');
+
+const md = `# Effective Design & Architecture Rules (Generated)
+
+> Auto-generated from \`docs/adr/ADR-*.md\` front matter via \`node scripts/generate-rules\`. Do not edit by hand.
+> Superseded ADRs are excluded automatically.
+
+| Metric | Value |
+| --- | --- |
+| Accepted ADRs | ${acceptedCount} |
+| Superseded ADRs (excluded) | ${supersededCount} |
+| Effective Rules | ${totalRules} |
+| Areas Covered | ${sortedAreas.length} |
+
+${sections}
+`;
+
+if (errors.length > 0) {
+  console.error(`✗ [RULES-GUARD] ${errors.length} ADR/rule enforcement error(s):`);
+  for (const e of errors) console.error(`  - ${e}`);
+  process.exit(1);
+}
+
+if (process.argv.includes('--check')) {
+  const existing = existsSync(OUT_PATH) ? readFileSync(OUT_PATH, 'utf8') : '';
+  if (existing !== md) {
+    console.error('✗ [RULES-DRIFT] docs/design/rules.md is out of sync with docs/adr/. Run: node scripts/generate-rules');
+    process.exit(1);
+  }
+  console.log(`✓ docs/design/rules.md matches ${acceptedCount} accepted ADRs (${totalRules} rules, ${supersededCount} superseded excluded).`);
+} else {
+  writeFileSync(OUT_PATH, md, 'utf8');
+  console.log(`✓ Generated docs/design/rules.md (${totalRules} effective rules across ${sortedAreas.length} areas).`);
+}

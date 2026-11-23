@@ -179,6 +179,7 @@
 | `A171` | wp-16n-s1-tokens-accent-docs-guards | `active` | [A171-wp-16n-s1-tokens-accent-docs-guards.md](execution-reports/A171-wp-16n-s1-tokens-accent-docs-guards.md) | — |
 | `A172` | wp-16n-s2-admin-css-migration | `active` | [A172-wp-16n-s2-admin-css-migration.md](execution-reports/A172-wp-16n-s2-admin-css-migration.md) | — |
 | `A173` | wp-16n-s3-public-editorial-fonts | `active` | [A173-wp-16n-s3-public-editorial-fonts.md](execution-reports/A173-wp-16n-s3-public-editorial-fonts.md) | — |
+| `A174` | wp-16n-s4-governance-adrs-health | `active` | [A174-wp-16n-s4-governance-adrs-health.md](execution-reports/A174-wp-16n-s4-governance-adrs-health.md) | — |
 
 ## Handover Snapshots (Class H)
 
@@ -261,4 +262,21 @@
 | `L034` | Admin Pack Tokens (Generated) | `active` | [tokens-admin.md](design/tokens-admin.md) | — |
 | `L035` | Public Pack Tokens (Generated) | `active` | [tokens-public.md](design/tokens-public.md) | — |
 | `L036` | WP-16.N Progress & DoD Checklist | `active` | [wp16n-progress.md](plans/wp16n-progress.md) | — |
+| `L037` | ADR-008: Minimalism and Quiet Restraint (D-MIN) | `active` | [ADR-008-d-min-quiet-restraint.md](adr/ADR-008-d-min-quiet-restraint.md) | — |
+| `L038` | ADR-009: Layout Grid and Responsive Breakpoints (D-LAYOUT) | `active` | [ADR-009-d-layout-grid-and-breakpoints.md](adr/ADR-009-d-layout-grid-and-breakpoints.md) | — |
+| `L039` | ADR-010: Admin Editor and Markdown Roundtrip (D-EDITOR) | `active` | [ADR-010-d-editor-markdown-architecture.md](adr/ADR-010-d-editor-markdown-architecture.md) | — |
+| `L040` | ADR-011: Schema-Driven Settings Registry (D-SETTINGS-ARCH) | `active` | [ADR-011-d-settings-arch-registry.md](adr/ADR-011-d-settings-arch-registry.md) | — |
+| `L041` | ADR-012: Frontend-Backend Storage Decoupling (D-STORAGE) | `active` | [ADR-012-d-storage-decoupling.md](adr/ADR-012-d-storage-decoupling.md) | — |
+| `L042` | ADR-013: Page Section Rhythm and Heading Hierarchy (D-SECTIONS) | `active` | [ADR-013-d-sections-rhythm.md](adr/ADR-013-d-sections-rhythm.md) | — |
+| `L043` | ADR-014: Component Composition and Primitives (D-COMP) | `active` | [ADR-014-d-comp-primitive-composition.md](adr/ADR-014-d-comp-primitive-composition.md) | — |
+| `L044` | ADR-015: System States, Empty States and Feedback (D-SYS) | `active` | [ADR-015-d-sys-system-states.md](adr/ADR-015-d-sys-system-states.md) | — |
+| `L045` | ADR-016: Visual Polish, Dark Theme and Focus Visibility | `active` | [ADR-016-d-final-visual-polish.md](adr/ADR-016-d-final-visual-polish.md) | — |
+| `L046` | ADR-017: Contact Sheet Census and Style Gate (D-G) | `active` | [ADR-017-d-g-contact-sheet-census.md](adr/ADR-017-d-g-contact-sheet-census.md) | — |
+| `L047` | ADR-018: Legacy Item Surface Bleed (D-H, Superseded) | `superseded` | [ADR-018-d-h-legacy-item-bleed.md](adr/ADR-018-d-h-legacy-item-bleed.md) | — |
+| `L048` | ADR-019: Overlay Surfaces and Focus Management (D-I) | `active` | [ADR-019-d-i-overlays-and-focus.md](adr/ADR-019-d-i-overlays-and-focus.md) | — |
+| `L049` | ADR-020: Component Registry and Governance (D-J) | `active` | [ADR-020-d-j-component-registry-governance.md](adr/ADR-020-d-j-component-registry-governance.md) | — |
+| `L050` | ADR-021: Item Flush Alignment Replacing Bleed (D-K) | `active` | [ADR-021-d-k-item-flush-alignment.md](adr/ADR-021-d-k-item-flush-alignment.md) | — |
+| `L051` | ADR-022: Consolidation, Health Budgets and Changesets (D-L / D-N) | `active` | [ADR-022-d-l-consolidation-health-changesets.md](adr/ADR-022-d-l-consolidation-health-changesets.md) | — |
+| `L052` | Effective Design & Architecture Rules (Generated) | `active` | [rules.md](design/rules.md) | — |
+| `L053` | Design System Health Report (Generated) | `active` | [health.md](design/health.md) | — |
 

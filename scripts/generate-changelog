@@ -1,0 +1,50 @@
+#!/usr/bin/env node
+/**
+ * Per-Package CHANGELOG Generator (`pnpm ds:changelog`)
+ * Generates CHANGELOG.md for the 4 UI packages from `.changeset/*.md`.
+ */
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const PACKAGES = [
+  { name: '@living-portfolio/design-tokens', dir: 'packages/design-tokens' },
+  { name: '@living-portfolio/ui-core', dir: 'packages/ui-core' },
+  { name: '@living-portfolio/ui-admin', dir: 'packages/ui-admin' },
+  { name: '@living-portfolio/ui-public', dir: 'packages/ui-public' },
+];
+
+const csDir = resolve(ROOT, '.changeset');
+const csFiles = existsSync(csDir)
+  ? readdirSync(csDir)
+      .filter((f) => f.endsWith('.md') && f !== 'README.md')
+      .sort()
+  : [];
+
+const entriesByPkg = new Map(PACKAGES.map((p) => [p.name, []]));
+
+for (const f of csFiles) {
+  const raw = readFileSync(resolve(csDir, f), 'utf8');
+  const m = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  if (!m) continue;
+  const headerLines = m[1].split('\n').filter(Boolean);
+  const body = m[2].trim();
+  for (const line of headerLines) {
+    const kv = line.match(/^["']?([^"':]+)["']?\s*:\s*(\w+)/);
+    if (!kv) continue;
+    const [, pkgName, bump] = kv;
+    if (entriesByPkg.has(pkgName)) {
+      entriesByPkg.get(pkgName).push({ file: f, bump, body });
+    }
+  }
+}
+
+for (const pkg of PACKAGES) {
+  const list = entriesByPkg.get(pkg.name) || [];
+  const sections = list
+    .map((e) => `## ${e.bump.toUpperCase()} (${e.file.replace(/\.md$/, '')})\n\n${e.body}`)
+    .join('\n\n');
+  const out = `# Changelog — ${pkg.name}\n\n> Generated from \`.changeset/*.md\` via \`pnpm ds:changelog\`.\n\n${sections || 'No changesets recorded yet.'}\n`;
+  writeFileSync(resolve(ROOT, pkg.dir, 'CHANGELOG.md'), out, 'utf8');
+}
+console.log(`✓ Generated CHANGELOG.md for ${PACKAGES.length} UI packages from ${csFiles.length} changeset(s).`);

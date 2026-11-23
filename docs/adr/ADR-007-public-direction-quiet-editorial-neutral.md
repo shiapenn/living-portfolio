@@ -4,6 +4,11 @@ title: Public Direction - Quiet Editorial, Made Neutral (D-N1)
 status: accepted
 date: 2026-11-23
 supersedes: null
+area: public-language
+rules:
+  - id: R-007-1
+    text: "Public neutrals stay strictly chroma-neutral (OKLCH chroma <= 0.01) with real self-hosted WOFF2 editorial fonts and CJK :lang(zh) support"
+    enforced_by: packages/design-tokens/src/rules.test.ts
 ---
 
 # ADR-007: Public Direction - Quiet Editorial, Made Neutral (`D-N1`)
