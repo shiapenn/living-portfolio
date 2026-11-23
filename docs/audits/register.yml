@@ -8011,3 +8011,98 @@
       status: partial
       note: "Implemented in WP-16.K K3 (PR #253) and pixel-diff verified in K4 (246/246 non-gallery 0% diff vs K2); awaiting L review."
   verified_by: null
+
+- id: 20261106-UX-213
+  audit: AUD-2026-11-06
+  title: 'L1 Item-level button grammar (one action = secondary; two actions = secondary affirmative + text button negative; at most two buttons; item-level primary removed everywhere; labels <= 2 words; destructive text button uses danger text token)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-l-census.spec.ts
+  history:
+    - date: 2026-11-23
+      status: open
+      note: "Registered in WP-16.L L0."
+  verified_by: null
+
+- id: 20261106-UX-214
+  audit: AUD-2026-11-06
+  title: 'L2 List variants plain and interactive (plain = flush with column edge, no hover/selected/pressed/chevron, buttons on column edge; interactive = Item rect equals column, content inset, hover/selected tint; variant set on List; 1 text edge per list and per plain page)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-l-census.spec.ts
+  history:
+    - date: 2026-11-23
+      status: open
+      note: "Registered in WP-16.L L0."
+  verified_by: null
+
+- id: 20261106-UX-215
+  audit: AUD-2026-11-06
+  title: 'L3 List spacing K2 amendment (plain absorption ink-measured; interactive tint clearance >= 8px; stack.control-to-list=16, stack.heading-to-list-plain=16, stack.heading-to-list-interactive=16; SectionHeader row height includes action button; Today uses FormSection + SectionHeader)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-l-census.spec.ts
+  history:
+    - date: 2026-11-23
+      status: open
+      note: "Registered in WP-16.L L0."
+  verified_by: null
+
+- id: 20261106-UX-216
+  audit: AUD-2026-11-06
+  title: 'L4 Spacing system taxonomy (--lp-space-stack-*, --lp-space-inline-*, --lp-space-inset-*, column-edge rule; raw scale 0..64 primitive tier only; component CSS guard forbidding raw scale; 0 unmapped items; monotonic proximity test)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-l-census.spec.ts
+  history:
+    - date: 2026-11-23
+      status: open
+      note: "Registered in WP-16.L L0."
+  verified_by: null
+
+- id: 20261106-UX-217
+  audit: AUD-2026-11-06
+  title: 'L5 Token restructure (no numeral-named tokens, strict tier isolation, remove reserved list with arithmetic closure defined=used, resolve all aliases, single-name responsive tokens, surface/role/scrim/elevation/type/z/radius/motion cleanup, omit primitives from shipped CSS)'
+  spec_sections:
+    - "12.8"
+  severity: P1
+  status: open
+  owner: A
+  links:
+    issue: null
+    pr: null
+    plan: docs/plans/P004-ux-remediation-work-packages.md
+  regression_test: tests/e2e/wp16-l-census.spec.ts
+  history:
+    - date: 2026-11-23
+      status: open
+      note: "Registered in WP-16.L L0."
+  verified_by: null

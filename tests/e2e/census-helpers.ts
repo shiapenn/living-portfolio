@@ -1596,3 +1596,380 @@ export async function checkListPaddingAbsorptionK2(page: Page, stateId = ''): Pr
     return reports;
   }, { sid: stateId, spec: TOKEN_SPEC });
 }
+
+export interface ItemButtonGrammarL1Report {
+  barCount: number;
+  issues: string[];
+}
+
+export async function checkItemButtonGrammarL1(page: Page, stateId = ''): Promise<ItemButtonGrammarL1Report> {
+  return page.evaluate((sid) => {
+    const isVisible = (el: HTMLElement | null): boolean => {
+      if (!el) return false;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+
+    const issues: string[] = [];
+    let barCount = 0;
+    const bars = Array.from(document.querySelectorAll<HTMLElement>('[data-c="ActionBar"][data-level="item"], .lp-action-bar-item'));
+    for (const bar of bars) {
+      if (!isVisible(bar)) continue;
+      barCount++;
+      const btns = Array.from(bar.querySelectorAll<HTMLElement>('button, a.lp-btn')).filter(isVisible);
+      if (btns.length === 0) continue;
+
+      if (btns.length > 2) {
+        issues.push(`l1-item-max-2(${sid}): count=${btns.length}`);
+      }
+      for (const b of btns) {
+        const label = (b.textContent || '').trim();
+        const words = label.split(/\s+/).filter(Boolean).length;
+        if (words > 2) {
+          issues.push(`l1-item-max-2-words(${sid}): "${label}" (${words} words)`);
+        }
+        if (b.classList.contains('lp-btn-primary') || b.classList.contains('lp-btn-danger')) {
+          issues.push(`l1-item-primary-disallowed(${sid}): "${label}" has primary/danger class`);
+        }
+      }
+      if (btns.length === 1) {
+        const b0 = btns[0];
+        if (!b0.classList.contains('lp-btn-secondary')) {
+          issues.push(`l1-item-single-must-be-secondary(${sid}): "${(b0.textContent || '').trim()}" classes="${b0.className}"`);
+        }
+      } else if (btns.length === 2) {
+        const [b0, b1] = btns;
+        if (!b0.classList.contains('lp-btn-secondary')) {
+          issues.push(`l1-item-first-must-be-secondary(${sid}): "${(b0.textContent || '').trim()}" classes="${b0.className}"`);
+        }
+        if (!b1.classList.contains('lp-btn-text')) {
+          issues.push(`l1-item-second-must-be-text(${sid}): "${(b1.textContent || '').trim()}" classes="${b1.className}"`);
+        }
+      }
+    }
+
+    // Destructive text buttons must use danger text colour token
+    const dangerProbe = document.createElement('span');
+    dangerProbe.style.color = 'var(--lp-color-role-danger-fg, var(--role-danger-fg))';
+    dangerProbe.style.display = 'none';
+    document.body.appendChild(dangerProbe);
+    const expectedDangerColor = getComputedStyle(dangerProbe).color;
+    dangerProbe.remove();
+
+    const destructiveTextBtns = Array.from(
+      document.querySelectorAll<HTMLElement>('.lp-btn-text.lp-btn-text-danger, .lp-btn-text[data-destructive="true"]')
+    ).filter(isVisible);
+    for (const btn of destructiveTextBtns) {
+      const actualColor = getComputedStyle(btn).color;
+      if (expectedDangerColor && actualColor !== expectedDangerColor) {
+        issues.push(`l1-destructive-text-color(${sid}): got ${actualColor}, expected ${expectedDangerColor}`);
+      }
+    }
+
+    return { barCount, issues };
+  }, stateId);
+}
+
+export interface ListTextEdgeL2Report {
+  listId: string;
+  variant: string;
+  itemTextEdges: number[];
+  issues: string[];
+}
+
+export interface PageTextEdgesL2Summary {
+  stateId: string;
+  pageColumnEdges: number[];
+  plainPageSharedEdges: number[];
+  lists: ListTextEdgeL2Report[];
+  issues: string[];
+}
+
+export async function checkListVariantsAndTextEdgesL2(page: Page, stateId = ''): Promise<PageTextEdgesL2Summary> {
+  return page.evaluate((sid) => {
+    const isVisible = (el: HTMLElement | null): boolean => {
+      if (!el) return false;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+
+    const clusterEdges = (xs: number[], tol = 1.5): number[] => {
+      const sorted = [...xs].sort((a, b) => a - b);
+      const clusters: number[] = [];
+      for (const x of sorted) {
+        if (clusters.length === 0 || Math.abs(x - clusters[clusters.length - 1]) > tol) {
+          clusters.push(Math.round(x));
+        }
+      }
+      return clusters;
+    };
+
+    const issues: string[] = [];
+    const listsReport: ListTextEdgeL2Report[] = [];
+    const lists = Array.from(document.querySelectorAll<HTMLElement>('.lp-list, .lp-item-list')).filter(isVisible);
+
+    for (const list of lists) {
+      const items = Array.from(list.querySelectorAll<HTMLElement>(':scope > [data-c="Item"], :scope > .lp-item')).filter(isVisible);
+      if (items.length === 0) continue;
+
+      const listId = list.id || list.closest('[id]')?.id || 'unnamed-list';
+      const dataVar = list.getAttribute('data-variant') || '';
+      const hasPlainCls = list.classList.contains('lp-list-plain');
+      const hasInteractiveCls = list.classList.contains('lp-list-interactive');
+      const variant = dataVar || (hasPlainCls ? 'plain' : hasInteractiveCls ? 'interactive' : 'missing');
+
+      const listIssues: string[] = [];
+      if (variant !== 'plain' && variant !== 'interactive') {
+        listIssues.push(`l2-missing-list-variant(${sid}, ${listId}): list must declare plain or interactive variant`);
+      }
+
+      const lr = list.getBoundingClientRect();
+      const rawItemEdges: number[] = [];
+
+      for (const item of items) {
+        const ir = item.getBoundingClientRect();
+        if (Math.abs(ir.left - lr.left) > 1.5 || Math.abs(ir.right - lr.right) > 1.5) {
+          listIssues.push(`l2-item-rect(${sid}, ${listId}): item=[${Math.round(ir.left)}..${Math.round(ir.right)}] list=[${Math.round(lr.left)}..${Math.round(lr.right)}]`);
+        }
+
+        const titleEl = item.querySelector<HTMLElement>('.lp-item-title');
+        if (titleEl && isVisible(titleEl)) {
+          const tr = titleEl.getBoundingClientRect();
+          rawItemEdges.push(tr.left);
+
+          if (variant === 'plain') {
+            if (Math.abs(tr.left - lr.left) > 1.5) {
+              listIssues.push(`l2-plain-not-flush(${sid}, ${listId}): titleLeft=${Math.round(tr.left)} expected=${Math.round(lr.left)}`);
+            }
+          } else if (variant === 'interactive') {
+            if (Math.abs(tr.left - (lr.left + 8)) > 1.5) {
+              listIssues.push(`l2-interactive-title-inset(${sid}, ${listId}): titleLeft=${Math.round(tr.left)} expected=${Math.round(lr.left + 8)}`);
+            }
+          }
+        }
+
+        if (variant === 'plain') {
+          const chev = item.querySelector<HTMLElement>('.lp-item-chevron');
+          if (chev && isVisible(chev)) {
+            listIssues.push(`l2-plain-has-chevron(${sid}, ${listId}): plain list item must not render a chevron`);
+          }
+          const beforeBg = getComputedStyle(item, '::before').backgroundColor;
+          const beforeDisp = getComputedStyle(item, '::before').display;
+          if (beforeDisp !== 'none' && beforeBg !== 'rgba(0, 0, 0, 0)' && beforeBg !== 'transparent') {
+            listIssues.push(`l2-plain-has-tint(${sid}, ${listId}): plain list item must not render hover/selected tint`);
+          }
+          const firstBtn = item.querySelector<HTMLElement>('[data-c="ActionBar"] .lp-btn');
+          if (firstBtn && isVisible(firstBtn)) {
+            const br = firstBtn.getBoundingClientRect();
+            if (Math.abs(br.left - lr.left) > 1.5) {
+              listIssues.push(`l2-plain-button-edge(${sid}, ${listId}): btnLeft=${Math.round(br.left)} expected=${Math.round(lr.left)}`);
+            }
+          }
+        }
+      }
+
+      const itemTextEdges = clusterEdges(rawItemEdges);
+      if (itemTextEdges.length > 1) {
+        listIssues.push(`l2-list-multiple-text-edges(${sid}, ${listId}): edges=${JSON.stringify(itemTextEdges)}`);
+      }
+
+      issues.push(...listIssues);
+      listsReport.push({ listId, variant, itemTextEdges, issues: listIssues });
+    }
+
+    // Measure page-level text left edges inside primary column
+    const col = document.querySelector<HTMLElement>('#ref-settings-view:not([hidden]) .lp-editor-writing-col, .lp-page-column');
+    const rawPageEdges: number[] = [];
+    const rawPlainSharedEdges: number[] = [];
+    if (col && isVisible(col)) {
+      const headingAndLabelEls = Array.from(
+        col.querySelectorAll<HTMLElement>(
+          '.lp-page-header-title, .lp-form-section-title, .lp-section-header-title, .lp-subsection-title, .lp-field-label'
+        )
+      ).filter((el) => isVisible(el) && !el.closest('.lp-dialog-panel, .lp-overlay-surface, .lp-gallery-overlay-sample, .lp-gallery-panel-sample'));
+      for (const el of headingAndLabelEls) {
+        const x = el.getBoundingClientRect().left;
+        rawPageEdges.push(x);
+        rawPlainSharedEdges.push(x);
+      }
+      for (const list of lists) {
+        if (!col.contains(list) || list.closest('.lp-dialog-panel, .lp-overlay-surface, .lp-gallery-overlay-sample, .lp-gallery-panel-sample')) continue;
+        const isPlain = list.getAttribute('data-variant') === 'plain' || list.classList.contains('lp-list-plain');
+        const items = Array.from(list.querySelectorAll<HTMLElement>(':scope > [data-c="Item"], :scope > .lp-item')).filter(isVisible);
+        for (const it of items) {
+          const t = it.querySelector<HTMLElement>('.lp-item-title');
+          if (t && isVisible(t)) {
+            const tx = t.getBoundingClientRect().left;
+            rawPageEdges.push(tx);
+            if (isPlain) rawPlainSharedEdges.push(tx);
+          }
+          if (isPlain) {
+            const b = it.querySelector<HTMLElement>('[data-c="ActionBar"] .lp-btn');
+            if (b && isVisible(b)) {
+              rawPlainSharedEdges.push(b.getBoundingClientRect().left);
+            }
+          }
+        }
+      }
+      const inSecBars = Array.from(col.querySelectorAll<HTMLElement>('[data-c="ActionBar"][data-level="item"]')).filter(
+        (b) => isVisible(b) && !b.closest('.lp-dialog-panel, .lp-overlay-surface, .lp-gallery-overlay-sample, .lp-gallery-panel-sample, .lp-list-interactive')
+      );
+      for (const bar of inSecBars) {
+        const b = bar.querySelector<HTMLElement>('.lp-btn');
+        if (b && isVisible(b)) {
+          rawPlainSharedEdges.push(b.getBoundingClientRect().left);
+        }
+      }
+    }
+
+    const pageColumnEdges = clusterEdges(rawPageEdges);
+    const plainPageSharedEdges = clusterEdges(rawPlainSharedEdges);
+    if (plainPageSharedEdges.length > 1 && sid !== 'gallery') {
+      issues.push(`l2-plain-page-multiple-edges(${sid}): edges=${JSON.stringify(plainPageSharedEdges)}`);
+    }
+
+    return {
+      stateId: sid,
+      pageColumnEdges,
+      plainPageSharedEdges,
+      lists: listsReport,
+      issues,
+    };
+  }, stateId);
+}
+
+export interface ListSpacingL3Report {
+  listId: string;
+  variant: string;
+  gapToInk: number | null;
+  gapToTint: number | null;
+  issues: string[];
+}
+
+export async function checkListSpacingAndHeadersL3(page: Page, stateId = ''): Promise<ListSpacingL3Report[]> {
+  return page.evaluate((sid) => {
+    const isVisible = (el: HTMLElement | null): boolean => {
+      if (!el) return false;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) === 0) return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    };
+
+    // Measure painted ink bounds including text nodes AND buttons/controls/icons (e.g. Today's 36px dismiss icon button)
+    const getInkAndControlBounds = (el: HTMLElement): { top: number; bottom: number } | null => {
+      let top = Infinity;
+      let bottom = -Infinity;
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      let node: Node | null;
+      while ((node = walker.nextNode())) {
+        if (!node.textContent || !node.textContent.trim()) continue;
+        const parent = node.parentElement;
+        if (!parent || !isVisible(parent) || parent.closest('.lp-sr-only')) continue;
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        const rect = range.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          if (rect.top < top) top = rect.top;
+          if (rect.bottom > bottom) bottom = rect.bottom;
+        }
+      }
+      for (const ctrl of Array.from(
+        el.querySelectorAll<HTMLElement>('button, a.lp-btn, .lp-icon-btn, input, select, textarea, [data-c="StatusLabel"]')
+      )) {
+        if (!isVisible(ctrl)) continue;
+        const r = ctrl.getBoundingClientRect();
+        if (r.top < top) top = r.top;
+        if (r.bottom > bottom) bottom = r.bottom;
+      }
+      if (['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(el.tagName)) {
+        const r = el.getBoundingClientRect();
+        if (r.top < top) top = r.top;
+        if (r.bottom > bottom) bottom = r.bottom;
+      }
+      return top < Infinity ? { top, bottom } : null;
+    };
+
+    const getFirstItemTintTop = (item: HTMLElement): number => {
+      const ir = item.getBoundingClientRect();
+      const beforeCs = getComputedStyle(item, '::before');
+      if (beforeCs.display === 'none') return ir.top;
+      const beforeTopOffset = parseFloat(beforeCs.top);
+      return Number.isFinite(beforeTopOffset) ? ir.top + beforeTopOffset : ir.top;
+    };
+
+    const reports: ListSpacingL3Report[] = [];
+    const lists = Array.from(document.querySelectorAll<HTMLElement>('.lp-list, .lp-item-list')).filter(isVisible);
+
+    for (const list of lists) {
+      if (list.closest('.lp-gallery-section')) continue;
+      const items = Array.from(list.querySelectorAll<HTMLElement>(':scope > [data-c="Item"], :scope > .lp-item')).filter(isVisible);
+      if (items.length === 0) continue;
+
+      const listId = list.id || list.closest('[id]')?.id || 'unnamed-list';
+      const dataVar = list.getAttribute('data-variant') || '';
+      const isPlain = dataVar === 'plain' || list.classList.contains('lp-list-plain');
+      const isInteractive =
+        dataVar === 'interactive' ||
+        list.classList.contains('lp-list-interactive') ||
+        Boolean(items[0].querySelector('.lp-item-chevron') || items[0].tagName === 'A' || items[0].classList.contains('is-selected'));
+      const variant = isPlain ? 'plain' : isInteractive ? 'interactive' : 'plain';
+
+      // Find preceding visible element (heading, section header, search input, filter toolbar, or tabs)
+      let prev: HTMLElement | null = list.previousElementSibling as HTMLElement | null;
+      while (prev && !isVisible(prev)) prev = prev.previousElementSibling as HTMLElement | null;
+      if (!prev && list.parentElement) {
+        let pPrev = list.parentElement.previousElementSibling as HTMLElement | null;
+        while (pPrev && !isVisible(pPrev)) pPrev = pPrev.previousElementSibling as HTMLElement | null;
+        prev = pPrev;
+      }
+      // If prev is a header stack container (e.g. .lp-editor-drawer-header-stack), measure from its last visible child or its full bounds
+      const issues: string[] = [];
+      let gapToInk: number | null = null;
+      let gapToTint: number | null = null;
+
+      if (prev) {
+        const prevBounds = getInkAndControlBounds(prev);
+        const firstInk = getInkAndControlBounds(items[0]);
+        const firstTintTop = getFirstItemTintTop(items[0]);
+
+        if (prevBounds && firstInk) {
+          gapToInk = Math.round((firstInk.top - prevBounds.bottom) * 10) / 10;
+        }
+        if (prevBounds) {
+          gapToTint = Math.round((firstTintTop - prevBounds.bottom) * 10) / 10;
+        }
+
+        // Check header action button overlap explicitly
+        const headerBtn = prev.querySelector<HTMLElement>('.lp-section-header-action button, .lp-section-header-action .lp-icon-btn');
+        if (headerBtn && isVisible(headerBtn)) {
+          const btnRect = headerBtn.getBoundingClientRect();
+          if (firstTintTop < btnRect.bottom - 0.5) {
+            issues.push(`l3-header-button-overlap(${sid}, ${listId}): tintTop=${Math.round(firstTintTop)} < headerBtnBottom=${Math.round(btnRect.bottom)}`);
+          }
+        }
+
+        if (variant === 'plain') {
+          if (gapToInk !== null && (gapToInk < 14 || gapToInk > 22)) {
+            issues.push(`l3-plain-heading-to-ink(${sid}, ${listId}): gapToInk=${gapToInk}px (expected 16px)`);
+          }
+        } else if (variant === 'interactive') {
+          if (gapToTint !== null && gapToTint < 7.5) {
+            issues.push(`l3-interactive-tint-clearance(${sid}, ${listId}): gapToTint=${gapToTint}px (< 8px clearance)`);
+          }
+          if (gapToTint !== null && Math.abs(gapToTint - 16) > 2.5) {
+            issues.push(`l3-interactive-gap-to-tint(${sid}, ${listId}): gapToTint=${gapToTint}px (expected 16px)`);
+          }
+        }
+      }
+
+      reports.push({ listId, variant, gapToInk, gapToTint, issues });
+    }
+
+    return reports;
+  }, stateId);
+}
