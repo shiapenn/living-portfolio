@@ -916,7 +916,7 @@ export function renderFoundationsTokensSection(): string {
       ${renderItem({
         id: 'gallery-tokens-radii',
         title: 'Admin Radii, Borders & Elevations',
-        subtitle: `r1: ${COMPONENT_TOKEN_VALUES['--lp-radius-r1']} · r2: ${COMPONENT_TOKEN_VALUES['--lp-radius-r2']} · borders: ${PACK_RULES.admin.borderAllowed.join('/')} · e0: ${SEMANTIC_LIGHT_VALUES['--lp-elevation-e0']} · e1: ${COMPONENT_TOKEN_VALUES['--lp-elevation-e1-offset-y']}/${SEMANTIC_LIGHT_VALUES['--lp-elevation-e1-blur']} · e2: ${COMPONENT_TOKEN_VALUES['--lp-elevation-e2-offset-y']}/${SEMANTIC_LIGHT_VALUES['--lp-elevation-e2-blur']}`,
+        subtitle: `r1: ${COMPONENT_TOKEN_VALUES['--lp-radius-r1']} · r2: ${COMPONENT_TOKEN_VALUES['--lp-radius-r2']} · borders: ${PACK_RULES.admin.borderAllowed.join('/')} · e0: ${COMPONENT_TOKEN_VALUES['--lp-elevation-e0']} · e1: ${COMPONENT_TOKEN_VALUES['--lp-elevation-e1-offset-y']}/${COMPONENT_TOKEN_VALUES['--lp-elevation-e1-blur']} · e2: ${COMPONENT_TOKEN_VALUES['--lp-elevation-e2-offset-y']}/${COMPONENT_TOKEN_VALUES['--lp-elevation-e2-blur']}`,
       })}
       ${renderItem({
         id: 'gallery-tokens-motion',

@@ -1,5 +1,10 @@
 import { Hono } from 'hono';
-import { CORE_BUNDLE_CSS, CORE_CSS_FILENAME } from '@living-portfolio/ui-core';
+import {
+  CORE_BUNDLE_CSS,
+  CORE_CSS_FILENAME,
+  DEFAULT_ACCENT_CSS,
+  DEFAULT_ACCENT_CSS_FILENAME,
+} from '@living-portfolio/ui-core';
 import { ADMIN_BASE_CSS, ADMIN_CSS_FILENAME } from '@living-portfolio/ui-admin';
 import {
   PUBLIC_BUNDLE_CSS,
@@ -141,6 +146,8 @@ export function createWebApp(options?: WebAppOptions) {
   const cssBundles: Record<string, string> = {
     [CORE_CSS_FILENAME]: CORE_BUNDLE_CSS,
     'core.css': CORE_BUNDLE_CSS,
+    [DEFAULT_ACCENT_CSS_FILENAME]: DEFAULT_ACCENT_CSS,
+    'accent.css': DEFAULT_ACCENT_CSS,
     [ADMIN_CSS_FILENAME]: ADMIN_BASE_CSS,
     'admin.css': ADMIN_BASE_CSS,
     [PUBLIC_CSS_FILENAME]: PUBLIC_BUNDLE_CSS,

@@ -254,4 +254,8 @@
 | `L030` | Accent Seed Contract (D-N2) | `active` | [accent-contract.md](design/accent-contract.md) | — |
 | `L031` | WP-16.N Audit Delta (baseline) | `active` | [audit-delta-wp16n.md](design/audit-delta-wp16n.md) | — |
 | `L032` | Public Direction Exploration Index | `active` | [index.md](design/explorations/index.md) | — |
+| `L033` | Core Pack Tokens (Generated) | `active` | [tokens-core.md](design/tokens-core.md) | — |
+| `L034` | Admin Pack Tokens (Generated) | `active` | [tokens-admin.md](design/tokens-admin.md) | — |
+| `L035` | Public Pack Tokens (Generated) | `active` | [tokens-public.md](design/tokens-public.md) | — |
+| `L036` | WP-16.N Progress & DoD Checklist | `active` | [wp16n-progress.md](plans/wp16n-progress.md) | — |
 

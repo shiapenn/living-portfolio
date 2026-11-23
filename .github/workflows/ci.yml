@@ -269,7 +269,7 @@ jobs:
   playwright-e2e:
     name: Playwright End-to-End Suite
     needs: [detect-changes, playwright-e2e-shard]
-    if: ${{ always() && needs.detect-changes.outputs.docs_only != 'true' }}
+    if: ${{ always() && !cancelled() && needs.detect-changes.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

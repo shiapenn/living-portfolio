@@ -10,7 +10,7 @@ const SRC_ROOT = resolve(__dirname, '../src');
 export function buildAdminBundleCss(extraAdminCss = ''): string {
   const buttonCss = readFileSync(resolve(SRC_ROOT, 'primitives/button/button.css'), 'utf8');
   const parts = [
-    '@layer reset, tokens, base, primitives, components, patterns, templates, pages, utilities;',
+    '@layer reset, tokens, base, primitives, components, patterns, templates, pages, utilities, user-theme;',
     `@layer tokens {\n${THEME_CSS.trim()}\n}`,
     buttonCss.trim(),
   ];

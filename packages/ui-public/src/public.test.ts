@@ -3,7 +3,7 @@ import { PUBLIC_BUNDLE_CSS, PUBLIC_CSS_HASH, renderPublicCard, PUBLIC_SHELL_GALL
 
 describe('@living-portfolio/ui-public (D-M1 public language pack)', () => {
   it('compiles public CSS in cascade layers with zero admin lp- component leakage', () => {
-    expect(PUBLIC_BUNDLE_CSS).toContain('@layer reset, tokens, base, primitives, components, patterns, templates, pages, utilities;');
+    expect(PUBLIC_BUNDLE_CSS).toContain('@layer reset, tokens, base, primitives, components, patterns, templates, pages, utilities, user-theme;');
     expect(PUBLIC_BUNDLE_CSS).toContain('--pub-color-surface-canvas');
     expect(PUBLIC_BUNDLE_CSS).not.toMatch(/--lp-(?!core-)/);
     expect(PUBLIC_BUNDLE_CSS).not.toMatch(/\.lp-(?!core-)/);

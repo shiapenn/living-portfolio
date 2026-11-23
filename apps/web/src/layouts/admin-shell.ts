@@ -1,4 +1,5 @@
 import { loadConfig } from '@living-portfolio/config';
+import { DEFAULT_ACCENT_CSS_FILENAME } from '@living-portfolio/ui-core';
 import { STRATA_DESIGN_SYSTEM_CSS } from '../styles.js';
 import { escapeHtml } from '../lib/html.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../lib/admin-api-client.js';
@@ -336,6 +337,7 @@ export function renderAdminShell(
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(title)} — ${escapeHtml(siteName)}</title>
+  <link rel="stylesheet" href="/assets/css/${DEFAULT_ACCENT_CSS_FILENAME}" />
   <style${nonceAttr}>${STRATA_DESIGN_SYSTEM_CSS}</style>
 </head>
 <body class="lp-admin-body">

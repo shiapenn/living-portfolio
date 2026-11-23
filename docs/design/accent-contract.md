@@ -1,6 +1,6 @@
 # Accent seed contract (D-N2)
 
-Status: generator, validation and tests landed in WP-16.N N1. Runtime wiring and the settings UI are not built yet; Appearance v2 (WP-17.4) configures the seed for both languages.
+Status: generator, validation, tests, and runtime wiring landed in WP-16.N S1. Appearance v2 (WP-17.4) will configure the seed for both languages.
 
 ## Contract
 
@@ -10,15 +10,7 @@ Status: generator, validation and tests landed in WP-16.N N1. Runtime wiring and
 | Generator | `generateAccentRamp` in `packages/ui-core/src/accent/accent.ts` (OKLCH curve, ten steps) |
 | Validation | `validateAccentSeed` rejects seeds that fail AA in either theme (text 4.5:1, UI 3:1, on-accent label 4.5:1) |
 | Output | `buildAccentCss` emits one `@layer user-theme` file declaring `--lp-core-accent-<step>` only |
-| File name | `accent.<hash>.css`, hash from content, immutable caching |
+| File name | `accent.<hash>.css`, hash from content, immutable caching, served at `/assets/css/accent.<hash>.css` |
 | Default | the default seed equals today's admin accent; unchanged builds emit the same bytes |
-| Overrides | `accent.overrides` lists steps kept at today's admin value, each with a reason |
-| Consumers | admin and public map their accent semantics to `--lp-core-accent-*` |
-
-## Current overrides
-
-| Step | Reason |
-| --- | --- |
-| 200 | generated value is delta-E 2000 of 2.01 from admin indigo-200 (limit 2) |
-| 800 | generated value is delta-E 2000 of 4.43 from admin indigo-800 |
-| 900 | generated value is delta-E 2000 of 6.15 from admin indigo-900 |
+| Overrides | none required — tuned OKLCH curve keeps all admin steps within delta-E 2000 of 2 (max 0.93) |
+| Consumers | admin (`tokens.css`) and public (`public.css`) map their accent semantics to `var(--lp-core-accent-*, <fallback>)` |

@@ -31,3 +31,8 @@ export {
   type AccentValidation,
   type BuildAccentCssInput,
 } from './accent/accent.js';
+export {
+  DEFAULT_ACCENT_CSS,
+  DEFAULT_ACCENT_CSS_HASH,
+  DEFAULT_ACCENT_CSS_FILENAME,
+} from './accent/default-accent.js';

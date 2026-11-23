@@ -129,18 +129,26 @@ export function generateOutputs() {
 
   const semanticLightVars = {};
   const semanticLightResolved = {};
+  const adminAccentLight = tokens.accentMapping?.light ?? {};
   for (const [k, v] of Object.entries(tokens.semantic.light)) {
     const cssName = semanticToCssVar(k);
-    semanticLightVars[cssName] = resolveForCss(v, tokens, 'light');
-    semanticLightResolved[cssName] = resolveRef(v, tokens, 'light');
+    const resolved = resolveRef(v, tokens, 'light');
+    semanticLightResolved[cssName] = resolved;
+    semanticLightVars[cssName] = adminAccentLight[k]
+      ? `var(--lp-core-accent-${adminAccentLight[k]}, ${resolved})`
+      : resolveForCss(v, tokens, 'light');
   }
 
   const semanticDarkVars = {};
   const semanticDarkResolved = {};
+  const adminAccentDark = tokens.accentMapping?.dark ?? {};
   for (const [k, v] of Object.entries(tokens.semantic.dark)) {
     const cssName = semanticToCssVar(k);
-    semanticDarkVars[cssName] = resolveForCss(v, tokens, 'dark');
-    semanticDarkResolved[cssName] = resolveRef(v, tokens, 'dark');
+    const resolved = resolveRef(v, tokens, 'dark');
+    semanticDarkResolved[cssName] = resolved;
+    semanticDarkVars[cssName] = adminAccentDark[k]
+      ? `var(--lp-core-accent-${adminAccentDark[k]}, ${resolved})`
+      : resolveForCss(v, tokens, 'dark');
   }
 
   // Component-derived surface aliases for backwards compatibility in SEMANTIC_*_VALUES
@@ -410,12 +418,26 @@ ${fmtBlock(responsiveVars.md ?? {}).replace(/^  /gm, '    ')}
   const corePack = loadPack('core');
 
   const pubLightVars = {};
+  const pubLightCssVars = {};
   const pubDarkVars = {};
+  const pubDarkCssVars = {};
+  const pubAccentLight = publicPack.accentMapping?.light ?? {};
+  const pubAccentDark = publicPack.accentMapping?.dark ?? {};
   for (const [k, v] of Object.entries(publicPack.semantic.light)) {
-    pubLightVars[`--pub-${k.replace(/\./g, '-')}`] = resolveRef(v, publicPack, 'light');
+    const cssName = `--pub-${k.replace(/\./g, '-')}`;
+    const resolved = resolveRef(v, publicPack, 'light');
+    pubLightVars[cssName] = resolved;
+    pubLightCssVars[cssName] = pubAccentLight[k]
+      ? `var(--lp-core-accent-${pubAccentLight[k]}, ${resolved})`
+      : resolved;
   }
   for (const [k, v] of Object.entries(publicPack.semantic.dark)) {
-    pubDarkVars[`--pub-${k.replace(/\./g, '-')}`] = resolveRef(v, publicPack, 'dark');
+    const cssName = `--pub-${k.replace(/\./g, '-')}`;
+    const resolved = resolveRef(v, publicPack, 'dark');
+    pubDarkVars[cssName] = resolved;
+    pubDarkCssVars[cssName] = pubAccentDark[k]
+      ? `var(--lp-core-accent-${pubAccentDark[k]}, ${resolved})`
+      : resolved;
   }
   const pubCompVars = {};
   for (const [k, v] of Object.entries(publicPack.component)) {
@@ -425,13 +447,13 @@ ${fmtBlock(responsiveVars.md ?? {}).replace(/^  /gm, '    ')}
   const publicCssOut = `/* AUTO-GENERATED FROM packages/design-tokens/packs/public.json — DO NOT EDIT BY HAND */
 :root[data-lang="public"],
 :root {
-${fmtBlock(pubLightVars)}
+${fmtBlock(pubLightCssVars)}
 ${fmtBlock(pubCompVars)}
 }
 
 :root[data-theme="dark"][data-lang="public"],
 :root[data-theme="dark"] {
-${fmtBlock(pubDarkVars)}
+${fmtBlock(pubDarkCssVars)}
 }
 `;
 
@@ -449,6 +471,8 @@ ${Object.entries(corePack.primitive.zIndex).map(([k, v]) => `  --lp-core-z-${k}:
   const tsOut = `/* AUTO-GENERATED FROM packages/design-tokens/packs/*.json — DO NOT EDIT BY HAND */
 
 export const TOKEN_VERSION = ${JSON.stringify(tokens.version)} as const;
+
+export const CORE_ACCENT_CONTRACT = ${JSON.stringify(corePack.accent ?? null, null, 2)} as const;
 
 export const BREAKPOINTS = ${JSON.stringify(tokens.breakpoints, null, 2)} as const;
 
@@ -491,71 +515,80 @@ export const PUBLIC_THEME_CSS = ${JSON.stringify(publicCssOut)};
 export const CORE_THEME_CSS = ${JSON.stringify(coreCssOut)};
 `;
 
+  const corePrimCount = Object.values(corePack.primitive).reduce((acc, o) => acc + Object.keys(o).length, 0);
+  const pubPrimCount = Object.values(publicPack.primitive).reduce((acc, o) => acc + Object.keys(o).length, 0);
+
   const mdOut = `# Design Tokens Reference (Generated)
 
-> **Source of truth:** \`packages/design-tokens/tokens.json\` (schema: \`packages/design-tokens/tokens.schema.json\`).
-> **Naming convention:** \`${tokens.naming}\`
-> **Version:** \`${tokens.version}\`
+| Pack | Source | Prefix | Version | Primitive | Semantic | Component | Reference |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| \`core\` | \`packages/design-tokens/packs/core.json\` | \`--${corePack.prefix}-*\` | \`${corePack.version}\` | ${corePrimCount} | 0 | 0 | [tokens-core.md](tokens-core.md) |
+| \`admin\` | \`packages/design-tokens/packs/admin.json\` | \`--${tokens.prefix}-*\` | \`${tokens.version}\` | ${Object.keys(primitiveVars).length} | ${Object.keys(semanticLightVars).length} | ${Object.keys(componentVars).length} | [tokens-admin.md](tokens-admin.md) |
+| \`public\` | \`packages/design-tokens/packs/public.json\` | \`--${publicPack.prefix}-*\` | \`${publicPack.version}\` | ${pubPrimCount} | ${Object.keys(pubLightVars).length} | ${Object.keys(pubCompVars).length} | [tokens-public.md](tokens-public.md) |
+`;
 
-## Architecture (D-L4 & D-L5)
+  const coreRows = [];
+  for (const [cat, entries] of Object.entries(corePack.primitive)) {
+    for (const [k, v] of Object.entries(entries)) {
+      coreRows.push(`| \`${cat}.${k}\` | \`${v}\` |`);
+    }
+  }
+  const mdCoreOut = `# Core Pack Tokens (Generated)
 
-### 1. Three-Tier Hierarchy
-- **Tier 1 — Primitive (\`primitive.*\`)**: Raw scales (\`color\`, \`space 0..64\`, \`size\`, \`radius\`, \`border\`, \`font\`, \`motion\`, \`zIndex\`, \`opacity\`, \`elevation\`). Never emitted as \`--lp-prim-*\` custom properties into shipped CSS and never referenced directly by component CSS.
-- **Tier 2 — Semantic (\`semantic.light.*\`, \`semantic.dark.*\`)**: Theme-switched roles (\`color.surface.l0..l2\`, \`color.surface.control*\`, \`color.surface.scrim\`, \`color.text.1..3\`, \`color.border.*\`, \`color.accent.*\`, \`color.role.*\`, \`color.passage.*\`, \`elevation.e0..e2\`, \`opacity.disabled\`). Emitted as CSS custom properties on \`:root\` and switched in \`:root[data-theme="dark"]\` / \`@media (prefers-color-scheme: dark)\`.
-- **Tier 3 — Component & Spacing Taxonomy (\`component.*\`, \`responsive.*\`)**:
-  - **Stack relations (\`--lp-space-stack-<relation>\`)**: Vertical gaps between stacked elements (monotonic proximity: \`label-to-control (8px) < field-to-field (16px) < subsection-to-subsection (24px) < section-to-section (40px)\`).
-  - **Inline relations (\`--lp-space-inline-<relation>\`)**: Horizontal gaps between inline peers (\`segment: 4px\`, \`dot-text: 6px\`, \`icon-text: 8px\`, \`button-button: 8px\`, \`tag-tag: 8px\`).
-  - **Insets (\`--lp-space-inset-<container>\`)**: Internal container padding (\`page-gutter: 16px -> 24px @ 768px\`, \`panel: 12px\`, \`dialog: 24px\`, \`item-x: 8px\`, \`item-y: 12px\`, \`control-x: 12px\`, \`tag-x: 8px\`, \`tag-y: 2px\`, \`track: 4px\`).
-  - **Sizes, Radii, Borders, Z-Index, Motion, Typography**: Semantic component dimensions (\`--lp-size-*\`), radii (\`--lp-radius-r1\`, \`--lp-radius-r2\`, plus semantic aliases), named z-index layers (\`base\`, \`raised\`, \`sticky\`, \`overlay\`, \`popover\`, \`modal\`, \`toast\`, \`skip\`), motion tokens, and font tokens.
-
-### 2. Rules & Guards
-1. **No numeral-named tokens**: Component and semantic token names may not be a bare number (e.g. \`--lp-size-14\`, \`--lp-space-8\`, \`--lp-z-10\` are forbidden).
-2. **No reserved list / arithmetic closure**: Every token emitted into \`tokens.css\` must be used (\`defined = used\`, \`0\` unused). Any unused or unresolved token fails \`scripts/verify-ui-guards\`.
-3. **Single-token responsive switching**: Responsive tokens (\`--lp-size-control-height\`, \`--lp-space-inset-page-gutter\`) keep one token name whose value switches at the \`breakpoints\` media query.
-4. **Build-time primitive resolution**: Non-theme primitive references resolve at build time in \`generate.mjs\` so shipped CSS carries zero \`--lp-prim-*\` declarations.
-
-### 3. How to Add a Token
-1. Check if an existing semantic, relation (\`space.stack.*\`, \`space.inline.*\`, \`space.inset.*\`), or component token already expresses the role.
-2. Add the raw value to \`primitive\` in \`packages/design-tokens/tokens.json\` if not already on the scale.
-3. Add the semantic or component token referencing \`{primitive.*}\` (or \`{semantic.*}\` / \`{component.*}\`).
-4. Run \`node packages/design-tokens/generate.mjs\` and verify \`./scripts/verify-ui-guards\` and \`pnpm --filter @living-portfolio/design-tokens test\`.
-
-### 4. How to Choose a Token (Decision List)
-1. **Vertical gap between stacked blocks, fields, headings, or lists?** -> Use \`--lp-space-stack-<relation>\` (\`label-to-control\`, \`field-to-field\`, \`heading-to-list-plain\`, \`heading-to-list-interactive\`, \`control-to-list\`, \`subsection-to-subsection\`, \`section-to-section\`, \`header-to-content\`).
-2. **Horizontal gap between inline icon, text, dot, tag, or button peers?** -> Use \`--lp-space-inline-<relation>\` (\`icon-text\`, \`button-button\`, \`dot-text\`, \`tag-tag\`, \`segment\`).
-3. **Internal padding of a page, panel, dialog, item, control, or tag?** -> Use \`--lp-space-inset-<container>\` (\`page-gutter\`, \`panel\`, \`dialog\`, \`item-x\`, \`item-y\`, \`control-x\`, \`tag-x\`, \`tag-y\`, \`track\`).
-4. **Surface background?** -> Use \`--lp-color-surface-l0\` (page canvas), \`--lp-color-surface-l1\` (bars, panels, overlays), \`--lp-color-surface-l2\` (resting controls/chips), \`--lp-color-surface-control-hover|active|selected\`, or \`--lp-color-surface-scrim\` (modal/sheet backdrop).
-5. **Text or icon colour?** -> Use \`--lp-color-text-1\` (primary), \`--lp-color-text-2\` (secondary/description/caption), \`--lp-color-text-3\` (placeholder/disabled), or \`--lp-color-role-<tone>-fg\`.
-6. **Border or divider?** -> Use \`--lp-border-hairline\` with \`--lp-color-border-subtle\` (dividers), \`--lp-color-border-control\` (inputs/buttons), or \`--lp-color-border-overlay\` (panels/popovers/dialogs).
-7. **Corner radius?** -> Use \`--lp-radius-r1\` / \`--lp-radius-chip\` (\`4px\`), \`--lp-radius-r2\` / \`--lp-radius-control|container|overlay|card\` (\`8px\`), or \`--lp-radius-full\` (\`9999px\` circular dots/radios).
-8. **Stacking layer (\`z-index\`)?** -> Use a named layer only: \`--lp-z-base\` (\`0\`), \`--lp-z-raised\` (\`1\`), \`--lp-z-sticky\` (\`100\`), \`--lp-z-overlay\` (\`200\`), \`--lp-z-popover\` (\`300\`), \`--lp-z-modal\` (\`400\`), \`--lp-z-toast\` (\`500\`), \`--lp-z-skip\` (\`1000\`).
-
-## Summary
-
-- Primitive scale entries (build-time resolved, not emitted to CSS): **${Object.keys(primitiveVars).length}**
-- Semantic tokens (per theme): **${Object.keys(semanticLightVars).length}**
-- Component, spacing (\`stack\`, \`inline\`, \`inset\`) & typography tokens: **${Object.keys(componentVars).length}**
-- Responsive breakpoint overrides: **${Object.values(responsiveVars).reduce((acc, o) => acc + Object.keys(o).length, 0)}**
+| Metadata | Value |
+| --- | --- |
+| Source | \`packages/design-tokens/packs/core.json\` |
+| Prefix | \`--${corePack.prefix}-*\` |
+| Version | \`${corePack.version}\` |
+| Accent Seed (Light) | \`${corePack.accent?.seed?.light ?? ''}\` |
+| Accent Seed (Dark) | \`${corePack.accent?.seed?.dark ?? ''}\` |
 
 ## Breakpoints
 
-| Token | Value | Usage |
-| --- | --- | --- |
-| \`breakpoints.viewport.sm\` | \`${tokens.breakpoints.viewport.sm}px\` | Mobile-to-desktop control height (\`44px\` -> \`40px\`), Item grid |
-| \`breakpoints.viewport.md\` | \`${tokens.breakpoints.viewport.md}px\` | Page gutter (\`16px\` -> \`24px\`), push-panel vs overlay |
-| \`breakpoints.viewport.lg\` | \`${tokens.breakpoints.viewport.lg}px\` | Wide desktop split layout (\`1024px\`) |
-| \`breakpoints.viewport.xl\` | \`${tokens.breakpoints.viewport.xl}px\` | 3-pane desktop layout (\`1280px\`) |
-| \`breakpoints.container.compact\` | \`${tokens.breakpoints.container.compact}px\` | Container query threshold (\`< 400px\`) |
+| Token | Value |
+| --- | --- |
+${Object.entries(corePack.breakpoints.viewport)
+  .map(([k, v]) => `| \`breakpoints.viewport.${k}\` | \`${v}px\` |`)
+  .join('\n')}
+| \`breakpoints.container.compact\` | \`${corePack.breakpoints.container.compact}px\` |
 
-## D-FINAL & D-L4 Spacing Relations
+## Primitives
 
-| Relation | Stack Token | Value |
+| Token | Value |
+| --- | --- |
+${coreRows.join('\n')}
+`;
+
+  const mdAdminOut = `# Admin Pack Tokens (Generated)
+
+| Metadata | Value |
+| --- | --- |
+| Source | \`packages/design-tokens/packs/admin.json\` |
+| Naming | \`${tokens.naming}\` |
+| Version | \`${tokens.version}\` |
+| Primitive | ${Object.keys(primitiveVars).length} |
+| Semantic (per theme) | ${Object.keys(semanticLightVars).length} |
+| Component | ${Object.keys(componentVars).length} |
+| Responsive | ${Object.values(responsiveVars).reduce((acc, o) => acc + Object.keys(o).length, 0)} |
+
+## Breakpoints
+
+| Token | Value |
+| --- | --- |
+${Object.entries(tokens.breakpoints.viewport)
+  .map(([k, v]) => `| \`breakpoints.viewport.${k}\` | \`${v}px\` |`)
+  .join('\n')}
+| \`breakpoints.container.compact\` | \`${tokens.breakpoints.container.compact}px\` |
+
+## Spacing Relations
+
+| Relation | Token | Value |
 | --- | --- | --- |
 ${Object.entries(relationsResolved)
   .map(([k, v]) => `| \`${k}\` | \`--lp-space-stack-${k}\` | \`${v}px\` |`)
   .join('\n')}
 
-## Typography Roles (7 Roles + control-label)
+## Typography Roles
 
 | Role | Size | Weight | Line Height | Color Token |
 | --- | --- | --- | --- | --- |
@@ -563,7 +596,7 @@ ${Object.entries(typeRolesResolved)
   .map(([r, s]) => `| \`${r}\` | \`${s.size}px\` | \`${s.weight}\` | \`${s.lineHeight}px\` | \`${s.colorToken}\` |`)
   .join('\n')}
 
-## Tier 2: Semantic Tokens (Light vs Dark)
+## Semantic Tokens (Theme-Switched)
 
 | Token | Light | Dark |
 | --- | --- | --- |
@@ -571,20 +604,64 @@ ${Object.keys(semanticLightVars)
   .map((k) => `| \`${k}\` | \`${semanticLightResolved[k]}\` | \`${semanticDarkResolved[k]}\` |`)
   .join('\n')}
 
-## Tier 3: Component & Spacing Taxonomy Tokens
+## Component Tokens
 
 | Token | Value |
 | --- | --- |
 ${Object.entries(componentResolved)
   .map(([k, v]) => `| \`${k}\` | \`${v}\` |`)
   .join('\n')}
+
+## Documented Aliases
+
+| Token | Alias Of | Reason |
+| --- | --- | --- |
+${Object.entries(tokens.governance?.aliases ?? {})
+  .map(([k, a]) => `| \`${k}\` | \`${a.aliasOf}\` | ${a.reason} |`)
+  .join('\n')}
 `;
 
-  return { tsOut, cssOut, publicCssOut, coreCssOut, mdOut };
+  const mdPublicOut = `# Public Pack Tokens (Generated)
+
+| Metadata | Value |
+| --- | --- |
+| Source | \`packages/design-tokens/packs/public.json\` |
+| Naming | \`${publicPack.naming}\` |
+| Version | \`${publicPack.version}\` |
+| Primitive | ${pubPrimCount} |
+| Semantic (per theme) | ${Object.keys(pubLightVars).length} |
+| Component | ${Object.keys(pubCompVars).length} |
+
+## Semantic Tokens (Theme-Switched)
+
+| Token | Light | Dark |
+| --- | --- | --- |
+${Object.keys(pubLightVars)
+  .map((k) => `| \`${k}\` | \`${pubLightVars[k]}\` | \`${pubDarkVars[k]}\` |`)
+  .join('\n')}
+
+## Component Tokens
+
+| Token | Value |
+| --- | --- |
+${Object.entries(pubCompVars)
+  .map(([k, v]) => `| \`${k}\` | \`${v}\` |`)
+  .join('\n')}
+
+## Documented Aliases
+
+| Token | Alias Of | Reason |
+| --- | --- | --- |
+${Object.entries(publicPack.governance?.aliases ?? {})
+  .map(([k, a]) => `| \`${k}\` | \`${a.aliasOf}\` | ${a.reason} |`)
+  .join('\n')}
+`;
+
+  return { tsOut, cssOut, publicCssOut, coreCssOut, mdOut, mdCoreOut, mdAdminOut, mdPublicOut };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const { tsOut, cssOut, publicCssOut, coreCssOut, mdOut } = generateOutputs();
+  const { tsOut, cssOut, publicCssOut, coreCssOut, mdOut, mdCoreOut, mdAdminOut, mdPublicOut } = generateOutputs();
   mkdirSync(resolve(__dirname, 'src'), { recursive: true });
   mkdirSync(resolve(REPO_ROOT, 'docs/design'), { recursive: true });
   writeFileSync(resolve(__dirname, 'src/generated.ts'), tsOut, 'utf8');
@@ -592,7 +669,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   writeFileSync(resolve(__dirname, 'src/public.css'), publicCssOut, 'utf8');
   writeFileSync(resolve(__dirname, 'src/core.css'), coreCssOut, 'utf8');
   writeFileSync(resolve(REPO_ROOT, 'docs/design/tokens.md'), mdOut, 'utf8');
+  writeFileSync(resolve(REPO_ROOT, 'docs/design/tokens-core.md'), mdCoreOut, 'utf8');
+  writeFileSync(resolve(REPO_ROOT, 'docs/design/tokens-admin.md'), mdAdminOut, 'utf8');
+  writeFileSync(resolve(REPO_ROOT, 'docs/design/tokens-public.md'), mdPublicOut, 'utf8');
   // Keep tokens.json mirrored to packs/admin.json for backward compatibility
   writeFileSync(TOKENS_PATH, readFileSync(resolve(PACKS_DIR, 'admin.json'), 'utf8'), 'utf8');
-  console.log('Generated design tokens -> src/generated.ts, src/tokens.css, src/public.css, src/core.css, docs/design/tokens.md');
+  console.log('Generated design tokens -> src/generated.ts, src/tokens.css, src/public.css, src/core.css, docs/design/tokens*.md');
 }

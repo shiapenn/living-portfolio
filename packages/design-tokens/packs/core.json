@@ -38,7 +38,6 @@
   "primitive": {
     "space": {
       "0": "0px",
-      "0-5": "2px",
       "1": "4px",
       "2": "8px",
       "3": "12px",
@@ -48,7 +47,8 @@
       "10": "40px",
       "12": "48px",
       "16": "64px",
-      "24": "96px"
+      "24": "96px",
+      "0-5": "2px"
     },
     "zIndex": {
       "base": "0",
@@ -80,8 +80,7 @@
       "letter-wide": "0.03em"
     },
     "motion": {
-      "duration-0": "0ms",
-      "duration-instant": "0.01ms"
+      "duration-0": "0ms"
     }
   },
   "governance": {
@@ -100,20 +99,7 @@
       "light": "#FFFFFF",
       "dark": "#0F1A22"
     },
-    "overrides": {
-      "200": {
-        "value": "#C5CEFF",
-        "reason": "generated step differs from admin indigo-200 by delta-E 2000 of 2.01 (limit 2)"
-      },
-      "800": {
-        "value": "#1E329E",
-        "reason": "generated step differs from admin indigo-800 by delta-E 2000 of 4.43"
-      },
-      "900": {
-        "value": "#1A244D",
-        "reason": "generated step differs from admin indigo-900 by delta-E 2000 of 6.15"
-      }
-    },
+    "overrides": {},
     "layer": "user-theme",
     "file": "accent.<hash>.css"
   }

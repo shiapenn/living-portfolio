@@ -1841,5 +1841,37 @@
     "path": "docs/execution-reports/A170-wp-16n-n1-slice-direction-and-accent-seed.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L033",
+    "title": "Core Pack Tokens (Generated)",
+    "class": "L",
+    "path": "docs/design/tokens-core.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L034",
+    "title": "Admin Pack Tokens (Generated)",
+    "class": "L",
+    "path": "docs/design/tokens-admin.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L035",
+    "title": "Public Pack Tokens (Generated)",
+    "class": "L",
+    "path": "docs/design/tokens-public.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L036",
+    "title": "WP-16.N Progress & DoD Checklist",
+    "class": "L",
+    "path": "docs/plans/wp16n-progress.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

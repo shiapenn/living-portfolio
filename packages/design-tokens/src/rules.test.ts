@@ -89,13 +89,10 @@ describe('D-M2 Scale Rules & Governance Validation across Core, Admin, and Publi
       if (v.endsWith('px')) expect(parseFloat(v) % r.sizeStep, `size.${k}=${v}`).toBe(0);
     }
     const layoutKeys = [
-      'size.layout-inspector-compact',
-      'size.layout-rail-width',
       'size.admin-inspector-width',
       'size.layout-narrow-max',
       'size.layout-reading-col',
       'size.layout-main-max',
-      'size.layout-medium-max',
       'size.layout-wide-col',
       'size.layout-dashboard-max',
       'size.layout-max',
@@ -115,19 +112,45 @@ describe('D-M2 Scale Rules & Governance Validation across Core, Admin, and Publi
       expect(borderSet.has(parseFloat(v)), `border.${k}=${v}`).toBe(true);
     }
 
-    // 8. Elevation e2 === 2 * e1
+    // 8. Elevation e2 === 2 * e1 and shadow direction uses offset variable (never literal)
     const e1y = parseFloat(admin.primitive.elevation['e1-offset-y']);
     const e2y = parseFloat(admin.primitive.elevation['e2-offset-y']);
     expect(e2y).toBe(e1y * r.elevationRatio);
     expect(e1y % r.spaceBase).toBe(0);
     expect(admin.semantic.light['elevation.e1']).toContain('{component.elevation.e1-offset-y}');
+    expect(admin.semantic.light['elevation.e1-up']).toContain('calc(-1 * {component.elevation.e1-offset-y})');
     expect(admin.semantic.light['elevation.e2']).toContain('{component.elevation.e2-offset-y}');
 
-    // 9. Motion durations & easings
+    // 9. Motion durations & easings (no reduced-motion hack token)
+    expect('duration-instant' in admin.primitive.motion).toBe(false);
+    expect('motion.duration-instant' in admin.component).toBe(false);
     const durSet = new Set(r.motionDurationsMs);
     for (const [k, v] of Object.entries<string>(admin.primitive.motion)) {
       if (k.startsWith('duration-')) expect(durSet.has(parseFloat(v)), `motion.${k}=${v}`).toBe(true);
       if (k.startsWith('easing-')) expect(r.motionEasingsAllowed.includes(k.replace('easing-', '')), `motion.${k}`).toBe(true);
+    }
+
+    // 9b. Semantic means theme-switched (no identical light/dark semantic tokens)
+    for (const k of Object.keys(admin.semantic.light)) {
+      const lVal = resolveRef(admin.semantic.light[k], admin, 'light');
+      const dVal = resolveRef(admin.semantic.dark[k], admin, 'dark');
+      expect(lVal, `semantic.${k} is identical in light and dark (${lVal}); move to component tier`).not.toBe(dVal);
+    }
+
+    // 9c. Zero undocumented value duplicates in component tier (every duplicate needs governance.aliases with reason)
+    const aliases = admin.governance?.aliases ?? {};
+    const seenByCatVal = new Map<string, string>();
+    for (const [k, v] of Object.entries<string>(admin.component)) {
+      const cat = k.split('.')[0];
+      const key = `${cat}:${resolveRef(v, admin, 'light')}`;
+      if (seenByCatVal.has(key)) {
+        const aliasEntry = aliases[k];
+        expect(aliasEntry, `undocumented duplicate component token ${k} (same value as ${seenByCatVal.get(key)})`).toBeDefined();
+        expect(aliasEntry.aliasOf, `alias ${k} missing aliasOf`).toBeTruthy();
+        expect(aliasEntry.reason?.length, `alias ${k} missing reason`).toBeGreaterThan(5);
+      } else {
+        seenByCatVal.set(key, k);
+      }
     }
 
     // 10. Z-index steps of 100
@@ -173,6 +196,24 @@ describe('D-M2 Scale Rules & Governance Validation across Core, Admin, and Publi
       expect(contrastRatio(t1, bg), `public ${mode} text.primary`).toBeGreaterThanOrEqual(r.minTextContrast);
       expect(contrastRatio(t2, bg), `public ${mode} text.secondary`).toBeGreaterThanOrEqual(r.minTextContrast);
       expect(contrastRatio(border, bg), `public ${mode} border.strong`).toBeGreaterThanOrEqual(r.minUiContrast);
+    }
+    // Public semantic tokens must be theme-switched (light !== dark)
+    for (const k of Object.keys(pub.semantic.light)) {
+      const lVal = resolveRef(pub.semantic.light[k], pub, 'light');
+      const dVal = resolveRef(pub.semantic.dark[k], pub, 'dark');
+      expect(lVal, `public semantic.${k} is identical in light and dark`).not.toBe(dVal);
+    }
+    // Public zero undocumented duplicates
+    const pubAliases = pub.governance?.aliases ?? {};
+    const pubSeen = new Map<string, string>();
+    for (const [k, v] of Object.entries<string>(pub.component)) {
+      const cat = k.split('.')[0];
+      const key = `${cat}:${resolveRef(v, pub, 'light')}`;
+      if (pubSeen.has(key)) {
+        expect(pubAliases[k], `public undocumented duplicate ${k} (same as ${pubSeen.get(key)})`).toBeDefined();
+      } else {
+        pubSeen.set(key, k);
+      }
     }
   });
 });
