@@ -1801,5 +1801,45 @@
     "path": "docs/adr/ADR-006-self-selecting-backlog.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L029",
+    "title": "ADR-007: Public Direction - Quiet Editorial, Made Neutral (D-N1)",
+    "class": "L",
+    "path": "docs/adr/ADR-007-public-direction-quiet-editorial-neutral.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L030",
+    "title": "Accent Seed Contract (D-N2)",
+    "class": "L",
+    "path": "docs/design/accent-contract.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L031",
+    "title": "WP-16.N Audit Delta (baseline)",
+    "class": "L",
+    "path": "docs/design/audit-delta-wp16n.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L032",
+    "title": "Public Direction Exploration Index",
+    "class": "L",
+    "path": "docs/design/explorations/index.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "A170",
+    "title": "wp-16n-n1-slice-direction-and-accent-seed",
+    "class": "A",
+    "path": "docs/execution-reports/A170-wp-16n-n1-slice-direction-and-accent-seed.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

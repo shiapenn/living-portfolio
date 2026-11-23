@@ -603,7 +603,6 @@
     "packages/ui-core/src/primitives/accessibility/accessibility.gallery.ts",
     "packages/ui-core/src/primitives/layout/layout.gallery.ts",
     "packages/ui-admin/src/primitives/button/button.gallery.ts",
-    "packages/ui-public/src/components/shell/shell.gallery.ts",
-    "packages/ui-public/src/directions/directions.gallery.ts"
+    "packages/ui-public/src/components/shell/shell.gallery.ts"
   ]
 }

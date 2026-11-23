@@ -5,7 +5,20 @@
   "prefix": "lp-core",
   "rules": {
     "spaceBase": 4,
-    "spaceMultipliers": [0, 0.5, 1, 2, 3, 4, 6, 8, 10, 12, 16, 24],
+    "spaceMultipliers": [
+      0,
+      0.5,
+      1,
+      2,
+      3,
+      4,
+      6,
+      8,
+      10,
+      12,
+      16,
+      24
+    ],
     "breakpointStep": 64,
     "containerBreakpoint": 400,
     "zIndexStep": 100,
@@ -77,5 +90,31 @@
       "since": "WP-16.M",
       "replacedBy": null
     }
+  },
+  "accent": {
+    "seed": {
+      "light": "#3A4FD0",
+      "dark": "#9AA8FF"
+    },
+    "canvas": {
+      "light": "#FFFFFF",
+      "dark": "#0F1A22"
+    },
+    "overrides": {
+      "200": {
+        "value": "#C5CEFF",
+        "reason": "generated step differs from admin indigo-200 by delta-E 2000 of 2.01 (limit 2)"
+      },
+      "800": {
+        "value": "#1E329E",
+        "reason": "generated step differs from admin indigo-800 by delta-E 2000 of 4.43"
+      },
+      "900": {
+        "value": "#1A244D",
+        "reason": "generated step differs from admin indigo-900 by delta-E 2000 of 6.15"
+      }
+    },
+    "layer": "user-theme",
+    "file": "accent.<hash>.css"
   }
 }
