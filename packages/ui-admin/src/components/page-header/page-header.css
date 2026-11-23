@@ -1,0 +1,90 @@
+/* =========================================================
+ * WP-16.C D-COMP Primitives & Component Contract
+ * ========================================================= */
+
+
+/* PageHeader (D-COMP #2) */
+.lp-page-header-dcomp {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-label-to-control);
+  margin: 0;
+}
+
+.lp-page-header-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lp-space-proximity-1);
+  width: fit-content;
+  font-size: var(--lp-font-size-14);
+  line-height: var(--lp-size-icon-md);
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.lp-page-header-back:hover {
+  color: var(--text);
+}
+
+.lp-page-header-title,
+.lp-page-header h1 {
+  font-size: var(--lp-font-size-24);
+  line-height: var(--lp-font-line-32);
+  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+}
+
+.lp-page-header .lp-page-description {
+  font-size: var(--lp-font-size-14);
+  line-height: var(--lp-size-icon-md);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.lp-page-header-action {
+  width: 100%;
+}
+
+.lp-page-header-action .lp-btn {
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .lp-page-header-dcomp {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    row-gap: var(--lp-space-stack-label-to-control);
+    column-gap: var(--lp-space-proximity-3);
+    align-items: start;
+  }
+
+  .lp-page-header-back {
+    grid-column: 1 / -1;
+  }
+
+  .lp-page-header-title,
+  .lp-page-header h1 {
+    grid-column: 1;
+    line-height: var(--lp-size-target-min);
+  }
+
+  .lp-page-header-action {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto;
+    justify-self: end;
+  }
+
+  .lp-page-header-back ~ .lp-page-header-action {
+    grid-row: 2;
+  }
+
+  .lp-page-header-action .lp-btn {
+    width: auto;
+  }
+
+  .lp-page-header .lp-page-description {
+    grid-column: 1 / -1;
+  }
+}

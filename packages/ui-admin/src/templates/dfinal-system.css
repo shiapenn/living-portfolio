@@ -1,0 +1,169 @@
+/* === D-FINAL Design System (F1) === */
+.lp-gap-tight { gap: var(--lp-space-proximity-2); }
+.lp-gap-related { gap: var(--lp-space-proximity-3); }
+.lp-gap-group { gap: var(--lp-space-proximity-4); }
+.lp-gap-section { gap: var(--lp-space-stack-action-bar-after-section); }
+
+/* Surfaces (F1) */
+body { background: var(--surface-l0); color: var(--text-1); }
+.lp-top-bar, .lp-admin-header, header[data-lp-shell-topbar] {
+  background: var(--surface-l1);
+  border-bottom: var(--lp-border-hairline) solid var(--border-subtle);
+}
+.lp-popover-menu, .lp-launcher-panel, .lp-dialog-panel, .lp-overlay-sheet, .lp-format-bar {
+  background: var(--surface-l1);
+}
+.lp-choice, .lp-icon-btn, .lp-icon-btn-ghost, .lp-icon-btn-outlined {
+  background: var(--surface-l2);
+}
+
+/* Native controls styled from tokens (D-FINAL #4) */
+select.lp-input, select.lp-select, input.lp-input, textarea.lp-input, textarea.lp-textarea, input.lp-choice-input {
+  background-color: var(--surface-input);
+  color: var(--text-1);
+  border: var(--lp-border-hairline) solid var(--border-control);
+  color-scheme: inherit;
+}
+select.lp-input option, select.lp-select option, select.lp-input optgroup, select.lp-select optgroup {
+  background-color: var(--surface-l1);
+  color: var(--text-1);
+}
+
+/* 7 Type Roles (D-FINAL #8) */
+.lp-page-title { font-size: var(--lp-font-size-24); font-weight: var(--lp-font-weight-600); color: var(--text-1); line-height: var(--lp-font-line-32); letter-spacing: var(--lp-font-letter-normal); }
+.lp-section-title, .lp-form-section-title, .lp-section-header-title { font-size: var(--lp-font-size-16); font-weight: 600; color: var(--text-1); line-height: var(--lp-font-line-24); }
+.lp-item-title, .lp-field-label { font-size: var(--lp-font-size-14); font-weight: 600; color: var(--text-1); line-height: var(--lp-size-icon-md); }
+.lp-body, .lp-item-body { font-size: var(--lp-font-size-14); font-weight: var(--lp-font-weight-400); color: var(--text-1); line-height: var(--lp-font-line-20); margin: 0; }
+.lp-line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.lp-description, .lp-page-description, .lp-form-section-desc { font-size: var(--lp-font-size-14); font-weight: 400; color: var(--text-2); line-height: var(--lp-size-icon-md); margin: 0; }
+.lp-caption, .lp-item-subtitle, .lp-item-meta, .lp-field-help, .lp-item-segment-heading { font-size: var(--lp-font-size-12); font-weight: 400; color: var(--text-2); line-height: var(--lp-font-line-16); margin: 0; }
+.lp-prose { margin: 0; }
+.lp-input::placeholder, .lp-textarea::placeholder, :disabled { color: var(--text-3); }
+
+/* Relation gaps (D-FINAL #2) */
+.lp-page-header { display: flex; flex-direction: column; gap: var(--lp-space-stack-page-title-to-description); margin: 0; }
+.lp-tabs { margin: 0; }
+.lp-form-section { display: flex; flex-direction: column; gap: var(--lp-space-stack-heading-to-first); margin: 0; }
+.lp-form-section.lp-gap-group { gap: var(--lp-space-stack-action-bar-after-control); }
+.lp-form-section + .lp-form-section { margin-top: 0; }
+.lp-form-section-header { display: flex; flex-direction: column; gap: var(--lp-space-stack-section-heading-to-intro); }
+.lp-field { display: flex; flex-direction: column; gap: var(--lp-space-stack-label-to-control); margin: 0; }
+.lp-field > .lp-field-label { display: block; position: static; margin: 0; }
+.lp-field > .lp-input, .lp-field > .lp-select-wrap { display: block; position: relative; margin: 0; }
+.lp-action-bar { margin-top: 0; }
+.lp-item-actions .lp-action-bar { margin-top: 0; }
+
+/* Item contract & hairlines (D-FINAL #5, #10, #24) */
+.lp-item:not(:last-child) { border-bottom: var(--lp-border-hairline) solid var(--border-subtle); }
+.lp-item {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--lp-space-proximity-1);
+}
+.lp-item-title { order: 1; }
+.lp-item-status { order: 2; }
+.lp-item-subtitle { order: 3; }
+.lp-item-body, .lp-item-segments { order: 4; }
+.lp-item-meta { order: 5; }
+.lp-item-actions { order: 6; }
+@media (min-width: 640px) {
+  .lp-item {
+    grid-template-columns: 1fr auto;
+    column-gap: var(--lp-space-proximity-3);
+  }
+  .lp-item-title { grid-column: 1; order: 1; }
+  .lp-item-status { grid-column: 2; grid-row: 1; align-self: center; justify-self: end; order: 1; }
+  .lp-item-subtitle, .lp-item-body, .lp-item-segments, .lp-item-meta, .lp-item-actions { grid-column: 1 / -1; }
+}
+
+/* Dialogs (D-FINAL #11, D-H H1) */
+.lp-dialog-panel {
+  container-type: inline-size;
+  padding: var(--lp-space-inset-dialog);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-dialog-body-to-actionbar);
+}
+.lp-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: var(--lp-space-stack-label-to-control); padding: 0; }
+.lp-dialog-body { padding: 0; }
+.lp-dialog-footer, .lp-dialog-panel .lp-action-bar { display: flex; flex-direction: column; align-items: flex-start; gap: var(--lp-space-inline-button-button); width: 100%; }
+.lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn {
+  width: auto;
+  min-width: var(--lp-size-btn-action-min);
+}
+@container (max-width: 399px) {
+  .lp-dialog-footer, .lp-dialog-panel .lp-action-bar { align-items: stretch; }
+  .lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* SegmentedControl (D-FINAL #15) */
+.lp-segmented-control {
+  display: inline-flex;
+  align-items: center;
+  height: var(--lp-size-target-min);
+  padding: 0;
+  border-radius: var(--lp-radius-r1);
+  background: var(--surface-l2);
+  gap: var(--lp-space-proximity-1);
+}
+.lp-segment-btn {
+  height: var(--lp-size-target-min);
+  padding: 0 var(--lp-space-inset-item-x);
+  border: var(--lp-border-hairline) solid transparent;
+  border-radius: var(--lp-radius-r1);
+  background: transparent;
+  color: var(--text-2);
+  font-family: var(--lp-font-family-ui);
+  font-size: var(--lp-font-size-14);
+  font-weight: 600;
+  cursor: pointer;
+}
+@media (min-width: 640px) {
+  .lp-segment-btn { padding: 0 var(--lp-space-inset-section); }
+}
+.lp-segment-btn.is-selected {
+  background: var(--surface-l0);
+  color: var(--text-1);
+}
+
+/* Tag chip (D-FINAL #18) */
+.lp-tag {
+  display: inline-flex;
+  align-items: center;
+  height: var(--lp-size-tag-height);
+  padding: 0 0 0 var(--lp-space-inset-tag-x);
+  border-radius: var(--lp-radius-r1);
+  background: var(--surface-l2);
+  color: var(--text-2);
+  font-size: var(--lp-font-size-12);
+  font-weight: 400;
+  border: 0;
+  animation: lp-tag-enter var(--lp-motion-duration-base) var(--lp-motion-easing-out);
+}
+.lp-tag-remove {
+  width: var(--lp-size-target-min);
+  height: var(--lp-size-target-min);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+}
+@keyframes lp-tag-enter {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Level 4-segment progress bar (D-FINAL #18) */
+.lp-level { display: flex; flex-direction: column; gap: var(--lp-space-stack-label-to-control); }
+.lp-level-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--lp-space-stack-label-to-control); }
+.lp-level-segment { display: flex; flex-direction: column; gap: var(--lp-space-proximity-1); }
+.lp-level-bar-fill { height: var(--lp-space-inset-track); border-radius: var(--lp-radius-r1); background: var(--surface-l2); }
+.lp-level-segment.is-done .lp-level-bar-fill { background: var(--accent); }
+.lp-level-label { font-size: var(--lp-font-size-12); font-weight: 400; color: var(--text-2); line-height: var(--lp-font-line-16); }
+.lp-level-segment.is-current .lp-level-label { font-weight: 600; color: var(--text-1); }

@@ -1,0 +1,25 @@
+/* Canary overrides (must stay after D-COMP rules so intentional violations remain broken) */
+.lp-canary-stacking.lp-page-header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-canary-rhythm.lp-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.lp-canary-tabs.lp-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  --_popover-max-w: calc(var(--lp-space-proximity-5) * 7);
+  width: var(--_popover-max-w);
+}
+
+.lp-canary-tabs.lp-tabs .lp-canary-tab {
+  flex: 0 0 auto;
+  width: var(--lp-size-btn-action-min);
+}

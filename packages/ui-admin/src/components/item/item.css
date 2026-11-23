@@ -1,0 +1,112 @@
+/* Item (D-COMP #3) */
+.lp-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-label-to-control);
+  padding: var(--lp-space-inset-section) 0;
+  border-bottom: var(--lp-border-hairline) solid var(--border-subtle);
+  color: var(--text);
+  text-decoration: none;
+}
+
+a.lp-item:hover {
+  background: var(--surface-subtle);
+}
+
+.lp-item.is-selected {
+  background: var(--role-action-bg);
+  border-radius: var(--lp-radius-r2);
+}
+
+.lp-item-title {
+  display: flex;
+  align-items: center;
+  gap: var(--lp-space-stack-label-to-control);
+  font-size: var(--lp-font-size-14);
+  line-height: var(--lp-size-icon-md);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.lp-item-leading {
+  display: inline-flex;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.lp-item-subtitle {
+  font-size: var(--lp-font-size-12);
+  line-height: var(--lp-font-line-16);
+  color: var(--text-muted);
+}
+
+.lp-item-body {
+  font-size: var(--lp-font-size-14);
+  line-height: var(--lp-size-icon-md);
+  color: var(--text);
+}
+
+.lp-item-segments {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-field-to-field);
+}
+
+.lp-item-segment {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-item-segment-heading {
+  font-size: var(--lp-font-size-14);
+  line-height: var(--lp-size-icon-md);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.lp-item-meta {
+  font-size: var(--lp-font-size-12);
+  line-height: var(--lp-font-line-16);
+  color: var(--text-muted);
+}
+
+.lp-item-status {
+  display: flex;
+  align-items: center;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-item-chevron {
+  display: inline-flex;
+  color: var(--text-muted);
+}
+
+@media (min-width: 640px) {
+  .lp-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: var(--lp-space-proximity-3);
+    row-gap: var(--lp-space-proximity-1);
+    align-items: start;
+  }
+
+  .lp-item-title {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .lp-item-status {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .lp-item-subtitle,
+  .lp-item-meta,
+  .lp-item-body,
+  .lp-item-segments,
+  .lp-item-actions {
+    grid-column: 1 / -1;
+  }
+}

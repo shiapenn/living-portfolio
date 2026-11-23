@@ -5,7 +5,14 @@ import {
   DEFAULT_ACCENT_CSS,
   DEFAULT_ACCENT_CSS_FILENAME,
 } from '@living-portfolio/ui-core';
-import { ADMIN_BASE_CSS, ADMIN_CSS_FILENAME } from '@living-portfolio/ui-admin';
+import {
+  ADMIN_BASE_CSS,
+  ADMIN_CSS_FILENAME,
+  ADMIN_EDITOR_CSS,
+  ADMIN_EDITOR_CSS_FILENAME,
+  ADMIN_GALLERY_CSS,
+  ADMIN_GALLERY_CSS_FILENAME,
+} from '@living-portfolio/ui-admin';
 import {
   PUBLIC_BUNDLE_CSS,
   PUBLIC_CSS_FILENAME,
@@ -150,6 +157,10 @@ export function createWebApp(options?: WebAppOptions) {
     'accent.css': DEFAULT_ACCENT_CSS,
     [ADMIN_CSS_FILENAME]: ADMIN_BASE_CSS,
     'admin.css': ADMIN_BASE_CSS,
+    [ADMIN_EDITOR_CSS_FILENAME]: ADMIN_EDITOR_CSS,
+    'admin-editor.css': ADMIN_EDITOR_CSS,
+    [ADMIN_GALLERY_CSS_FILENAME]: ADMIN_GALLERY_CSS,
+    'admin-gallery.css': ADMIN_GALLERY_CSS,
     [PUBLIC_CSS_FILENAME]: PUBLIC_BUNDLE_CSS,
     'public.css': PUBLIC_BUNDLE_CSS,
   };

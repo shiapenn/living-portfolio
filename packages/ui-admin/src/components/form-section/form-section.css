@@ -1,0 +1,22 @@
+/* FormSection (D-COMP #9) */
+.lp-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-field-to-field);
+  margin: 0;
+}
+
+.lp-form-section-title {
+  font-size: var(--lp-font-size-16);
+  line-height: var(--lp-font-line-24);
+  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+}
+
+.lp-form-section-desc {
+  font-size: var(--lp-font-size-14);
+  line-height: var(--lp-size-icon-md);
+  color: var(--text-muted);
+  margin: 0;
+}

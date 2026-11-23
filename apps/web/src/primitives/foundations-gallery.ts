@@ -1,4 +1,9 @@
-import { STRATA_DESIGN_SYSTEM_CSS } from '../styles.js';
+import {
+  ADMIN_CSS_FILENAME,
+  ADMIN_EDITOR_CSS_FILENAME,
+  ADMIN_GALLERY_CSS_FILENAME,
+} from '@living-portfolio/ui-admin';
+import { CORE_CSS_FILENAME, DEFAULT_ACCENT_CSS_FILENAME } from '@living-portfolio/ui-core';
 import {
   COMPONENT_TOKEN_VALUES,
   PACK_RULES,
@@ -835,7 +840,11 @@ export function renderFoundationsGalleryPage(theme: 'light' | 'dark' = 'light'):
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Design Foundations Gallery — Living Portfolio</title>
-  <style>${STRATA_DESIGN_SYSTEM_CSS}</style>
+  <link rel="stylesheet" href="/assets/css/${CORE_CSS_FILENAME}" />
+  <link rel="stylesheet" href="/assets/css/${ADMIN_CSS_FILENAME}" />
+  <link rel="stylesheet" href="/assets/css/${ADMIN_EDITOR_CSS_FILENAME}" />
+  <link rel="stylesheet" href="/assets/css/${ADMIN_GALLERY_CSS_FILENAME}" />
+  <link rel="stylesheet" href="/assets/css/${DEFAULT_ACCENT_CSS_FILENAME}" />
 </head>
 <body>
   ${renderIconSprite()}

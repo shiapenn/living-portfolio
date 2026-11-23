@@ -1,0 +1,431 @@
+/* --- WP-16.1 Admin Shell & Auth Shell --- */
+.lp-admin-header-start {
+  display: flex;
+  align-items: center;
+  gap: var(--lp-space-stack-label-to-control);
+  min-width: 0;
+}
+
+.lp-admin-shell-body {
+  display: flex;
+  min-height: calc(100vh - var(--_bar-legacy-offset));
+  position: relative;
+}
+
+.lp-admin-shell-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.lp-status-legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lp-space-stack-label-to-control);
+  font-size: var(--lp-font-size-12);
+}
+
+.lp-status-legend-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-admin-section-card {
+  max-width: var(--lp-size-layout-main-max);
+  background: var(--surface-raised);
+  border: var(--lp-border-hairline) solid var(--border-subtle);
+  border-radius: var(--lp-radius-container);
+  padding: var(--lp-space-inset-dialog);
+}
+
+.lp-admin-section-title {
+  margin: 0;
+  font-family: var(--lp-font-family-reading);
+}
+
+.lp-admin-section-desc {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.lp-admin-section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 767px) {
+  .wizard-step-labels {
+    display: none !important;
+  }
+
+  .lp-admin-rail-toggle {
+    display: inline-flex;
+  }
+
+  .lp-admin-rail {
+    position: fixed;
+    top: var(--_bar-legacy-offset);
+    left: 0;
+    bottom: 0;
+    z-index: var(--lp-z-sticky);
+    transform: translateX(-100%);
+    transition: transform 0.18s ease;
+    box-shadow: var(--lp-elevation-e2);
+  }
+
+  .lp-admin-rail.is-open {
+    transform: translateX(0);
+  }
+}
+
+/* --- WP-16.2 Today Dashboard --- */
+.lp-dashboard-stack {
+  max-width: var(--lp-size-layout-wide-col);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-field-to-field);
+}
+
+.lp-dashboard-header h1 {
+  margin: 0;
+}
+
+.lp-dashboard-header p {
+  margin: 0;
+}
+
+.lp-dashboard-explain,
+.lp-dashboard-card {
+  background: var(--surface-raised);
+  border: var(--lp-border-hairline) solid var(--border-subtle);
+  border-radius: var(--lp-radius-container);
+  padding: var(--lp-space-inset-section);
+}
+
+.lp-dashboard-explain-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--lp-size-grid-card-min)), 1fr));
+  gap: var(--lp-space-stack-field-to-field);
+  margin: 0;
+}
+
+.lp-dashboard-explain-grid dt {
+  font-size: var(--lp-font-size-12);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.lp-dashboard-explain-grid dd {
+  margin: 0;
+  font-size: var(--lp-font-size-14);
+}
+
+.lp-dashboard-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lp-space-stack-label-to-control);
+  margin: 0;
+}
+
+.lp-dashboard-card-title {
+  margin: 0;
+  font-size: var(--lp-font-size-16);
+  font-weight: 600;
+}
+
+.lp-dashboard-card-header .lp-dashboard-card-title {
+  margin: 0;
+}
+
+.lp-dashboard-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-dashboard-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lp-space-stack-label-to-control);
+  padding: var(--lp-space-inset-item-x) var(--lp-space-inset-section);
+  border: var(--lp-border-hairline) solid var(--border-subtle);
+  border-radius: var(--lp-radius-control);
+  background: var(--surface-subtle);
+}
+
+.lp-dashboard-item-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--lp-space-stack-label-to-control);
+  min-width: 0;
+}
+
+.lp-dashboard-checklist {
+  margin: 0;
+  padding-left: var(--lp-space-inset-dialog);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+/* --- WP-16.3 Entries List Page --- */
+.lp-entries-stack {
+  max-width: var(--lp-size-layout-dashboard-max);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-field-to-field);
+}
+
+.lp-entries-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lp-space-stack-field-to-field);
+}
+
+.lp-entries-header h1,
+.lp-entries-header p {
+  margin: 0;
+}
+
+.lp-entries-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-field-to-field);
+  align-items: stretch;
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .lp-entries-toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+}
+
+.lp-entries-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-proximity-1);
+  --_col-min-xs: calc(var(--lp-space-proximity-3) * 8);
+  min-width: var(--_col-min-xs);
+}
+
+.lp-entries-search-group {
+  flex: 1;
+  min-width: var(--lp-size-grid-card-min);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-proximity-1);
+}
+
+.lp-entries-search-row {
+  display: flex;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-entries-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-entries-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lp-space-stack-field-to-field);
+  padding: var(--lp-space-inset-section);
+  background: var(--surface-raised);
+  border: var(--lp-border-hairline) solid var(--border-subtle);
+  border-radius: var(--lp-radius-control);
+}
+
+.lp-entries-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-proximity-1);
+  min-width: 0;
+}
+
+.lp-entries-row-title {
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.lp-entries-row-title:hover {
+  text-decoration: underline;
+}
+
+.lp-entries-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-structure-meter {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lp-border-role-rule);
+}
+
+.lp-structure-step {
+  width: var(--lp-size-indicator-md);
+  height: var(--lp-size-status-dot);
+  border-radius: var(--lp-radius-r1);
+  background: var(--border-subtle);
+  display: inline-block;
+}
+
+.lp-structure-step.is-filled {
+  background: var(--accent);
+}
+
+.lp-structure-label {
+  font-size: var(--lp-font-size-12);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.lp-entries-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+/* WP-16.R R2 Unified Admin Page & Auth Primitives (D-MIN) */
+.lp-is-hidden,
+[hidden] {
+  display: none !important;
+}
+
+.lp-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--lp-space-stack-field-to-field);
+  margin: 0;
+}
+
+.lp-page-title {
+  margin: 0;
+  font-family: var(--lp-font-family-ui);
+  font-size: var(--lp-font-size-24);
+  line-height: var(--lp-font-line-32);
+  font-weight: 600;
+}
+
+.lp-page-subtitle {
+  margin: 0;
+  font-size: var(--lp-font-size-14);
+  color: var(--text-muted);
+}
+
+.lp-section-title {
+  margin: 0;
+  font-family: var(--lp-font-family-ui);
+  font-size: var(--lp-font-size-16);
+  line-height: var(--lp-font-line-24);
+  font-weight: 600;
+}
+
+.lp-section-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--lp-size-admin-inspector-width)), 1fr));
+  gap: var(--lp-space-proximity-4);
+}
+
+.lp-section-block {
+  padding-top: var(--lp-space-inset-dialog);
+  border-top: var(--lp-border-hairline) solid var(--border-subtle);
+}
+
+.lp-stack-sm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-stack-md {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-field-to-field);
+}
+
+.lp-stack-md > * {
+  margin: 0;
+}
+
+.lp-row-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--lp-space-stack-label-to-control);
+}
+
+.lp-help-text {
+  margin: 0;
+  font-size: var(--lp-font-size-12);
+  color: var(--text-muted);
+}
+
+.lp-body-sm {
+  margin: 0;
+  font-size: var(--lp-font-size-14);
+  color: var(--text);
+}
+
+.lp-body-sm-muted {
+  margin: 0;
+  font-size: var(--lp-font-size-14);
+  color: var(--text-muted);
+}
+
+.lp-btn-full {
+  width: 100%;
+  white-space: normal;
+  text-align: center;
+}
+
+.lp-btn-as-link {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}

@@ -1,5 +1,10 @@
 import { renderLayout } from '../layouts/public-shell.js';
-import { STRATA_DESIGN_SYSTEM_CSS } from '../styles.js';
+import {
+  ADMIN_CSS_FILENAME,
+  ADMIN_EDITOR_CSS_FILENAME,
+  ADMIN_GALLERY_CSS_FILENAME,
+} from '@living-portfolio/ui-admin';
+import { CORE_CSS_FILENAME, DEFAULT_ACCENT_CSS_FILENAME } from '@living-portfolio/ui-core';
 import {
   renderIconSprite,
   renderButton,
@@ -130,7 +135,7 @@ ${renderDrawer({
 })}`;
 
   return renderLayout('Primitives Gallery', '/admin/dev/primitives', content, {
-    headSlot: `<style>${STRATA_DESIGN_SYSTEM_CSS}</style>`,
+    headSlot: `<link rel="stylesheet" href="/assets/css/${CORE_CSS_FILENAME}" /><link rel="stylesheet" href="/assets/css/${ADMIN_CSS_FILENAME}" /><link rel="stylesheet" href="/assets/css/${ADMIN_EDITOR_CSS_FILENAME}" /><link rel="stylesheet" href="/assets/css/${ADMIN_GALLERY_CSS_FILENAME}" /><link rel="stylesheet" href="/assets/css/${DEFAULT_ACCENT_CSS_FILENAME}" />`,
     clientScript: '/assets/client/gallery.js',
   });
 }
