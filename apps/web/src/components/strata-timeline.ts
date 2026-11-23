@@ -188,7 +188,7 @@ export async function renderStrataTimelineSection(
       <form method="GET" action="/timeline" style="display:flex;gap:var(--lp-space-stack-label-to-control);align-items:center">
         <label for="as-of-input" style="font-size:var(--lp-font-size-14)">As of:</label>
         <input id="as-of-input" name="as_of" type="date" value="${escapeHtml(defaultInputValue)}" class="ask-input" style="padding:var(--lp-space-inset-track) var(--lp-space-inset-item-x);width:auto" />
-        <button type="submit" class="btn btn-secondary" style="min-height:var(--lp-size-hit-area);padding:var(--lp-space-proximity-2) var(--lp-space-inset-section)">Apply Date</button>
+        <button type="submit" class="btn btn-secondary">Apply Date</button>
       </form>
     </div>
     ${asOfBanner}

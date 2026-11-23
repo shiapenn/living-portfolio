@@ -27,10 +27,21 @@
     --border-control: var(--pub-color-border-strong);
     --accent: var(--pub-color-accent-primary);
     --focus-ring: var(--pub-color-accent-primary);
+    --layout-max: var(--pub-size-layout-max);
   }
 }
 
 @layer components {
+  button,
+  input[type="date"],
+  input[type="search"],
+  input[type="text"],
+  select,
+  a[data-action="view-switch"] {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
   .pub-header,
   .site-header {
     border-bottom: var(--pub-border-hairline) solid var(--pub-color-border-rule);

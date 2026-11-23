@@ -244,7 +244,7 @@ export async function renderEntryDetailPage(
             ${qualifiesForStructured ? `<span class="chip">Structured</span>` : ''}
             ${
               qualifiesForStructured
-                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}${asOfAndPart}" class="btn btn-secondary" data-action="view-switch" style="padding:var(--lp-space-proximity-2) var(--lp-space-inset-card-sm);min-height:var(--lp-size-hit-area);display:inline-flex;align-items:center;font-size:var(--lp-font-size-14);text-decoration:none">${activeView === 'structured' ? 'Read as one article' : 'Read by section'}</a>`
+                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}${asOfAndPart}" class="btn btn-secondary" data-action="view-switch">${activeView === 'structured' ? 'Read as one article' : 'Read by section'}</a>`
                 : ''
             }
           </div>
