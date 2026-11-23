@@ -1,12 +1,16 @@
 import { escapeHtml } from '../lib/html.js';
+import { renderSectionHeader } from './section-header.js';
 
 export interface FormSectionProps {
   title: string;
   description?: string;
   fieldsHtml: string;
   actionBarHtml?: string;
+  headerId?: string;
+  headerActionHtml?: string;
   id?: string;
   className?: string;
+  attributes?: string;
 }
 
 export interface SubsectionProps {
@@ -50,17 +54,23 @@ export function renderSubsection(props: SubsectionProps): string {
  */
 export function renderFormSection(props: FormSectionProps): string {
   const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
+  const extraAttr = props.attributes ? ` ${props.attributes}` : '';
   const classes = ['lp-form-section', props.className].filter(Boolean).join(' ');
   const descHtml = props.description
     ? `<p data-rel="section-intro" class="lp-form-section-desc">${escapeHtml(props.description)}</p>`
     : '';
   const actionHtml = props.actionBarHtml ?? '';
 
-  const headerHtml = descHtml
-    ? `<div class="lp-stack lp-gap-8"><h2 data-rel="section-title" class="lp-form-section-title">${escapeHtml(props.title)}</h2>${descHtml}</div>`
-    : `<h2 data-rel="section-title" class="lp-form-section-title">${escapeHtml(props.title)}</h2>`;
+  const titleOrSectionHeader =
+    props.headerActionHtml || props.headerId
+      ? renderSectionHeader({ id: props.headerId, title: props.title, actionHtml: props.headerActionHtml })
+      : `<h2 data-rel="section-title" class="lp-form-section-title">${escapeHtml(props.title)}</h2>`;
 
-  return `<section${idAttr} data-c="FormSection" data-rel="section" class="${escapeHtml(classes)} lp-stack lp-gap-group">
+  const headerHtml = descHtml
+    ? `<div class="lp-stack lp-gap-8">${titleOrSectionHeader}${descHtml}</div>`
+    : titleOrSectionHeader;
+
+  return `<section${idAttr}${extraAttr} data-c="FormSection" data-rel="section" class="${escapeHtml(classes)} lp-stack lp-gap-group">
   <div class="lp-stack lp-gap-related">
     ${headerHtml}
     <div class="lp-stack lp-gap-related">${props.fieldsHtml}</div>

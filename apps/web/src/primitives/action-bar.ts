@@ -13,16 +13,22 @@ export interface ActionBarProps {
   className?: string;
 }
 
-function renderActionSlot(item: ButtonProps | string, defaultVariant: 'primary' | 'secondary' | 'text'): string {
+function renderActionSlot(item: ButtonProps | string, defaultVariant: 'primary' | 'secondary' | 'text', forceVariant = false): string {
   if (typeof item === 'string') return item;
-  return renderButton({ ...item, variant: item.variant ?? defaultVariant });
+  const resolvedVariant = forceVariant
+    ? defaultVariant === 'text' && (item.variant === 'text-danger' || item.variant === 'danger' || item.destructive)
+      ? 'text-danger'
+      : defaultVariant
+    : item.variant ?? defaultVariant;
+  return renderButton({ ...item, variant: resolvedVariant });
 }
 
 /**
- * Unified ActionBar primitive (D-COMP #4, D-I1, D-K1):
- * - page / dialog levels: full width, stacked
- * - item level: always compact, auto width (min 96px), left-aligned flex-wrap row (gap 8px),
- *   wrapping only when buttons do not fit; touch size from 44px control height < 640px.
+ * Unified ActionBar primitive (D-COMP #4, D-I1, D-K1, D-L1):
+ * - page / dialog levels: full width, stacked (primary -> secondary -> text)
+ * - item level (D-L1): always compact, auto width (min 96px), left-aligned flex-wrap row (gap 8px);
+ *   never contains a primary; at most two buttons:
+ *   1 action -> secondary; 2 actions -> affirmative = secondary, negative = text button.
  */
 export function renderActionBar(props: ActionBarProps): string {
   const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
@@ -37,10 +43,22 @@ export function renderActionBar(props: ActionBarProps): string {
     .join(' ');
   const relAttr = level === 'page' ? 'page-actions' : 'actions';
   const slots: string[] = [];
-  const defaultSecondaryOrPrimary = level === 'item' ? 'secondary' : 'primary';
-  if (props.primary) slots.push(renderActionSlot(props.primary, defaultSecondaryOrPrimary));
-  if (props.secondary) slots.push(renderActionSlot(props.secondary, 'secondary'));
-  if (props.textAction) slots.push(renderActionSlot(props.textAction, 'text'));
+
+  if (level === 'item') {
+    const rawActions = [props.primary, props.secondary, props.textAction].filter(
+      (a): a is ButtonProps | string => Boolean(a)
+    ).slice(0, 2);
+    if (rawActions.length === 1) {
+      slots.push(renderActionSlot(rawActions[0], 'secondary', true));
+    } else if (rawActions.length === 2) {
+      slots.push(renderActionSlot(rawActions[0], 'secondary', true));
+      slots.push(renderActionSlot(rawActions[1], 'text', true));
+    }
+  } else {
+    if (props.primary) slots.push(renderActionSlot(props.primary, 'primary'));
+    if (props.secondary) slots.push(renderActionSlot(props.secondary, 'secondary'));
+    if (props.textAction) slots.push(renderActionSlot(props.textAction, 'text'));
+  }
 
   return `<div${idAttr} data-c="ActionBar" data-level="${level}" data-rel="${relAttr}" class="${escapeHtml(classes)}">${slots.join('')}</div>`;
 }

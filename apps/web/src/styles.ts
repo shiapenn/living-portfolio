@@ -5332,7 +5332,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   color: var(--text-2);
 }
 
-/* Text button & Disabled button weight (D-G #3, #11, D-H H8) */
+/* Text button & Disabled button weight (D-G #3, #11, D-H H8, D-L) */
 .lp-btn.lp-btn-text,
 .lp-btn-text {
   background: transparent;
@@ -5346,6 +5346,12 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
   min-height: var(--control-height);
   font-weight: 600;
 }
+.lp-btn.lp-btn-text.lp-btn-text-danger,
+.lp-btn-text.lp-btn-text-danger,
+.lp-btn.lp-btn-text[data-destructive="true"],
+.lp-btn-text[data-destructive="true"] {
+  color: var(--lp-color-role-danger-fg);
+}
 .lp-btn.lp-btn-text:hover:not(:disabled),
 .lp-btn-text:hover:not(:disabled) {
   background: var(--surface-l2);
@@ -5353,6 +5359,55 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-btn:disabled {
   font-weight: 600;
   color: var(--text-3);
+}
+
+/* D-L: List variants (plain vs interactive) & list spacing */
+.lp-list,
+.lp-item-list {
+  --item-pad-y: var(--lp-space-inset-item-y);
+  --item-pad-x: var(--lp-space-inset-item-x);
+  --list-control-gap: var(--lp-space-stack-control-to-list);
+  --list-heading-plain-gap: var(--lp-space-stack-heading-to-list-plain);
+  --list-heading-interactive-gap: var(--lp-space-stack-heading-to-list-interactive);
+  --list-tint-clearance: var(--lp-space-stack-tint-clearance);
+}
+.lp-list.lp-list-plain > .lp-item,
+.lp-list[data-variant="plain"] > .lp-item {
+  padding: var(--item-pad-y) 0;
+}
+.lp-list.lp-list-plain > .lp-item:first-child,
+.lp-list[data-variant="plain"] > .lp-item:first-child {
+  padding-top: 0;
+}
+.lp-list.lp-list-plain > .lp-item:last-child,
+.lp-list[data-variant="plain"] > .lp-item:last-child {
+  padding-bottom: 0;
+}
+.lp-list.lp-list-plain > .lp-item::before,
+.lp-list[data-variant="plain"] > .lp-item::before,
+.lp-list.lp-list-plain .lp-item-chevron,
+.lp-list[data-variant="plain"] .lp-item-chevron {
+  display: none;
+}
+.lp-list.lp-list-interactive > .lp-item,
+.lp-list[data-variant="interactive"] > .lp-item {
+  padding: var(--item-pad-y) var(--item-pad-x);
+}
+.lp-list.lp-list-interactive > .lp-item:first-child,
+.lp-list[data-variant="interactive"] > .lp-item:first-child {
+  padding-top: var(--item-pad-y);
+}
+.lp-list.lp-list-interactive > .lp-item:last-child,
+.lp-list[data-variant="interactive"] > .lp-item:last-child {
+  padding-bottom: var(--item-pad-y);
+}
+.lp-list.lp-list-interactive > .lp-item:first-child::before,
+.lp-list[data-variant="interactive"] > .lp-item:first-child::before {
+  top: 0;
+}
+.lp-list.lp-list-interactive > .lp-item:last-child::before,
+.lp-list[data-variant="interactive"] > .lp-item:last-child::before {
+  bottom: 0;
 }
 
 /* Segmented track & 4px inset thumb + responsive icons (D-G #12, D-H H1, H7) */

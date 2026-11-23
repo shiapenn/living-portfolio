@@ -8,6 +8,7 @@ import {
   renderIconButton,
   renderIconSprite,
   renderItem,
+  renderList,
   renderOverlay,
   renderPageHeader,
   renderStepper,
@@ -72,8 +73,9 @@ describe('WP-16.C C1 D-COMP Primitives', () => {
     expect(actionItem).toContain('lp-action-bar');
   });
 
-  it('renders ActionBar in primary -> secondary -> text order', () => {
+  it('renders ActionBar in primary -> secondary -> text order on page level and enforces D-L1 item grammar on item level', () => {
     const html = renderActionBar({
+      level: 'page',
       primary: { label: 'Save' },
       secondary: { label: 'Cancel' },
       textAction: { label: 'Reset' },
@@ -83,6 +85,32 @@ describe('WP-16.C C1 D-COMP Primitives', () => {
     const tIdx = html.indexOf('Reset');
     expect(pIdx).toBeLessThan(sIdx);
     expect(sIdx).toBeLessThan(tIdx);
+
+    const itemOne = renderActionBar({
+      level: 'item',
+      primary: { label: 'Restore', variant: 'primary' },
+    });
+    expect(itemOne).toContain('lp-btn-secondary');
+    expect(itemOne).not.toContain('lp-btn-primary');
+
+    const itemTwo = renderActionBar({
+      level: 'item',
+      primary: { label: 'Confirm rule', variant: 'primary' },
+      secondary: { label: 'Discard', variant: 'secondary', destructive: true },
+    });
+    expect(itemTwo).toContain('lp-btn-secondary');
+    expect(itemTwo).toContain('lp-btn-text');
+    expect(itemTwo).toContain('lp-btn-text-danger');
+    expect(itemTwo).not.toContain('lp-btn-primary');
+
+    const plainList = renderList({ id: 'l-plain', variant: 'plain', itemsHtml: renderItem({ title: 'Static row' }) });
+    expect(plainList).toContain('data-c="List"');
+    expect(plainList).toContain('data-variant="plain"');
+    expect(plainList).toContain('lp-list-plain');
+
+    const interactiveList = renderList({ id: 'l-int', variant: 'interactive', itemsHtml: renderItem({ title: 'Nav row', href: '/admin' }) });
+    expect(interactiveList).toContain('data-variant="interactive"');
+    expect(interactiveList).toContain('lp-list-interactive');
   });
 
   it('renders Choice button and card variants with visually hidden native input', () => {

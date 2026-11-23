@@ -10,7 +10,7 @@ import { LUCIDE_ICON_NAMES, renderIcon, renderIconSprite } from './icons.js';
 import { renderButton, renderIconButton } from './button.js';
 import { renderBadge, renderChip, renderStatusDot } from './chip.js';
 import { renderField } from './field.js';
-import { renderItem } from './item.js';
+import { renderItem, renderList } from './item.js';
 import { renderSectionHeader } from './section-header.js';
 import { renderText } from './text.js';
 import { renderSwitch } from './switch.js';
@@ -853,8 +853,10 @@ export function renderFoundationsTokensSection(): string {
   return `<section id="gallery-foundations-tokens" class="lp-gallery-section" data-component="FoundationsTokens">
     ${renderSectionHeader({ title: 'Foundations: Design Tokens' })}
     ${renderText({ variant: 'description', text: 'Primitive scale, Semantic Light and Dark themes, and Component defaults.' })}
-    <div class="lp-list">
-      ${renderItem({
+    ${renderList({
+      id: 'gallery-tokens-list',
+      variant: 'plain',
+      itemsHtml: `${renderItem({
         id: 'gallery-tokens-colors',
         title: 'Semantic Colours (Light / Dark)',
         subtitle: `surface-l0: ${SEMANTIC_LIGHT_VALUES['--lp-color-surface-l0']} / ${SEMANTIC_DARK_VALUES['--lp-color-surface-l0']} · text-1: ${SEMANTIC_LIGHT_VALUES['--lp-color-text-1']} / ${SEMANTIC_DARK_VALUES['--lp-color-text-1']} · accent: ${SEMANTIC_LIGHT_VALUES['--lp-color-accent-default']} / ${SEMANTIC_DARK_VALUES['--lp-color-accent-default']}`,
@@ -883,7 +885,7 @@ export function renderFoundationsTokensSection(): string {
         id: 'gallery-tokens-motion',
         title: 'Motion Durations',
         subtitle: `fast: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-fast']} · item: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-item']} · base: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-base']} · slow: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-slow']}`,
-      })}
-    </div>
+      })}`,
+    })}
   </section>`;
 }
