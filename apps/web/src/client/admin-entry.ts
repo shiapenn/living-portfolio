@@ -123,12 +123,12 @@ export async function refreshEntriesList(selectedId?: string): Promise<void> {
             badgeColor = 'var(--lp-color-role-warning-fg)';
             badgeBg = 'var(--lp-color-role-warning-bg)';
           }
-          const visibilityBadge = `<span class="chip" style="font-size:var(--lp-size-10);padding:var(--lp-border-hairline) var(--lp-size-5);background:${badgeBg};color:${badgeColor}">${escapeClientHtml(
+          const visibilityBadge = `<span class="chip" style="font-size:var(--lp-font-size-10);padding:var(--lp-border-hairline) var(--lp-space-inset-badge-x);background:${badgeBg};color:${badgeColor}">${escapeClientHtml(
             e.visibility
           )}</span>`;
           return `
-          <li data-entry-id="${escapeClientHtml(e.id)}" style="display:flex;align-items:center;justify-content:space-between;padding:var(--lp-space-8) var(--lp-size-6);border-bottom:var(--lp-border-hairline) solid var(--rule);font-size:var(--lp-size-13);cursor:pointer;${selStyle}" class="admin-entry-item" role="button" tabindex="0">
-            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:var(--lp-size-140)">${escapeClientHtml(e.title || 'Untitled')}</span>
+          <li data-entry-id="${escapeClientHtml(e.id)}" style="display:flex;align-items:center;justify-content:space-between;padding:var(--lp-space-inset-item-x) var(--lp-space-inset-compact);border-bottom:var(--lp-border-hairline) solid var(--rule);font-size:var(--lp-font-size-13);cursor:pointer;${selStyle}" class="admin-entry-item" role="button" tabindex="0">
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:var(--lp-size-card-min-h)">${escapeClientHtml(e.title || 'Untitled')}</span>
             ${visibilityBadge}
           </li>`;
         })

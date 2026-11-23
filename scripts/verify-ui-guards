@@ -254,6 +254,12 @@ export function evaluateUiGuards({ rootDir = DEFAULT_ROOT, allowlist } = {}) {
       if (/--lp-prim-[a-z0-9-]+/.test(line)) {
         errors.push(`[PRIMITIVE-TOKEN-LEAK] ${relPath}:${i + 1}: primitive token referenced outside semantic/component tier.`);
       }
+      if (/--(?:lp-)?space-\d+\b/.test(line)) {
+        errors.push(`[RAW-SPACE-SCALE-LEAK] ${relPath}:${i + 1}: component CSS may not reference raw space scale (--lp-space-<N> or --space-<N>); use --lp-space-stack-*, --lp-space-inline-*, or --lp-space-inset-*.`);
+      }
+      if (/--lp-(?:size|z)-\d+(?:-\d+)?\b/.test(line)) {
+        errors.push(`[NUMERAL-TOKEN-LEAK] ${relPath}:${i + 1}: numeral-named token (--lp-size-<N> or --lp-z-<N>) is forbidden.`);
+      }
       const pxHits = (line.match(/(?<![a-zA-Z0-9_$-])\d+(?:\.\d+)?px\b/g) || []).filter((v) => v !== '0px');
       if (pxHits.length > 0) {
         errors.push(`[TOKEN-LITERAL-PX] ${relPath}:${i + 1}: literal px (${pxHits.join(', ')}).`);
@@ -281,14 +287,30 @@ export function evaluateUiGuards({ rootDir = DEFAULT_ROOT, allowlist } = {}) {
   }
 
   const tokensJsonPath = join(rootDir, 'packages/design-tokens/tokens.json');
-  const reservedTokens = existsSync(tokensJsonPath)
-    ? JSON.parse(readFileSync(tokensJsonPath, 'utf8')).reserved ?? {}
-    : {};
+  if (existsSync(tokensJsonPath)) {
+    const tJson = JSON.parse(readFileSync(tokensJsonPath, 'utf8'));
+    if ('reserved' in tJson) {
+      errors.push(`[TOKEN-RESERVED-FORBIDDEN] packages/design-tokens/tokens.json: "reserved" list concept is forbidden by D-L5.`);
+    }
+  }
+  if (existsSync(tokensCssPath)) {
+    const css = readFileSync(tokensCssPath, 'utf8');
+    if (/\{[^}]+\}/.test(css.replace(/@[^{]+\{[\s\S]*?\}/g, '').replace(/[^{]+\{[^}]*\}/g, ''))) {
+      // Check property values for unresolved {primitive.*} / {semantic.*} / {component.*}
+    }
+    for (const m of css.matchAll(/:\s*([^;\n}]*\{[a-zA-Z0-9_.-]+\}[^;\n}]*);/g)) {
+      errors.push(`[TOKEN-UNRESOLVED-ALIAS] packages/design-tokens/src/tokens.css: unresolved reference "${m[1].trim()}".`);
+    }
+    if (/--lp-prim-/.test(css)) {
+      errors.push(`[PRIMITIVE-EMITTED-TO-CSS] packages/design-tokens/src/tokens.css: primitive tokens (--lp-prim-*) must not be emitted into shipped CSS.`);
+    }
+  }
   for (const tok of definedLpTokens) {
-    if (tok.startsWith('--lp-prim-')) continue;
-    if (tok.startsWith('--lp-rel-') || tok.startsWith('--lp-type-')) continue;
-    if (!usedLpTokens.has(tok) && !reservedTokens[tok]) {
-      errors.push(`[TOKEN-UNUSED] ${tok}: defined in tokens.css but never used and not listed in tokens.json reserved.`);
+    if (/^--lp-(?:size|space|z)-\d+(?:-\d+)?$/.test(tok)) {
+      errors.push(`[TOKEN-NUMERAL-NAME] ${tok}: token name may not be only a number (D-L5).`);
+    }
+    if (!usedLpTokens.has(tok)) {
+      errors.push(`[TOKEN-UNUSED] ${tok}: defined in tokens.css but never used (D-L5 arithmetic closure: defined must equal used).`);
     }
   }
 

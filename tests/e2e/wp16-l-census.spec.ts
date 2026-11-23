@@ -192,4 +192,40 @@ test.describe('WP-16.L Live Verification & 42-State Census (UX-213..UX-215)', ()
     }
     expect(allIssues).toEqual([]);
   });
+
+  test('20261106-UX-216 & 20261106-UX-217 (L4 & L5): unified scrim on dialogs, zero --lp-prim-* on :root, and gallery style-recalc benchmark', async ({ page }) => {
+    await ensureAdminLoggedIn(page);
+    const ids = await getSeededIds(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    await navigateToState(page, STATES.find((s) => s.id === 'gallery')!, ids);
+    const recalcMetrics = await page.evaluate(() => {
+      const rootStyle = getComputedStyle(document.documentElement);
+      const scrim = rootStyle.getPropertyValue('--lp-color-surface-scrim').trim();
+      const primCheck = rootStyle.getPropertyValue('--lp-prim-space-8').trim();
+      const zBase = rootStyle.getPropertyValue('--lp-z-base').trim();
+
+      // Run 20 theme toggles (light <-> dark) forcing full style recalculation across gallery DOM
+      const iterations = 20;
+      const t0 = performance.now();
+      for (let i = 0; i < iterations; i++) {
+        document.documentElement.setAttribute('data-theme', i % 2 === 0 ? 'dark' : 'light');
+        void document.body.offsetHeight;
+        void getComputedStyle(document.body).backgroundColor;
+      }
+      const elapsedMs = performance.now() - t0;
+      return {
+        scrim,
+        primCheck,
+        zBase,
+        avgStyleRecalcMs: Number((elapsedMs / iterations).toFixed(3)),
+      };
+    });
+
+    console.log('L5_GALLERY_STYLE_RECALC:', JSON.stringify(recalcMetrics));
+    expect(recalcMetrics.scrim).toBe('rgba(15, 26, 34, 0.45)');
+    expect(recalcMetrics.primCheck).toBe('');
+    expect(recalcMetrics.zBase).toBe('0');
+    expect(recalcMetrics.avgStyleRecalcMs).toBeLessThan(50);
+  });
 });

@@ -34,12 +34,12 @@ export function renderLayout(
 
   const safeLogoUrl = sanitizeHttpUrl(cfg.PUBLIC_SITE_LOGO_URL);
   const brandHtml = safeLogoUrl
-    ? `<img src="${escapeHtml(safeLogoUrl)}" alt="${escapeHtml(cfg.PUBLIC_OWNER_NAME)}" style="height:var(--lp-space-24);vertical-align:middle;margin-right:var(--lp-space-8)" />${escapeHtml(cfg.PUBLIC_OWNER_NAME)}`
+    ? `<img src="${escapeHtml(safeLogoUrl)}" alt="${escapeHtml(cfg.PUBLIC_OWNER_NAME)}" style="height:var(--lp-size-icon-lg);vertical-align:middle;margin-right:var(--lp-space-inline-icon-text)" />${escapeHtml(cfg.PUBLIC_OWNER_NAME)}`
     : escapeHtml(cfg.PUBLIC_OWNER_NAME);
 
   const stagingBannerHtml =
     cfg.DEPLOYMENT_CLASS === 'staging'
-      ? `<div class="as-of-banner" data-banner="staging-synthetic-only" role="status" style="position:sticky;top:0;z-index: var(--lp-z-modal);margin:0;border-radius:0;justify-content:center;background:var(--surface-raised);border-bottom:var(--lp-space-2) solid var(--role-challenge,var(--lp-color-role-friction))"><strong>Staging: synthetic data only.</strong></div>`
+      ? `<div class="as-of-banner" data-banner="staging-synthetic-only" role="status" style="position:sticky;top:0;z-index:var(--lp-z-modal);margin:0;border-radius:0;justify-content:center;background:var(--surface-raised);border-bottom:var(--lp-border-focus) solid var(--lp-color-passage-friction)"><strong>Staging: synthetic data only.</strong></div>`
       : '';
 
   const robotsMetaHtml =
@@ -48,7 +48,7 @@ export function renderLayout(
       : '';
 
   const unofficialForkSlotHtml = cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE
-    ? `<div class="unofficial-fork-slot" data-slot="unofficial-fork-notice" style="margin-top:var(--lp-size-6);font-size:var(--lp-size-13);color:var(--text-muted)">${escapeHtml(cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE)}</div>`
+    ? `<div class="unofficial-fork-slot" data-slot="unofficial-fork-notice" style="margin-top:var(--lp-space-stack-sub-compact);font-size:var(--lp-font-size-13);color:var(--text-muted)">${escapeHtml(cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE)}</div>`
     : '';
 
   const nonceAttr = options?.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : '';
@@ -84,7 +84,7 @@ ${headerSlotHtml}    <nav class="site-nav" aria-label="Primary navigation">
       <a href="/" class="site-brand"${activePath === '/' ? ' aria-current="page"' : ''}>${brandHtml}</a>
       <div class="nav-links">
         ${navHtml}
-        ${isAdmin ? `<button type="button" class="btn btn-secondary" id="btn-admin-logout" style="font-size:var(--lp-space-12);padding:var(--lp-space-4) var(--lp-size-10);margin-left:var(--lp-space-8);cursor:pointer">Sign out</button>` : ''}
+        ${isAdmin ? `<button type="button" class="btn btn-secondary" id="btn-admin-logout" style="font-size:var(--lp-font-size-12);padding:var(--lp-space-inset-track) var(--lp-space-inset-control-sm);margin-left:var(--lp-space-inline-icon-text);cursor:pointer">Sign out</button>` : ''}
         <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-pressed="false" style="min-height:var(--lp-size-hit-area)"><span aria-hidden="true">◐</span> <span class="theme-label">Dark theme</span></button>
       </div>
     </nav>
@@ -92,9 +92,9 @@ ${headerSlotHtml}    <nav class="site-nav" aria-label="Primary navigation">
   <main class="site-main" id="main-content">
     ${safeMainContent}
   </main>
-  <footer class="site-footer" style="max-width:var(--layout-max);margin:var(--lp-size-48) auto var(--lp-space-24);padding:var(--lp-space-16) var(--lp-space-24);border-top:var(--lp-border-hairline) solid var(--rule);font-size:var(--lp-size-14);color:var(--text-muted)">
-${footerSlotHtml}    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--lp-space-12);margin-bottom:var(--lp-space-12)">
-      <nav aria-label="Secondary navigation" style="display:flex;gap:var(--lp-space-16);flex-wrap:wrap">
+  <footer class="site-footer" style="max-width:var(--lp-size-layout-max);margin:var(--lp-space-stack-block) auto var(--lp-space-stack-group);padding:var(--lp-space-inset-section) var(--lp-space-inset-dialog);border-top:var(--lp-border-hairline) solid var(--rule);font-size:var(--lp-font-size-14);color:var(--text-muted)">
+${footerSlotHtml}    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--lp-space-stack-snug);margin-bottom:var(--lp-space-stack-snug)">
+      <nav aria-label="Secondary navigation" style="display:flex;gap:var(--lp-space-stack-field-to-field);flex-wrap:wrap">
         <a href="/about">About</a>
         <a href="/now">Now</a>
         <a href="/uses">Uses</a>

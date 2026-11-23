@@ -123,8 +123,8 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
 
   test('20261106-UX-188 (H7): Radius scale restricted to {0, 4, 8, full} and r2=8px on buttons/inputs/selects/tracks', async ({ page }) => {
     const tokensSrc = readFileSync(resolve(process.cwd(), 'packages/design-tokens/src/tokens.css'), 'utf8');
-    expect(tokensSrc).toContain('--lp-radius-r1: var(--lp-prim-radius-4);');
-    expect(tokensSrc).toContain('--lp-radius-r2: var(--lp-prim-radius-8);');
+    expect(tokensSrc).toMatch(/--lp-radius-r1:\s*(?:4px|var\(--lp-prim-radius-4\));/);
+    expect(tokensSrc).toMatch(/--lp-radius-r2:\s*(?:8px|var\(--lp-prim-radius-8\));/);
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/gallery');
     const c3 = await checkControlsRadiusTextButtonsSrOnly(page);
