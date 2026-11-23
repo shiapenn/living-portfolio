@@ -48,7 +48,7 @@ export function renderLayout(
       : '';
 
   const unofficialForkSlotHtml = cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE
-    ? `<div class="unofficial-fork-slot" data-slot="unofficial-fork-notice" style="margin-top:var(--lp-space-stack-sub-compact);font-size:var(--lp-font-size-13);color:var(--text-muted)">${escapeHtml(cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE)}</div>`
+    ? `<div class="unofficial-fork-slot" data-slot="unofficial-fork-notice" style="margin-top:var(--lp-space-proximity-2);font-size:var(--lp-font-size-12);color:var(--text-muted)">${escapeHtml(cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE)}</div>`
     : '';
 
   const nonceAttr = options?.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : '';
@@ -92,8 +92,8 @@ ${headerSlotHtml}    <nav class="site-nav" aria-label="Primary navigation">
   <main class="site-main" id="main-content">
     ${safeMainContent}
   </main>
-  <footer class="site-footer" style="max-width:var(--lp-size-layout-max);margin:var(--lp-space-stack-block) auto var(--lp-space-stack-group);padding:var(--lp-space-inset-section) var(--lp-space-inset-dialog);border-top:var(--lp-border-hairline) solid var(--rule);font-size:var(--lp-font-size-14);color:var(--text-muted)">
-${footerSlotHtml}    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--lp-space-stack-snug);margin-bottom:var(--lp-space-stack-snug)">
+  <footer class="site-footer" style="max-width:var(--lp-size-layout-max);margin:var(--lp-space-inset-hero-y) auto var(--lp-space-proximity-4);padding:var(--lp-space-inset-section) var(--lp-space-inset-dialog);border-top:var(--lp-border-hairline) solid var(--rule);font-size:var(--lp-font-size-14);color:var(--text-muted)">
+${footerSlotHtml}    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--lp-space-inset-item-y);margin-bottom:var(--lp-space-inset-item-y)">
       <nav aria-label="Secondary navigation" style="display:flex;gap:var(--lp-space-stack-field-to-field);flex-wrap:wrap">
         <a href="/about">About</a>
         <a href="/now">Now</a>

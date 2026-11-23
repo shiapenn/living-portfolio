@@ -1,0 +1,127 @@
+#!/usr/bin/env node
+/**
+ * Design System Dependency, Namespace & Drift Guard (WP-16.M D-M1, D-M6)
+ *
+ * Enforces:
+ * 1. .dependency-cruiser.cjs exists and is valid.
+ * 2. Package boundary rules:
+ *    - packages/ui-admin never imports @living-portfolio/ui-public or packages/ui-public.
+ *    - packages/ui-public never imports @living-portfolio/ui-admin or packages/ui-admin.
+ *    - packages/ui-core never imports ui-admin or ui-public.
+ *    - apps/* never deep-import packages/* /src/*.
+ *    - Downward-only tier imports within packages/ui-*.
+ * 3. Namespace isolation:
+ *    - Zero pub- classes or --pub-* tokens in packages/ui-admin or admin pages/layouts.
+ *    - Zero lp- component classes or --lp-* component tokens in packages/ui-public (--lp-core-* allowed).
+ * 4. Docs drift guard:
+ *    - packages/design-tokens/src/generated.ts, src/tokens.css, docs/design/tokens.md equal generated output.
+ *    - docs/design/components.json equals generated registry output.
+ */
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
+import { createRequire } from 'node:module';
+import { generateOutputs } from '../packages/design-tokens/generate.mjs';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const require = createRequire(import.meta.url);
+const errors = [];
+
+// 1. Validate .dependency-cruiser.cjs
+const dcPath = resolve(ROOT, '.dependency-cruiser.cjs');
+if (!existsSync(dcPath)) {
+  errors.push('[DEP-CRUISER] Missing .dependency-cruiser.cjs');
+} else {
+  const cfg = require(dcPath);
+  if (!Array.isArray(cfg.forbidden) || cfg.forbidden.length < 6) {
+    errors.push('[DEP-CRUISER] .dependency-cruiser.cjs must declare forbidden rules');
+  }
+}
+
+function walkFiles(dir, exts = ['.ts', '.css']) {
+  if (!existsSync(dir)) return [];
+  const out = [];
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    if (e.name === 'node_modules' || e.name === 'dist') continue;
+    const full = join(dir, e.name);
+    if (e.isDirectory()) out.push(...walkFiles(full, exts));
+    else if (exts.some((x) => e.name.endsWith(x)) && !e.name.endsWith('.test.ts')) out.push(full);
+  }
+  return out;
+}
+
+// 2. Package boundary & namespace checks
+const uiCoreFiles = walkFiles(resolve(ROOT, 'packages/ui-core/src'));
+const uiAdminFiles = walkFiles(resolve(ROOT, 'packages/ui-admin/src'));
+const uiPublicFiles = walkFiles(resolve(ROOT, 'packages/ui-public/src'));
+const adminAppFiles = [
+  ...walkFiles(resolve(ROOT, 'apps/web/src/pages/admin')),
+  resolve(ROOT, 'apps/web/src/layouts/admin-shell.ts'),
+].filter((f) => existsSync(f));
+
+for (const f of uiCoreFiles) {
+  const rel = relative(ROOT, f);
+  const txt = readFileSync(f, 'utf8');
+  if (/@living-portfolio\/ui-(admin|public)|packages\/ui-(admin|public)/.test(txt)) {
+    errors.push(`[BOUNDARY] ${rel}: ui-core must not import ui-admin or ui-public.`);
+  }
+}
+
+for (const f of [...uiAdminFiles, ...adminAppFiles]) {
+  const rel = relative(ROOT, f);
+  const txt = readFileSync(f, 'utf8');
+  if (/@living-portfolio\/ui-public|packages\/ui-public/.test(txt)) {
+    errors.push(`[BOUNDARY] ${rel}: admin code must not import ui-public.`);
+  }
+  // Allow gallery/foundations specimen files to reference public pack tokens for display
+  if (!rel.includes('gallery') && !rel.includes('foundations')) {
+    if (/\bpub-[a-z0-9-]+|--pub-[a-z0-9-]+/.test(txt)) {
+      errors.push(`[NAMESPACE] ${rel}: admin code must not use pub- classes or --pub-* tokens.`);
+    }
+  }
+}
+
+for (const f of uiPublicFiles) {
+  const rel = relative(ROOT, f);
+  const txt = readFileSync(f, 'utf8');
+  if (/@living-portfolio\/ui-admin|packages\/ui-admin/.test(txt)) {
+    errors.push(`[BOUNDARY] ${rel}: ui-public must not import ui-admin.`);
+  }
+  if (/--lp-(?!core-)[a-z0-9-]+|\blp-(?!core-)[a-z0-9-]+/.test(txt)) {
+    errors.push(`[NAMESPACE] ${rel}: ui-public must not use lp- component classes or --lp-* component tokens.`);
+  }
+}
+
+// Apps must not deep-import packages/*/src/*
+for (const f of walkFiles(resolve(ROOT, 'apps/web/src'), ['.ts'])) {
+  const rel = relative(ROOT, f);
+  const txt = readFileSync(f, 'utf8');
+  if (/from\s+['"][^'"]*packages\/[^/]+\/src\//.test(txt)) {
+    errors.push(`[ENTRYPOINT] ${rel}: apps must import packages only through public entry points.`);
+  }
+}
+
+// 3. Docs drift guard for tokens
+const { tsOut, cssOut, publicCssOut, coreCssOut, mdOut } = generateOutputs();
+const driftChecks = [
+  ['packages/design-tokens/src/generated.ts', tsOut],
+  ['packages/design-tokens/src/tokens.css', cssOut],
+  ['packages/design-tokens/src/public.css', publicCssOut],
+  ['packages/design-tokens/src/core.css', coreCssOut],
+  ['docs/design/tokens.md', mdOut],
+];
+for (const [rel, expected] of driftChecks) {
+  const full = resolve(ROOT, rel);
+  if (!existsSync(full) || readFileSync(full, 'utf8') !== expected) {
+    errors.push(`[DRIFT] ${rel} does not match generated output. Run: node packages/design-tokens/generate.mjs`);
+  }
+}
+
+if (errors.length > 0) {
+  console.error(`✗ Design boundary & drift guard FAILED (${errors.length} error(s)):\n`);
+  for (const e of errors) console.error(`  - ${e}`);
+  process.exit(1);
+}
+
+console.log(
+  `✓ Design boundary, namespace & drift guard PASSED (ui-core=${uiCoreFiles.length}, ui-admin=${uiAdminFiles.length}, ui-public=${uiPublicFiles.length}, admin-app=${adminAppFiles.length} files checked).`
+);

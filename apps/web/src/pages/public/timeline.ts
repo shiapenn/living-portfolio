@@ -44,13 +44,13 @@ export async function renderTimelinePage(
   const hiddenText = excludedCount > 0 ? `. ${excludedCount} are hidden because they were written later.` : '';
 
   const content = `
-    <h1 style="font-family:var(--lp-font-family-reading);font-size:var(--lp-font-size-30);margin:0 0 var(--lp-space-stack-label-to-control) 0">Timeline</h1>
-    <p style="color:var(--text-muted);margin:0 0 var(--lp-space-stack-group) 0">
+    <h1 style="font-family:var(--lp-font-family-reading);font-size:var(--lp-font-size-28);margin:0 0 var(--lp-space-stack-label-to-control) 0">Timeline</h1>
+    <p style="color:var(--text-muted);margin:0 0 var(--lp-space-proximity-4) 0">
       Move the cursor to see what I had written by that date. Later entries, and entries written looking back, are hidden.
     </p>
     ${strataHtml}
     <section>
-      <h2 style="font-family:var(--lp-font-family-reading);font-size:var(--lp-font-size-21);margin:0 0 var(--lp-space-stack-snug) 0">
+      <h2 style="font-family:var(--lp-font-family-reading);font-size:var(--lp-font-size-20);margin:0 0 var(--lp-space-inset-item-y) 0">
         ${entryCountText} as of ${activeDateLabel}${hiddenText}
       </h2>
       ${listContentHtml}

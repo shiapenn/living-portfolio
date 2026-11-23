@@ -77,7 +77,7 @@ export async function renderEntryDetailPage(
   const confirmedFacets = facets.filter((f) => f.status === 'confirmed');
   const contextStripHtml =
     confirmedFacets.length > 0
-      ? `<div style="display:flex;flex-wrap:wrap;gap:var(--lp-space-stack-label-to-control);margin:var(--lp-space-stack-snug) 0" aria-label="Confirmed context conditions">
+      ? `<div style="display:flex;flex-wrap:wrap;gap:var(--lp-space-stack-label-to-control);margin:var(--lp-space-inset-item-y) 0" aria-label="Confirmed context conditions">
           ${confirmedFacets.map((f) => `<span class="chip"><strong>${escapeHtml(f.key)}:</strong> ${escapeHtml(String(f.value))}</span>`).join('\n          ')}
          </div>`
       : '';
@@ -154,7 +154,7 @@ export async function renderEntryDetailPage(
             <div class="reading-column">${combinedText}</div>
           </section>`;
         }
-        return `<div class="unlabeled-span reading-column" style="margin-bottom:var(--lp-space-stack-group)">${combinedText}</div>`;
+        return `<div class="unlabeled-span reading-column" style="margin-bottom:var(--lp-space-proximity-4)">${combinedText}</div>`;
       });
 
       bodyHtml = renderedSections.join('\n');
@@ -186,7 +186,7 @@ export async function renderEntryDetailPage(
               ${linkMarkup}
               ${
                 ev.verified_at
-                  ? `<div class="chip" style="margin-top:var(--lp-space-stack-compact);border-color:var(--lp-color-passage-outcome)" title="Verification proves the artifact exists and who authored it; it does not prove the surrounding narrative fits your situation.">✓ Verified (${escapeHtml(ev.verification?.label || 'artifact')})</div>`
+                  ? `<div class="chip" style="margin-top:var(--lp-space-proximity-1);border-color:var(--lp-color-passage-outcome)" title="Verification proves the artifact exists and who authored it; it does not prove the surrounding narrative fits your situation.">✓ Verified (${escapeHtml(ev.verification?.label || 'artifact')})</div>`
                   : ''
               }
             </div>`;
@@ -218,7 +218,7 @@ export async function renderEntryDetailPage(
     } else if (notYetWritten) {
       asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index: var(--lp-z-sticky);margin-bottom:var(--lp-space-stack-field-to-field);background:var(--surface-raised);border-left:var(--lp-border-banner-rule) solid var(--accent)">
         <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}</strong> — This entry had not yet been recorded as of this date. Showing original revision from ${escapeHtml(result.currentRevision.written_at.slice(0, 10))}.</span>
-        <div style="display:flex;gap:var(--lp-space-stack-snug);margin-top:var(--lp-space-stack-compact)">
+        <div style="display:flex;gap:var(--lp-space-inset-item-y);margin-top:var(--lp-space-proximity-1)">
           <a href="/work/${entry.slug}">View present revision</a>
           <a href="/timeline?as_of=${encodeURIComponent(asOfInfo.raw)}">Back to timeline</a>
         </div>
@@ -226,7 +226,7 @@ export async function renderEntryDetailPage(
     } else {
       asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index: var(--lp-z-sticky);margin-bottom:var(--lp-space-stack-field-to-field);background:var(--surface-raised);border-left:var(--lp-border-banner-rule) solid var(--accent)">
         <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}</strong> — Showing the revision active as of this date${isHistoricalRevision ? ' (historical revision)' : ' (latest revision)'}.</span>
-        <div style="display:flex;gap:var(--lp-space-stack-snug);margin-top:var(--lp-space-stack-compact)">
+        <div style="display:flex;gap:var(--lp-space-inset-item-y);margin-top:var(--lp-space-proximity-1)">
           <a href="/work/${entry.slug}">View present revision</a>
           <a href="/timeline?as_of=${encodeURIComponent(asOfInfo.raw)}">Back to timeline</a>
         </div>
@@ -237,19 +237,19 @@ export async function renderEntryDetailPage(
   const content = `
     <article${(entry as any).lang ? ` lang="${escapeHtml((entry as any).lang)}"` : ''}>
       ${asOfBannerHtml}
-      <header style="margin-bottom:var(--lp-space-stack-group);border-bottom:var(--lp-border-hairline) solid var(--rule);padding-bottom:var(--lp-space-inset-section)">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:var(--lp-space-stack-snug)">
-          <h1 style="font-family:var(--lp-font-family-reading);font-size:var(--lp-font-size-30);margin:0">${escapeHtml(entry.title)}</h1>
+      <header style="margin-bottom:var(--lp-space-proximity-4);border-bottom:var(--lp-border-hairline) solid var(--rule);padding-bottom:var(--lp-space-inset-section)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:var(--lp-space-inset-item-y)">
+          <h1 style="font-family:var(--lp-font-family-reading);font-size:var(--lp-font-size-28);margin:0">${escapeHtml(entry.title)}</h1>
           <div style="display:flex;gap:var(--lp-space-stack-label-to-control)">
             ${qualifiesForStructured ? `<span class="chip">Structured</span>` : ''}
             ${
               qualifiesForStructured
-                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}${asOfAndPart}" class="btn btn-secondary" data-action="view-switch" style="padding:var(--lp-space-inset-compact) var(--lp-space-inset-card-sm);min-height:var(--lp-size-hit-area);display:inline-flex;align-items:center;font-size:var(--lp-font-size-14);text-decoration:none">${activeView === 'structured' ? 'Read as one article' : 'Read by section'}</a>`
+                ? `<a href="/work/${entry.slug}?view=${activeView === 'structured' ? 'article' : 'structured'}${asOfAndPart}" class="btn btn-secondary" data-action="view-switch" style="padding:var(--lp-space-proximity-2) var(--lp-space-inset-card-sm);min-height:var(--lp-size-hit-area);display:inline-flex;align-items:center;font-size:var(--lp-font-size-14);text-decoration:none">${activeView === 'structured' ? 'Read as one article' : 'Read by section'}</a>`
                 : ''
             }
           </div>
         </div>
-        <p class="entry-date-line tabular-nums" style="color:var(--text-muted);margin:var(--lp-space-stack-label-to-control) 0 var(--lp-space-stack-label-to-control);font-size:var(--lp-font-size-14);display:flex;align-items:center;gap:var(--lp-space-stack-compact)">${dateGlyphHtml}<span>${escapeHtml(dateDisplay)}</span></p>
+        <p class="entry-date-line tabular-nums" style="color:var(--text-muted);margin:var(--lp-space-stack-label-to-control) 0 var(--lp-space-stack-label-to-control);font-size:var(--lp-font-size-14);display:flex;align-items:center;gap:var(--lp-space-proximity-1)">${dateGlyphHtml}<span>${escapeHtml(dateDisplay)}</span></p>
         ${contextStripHtml}
       </header>
 
@@ -263,9 +263,9 @@ export async function renderEntryDetailPage(
           <h3 style="margin:0 0 var(--lp-space-stack-label-to-control);font-size:var(--lp-font-size-14);font-family:var(--lp-font-family-reading)">Evidence</h3>
           ${evidenceHtml}
 
-          ${claimsHtml ? `<h3 style="margin:var(--lp-space-stack-group) 0 var(--lp-space-stack-label-to-control);font-size:var(--lp-font-size-14);font-family:var(--lp-font-family-reading)">Conclusions</h3>${claimsHtml}` : ''}
+          ${claimsHtml ? `<h3 style="margin:var(--lp-space-proximity-4) 0 var(--lp-space-stack-label-to-control);font-size:var(--lp-font-size-14);font-family:var(--lp-font-family-reading)">Conclusions</h3>${claimsHtml}` : ''}
 
-          <div style="margin-top:var(--lp-space-stack-group);padding-top:var(--lp-space-inset-section);border-top:var(--lp-border-hairline) solid var(--rule)">
+          <div style="margin-top:var(--lp-space-proximity-4);padding-top:var(--lp-space-inset-section);border-top:var(--lp-border-hairline) solid var(--rule)">
             <h3 style="margin:0 0 var(--lp-space-stack-label-to-control);font-size:var(--lp-font-size-14);font-family:var(--lp-font-family-reading)">Ask about this entry</h3>
             <form action="/ask" method="GET">
               <input type="hidden" name="scope" value="${escapeHtml(entry.slug)}" />

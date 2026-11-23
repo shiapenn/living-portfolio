@@ -3,14 +3,6 @@
   "version": "1.0.0",
   "exceptions": [
     {
-      "file": "apps/web/src/pages/admin/gallery.ts",
-      "reason": "Human-readable specimen labels and Foundations Tokens view rendering primitive token tier keys"
-    },
-    {
-      "file": "apps/web/src/primitives/foundations-gallery.ts",
-      "reason": "Human-readable specimen labels (e.g. '16px', '20px', '24px') in foundations gallery"
-    },
-    {
       "file": "apps/web/src/pages/admin/import-script.ts",
       "reason": "Mock scan timing string ('42ms') in client script, not a CSS/motion value"
     },

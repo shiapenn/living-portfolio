@@ -240,4 +240,5 @@
 | `L017` | Design Foundations Specification | `active` | [foundations.md](design/foundations.md) | — |
 | `L018` | Front-End Complete Acceptance Pack (Gate GFE) | `active` | [front-end-acceptance.md](plans/front-end-acceptance.md) | — |
 | `L019` | Design Tokens Reference | `active` | [tokens.md](design/tokens.md) | — |
+| `L020` | Design System Architecture & Public Foundations Audit (2026-11) | `active` | [2026-11-design-system-architecture-audit.md](audits/2026-11-design-system-architecture-audit.md) | — |
 

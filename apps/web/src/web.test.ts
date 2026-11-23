@@ -353,7 +353,7 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
       const askHtml = await renderAskPage('How do locks work?', 'redis-distributed-locks-2021', asOf);
       expect(askHtml).toContain('Time-travel query active:');
       expect(askHtml).toContain('2022-06-01');
-      expect(askHtml).toContain('id="facet-asof" type="date" class="ask-input" style="width:100%;padding:var(--lp-space-inset-compact)" value="2022-06-01"');
+      expect(askHtml).toContain('id="facet-asof" type="date" class="ask-input" style="width:100%;padding:var(--lp-space-proximity-2)" value="2022-06-01"');
       expect(askHtml).toContain('<details style="margin-top:var(--lp-space-stack-field-to-field)" open>');
     });
 
@@ -607,7 +607,7 @@ console.log(x);
       expect(SEMANTIC_LIGHT_VALUES['--lp-color-surface-page']).toBe('#FFFFFF');
       expect(SEMANTIC_LIGHT_VALUES['--lp-color-surface-raised']).toBe('#FFFFFF');
       expect(SEMANTIC_LIGHT_VALUES['--lp-color-border-control']).toBe('#6B7B88');
-      expect(COMPONENT_TOKEN_VALUES['--lp-size-layout-max']).toBe('1180px');
+      expect(COMPONENT_TOKEN_VALUES['--lp-size-layout-max']).toBe('1200px');
       expect(PRIMITIVE_VALUES['--lp-prim-size-measure-reading']).toBe('68ch');
 
       // Dark semantic tokens
@@ -616,7 +616,7 @@ console.log(x);
 
       // Component tokens
       expect(COMPONENT_TOKEN_VALUES['--lp-size-admin-nav-width']).toBe('240px');
-      expect(COMPONENT_TOKEN_VALUES['--lp-size-admin-inspector-width']).toBe('340px');
+      expect(COMPONENT_TOKEN_VALUES['--lp-size-admin-inspector-width']).toBe('320px');
       expect(PRIMITIVE_VALUES['--lp-prim-size-editor-min-h']).toBe('60vh');
     });
 

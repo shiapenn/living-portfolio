@@ -6,9 +6,14 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, '../..');
 const TOKENS_PATH = resolve(__dirname, 'tokens.json');
+const PACKS_DIR = resolve(__dirname, 'packs');
+
+export function loadPack(name) {
+  return JSON.parse(readFileSync(resolve(PACKS_DIR, `${name}.json`), 'utf8'));
+}
 
 export function loadTokens() {
-  return JSON.parse(readFileSync(TOKENS_PATH, 'utf8'));
+  return loadPack('admin');
 }
 
 function primitiveToCssVar(cat, key) {
@@ -48,6 +53,14 @@ export function resolveRef(ref, tokens, mode = 'light', depth = 0) {
       }
       return resolveRef(val, tokens, mode, depth + 1);
     }
+    if (path[0] === 'proximity') {
+      const tier = path.slice(1).join('.');
+      const val = tokens.proximity?.[tier];
+      if (val === undefined) {
+        throw new Error(`Unresolved proximity tier reference: ${full}`);
+      }
+      return resolveRef(val, tokens, mode, depth + 1);
+    }
     if (path[0] === 'semantic') {
       const semKey = path.slice(1).join('.');
       const val = tokens.semantic?.[mode]?.[semKey];
@@ -82,7 +95,7 @@ function resolveForCss(ref, tokens, mode = 'light', preserveComponentVars = fals
   if (typeof ref !== 'string') return ref;
   const out = ref.replace(/\{([a-zA-Z0-9_.-]+)\}/g, (full, pathStr) => {
     const path = pathStr.split('.');
-    if (path[0] === 'primitive') {
+    if (path[0] === 'primitive' || path[0] === 'proximity') {
       return resolveRef(full, tokens, mode);
     }
     if (path[0] === 'component') {
@@ -393,11 +406,57 @@ ${fmtBlock(responsiveVars.md ?? {}).replace(/^  /gm, '    ')}
     responsive: responsiveResolved,
   };
 
-  const tsOut = `/* AUTO-GENERATED FROM packages/design-tokens/tokens.json — DO NOT EDIT BY HAND */
+  const publicPack = loadPack('public');
+  const corePack = loadPack('core');
+
+  const pubLightVars = {};
+  const pubDarkVars = {};
+  for (const [k, v] of Object.entries(publicPack.semantic.light)) {
+    pubLightVars[`--pub-${k.replace(/\./g, '-')}`] = resolveRef(v, publicPack, 'light');
+  }
+  for (const [k, v] of Object.entries(publicPack.semantic.dark)) {
+    pubDarkVars[`--pub-${k.replace(/\./g, '-')}`] = resolveRef(v, publicPack, 'dark');
+  }
+  const pubCompVars = {};
+  for (const [k, v] of Object.entries(publicPack.component)) {
+    pubCompVars[`--pub-${k.replace(/\./g, '-')}`] = resolveRef(v, publicPack, 'light');
+  }
+
+  const publicCssOut = `/* AUTO-GENERATED FROM packages/design-tokens/packs/public.json — DO NOT EDIT BY HAND */
+:root[data-lang="public"],
+:root {
+${fmtBlock(pubLightVars)}
+${fmtBlock(pubCompVars)}
+}
+
+:root[data-theme="dark"][data-lang="public"],
+:root[data-theme="dark"] {
+${fmtBlock(pubDarkVars)}
+}
+`;
+
+  const coreCssOut = `/* AUTO-GENERATED FROM packages/design-tokens/packs/core.json — DO NOT EDIT BY HAND */
+:root {
+${Object.entries(corePack.primitive.zIndex).map(([k, v]) => `  --lp-core-z-${k}: ${v};`).join('\n')}
+}
+`;
+
+  const proximityResolved = {};
+  for (const [tier, ref] of Object.entries(tokens.proximity ?? {})) {
+    proximityResolved[tier] = parseFloat(resolveRef(ref, tokens, 'light'));
+  }
+
+  const tsOut = `/* AUTO-GENERATED FROM packages/design-tokens/packs/*.json — DO NOT EDIT BY HAND */
 
 export const TOKEN_VERSION = ${JSON.stringify(tokens.version)} as const;
 
 export const BREAKPOINTS = ${JSON.stringify(tokens.breakpoints, null, 2)} as const;
+
+export const PROXIMITY_TIERS = ${JSON.stringify(proximityResolved, null, 2)} as const;
+
+export const SNAP_TABLE = ${JSON.stringify(tokens.snapTable ?? [], null, 2)} as const;
+
+export const PACK_RULES = ${JSON.stringify({ core: corePack.rules, admin: tokens.rules, public: publicPack.rules }, null, 2)} as const;
 
 export const RELATIONS = ${JSON.stringify(relationsResolved, null, 2)} as const;
 
@@ -417,9 +476,19 @@ export const LIGHT_PACK_TOKENS = ${JSON.stringify(lightPack, null, 2)} as const;
 
 export const DARK_PACK_TOKENS = ${JSON.stringify(darkPack, null, 2)} as const;
 
+export const PUBLIC_LIGHT_VALUES = ${JSON.stringify(pubLightVars, null, 2)} as const;
+
+export const PUBLIC_DARK_VALUES = ${JSON.stringify(pubDarkVars, null, 2)} as const;
+
+export const PUBLIC_COMPONENT_VALUES = ${JSON.stringify(pubCompVars, null, 2)} as const;
+
 export const TOKEN_TIERS = ${JSON.stringify(allDefinedTokens, null, 2)} as const;
 
 export const THEME_CSS = ${JSON.stringify(cssOut)};
+
+export const PUBLIC_THEME_CSS = ${JSON.stringify(publicCssOut)};
+
+export const CORE_THEME_CSS = ${JSON.stringify(coreCssOut)};
 `;
 
   const mdOut = `# Design Tokens Reference (Generated)
@@ -511,15 +580,19 @@ ${Object.entries(componentResolved)
   .join('\n')}
 `;
 
-  return { tsOut, cssOut, mdOut };
+  return { tsOut, cssOut, publicCssOut, coreCssOut, mdOut };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const { tsOut, cssOut, mdOut } = generateOutputs();
+  const { tsOut, cssOut, publicCssOut, coreCssOut, mdOut } = generateOutputs();
   mkdirSync(resolve(__dirname, 'src'), { recursive: true });
   mkdirSync(resolve(REPO_ROOT, 'docs/design'), { recursive: true });
   writeFileSync(resolve(__dirname, 'src/generated.ts'), tsOut, 'utf8');
   writeFileSync(resolve(__dirname, 'src/tokens.css'), cssOut, 'utf8');
+  writeFileSync(resolve(__dirname, 'src/public.css'), publicCssOut, 'utf8');
+  writeFileSync(resolve(__dirname, 'src/core.css'), coreCssOut, 'utf8');
   writeFileSync(resolve(REPO_ROOT, 'docs/design/tokens.md'), mdOut, 'utf8');
-  console.log('Generated design tokens -> src/generated.ts, src/tokens.css, docs/design/tokens.md');
+  // Keep tokens.json mirrored to packs/admin.json for backward compatibility
+  writeFileSync(TOKENS_PATH, readFileSync(resolve(PACKS_DIR, 'admin.json'), 'utf8'), 'utf8');
+  console.log('Generated design tokens -> src/generated.ts, src/tokens.css, src/public.css, src/core.css, docs/design/tokens.md');
 }

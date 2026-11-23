@@ -1,3 +1,4 @@
+import { COMPONENT_TOKEN_VALUES, TYPE_ROLES } from '../../tokens/index.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
 import {
   renderActionBar,
@@ -161,7 +162,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
             })}
           </div>
           <div class="lp-stack lp-gap-group">
-            ${renderSectionHeader({ title: 'Level: item (compact min 96px flex-wrap row at every width)', headingTag: 'h3' })}
+            ${renderSectionHeader({ title: `Level: item (compact min ${COMPONENT_TOKEN_VALUES['--lp-size-btn-item-min']} flex-wrap row at every width)`, headingTag: 'h3' })}
             ${renderActionBar({
               id: 'gallery-ab-item',
               level: 'item',
@@ -226,9 +227,9 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
       <section id="gallery-text" class="lp-gallery-section" data-component="Text">
         ${renderSectionHeader({ title: 'Text' })}
         <div id="gallery-text-sample" class="lp-stack lp-gap-related">
-          ${renderText({ variant: 'body', text: 'Body text role (14px/20px, text-1).' })}
-          ${renderText({ variant: 'description', text: 'Description text role (14px/20px, text-2).' })}
-          ${renderText({ variant: 'caption', text: 'Caption text role (12px/16px, text-2).' })}
+          ${renderText({ variant: 'body', text: `Body text role (${TYPE_ROLES.body.size}/${TYPE_ROLES.body.lineHeight}, text-1).` })}
+          ${renderText({ variant: 'description', text: `Description text role (${TYPE_ROLES.description.size}/${TYPE_ROLES.description.lineHeight}, text-2).` })}
+          ${renderText({ variant: 'caption', text: `Caption text role (${TYPE_ROLES.caption.size}/${TYPE_ROLES.caption.lineHeight}, text-2).` })}
           ${renderText({ variant: 'prose', text: 'Prose text role for structured multi-paragraph copy.' })}
         </div>
       </section>
@@ -275,7 +276,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
 
       <section id="gallery-tabs-stepper" class="lp-gallery-section" data-component="TabsStepper">
         ${renderSectionHeader({ title: 'Tabs & Stepper' })}
-        ${renderText({ variant: 'description', text: 'Parent: Page or Section · Children: Tablist (max 4, or Select when >=5), Stepper (Step N of M + 2px bar).' })}
+        ${renderText({ variant: 'description', text: `Parent: Page or Section · Children: Tablist (max 4, or Select when >=5), Stepper (Step N of M + ${COMPONENT_TOKEN_VALUES['--lp-size-track-height']} bar).` })}
         <div class="lp-stack lp-gap-related">
         ${renderTabs({
           id: 'gallery-tabs-3',
@@ -324,7 +325,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
           })}
           <div class="lp-gallery-panel-sample" data-c="EdgePanel">
             ${renderSectionHeader({ title: 'Edge-docked panel', headingTag: 'h3' })}
-            ${renderText({ variant: 'description', text: 'Border-right 1px outline only, zero shadow.' })}
+            ${renderText({ variant: 'description', text: `Border-right ${COMPONENT_TOKEN_VALUES['--lp-border-hairline']} outline only, zero shadow.` })}
           </div>
           ${renderOverlay({
             id: 'gallery-overlay-dialog',

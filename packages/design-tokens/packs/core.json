@@ -1,0 +1,81 @@
+{
+  "$schema": "../tokens.schema.json",
+  "pack": "core",
+  "version": "1.0.0",
+  "prefix": "lp-core",
+  "rules": {
+    "spaceBase": 4,
+    "spaceMultipliers": [0, 0.5, 1, 2, 3, 4, 6, 8, 10, 12, 16, 24],
+    "breakpointStep": 64,
+    "containerBreakpoint": 400,
+    "zIndexStep": 100,
+    "letterSpacingUnit": "em"
+  },
+  "breakpoints": {
+    "viewport": {
+      "sm": 640,
+      "md": 768,
+      "lg": 1024,
+      "xl": 1280
+    },
+    "container": {
+      "compact": 400
+    }
+  },
+  "primitive": {
+    "space": {
+      "0": "0px",
+      "0-5": "2px",
+      "1": "4px",
+      "2": "8px",
+      "3": "12px",
+      "4": "16px",
+      "6": "24px",
+      "8": "32px",
+      "10": "40px",
+      "12": "48px",
+      "16": "64px",
+      "24": "96px"
+    },
+    "zIndex": {
+      "base": "0",
+      "raised": "100",
+      "sticky": "200",
+      "overlay": "300",
+      "popover": "400",
+      "modal": "500",
+      "toast": "600",
+      "skip": "1000"
+    },
+    "border": {
+      "0": "0px",
+      "1": "1px",
+      "2": "2px",
+      "4": "4px"
+    },
+    "radius": {
+      "0": "0px",
+      "4": "4px",
+      "8": "8px",
+      "full": "999px"
+    },
+    "font": {
+      "weight-400": "400",
+      "weight-600": "600",
+      "letter-tight": "-0.01em",
+      "letter-normal": "0em",
+      "letter-wide": "0.03em"
+    },
+    "motion": {
+      "duration-0": "0ms",
+      "duration-instant": "0.01ms"
+    }
+  },
+  "governance": {
+    "default": {
+      "status": "active",
+      "since": "WP-16.M",
+      "replacedBy": null
+    }
+  }
+}

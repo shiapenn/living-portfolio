@@ -1729,5 +1729,13 @@
     "path": "docs/execution-reports/A169-wp-16l-l4-pixel-diff-and-closure.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L020",
+    "title": "Design System Architecture & Public Foundations Audit (2026-11)",
+    "class": "L",
+    "path": "docs/audits/2026-11-design-system-architecture-audit.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

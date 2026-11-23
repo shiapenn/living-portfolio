@@ -43,6 +43,7 @@ const steps = [
   { name: 'Hard-Code Inventory Scan', command: 'node scripts/hardcode-check' },
   { name: 'CSS Custom Property Check', command: 'node scripts/verify-css-variables' },
   { name: 'UI Contract & Size-Budget Guards', command: 'node scripts/verify-ui-guards' },
+  { name: 'Design Boundary & Drift Guards', command: 'node scripts/verify-design-boundaries && node scripts/generate-registry --check' },
   { name: 'Dependency Rules Check', command: 'node scripts/verify-dependency-rules' },
   { name: 'DCO Sign-off Check', command: 'node scripts/dco-check' },
 ];

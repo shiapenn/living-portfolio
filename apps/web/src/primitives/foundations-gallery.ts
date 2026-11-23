@@ -1,7 +1,12 @@
 import { STRATA_DESIGN_SYSTEM_CSS } from '../styles.js';
 import {
   COMPONENT_TOKEN_VALUES,
+  PACK_RULES,
   PRIMITIVE_VALUES,
+  PROXIMITY_TIERS,
+  PUBLIC_LIGHT_VALUES,
+  PUBLIC_DARK_VALUES,
+  RELATIONS,
   SEMANTIC_DARK_VALUES,
   SEMANTIC_LIGHT_VALUES,
   TYPE_ROLES,
@@ -232,11 +237,11 @@ export function renderFoundationsGalleryPage(theme: 'light' | 'dark' = 'light'):
   <div class="lp-card">
     <h2>Shape, Radii, Elevation &amp; Borders (D-FOUND-2)</h2>
     <div class="lp-gallery-row">
-      ${renderButton({ label: 'Control 8px', variant: 'secondary', size: 'sm' })}
-      <span id="specimen-radius-container" class="lp-specimen-box-container">Container 12px (Flat)</span>
-      <span id="specimen-radius-overlay" class="lp-specimen-box-overlay">Overlay 16px (Raised)</span>
-      ${renderBadge({ label: 'Pill 999px (0px border)', tone: 'action' })}
-      ${renderChip({ label: 'Chip 999px (1px border)', interactive: true, selected: true })}
+      ${renderButton({ label: `Control ${COMPONENT_TOKEN_VALUES['--lp-radius-control']}`, variant: 'secondary', size: 'sm' })}
+      <span id="specimen-radius-container" class="lp-specimen-box-container">Container ${COMPONENT_TOKEN_VALUES['--lp-radius-container']} (Flat)</span>
+      <span id="specimen-radius-overlay" class="lp-specimen-box-overlay">Overlay ${COMPONENT_TOKEN_VALUES['--lp-radius-overlay']} (Raised)</span>
+      ${renderBadge({ label: `Pill ${COMPONENT_TOKEN_VALUES['--lp-radius-full']} (borderless)`, tone: 'action' })}
+      ${renderChip({ label: `Chip ${COMPONENT_TOKEN_VALUES['--lp-radius-chip']} (hairline border)`, interactive: true, selected: true })}
     </div>
     <div class="lp-card-section">
       <h3>Surface &amp; Border Tokens</h3>
@@ -250,9 +255,9 @@ export function renderFoundationsGalleryPage(theme: 'light' | 'dark' = 'light'):
     <div class="lp-card-section">
       <h3>Icon Sizes (16 / 20 / 24 px) &amp; Sprite Inventory (D-FOUND-1)</h3>
       <div class="lp-gallery-row">
-        <span>16px ${renderIcon({ name: 'info', size: 16 })}</span>
-        <span>20px ${renderIcon({ name: 'moon', size: 20 })}</span>
-        <span>24px ${renderIcon({ name: 'layers', size: 24 })}</span>
+        <span>${COMPONENT_TOKEN_VALUES['--lp-size-icon-sm']} ${renderIcon({ name: 'info', size: 16 })}</span>
+        <span>${COMPONENT_TOKEN_VALUES['--lp-size-icon-md']} ${renderIcon({ name: 'moon', size: 20 })}</span>
+        <span>${COMPONENT_TOKEN_VALUES['--lp-size-icon-lg']} ${renderIcon({ name: 'layers', size: 24 })}</span>
       </div>
       <div id="foundations-icon-inventory" class="lp-icon-inventory-grid">
         ${iconInventoryHtml}
@@ -850,41 +855,78 @@ export function renderFoundationsGalleryPage(theme: 'light' | 'dark' = 'light'):
 }
 
 export function renderFoundationsTokensSection(): string {
+  const spaceSummary = PACK_RULES.admin.spaceAllowed
+    .map((px) => `${px} (${px / PACK_RULES.admin.spaceBase}x)`)
+    .join(' · ');
+
+  const proximitySummary = Object.entries(PROXIMITY_TIERS)
+    .map(([level, px]) => `p${level}: ${px}`)
+    .join(' < ');
+
+  const relationsSummary = Object.entries(RELATIONS)
+    .slice(0, 8)
+    .map(([rel, px]) => `${rel}: ${px}`)
+    .join(' · ');
+
+  const lightContrast = computeHexContrastRatio(
+    SEMANTIC_LIGHT_VALUES['--lp-color-text-1'],
+    SEMANTIC_LIGHT_VALUES['--lp-color-surface-l0']
+  );
+  const darkContrast = computeHexContrastRatio(
+    SEMANTIC_DARK_VALUES['--lp-color-text-1'],
+    SEMANTIC_DARK_VALUES['--lp-color-surface-l0']
+  );
+  const pubLightContrast = computeHexContrastRatio(
+    PUBLIC_LIGHT_VALUES['--pub-color-text-primary'],
+    PUBLIC_LIGHT_VALUES['--pub-color-surface-canvas']
+  );
+  const pubDarkContrast = computeHexContrastRatio(
+    PUBLIC_DARK_VALUES['--pub-color-text-primary'],
+    PUBLIC_DARK_VALUES['--pub-color-surface-canvas']
+  );
+
   return `<section id="gallery-foundations-tokens" class="lp-gallery-section" data-component="FoundationsTokens">
-    ${renderSectionHeader({ title: 'Foundations: Design Tokens' })}
-    ${renderText({ variant: 'description', text: 'Primitive scale, Semantic Light and Dark themes, and Component defaults.' })}
+    ${renderSectionHeader({ title: 'Foundations: Design Tokens (Admin & Public Packs)' })}
+    ${renderText({ variant: 'description', text: 'Generated directly from packages/design-tokens/packs/*.json (D-M2 scale rules, proximity tiers, contrast ratios).' })}
     ${renderList({
       id: 'gallery-tokens-list',
       variant: 'plain',
       itemsHtml: `${renderItem({
         id: 'gallery-tokens-colors',
-        title: 'Semantic Colours (Light / Dark)',
-        subtitle: `surface-l0: ${SEMANTIC_LIGHT_VALUES['--lp-color-surface-l0']} / ${SEMANTIC_DARK_VALUES['--lp-color-surface-l0']} · text-1: ${SEMANTIC_LIGHT_VALUES['--lp-color-text-1']} / ${SEMANTIC_DARK_VALUES['--lp-color-text-1']} · accent: ${SEMANTIC_LIGHT_VALUES['--lp-color-accent-default']} / ${SEMANTIC_DARK_VALUES['--lp-color-accent-default']}`,
+        title: 'Admin Semantic Colours (Light / Dark + Contrast)',
+        subtitle: `surface-l0: ${SEMANTIC_LIGHT_VALUES['--lp-color-surface-l0']} / ${SEMANTIC_DARK_VALUES['--lp-color-surface-l0']} · text-1: ${SEMANTIC_LIGHT_VALUES['--lp-color-text-1']} (${lightContrast}) / ${SEMANTIC_DARK_VALUES['--lp-color-text-1']} (${darkContrast}) · accent: ${SEMANTIC_LIGHT_VALUES['--lp-color-accent-default']} / ${SEMANTIC_DARK_VALUES['--lp-color-accent-default']}`,
       })}
       ${renderItem({
         id: 'gallery-tokens-space',
-        title: 'Space Scale',
-        subtitle: Object.entries(PRIMITIVE_VALUES)
-          .filter(([k]) => k.startsWith('--lp-prim-space-'))
-          .map(([k, v]) => `${k.replace('--lp-prim-space-', '')}: ${v}`)
-          .join(' · '),
+        title: `Admin Space Scale (base ${PACK_RULES.admin.spaceBase}px)`,
+        subtitle: spaceSummary,
+      })}
+      ${renderItem({
+        id: 'gallery-tokens-proximity',
+        title: 'Admin Proximity Levels & Relations',
+        subtitle: `${proximitySummary} | ${relationsSummary}`,
       })}
       ${renderItem({
         id: 'gallery-tokens-type',
-        title: 'Typography Roles (7 + control-label)',
+        title: 'Admin Typography Roles (7 + control-label)',
         subtitle: Object.entries(TYPE_ROLES)
           .map(([role, spec]) => `${role}: ${spec.size}/${spec.weight} (${spec.lineHeight})`)
           .join(' · '),
       })}
       ${renderItem({
         id: 'gallery-tokens-radii',
-        title: 'Radii & Elevations',
-        subtitle: `r1: ${COMPONENT_TOKEN_VALUES['--lp-radius-r1']} · r2: ${COMPONENT_TOKEN_VALUES['--lp-radius-r2']} · e0: ${SEMANTIC_LIGHT_VALUES['--lp-elevation-e0']} · e1: ${SEMANTIC_LIGHT_VALUES['--lp-elevation-e1']} · e2: ${SEMANTIC_LIGHT_VALUES['--lp-elevation-e2']}`,
+        title: 'Admin Radii, Borders & Elevations',
+        subtitle: `r1: ${COMPONENT_TOKEN_VALUES['--lp-radius-r1']} · r2: ${COMPONENT_TOKEN_VALUES['--lp-radius-r2']} · borders: ${PACK_RULES.admin.borderAllowed.join('/')} · e0: ${SEMANTIC_LIGHT_VALUES['--lp-elevation-e0']} · e1: ${COMPONENT_TOKEN_VALUES['--lp-elevation-e1-offset-y']}/${SEMANTIC_LIGHT_VALUES['--lp-elevation-e1-blur']} · e2: ${COMPONENT_TOKEN_VALUES['--lp-elevation-e2-offset-y']}/${SEMANTIC_LIGHT_VALUES['--lp-elevation-e2-blur']}`,
       })}
       ${renderItem({
         id: 'gallery-tokens-motion',
-        title: 'Motion Durations',
-        subtitle: `fast: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-fast']} · item: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-item']} · base: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-base']} · slow: ${PRIMITIVE_VALUES['--lp-prim-motion-duration-slow']}`,
+        title: 'Admin Motion Durations & Easings',
+        subtitle: `fast: ${COMPONENT_TOKEN_VALUES['--lp-motion-duration-fast']} · base: ${COMPONENT_TOKEN_VALUES['--lp-motion-duration-base']} · slow: ${COMPONENT_TOKEN_VALUES['--lp-motion-duration-slow']} · pulse: ${COMPONENT_TOKEN_VALUES['--lp-motion-duration-pulse']} · easings: ${PACK_RULES.admin.motionEasingsAllowed.join(', ')}`,
+      })}
+      ${renderItem({
+        id: 'gallery-tokens-public-pack',
+        title: 'Public Pack Summary (Fluid Type + Light/Dark Moods)',
+        subtitle: `ratio ${PACK_RULES.public.typeScale.ratio} · max space ${PACK_RULES.public.spaceMax} · light ${PUBLIC_LIGHT_VALUES['--pub-color-text-primary']} on ${PUBLIC_LIGHT_VALUES['--pub-color-surface-canvas']} (${pubLightContrast}) · dark ${PUBLIC_DARK_VALUES['--pub-color-text-primary']} on ${PUBLIC_DARK_VALUES['--pub-color-surface-canvas']} (${pubDarkContrast})`,
       })}`,
     })}
   </section>`;

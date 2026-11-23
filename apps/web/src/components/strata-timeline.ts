@@ -188,7 +188,7 @@ export async function renderStrataTimelineSection(
       <form method="GET" action="/timeline" style="display:flex;gap:var(--lp-space-stack-label-to-control);align-items:center">
         <label for="as-of-input" style="font-size:var(--lp-font-size-14)">As of:</label>
         <input id="as-of-input" name="as_of" type="date" value="${escapeHtml(defaultInputValue)}" class="ask-input" style="padding:var(--lp-space-inset-track) var(--lp-space-inset-item-x);width:auto" />
-        <button type="submit" class="btn btn-secondary" style="min-height:var(--lp-size-hit-area);padding:var(--lp-space-inset-compact) var(--lp-space-inset-section)">Apply Date</button>
+        <button type="submit" class="btn btn-secondary" style="min-height:var(--lp-size-hit-area);padding:var(--lp-space-proximity-2) var(--lp-space-inset-section)">Apply Date</button>
       </form>
     </div>
     ${asOfBanner}
@@ -205,7 +205,7 @@ export async function renderStrataTimelineSection(
       <span class="strata-legend-item" role="listitem"><span class="band-venture-notch" style="position:static;display:inline-block;margin-right:var(--lp-space-inline-segment)" aria-hidden="true"></span> Venture notch</span>
       <span class="strata-legend-hint">Keyboard: Left/Right arrows move between months, PageUp/PageDown by year, Enter opens month.</span>
     </div>
-    <details style="margin-top:var(--lp-space-stack-snug);font-size:var(--lp-font-size-14)">
+    <details style="margin-top:var(--lp-space-inset-item-y);font-size:var(--lp-font-size-14)">
       <summary style="cursor:pointer;color:var(--lp-color-text-2)">Timeline as a list</summary>
       <ul style="margin-top:var(--lp-space-stack-label-to-control)">
         ${textListHtml}

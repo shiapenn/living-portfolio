@@ -1,0 +1,14 @@
+@layer primitives {
+  .lp-core-container {
+    container-type: inline-size;
+  }
+  .lp-core-stack {
+    display: flex;
+    flex-direction: column;
+  }
+  .lp-core-cluster {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+}

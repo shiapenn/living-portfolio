@@ -156,10 +156,10 @@ export function showPublishSuccessToast(title: string, slug: string): void {
   if (!toast) return;
 
   toast.innerHTML =
-    `<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--lp-space-stack-snug)">` +
+    `<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--lp-space-inset-item-y)">` +
     `<div>` +
     `<strong>Published "${escapeClientHtml(title)}"</strong><br/>` +
-    `<a href="/work/${escapeClientHtml(slug)}" style="font-size:var(--lp-font-size-13);color:var(--lp-color-accent-default))">View page</a>` +
+    `<a href="/work/${escapeClientHtml(slug)}" style="font-size:var(--lp-font-size-12);color:var(--lp-color-accent-default))">View page</a>` +
     `</div>` +
     `<button type="button" class="btn btn-secondary" id="btn-toast-unpublish" style="font-size:var(--lp-font-size-12);padding:var(--lp-border-role-rule) var(--lp-space-inset-item-x)">Unpublish</button>` +
     `</div>`;

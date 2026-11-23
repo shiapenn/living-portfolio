@@ -164,6 +164,9 @@ jobs:
       - name: Run UI Contract & Size-Budget Guard Check (WP-15.6, D-CONTRACT-5)
         run: node scripts/verify-ui-guards
 
+      - name: Run Design System Boundary, Namespace & Drift Guard (WP-16.M D-M1/D-M6)
+        run: node scripts/verify-design-boundaries && node scripts/generate-registry --check
+
       - name: Verify every pinned action SHA resolves upstream (CI fix 3a)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
