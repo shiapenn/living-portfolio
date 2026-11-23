@@ -190,19 +190,19 @@ export function showUndoBanner(message: string, onUndo: () => Promise<void>) {
   clearUndoTimers();
 
   const statusLineHtml =
-    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-stack-snug)">` +
+    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-inset-item-y)">` +
     `<span>${message}</span>` +
     `<button type="button" class="btn btn-secondary" id="btn-undo-status-line" data-undo-action="true" style="padding:var(--lp-space-inset-tag-y) var(--lp-space-inset-item-x);font-size:var(--lp-font-size-12);margin-left:var(--lp-space-inline-icon-text)">Undo (30s)</button>` +
     `</div>`;
 
   const toastHtml =
-    `<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-stack-snug)">` +
+    `<div style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-inset-item-y)">` +
     `<span>${message}</span>` +
     `<button type="button" class="btn btn-secondary" id="btn-undo-toast" data-undo-action="true" style="padding:var(--lp-space-inset-tag-y) var(--lp-space-inset-item-x);font-size:var(--lp-font-size-12);margin-left:var(--lp-space-inline-icon-text)">Undo (30s)</button>` +
     `</div>`;
 
   const bannerHtml =
-    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-stack-snug)">` +
+    `<div class="as-of-banner" style="display:flex;justify-content:space-between;align-items:center;gap:var(--lp-space-inset-item-y)">` +
     `<span>${message}</span>` +
     `</div>`;
 

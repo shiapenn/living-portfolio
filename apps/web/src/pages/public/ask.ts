@@ -56,23 +56,23 @@ export async function renderAskPage(
     .join('\n');
 
   const asOfNoticeHtml = hasValidAsOf
-    ? `<div class="as-of-banner" role="status" style="margin-bottom:var(--lp-space-stack-snug);font-size:var(--lp-font-size-13)">
+    ? `<div class="as-of-banner" role="status" style="margin-bottom:var(--lp-space-inset-item-y);font-size:var(--lp-font-size-12)">
         <span><strong>Time-travel query active:</strong> Synthesizing answer strictly from records known as of <strong>${escapeHtml(initialAsOfDate)}</strong>.</span>
         <a href="/ask${activeScope ? `?scope=${encodeURIComponent(activeScope)}` : ''}">Reset to present</a>
       </div>`
     : '';
 
   const content = `
-    <h1 style="font-family:var(--lp-font-family-reading);font-size:var(--lp-font-size-30);margin:0 0 var(--lp-space-stack-label-to-control) 0">Ask about my work</h1>
-    <p style="color:var(--text-muted);margin:0 0 var(--lp-space-stack-group) 0;max-width:65ch">
+    <h1 style="font-family:var(--lp-font-family-reading);font-size:var(--lp-font-size-28);margin:0 0 var(--lp-space-stack-label-to-control) 0">Ask about my work</h1>
+    <p style="color:var(--text-muted);margin:0 0 var(--lp-space-proximity-4) 0;max-width:65ch">
       Answers come from my published entries and cite them. When my records don't cover your situation, I'll say so and offer a conversation.
     </p>
 
     <div class="ask-box" style="margin-top:0">
-      ${activeScope ? `<div id="scope-chip-container" style="margin-bottom:var(--lp-space-stack-snug)"><span class="chip" id="ask-scope-chip">Scope: <strong>${escapeHtml(activeScope)}</strong> <button type="button" id="btn-clear-scope" style="background:none;border:none;cursor:pointer;padding:0 var(--lp-space-inset-track);font-weight:700" title="Clear scope">×</button></span></div>` : ''}
+      ${activeScope ? `<div id="scope-chip-container" style="margin-bottom:var(--lp-space-inset-item-y)"><span class="chip" id="ask-scope-chip">Scope: <strong>${escapeHtml(activeScope)}</strong> <button type="button" id="btn-clear-scope" style="background:none;border:none;cursor:pointer;padding:0 var(--lp-space-inset-track);font-weight:700" title="Clear scope">×</button></span></div>` : ''}
       ${asOfNoticeHtml}
       <form id="ask-form">
-        <label for="ask-q" style="font-weight:600;display:block;margin-bottom:var(--lp-space-stack-sub-compact)">Your question</label>
+        <label for="ask-q" style="font-weight:600;display:block;margin-bottom:var(--lp-space-proximity-2)">Your question</label>
         <div class="ask-input-row" style="margin-top:0">
           <input id="ask-q" name="q" type="text" class="ask-input" value="${escapeHtml(queryText || '')}" placeholder="e.g., Should we use PostgreSQL advisory locks or Redis for webhook coordination?" required />
           <button type="submit" class="btn" id="btn-ask-submit">Ask</button>
@@ -80,30 +80,30 @@ export async function renderAskPage(
 
         <details style="margin-top:var(--lp-space-stack-field-to-field)" ${queryText?.toLowerCase().includes('should') || hasValidAsOf ? 'open' : ''}>
           <summary style="cursor:pointer;font-size:var(--lp-font-size-14);color:var(--text-muted)">Tell me about your situation (optional)</summary>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(var(--lp-size-popover-min-w),1fr));gap:var(--lp-space-stack-snug);margin-top:var(--lp-space-stack-snug)">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(var(--lp-size-popover-min-w),1fr));gap:var(--lp-space-inset-item-y);margin-top:var(--lp-space-inset-item-y)">
             <div>
-              <label for="facet-db" style="font-size:var(--lp-font-size-13);display:block">Database</label>
-              <input id="facet-db" type="text" class="ask-input" style="width:100%;padding:var(--lp-space-inset-compact)" placeholder="e.g., PostgreSQL or MySQL" />
+              <label for="facet-db" style="font-size:var(--lp-font-size-12);display:block">Database</label>
+              <input id="facet-db" type="text" class="ask-input" style="width:100%;padding:var(--lp-space-proximity-2)" placeholder="e.g., PostgreSQL or MySQL" />
             </div>
             <div>
-              <label for="facet-stack" style="font-size:var(--lp-font-size-13);display:block">Stack</label>
-              <input id="facet-stack" type="text" class="ask-input" style="width:100%;padding:var(--lp-space-inset-compact)" placeholder="e.g., Node.js, PgBouncer" />
+              <label for="facet-stack" style="font-size:var(--lp-font-size-12);display:block">Stack</label>
+              <input id="facet-stack" type="text" class="ask-input" style="width:100%;padding:var(--lp-space-proximity-2)" placeholder="e.g., Node.js, PgBouncer" />
             </div>
             <div>
-              <label for="facet-asof" style="font-size:var(--lp-font-size-13);display:block">Answer as of (optional)</label>
-              <input id="facet-asof" type="date" class="ask-input" style="width:100%;padding:var(--lp-space-inset-compact)" value="${escapeHtml(initialAsOfDate)}" />
+              <label for="facet-asof" style="font-size:var(--lp-font-size-12);display:block">Answer as of (optional)</label>
+              <input id="facet-asof" type="date" class="ask-input" style="width:100%;padding:var(--lp-space-proximity-2)" value="${escapeHtml(initialAsOfDate)}" />
             </div>
           </div>
         </details>
       </form>
 
       <div style="margin-top:var(--lp-space-stack-field-to-field);display:flex;gap:var(--lp-space-stack-label-to-control);flex-wrap:wrap;align-items:center">
-        <span style="font-size:var(--lp-font-size-13);color:var(--text-muted)">Try asking:</span>
+        <span style="font-size:var(--lp-font-size-12);color:var(--text-muted)">Try asking:</span>
         ${examplesHtml}
       </div>
     </div>
 
-    <div id="ask-live-region" aria-live="polite" style="margin-top:var(--lp-space-stack-group)"></div>
+    <div id="ask-live-region" aria-live="polite" style="margin-top:var(--lp-space-proximity-4)"></div>
 
     <script>
       (function() {
@@ -186,10 +186,10 @@ export async function renderAskPage(
               const msg = (data && (data.answer || data.message)) || 'Type a question to ask. It can be up to 1000 characters.';
               region.innerHTML =
                 '<div class="strata-section" role="alert">' +
-                  '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--lp-space-stack-label-to-control);margin-bottom:var(--lp-space-stack-snug)">' +
+                  '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--lp-space-stack-label-to-control);margin-bottom:var(--lp-space-inset-item-y)">' +
                     '<span class="chip" data-status="invalid-query"><strong>Type a question to ask</strong></span>' +
                   '</div>' +
-                  '<p style="margin:0 0 var(--lp-space-stack-snug) 0">' + esc(msg) + '</p>' +
+                  '<p style="margin:0 0 var(--lp-space-inset-item-y) 0">' + esc(msg) + '</p>' +
                 '</div>';
               return;
             }
@@ -201,9 +201,9 @@ export async function renderAskPage(
               region.innerHTML =
                 '<div class="strata-section" role="alert">' +
                   '<span class="chip" data-status="rate-limited"><strong>Hourly question limit reached</strong></span>' +
-                  '<p style="margin:var(--lp-space-stack-snug) 0">' + esc(answerText) + '</p>' +
-                  '<p style="font-size:var(--lp-font-size-13);color:var(--text-muted)">Please try again in about ' + retryMinutes + ' minutes (' + retrySecs + 's), or book a session directly.</p>' +
-                  '<div style="margin-top:var(--lp-space-stack-snug)"><a href="/book?q=' + encodeURIComponent(queryText) + '" class="btn" style="display:inline-block;text-decoration:none">Book a conversation →</a></div>' +
+                  '<p style="margin:var(--lp-space-inset-item-y) 0">' + esc(answerText) + '</p>' +
+                  '<p style="font-size:var(--lp-font-size-12);color:var(--text-muted)">Please try again in about ' + retryMinutes + ' minutes (' + retrySecs + 's), or book a session directly.</p>' +
+                  '<div style="margin-top:var(--lp-space-inset-item-y)"><a href="/book?q=' + encodeURIComponent(queryText) + '" class="btn" style="display:inline-block;text-decoration:none">Book a conversation →</a></div>' +
                 '</div>';
               return;
             }
@@ -227,7 +227,7 @@ export async function renderAskPage(
             };
 
             const scopeNoticeHtml = currentScope
-              ? '<div class="scope-notice" id="ask-scoped-notice" style="margin-bottom:var(--lp-space-stack-note);font-size:var(--lp-font-size-13);color:var(--text-muted)">Scoped to entry: <strong>' + esc(currentScope) + '</strong></div>'
+              ? '<div class="scope-notice" id="ask-scoped-notice" style="margin-bottom:var(--lp-space-inset-item-y);font-size:var(--lp-font-size-12);color:var(--text-muted)">Scoped to entry: <strong>' + esc(currentScope) + '</strong></div>'
               : '';
 
             if (data.tier === 'needs_context') {
@@ -235,21 +235,21 @@ export async function renderAskPage(
               const facetFieldsHtml = missingList.map(function(f) {
                 const label = esc(f.charAt(0).toUpperCase() + f.slice(1).replace(/_/g, ' '));
                 return '<div style="margin-bottom:var(--lp-space-stack-label-to-control)">' +
-                  '<label for="ctx-facet-' + esc(f) + '" style="font-size:var(--lp-font-size-12);font-weight:600;display:block;margin-bottom:var(--lp-space-stack-hairline)">' + label + '</label>' +
-                  '<input type="text" id="ctx-facet-' + esc(f) + '" class="ask-input dynamic-facet-input" data-facet="' + esc(f) + '" style="width:100%;padding:var(--lp-space-inset-compact)" placeholder="e.g. your ' + esc(f) + '..." />' +
+                  '<label for="ctx-facet-' + esc(f) + '" style="font-size:var(--lp-font-size-12);font-weight:600;display:block;margin-bottom:var(--lp-space-inset-tag-y)">' + label + '</label>' +
+                  '<input type="text" id="ctx-facet-' + esc(f) + '" class="ask-input dynamic-facet-input" data-facet="' + esc(f) + '" style="width:100%;padding:var(--lp-space-proximity-2)" placeholder="e.g. your ' + esc(f) + '..." />' +
                   '</div>';
               }).join('');
 
               region.innerHTML =
                 '<div class="strata-section" id="needs-context-card">' +
-                  '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--lp-space-stack-label-to-control);margin-bottom:var(--lp-space-stack-snug)">' +
+                  '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--lp-space-stack-label-to-control);margin-bottom:var(--lp-space-inset-item-y)">' +
                     '<span class="chip"><strong>' + esc(tierLabels.needs_context) + '</strong></span>' +
                   '</div>' +
                   scopeNoticeHtml +
-                  '<p style="margin:0 0 var(--lp-space-stack-snug) 0">' + esc(data.answer || 'To advise accurately on this question, please provide the following details about your architecture or environment:') + '</p>' +
-                  '<form id="needs-context-form" style="margin-bottom:var(--lp-space-stack-snug)">' +
+                  '<p style="margin:0 0 var(--lp-space-inset-item-y) 0">' + esc(data.answer || 'To advise accurately on this question, please provide the following details about your architecture or environment:') + '</p>' +
+                  '<form id="needs-context-form" style="margin-bottom:var(--lp-space-inset-item-y)">' +
                     facetFieldsHtml +
-                    '<div style="display:flex;gap:var(--lp-space-stack-label-to-control);margin-top:var(--lp-space-stack-snug);flex-wrap:wrap">' +
+                    '<div style="display:flex;gap:var(--lp-space-stack-label-to-control);margin-top:var(--lp-space-inset-item-y);flex-wrap:wrap">' +
                       '<button type="submit" class="btn" id="btn-submit-with-context">Submit with Context</button>' +
                       '<button type="button" class="btn btn-secondary" id="btn-skip-context">Skip (Answer with uncertainty)</button>' +
                     '</div>' +
@@ -279,7 +279,7 @@ export async function renderAskPage(
             }
 
             const citationsHtml = (data.citations || []).map(function(c) {
-              return '<li style="margin-bottom:var(--lp-space-stack-sub-compact)"><strong>[' + esc(c.citationId) + ']</strong> <a href="/work/' + encodeURIComponent(String(c.slug || '')) + '">' + esc(c.title) + '</a>: <em>"' + esc(c.text) + '"</em></li>';
+              return '<li style="margin-bottom:var(--lp-space-proximity-2)"><strong>[' + esc(c.citationId) + ']</strong> <a href="/work/' + encodeURIComponent(String(c.slug || '')) + '">' + esc(c.title) + '</a>: <em>"' + esc(c.text) + '"</em></li>';
             }).join('');
 
             const disclosureText = data.provider_disclosure || data.aiDisclosure;
@@ -292,23 +292,23 @@ export async function renderAskPage(
               const rUrl = safePath(data.receiptUrl || ('/ask/status/' + (data.statusToken || '')));
               receiptHtml =
                 '<div style="margin:var(--lp-space-stack-field-to-field) 0;padding:var(--lp-space-inset-item-y);border:var(--lp-border-hairline) solid var(--accent);border-radius:var(--lp-radius-control);background:var(--surface-raised)">' +
-                  '<strong style="font-size:var(--lp-font-size-14);display:block;margin-bottom:var(--lp-space-stack-compact)">Receipt Created</strong>' +
-                  '<p style="margin:0 0 var(--lp-space-stack-label-to-control) 0;font-size:var(--lp-font-size-13)">You can track the owner&#39;s review and view the delivered reply at your personal receipt URL:</p>' +
+                  '<strong style="font-size:var(--lp-font-size-14);display:block;margin-bottom:var(--lp-space-proximity-1)">Receipt Created</strong>' +
+                  '<p style="margin:0 0 var(--lp-space-stack-label-to-control) 0;font-size:var(--lp-font-size-12)">You can track the owner&#39;s review and view the delivered reply at your personal receipt URL:</p>' +
                   '<a href="' + rUrl + '" class="btn" id="btn-view-receipt" style="display:inline-block;text-decoration:none">View Status Receipt →</a>' +
                 '</div>';
             }
 
             region.innerHTML =
               '<div class="strata-section">' +
-                '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--lp-space-stack-label-to-control);margin-bottom:var(--lp-space-stack-snug)">' +
+                '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:var(--lp-space-stack-label-to-control);margin-bottom:var(--lp-space-inset-item-y)">' +
                   '<span class="chip"><strong>' + esc(tierLabels[data.tier] || data.tier) + '</strong></span>' +
                 '</div>' +
                 scopeNoticeHtml +
-                (data.basis ? '<p style="font-size:var(--lp-font-size-13);color:var(--text-muted);margin:0 0 var(--lp-space-stack-label-to-control) 0">' + esc(data.basis) + '</p>' : '') +
+                (data.basis ? '<p style="font-size:var(--lp-font-size-12);color:var(--text-muted);margin:0 0 var(--lp-space-stack-label-to-control) 0">' + esc(data.basis) + '</p>' : '') +
                 '<div class="reading-column" style="white-space:pre-wrap;margin-bottom:var(--lp-space-stack-field-to-field)">' + esc(data.answer) + '</div>' +
                 receiptHtml +
                 (citationsHtml ? '<div style="border-top:var(--lp-border-hairline) solid var(--rule);padding-top:var(--lp-space-inset-item-y)"><strong style="font-size:var(--lp-font-size-14)">Sources</strong><ul style="margin:var(--lp-space-stack-label-to-control) 0 0;padding-left:var(--lp-size-icon-md);font-size:var(--lp-font-size-14)">' + citationsHtml + '</ul></div>' : '') +
-                (data.bookingUrl ? '<div style="margin-top:var(--lp-space-stack-snug)"><a href="' + safePath(data.bookingUrl) + '" class="btn" style="display:inline-block;text-decoration:none">Book a conversation →</a></div>' : '') +
+                (data.bookingUrl ? '<div style="margin-top:var(--lp-space-inset-item-y)"><a href="' + safePath(data.bookingUrl) + '" class="btn" style="display:inline-block;text-decoration:none">Book a conversation →</a></div>' : '') +
                 disclosureHtml +
               '</div>';
           } catch (err) {

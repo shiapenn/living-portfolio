@@ -2,7 +2,7 @@
 
 > **Source of truth:** `packages/design-tokens/tokens.json` (schema: `packages/design-tokens/tokens.schema.json`).
 > **Naming convention:** `--lp-<category>-<role>[-<variant>][-<state>]`
-> **Version:** `2.0.0`
+> **Version:** `3.0.0`
 
 ## Architecture (D-L4 & D-L5)
 
@@ -39,9 +39,9 @@
 
 ## Summary
 
-- Primitive scale entries (build-time resolved, not emitted to CSS): **219**
+- Primitive scale entries (build-time resolved, not emitted to CSS): **192**
 - Semantic tokens (per theme): **52**
-- Component, spacing (`stack`, `inline`, `inset`) & typography tokens: **173**
+- Component, spacing (`stack`, `inline`, `inset`) & typography tokens: **152**
 - Responsive breakpoint overrides: **2**
 
 ## Breakpoints
@@ -141,12 +141,12 @@
 | `--lp-color-passage-neutral` | `#5A5F6B` | `#B4B9C4` |
 | `--lp-color-elevation-shadow-e1` | `rgba(20, 32, 42, 0.14)` | `rgba(0, 0, 0, 0.55)` |
 | `--lp-color-elevation-shadow-e2` | `rgba(20, 32, 42, 0.18)` | `rgba(0, 0, 0, 0.65)` |
-| `--lp-elevation-e1-blur` | `16px` | `18px` |
-| `--lp-elevation-e2-blur` | `32px` | `36px` |
+| `--lp-elevation-e1-blur` | `16px` | `16px` |
+| `--lp-elevation-e2-blur` | `32px` | `32px` |
 | `--lp-elevation-e0` | `none` | `none` |
-| `--lp-elevation-e1` | `0 6px 16px rgba(20, 32, 42, 0.14)` | `0 6px 18px rgba(0, 0, 0, 0.55)` |
-| `--lp-elevation-e1-up` | `0 calc(-1 * 6px) 16px rgba(20, 32, 42, 0.14)` | `0 calc(-1 * 6px) 18px rgba(0, 0, 0, 0.55)` |
-| `--lp-elevation-e2` | `0 12px 32px rgba(20, 32, 42, 0.18)` | `0 12px 36px rgba(0, 0, 0, 0.65)` |
+| `--lp-elevation-e1` | `0 4px 16px rgba(20, 32, 42, 0.14)` | `0 4px 16px rgba(0, 0, 0, 0.55)` |
+| `--lp-elevation-e1-up` | `0 calc(-1 * 4px) 16px rgba(20, 32, 42, 0.14)` | `0 calc(-1 * 4px) 16px rgba(0, 0, 0, 0.55)` |
+| `--lp-elevation-e2` | `0 8px 32px rgba(20, 32, 42, 0.18)` | `0 8px 32px rgba(0, 0, 0, 0.65)` |
 | `--lp-opacity-disabled` | `0.5` | `0.5` |
 
 ## Tier 3: Component & Spacing Taxonomy Tokens
@@ -156,57 +156,46 @@
 | `--lp-color-surface-page` | `#FFFFFF` |
 | `--lp-color-surface-overlay` | `#F5F6F7` |
 | `--lp-color-surface-subtle` | `#F5F6F7` |
+| `--lp-space-proximity-1` | `4px` |
+| `--lp-space-proximity-2` | `8px` |
+| `--lp-space-proximity-3` | `16px` |
+| `--lp-space-proximity-4` | `24px` |
+| `--lp-space-proximity-5` | `40px` |
 | `--lp-space-stack-none` | `0px` |
-| `--lp-space-stack-hairline` | `2px` |
-| `--lp-space-stack-compact` | `4px` |
-| `--lp-space-stack-sub-compact` | `6px` |
 | `--lp-space-stack-label-to-control` | `8px` |
-| `--lp-space-stack-tight` | `8px` |
 | `--lp-space-stack-tint-clearance` | `8px` |
 | `--lp-space-stack-page-title-to-description` | `8px` |
 | `--lp-space-stack-section-heading-to-intro` | `8px` |
-| `--lp-space-stack-note` | `10px` |
-| `--lp-space-stack-snug` | `12px` |
 | `--lp-space-stack-field-to-field` | `16px` |
-| `--lp-space-stack-related` | `16px` |
 | `--lp-space-stack-heading-to-first` | `16px` |
 | `--lp-space-stack-heading-to-list-plain` | `16px` |
 | `--lp-space-stack-heading-to-list-interactive` | `16px` |
 | `--lp-space-stack-control-to-list` | `16px` |
 | `--lp-space-stack-tabs-to-content` | `16px` |
 | `--lp-space-stack-dialog-title-to-body` | `16px` |
-| `--lp-space-stack-group` | `24px` |
 | `--lp-space-stack-subsection-to-subsection` | `24px` |
 | `--lp-space-stack-header-to-content` | `24px` |
 | `--lp-space-stack-item-body-to-actionbar` | `24px` |
 | `--lp-space-stack-action-bar-after-control` | `24px` |
 | `--lp-space-stack-dialog-body-to-actionbar` | `24px` |
-| `--lp-space-stack-display` | `28px` |
 | `--lp-space-stack-section` | `40px` |
 | `--lp-space-stack-section-to-section` | `40px` |
 | `--lp-space-stack-action-bar-after-section` | `40px` |
-| `--lp-space-stack-block` | `48px` |
-| `--lp-space-stack-page` | `64px` |
-| `--lp-space-inline-hairline` | `2px` |
 | `--lp-space-inline-segment` | `4px` |
-| `--lp-space-inline-dot-text` | `6px` |
+| `--lp-space-inline-dot-text` | `8px` |
 | `--lp-space-inline-icon-text` | `8px` |
 | `--lp-space-inline-button-button` | `8px` |
 | `--lp-space-inline-tag-tag` | `8px` |
-| `--lp-space-inline-snug` | `12px` |
-| `--lp-space-inline-related` | `16px` |
-| `--lp-space-inline-group` | `24px` |
 | `--lp-space-inset-tag-y` | `2px` |
 | `--lp-space-inset-track` | `4px` |
-| `--lp-space-inset-badge-x` | `5px` |
-| `--lp-space-inset-compact` | `6px` |
+| `--lp-space-inset-badge-x` | `4px` |
 | `--lp-space-inset-item-x` | `8px` |
 | `--lp-space-inset-tag-x` | `8px` |
-| `--lp-space-inset-control-sm` | `10px` |
+| `--lp-space-inset-control-sm` | `12px` |
 | `--lp-space-inset-item-y` | `12px` |
 | `--lp-space-inset-control-x` | `12px` |
 | `--lp-space-inset-panel` | `12px` |
-| `--lp-space-inset-card-sm` | `14px` |
+| `--lp-space-inset-card-sm` | `16px` |
 | `--lp-space-inset-page-gutter` | `16px` |
 | `--lp-space-inset-section` | `16px` |
 | `--lp-space-inset-dialog` | `24px` |
@@ -220,25 +209,22 @@
 | `--lp-size-target-min` | `36px` |
 | `--lp-size-bar-compact-height` | `48px` |
 | `--lp-size-bar-editor-height` | `56px` |
-| `--lp-size-bar-legacy-offset` | `57px` |
 | `--lp-size-bar-top-height` | `60px` |
 | `--lp-size-icon-sm` | `16px` |
 | `--lp-size-icon-md` | `20px` |
 | `--lp-size-icon-lg` | `24px` |
-| `--lp-size-status-dot` | `6px` |
-| `--lp-size-notch-width` | `9px` |
-| `--lp-size-indicator-md` | `10px` |
-| `--lp-size-checkbox-sm` | `14px` |
-| `--lp-size-switch-thumb` | `18px` |
+| `--lp-size-status-dot` | `8px` |
+| `--lp-size-notch-width` | `8px` |
+| `--lp-size-indicator-md` | `8px` |
+| `--lp-size-checkbox-sm` | `16px` |
+| `--lp-size-switch-thumb` | `16px` |
 | `--lp-size-tag-height` | `28px` |
-| `--lp-size-track-height` | `2px` |
-| `--lp-size-hatch-step` | `1.5px` |
+| `--lp-size-track-height` | `4px` |
 | `--lp-size-progress-track-w` | `100px` |
-| `--lp-size-canary-probe` | `80px` |
-| `--lp-size-textarea-compact-min-h` | `70px` |
+| `--lp-size-textarea-compact-min-h` | `68px` |
 | `--lp-size-textarea-min-h` | `144px` |
 | `--lp-size-card-min-h` | `140px` |
-| `--lp-size-col-min-xs` | `130px` |
+| `--lp-size-col-min-xs` | `128px` |
 | `--lp-size-menu-min-w` | `148px` |
 | `--lp-size-grid-card-min` | `180px` |
 | `--lp-size-popover-min-w` | `200px` |
@@ -250,18 +236,18 @@
 | `--lp-size-dialog-max-w` | `480px` |
 | `--lp-size-card-max-w` | `520px` |
 | `--lp-size-layout-list-col` | `260px` |
-| `--lp-size-layout-nav-compact` | `230px` |
-| `--lp-size-layout-inspector-compact` | `310px` |
+| `--lp-size-layout-nav-compact` | `240px` |
+| `--lp-size-layout-inspector-compact` | `320px` |
 | `--lp-size-layout-rail-width` | `320px` |
 | `--lp-size-admin-nav-width` | `240px` |
-| `--lp-size-admin-inspector-width` | `340px` |
+| `--lp-size-admin-inspector-width` | `320px` |
 | `--lp-size-layout-narrow-max` | `400px` |
 | `--lp-size-layout-reading-col` | `640px` |
 | `--lp-size-layout-main-max` | `720px` |
-| `--lp-size-layout-medium-max` | `760px` |
-| `--lp-size-layout-wide-col` | `840px` |
-| `--lp-size-layout-dashboard-max` | `920px` |
-| `--lp-size-layout-max` | `1180px` |
+| `--lp-size-layout-medium-max` | `720px` |
+| `--lp-size-layout-wide-col` | `800px` |
+| `--lp-size-layout-dashboard-max` | `960px` |
+| `--lp-size-layout-max` | `1200px` |
 | `--lp-size-strata-band-min` | `44px` |
 | `--lp-size-strata-band-max` | `120px` |
 | `--lp-size-btn-item-min` | `96px` |
@@ -269,8 +255,8 @@
 | `--lp-size-btn-action-max` | `240px` |
 | `--lp-measure-reading` | `68ch` |
 | `--lp-editor-min-h` | `60vh` |
-| `--lp-elevation-e1-offset-y` | `6px` |
-| `--lp-elevation-e2-offset-y` | `12px` |
+| `--lp-elevation-e1-offset-y` | `4px` |
+| `--lp-elevation-e2-offset-y` | `8px` |
 | `--lp-radius-r1` | `4px` |
 | `--lp-radius-r2` | `8px` |
 | `--lp-radius-control` | `8px` |
@@ -281,48 +267,41 @@
 | `--lp-radius-full` | `999px` |
 | `--lp-border-hairline` | `1px` |
 | `--lp-border-focus` | `2px` |
-| `--lp-border-role-rule` | `3px` |
+| `--lp-border-role-rule` | `4px` |
 | `--lp-border-banner-rule` | `4px` |
 | `--lp-z-base` | `0` |
-| `--lp-z-raised` | `1` |
-| `--lp-z-sticky` | `100` |
-| `--lp-z-overlay` | `200` |
-| `--lp-z-popover` | `300` |
-| `--lp-z-modal` | `400` |
-| `--lp-z-toast` | `500` |
+| `--lp-z-raised` | `100` |
+| `--lp-z-sticky` | `200` |
+| `--lp-z-overlay` | `300` |
+| `--lp-z-popover` | `400` |
+| `--lp-z-modal` | `500` |
+| `--lp-z-toast` | `600` |
 | `--lp-z-skip` | `1000` |
 | `--lp-motion-duration-instant` | `0.01ms` |
-| `--lp-motion-duration-fast` | `100ms` |
-| `--lp-motion-duration-item` | `120ms` |
+| `--lp-motion-duration-fast` | `80ms` |
+| `--lp-motion-duration-item` | `80ms` |
 | `--lp-motion-duration-base` | `160ms` |
 | `--lp-motion-duration-slow` | `240ms` |
-| `--lp-motion-duration-pulse` | `900ms` |
-| `--lp-motion-easing-out` | `cubic-bezier(0.2, 0, 0, 1)` |
-| `--lp-motion-easing-ease` | `ease` |
+| `--lp-motion-duration-pulse` | `960ms` |
+| `--lp-motion-easing-standard` | `cubic-bezier(0.2, 0, 0, 1)` |
+| `--lp-motion-easing-out` | `cubic-bezier(0, 0, 0.2, 1)` |
 | `--lp-font-family-ui` | `'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif` |
 | `--lp-font-family-reading` | `'Literata', Georgia, 'Times New Roman', serif` |
 | `--lp-font-family-code` | `'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace` |
-| `--lp-font-size-10` | `10px` |
-| `--lp-font-size-11` | `11px` |
 | `--lp-font-size-12` | `12px` |
-| `--lp-font-size-13` | `13px` |
 | `--lp-font-size-14` | `14px` |
-| `--lp-font-size-15` | `15px` |
 | `--lp-font-size-16` | `16px` |
-| `--lp-font-size-17` | `17px` |
 | `--lp-font-size-18` | `18px` |
-| `--lp-font-size-21` | `21px` |
+| `--lp-font-size-20` | `20px` |
 | `--lp-font-size-24` | `24px` |
-| `--lp-font-size-30` | `30px` |
+| `--lp-font-size-28` | `28px` |
 | `--lp-font-size-32` | `32px` |
 | `--lp-font-weight-400` | `400` |
-| `--lp-font-weight-500` | `500` |
 | `--lp-font-weight-600` | `600` |
-| `--lp-font-weight-700` | `700` |
 | `--lp-font-line-16` | `16px` |
 | `--lp-font-line-20` | `20px` |
 | `--lp-font-line-24` | `24px` |
 | `--lp-font-line-32` | `32px` |
 | `--lp-font-line-reading` | `1.65` |
 | `--lp-font-letter-normal` | `0em` |
-| `--lp-font-letter-wide` | `0.5px` |
+| `--lp-font-letter-wide` | `0.03em` |

@@ -1,0 +1,11 @@
+/* AUTO-GENERATED FROM packages/design-tokens/packs/core.json — DO NOT EDIT BY HAND */
+:root {
+  --lp-core-z-base: 0;
+  --lp-core-z-raised: 100;
+  --lp-core-z-sticky: 200;
+  --lp-core-z-overlay: 300;
+  --lp-core-z-popover: 400;
+  --lp-core-z-modal: 500;
+  --lp-core-z-toast: 600;
+  --lp-core-z-skip: 1000;
+}
