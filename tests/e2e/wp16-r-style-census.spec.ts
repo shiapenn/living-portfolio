@@ -129,21 +129,28 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
         const probe = document.createElement('span');
         probe.style.display = 'none';
         document.body.appendChild(probe);
+        const visitRule = (rule: CSSRule) => {
+          if (rule instanceof CSSStyleRule) {
+            for (let i = 0; i < rule.style.length; i++) {
+              const prop = rule.style[i];
+              if (prop.startsWith('--')) {
+                const val = rootStyle.getPropertyValue(prop).trim();
+                if (val && (val.startsWith('#') || val.startsWith('rgb') || val.startsWith('hsl'))) {
+                  probe.style.color = val;
+                  tokenColors.add(getComputedStyle(probe).color);
+                }
+              }
+            }
+          } else if ('cssRules' in rule && (rule as CSSGroupingRule).cssRules) {
+            for (const child of Array.from((rule as CSSGroupingRule).cssRules)) {
+              visitRule(child);
+            }
+          }
+        };
         for (const sheet of Array.from(document.styleSheets)) {
           try {
             for (const rule of Array.from(sheet.cssRules)) {
-              if (rule instanceof CSSStyleRule) {
-                for (let i = 0; i < rule.style.length; i++) {
-                  const prop = rule.style[i];
-                  if (prop.startsWith('--')) {
-                    const val = rootStyle.getPropertyValue(prop).trim();
-                    if (val && (val.startsWith('#') || val.startsWith('rgb') || val.startsWith('hsl'))) {
-                      probe.style.color = val;
-                      tokenColors.add(getComputedStyle(probe).color);
-                    }
-                  }
-                }
-              }
+              visitRule(rule);
             }
           } catch {}
         }

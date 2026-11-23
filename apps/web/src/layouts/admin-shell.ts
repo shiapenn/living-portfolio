@@ -335,13 +335,13 @@ export function renderAdminShell(
       </div>`
     : '';
 
+  const isGalleryRoute = activePath.startsWith('/admin/dev/') || activePath.startsWith('/admin/_');
   const isEditorRoute =
     options?.template === 'editor' ||
     activePath === '/admin/entries/new' ||
     activePath === '/admin/entries/editor' ||
     /^\/admin\/entries\/[^/]+$/.test(activePath) ||
-    activePath.startsWith('/admin/dev/');
-  const isGalleryRoute = activePath.startsWith('/admin/dev/');
+    isGalleryRoute;
   const routeCssLinks = [
     `<link rel="stylesheet" href="/assets/css/${CORE_CSS_FILENAME}" />`,
     `<link rel="stylesheet" href="/assets/css/${ADMIN_CSS_FILENAME}" />`,
