@@ -236,14 +236,14 @@ Always use transaction-scoped locks with pooling.`;
       expect(res.status).toBe(200);
 
       // Header padding and margin tokens
-      expect(res.html).toContain('margin-bottom:var(--lp-space-stack-group)');
+      expect(res.html).toContain('margin-bottom:var(--lp-space-proximity-4)');
       expect(res.html).toContain('padding-bottom:var(--lp-space-inset-section)');
 
       // Date line margin tokens
       expect(res.html).toContain('margin:var(--lp-space-stack-label-to-control) 0 var(--lp-space-stack-label-to-control)');
 
       // Rail section margins
-      expect(res.html).toContain('margin-top:var(--lp-space-stack-group)');
+      expect(res.html).toContain('margin-top:var(--lp-space-proximity-4)');
       expect(res.html).toContain('padding-top:var(--lp-space-inset-section)');
     });
   });

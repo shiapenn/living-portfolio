@@ -30,6 +30,7 @@ export function buildCoreBundleCss(): string {
   ].join('\n\n') + '\n';
 }
 
-export function renderThemeBootstrapScript(storageKey = 'strata-theme'): string {
-  return `(function(){try{var s=localStorage.getItem(${JSON.stringify(storageKey)});var t=(s==='dark'||s==='light')?s:(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(_){}})();`;
+export function renderThemeBootstrapScript(storageKey: 'strata-theme' | 'lp-theme' = 'strata-theme'): string {
+  const key = storageKey === 'lp-theme' ? 'lp-theme' : 'strata-theme';
+  return `(function(){try{var s=localStorage.getItem('${key}');var t=(s==='dark'||s==='light')?s:(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(_){}})();`;
 }
