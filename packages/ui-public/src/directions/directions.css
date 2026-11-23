@@ -105,6 +105,27 @@
     color: var(--pub-color-text-primary);
     font-family: var(--pub-font-family-prose);
   }
+  .pub-lab-shell a {
+    color: var(--pub-color-accent-primary);
+  }
+  .pub-lab-card h2,
+  .pub-lab-strata-layer h2 {
+    margin: 8px 0 10px;
+    font-family: var(--pub-font-family-display);
+    font-size: 20px;
+    line-height: 1.3;
+  }
+  .pub-lab-card h2 a,
+  .pub-lab-strata-layer h2 a {
+    color: var(--pub-color-text-primary);
+    text-decoration: none;
+  }
+  .pub-lab-card h2 a:hover,
+  .pub-lab-strata-layer h2 a:hover {
+    color: var(--pub-color-accent-primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
   :root[data-direction="field-notebook"] .pub-lab-shell {
     background-image:
       linear-gradient(to right, var(--pub-color-border-rule) 1px, transparent 1px),

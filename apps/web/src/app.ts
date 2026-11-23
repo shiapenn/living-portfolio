@@ -457,7 +457,15 @@ export function createWebApp(options?: WebAppOptions) {
       return c.text('Not Found', 404);
     }
     const res = await client.listEntries({ visibility: 'public', page: 1, limit: 12 }).catch(() => ({ entries: [] }));
-    const rawEntries = (res as any).entries ?? [];
+    const rawEntries = Array.isArray(res)
+      ? res
+      : Array.isArray((res as any)?.entries)
+        ? (res as any).entries
+        : Array.isArray((res as any)?.items)
+          ? (res as any).items
+          : Array.isArray((res as any)?.data)
+            ? (res as any).data
+            : [];
     const entries = rawEntries.map((e: any) => ({
       slug: e.slug ?? e.id ?? 'entry',
       title: e.title ?? 'Untitled',
