@@ -1,7 +1,13 @@
 import { Hono } from 'hono';
 import { CORE_BUNDLE_CSS, CORE_CSS_FILENAME } from '@living-portfolio/ui-core';
 import { ADMIN_BASE_CSS, ADMIN_CSS_FILENAME } from '@living-portfolio/ui-admin';
-import { PUBLIC_BUNDLE_CSS, PUBLIC_CSS_FILENAME } from '@living-portfolio/ui-public';
+import {
+  PUBLIC_BUNDLE_CSS,
+  PUBLIC_CSS_FILENAME,
+  isValidPublicDirection,
+  renderPublicLabPage,
+  type PublicLabTemplate,
+} from '@living-portfolio/ui-public';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
@@ -441,6 +447,46 @@ export function createWebApp(options?: WebAppOptions) {
   }
 
   // Public visitor booking & escalation status routes
+  // Public Direction Exploration Lab (WP-16.M D-M5 — dev/staging only, never shipped to production)
+  const handlePublicLab = async (c: any, template: PublicLabTemplate) => {
+    if (cfg.DEPLOYMENT_CLASS === 'production' && process.env.ENABLE_PUBLIC_LAB !== 'true') {
+      return c.text('Not Found', 404);
+    }
+    const dir = c.req.param('direction');
+    if (!isValidPublicDirection(dir)) {
+      return c.text('Not Found', 404);
+    }
+    const res = await client.listEntries({ visibility: 'public', page: 1, limit: 12 }).catch(() => ({ entries: [] }));
+    const rawEntries = (res as any).entries ?? [];
+    const entries = rawEntries.map((e: any) => ({
+      slug: e.slug ?? e.id ?? 'entry',
+      title: e.title ?? 'Untitled',
+      date: e.date ?? e.createdAt ?? '2026-11-01',
+      profile: e.profile ?? 'case-study',
+      summary: e.summary ?? (typeof e.body_md === 'string' ? e.body_md.slice(0, 160) : ''),
+      bodyHtml: typeof e.body_md === 'string' ? `<p>${e.body_md.slice(0, 600).replace(/</g, '&lt;')}</p>` : undefined,
+    }));
+    const slug = c.req.param('slug');
+    const activeEntry = slug ? entries.find((e: any) => e.slug === slug) ?? entries[0] : entries[0];
+    return c.html(
+      renderPublicLabPage({
+        direction: dir,
+        template,
+        siteName: cfg.PUBLIC_SITE_NAME,
+        ownerName: cfg.PUBLIC_OWNER_NAME,
+        entries,
+        activeEntry,
+      })
+    );
+  };
+  app.get('/_lab/public/:direction', (c) => handlePublicLab(c, 'home'));
+  app.get('/_lab/public/:direction/work', (c) => handlePublicLab(c, 'work'));
+  app.get('/_lab/public/:direction/work/:slug', (c) => handlePublicLab(c, 'entry'));
+  app.get('/_lab/public/:direction/writing', (c) => handlePublicLab(c, 'writing'));
+  app.get('/_lab/public/:direction/build', (c) => handlePublicLab(c, 'build'));
+  app.get('/_lab/public/:direction/timeline', (c) => handlePublicLab(c, 'timeline'));
+  app.get('/_lab/public/:direction/ask', (c) => handlePublicLab(c, 'ask'));
+
   app.get('/book', (c) => c.html(renderBookPage(c.req.query('q'), c.req.query('facets'))));
   app.get('/ask/status/:token', async (c) => c.html(await renderAskStatusPage(client, c.req.param('token'))));
 

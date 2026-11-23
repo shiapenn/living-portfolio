@@ -40,7 +40,7 @@ export function renderLayout(
 
   const stagingBannerHtml =
     cfg.DEPLOYMENT_CLASS === 'staging'
-      ? `<div class="as-of-banner pub-staging-banner" data-banner="staging-synthetic-only" role="status"><strong>Staging: synthetic data only.</strong></div>`
+      ? `<div class="as-of-banner pub-staging-banner" data-banner="staging-synthetic-only" role="status" style="position:sticky;top:0"><strong>Staging: synthetic data only.</strong></div>`
       : '';
 
   const robotsMetaHtml =
@@ -80,8 +80,8 @@ ${options?.nonce ? `  <style${nonceAttr}>/* public-pack-csp-nonce */</style>\n` 
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
   ${stagingBannerHtml}
-  <header class="site-header pub-header">
-${headerSlotHtml}    <nav class="site-nav pub-nav" aria-label="Primary navigation">
+  <header class="site-header">
+${headerSlotHtml}    <nav class="site-nav" aria-label="Primary navigation">
       <a href="/" class="site-brand"${activePath === '/' ? ' aria-current="page"' : ''}>${brandHtml}</a>
       <div class="nav-links">
         ${navHtml}
