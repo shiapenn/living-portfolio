@@ -107,11 +107,32 @@ runCheck('S3-ZERO-INLINE-STYLE', 'Zero inline style= attributes in admin and pub
   return '0 inline style= attributes';
 });
 
-// 4. S4 checks: ADRs, rules.md, health.md
-runCheck('S4-GOVERNANCE', 'ADR coverage, generated rules.md, and health.md present', () => {
-  if (!existsSync(resolve(ROOT, 'docs/design/rules.md'))) throw new Error('docs/design/rules.md missing (pending S4)');
-  if (!existsSync(resolve(ROOT, 'docs/design/health.md'))) throw new Error('docs/design/health.md missing (pending S4)');
-  return 'rules.md + health.md present';
+// 4. S4 checks: ADRs, decisions.md, rules.md, health.md, changesets, component folder completeness
+runCheck('S4-GOVERNANCE', 'ADR coverage, generated decisions.md, rules.md, health.md, and changesets', () => {
+  execCmd('node scripts/generate-decisions --check');
+  execCmd('node scripts/generate-rules --check');
+  execCmd('node scripts/ds-health --check');
+  execCmd('node scripts/verify-changeset');
+  return 'decisions.md + rules.md + health.md + changesets green';
+});
+
+runCheck('S4-COMPONENTS', 'UI packages have component sources, CSS, tests, and gallery coverage', () => {
+  const requiredTests = [
+    'packages/ui-core/src/core.test.ts',
+    'packages/ui-core/src/accent/accent.test.ts',
+    'packages/ui-public/src/public.test.ts',
+    'apps/web/src/components/components.test.ts',
+    'apps/web/src/primitives/dcomp.test.ts',
+  ];
+  for (const t of requiredTests) {
+    if (!existsSync(resolve(ROOT, t))) throw new Error(`Missing required UI test: ${t}`);
+  }
+  const compReg = JSON.parse(readFileSync(resolve(ROOT, 'docs/design/components.json'), 'utf8'));
+  const missingGallery = (compReg.components || []).filter((c) => !c.gallerySampleId).map((c) => c.name);
+  if (missingGallery.length > 0) {
+    throw new Error(`Registered component(s) missing gallerySampleId: ${missingGallery.join(', ')}`);
+  }
+  return `${(compReg.components || []).length} registered components with gallery samples & tests`;
 });
 
 // 5. S5 checks: budgets + backlog consistency

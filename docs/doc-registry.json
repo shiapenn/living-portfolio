@@ -1891,6 +1891,142 @@
     "supersedes": null
   },
   {
+    "id": "L037",
+    "title": "ADR-008: Minimalism and Quiet Restraint (D-MIN)",
+    "class": "L",
+    "path": "docs/adr/ADR-008-d-min-quiet-restraint.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L038",
+    "title": "ADR-009: Layout Grid and Responsive Breakpoints (D-LAYOUT)",
+    "class": "L",
+    "path": "docs/adr/ADR-009-d-layout-grid-and-breakpoints.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L039",
+    "title": "ADR-010: Admin Editor and Markdown Roundtrip (D-EDITOR)",
+    "class": "L",
+    "path": "docs/adr/ADR-010-d-editor-markdown-architecture.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L040",
+    "title": "ADR-011: Schema-Driven Settings Registry (D-SETTINGS-ARCH)",
+    "class": "L",
+    "path": "docs/adr/ADR-011-d-settings-arch-registry.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L041",
+    "title": "ADR-012: Frontend-Backend Storage Decoupling (D-STORAGE)",
+    "class": "L",
+    "path": "docs/adr/ADR-012-d-storage-decoupling.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L042",
+    "title": "ADR-013: Page Section Rhythm and Heading Hierarchy (D-SECTIONS)",
+    "class": "L",
+    "path": "docs/adr/ADR-013-d-sections-rhythm.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L043",
+    "title": "ADR-014: Component Composition and Primitives (D-COMP)",
+    "class": "L",
+    "path": "docs/adr/ADR-014-d-comp-primitive-composition.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L044",
+    "title": "ADR-015: System States, Empty States and Feedback (D-SYS)",
+    "class": "L",
+    "path": "docs/adr/ADR-015-d-sys-system-states.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L045",
+    "title": "ADR-016: Visual Polish, Dark Theme and Focus Visibility",
+    "class": "L",
+    "path": "docs/adr/ADR-016-d-final-visual-polish.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L046",
+    "title": "ADR-017: Contact Sheet Census and Style Gate (D-G)",
+    "class": "L",
+    "path": "docs/adr/ADR-017-d-g-contact-sheet-census.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L047",
+    "title": "ADR-018: Legacy Item Surface Bleed (D-H, Superseded)",
+    "class": "L",
+    "path": "docs/adr/ADR-018-d-h-legacy-item-bleed.md",
+    "status": "superseded",
+    "supersedes": null
+  },
+  {
+    "id": "L048",
+    "title": "ADR-019: Overlay Surfaces and Focus Management (D-I)",
+    "class": "L",
+    "path": "docs/adr/ADR-019-d-i-overlays-and-focus.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L049",
+    "title": "ADR-020: Component Registry and Governance (D-J)",
+    "class": "L",
+    "path": "docs/adr/ADR-020-d-j-component-registry-governance.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L050",
+    "title": "ADR-021: Item Flush Alignment Replacing Bleed (D-K)",
+    "class": "L",
+    "path": "docs/adr/ADR-021-d-k-item-flush-alignment.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L051",
+    "title": "ADR-022: Consolidation, Health Budgets and Changesets (D-L / D-N)",
+    "class": "L",
+    "path": "docs/adr/ADR-022-d-l-consolidation-health-changesets.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L052",
+    "title": "Effective Design & Architecture Rules (Generated)",
+    "class": "L",
+    "path": "docs/design/rules.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L053",
+    "title": "Design System Health Report (Generated)",
+    "class": "L",
+    "path": "docs/design/health.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
     "id": "A173",
     "title": "wp-16n-s3-public-editorial-fonts",
     "class": "A",

@@ -4,6 +4,14 @@ title: One Thin Core, Two Design Languages (D-M0 / D-M1)
 status: accepted
 date: 2026-11-23
 supersedes: null
+area: architecture
+rules:
+  - id: R-001-1
+    text: "Separate UI into ui-core, ui-admin (lp-*), and ui-public (pub-*) with zero cross-language imports or bundles"
+    enforced_by: scripts/verify-design-boundaries
+  - id: R-001-2
+    text: "Share one core accent seed across admin and public via user-theme accent.<hash>.css"
+    enforced_by: packages/ui-core/src/accent/accent.test.ts
 ---
 
 # ADR-001: One Thin Core, Two Design Languages (`D-M0` / `D-M1`)

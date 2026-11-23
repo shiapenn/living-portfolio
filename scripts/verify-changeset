@@ -1,0 +1,60 @@
+#!/usr/bin/env node
+/**
+ * Changeset Policy Guard (`scripts/verify-changeset`)
+ * Ensures every PR modifying one of the 4 UI packages
+ * (`design-tokens`, `ui-core`, `ui-admin`, `ui-public`) includes at least one
+ * changeset file under `.changeset/*.md` (excluding README.md) and that
+ * per-package CHANGELOG.md files exist.
+ */
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+import { resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const UI_PACKAGES = ['packages/design-tokens', 'packages/ui-core', 'packages/ui-admin', 'packages/ui-public'];
+
+const errors = [];
+
+// 1. Every UI package must have a CHANGELOG.md
+for (const pkg of UI_PACKAGES) {
+  const cl = resolve(ROOT, pkg, 'CHANGELOG.md');
+  if (!existsSync(cl)) {
+    errors.push(`${pkg}/CHANGELOG.md is missing`);
+  }
+}
+
+// 2. .changeset directory must exist and contain at least one changeset or README
+const csDir = resolve(ROOT, '.changeset');
+if (!existsSync(csDir)) {
+  errors.push('.changeset/ directory is missing');
+} else {
+  const changesets = readdirSync(csDir).filter((f) => f.endsWith('.md') && f !== 'README.md');
+  // Check git diff against base if available
+  const baseRef = process.env.CHANGESET_BASE || 'main';
+  let changedFiles = [];
+  try {
+    const out = execSync(`git diff --name-only ${baseRef}...HEAD`, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+    changedFiles = out.split('\n').filter(Boolean);
+  } catch {
+    changedFiles = [];
+  }
+  const touchedUi = changedFiles.filter((f) => UI_PACKAGES.some((p) => f.startsWith(`${p}/`)));
+  const touchedChangesets = changedFiles.filter((f) => f.startsWith('.changeset/') && f.endsWith('.md') && f !== '.changeset/README.md');
+
+  if (touchedUi.length > 0 && touchedChangesets.length === 0 && changesets.length === 0) {
+    errors.push(`UI packages modified (${touchedUi.length} file(s)) without a .changeset/<name>.md entry`);
+  }
+  for (const f of changesets) {
+    const body = readFileSync(resolve(csDir, f), 'utf8');
+    if (!body.startsWith('---\n')) {
+      errors.push(`.changeset/${f} missing YAML front matter listing affected packages and bump type`);
+    }
+  }
+}
+
+if (errors.length > 0) {
+  console.error('✗ [CHANGESET-GUARD] FAILED:');
+  for (const e of errors) console.error(`  - ${e}`);
+  process.exit(1);
+}
+console.log('✓ Changeset policy & UI package CHANGELOG.md guard PASSED.');

@@ -1,0 +1,99 @@
+#!/usr/bin/env node
+/**
+ * Design System Impact Query (`pnpm ds:impact <token|component>`)
+ * Scans token packs, UI packages, web templates, and tests to report all consumers
+ * of a CSS custom property (`--lp-*`, `--pub-*`, `--lp-core-*`) or component name/class family.
+ */
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const args = process.argv.slice(2);
+const asJson = args.includes('--json');
+const query = args.find((a) => a !== '--json');
+
+if (!query) {
+  console.error('Usage: pnpm ds:impact <token-or-component> [--json]');
+  console.error('Examples:');
+  console.error('  pnpm ds:impact --lp-color-accent-primary');
+  console.error('  pnpm ds:impact --pub-color-accent-default');
+  console.error('  pnpm ds:impact Button');
+  process.exit(1);
+}
+
+const SEARCH_ROOTS = ['packages/design-tokens', 'packages/ui-core', 'packages/ui-admin', 'packages/ui-public', 'apps/web/src', 'tests'];
+const EXTS = new Set(['.ts', '.css', '.json', '.mjs']);
+
+function walkFiles(dir, out = []) {
+  if (!existsSync(dir)) return out;
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    if (['node_modules', 'dist', '.turbo'].includes(e.name)) continue;
+    const full = join(dir, e.name);
+    if (e.isDirectory()) walkFiles(full, out);
+    else if (EXTS.has(e.name.slice(e.name.lastIndexOf('.')))) out.push(full);
+  }
+  return out;
+}
+
+// Resolve component aliases from docs/design/components.json if query matches a component name
+const patterns = [query];
+const compPath = resolve(ROOT, 'docs/design/components.json');
+let matchedComponent = null;
+if (existsSync(compPath)) {
+  const reg = JSON.parse(readFileSync(compPath, 'utf8'));
+  const comp = (reg.components || []).find(
+    (c) => c.name.toLowerCase() === query.toLowerCase() || (c.classFamilies || []).includes(query)
+  );
+  if (comp) {
+    matchedComponent = comp;
+    for (const fam of comp.classFamilies || []) {
+      if (!patterns.includes(fam)) patterns.push(fam);
+    }
+    if (comp.gallerySampleId && !patterns.includes(comp.gallerySampleId)) {
+      patterns.push(comp.gallerySampleId);
+    }
+  }
+}
+
+const files = SEARCH_ROOTS.flatMap((r) => walkFiles(resolve(ROOT, r)));
+const hits = [];
+const packsAffected = new Set();
+
+for (const file of files) {
+  const rel = relative(ROOT, file).replace(/\\/g, '/');
+  const lines = readFileSync(file, 'utf8').split('\n');
+  const matchedLines = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (patterns.some((p) => lines[i].includes(p))) {
+      matchedLines.push(i + 1);
+    }
+  }
+  if (matchedLines.length > 0) {
+    hits.push({ file: rel, count: matchedLines.length, lines: matchedLines.slice(0, 10) });
+    const top = rel.split('/').slice(0, 2).join('/');
+    packsAffected.add(top);
+  }
+}
+
+const report = {
+  query,
+  kind: query.startsWith('--') ? 'token' : matchedComponent ? 'component' : 'symbol',
+  patterns,
+  component: matchedComponent ? { name: matchedComponent.name, classFamilies: matchedComponent.classFamilies } : null,
+  totalFiles: hits.length,
+  totalReferences: hits.reduce((acc, h) => acc + h.count, 0),
+  packagesAffected: Array.from(packsAffected).sort(),
+  consumers: hits,
+};
+
+if (asJson) {
+  console.log(JSON.stringify(report, null, 2));
+} else {
+  console.log(`Impact Report for "${query}" (${report.kind})`);
+  console.log(`Patterns: ${patterns.join(', ')}`);
+  console.log(`Packages affected (${report.packagesAffected.length}): ${report.packagesAffected.join(', ') || 'none'}`);
+  console.log(`Total references: ${report.totalReferences} across ${report.totalFiles} file(s)\n`);
+  for (const h of hits) {
+    console.log(`  - ${h.file} (${h.count} hit(s); lines: ${h.lines.join(', ')}${h.count > 10 ? ', ...' : ''})`);
+  }
+}

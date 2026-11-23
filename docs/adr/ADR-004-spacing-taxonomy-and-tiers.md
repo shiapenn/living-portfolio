@@ -4,6 +4,11 @@ title: Spacing Taxonomy and Monotonic Proximity (D-L4)
 status: accepted
 date: 2026-11-23
 supersedes: null
+area: tokens
+rules:
+  - id: R-004-1
+    text: "Spacing tokens preserve monotonic proximity hierarchy (inline <= label-to-control < field < subsection < section)"
+    enforced_by: packages/design-tokens/src/drift.test.ts
 ---
 
 # ADR-004: Spacing Taxonomy and Monotonic Proximity (`D-L4`)

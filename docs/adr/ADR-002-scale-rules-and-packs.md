@@ -4,6 +4,11 @@ title: Rule-Governed Scale Packs and Proximity Tiers (D-M2)
 status: accepted
 date: 2026-11-23
 supersedes: null
+area: tokens
+rules:
+  - id: R-002-1
+    text: "Every token pack declares and satisfies mathematical scale rules and AA contrast in light and dark themes"
+    enforced_by: packages/design-tokens/src/rules.test.ts
 ---
 
 # ADR-002: Rule-Governed Scale Packs and Proximity Tiers (`D-M2`)

@@ -1,0 +1,185 @@
+#!/usr/bin/env node
+/**
+ * Design System Health Report & History Generator (`pnpm ds:health`)
+ * Computes token counts by pack, bundle gzip budgets, guard status, and component coverage.
+ * Writes docs/design/health.md (tables only; zero prose literals) and docs/design/health-history.json.
+ * Pass `--check` to verify no drift and no budget regression without writing.
+ */
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { gzipSync } from 'node:zlib';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const HEALTH_MD_PATH = resolve(ROOT, 'docs/design/health.md');
+const HISTORY_PATH = resolve(ROOT, 'docs/design/health-history.json');
+
+const BUDGETS = {
+  publicCssGzipBytes: 15 * 1024,
+  publicFontsRawBytes: 100 * 1024,
+  adminEntryCssGzipBytes: 30 * 1024,
+  editorJsGzipBytes: 150 * 1024,
+};
+
+function countPackTokens(packPath) {
+  const data = JSON.parse(readFileSync(packPath, 'utf8'));
+  let primitive = 0;
+  for (const cat of Object.values(data.primitive || {})) {
+    primitive += Object.keys(cat).length;
+  }
+  const semanticLight = Object.keys(data.semantic?.light || {}).length;
+  const semanticDark = Object.keys(data.semantic?.dark || {}).length;
+  const component = Object.keys(data.component || {}).length;
+  const aliases = Object.keys(data.governance?.aliases || {}).length;
+  return { primitive, semanticLight, semanticDark, component, aliases };
+}
+
+function gzipSizeOf(strOrBuf) {
+  return gzipSync(typeof strOrBuf === 'string' ? Buffer.from(strOrBuf, 'utf8') : strOrBuf).length;
+}
+
+function readBundleCss(relPath) {
+  const p = resolve(ROOT, relPath);
+  return existsSync(p) ? readFileSync(p, 'utf8') : '';
+}
+
+function collectCssBytes(dirRel) {
+  const dir = resolve(ROOT, dirRel);
+  if (!existsSync(dir)) return '';
+  let combined = '';
+  function walk(d) {
+    for (const e of readdirSync(d, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+      const full = resolve(d, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (e.name.endsWith('.css')) combined += readFileSync(full, 'utf8') + '\n';
+    }
+  }
+  walk(dir);
+  return combined;
+}
+
+const corePack = countPackTokens(resolve(ROOT, 'packages/design-tokens/packs/core.json'));
+const adminPack = countPackTokens(resolve(ROOT, 'packages/design-tokens/packs/admin.json'));
+const publicPack = countPackTokens(resolve(ROOT, 'packages/design-tokens/packs/public.json'));
+
+// Compute CSS/font/JS budgets directly from source/dist artifacts
+const coreCss = readBundleCss('packages/design-tokens/src/core.css') + collectCssBytes('packages/ui-core/src');
+const publicCss = readBundleCss('packages/design-tokens/src/public.css') + collectCssBytes('packages/ui-public/src');
+const adminTokensCss = readBundleCss('packages/design-tokens/src/tokens.css');
+const adminBaseCss =
+  adminTokensCss +
+  collectCssBytes('packages/ui-admin/src/base') +
+  collectCssBytes('packages/ui-admin/src/shell') +
+  collectCssBytes('packages/ui-admin/src/primitives') +
+  collectCssBytes('packages/ui-admin/src/components') +
+  collectCssBytes('packages/ui-admin/src/patterns') +
+  collectCssBytes('packages/ui-admin/src/templates');
+
+const publicCssGzip = gzipSizeOf(coreCss + '\n' + publicCss);
+const adminEntryCssGzip = gzipSizeOf(coreCss + '\n' + adminBaseCss);
+
+const fontsDir = resolve(ROOT, 'packages/ui-core/assets/fonts');
+const fontFiles = existsSync(fontsDir) ? readdirSync(fontsDir).filter((f) => f.endsWith('.woff2')).sort() : [];
+const publicFontsRaw = fontFiles.reduce((acc, f) => acc + readFileSync(resolve(fontsDir, f)).length, 0);
+
+const editorJsPath = resolve(ROOT, 'apps/web/dist/client/editor-page.js');
+const editorJsGzip = existsSync(editorJsPath) ? gzipSizeOf(readFileSync(editorJsPath)) : 0;
+
+const compReg = JSON.parse(readFileSync(resolve(ROOT, 'docs/design/components.json'), 'utf8'));
+const registeredComponents = (compReg.components || []).length;
+
+const adrDir = resolve(ROOT, 'docs/adr');
+const adrCount = existsSync(adrDir) ? readdirSync(adrDir).filter((f) => /^ADR-\d+.*\.md$/.test(f)).length : 0;
+
+const snapshot = {
+  tokens: {
+    core: corePack,
+    admin: adminPack,
+    public: publicPack,
+  },
+  budgets: {
+    publicCssGzipBytes: publicCssGzip,
+    publicFontsRawBytes: publicFontsRaw,
+    publicFontFaces: fontFiles.length,
+    adminEntryCssGzipBytes: adminEntryCssGzip,
+    editorJsGzipBytes: editorJsGzip,
+  },
+  governance: {
+    registeredComponents,
+    adrCount,
+  },
+};
+
+const budgetChecks = [
+  ['Public CSS (core + public, gzip)', publicCssGzip, BUDGETS.publicCssGzipBytes],
+  ['Public WOFF2 Fonts (raw total)', publicFontsRaw, BUDGETS.publicFontsRawBytes],
+  ['Admin Entry CSS (core + admin, gzip)', adminEntryCssGzip, BUDGETS.adminEntryCssGzipBytes],
+  ['Admin Editor JS (gzip)', editorJsGzip, BUDGETS.editorJsGzipBytes],
+];
+
+const regressions = [];
+for (const [label, actual, limit] of budgetChecks) {
+  if (actual > limit) {
+    regressions.push(`${label}: ${actual} B > budget ${limit} B`);
+  }
+}
+
+const existingHistory = existsSync(HISTORY_PATH) ? JSON.parse(readFileSync(HISTORY_PATH, 'utf8')) : { entries: [] };
+const prev = existingHistory.entries.length > 0 ? existingHistory.entries[existingHistory.entries.length - 1] : null;
+const trendLabel = prev
+  ? `Public CSS ${publicCssGzip - prev.budgets.publicCssGzipBytes >= 0 ? '+' : ''}${publicCssGzip - prev.budgets.publicCssGzipBytes} B; Admin CSS ${adminEntryCssGzip - prev.budgets.adminEntryCssGzipBytes >= 0 ? '+' : ''}${adminEntryCssGzip - prev.budgets.adminEntryCssGzipBytes} B`
+  : 'Baseline';
+
+const md = `# Design System Health Report (Generated)
+
+> Auto-generated via \`pnpm ds:health\`. Do not edit by hand.
+
+## Token Inventory by Pack
+
+| Pack | Primitive | Semantic (Light) | Semantic (Dark) | Component | Documented Aliases |
+| --- | --- | --- | --- | --- | --- |
+| \`core\` | ${corePack.primitive} | ${corePack.semanticLight} | ${corePack.semanticDark} | ${corePack.component} | ${corePack.aliases} |
+| \`admin\` | ${adminPack.primitive} | ${adminPack.semanticLight} | ${adminPack.semanticDark} | ${adminPack.component} | ${adminPack.aliases} |
+| \`public\` | ${publicPack.primitive} | ${publicPack.semanticLight} | ${publicPack.semanticDark} | ${publicPack.component} | ${publicPack.aliases} |
+
+## Payload Budgets
+
+| Asset | Measured (Bytes) | Budget (Bytes) | Status |
+| --- | --- | --- | --- |
+| Public CSS (core + public, gzip) | ${publicCssGzip} | ${BUDGETS.publicCssGzipBytes} | ${publicCssGzip <= BUDGETS.publicCssGzipBytes ? 'PASS' : 'FAIL'} |
+| Public WOFF2 Fonts (raw, ${fontFiles.length} faces) | ${publicFontsRaw} | ${BUDGETS.publicFontsRawBytes} | ${publicFontsRaw <= BUDGETS.publicFontsRawBytes ? 'PASS' : 'FAIL'} |
+| Admin Entry CSS (core + admin, gzip) | ${adminEntryCssGzip} | ${BUDGETS.adminEntryCssGzipBytes} | ${adminEntryCssGzip <= BUDGETS.adminEntryCssGzipBytes ? 'PASS' : 'FAIL'} |
+| Admin Editor JS (gzip) | ${editorJsGzip} | ${BUDGETS.editorJsGzipBytes} | ${editorJsGzip <= BUDGETS.editorJsGzipBytes ? 'PASS' : 'FAIL'} |
+
+## Governance Coverage
+
+| Metric | Value |
+| --- | --- |
+| Registered UI Components | ${registeredComponents} |
+| Architecture Decision Records | ${adrCount} |
+| History Trend | ${trendLabel} |
+`;
+
+if (regressions.length > 0) {
+  console.error('✗ [DS-HEALTH] Budget regression detected:');
+  for (const r of regressions) console.error(`  - ${r}`);
+  process.exit(1);
+}
+
+if (process.argv.includes('--check')) {
+  const existingMd = existsSync(HEALTH_MD_PATH) ? readFileSync(HEALTH_MD_PATH, 'utf8') : '';
+  if (existingMd !== md) {
+    console.error('✗ [DS-HEALTH-DRIFT] docs/design/health.md is out of sync. Run: pnpm ds:health');
+    process.exit(1);
+  }
+  console.log(`✓ Design system health check PASSED (Public CSS ${publicCssGzip} B gzip, Fonts ${publicFontsRaw} B, Admin CSS ${adminEntryCssGzip} B gzip, Editor JS ${editorJsGzip} B gzip).`);
+} else {
+  writeFileSync(HEALTH_MD_PATH, md, 'utf8');
+  const nextEntries = [...existingHistory.entries];
+  const lastJson = prev ? JSON.stringify(prev.budgets) + JSON.stringify(prev.tokens) : '';
+  const curJson = JSON.stringify(snapshot.budgets) + JSON.stringify(snapshot.tokens);
+  if (lastJson !== curJson) {
+    nextEntries.push({ recordedAt: new Date().toISOString().slice(0, 10), ...snapshot });
+  }
+  writeFileSync(HISTORY_PATH, JSON.stringify({ entries: nextEntries }, null, 2) + '\n', 'utf8');
+  console.log(`✓ Generated docs/design/health.md and updated docs/design/health-history.json (${nextEntries.length} entry/entries).`);
+}

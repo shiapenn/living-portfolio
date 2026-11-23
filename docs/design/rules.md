@@ -1,0 +1,87 @@
+# Effective Design & Architecture Rules (Generated)
+
+> Auto-generated from `docs/adr/ADR-*.md` front matter via `node scripts/generate-rules`. Do not edit by hand.
+> Superseded ADRs are excluded automatically.
+
+| Metric | Value |
+| --- | --- |
+| Accepted ADRs | 21 |
+| Superseded ADRs (excluded) | 1 |
+| Effective Rules | 26 |
+| Areas Covered | 10 |
+
+## architecture
+
+| Rule | Requirement | Source ADR | Enforced By |
+| --- | --- | --- | --- |
+| `R-001-1` | Separate UI into ui-core, ui-admin (lp-*), and ui-public (pub-*) with zero cross-language imports or bundles | [ADR-001](../adr/ADR-001-two-design-languages.md) | `scripts/verify-design-boundaries` |
+| `R-001-2` | Share one core accent seed across admin and public via user-theme accent.<hash>.css | [ADR-001](../adr/ADR-001-two-design-languages.md) | `packages/ui-core/src/accent/accent.test.ts` |
+| `R-012-1` | apps/web has zero database dependencies or imports; apps/api has zero static imports of apps/web | [ADR-012](../adr/ADR-012-d-storage-decoupling.md) | `scripts/verify-dependency-rules` |
+
+## components
+
+| Rule | Requirement | Source ADR | Enforced By |
+| --- | --- | --- | --- |
+| `R-014-1` | Admin primitives and components pass composition and markup contract unit tests | [ADR-014](../adr/ADR-014-d-comp-primitive-composition.md) | `apps/web/src/primitives/dcomp.test.ts` |
+| `R-015-1` | Public and admin routes render complete empty, error, and 404 system states with actionable CTAs | [ADR-015](../adr/ADR-015-d-sys-system-states.md) | `apps/api/src/conformance/wp11-nav-states.conformance.test.ts` |
+| `R-019-1` | Named z-index tokens enforce modal and toast stacking order without magic numbers | [ADR-019](../adr/ADR-019-d-i-overlays-and-focus.md) | `packages/design-tokens/src/drift.test.ts` |
+
+## editor
+
+| Rule | Requirement | Source ADR | Enforced By |
+| --- | --- | --- | --- |
+| `R-010-1` | Admin editor preserves lossless markdown roundtrip and loads route-split editor CSS only on editor routes | [ADR-010](../adr/ADR-010-d-editor-markdown-architecture.md) | `apps/web/src/editor/roundtrip.test.ts` |
+
+## governance
+
+| Rule | Requirement | Source ADR | Enforced By |
+| --- | --- | --- | --- |
+| `R-003-1` | Admin and public enforce universal accessibility, containment, and isolation floors in Playwright census | [ADR-003](../adr/ADR-003-governance-modes-and-floors.md) | `tests/e2e/wp16-m-public-census.spec.ts` |
+| `R-006-1` | Backlog items declare dependencies and owner gates in docs/plans/backlog.yml | [ADR-006](../adr/ADR-006-self-selecting-backlog.md) | `scripts/backlog-next` |
+| `R-020-1` | Component registry docs/design/components.json stays synchronized with co-located component sources | [ADR-020](../adr/ADR-020-d-j-component-registry-governance.md) | `scripts/generate-registry` |
+| `R-020-2` | Design decisions index and effective rules stay synchronized with docs/adr/ front matter | [ADR-020](../adr/ADR-020-d-j-component-registry-governance.md) | `scripts/generate-decisions` |
+| `R-020-3` | Every accepted ADR rule links to a valid enforcement guard/test or explicit manual review | [ADR-020](../adr/ADR-020-d-j-component-registry-governance.md) | `scripts/generate-rules` |
+| `R-022-1` | Design system payload budgets and token inventory are tracked in docs/design/health.md and guarded against regression | [ADR-022](../adr/ADR-022-d-l-consolidation-health-changesets.md) | `scripts/ds-health` |
+| `R-022-2` | Changes to UI packages require a .changeset entry and up-to-date package CHANGELOG.md files | [ADR-022](../adr/ADR-022-d-l-consolidation-health-changesets.md) | `scripts/verify-changeset` |
+| `R-022-3` | All consolidation DoD criteria pass together under pnpm wp16n:verify | [ADR-022](../adr/ADR-022-d-l-consolidation-health-changesets.md) | `scripts/wp16n-verify` |
+
+## layout
+
+| Rule | Requirement | Source ADR | Enforced By |
+| --- | --- | --- | --- |
+| `R-009-1` | Zero horizontal overflow across 320px, 1280px, and 1920px viewports in both admin and public | [ADR-009](../adr/ADR-009-d-layout-grid-and-breakpoints.md) | `tests/e2e/wp16-r-style-census.spec.ts` |
+| `R-013-1` | Admin and public pages preserve single H1 hierarchy and tokenized section spacing rhythm | [ADR-013](../adr/ADR-013-d-sections-rhythm.md) | `tests/e2e/wp16-g-census.spec.ts` |
+| `R-021-1` | List items align flush with parent section boundaries (replaces legacy D-H negative bleed) | [ADR-021](../adr/ADR-021-d-k-item-flush-alignment.md) | `tests/e2e/wp16-g-census.spec.ts` |
+
+## public-language
+
+| Rule | Requirement | Source ADR | Enforced By |
+| --- | --- | --- | --- |
+| `R-007-1` | Public neutrals stay strictly chroma-neutral (OKLCH chroma <= 0.01) with real self-hosted WOFF2 editorial fonts and CJK :lang(zh) support | [ADR-007](../adr/ADR-007-public-direction-quiet-editorial-neutral.md) | `packages/design-tokens/src/rules.test.ts` |
+
+## settings
+
+| Rule | Requirement | Source ADR | Enforced By |
+| --- | --- | --- | --- |
+| `R-011-1` | Admin settings groups and fields are declared in the central typed settings registry | [ADR-011](../adr/ADR-011-d-settings-arch-registry.md) | `apps/web/src/settings/registry.test.ts` |
+
+## testing
+
+| Rule | Requirement | Source ADR | Enforced By |
+| --- | --- | --- | --- |
+| `R-017-1` | All 42 admin states and 16 public states pass automated multi-viewport, dual-theme census with zero violations | [ADR-017](../adr/ADR-017-d-g-contact-sheet-census.md) | `tests/e2e/wp16-r-style-census.spec.ts` |
+
+## tokens
+
+| Rule | Requirement | Source ADR | Enforced By |
+| --- | --- | --- | --- |
+| `R-002-1` | Every token pack declares and satisfies mathematical scale rules and AA contrast in light and dark themes | [ADR-002](../adr/ADR-002-scale-rules-and-packs.md) | `packages/design-tokens/src/rules.test.ts` |
+| `R-004-1` | Spacing tokens preserve monotonic proximity hierarchy (inline <= label-to-control < field < subsection < section) | [ADR-004](../adr/ADR-004-spacing-taxonomy-and-tiers.md) | `packages/design-tokens/src/drift.test.ts` |
+| `R-005-1` | Zero unresolved token aliases, zero emitted primitives, and full CSS custom property closure | [ADR-005](../adr/ADR-005-token-tiers-and-closure.md) | `scripts/verify-css-variables` |
+
+## visual-discipline
+
+| Rule | Requirement | Source ADR | Enforced By |
+| --- | --- | --- | --- |
+| `R-008-1` | Avoid decorative chrome and redundant containers; rely on whitespace and hairline rules for structure | [ADR-008](../adr/ADR-008-d-min-quiet-restraint.md) | `manual review` |
+| `R-016-1` | Zero hard-coded color, spacing, or timing literals outside token sources and zero inline style= attributes | [ADR-016](../adr/ADR-016-d-final-visual-polish.md) | `scripts/verify-ui-guards` |
