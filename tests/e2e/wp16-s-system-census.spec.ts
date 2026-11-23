@@ -244,9 +244,10 @@ async function scanDSysOnPage(
           violations.itemHoverAndPadding++;
           details.itemHoverAndPadding.push(`Item container ${container.className} clips bleed (padL=${padLeft}, padR=${padRight})`);
         }
+        const isPlainList = container.getAttribute('data-variant') === 'plain' || container.classList.contains('lp-list-plain');
         const title = item.querySelector('.lp-item-title') ?? item;
         const tRect = title.getBoundingClientRect();
-        if (tRect.left - cRect.left < 7.5) {
+        if (!isPlainList && tRect.left - cRect.left < 7.5) {
           violations.itemHoverAndPadding++;
           details.itemHoverAndPadding.push(`Item text "${title.textContent?.trim()}" within 8px of container edge (${(tRect.left - cRect.left).toFixed(1)}px)`);
         }

@@ -90,3 +90,35 @@ export function renderItem(props: ItemProps): string {
   }
   return `<div${idAttr} data-c="Item" data-rel="item" class="${escapeHtml(classes)}"${extra}>${inner}</div>`;
 }
+
+export type ListVariant = 'plain' | 'interactive';
+
+export interface ListProps {
+  id?: string;
+  variant: ListVariant;
+  itemsHtml: string;
+  empty?: boolean;
+  className?: string;
+  attributes?: string;
+}
+
+/**
+ * Unified List primitive (D-L2, D-L3):
+ * - plain: no hover/selected/pressed tint, no chevron; Item content and buttons sit flush on the column edge;
+ *   absorbs first/last Item vertical padding (ink-measured).
+ * - interactive: rows that navigate or select; Item rect equals column, content inset, hover and selected tint;
+ *   keeps top/bottom padding for tint clearance.
+ */
+export function renderList(props: ListProps): string {
+  const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
+  const classes = [
+    'lp-list',
+    `lp-list-${props.variant}`,
+    props.empty ? 'lp-is-empty' : '',
+    props.className,
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const extra = props.attributes ? ` ${props.attributes}` : '';
+  return `<div${idAttr} data-c="List" data-variant="${props.variant}" class="${escapeHtml(classes)}"${extra}>${props.itemsHtml}</div>`;
+}

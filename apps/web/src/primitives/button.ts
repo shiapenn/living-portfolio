@@ -1,13 +1,14 @@
 import { escapeHtml } from '../lib/html.js';
 import { isKnownIconName, renderIcon, type IconName, type IconSize } from './icons.js';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'quiet' | 'text';
+export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'quiet' | 'text' | 'text-danger';
 export type ButtonSize = 'sm' | 'md';
 
 export interface ButtonProps {
   label: string;
   ariaLabel?: string;
   variant?: ButtonVariant;
+  destructive?: boolean;
   size?: ButtonSize;
   type?: 'button' | 'submit' | 'reset';
   id?: string;
@@ -69,13 +70,16 @@ function normalizeIconName(raw: string): IconName {
  * Loading buttons retain full text contrast and display a 16px spinner (D-FOUND-5).
  */
 export function renderButton(props: ButtonProps): string {
-  const variant = props.variant ?? 'secondary';
+  const rawVariant = props.variant ?? 'secondary';
+  const isDestructiveText = rawVariant === 'text-danger' || (rawVariant === 'text' && Boolean(props.destructive));
+  const variant = isDestructiveText ? 'text' : rawVariant;
   const size = props.size ?? 'md';
   const type = props.type ?? 'button';
   const isDisabled = Boolean(props.disabled || props.loading);
   const classes = [
     'lp-btn',
     `lp-btn-${variant}`,
+    isDestructiveText ? 'lp-btn-text-danger' : '',
     `lp-btn-${size}`,
     props.loading ? 'lp-btn-loading' : '',
     props.className,
@@ -90,12 +94,13 @@ export function renderButton(props: ButtonProps): string {
   const busyAttr = props.loading ? ' aria-busy="true"' : '';
   const ariaLabelAttr = props.ariaLabel ? ` aria-label="${escapeHtml(props.ariaLabel)}"` : '';
   const disabledAttr = isDisabled ? ' disabled' : '';
+  const destructiveAttr = isDestructiveText ? ' data-destructive="true"' : '';
   const data = formatDataAttrs(props.dataAttrs);
   const spinner = props.loading ? `${renderIcon({ name: 'loader', size: 16, className: 'lp-icon-spin' })} ` : '';
   if (props.href && !isDisabled) {
-    return `<a href="${escapeHtml(props.href)}" data-c="Button" class="${escapeHtml(classes)}"${idAttr}${ariaLabelAttr}${titleAttr}${data}>${spinner}<span>${escapeHtml(props.label)}</span></a>`;
+    return `<a href="${escapeHtml(props.href)}" data-c="Button" class="${escapeHtml(classes)}"${idAttr}${ariaLabelAttr}${titleAttr}${destructiveAttr}${data}>${spinner}<span>${escapeHtml(props.label)}</span></a>`;
   }
-  return `<button type="${type}" data-c="Button" class="${escapeHtml(classes)}"${idAttr}${nameAttr}${valueAttr}${ariaLabelAttr}${titleAttr}${busyAttr}${disabledAttr}${data}>${spinner}<span>${escapeHtml(props.label)}</span></button>`;
+  return `<button type="${type}" data-c="Button" class="${escapeHtml(classes)}"${idAttr}${nameAttr}${valueAttr}${ariaLabelAttr}${titleAttr}${busyAttr}${disabledAttr}${destructiveAttr}${data}>${spinner}<span>${escapeHtml(props.label)}</span></button>`;
 }
 
 /**

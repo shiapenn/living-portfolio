@@ -9,6 +9,7 @@ import {
   renderIcon,
   renderIconButton,
   renderItem,
+  renderList,
   renderOverlay,
   renderPageHeader,
   renderSectionHeader,
@@ -37,24 +38,8 @@ export interface GalleryOptions {
  */
 export function renderComponentGalleryPage(options: GalleryOptions = {}): string {
   const requiredIcons = [
-    'grid',
-    'user',
-    'bold',
-    'italic',
-    'heading',
-    'link',
-    'list',
-    'quote',
-    'code',
-    'source',
-    'clock',
-    'layers',
-    'more',
-    'search',
-    'chevron-down',
-    'chevron-left',
-    'check',
-    'close',
+    'grid', 'user', 'bold', 'italic', 'heading', 'link', 'list', 'quote', 'code',
+    'source', 'clock', 'layers', 'more', 'search', 'chevron-down', 'chevron-left', 'check', 'close',
   ] as const;
 
   const bodyHtml = `
@@ -82,6 +67,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
           ${renderButton({ label: 'Primary', variant: 'primary' })}
           ${renderButton({ label: 'Secondary', variant: 'secondary' })}
           ${renderButton({ label: 'Quiet', variant: 'quiet' })}
+          ${renderButton({ id: 'gallery-btn-text-danger', label: 'Delete rule', variant: 'text-danger' })}
           ${renderButton({ label: 'Hover', variant: 'secondary', className: 'is-hover' })}
           ${renderButton({ label: 'Pressed', variant: 'secondary', dataAttrs: { pressed: 'true' } })}
           ${renderButton({ label: 'Disabled', variant: 'secondary', disabled: true, disabledReason: 'Unavailable in this state' })}
@@ -102,47 +88,54 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
       </section>
 
       <section id="gallery-item" class="lp-gallery-section" data-component="Item">
-        ${renderSectionHeader({ title: 'Item' })}
-        ${renderText({ variant: 'description', text: 'Parent: List container (.lp-list) · Children: Title, StatusLabel + Chevron, Subtitle, Body/Segments, Meta, ActionBar.' })}
-        <div class="lp-list">
-        ${renderItem({
-          id: 'gallery-item-link',
-          href: '#gallery-item',
-          leadingIcon: 'file-text',
-          title: 'Clickable item without actions',
-          subtitle: 'Subtitle · Scope',
-          body: 'Plain-text body excerpt.',
-          meta: '16 Nov 2026 · 14:30',
-          statusLabel: 'Active',
-          statusTone: 'ok',
+        ${renderSectionHeader({ title: 'Item & List (plain | interactive)' })}
+        ${renderText({ variant: 'description', text: 'Parent: List container (.lp-list, variants plain & interactive) · Children: Title, StatusLabel + Chevron, Subtitle, Body/Segments, Meta, ActionBar.' })}
+        ${renderList({
+          id: 'gallery-list-interactive',
+          variant: 'interactive',
+          itemsHtml: `${renderItem({
+            id: 'gallery-item-link',
+            href: '#gallery-item',
+            leadingIcon: 'file-text',
+            title: 'Clickable item without actions',
+            subtitle: 'Subtitle · Scope',
+            body: 'Plain-text body excerpt.',
+            meta: '16 Nov 2026 · 14:30',
+            statusLabel: 'Active',
+            statusTone: 'ok',
+            showChevron: true,
+          })}${renderItem({
+            id: 'gallery-item-selected',
+            href: '#gallery-item',
+            title: 'Selected item state',
+            subtitle: 'Selected row',
+            statusLabel: 'Pending',
+            statusTone: 'warn',
+            selected: true,
+            showChevron: true,
+          })}`,
         })}
-        ${renderItem({
-          id: 'gallery-item-selected',
-          href: '#gallery-item',
-          title: 'Selected item state',
-          subtitle: 'Selected row',
-          statusLabel: 'Pending',
-          statusTone: 'warn',
-          selected: true,
+        ${renderList({
+          id: 'gallery-list-plain',
+          variant: 'plain',
+          itemsHtml: renderItem({
+            id: 'gallery-item-actions',
+            title: 'Item with segments and actions',
+            subtitle: 'Scope: Public answers',
+            segments: [
+              { heading: 'Rule', body: 'Always state the date of evidence.' },
+              { heading: 'Source quote', body: 'Reviewed during Q3 audit.' },
+            ],
+            meta: '16 Nov 2026 · 15:00',
+            statusLabel: 'Pending',
+            statusTone: 'warn',
+            actions: {
+              level: 'item',
+              secondary: { label: 'Confirm', variant: 'secondary' },
+              textAction: { label: 'Dismiss', variant: 'text' },
+            },
+          }),
         })}
-        ${renderItem({
-          id: 'gallery-item-actions',
-          title: 'Item with segments and actions',
-          subtitle: 'Scope: Public answers',
-          segments: [
-            { heading: 'Rule', body: 'Always state the date of evidence.' },
-            { heading: 'Source quote', body: 'Reviewed during Q3 audit.' },
-          ],
-          meta: '16 Nov 2026 · 15:00',
-          statusLabel: 'Pending',
-          statusTone: 'warn',
-          actions: {
-            level: 'item',
-            secondary: { label: 'Confirm', variant: 'secondary' },
-            textAction: { label: 'Dismiss', variant: 'text' },
-          },
-        })}
-        </div>
       </section>
 
       <section id="gallery-action-bar" class="lp-gallery-section" data-component="ActionBar">

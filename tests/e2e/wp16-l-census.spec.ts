@@ -102,6 +102,24 @@ test.describe('WP-16.L Census Canaries (synthetic broken DOM, verifying L1, L2, 
     expect(issues.some((i) => i.includes('l3-interactive-tint-clearance'))).toBe(true);
     expect(issues.some((i) => i.includes('l3-interactive-gap-to-tint'))).toBe(true);
   });
+
+  test('L1 gallery verification: /admin/_gallery renders List plain and interactive variants, destructive text button, and D-L1 item ActionBar', async ({ page }) => {
+    await ensureAdminLoggedIn(page);
+    const ids = await getSeededIds(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await navigateToState(page, STATES.find((s) => s.id === 'gallery')!, ids);
+
+    await expect(page.locator('#gallery-list-interactive[data-c="List"][data-variant="interactive"]')).toBeVisible();
+    await expect(page.locator('#gallery-list-plain[data-c="List"][data-variant="plain"]')).toBeVisible();
+    await expect(page.locator('#gallery-btn-text-danger')).toBeVisible();
+
+    const l1Report = await checkItemButtonGrammarL1(page, 'gallery');
+    expect(l1Report.barCount).toBeGreaterThan(0);
+    expect(l1Report.issues).toEqual([]);
+
+    const l2Report = await checkListVariantsAndTextEdgesL2(page, 'gallery');
+    expect(l2Report.issues).toEqual([]);
+  });
 });
 
 test.describe('WP-16.L Failing-First Defect Verification on 3d312a9 (UX-213..UX-215)', () => {

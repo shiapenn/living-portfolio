@@ -1172,11 +1172,13 @@ export async function checkItemGeometryI8(page: Page, stateId = ''): Promise<{ p
       if (Math.abs(ir.left - lr.left) > 1 || Math.abs(ir.right - lr.right) > 1) {
         issues.push(`i8-item-bleed(${sid}): item=[${Math.round(ir.left)}..${Math.round(ir.right)}] list=[${Math.round(lr.left)}..${Math.round(lr.right)}]`);
       }
+      const isPlain = list.getAttribute('data-variant') === 'plain' || list.classList.contains('lp-list-plain');
+      const expectedInset = isPlain ? 0 : 8;
       const title = item.querySelector<HTMLElement>('.lp-item-title');
       if (title) {
         const tr = title.getBoundingClientRect();
-        if (Math.abs(tr.left - (lr.left + 8)) > 1.5) {
-          issues.push(`i8-title-inset(${sid}): titleLeft=${Math.round(tr.left)} expected=${Math.round(lr.left + 8)}`);
+        if (Math.abs(tr.left - (lr.left + expectedInset)) > 1.5) {
+          issues.push(`i8-title-inset(${sid}): titleLeft=${Math.round(tr.left)} expected=${Math.round(lr.left + expectedInset)}`);
         }
       }
     }

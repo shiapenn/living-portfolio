@@ -8,7 +8,7 @@
 
 - Primitive tokens: **216**
 - Semantic tokens (per theme): **63**
-- Component, relation & typography tokens: **198**
+- Component, relation & typography tokens: **208**
 - Reserved tokens: **31**
 
 ## Breakpoints
@@ -28,6 +28,10 @@
 | `tabs-to-content` | `--lp-rel-tabs-to-content` | `16px` |
 | `section-heading-to-intro` | `--lp-rel-section-heading-to-intro` | `8px` |
 | `heading-to-first` | `--lp-rel-heading-to-first` | `16px` |
+| `heading-to-list-plain` | `--lp-rel-heading-to-list-plain` | `16px` |
+| `heading-to-list-interactive` | `--lp-rel-heading-to-list-interactive` | `16px` |
+| `control-to-list` | `--lp-rel-control-to-list` | `16px` |
+| `tint-clearance` | `--lp-rel-tint-clearance` | `8px` |
 | `subsection-to-subsection` | `--lp-rel-subsection-to-subsection` | `24px` |
 | `label-to-control` | `--lp-rel-label-to-control` | `8px` |
 | `field-to-field` | `--lp-rel-field-to-field` | `16px` |
@@ -259,6 +263,12 @@
 | `--lp-elevation-subtle-ring` | `rgba(0, 0, 0, 0.1)` |
 | `--lp-size-17` | `17px` |
 | `--lp-size-640` | `640px` |
+| `--lp-space-stack-control-to-list` | `16px` |
+| `--lp-space-stack-heading-to-list-plain` | `16px` |
+| `--lp-space-stack-heading-to-list-interactive` | `16px` |
+| `--lp-space-stack-tint-clearance` | `8px` |
+| `--lp-space-inset-item-x` | `8px` |
+| `--lp-space-inset-item-y` | `12px` |
 
 ## Reserved Tokens
 
