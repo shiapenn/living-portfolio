@@ -110,7 +110,11 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
         try { localStorage.setItem('strata-theme', t); } catch {}
         void document.body.offsetHeight;
         await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        for (const a of document.getAnimations()) {
+          try { a.finish(); } catch {}
+        }
         await Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {})));
+        await new Promise((r) => requestAnimationFrame(r));
       }, theme);
 
       const res = await page.evaluate(({ isTemplate, vpWidth }) => {
