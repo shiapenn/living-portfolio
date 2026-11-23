@@ -1944,13 +1944,13 @@ export async function checkListSpacingAndHeadersL3(page: Page, stateId = ''): Pr
         const prevBounds = getInkAndControlBounds(prev);
         const firstInk = getInkAndControlBounds(items[0]);
         const firstTintTop = getFirstItemTintTop(items[0]);
+        const prevBoxBottom = prev.getBoundingClientRect().bottom;
+        const prevLowestEdge = prevBounds ? Math.max(prevBoxBottom, prevBounds.bottom) : prevBoxBottom;
 
         if (prevBounds && firstInk) {
           gapToInk = Math.round((firstInk.top - prevBounds.bottom) * 10) / 10;
         }
-        if (prevBounds) {
-          gapToTint = Math.round((firstTintTop - prevBounds.bottom) * 10) / 10;
-        }
+        gapToTint = Math.round((firstTintTop - prevLowestEdge) * 10) / 10;
 
         // Check header action button overlap explicitly
         const headerBtn = prev.querySelector<HTMLElement>('.lp-section-header-action button, .lp-section-header-action .lp-icon-btn');
