@@ -171,10 +171,10 @@ Always use transaction-scoped locks with pooling.`;
     it('3. Band heights follow square-root scaling between min and max tokens', async () => {
       const { html } = await renderStrataTimelineSection(repo as any);
 
-      // Active months have height scaled with Math.min(120, Math.round(52 + Math.sqrt(count) * 28))
-      expect(html).toContain('style="height:80px"'); // count=1 -> 52 + 28 = 80px
-      // Empty months have fixed 44px touch-accessible height with hairline
-      expect(html).toContain('style="height:var(--lp-size-strata-band-min)"');
+      // Active months use data-band-tier="2".."5" (no inline style=)
+      expect(html).toMatch(/data-band-tier="[2-5]"/);
+      // Empty months have fixed touch-accessible height via data-band-tier="1"
+      expect(html).toContain('data-band-tier="1"');
     });
 
     it('4. As-of cursor renders slider semantics and labeled handle', async () => {
@@ -235,16 +235,11 @@ Always use transaction-scoped locks with pooling.`;
       const res = await renderEntryDetailPage(repo as any, 'distributed-lock-manager');
       expect(res.status).toBe(200);
 
-      // Header padding and margin tokens
-      expect(res.html).toContain('margin-bottom:var(--lp-space-proximity-4)');
-      expect(res.html).toContain('padding-bottom:var(--lp-space-inset-section)');
-
-      // Date line margin tokens
-      expect(res.html).toContain('margin:var(--lp-space-stack-label-to-control) 0 var(--lp-space-stack-label-to-control)');
-
-      // Rail section margins
-      expect(res.html).toContain('margin-top:var(--lp-space-proximity-4)');
-      expect(res.html).toContain('padding-top:var(--lp-space-inset-section)');
+      // Tokenized classes replace inline style= attributes (zero inline styles)
+      expect(res.html).toContain('class="pub-header-rule pub-mb-md"');
+      expect(res.html).toContain('class="entry-date-line tabular-nums');
+      expect(res.html).toContain('class="pub-section pub-mt-md"');
+      expect(res.html).not.toMatch(/\sstyle="/);
     });
   });
 

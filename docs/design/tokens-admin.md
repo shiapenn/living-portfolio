@@ -7,7 +7,7 @@
 | Version | `3.0.0` |
 | Primitive | 191 |
 | Semantic (per theme) | 47 |
-| Component | 136 |
+| Component | 126 |
 | Responsive | 2 |
 
 ## Breakpoints
@@ -142,20 +142,16 @@
 | `--lp-space-stack-section-to-section` | `40px` |
 | `--lp-space-stack-action-bar-after-section` | `40px` |
 | `--lp-space-inline-segment` | `4px` |
-| `--lp-space-inline-dot-text` | `8px` |
 | `--lp-space-inline-icon-text` | `8px` |
 | `--lp-space-inline-button-button` | `8px` |
 | `--lp-space-inline-tag-tag` | `8px` |
 | `--lp-space-inset-tag-y` | `2px` |
 | `--lp-space-inset-track` | `4px` |
-| `--lp-space-inset-badge-x` | `4px` |
 | `--lp-space-inset-item-x` | `8px` |
 | `--lp-space-inset-tag-x` | `8px` |
-| `--lp-space-inset-control-sm` | `12px` |
 | `--lp-space-inset-item-y` | `12px` |
 | `--lp-space-inset-control-x` | `12px` |
 | `--lp-space-inset-panel` | `12px` |
-| `--lp-space-inset-card-sm` | `16px` |
 | `--lp-space-inset-page-gutter` | `16px` |
 | `--lp-space-inset-section` | `16px` |
 | `--lp-space-inset-dialog` | `24px` |
@@ -186,13 +182,10 @@
 | `--lp-size-admin-nav-width` | `240px` |
 | `--lp-size-admin-inspector-width` | `320px` |
 | `--lp-size-layout-narrow-max` | `400px` |
-| `--lp-size-layout-reading-col` | `640px` |
 | `--lp-size-layout-main-max` | `720px` |
 | `--lp-size-layout-wide-col` | `800px` |
 | `--lp-size-layout-dashboard-max` | `960px` |
 | `--lp-size-layout-max` | `1200px` |
-| `--lp-size-strata-band-min` | `44px` |
-| `--lp-size-strata-band-max` | `120px` |
 | `--lp-size-btn-item-min` | `96px` |
 | `--lp-size-btn-action-min` | `160px` |
 | `--lp-size-btn-action-max` | `240px` |
@@ -225,17 +218,13 @@
 | `--lp-motion-duration-pulse` | `960ms` |
 | `--lp-motion-easing-standard` | `cubic-bezier(0.2, 0, 0, 1)` |
 | `--lp-motion-easing-out` | `cubic-bezier(0, 0, 0.2, 1)` |
-| `--lp-font-family-ui` | `'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif` |
-| `--lp-font-family-reading` | `'Literata', Georgia, 'Times New Roman', serif` |
+| `--lp-font-family-ui` | `'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', sans-serif` |
+| `--lp-font-family-reading` | `'Literata', Georgia, 'Times New Roman', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', serif` |
 | `--lp-font-family-code` | `'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace` |
 | `--lp-font-size-12` | `12px` |
 | `--lp-font-size-14` | `14px` |
 | `--lp-font-size-16` | `16px` |
-| `--lp-font-size-18` | `18px` |
-| `--lp-font-size-20` | `20px` |
 | `--lp-font-size-24` | `24px` |
-| `--lp-font-size-28` | `28px` |
-| `--lp-font-size-32` | `32px` |
 | `--lp-font-weight-400` | `400` |
 | `--lp-font-weight-600` | `600` |
 | `--lp-font-line-16` | `16px` |
@@ -250,6 +239,7 @@
 | `--lp-elevation-e2-blur` | `32px` |
 | `--lp-elevation-e0` | `none` |
 | `--lp-opacity-disabled` | `0.5` |
+| `--lp-size-strata-band-max` | `120px` |
 
 ## Documented Aliases
 
@@ -258,12 +248,10 @@
 | `color.surface.subtle` | `color.surface.overlay` | Surface alias for recessed subtle panels on L1 |
 | `space.inline.segment` | `space.proximity.1` | D-L4 inline relation: segmented control gap |
 | `space.inset.track` | `space.proximity.1` | D-L4 inset relation: segmented track padding |
-| `space.inset.badge-x` | `space.proximity.1` | D-L4 inset relation: badge horizontal padding |
 | `space.stack.label-to-control` | `space.proximity.2` | D-L4 stack relation: label to control |
 | `space.stack.tint-clearance` | `space.proximity.2` | D-L4 stack relation: tinted row clearance |
 | `space.stack.page-title-to-description` | `space.proximity.2` | D-L4 stack relation: page title to subtitle |
 | `space.stack.section-heading-to-intro` | `space.proximity.2` | D-L4 stack relation: section heading to intro |
-| `space.inline.dot-text` | `space.proximity.2` | D-L4 inline relation: status dot to label |
 | `space.inline.icon-text` | `space.proximity.2` | D-L4 inline relation: icon to label |
 | `space.inline.button-button` | `space.proximity.2` | D-L4 inline relation: peer buttons |
 | `space.inline.tag-tag` | `space.proximity.2` | D-L4 inline relation: peer tags |
@@ -279,7 +267,6 @@
 | `space.stack.control-to-list` | `space.proximity.3` | D-L4 stack relation: filter control to list |
 | `space.stack.tabs-to-content` | `space.proximity.3` | D-L4 stack relation: tabs to tabpanel |
 | `space.stack.dialog-title-to-body` | `space.proximity.3` | D-L4 stack relation: dialog title to body |
-| `space.inset.card-sm` | `space.proximity.3` | D-L4 inset relation: compact card padding |
 | `space.inset.page-gutter` | `space.proximity.3` | D-L4 responsive page gutter (switches to proximity.4 at md) |
 | `space.inset.section` | `space.proximity.3` | D-L4 inset relation: section padding |
 | `space.stack.subsection-to-subsection` | `space.proximity.4` | D-L4 stack relation: subsection separation |
@@ -292,7 +279,6 @@
 | `space.stack.action-bar-after-section` | `space.proximity.5` | D-L4 stack relation: action bar after section |
 | `space.inset.page-y` | `space.proximity.5` | D-L4 inset relation: page vertical padding |
 | `size.hit-area` | `size.control-height` | Invariant WCAG touch target floor (control-height shrinks at sm) |
-| `size.strata-band-min` | `size.hit-area` | Minimum interactive height for chronological timeline band |
 | `size.checkbox-sm` | `size.icon-sm` | Checkbox box dimension |
 | `size.switch-thumb` | `size.icon-sm` | Toggle switch thumb diameter |
 | `size.indicator-md` | `size.status-dot` | Medium status indicator diameter |

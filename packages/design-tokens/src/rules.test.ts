@@ -91,7 +91,6 @@ describe('D-M2 Scale Rules & Governance Validation across Core, Admin, and Publi
     const layoutKeys = [
       'size.admin-inspector-width',
       'size.layout-narrow-max',
-      'size.layout-reading-col',
       'size.layout-main-max',
       'size.layout-wide-col',
       'size.layout-dashboard-max',
@@ -196,6 +195,26 @@ describe('D-M2 Scale Rules & Governance Validation across Core, Admin, and Publi
       expect(contrastRatio(t1, bg), `public ${mode} text.primary`).toBeGreaterThanOrEqual(r.minTextContrast);
       expect(contrastRatio(t2, bg), `public ${mode} text.secondary`).toBeGreaterThanOrEqual(r.minTextContrast);
       expect(contrastRatio(border, bg), `public ${mode} border.strong`).toBeGreaterThanOrEqual(r.minUiContrast);
+    }
+    // Public neutrals must be chroma-neutral (OKLCH chroma <= 0.01, ADR-007 / D-N1)
+    const hexToOklchChroma = (hex: string): number => {
+      const [r, g, b] = hexToRgb(hex).map((v) => {
+        const s = v / 255;
+        return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+      });
+      const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+      const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+      const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+      const A = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
+      const B = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
+      return Math.hypot(A, B);
+    };
+    const maxChroma = r.maxNeutralChroma ?? 0.01;
+    for (const [k, v] of Object.entries<string>(pub.primitive.color)) {
+      if (/^(white|paper-|ink-|night-)/.test(k)) {
+        const c = hexToOklchChroma(v);
+        expect(c, `public neutral ${k}=${v} has OKLCH chroma ${c.toFixed(4)} > ${maxChroma}`).toBeLessThanOrEqual(maxChroma);
+      }
     }
     // Public semantic tokens must be theme-switched (light !== dark)
     for (const k of Object.keys(pub.semantic.light)) {

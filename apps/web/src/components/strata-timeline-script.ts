@@ -7,8 +7,9 @@ export const STRATA_TIMELINE_SCRIPT = `
 
         function updateCursor(targetBand) {
           if (!cursor || !targetBand) return;
-          const leftPos = targetBand.offsetLeft + (targetBand.offsetWidth / 2);
-          cursor.style.left = leftPos + 'px';
+          if (cursor.parentElement !== targetBand) {
+            targetBand.appendChild(cursor);
+          }
         }
 
         const activeBand = document.querySelector('.strata-band[data-cursor="true"]') ||

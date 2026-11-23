@@ -36,3 +36,11 @@ export {
   DEFAULT_ACCENT_CSS_HASH,
   DEFAULT_ACCENT_CSS_FILENAME,
 } from './accent/default-accent.js';
+export {
+  ATKINSON_FONT,
+  LITERATA_FONT,
+  FONT_ASSETS,
+  TOTAL_FONT_BYTES,
+  PUBLIC_FONT_FACE_CSS,
+  PUBLIC_FONT_PRELOAD_HTML,
+} from './fonts/fonts.js';

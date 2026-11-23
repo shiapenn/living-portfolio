@@ -55,34 +55,35 @@
       480
     ],
     "minTextContrast": 4.5,
-    "minUiContrast": 3
+    "minUiContrast": 3,
+    "maxNeutralChroma": 0.01
   },
   "oklchSeeds": {
-    "paper": "oklch(0.985 0.004 240)",
-    "ink": "oklch(0.22 0.025 240)",
+    "paper": "oklch(1.00 0.000 0)",
+    "ink": "oklch(0.19 0.000 0)",
     "accent": "oklch(0.50 0.19 266)"
   },
   "primitive": {
     "color": {
       "white": "#FFFFFF",
-      "paper-50": "#F5F6F7",
-      "paper-100": "#EEF1F3",
-      "paper-150": "#EBEFF2",
-      "paper-200": "#E1E6EA",
-      "paper-300": "#CBD3D8",
-      "ink-400": "#6B7B88",
-      "ink-500": "#63727E",
-      "ink-600": "#4B5A66",
-      "ink-700": "#2D3B45",
-      "ink-900": "#14202A",
-      "night-950": "#0F1A22",
-      "night-900": "#16232D",
-      "night-800": "#1E2E3B",
-      "night-700": "#2A3946",
-      "night-500": "#7E8F9C",
-      "night-400": "#8A99A6",
-      "night-300": "#A3B2BD",
-      "night-100": "#E6ECEF",
+      "paper-50": "#FAFAFA",
+      "paper-100": "#F5F5F5",
+      "paper-150": "#F0F0F0",
+      "paper-200": "#E5E5E5",
+      "paper-300": "#D4D4D4",
+      "ink-400": "#737373",
+      "ink-500": "#666666",
+      "ink-600": "#525252",
+      "ink-700": "#333333",
+      "ink-900": "#141414",
+      "night-950": "#111111",
+      "night-900": "#171717",
+      "night-800": "#222222",
+      "night-700": "#333333",
+      "night-500": "#737373",
+      "night-400": "#8C8C8C",
+      "night-300": "#B3B3B3",
+      "night-100": "#F2F2F2",
       "accent-600": "#3A4FD0",
       "accent-800": "#1E329E",
       "accent-300": "#9AA8FF",
@@ -135,9 +136,9 @@
       "4": "4px"
     },
     "font": {
-      "family-display": "'Literata', Georgia, 'Times New Roman', serif",
-      "family-prose": "'Literata', Georgia, 'Times New Roman', serif",
-      "family-ui": "'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      "family-display": "'Literata', 'Literata Fallback', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', Georgia, serif",
+      "family-prose": "'Literata', 'Literata Fallback', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', Georgia, serif",
+      "family-ui": "'Atkinson Hyperlegible Next', 'Atkinson Fallback', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', -apple-system, BlinkMacSystemFont, sans-serif",
       "family-mono": "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
       "size-caption": "clamp(0.75rem, 0.72rem + 0.15vw, 0.875rem)",
       "size-body": "clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem)",
@@ -152,7 +153,8 @@
       "weight-600": "600",
       "letter-tight": "-0.015em",
       "letter-normal": "0em",
-      "letter-wide": "0.04em"
+      "letter-wide": "0.04em",
+      "line-zh": "1.7"
     },
     "motion": {
       "duration-0": "0ms",
@@ -202,7 +204,7 @@
       "color.text.muted": "{primitive.color.night-400}",
       "color.text.on-accent": "{primitive.color.night-950}",
       "color.border.rule": "{primitive.color.night-700}",
-      "color.border.strong": "{primitive.color.night-500}",
+      "color.border.strong": "{primitive.color.night-400}",
       "color.accent.primary": "{primitive.color.accent-300}",
       "color.accent.tint": "{primitive.color.accent-900}",
       "color.accent.ink": "{primitive.color.accent-200}",
@@ -246,7 +248,8 @@
     "motion.duration-base": "{primitive.motion.duration-base}",
     "motion.duration-slow": "{primitive.motion.duration-slow}",
     "motion.easing-standard": "{primitive.motion.easing-standard}",
-    "motion.easing-out": "{primitive.motion.easing-out}"
+    "motion.easing-out": "{primitive.motion.easing-out}",
+    "font.line-zh": "{primitive.font.line-zh}"
   },
   "governance": {
     "default": {

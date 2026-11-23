@@ -169,8 +169,6 @@ Safe text before
       // Tier 3: Component tokens
       expect(COMPONENT_TOKEN_VALUES['--lp-size-admin-nav-width']).toBe('240px');
       expect(COMPONENT_TOKEN_VALUES['--lp-size-admin-inspector-width']).toBe('320px');
-      expect(COMPONENT_TOKEN_VALUES['--lp-size-strata-band-min']).toBe('44px');
-      expect(COMPONENT_TOKEN_VALUES['--lp-size-strata-band-max']).toBe('120px');
     });
 
     it('declares self-hosted font-face rules with font-display: swap for Literata, Atkinson Hyperlegible, and JetBrains Mono', () => {

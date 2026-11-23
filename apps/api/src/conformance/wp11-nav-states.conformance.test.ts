@@ -258,7 +258,7 @@ describe('WP-11.2 Conformance: Navigation Redesign & System States (20261020-UX-
     const homeRes = await app.request('/');
     expect(homeRes.status).toBe(200);
     const homeHtml = await homeRes.text();
-    expect(homeHtml).toContain('class="empty-state"');
+    expect(homeHtml).toContain('empty-state');
     expect(homeHtml).toContain('No entries published yet');
     expect(homeHtml).toContain('Ask about my work');
 
@@ -266,7 +266,7 @@ describe('WP-11.2 Conformance: Navigation Redesign & System States (20261020-UX-
     const buildRes = await app.request('/build');
     expect(buildRes.status).toBe(200);
     const buildHtml = await buildRes.text();
-    expect(buildHtml).toContain('class="empty-state"');
+    expect(buildHtml).toContain('empty-state');
     expect(buildHtml).toContain('No ventures or products listed yet');
     expect(buildHtml).toContain('Explore Technical Work');
 
@@ -274,7 +274,7 @@ describe('WP-11.2 Conformance: Navigation Redesign & System States (20261020-UX-
     const workRes = await app.request('/work?outcome=failed');
     expect(workRes.status).toBe(200);
     const workHtml = await workRes.text();
-    expect(workHtml).toContain('class="empty-state"');
+    expect(workHtml).toContain('empty-state');
     expect(workHtml).toContain('No entries match the selected filters');
     expect(workHtml).toContain('Reset all filters');
     expect(workHtml).toContain('href="/work"');

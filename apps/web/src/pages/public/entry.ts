@@ -18,7 +18,8 @@ export async function renderEntryDetailPage(
   slug: string,
   requestedView?: string,
   asOfParam?: string | null,
-  activeSection: string = '/work'
+  activeSection: string = '/work',
+  requestedLang?: string | null
 ): Promise<{ status: number; html: string; entry?: any }> {
   repo = adaptDataSource(repo);
   const result = await repo.getEntryBySlug(slug);
@@ -77,7 +78,7 @@ export async function renderEntryDetailPage(
   const confirmedFacets = facets.filter((f) => f.status === 'confirmed');
   const contextStripHtml =
     confirmedFacets.length > 0
-      ? `<div style="display:flex;flex-wrap:wrap;gap:var(--lp-space-stack-label-to-control);margin:var(--lp-space-inset-item-y) 0" aria-label="Confirmed context conditions">
+      ? `<div class="pub-row" aria-label="Confirmed context conditions">
           ${confirmedFacets.map((f) => `<span class="chip"><strong>${escapeHtml(f.key)}:</strong> ${escapeHtml(String(f.value))}</span>`).join('\n          ')}
          </div>`
       : '';
@@ -94,7 +95,7 @@ export async function renderEntryDetailPage(
     .map(
       (a) => `<div class="later-thinking-banner" role="note">
         <strong>${escapeHtml(a.message)}</strong>
-        <a href="/work/${a.newer_entry_slug}${asOfQueryPart}" style="margin-left:var(--lp-space-inline-icon-text)">Read "${escapeHtml(a.newer_entry_title)}" →</a>
+        <a href="/work/${a.newer_entry_slug}${asOfQueryPart}" class="pub-ml-sm">Read "${escapeHtml(a.newer_entry_title)}" →</a>
       </div>`
     )
     .join('\n');
@@ -154,7 +155,7 @@ export async function renderEntryDetailPage(
             <div class="reading-column">${combinedText}</div>
           </section>`;
         }
-        return `<div class="unlabeled-span reading-column" style="margin-bottom:var(--lp-space-proximity-4)">${combinedText}</div>`;
+        return `<div class="unlabeled-span reading-column pub-mb-md">${combinedText}</div>`;
       });
 
       bodyHtml = renderedSections.join('\n');
@@ -182,18 +183,18 @@ export async function renderEntryDetailPage(
             const safeUrl = sanitizeHttpUrl(ev.url);
             if (!safeUrl) return '';
             const linkMarkup = `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">${escapeHtml(ev.url || ev.kind)}</a>`;
-            return `<div style="margin-bottom:var(--lp-space-stack-label-to-control)">
+            return `<div class="pub-mb-md">
               ${linkMarkup}
               ${
                 ev.verified_at
-                  ? `<div class="chip" style="margin-top:var(--lp-space-proximity-1);border-color:var(--lp-color-passage-outcome)" title="Verification proves the artifact exists and who authored it; it does not prove the surrounding narrative fits your situation.">✓ Verified (${escapeHtml(ev.verification?.label || 'artifact')})</div>`
+                  ? `<div class="chip pub-mt-md" title="Verification proves the artifact exists and who authored it; it does not prove the surrounding narrative fits your situation.">✓ Verified (${escapeHtml(ev.verification?.label || 'artifact')})</div>`
                   : ''
               }
             </div>`;
           })
           .filter(Boolean)
-          .join('\n') || '<p style="color:var(--text-muted);margin:0">No links or files attached to this entry.</p>'
-      : '<p style="color:var(--text-muted);margin:0">No links or files attached to this entry.</p>';
+          .join('\n') || '<p class="pub-muted pub-m-0">No links or files attached to this entry.</p>'
+      : '<p class="pub-muted pub-m-0">No links or files attached to this entry.</p>';
 
   const claimsHtml =
     claims.filter((c) => c.status === 'accepted').length > 0
@@ -211,22 +212,22 @@ export async function renderEntryDetailPage(
   let asOfBannerHtml = '';
   if (asOfInfo) {
     if (!asOfInfo.valid) {
-      asOfBannerHtml = `<div class="as-of-banner" role="alert" style="position:sticky;top:0;z-index: var(--lp-z-sticky);margin-bottom:var(--lp-space-stack-field-to-field);border-left-color:var(--lp-color-passage-friction);background:var(--surface-raised)">
+      asOfBannerHtml = `<div class="as-of-banner as-of-banner-sticky pub-mb-md" role="alert">
         <span><strong>Invalid as-of date ("${escapeHtml(asOfInfo.raw)}")</strong> — Showing present revision.</span>
         <a href="/work/${entry.slug}">Reset to present</a>
       </div>`;
     } else if (notYetWritten) {
-      asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index: var(--lp-z-sticky);margin-bottom:var(--lp-space-stack-field-to-field);background:var(--surface-raised);border-left:var(--lp-border-role-rule) solid var(--accent)">
+      asOfBannerHtml = `<div class="as-of-banner as-of-banner-sticky pub-mb-md" role="status">
         <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}</strong> — This entry had not yet been recorded as of this date. Showing original revision from ${escapeHtml(result.currentRevision.written_at.slice(0, 10))}.</span>
-        <div style="display:flex;gap:var(--lp-space-inset-item-y);margin-top:var(--lp-space-proximity-1)">
+        <div class="pub-row pub-mt-md">
           <a href="/work/${entry.slug}">View present revision</a>
           <a href="/timeline?as_of=${encodeURIComponent(asOfInfo.raw)}">Back to timeline</a>
         </div>
       </div>`;
     } else {
-      asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index: var(--lp-z-sticky);margin-bottom:var(--lp-space-stack-field-to-field);background:var(--surface-raised);border-left:var(--lp-border-role-rule) solid var(--accent)">
+      asOfBannerHtml = `<div class="as-of-banner as-of-banner-sticky pub-mb-md" role="status">
         <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}</strong> — Showing the revision active as of this date${isHistoricalRevision ? ' (historical revision)' : ' (latest revision)'}.</span>
-        <div style="display:flex;gap:var(--lp-space-inset-item-y);margin-top:var(--lp-space-proximity-1)">
+        <div class="pub-row pub-mt-md">
           <a href="/work/${entry.slug}">View present revision</a>
           <a href="/timeline?as_of=${encodeURIComponent(asOfInfo.raw)}">Back to timeline</a>
         </div>
@@ -234,13 +235,23 @@ export async function renderEntryDetailPage(
     }
   }
 
+  const zhSampleHtml =
+    requestedLang === 'zh'
+      ? `<section class="pub-section pub-zh-sample" lang="zh" aria-label="中文排版示例">
+          <h2>中文排版与阅读节奏</h2>
+          <p>安静的编排风格依靠留白、细线与清晰的层级关系来组织信息，而不是依赖装饰性的色彩或沉重的卡片边框。在中文长文阅读中，合理的行高与字距能够让视线平稳推进，避免拥挤感。</p>
+          <blockquote>「好的设计系统应当退居内容之后，让文字、证据与时间线本身成为页面的主角。」</blockquote>
+          <p>当内容包含<em>强调语义</em>或技术术语（如 <code>OKLCH</code> 与 <code>WOFF2</code>）时，排版系统会保持端正的字形，不施加倾斜变形，并自动匹配合适的中文字体回退栈。</p>
+        </section>`
+      : '';
+
   const content = `
-    <article${(entry as any).lang ? ` lang="${escapeHtml((entry as any).lang)}"` : ''}>
+    <article${requestedLang ? ` lang="${escapeHtml(requestedLang)}"` : (entry as any).lang ? ` lang="${escapeHtml((entry as any).lang)}"` : ''}>
       ${asOfBannerHtml}
-      <header style="margin-bottom:var(--lp-space-proximity-4);border-bottom:var(--lp-border-hairline) solid var(--rule);padding-bottom:var(--lp-space-inset-section)">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:var(--lp-space-inset-item-y)">
-          <h1 style="font-family:var(--lp-font-family-reading);font-size:var(--lp-font-size-28);margin:0">${escapeHtml(entry.title)}</h1>
-          <div style="display:flex;gap:var(--lp-space-stack-label-to-control)">
+      <header class="pub-header-rule pub-mb-md">
+        <div class="pub-row-between">
+          <h1 class="pub-m-0">${escapeHtml(entry.title)}</h1>
+          <div class="pub-row">
             ${qualifiesForStructured ? `<span class="chip">Structured</span>` : ''}
             ${
               qualifiesForStructured
@@ -249,7 +260,7 @@ export async function renderEntryDetailPage(
             }
           </div>
         </div>
-        <p class="entry-date-line tabular-nums" style="color:var(--text-muted);margin:var(--lp-space-stack-label-to-control) 0 var(--lp-space-stack-label-to-control);font-size:var(--lp-font-size-14);display:flex;align-items:center;gap:var(--lp-space-proximity-1)">${dateGlyphHtml}<span>${escapeHtml(dateDisplay)}</span></p>
+        <p class="entry-date-line tabular-nums pub-row pub-muted">${dateGlyphHtml}<span>${escapeHtml(dateDisplay)}</span></p>
         ${contextStripHtml}
       </header>
 
@@ -258,20 +269,21 @@ export async function renderEntryDetailPage(
       <div class="entry-layout">
         <div>
           ${bodyHtml}
+          ${zhSampleHtml}
         </div>
         <aside class="margin-rail" aria-label="Entry evidence, claims, and scoped ask">
-          <h3 style="margin:0 0 var(--lp-space-stack-label-to-control);font-size:var(--lp-font-size-14);font-family:var(--lp-font-family-reading)">Evidence</h3>
+          <h3 class="pub-m-0">Evidence</h3>
           ${evidenceHtml}
 
-          ${claimsHtml ? `<h3 style="margin:var(--lp-space-proximity-4) 0 var(--lp-space-stack-label-to-control);font-size:var(--lp-font-size-14);font-family:var(--lp-font-family-reading)">Conclusions</h3>${claimsHtml}` : ''}
+          ${claimsHtml ? `<h3>Conclusions</h3>${claimsHtml}` : ''}
 
-          <div style="margin-top:var(--lp-space-proximity-4);padding-top:var(--lp-space-inset-section);border-top:var(--lp-border-hairline) solid var(--rule)">
-            <h3 style="margin:0 0 var(--lp-space-stack-label-to-control);font-size:var(--lp-font-size-14);font-family:var(--lp-font-family-reading)">Ask about this entry</h3>
+          <div class="pub-section pub-mt-md">
+            <h3 class="pub-m-0">Ask about this entry</h3>
             <form action="/ask" method="GET">
               <input type="hidden" name="scope" value="${escapeHtml(entry.slug)}" />
               ${asOfInfo && asOfInfo.valid ? `<input type="hidden" name="as_of" value="${escapeHtml(asOfInfo.raw)}" />` : ''}
-              <input type="text" name="q" class="ask-input" style="width:100%;margin-bottom:var(--lp-space-stack-label-to-control)" placeholder="What would you like to know?" aria-label="Ask about this entry" required />
-              <button type="submit" class="btn" style="width:100%">Ask</button>
+              <input type="text" name="q" class="ask-input pub-btn-full pub-mb-md" placeholder="What would you like to know?" aria-label="Ask about this entry" required />
+              <button type="submit" class="btn pub-btn-full">Ask</button>
             </form>
           </div>
         </aside>

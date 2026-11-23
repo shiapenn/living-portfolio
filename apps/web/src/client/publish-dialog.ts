@@ -81,7 +81,7 @@ export function openPublishDialog(): void {
   updatePublishDialogStepNumbers(false);
 
   if (scanStatusEl) {
-    scanStatusEl.innerHTML = '<div style="color:var(--text-muted)">Checking for private details...</div>';
+    scanStatusEl.innerHTML = '<div class="pub-muted">Checking for private details...</div>';
   }
 
   dialog.style.display = 'block';
@@ -119,7 +119,7 @@ async function runDialogAutoScan(text: string, entryId?: string): Promise<void> 
 
     if (!res.ok) {
       if (scanStatusEl) {
-        scanStatusEl.innerHTML = '<div class="later-thinking-banner" style="margin:0" role="alert">Error connecting to redaction scan. Please retry.</div>';
+        scanStatusEl.innerHTML = '<div class="later-thinking-banner pub-m-0" role="alert">Error connecting to redaction scan. Please retry.</div>';
       }
       return;
     }
@@ -131,14 +131,14 @@ async function runDialogAutoScan(text: string, entryId?: string): Promise<void> 
 
     if (currentDialogWarnings.length === 0) {
       if (scanStatusEl) {
-        scanStatusEl.innerHTML = '<span class="chip" data-state="clean" style="border-color:var(--lp-color-passage-outcome);background:var(--lp-color-role-success-bg);color:var(--lp-color-role-success-fg);font-weight:600">✓ Nothing found (0 confidential findings)</span>';
+        scanStatusEl.innerHTML = '<span class="chip" data-state="clean">✓ Nothing found (0 confidential findings)</span>';
       }
       if (ndaSection) ndaSection.style.display = 'none';
       if (matchesDetail) matchesDetail.style.display = 'none';
       updatePublishDialogStepNumbers(false);
     } else {
       if (scanStatusEl) {
-        scanStatusEl.innerHTML = `<div class="later-thinking-banner" data-state="needs-review" role="alert" style="margin:0">⚠ Needs Review: Found ${currentDialogWarnings.length} potential private item(s).</div>`;
+        scanStatusEl.innerHTML = `<div class="later-thinking-banner pub-m-0" data-state="needs-review" role="alert">⚠ Needs Review: Found ${currentDialogWarnings.length} potential private item(s).</div>`;
       }
       if (ndaSection) ndaSection.style.display = 'block';
       if (matchesDetail) matchesDetail.style.display = 'block';
@@ -146,7 +146,7 @@ async function runDialogAutoScan(text: string, entryId?: string): Promise<void> 
     }
   } catch (_) {
     if (scanStatusEl) {
-      scanStatusEl.innerHTML = '<div class="later-thinking-banner" style="margin:0" role="alert">Network error during private details check.</div>';
+      scanStatusEl.innerHTML = '<div class="later-thinking-banner pub-m-0" role="alert">Network error during private details check.</div>';
     }
   }
 }
@@ -156,12 +156,12 @@ export function showPublishSuccessToast(title: string, slug: string): void {
   if (!toast) return;
 
   toast.innerHTML =
-    `<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--lp-space-inset-item-y)">` +
+    `<div class="pub-row-between">` +
     `<div>` +
     `<strong>Published "${escapeClientHtml(title)}"</strong><br/>` +
-    `<a href="/work/${escapeClientHtml(slug)}" style="font-size:var(--lp-font-size-12);color:var(--lp-color-accent-default))">View page</a>` +
+    `<a href="/work/${escapeClientHtml(slug)}">View page</a>` +
     `</div>` +
-    `<button type="button" class="btn btn-secondary" id="btn-toast-unpublish" style="font-size:var(--lp-font-size-12);padding:var(--lp-border-role-rule) var(--lp-space-inset-item-x)">Unpublish</button>` +
+    `<button type="button" class="btn btn-secondary" id="btn-toast-unpublish">Unpublish</button>` +
     `</div>`;
 
   toast.style.display = 'block';

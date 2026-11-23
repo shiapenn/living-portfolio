@@ -86,7 +86,7 @@ export function renderEntryRow(entry: any, opts?: EntryRowOptions): string {
 
   const updatedLaterBadge =
     opts?.hasLaterUpdates
-      ? '<span class="chip" style="border-color:var(--lp-color-role-warning-fg)">Later thinking</span>'
+      ? '<span class="chip">Later thinking</span>'
       : '';
 
   const outcomeText = formatOutcome(entry.outcome);
@@ -96,7 +96,7 @@ export function renderEntryRow(entry: any, opts?: EntryRowOptions): string {
 
   let facetChips = '';
   if (opts?.facets && opts.facets.length > 0) {
-    facetChips = `<div style="display:flex;gap:var(--lp-space-inline-dot-text);flex-wrap:wrap;margin-top:var(--lp-space-proximity-1)">${opts.facets
+    facetChips = `<div class="pub-row pub-mt-md">${opts.facets
       .map((f) => `<span class="chip">${escapeHtml(f.key)}: ${escapeHtml(String(f.value))}</span>`)
       .join(' ')}</div>`;
   }
@@ -104,7 +104,7 @@ export function renderEntryRow(entry: any, opts?: EntryRowOptions): string {
   let summaryHtml = '';
   const summaryText = opts?.summary !== undefined ? opts.summary : entry.summary;
   if (opts?.showSummary !== false && summaryText) {
-    summaryHtml = `<div style="color:var(--lp-color-text-2);max-width:var(--lp-measure-reading);margin-top:var(--lp-space-proximity-1)">${escapeHtml(summaryText)}</div>`;
+    summaryHtml = `<div class="pub-prose pub-muted pub-mt-md">${escapeHtml(summaryText)}</div>`;
   }
 
   const tag = opts?.asArticle ? 'article' : 'li';

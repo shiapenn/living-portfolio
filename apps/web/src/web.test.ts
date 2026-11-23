@@ -354,8 +354,8 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
       const askHtml = await renderAskPage('How do locks work?', 'redis-distributed-locks-2021', asOf);
       expect(askHtml).toContain('Time-travel query active:');
       expect(askHtml).toContain('2022-06-01');
-      expect(askHtml).toContain('id="facet-asof" type="date" class="ask-input" style="width:100%;padding:var(--lp-space-proximity-2)" value="2022-06-01"');
-      expect(askHtml).toContain('<details style="margin-top:var(--lp-space-stack-field-to-field)" open>');
+      expect(askHtml).toContain('id="facet-asof" type="date" class="ask-input pub-btn-full" value="2022-06-01"');
+      expect(askHtml).toContain('<details class="pub-mt-md" open>');
     });
 
     it('serves historical revision active as of query date on entry detail page', async () => {
@@ -740,9 +740,8 @@ console.log(x);
       expect(html).toContain('aria-valuetext="2024-03-15"');
       expect(html).toContain('Viewing as of 2024-03');
 
-      // Band height matches square-root formula Math.min(120, Math.round(52 + Math.sqrt(count) * 28))
-      // e.g. for count=1: 80px
-      expect(html).toMatch(/style="height:(?:80|92|100|120|44)px"/);
+      // Band height uses tokenized tier attribute (no inline style=)
+      expect(html).toMatch(/data-band-tier="[1-5]"/);
     });
 
     it('3. Applies active role styling (.role-marker, .role-goal to .role-lesson) without inline border styles (20261020-UI-08)', async () => {
@@ -775,7 +774,7 @@ console.log(x);
       expect(res.status).toBe(200);
 
       // Tabular numerals applied to entry date line
-      expect(res.html).toContain('class="entry-date-line tabular-nums"');
+      expect(res.html).toContain('class="entry-date-line tabular-nums');
 
       // Two-layer strata date glyph differentiation device
       expect(res.html).toContain('class="strata-date-glyph');
