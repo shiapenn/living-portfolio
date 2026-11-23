@@ -367,8 +367,12 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
             sigs.iconButton.push(`${Math.round(rect.width)}x${Math.round(rect.height)}|${radPx}|${cs.borderTopWidth}`);
             borderColors.iconButton.push(cs.borderTopColor);
           } else if (tag === 'button' || el.classList.contains('lp-btn')) {
-            if (el.classList.contains('lp-segment-btn') || (el.classList.contains('lp-choice') && !!el.closest('.lp-choice-variant-segmented'))) {
-              // Segmented thumbs are tracked by C3/C4; keep button signature focused on .lp-btn / action buttons
+            if (
+              el.classList.contains('lp-segment-btn') ||
+              el.classList.contains('lp-btn-text') ||
+              (el.classList.contains('lp-choice') && !!el.closest('.lp-choice-variant-segmented'))
+            ) {
+              // Segmented thumbs and borderless text buttons (D-H H8 / D-L1) are tracked by C3/L1; keep button signature focused on bordered .lp-btn
             } else {
               const normH = Math.round(rect.height) === (window.innerWidth < 640 ? 44 : 40) ? 'token' : Math.round(rect.height);
               sigs.button.push(`${normH}|${radPx}|${cs.borderTopWidth}|${fs}|${cs.fontFamily}`);
