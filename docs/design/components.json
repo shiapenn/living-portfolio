@@ -1,7 +1,7 @@
 {
   "$schema": "./components.schema.json",
   "version": "1.0.0",
-  "amendment": "D-J (WP-16.J)",
+  "amendment": "D-L (WP-16.L)",
   "components": [
     {
       "name": "ActionBar",
@@ -23,7 +23,7 @@
     },
     {
       "name": "Button",
-      "variants": ["primary", "secondary", "quiet", "text", "danger", "danger-confirm"],
+      "variants": ["primary", "secondary", "quiet", "text", "text-danger", "danger", "danger-confirm"],
       "gallerySampleId": "gallery-buttons-sample",
       "parent": ["ActionBar", "PageHeader", "SectionHeader", "Overlay", "Shell", "EditorToolbar"],
       "children": [],
@@ -44,7 +44,7 @@
       "variants": ["left", "push"],
       "gallerySampleId": "gallery-overlay-panel-sample",
       "parent": ["Shell", "EditorShell"],
-      "children": ["ActionBar", "Field", "ItemList"],
+      "children": ["ActionBar", "Field", "List"],
       "classFamilies": ["lp-drawer", "lp-editor-drawer", "lp-entries-drawer", "lp-overlay-push-panel"],
       "variantOf": "Overlay"
     },
@@ -62,7 +62,7 @@
       "variants": ["default"],
       "gallerySampleId": "gallery-form-section-sample",
       "parent": ["Page", "Section"],
-      "children": ["SectionHeader", "Subsection", "Field", "Choice", "Item", "ItemList", "Tag", "ActionBar", "StatusLabel"],
+      "children": ["SectionHeader", "Subsection", "Field", "Choice", "Item", "List", "Tag", "ActionBar", "StatusLabel"],
       "classFamilies": ["lp-form-section", "lp-section"],
       "variantOf": null
     },
@@ -70,10 +70,19 @@
       "name": "Item",
       "variants": ["default", "has-actions", "selected", "trailing-status"],
       "gallerySampleId": "gallery-item-sample",
-      "parent": ["ItemList", "FormSection", "Subsection"],
+      "parent": ["List", "FormSection", "Subsection"],
       "children": ["StatusLabel", "ActionBar"],
       "classFamilies": ["lp-item", "lp-list", "lp-item-list"],
       "variantOf": null
+    },
+    {
+      "name": "List",
+      "variants": ["plain", "interactive"],
+      "gallerySampleId": "gallery-item",
+      "parent": ["Page", "FormSection", "Subsection", "EdgePanel", "Overlay"],
+      "children": ["Item"],
+      "classFamilies": ["lp-list", "lp-item-list"],
+      "variantOf": "Item"
     },
     {
       "name": "Notice",
@@ -152,7 +161,7 @@
       "variants": ["default"],
       "gallerySampleId": "gallery-subsection-sample",
       "parent": ["FormSection", "Page"],
-      "children": ["Field", "Choice", "Item", "ItemList", "Tag", "ActionBar", "StatusLabel"],
+      "children": ["Field", "Choice", "Item", "List", "Tag", "ActionBar", "StatusLabel"],
       "classFamilies": ["lp-subsection"],
       "variantOf": null
     },
