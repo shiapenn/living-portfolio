@@ -1,0 +1,65 @@
+#!/usr/bin/env node
+/**
+ * ADR Front-Matter Decisions Index Generator (WP-16.M D-M6)
+ * Generates docs/design/decisions.md from docs/adr/ADR-*.md front matter.
+ * Pass --check to fail on drift without writing.
+ */
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const ADR_DIR = resolve(ROOT, 'docs/adr');
+const OUT_PATH = resolve(ROOT, 'docs/design/decisions.md');
+
+function parseFrontMatter(text) {
+  const m = text.match(/^---\n([\s\S]*?)\n---/);
+  if (!m) return {};
+  const out = {};
+  for (const line of m[1].split('\n')) {
+    const idx = line.indexOf(':');
+    if (idx === -1) continue;
+    const k = line.slice(0, idx).trim();
+    const v = line.slice(idx + 1).trim();
+    out[k] = v === 'null' ? null : v;
+  }
+  return out;
+}
+
+const files = existsSync(ADR_DIR)
+  ? readdirSync(ADR_DIR)
+      .filter((f) => /^ADR-\d+.*\.md$/.test(f))
+      .sort()
+  : [];
+
+const rows = files.map((f) => {
+  const fm = parseFrontMatter(readFileSync(resolve(ADR_DIR, f), 'utf8'));
+  return {
+    id: fm.id || f.replace(/\.md$/, ''),
+    title: fm.title || f,
+    status: fm.status || 'accepted',
+    date: fm.date || 'unknown',
+    supersedes: fm.supersedes || '—',
+    file: `../adr/${f}`,
+  };
+});
+
+const md = `# Design & Architecture Decisions Index (Generated)
+
+> Auto-generated from \`docs/adr/ADR-*.md\` front matter via \`node scripts/generate-decisions\`. Do not edit by hand.
+
+| ID | Title | Status | Date | Supersedes | Record |
+| --- | --- | --- | --- | --- | --- |
+${rows.map((r) => `| \`${r.id}\` | ${r.title} | \`${r.status}\` | ${r.date} | ${r.supersedes} | [${r.id}](${r.file}) |`).join('\n')}
+`;
+
+if (process.argv.includes('--check')) {
+  const existing = existsSync(OUT_PATH) ? readFileSync(OUT_PATH, 'utf8') : '';
+  if (existing !== md) {
+    console.error('✗ [DECISIONS-DRIFT] docs/design/decisions.md is out of sync with docs/adr/. Run: node scripts/generate-decisions');
+    process.exit(1);
+  }
+  console.log(`✓ docs/design/decisions.md matches ${rows.length} ADR(s).`);
+} else {
+  writeFileSync(OUT_PATH, md, 'utf8');
+  console.log(`✓ Generated docs/design/decisions.md from ${rows.length} ADR(s).`);
+}

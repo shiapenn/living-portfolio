@@ -11,6 +11,7 @@
     "verify": "node scripts/verify-all",
     "verify:fast": "node scripts/verify-fast",
     "hooks:install": "git config core.hooksPath .githooks",
+    "backlog:next": "node scripts/backlog-next",
     "verify:css-variables": "node scripts/verify-css-variables",
     "dom:snapshot": "node scripts/snapshot-dom-ids",
     "triage": "node scripts/triage",

@@ -241,4 +241,12 @@
 | `L018` | Front-End Complete Acceptance Pack (Gate GFE) | `active` | [front-end-acceptance.md](plans/front-end-acceptance.md) | — |
 | `L019` | Design Tokens Reference | `active` | [tokens.md](design/tokens.md) | — |
 | `L020` | Design System Architecture & Public Foundations Audit (2026-11) | `active` | [2026-11-design-system-architecture-audit.md](audits/2026-11-design-system-architecture-audit.md) | — |
+| `L021` | Design System Map & Governance | `active` | [README.md](design/README.md) | — |
+| `L022` | Design & Architecture Decisions Index (Generated) | `active` | [decisions.md](design/decisions.md) | — |
+| `L023` | ADR-001: One Thin Core, Two Design Languages (D-M0 / D-M1) | `active` | [ADR-001-two-design-languages.md](adr/ADR-001-two-design-languages.md) | — |
+| `L024` | ADR-002: Rule-Governed Scale Packs and Proximity Tiers (D-M2) | `active` | [ADR-002-scale-rules-and-packs.md](adr/ADR-002-scale-rules-and-packs.md) | — |
+| `L025` | ADR-003: Dual Governance Modes and Universal Floors (D-M3 / D-J) | `active` | [ADR-003-governance-modes-and-floors.md](adr/ADR-003-governance-modes-and-floors.md) | — |
+| `L026` | ADR-004: Spacing Taxonomy and Monotonic Proximity (D-L4) | `active` | [ADR-004-spacing-taxonomy-and-tiers.md](adr/ADR-004-spacing-taxonomy-and-tiers.md) | — |
+| `L027` | ADR-005: Three-Tier Tokens and Arithmetic Closure (D-L5) | `active` | [ADR-005-token-tiers-and-closure.md](adr/ADR-005-token-tiers-and-closure.md) | — |
+| `L028` | ADR-006: Self-Selecting Backlog and Owner Gates (D-M7) | `active` | [ADR-006-self-selecting-backlog.md](adr/ADR-006-self-selecting-backlog.md) | — |
 

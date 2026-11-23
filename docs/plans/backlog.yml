@@ -1,0 +1,135 @@
+# Living Portfolio Self-Selecting Backlog (WP-16.M D-M7)
+# Validated and queried by `pnpm backlog:next` (`scripts/backlog-next`).
+schema_version: 1
+items:
+  - id: WP-16.M
+    title: Design system architecture, two design languages, efficiency, public foundations
+    track: core
+    type: infra
+    depends_on: []
+    size: L
+    expected_minutes: 90
+    gate: owner-direction
+    acceptance: M0..M6 merged, CI Playwright <= 4m, admin pixel diff zero on public-only change, contact sheets zip delivered
+    status: in-progress
+
+  - id: WP-17.1
+    title: Settings templates & Routing page (/admin/settings, /admin/routing)
+    track: admin
+    type: visual
+    depends_on: [WP-16.M]
+    size: M
+    expected_minutes: 45
+    gate: none
+    acceptance: Dedicated settings/routing routes on ui-admin, E2E + census green
+    status: ready
+
+  - id: WP-17.2
+    title: Setup wizard step 3 Model Providers interactive configuration (UX-09)
+    track: admin
+    type: functional
+    depends_on: [WP-17.1]
+    size: M
+    expected_minutes: 45
+    gate: none
+    acceptance: Step 3 allows provider configuration & validation; UX-09 fixed
+    status: ready
+
+  - id: WP-17.3
+    title: Storage settings & Media API foundations
+    track: functional
+    type: functional
+    depends_on: [WP-17.1]
+    size: M
+    expected_minutes: 50
+    gate: none
+    acceptance: Storage settings UI + /api/media endpoints with conformance tests
+    status: ready
+
+  - id: WP-17.4
+    title: Appearance v2 (theme packs, density tier table, live preview)
+    track: admin
+    type: visual
+    depends_on: [WP-17.1]
+    size: M
+    expected_minutes: 45
+    gate: L-review
+    acceptance: Appearance settings drive density & theme packs cleanly
+    status: ready
+
+  - id: WP-18.1
+    title: Real file import & Authoring Canvas polish
+    track: admin
+    type: functional
+    depends_on: [WP-17.3]
+    size: L
+    expected_minutes: 60
+    gate: none
+    acceptance: Multipart/markdown/zip import wired to real storage API + E2E
+    status: ready
+
+  - id: WP-18.2
+    title: Quick Log capture flow
+    track: admin
+    type: functional
+    depends_on: [WP-18.1]
+    size: S
+    expected_minutes: 30
+    gate: none
+    acceptance: Fast keyboard-first quick log entry creation + E2E
+    status: ready
+
+  - id: P-1
+    title: Build chosen public direction from WP-16.M exploration lab
+    track: public
+    type: visual
+    depends_on: [WP-16.M]
+    size: L
+    expected_minutes: 75
+    gate: owner-direction
+    acceptance: Owner selects direction (or mix) from /_lab/public/*; wire into packages/ui-public and public routes
+    status: blocked-on-owner
+
+  - id: P-2
+    title: Public components, templates, and Strata time-travel polish (WP-19 Public Frame)
+    track: public
+    type: visual
+    depends_on: [P-1]
+    size: L
+    expected_minutes: 75
+    gate: L-review
+    acceptance: All public templates on ui-public with zero inline styles; UX-44 time travel fixed
+    status: ready
+
+  - id: P-3
+    title: Public performance budget enforcement (LCP/CLS/INP/font/gzip CI gate)
+    track: public
+    type: infra
+    depends_on: [P-2]
+    size: M
+    expected_minutes: 40
+    gate: L-review
+    acceptance: Non-blocking public budget report promoted to blocking CI gate after L approval
+    status: ready
+
+  - id: GATE-GFE
+    title: Milestone Gate GFE — Owner Front-End Acceptance Walkthrough (J1-J11)
+    track: core
+    type: visual
+    depends_on: [WP-17.2, WP-17.4, WP-18.2, P-2]
+    size: M
+    expected_minutes: 45
+    gate: owner
+    acceptance: Owner completes front-end-acceptance.md journeys J1-J11
+    status: ready
+
+  - id: WP-20.1
+    title: Live public theme application & post-GFE hardening (UX-27)
+    track: public
+    type: functional
+    depends_on: [GATE-GFE, P-3]
+    size: M
+    expected_minutes: 45
+    gate: none
+    acceptance: Public theme pack switching live in production; UX-27 fixed
+    status: ready

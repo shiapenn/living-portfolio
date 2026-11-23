@@ -1,0 +1,8 @@
+# Design System & Architecture Ownership (WP-16.M D-M6)
+/packages/design-tokens/ @shiapenn
+/packages/ui-core/       @shiapenn
+/packages/ui-admin/      @shiapenn
+/packages/ui-public/     @shiapenn
+/docs/design/            @shiapenn
+/docs/adr/               @shiapenn
+/.dependency-cruiser.cjs @shiapenn
