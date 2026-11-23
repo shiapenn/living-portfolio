@@ -174,6 +174,7 @@
 | `A166` | wp-16l-l1-button-grammar-and-list-variants | `active` | [A166-wp-16l-l1-button-grammar-and-list-variants.md](execution-reports/A166-wp-16l-l1-button-grammar-and-list-variants.md) | — |
 | `A167` | wp-16l-l2-page-and-list-migrations | `active` | [A167-wp-16l-l2-page-and-list-migrations.md](execution-reports/A167-wp-16l-l2-page-and-list-migrations.md) | — |
 | `A168` | wp-16l-l3-token-restructure-and-spacing-system | `active` | [A168-wp-16l-l3-token-restructure-and-spacing-system.md](execution-reports/A168-wp-16l-l3-token-restructure-and-spacing-system.md) | — |
+| `A169` | wp-16l-l4-pixel-diff-and-closure | `active` | [A169-wp-16l-l4-pixel-diff-and-closure.md](execution-reports/A169-wp-16l-l4-pixel-diff-and-closure.md) | — |
 
 ## Handover Snapshots (Class H)
 
