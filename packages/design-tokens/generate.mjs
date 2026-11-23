@@ -228,6 +228,7 @@ export function generateOutputs() {
   --role-info-fg: var(--lp-color-role-info-fg);
   --role-info-bg: var(--lp-color-role-info-bg);
   --role-info-border: var(--lp-color-role-info-border);
+  --layout-max: var(--lp-size-layout-max);
   --vv-bottom: 0px;`.trim();
 
   const fmtBlock = (obj) =>

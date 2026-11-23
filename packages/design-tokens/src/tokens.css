@@ -202,7 +202,7 @@
   --lp-radius-overlay: 8px;
   --lp-radius-chip: 4px;
   --lp-radius-card: 8px;
-  --lp-radius-full: 9999px;
+  --lp-radius-full: 999px;
   --lp-border-hairline: 1px;
   --lp-border-focus: 2px;
   --lp-border-role-rule: 3px;
@@ -297,6 +297,7 @@
   --role-info-fg: var(--lp-color-role-info-fg);
   --role-info-bg: var(--lp-color-role-info-bg);
   --role-info-border: var(--lp-color-role-info-border);
+  --layout-max: var(--lp-size-layout-max);
   --vv-bottom: 0px;
 }
 

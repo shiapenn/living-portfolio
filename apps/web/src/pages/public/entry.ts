@@ -211,12 +211,12 @@ export async function renderEntryDetailPage(
   let asOfBannerHtml = '';
   if (asOfInfo) {
     if (!asOfInfo.valid) {
-      asOfBannerHtml = `<div class="as-of-banner" role="alert" style="position:sticky;top:0;z-index:var(--lp-z-sticky);margin-bottom:var(--lp-space-stack-field-to-field);border-left-color:var(--lp-color-passage-friction);background:var(--surface-raised)">
+      asOfBannerHtml = `<div class="as-of-banner" role="alert" style="position:sticky;top:0;z-index: var(--lp-z-sticky);margin-bottom:var(--lp-space-stack-field-to-field);border-left-color:var(--lp-color-passage-friction);background:var(--surface-raised)">
         <span><strong>Invalid as-of date ("${escapeHtml(asOfInfo.raw)}")</strong> — Showing present revision.</span>
         <a href="/work/${entry.slug}">Reset to present</a>
       </div>`;
     } else if (notYetWritten) {
-      asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index:var(--lp-z-sticky);margin-bottom:var(--lp-space-stack-field-to-field);background:var(--surface-raised);border-left:var(--lp-border-banner-rule) solid var(--accent)">
+      asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index: var(--lp-z-sticky);margin-bottom:var(--lp-space-stack-field-to-field);background:var(--surface-raised);border-left:var(--lp-border-banner-rule) solid var(--accent)">
         <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}</strong> — This entry had not yet been recorded as of this date. Showing original revision from ${escapeHtml(result.currentRevision.written_at.slice(0, 10))}.</span>
         <div style="display:flex;gap:var(--lp-space-stack-snug);margin-top:var(--lp-space-stack-compact)">
           <a href="/work/${entry.slug}">View present revision</a>
@@ -224,7 +224,7 @@ export async function renderEntryDetailPage(
         </div>
       </div>`;
     } else {
-      asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index:var(--lp-z-sticky);margin-bottom:var(--lp-space-stack-field-to-field);background:var(--surface-raised);border-left:var(--lp-border-banner-rule) solid var(--accent)">
+      asOfBannerHtml = `<div class="as-of-banner" role="status" style="position:sticky;top:0;z-index: var(--lp-z-sticky);margin-bottom:var(--lp-space-stack-field-to-field);background:var(--surface-raised);border-left:var(--lp-border-banner-rule) solid var(--accent)">
         <span><strong>Viewing as of ${escapeHtml(asOfInfo.raw.slice(0, 10))}</strong> — Showing the revision active as of this date${isHistoricalRevision ? ' (historical revision)' : ' (latest revision)'}.</span>
         <div style="display:flex;gap:var(--lp-space-stack-snug);margin-top:var(--lp-space-stack-compact)">
           <a href="/work/${entry.slug}">View present revision</a>

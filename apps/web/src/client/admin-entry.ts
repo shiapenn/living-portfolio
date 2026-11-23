@@ -112,7 +112,7 @@ export async function refreshEntriesList(selectedId?: string): Promise<void> {
         .map((e: any) => {
           const isCurrent = selectedId && (e.id === selectedId || e.slug === selectedId);
           const selStyle = isCurrent
-            ? 'background:var(--surface-raised,var(--lp-color-surface-l1));border-left:var(--lp-border-role-rule) solid var(--lp-color-accent-default);'
+            ? 'background:var(--surface-raised, var(--lp-color-surface-l1));border-left:var(--lp-border-role-rule) solid var(--lp-color-accent-default);'
             : '';
           let badgeColor = 'var(--lp-color-role-neutral-fg)';
           let badgeBg = 'var(--lp-color-role-neutral-bg)';

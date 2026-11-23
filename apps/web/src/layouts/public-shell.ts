@@ -39,7 +39,7 @@ export function renderLayout(
 
   const stagingBannerHtml =
     cfg.DEPLOYMENT_CLASS === 'staging'
-      ? `<div class="as-of-banner" data-banner="staging-synthetic-only" role="status" style="position:sticky;top:0;z-index:var(--lp-z-modal);margin:0;border-radius:0;justify-content:center;background:var(--surface-raised);border-bottom:var(--lp-border-focus) solid var(--lp-color-passage-friction)"><strong>Staging: synthetic data only.</strong></div>`
+      ? `<div class="as-of-banner" data-banner="staging-synthetic-only" role="status" style="position:sticky;top:0;z-index: var(--lp-z-modal);margin:0;border-radius:0;justify-content:center;background:var(--surface-raised);border-bottom:var(--lp-border-focus) solid var(--lp-color-passage-friction)"><strong>Staging: synthetic data only.</strong></div>`
       : '';
 
   const robotsMetaHtml =

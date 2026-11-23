@@ -140,7 +140,7 @@ Safe text before
       expect(html).toContain('id="ref-field-body"');
       expect(html).toContain('id="ref-tiptap-editor"');
       expect(html).toContain('lp-tiptap-mount');
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('min-height: var(--editor-min-height, 60vh)');
+      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('min-height: var(--lp-editor-min-h)');
     });
   });
 
@@ -182,7 +182,7 @@ Safe text before
 
     it('STRATA_DESIGN_SYSTEM_CSS embeds unified dark theme eliminating drift', () => {
       expect(STRATA_DESIGN_SYSTEM_CSS).toContain(':root[data-theme="dark"]');
-      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('--lp-color-surface-page: var(--lp-prim-color-dark-950)');
+      expect(STRATA_DESIGN_SYSTEM_CSS).toContain('--lp-color-surface-l0: #0F1A22');
       expect(SEMANTIC_DARK_VALUES['--lp-color-surface-page']).toBe('#0F1A22');
       expect(SEMANTIC_DARK_VALUES['--lp-color-surface-raised']).toBe('#16232D');
     });

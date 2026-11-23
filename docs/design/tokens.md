@@ -278,7 +278,7 @@
 | `--lp-radius-overlay` | `8px` |
 | `--lp-radius-chip` | `4px` |
 | `--lp-radius-card` | `8px` |
-| `--lp-radius-full` | `9999px` |
+| `--lp-radius-full` | `999px` |
 | `--lp-border-hairline` | `1px` |
 | `--lp-border-focus` | `2px` |
 | `--lp-border-role-rule` | `3px` |
