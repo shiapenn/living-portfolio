@@ -80,7 +80,7 @@ export async function renderAskPage(
 
         <details style="margin-top:var(--lp-space-stack-field-to-field)" ${queryText?.toLowerCase().includes('should') || hasValidAsOf ? 'open' : ''}>
           <summary style="cursor:pointer;font-size:var(--lp-font-size-14);color:var(--text-muted)">Tell me about your situation (optional)</summary>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(var(--lp-size-popover-min-w),1fr));gap:var(--lp-space-inset-item-y);margin-top:var(--lp-space-inset-item-y)">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(calc(var(--lp-space-proximity-5) * 5),1fr));gap:var(--lp-space-inset-item-y);margin-top:var(--lp-space-inset-item-y)">
             <div>
               <label for="facet-db" style="font-size:var(--lp-font-size-12);display:block">Database</label>
               <input id="facet-db" type="text" class="ask-input" style="width:100%;padding:var(--lp-space-proximity-2)" placeholder="e.g., PostgreSQL or MySQL" />

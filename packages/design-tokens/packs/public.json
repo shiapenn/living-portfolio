@@ -7,18 +7,55 @@
   "rules": {
     "spaceBase": 4,
     "spaceMax": 256,
-    "spaceAllowed": [0, 2, 4, 8, 12, 16, 24, 32, 40, 48, 64, 80, 96, 128, 160, 192, 256],
+    "spaceAllowed": [
+      0,
+      2,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32,
+      40,
+      48,
+      64,
+      80,
+      96,
+      128,
+      160,
+      192,
+      256
+    ],
     "typeScale": {
       "kind": "fluid-modular",
       "ratio": 1.25,
       "minBasePx": 16,
       "maxBasePx": 18
     },
-    "borderAllowed": [0, 1, 2, 4],
-    "radiusAllowed": [0, 2, 4, 8, 12, 16, 999],
-    "motionDurationsMs": [0, 120, 200, 320, 480],
+    "borderAllowed": [
+      0,
+      1,
+      2,
+      4
+    ],
+    "radiusAllowed": [
+      0,
+      2,
+      4,
+      8,
+      12,
+      16,
+      999
+    ],
+    "motionDurationsMs": [
+      0,
+      120,
+      200,
+      320,
+      480
+    ],
     "minTextContrast": 4.5,
-    "minUiContrast": 3.0
+    "minUiContrast": 3
   },
   "oklchSeeds": {
     "paper": "oklch(0.985 0.004 240)",
@@ -65,7 +102,6 @@
     },
     "space": {
       "0": "0px",
-      "0-5": "2px",
       "1": "4px",
       "2": "8px",
       "3": "12px",
@@ -80,7 +116,8 @@
       "32": "128px",
       "40": "160px",
       "48": "192px",
-      "64": "256px"
+      "64": "256px",
+      "0-5": "2px"
     },
     "radius": {
       "0": "0px",
@@ -216,6 +253,28 @@
       "status": "active",
       "since": "WP-16.M",
       "replacedBy": null
+    },
+    "aliases": {
+      "space.stack-md": {
+        "aliasOf": "space.page-gutter",
+        "reason": "Medium vertical stack rhythm distinct from horizontal page gutter"
+      },
+      "font.family-prose": {
+        "aliasOf": "font.family-display",
+        "reason": "Reading body uses editorial serif stack matching display headings"
+      }
+    }
+  },
+  "accentMapping": {
+    "light": {
+      "color.accent.primary": 600,
+      "color.accent.tint": 50,
+      "color.accent.ink": 800
+    },
+    "dark": {
+      "color.accent.primary": 300,
+      "color.accent.tint": 900,
+      "color.accent.ink": 200
     }
   }
 }

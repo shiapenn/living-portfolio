@@ -1,0 +1,77 @@
+# Public Pack Tokens (Generated)
+
+| Metadata | Value |
+| --- | --- |
+| Source | `packages/design-tokens/packs/public.json` |
+| Naming | `--pub-<category>-<role>[-<variant>]` |
+| Version | `1.0.0` |
+| Primitive | 93 |
+| Semantic (per theme) | 19 |
+| Component | 31 |
+
+## Semantic Tokens (Theme-Switched)
+
+| Token | Light | Dark |
+| --- | --- | --- |
+| `--pub-color-surface-canvas` | `#FFFFFF` | `#0F1A22` |
+| `--pub-color-surface-paper` | `#F5F6F7` | `#16232D` |
+| `--pub-color-surface-elevated` | `#EBEFF2` | `#1E2E3B` |
+| `--pub-color-text-primary` | `#14202A` | `#E6ECEF` |
+| `--pub-color-text-secondary` | `#4B5A66` | `#A3B2BD` |
+| `--pub-color-text-muted` | `#63727E` | `#8A99A6` |
+| `--pub-color-text-on-accent` | `#FFFFFF` | `#0F1A22` |
+| `--pub-color-border-rule` | `#CBD3D8` | `#2A3946` |
+| `--pub-color-border-strong` | `#6B7B88` | `#7E8F9C` |
+| `--pub-color-accent-primary` | `#3A4FD0` | `#9AA8FF` |
+| `--pub-color-accent-tint` | `#EEF1FF` | `#1A244D` |
+| `--pub-color-accent-ink` | `#1E329E` | `#C5CEFF` |
+| `--pub-color-strata-goal` | `#2F5FA8` | `#8DB4EA` |
+| `--pub-color-strata-friction` | `#9A6A00` | `#E2B34A` |
+| `--pub-color-strata-decision` | `#5B3FA0` | `#B9A4EE` |
+| `--pub-color-strata-outcome` | `#1F7A5A` | `#6FCBA3` |
+| `--pub-color-strata-lesson` | `#A13A6B` | `#EE9CC2` |
+| `--pub-elevation-card` | `0 4px 16px rgba(20, 32, 42, 0.08)` | `0 4px 16px rgba(0, 0, 0, 0.45)` |
+| `--pub-elevation-raised` | `0 8px 32px rgba(20, 32, 42, 0.14)` | `0 8px 32px rgba(0, 0, 0, 0.60)` |
+
+## Component Tokens
+
+| Token | Value |
+| --- | --- |
+| `--pub-space-page-gutter` | `16px` |
+| `--pub-space-section` | `48px` |
+| `--pub-space-atmosphere` | `64px` |
+| `--pub-space-card-pad` | `24px` |
+| `--pub-space-stack-sm` | `8px` |
+| `--pub-space-stack-md` | `16px` |
+| `--pub-space-stack-lg` | `32px` |
+| `--pub-size-layout-max` | `1200px` |
+| `--pub-size-reading-measure` | `68ch` |
+| `--pub-radius-card` | `8px` |
+| `--pub-radius-pill` | `999px` |
+| `--pub-border-hairline` | `1px` |
+| `--pub-border-accent` | `4px` |
+| `--pub-font-family-display` | `'Literata', Georgia, 'Times New Roman', serif` |
+| `--pub-font-family-prose` | `'Literata', Georgia, 'Times New Roman', serif` |
+| `--pub-font-family-ui` | `'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif` |
+| `--pub-font-family-mono` | `'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace` |
+| `--pub-font-size-caption` | `clamp(0.75rem, 0.72rem + 0.15vw, 0.875rem)` |
+| `--pub-font-size-body` | `clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem)` |
+| `--pub-font-size-lead` | `clamp(1.0625rem, 1rem + 0.35vw, 1.25rem)` |
+| `--pub-font-size-heading-sm` | `clamp(1.125rem, 1.05rem + 0.4vw, 1.375rem)` |
+| `--pub-font-size-heading-md` | `clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem)` |
+| `--pub-font-size-display` | `clamp(1.75rem, 1.4rem + 1.6vw, 2.75rem)` |
+| `--pub-font-line-tight` | `1.2` |
+| `--pub-font-line-ui` | `1.45` |
+| `--pub-font-line-prose` | `1.65` |
+| `--pub-motion-duration-fast` | `120ms` |
+| `--pub-motion-duration-base` | `200ms` |
+| `--pub-motion-duration-slow` | `320ms` |
+| `--pub-motion-easing-standard` | `cubic-bezier(0.2, 0, 0, 1)` |
+| `--pub-motion-easing-out` | `cubic-bezier(0, 0, 0.2, 1)` |
+
+## Documented Aliases
+
+| Token | Alias Of | Reason |
+| --- | --- | --- |
+| `space.stack-md` | `space.page-gutter` | Medium vertical stack rhythm distinct from horizontal page gutter |
+| `font.family-prose` | `font.family-display` | Reading body uses editorial serif stack matching display headings |

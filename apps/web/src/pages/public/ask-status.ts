@@ -74,7 +74,7 @@ export async function renderAskStatusPage(repo: WebDataClient, statusToken: stri
 
         <form id="contact-form" style="display:flex;gap:var(--lp-space-stack-label-to-control);flex-wrap:wrap">
           <label for="contact-input" class="visually-hidden">Notification Email</label>
-          <input id="contact-input" type="text" class="ask-input" style="flex:1;min-width:var(--lp-size-popover-min-w)" value="${escapeHtml(escalation.visitor_contact || '')}" placeholder="you@example.com (optional notification)" />
+          <input id="contact-input" type="text" class="ask-input" style="flex:1;min-width:calc(var(--lp-space-proximity-5) * 5)" value="${escapeHtml(escalation.visitor_contact || '')}" placeholder="you@example.com (optional notification)" />
           <button type="submit" id="btn-save-contact" class="btn btn-secondary">Save Notification Contact</button>
         </form>
 

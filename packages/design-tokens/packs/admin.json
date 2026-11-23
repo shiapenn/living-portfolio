@@ -6,22 +6,83 @@
   "naming": "--lp-<category>-<role>[-<variant>][-<state>]",
   "rules": {
     "spaceBase": 4,
-    "spaceAllowed": [0, 2, 4, 8, 12, 16, 24, 32, 40, 48, 64, 96],
-    "proximityTiers": [4, 8, 16, 24, 40],
-    "typeRamp": [12, 14, 16, 18, 20, 24, 28, 32, 40, 48],
+    "spaceAllowed": [
+      0,
+      2,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32,
+      40,
+      48,
+      64,
+      96
+    ],
+    "proximityTiers": [
+      4,
+      8,
+      16,
+      24,
+      40
+    ],
+    "typeRamp": [
+      12,
+      14,
+      16,
+      18,
+      20,
+      24,
+      28,
+      32,
+      40,
+      48
+    ],
     "lineHeightStep": 4,
-    "weightsAllowed": [400, 600],
+    "weightsAllowed": [
+      400,
+      600
+    ],
     "letterSpacingUnit": "em",
-    "layoutLattice": [320, 400, 480, 640, 720, 800, 960, 1200],
+    "layoutLattice": [
+      320,
+      400,
+      480,
+      640,
+      720,
+      800,
+      960,
+      1200
+    ],
     "sizeStep": 4,
-    "radiusAllowed": [0, 4, 8, 999],
-    "borderAllowed": [0, 1, 2, 4],
+    "radiusAllowed": [
+      0,
+      4,
+      8,
+      999
+    ],
+    "borderAllowed": [
+      0,
+      1,
+      2,
+      4
+    ],
     "elevationRatio": 2,
-    "motionDurationsMs": [0, 0.01, 80, 160, 240, 960],
-    "motionEasingsAllowed": ["standard", "out"],
+    "motionDurationsMs": [
+      0,
+      80,
+      160,
+      240,
+      960
+    ],
+    "motionEasingsAllowed": [
+      "standard",
+      "out"
+    ],
     "zIndexStep": 100,
     "minTextContrast": 4.5,
-    "minUiContrast": 3.0
+    "minUiContrast": 3
   },
   "oklchSeeds": {
     "curve": "OKLCH lightness ramp L=0.98..0.18 with chroma peak at mid-tones; semantic tokens retain exact hex overrides where OKLCH delta-E 2000 > 1.5 vs WP-16.L baseline",
@@ -56,45 +117,279 @@
     }
   },
   "snapTable": [
-    { "token": "--lp-space-inset-badge-x", "category": "space", "before": "5px", "after": "4px", "rule": "space-scale-4n" },
-    { "token": "--lp-space-inline-dot-text", "category": "space", "before": "6px", "after": "8px", "rule": "space-scale-4n (tie -> larger for gap)" },
-    { "token": "--lp-space-inset-control-sm", "category": "space", "before": "10px", "after": "12px", "rule": "space-scale-4n (tie -> larger for inset)" },
-    { "token": "--lp-space-inset-card-sm", "category": "space", "before": "14px", "after": "16px", "rule": "space-scale-4n (tie -> larger for inset)" },
-    { "token": "--lp-font-size-10", "category": "type", "before": "10px", "after": "12px", "rule": "type-ramp-min-12" },
-    { "token": "--lp-font-size-11", "category": "type", "before": "11px", "after": "12px", "rule": "type-ramp-min-12" },
-    { "token": "--lp-font-size-13", "category": "type", "before": "13px", "after": "12px", "rule": "type-ramp (tie -> smaller for size)" },
-    { "token": "--lp-font-size-15", "category": "type", "before": "15px", "after": "14px", "rule": "type-ramp (tie -> smaller for size)" },
-    { "token": "--lp-font-size-17", "category": "type", "before": "17px", "after": "16px", "rule": "type-ramp (tie -> smaller for size)" },
-    { "token": "--lp-font-size-21", "category": "type", "before": "21px", "after": "20px", "rule": "type-ramp (tie -> smaller for size)" },
-    { "token": "--lp-font-size-30", "category": "type", "before": "30px", "after": "28px", "rule": "type-ramp (tie -> smaller for size)" },
-    { "token": "--lp-font-weight-500", "category": "type", "before": "500", "after": "600", "rule": "weights-400-600-only" },
-    { "token": "--lp-font-weight-700", "category": "type", "before": "700", "after": "600", "rule": "weights-400-600-only" },
-    { "token": "--lp-font-letter-wide", "category": "type", "before": "0.5px", "after": "0.03em", "rule": "letter-spacing-em" },
-    { "token": "--lp-border-role-rule", "category": "border", "before": "3px", "after": "4px", "rule": "borders-1-2-4" },
-    { "token": "--lp-size-status-dot", "category": "size", "before": "6px", "after": "8px", "rule": "size-mult-4" },
-    { "token": "--lp-size-notch-width", "category": "size", "before": "9px", "after": "8px", "rule": "size-mult-4" },
-    { "token": "--lp-size-indicator-md", "category": "size", "before": "10px", "after": "8px", "rule": "size-mult-4 (tie -> smaller)" },
-    { "token": "--lp-size-checkbox-sm", "category": "size", "before": "14px", "after": "16px", "rule": "size-mult-4" },
-    { "token": "--lp-size-switch-thumb", "category": "size", "before": "18px", "after": "16px", "rule": "size-mult-4" },
-    { "token": "--lp-size-track-height", "category": "size", "before": "2px", "after": "4px", "rule": "size-mult-4" },
-    { "token": "--lp-size-textarea-compact-min-h", "category": "size", "before": "70px", "after": "68px", "rule": "size-mult-4 (tie -> smaller)" },
-    { "token": "--lp-size-col-min-xs", "category": "size", "before": "130px", "after": "128px", "rule": "size-mult-4" },
-    { "token": "--lp-size-layout-nav-compact", "category": "size", "before": "230px", "after": "240px", "rule": "size-mult-4" },
-    { "token": "--lp-size-layout-inspector-compact", "category": "layout", "before": "310px", "after": "320px", "rule": "layout-lattice-80" },
-    { "token": "--lp-size-admin-inspector-width", "category": "layout", "before": "340px", "after": "320px", "rule": "layout-lattice-80" },
-    { "token": "--lp-size-layout-medium-max", "category": "layout", "before": "760px", "after": "720px", "rule": "layout-lattice-80 (tie -> smaller)" },
-    { "token": "--lp-size-layout-wide-col", "category": "layout", "before": "840px", "after": "800px", "rule": "layout-lattice-80" },
-    { "token": "--lp-size-layout-dashboard-max", "category": "layout", "before": "920px", "after": "960px", "rule": "layout-lattice-80" },
-    { "token": "--lp-size-layout-max", "category": "layout", "before": "1180px", "after": "1200px", "rule": "layout-lattice-80" },
-    { "token": "--lp-elevation-e1-offset-y", "category": "elevation", "before": "6px", "after": "4px", "rule": "elevation-e1-4-16" },
-    { "token": "--lp-elevation-e2-offset-y", "category": "elevation", "before": "12px", "after": "8px", "rule": "elevation-e2-8-32" },
-    { "token": "--lp-elevation-e1-blur (dark)", "category": "elevation", "before": "18px", "after": "16px", "rule": "elevation-e1-4-16" },
-    { "token": "--lp-elevation-e2-blur (dark)", "category": "elevation", "before": "36px", "after": "32px", "rule": "elevation-e2-8-32" },
-    { "token": "--lp-motion-duration-fast", "category": "motion", "before": "100ms", "after": "80ms", "rule": "motion-0-80-160-240-960" },
-    { "token": "--lp-motion-duration-item", "category": "motion", "before": "120ms", "after": "80ms", "rule": "motion-0-80-160-240-960" },
-    { "token": "--lp-motion-duration-pulse", "category": "motion", "before": "900ms", "after": "960ms", "rule": "motion-0-80-160-240-960" },
-    { "token": "--lp-motion-easing-ease", "category": "motion", "before": "ease", "after": "deleted -> --lp-motion-easing-standard", "rule": "easing-standard-out-only" },
-    { "token": "--lp-z-raised..toast", "category": "zIndex", "before": "1,100..500", "after": "100,200..600", "rule": "z-steps-of-100" }
+    {
+      "token": "--lp-space-inset-badge-x",
+      "category": "space",
+      "before": "5px",
+      "after": "4px",
+      "rule": "space-scale-4n"
+    },
+    {
+      "token": "--lp-space-inline-dot-text",
+      "category": "space",
+      "before": "6px",
+      "after": "8px",
+      "rule": "space-scale-4n (tie -> larger for gap)"
+    },
+    {
+      "token": "--lp-space-inset-control-sm",
+      "category": "space",
+      "before": "10px",
+      "after": "12px",
+      "rule": "space-scale-4n (tie -> larger for inset)"
+    },
+    {
+      "token": "--lp-space-inset-card-sm",
+      "category": "space",
+      "before": "14px",
+      "after": "16px",
+      "rule": "space-scale-4n (tie -> larger for inset)"
+    },
+    {
+      "token": "--lp-font-size-10",
+      "category": "type",
+      "before": "10px",
+      "after": "12px",
+      "rule": "type-ramp-min-12"
+    },
+    {
+      "token": "--lp-font-size-11",
+      "category": "type",
+      "before": "11px",
+      "after": "12px",
+      "rule": "type-ramp-min-12"
+    },
+    {
+      "token": "--lp-font-size-13",
+      "category": "type",
+      "before": "13px",
+      "after": "12px",
+      "rule": "type-ramp (tie -> smaller for size)"
+    },
+    {
+      "token": "--lp-font-size-15",
+      "category": "type",
+      "before": "15px",
+      "after": "14px",
+      "rule": "type-ramp (tie -> smaller for size)"
+    },
+    {
+      "token": "--lp-font-size-17",
+      "category": "type",
+      "before": "17px",
+      "after": "16px",
+      "rule": "type-ramp (tie -> smaller for size)"
+    },
+    {
+      "token": "--lp-font-size-21",
+      "category": "type",
+      "before": "21px",
+      "after": "20px",
+      "rule": "type-ramp (tie -> smaller for size)"
+    },
+    {
+      "token": "--lp-font-size-30",
+      "category": "type",
+      "before": "30px",
+      "after": "28px",
+      "rule": "type-ramp (tie -> smaller for size)"
+    },
+    {
+      "token": "--lp-font-weight-500",
+      "category": "type",
+      "before": "500",
+      "after": "600",
+      "rule": "weights-400-600-only"
+    },
+    {
+      "token": "--lp-font-weight-700",
+      "category": "type",
+      "before": "700",
+      "after": "600",
+      "rule": "weights-400-600-only"
+    },
+    {
+      "token": "--lp-font-letter-wide",
+      "category": "type",
+      "before": "0.5px",
+      "after": "0.03em",
+      "rule": "letter-spacing-em"
+    },
+    {
+      "token": "--lp-border-role-rule",
+      "category": "border",
+      "before": "3px",
+      "after": "4px",
+      "rule": "borders-1-2-4"
+    },
+    {
+      "token": "--lp-size-status-dot",
+      "category": "size",
+      "before": "6px",
+      "after": "8px",
+      "rule": "size-mult-4"
+    },
+    {
+      "token": "--lp-size-notch-width",
+      "category": "size",
+      "before": "9px",
+      "after": "8px",
+      "rule": "size-mult-4"
+    },
+    {
+      "token": "--lp-size-indicator-md",
+      "category": "size",
+      "before": "10px",
+      "after": "8px",
+      "rule": "size-mult-4 (tie -> smaller)"
+    },
+    {
+      "token": "--lp-size-checkbox-sm",
+      "category": "size",
+      "before": "14px",
+      "after": "16px",
+      "rule": "size-mult-4"
+    },
+    {
+      "token": "--lp-size-switch-thumb",
+      "category": "size",
+      "before": "18px",
+      "after": "16px",
+      "rule": "size-mult-4"
+    },
+    {
+      "token": "--lp-size-track-height",
+      "category": "size",
+      "before": "2px",
+      "after": "4px",
+      "rule": "size-mult-4"
+    },
+    {
+      "token": "--lp-size-textarea-compact-min-h",
+      "category": "size",
+      "before": "70px",
+      "after": "68px",
+      "rule": "size-mult-4 (tie -> smaller)"
+    },
+    {
+      "token": "--lp-size-col-min-xs",
+      "category": "size",
+      "before": "130px",
+      "after": "128px",
+      "rule": "size-mult-4"
+    },
+    {
+      "token": "--lp-size-layout-nav-compact",
+      "category": "size",
+      "before": "230px",
+      "after": "240px",
+      "rule": "size-mult-4"
+    },
+    {
+      "token": "--lp-size-layout-inspector-compact",
+      "category": "layout",
+      "before": "310px",
+      "after": "320px",
+      "rule": "layout-lattice-80"
+    },
+    {
+      "token": "--lp-size-admin-inspector-width",
+      "category": "layout",
+      "before": "340px",
+      "after": "320px",
+      "rule": "layout-lattice-80"
+    },
+    {
+      "token": "--lp-size-layout-medium-max",
+      "category": "layout",
+      "before": "760px",
+      "after": "720px",
+      "rule": "layout-lattice-80 (tie -> smaller)"
+    },
+    {
+      "token": "--lp-size-layout-wide-col",
+      "category": "layout",
+      "before": "840px",
+      "after": "800px",
+      "rule": "layout-lattice-80"
+    },
+    {
+      "token": "--lp-size-layout-dashboard-max",
+      "category": "layout",
+      "before": "920px",
+      "after": "960px",
+      "rule": "layout-lattice-80"
+    },
+    {
+      "token": "--lp-size-layout-max",
+      "category": "layout",
+      "before": "1180px",
+      "after": "1200px",
+      "rule": "layout-lattice-80"
+    },
+    {
+      "token": "--lp-elevation-e1-offset-y",
+      "category": "elevation",
+      "before": "6px",
+      "after": "4px",
+      "rule": "elevation-e1-4-16"
+    },
+    {
+      "token": "--lp-elevation-e2-offset-y",
+      "category": "elevation",
+      "before": "12px",
+      "after": "8px",
+      "rule": "elevation-e2-8-32"
+    },
+    {
+      "token": "--lp-elevation-e1-blur (dark)",
+      "category": "elevation",
+      "before": "18px",
+      "after": "16px",
+      "rule": "elevation-e1-4-16"
+    },
+    {
+      "token": "--lp-elevation-e2-blur (dark)",
+      "category": "elevation",
+      "before": "36px",
+      "after": "32px",
+      "rule": "elevation-e2-8-32"
+    },
+    {
+      "token": "--lp-motion-duration-fast",
+      "category": "motion",
+      "before": "100ms",
+      "after": "80ms",
+      "rule": "motion-0-80-160-240-960"
+    },
+    {
+      "token": "--lp-motion-duration-item",
+      "category": "motion",
+      "before": "120ms",
+      "after": "80ms",
+      "rule": "motion-0-80-160-240-960"
+    },
+    {
+      "token": "--lp-motion-duration-pulse",
+      "category": "motion",
+      "before": "900ms",
+      "after": "960ms",
+      "rule": "motion-0-80-160-240-960"
+    },
+    {
+      "token": "--lp-motion-easing-ease",
+      "category": "motion",
+      "before": "ease",
+      "after": "deleted -> --lp-motion-easing-standard",
+      "rule": "easing-standard-out-only"
+    },
+    {
+      "token": "--lp-z-raised..toast",
+      "category": "zIndex",
+      "before": "1,100..500",
+      "after": "100,200..600",
+      "rule": "z-steps-of-100"
+    }
   ],
   "primitive": {
     "color": {
@@ -272,7 +567,6 @@
     },
     "motion": {
       "duration-0": "0ms",
-      "duration-instant": "0.01ms",
       "duration-fast": "80ms",
       "duration-base": "160ms",
       "duration-slow": "240ms",
@@ -327,7 +621,6 @@
       "color.border.subtle": "{primitive.color.neutral-300}",
       "color.border.control": "{primitive.color.neutral-400}",
       "color.border.overlay": "{primitive.color.neutral-300}",
-      "color.border.subtle-ring": "{primitive.elevation.subtle-ring}",
       "color.accent.default": "{primitive.color.indigo-600}",
       "color.accent.focus-ring": "{primitive.color.indigo-600}",
       "color.role.action-fg": "{primitive.color.indigo-800}",
@@ -357,13 +650,9 @@
       "color.passage.neutral": "{primitive.color.slate-500}",
       "color.elevation.shadow-e1": "{primitive.elevation.shadow-e1-light}",
       "color.elevation.shadow-e2": "{primitive.elevation.shadow-e2-light}",
-      "elevation.e1-blur": "{primitive.elevation.e1-blur-light}",
-      "elevation.e2-blur": "{primitive.elevation.e2-blur-light}",
-      "elevation.e0": "{primitive.elevation.none}",
-      "elevation.e1": "0 {component.elevation.e1-offset-y} {semantic.elevation.e1-blur} {semantic.color.elevation.shadow-e1}",
-      "elevation.e1-up": "0 calc(-1 * {component.elevation.e1-offset-y}) {semantic.elevation.e1-blur} {semantic.color.elevation.shadow-e1}",
-      "elevation.e2": "0 {component.elevation.e2-offset-y} {semantic.elevation.e2-blur} {semantic.color.elevation.shadow-e2}",
-      "opacity.disabled": "{primitive.opacity.disabled}"
+      "elevation.e1": "0 {component.elevation.e1-offset-y} {component.elevation.e1-blur} {semantic.color.elevation.shadow-e1}",
+      "elevation.e1-up": "0 calc(-1 * {component.elevation.e1-offset-y}) {component.elevation.e1-blur} {semantic.color.elevation.shadow-e1}",
+      "elevation.e2": "0 {component.elevation.e2-offset-y} {component.elevation.e2-blur} {semantic.color.elevation.shadow-e2}"
     },
     "dark": {
       "color.surface.l0": "{primitive.color.dark-950}",
@@ -381,7 +670,6 @@
       "color.border.subtle": "{primitive.color.dark-700}",
       "color.border.control": "{primitive.color.dark-500}",
       "color.border.overlay": "{primitive.color.dark-600}",
-      "color.border.subtle-ring": "{primitive.elevation.subtle-ring}",
       "color.accent.default": "{primitive.color.indigo-300}",
       "color.accent.focus-ring": "{primitive.color.indigo-300}",
       "color.role.action-fg": "{primitive.color.indigo-200}",
@@ -411,13 +699,9 @@
       "color.passage.neutral": "{primitive.color.slate-300}",
       "color.elevation.shadow-e1": "{primitive.elevation.shadow-e1-dark}",
       "color.elevation.shadow-e2": "{primitive.elevation.shadow-e2-dark}",
-      "elevation.e1-blur": "{primitive.elevation.e1-blur-dark}",
-      "elevation.e2-blur": "{primitive.elevation.e2-blur-dark}",
-      "elevation.e0": "{primitive.elevation.none}",
-      "elevation.e1": "0 {component.elevation.e1-offset-y} {semantic.elevation.e1-blur} {semantic.color.elevation.shadow-e1}",
-      "elevation.e1-up": "0 calc(-1 * {component.elevation.e1-offset-y}) {semantic.elevation.e1-blur} {semantic.color.elevation.shadow-e1}",
-      "elevation.e2": "0 {component.elevation.e2-offset-y} {semantic.elevation.e2-blur} {semantic.color.elevation.shadow-e2}",
-      "opacity.disabled": "{primitive.opacity.disabled}"
+      "elevation.e1": "0 {component.elevation.e1-offset-y} {component.elevation.e1-blur} {semantic.color.elevation.shadow-e1}",
+      "elevation.e1-up": "0 calc(-1 * {component.elevation.e1-offset-y}) {component.elevation.e1-blur} {semantic.color.elevation.shadow-e1}",
+      "elevation.e2": "0 {component.elevation.e2-offset-y} {component.elevation.e2-blur} {semantic.color.elevation.shadow-e2}"
     }
   },
   "component": {
@@ -446,7 +730,6 @@
     "space.stack.item-body-to-actionbar": "{proximity.4}",
     "space.stack.action-bar-after-control": "{proximity.4}",
     "space.stack.dialog-body-to-actionbar": "{proximity.4}",
-    "space.stack.section": "{proximity.5}",
     "space.stack.section-to-section": "{proximity.5}",
     "space.stack.action-bar-after-section": "{proximity.5}",
     "space.inline.segment": "{proximity.1}",
@@ -482,37 +765,20 @@
     "size.icon-md": "{primitive.size.20}",
     "size.icon-lg": "{primitive.size.24}",
     "size.status-dot": "{primitive.size.8}",
-    "size.notch-width": "{primitive.size.8}",
     "size.indicator-md": "{primitive.size.8}",
     "size.checkbox-sm": "{primitive.size.16}",
     "size.switch-thumb": "{primitive.size.16}",
     "size.tag-height": "{primitive.size.28}",
     "size.track-height": "{primitive.size.4}",
-    "size.progress-track-w": "{primitive.size.100}",
-    "size.textarea-compact-min-h": "{primitive.size.68}",
-    "size.textarea-min-h": "{primitive.size.144}",
-    "size.card-min-h": "{primitive.size.140}",
-    "size.col-min-xs": "{primitive.size.128}",
-    "size.menu-min-w": "{primitive.size.148}",
     "size.grid-card-min": "{primitive.size.180}",
-    "size.popover-min-w": "{primitive.size.200}",
-    "size.grid-field-min": "{primitive.size.220}",
-    "size.popover-max-w": "{primitive.size.280}",
     "size.editor-canvas-min-h": "{primitive.size.360}",
-    "size.overlay-sample-max": "{primitive.size.420}",
-    "size.form-compact-max": "{primitive.size.440}",
     "size.dialog-max-w": "{primitive.size.480}",
-    "size.card-max-w": "{primitive.size.520}",
     "size.layout-list-col": "{primitive.size.260}",
-    "size.layout-nav-compact": "{primitive.size.240}",
-    "size.layout-inspector-compact": "{primitive.size.320}",
-    "size.layout-rail-width": "{primitive.size.320}",
     "size.admin-nav-width": "{primitive.size.240}",
     "size.admin-inspector-width": "{primitive.size.320}",
     "size.layout-narrow-max": "{primitive.size.400}",
     "size.layout-reading-col": "{primitive.size.640}",
     "size.layout-main-max": "{primitive.size.720}",
-    "size.layout-medium-max": "{primitive.size.720}",
     "size.layout-wide-col": "{primitive.size.800}",
     "size.layout-dashboard-max": "{primitive.size.960}",
     "size.layout-max": "{primitive.size.1200}",
@@ -536,7 +802,6 @@
     "border.hairline": "{primitive.border.1}",
     "border.focus": "{primitive.border.2}",
     "border.role-rule": "{primitive.border.4}",
-    "border.banner-rule": "{primitive.border.4}",
     "z.base": "{primitive.zIndex.0}",
     "z.raised": "{primitive.zIndex.100}",
     "z.sticky": "{primitive.zIndex.200}",
@@ -545,9 +810,7 @@
     "z.modal": "{primitive.zIndex.500}",
     "z.toast": "{primitive.zIndex.600}",
     "z.skip": "{primitive.zIndex.1000}",
-    "motion.duration-instant": "{primitive.motion.duration-instant}",
     "motion.duration-fast": "{primitive.motion.duration-fast}",
-    "motion.duration-item": "{primitive.motion.duration-fast}",
     "motion.duration-base": "{primitive.motion.duration-base}",
     "motion.duration-slow": "{primitive.motion.duration-slow}",
     "motion.duration-pulse": "{primitive.motion.duration-pulse}",
@@ -572,7 +835,12 @@
     "font.line-32": "{primitive.font.line-32}",
     "font.line-reading": "{primitive.font.line-reading}",
     "font.letter-normal": "{primitive.font.letter-normal}",
-    "font.letter-wide": "{primitive.font.letter-wide}"
+    "font.letter-wide": "{primitive.font.letter-wide}",
+    "color.border.subtle-ring": "{primitive.elevation.subtle-ring}",
+    "elevation.e1-blur": "{primitive.elevation.e1-blur-light}",
+    "elevation.e2-blur": "{primitive.elevation.e2-blur-light}",
+    "elevation.e0": "{primitive.elevation.none}",
+    "opacity.disabled": "{primitive.opacity.disabled}"
   },
   "responsive": {
     "sm": {
@@ -688,12 +956,260 @@
       "replacedBy": null
     },
     "overrides": {
-      "space.proximity.1": { "status": "active", "since": "WP-16.M", "replacedBy": null },
-      "space.proximity.2": { "status": "active", "since": "WP-16.M", "replacedBy": null },
-      "space.proximity.3": { "status": "active", "since": "WP-16.M", "replacedBy": null },
-      "space.proximity.4": { "status": "active", "since": "WP-16.M", "replacedBy": null },
-      "space.proximity.5": { "status": "active", "since": "WP-16.M", "replacedBy": null },
-      "motion.easing-standard": { "status": "active", "since": "WP-16.M", "replacedBy": null }
+      "space.proximity.1": {
+        "status": "active",
+        "since": "WP-16.M",
+        "replacedBy": null
+      },
+      "space.proximity.2": {
+        "status": "active",
+        "since": "WP-16.M",
+        "replacedBy": null
+      },
+      "space.proximity.3": {
+        "status": "active",
+        "since": "WP-16.M",
+        "replacedBy": null
+      },
+      "space.proximity.4": {
+        "status": "active",
+        "since": "WP-16.M",
+        "replacedBy": null
+      },
+      "space.proximity.5": {
+        "status": "active",
+        "since": "WP-16.M",
+        "replacedBy": null
+      },
+      "motion.easing-standard": {
+        "status": "active",
+        "since": "WP-16.M",
+        "replacedBy": null
+      }
+    },
+    "aliases": {
+      "color.surface.subtle": {
+        "aliasOf": "color.surface.overlay",
+        "reason": "Surface alias for recessed subtle panels on L1"
+      },
+      "space.inline.segment": {
+        "aliasOf": "space.proximity.1",
+        "reason": "D-L4 inline relation: segmented control gap"
+      },
+      "space.inset.track": {
+        "aliasOf": "space.proximity.1",
+        "reason": "D-L4 inset relation: segmented track padding"
+      },
+      "space.inset.badge-x": {
+        "aliasOf": "space.proximity.1",
+        "reason": "D-L4 inset relation: badge horizontal padding"
+      },
+      "space.stack.label-to-control": {
+        "aliasOf": "space.proximity.2",
+        "reason": "D-L4 stack relation: label to control"
+      },
+      "space.stack.tint-clearance": {
+        "aliasOf": "space.proximity.2",
+        "reason": "D-L4 stack relation: tinted row clearance"
+      },
+      "space.stack.page-title-to-description": {
+        "aliasOf": "space.proximity.2",
+        "reason": "D-L4 stack relation: page title to subtitle"
+      },
+      "space.stack.section-heading-to-intro": {
+        "aliasOf": "space.proximity.2",
+        "reason": "D-L4 stack relation: section heading to intro"
+      },
+      "space.inline.dot-text": {
+        "aliasOf": "space.proximity.2",
+        "reason": "D-L4 inline relation: status dot to label"
+      },
+      "space.inline.icon-text": {
+        "aliasOf": "space.proximity.2",
+        "reason": "D-L4 inline relation: icon to label"
+      },
+      "space.inline.button-button": {
+        "aliasOf": "space.proximity.2",
+        "reason": "D-L4 inline relation: peer buttons"
+      },
+      "space.inline.tag-tag": {
+        "aliasOf": "space.proximity.2",
+        "reason": "D-L4 inline relation: peer tags"
+      },
+      "space.inset.item-x": {
+        "aliasOf": "space.proximity.2",
+        "reason": "D-L4 inset relation: item horizontal padding"
+      },
+      "space.inset.tag-x": {
+        "aliasOf": "space.proximity.2",
+        "reason": "D-L4 inset relation: tag horizontal padding"
+      },
+      "space.inset.item-y": {
+        "aliasOf": "space.inset.control-sm",
+        "reason": "D-L4 inset relation: item vertical padding"
+      },
+      "space.inset.control-x": {
+        "aliasOf": "space.inset.control-sm",
+        "reason": "D-L4 inset relation: control horizontal padding"
+      },
+      "space.inset.panel": {
+        "aliasOf": "space.inset.control-sm",
+        "reason": "D-L4 inset relation: panel padding"
+      },
+      "space.stack.field-to-field": {
+        "aliasOf": "space.proximity.3",
+        "reason": "D-L4 stack relation: field to field"
+      },
+      "space.stack.heading-to-first": {
+        "aliasOf": "space.proximity.3",
+        "reason": "D-L4 stack relation: heading to first element"
+      },
+      "space.stack.heading-to-list-plain": {
+        "aliasOf": "space.proximity.3",
+        "reason": "D-L4 stack relation: heading to plain list"
+      },
+      "space.stack.heading-to-list-interactive": {
+        "aliasOf": "space.proximity.3",
+        "reason": "D-L4 stack relation: heading to interactive list"
+      },
+      "space.stack.control-to-list": {
+        "aliasOf": "space.proximity.3",
+        "reason": "D-L4 stack relation: filter control to list"
+      },
+      "space.stack.tabs-to-content": {
+        "aliasOf": "space.proximity.3",
+        "reason": "D-L4 stack relation: tabs to tabpanel"
+      },
+      "space.stack.dialog-title-to-body": {
+        "aliasOf": "space.proximity.3",
+        "reason": "D-L4 stack relation: dialog title to body"
+      },
+      "space.inset.card-sm": {
+        "aliasOf": "space.proximity.3",
+        "reason": "D-L4 inset relation: compact card padding"
+      },
+      "space.inset.page-gutter": {
+        "aliasOf": "space.proximity.3",
+        "reason": "D-L4 responsive page gutter (switches to proximity.4 at md)"
+      },
+      "space.inset.section": {
+        "aliasOf": "space.proximity.3",
+        "reason": "D-L4 inset relation: section padding"
+      },
+      "space.stack.subsection-to-subsection": {
+        "aliasOf": "space.proximity.4",
+        "reason": "D-L4 stack relation: subsection separation"
+      },
+      "space.stack.header-to-content": {
+        "aliasOf": "space.proximity.4",
+        "reason": "D-L4 stack relation: header to content"
+      },
+      "space.stack.item-body-to-actionbar": {
+        "aliasOf": "space.proximity.4",
+        "reason": "D-L4 stack relation: item body to action bar"
+      },
+      "space.stack.action-bar-after-control": {
+        "aliasOf": "space.proximity.4",
+        "reason": "D-L4 stack relation: action bar after control"
+      },
+      "space.stack.dialog-body-to-actionbar": {
+        "aliasOf": "space.proximity.4",
+        "reason": "D-L4 stack relation: dialog body to action bar"
+      },
+      "space.inset.dialog": {
+        "aliasOf": "space.proximity.4",
+        "reason": "D-L4 inset relation: dialog padding"
+      },
+      "space.stack.section-to-section": {
+        "aliasOf": "space.proximity.5",
+        "reason": "D-L4 stack relation: major section separation"
+      },
+      "space.stack.action-bar-after-section": {
+        "aliasOf": "space.proximity.5",
+        "reason": "D-L4 stack relation: action bar after section"
+      },
+      "space.inset.page-y": {
+        "aliasOf": "space.proximity.5",
+        "reason": "D-L4 inset relation: page vertical padding"
+      },
+      "size.hit-area": {
+        "aliasOf": "size.control-height",
+        "reason": "Invariant WCAG touch target floor (control-height shrinks at sm)"
+      },
+      "size.strata-band-min": {
+        "aliasOf": "size.hit-area",
+        "reason": "Minimum interactive height for chronological timeline band"
+      },
+      "size.checkbox-sm": {
+        "aliasOf": "size.icon-sm",
+        "reason": "Checkbox box dimension"
+      },
+      "size.switch-thumb": {
+        "aliasOf": "size.icon-sm",
+        "reason": "Toggle switch thumb diameter"
+      },
+      "size.indicator-md": {
+        "aliasOf": "size.status-dot",
+        "reason": "Medium status indicator diameter"
+      },
+      "size.btn-action-max": {
+        "aliasOf": "size.admin-nav-width",
+        "reason": "Maximum action button width cap (distinct from nav column)"
+      },
+      "radius.chip": {
+        "aliasOf": "radius.r1",
+        "reason": "Chip and tag corner radius role"
+      },
+      "radius.control": {
+        "aliasOf": "radius.r2",
+        "reason": "Interactive control corner radius role"
+      },
+      "radius.container": {
+        "aliasOf": "radius.r2",
+        "reason": "Container surface corner radius role"
+      },
+      "radius.overlay": {
+        "aliasOf": "radius.r2",
+        "reason": "Overlay surface corner radius role"
+      },
+      "radius.card": {
+        "aliasOf": "radius.r2",
+        "reason": "Card surface corner radius role"
+      },
+      "font.line-16": {
+        "aliasOf": "font.size-16",
+        "reason": "Line-height step distinct from font-size property"
+      },
+      "font.line-20": {
+        "aliasOf": "font.size-20",
+        "reason": "Line-height step distinct from font-size property"
+      },
+      "font.line-24": {
+        "aliasOf": "font.size-24",
+        "reason": "Line-height step distinct from font-size property"
+      },
+      "font.line-32": {
+        "aliasOf": "font.size-32",
+        "reason": "Line-height step distinct from font-size property"
+      }
+    }
+  },
+  "accentMapping": {
+    "light": {
+      "color.surface.control-selected": 50,
+      "color.accent.default": 600,
+      "color.accent.focus-ring": 600,
+      "color.role.action-fg": 800,
+      "color.role.action-bg": 50,
+      "color.role.action-border": 600
+    },
+    "dark": {
+      "color.surface.control-selected": 900,
+      "color.accent.default": 300,
+      "color.accent.focus-ring": 300,
+      "color.role.action-fg": 200,
+      "color.role.action-bg": 900,
+      "color.role.action-border": 300
     }
   }
 }

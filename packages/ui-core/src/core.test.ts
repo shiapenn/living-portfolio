@@ -4,7 +4,7 @@ import { buildCoreBundleCss, hashCss, renderSkipLink, renderCoreStack, renderCor
 describe('@living-portfolio/ui-core (D-M1 core floor)', () => {
   it('compiles cascade layers and accessibility floor into core.css with deterministic content hash', () => {
     const css = buildCoreBundleCss();
-    expect(css).toContain('@layer reset, tokens, base, primitives, components, patterns, templates, pages, utilities;');
+    expect(css).toContain('@layer reset, tokens, base, primitives, components, patterns, templates, pages, utilities, user-theme;');
     expect(css).toContain('prefers-reduced-motion: reduce');
     expect(css).toContain('.lp-core-skip-link');
     expect(css).toContain('.lp-core-sr-only');

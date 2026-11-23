@@ -4,15 +4,25 @@ import { resolve } from 'node:path';
 import { generateOutputs, loadTokens, resolveRef } from '../generate.mjs';
 
 describe('Design tokens single-source drift, D-L4 monotonic proximity, and D-L5 architecture', () => {
-  it('generated src/generated.ts, src/tokens.css, and docs/design/tokens.md match committed files', () => {
-    const { tsOut, cssOut, mdOut } = generateOutputs();
+  it('generated src/generated.ts, css bundles, and per-pack docs/design/tokens*.md match committed files', () => {
+    const { tsOut, cssOut, publicCssOut, coreCssOut, mdOut, mdCoreOut, mdAdminOut, mdPublicOut } = generateOutputs();
     const committedTs = readFileSync(resolve(import.meta.dirname, 'generated.ts'), 'utf8');
     const committedCss = readFileSync(resolve(import.meta.dirname, 'tokens.css'), 'utf8');
+    const committedPublicCss = readFileSync(resolve(import.meta.dirname, 'public.css'), 'utf8');
+    const committedCoreCss = readFileSync(resolve(import.meta.dirname, 'core.css'), 'utf8');
     const committedMd = readFileSync(resolve(import.meta.dirname, '../../../docs/design/tokens.md'), 'utf8');
+    const committedMdCore = readFileSync(resolve(import.meta.dirname, '../../../docs/design/tokens-core.md'), 'utf8');
+    const committedMdAdmin = readFileSync(resolve(import.meta.dirname, '../../../docs/design/tokens-admin.md'), 'utf8');
+    const committedMdPublic = readFileSync(resolve(import.meta.dirname, '../../../docs/design/tokens-public.md'), 'utf8');
 
     expect(committedTs).toBe(tsOut);
     expect(committedCss).toBe(cssOut);
+    expect(committedPublicCss).toBe(publicCssOut);
+    expect(committedCoreCss).toBe(coreCssOut);
     expect(committedMd).toBe(mdOut);
+    expect(committedMdCore).toBe(mdCoreOut);
+    expect(committedMdAdmin).toBe(mdAdminOut);
+    expect(committedMdPublic).toBe(mdPublicOut);
   });
 
   it('validates three-tier structure and semantic light/dark key parity', () => {

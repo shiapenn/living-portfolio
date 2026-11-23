@@ -100,19 +100,45 @@ for (const f of walkFiles(resolve(ROOT, 'apps/web/src'), ['.ts'])) {
   }
 }
 
-// 3. Docs drift guard for tokens
-const { tsOut, cssOut, publicCssOut, coreCssOut, mdOut } = generateOutputs();
+// 3. Docs drift guard for tokens (all packs)
+const { tsOut, cssOut, publicCssOut, coreCssOut, mdOut, mdCoreOut, mdAdminOut, mdPublicOut } = generateOutputs();
 const driftChecks = [
   ['packages/design-tokens/src/generated.ts', tsOut],
   ['packages/design-tokens/src/tokens.css', cssOut],
   ['packages/design-tokens/src/public.css', publicCssOut],
   ['packages/design-tokens/src/core.css', coreCssOut],
   ['docs/design/tokens.md', mdOut],
+  ['docs/design/tokens-core.md', mdCoreOut],
+  ['docs/design/tokens-admin.md', mdAdminOut],
+  ['docs/design/tokens-public.md', mdPublicOut],
 ];
 for (const [rel, expected] of driftChecks) {
   const full = resolve(ROOT, rel);
   if (!existsSync(full) || readFileSync(full, 'utf8') !== expected) {
     errors.push(`[DRIFT] ${rel} does not match generated output. Run: node packages/design-tokens/generate.mjs`);
+  }
+}
+
+// 4. Prose token-value guard (D-N3.4): design & generated docs may not state px, ms, or hex values in prose
+const designDocsDir = resolve(ROOT, 'docs/design');
+if (existsSync(designDocsDir)) {
+  for (const entry of readdirSync(designDocsDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith('.md')) continue;
+    const rel = `docs/design/${entry.name}`;
+    const lines = readFileSync(resolve(designDocsDir, entry.name), 'utf8').split('\n');
+    let inFence = false;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.trim().startsWith('```')) {
+        inFence = !inFence;
+        continue;
+      }
+      if (inFence) continue;
+      if (line.trim().startsWith('|')) continue; // Markdown tables are allowed
+      if (/\b\d+(?:\.\d+)?\s*(?:px|ms)\b|#[0-9a-fA-F]{3,8}\b/.test(line)) {
+        errors.push(`[DOC-PROSE-VALUE] ${rel}:${i + 1}: prose may not state px, ms, or hex token values (use generated tables).`);
+      }
+    }
   }
 }
 

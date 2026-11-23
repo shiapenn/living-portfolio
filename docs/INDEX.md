@@ -176,6 +176,7 @@
 | `A168` | wp-16l-l3-token-restructure-and-spacing-system | `active` | [A168-wp-16l-l3-token-restructure-and-spacing-system.md](execution-reports/A168-wp-16l-l3-token-restructure-and-spacing-system.md) | — |
 | `A169` | wp-16l-l4-pixel-diff-and-closure | `active` | [A169-wp-16l-l4-pixel-diff-and-closure.md](execution-reports/A169-wp-16l-l4-pixel-diff-and-closure.md) | — |
 | `A170` | wp-16n-n1-slice-direction-and-accent-seed | `active` | [A170-wp-16n-n1-slice-direction-and-accent-seed.md](execution-reports/A170-wp-16n-n1-slice-direction-and-accent-seed.md) | — |
+| `A171` | wp-16n-s1-tokens-accent-docs-guards | `active` | [A171-wp-16n-s1-tokens-accent-docs-guards.md](execution-reports/A171-wp-16n-s1-tokens-accent-docs-guards.md) | — |
 
 ## Handover Snapshots (Class H)
 
@@ -254,4 +255,8 @@
 | `L030` | Accent Seed Contract (D-N2) | `active` | [accent-contract.md](design/accent-contract.md) | — |
 | `L031` | WP-16.N Audit Delta (baseline) | `active` | [audit-delta-wp16n.md](design/audit-delta-wp16n.md) | — |
 | `L032` | Public Direction Exploration Index | `active` | [index.md](design/explorations/index.md) | — |
+| `L033` | Core Pack Tokens (Generated) | `active` | [tokens-core.md](design/tokens-core.md) | — |
+| `L034` | Admin Pack Tokens (Generated) | `active` | [tokens-admin.md](design/tokens-admin.md) | — |
+| `L035` | Public Pack Tokens (Generated) | `active` | [tokens-public.md](design/tokens-public.md) | — |
+| `L036` | WP-16.N Progress & DoD Checklist | `active` | [wp16n-progress.md](plans/wp16n-progress.md) | — |
 

@@ -2,6 +2,20 @@
 
 export const TOKEN_VERSION = "3.0.0" as const;
 
+export const CORE_ACCENT_CONTRACT = {
+  "seed": {
+    "light": "#3A4FD0",
+    "dark": "#9AA8FF"
+  },
+  "canvas": {
+    "light": "#FFFFFF",
+    "dark": "#0F1A22"
+  },
+  "overrides": {},
+  "layer": "user-theme",
+  "file": "accent.<hash>.css"
+} as const;
+
 export const BREAKPOINTS = {
   "viewport": {
     "sm": 640,
@@ -387,7 +401,6 @@ export const PACK_RULES = {
     "elevationRatio": 2,
     "motionDurationsMs": [
       0,
-      0.01,
       80,
       160,
       240,
@@ -572,7 +585,6 @@ export const COMPONENT_TOKEN_VALUES = {
   "--lp-space-stack-item-body-to-actionbar": "24px",
   "--lp-space-stack-action-bar-after-control": "24px",
   "--lp-space-stack-dialog-body-to-actionbar": "24px",
-  "--lp-space-stack-section": "40px",
   "--lp-space-stack-section-to-section": "40px",
   "--lp-space-stack-action-bar-after-section": "40px",
   "--lp-space-inline-segment": "4px",
@@ -608,37 +620,20 @@ export const COMPONENT_TOKEN_VALUES = {
   "--lp-size-icon-md": "20px",
   "--lp-size-icon-lg": "24px",
   "--lp-size-status-dot": "8px",
-  "--lp-size-notch-width": "8px",
   "--lp-size-indicator-md": "8px",
   "--lp-size-checkbox-sm": "16px",
   "--lp-size-switch-thumb": "16px",
   "--lp-size-tag-height": "28px",
   "--lp-size-track-height": "4px",
-  "--lp-size-progress-track-w": "100px",
-  "--lp-size-textarea-compact-min-h": "68px",
-  "--lp-size-textarea-min-h": "144px",
-  "--lp-size-card-min-h": "140px",
-  "--lp-size-col-min-xs": "128px",
-  "--lp-size-menu-min-w": "148px",
   "--lp-size-grid-card-min": "180px",
-  "--lp-size-popover-min-w": "200px",
-  "--lp-size-grid-field-min": "220px",
-  "--lp-size-popover-max-w": "280px",
   "--lp-size-editor-canvas-min-h": "360px",
-  "--lp-size-overlay-sample-max": "420px",
-  "--lp-size-form-compact-max": "440px",
   "--lp-size-dialog-max-w": "480px",
-  "--lp-size-card-max-w": "520px",
   "--lp-size-layout-list-col": "260px",
-  "--lp-size-layout-nav-compact": "240px",
-  "--lp-size-layout-inspector-compact": "320px",
-  "--lp-size-layout-rail-width": "320px",
   "--lp-size-admin-nav-width": "240px",
   "--lp-size-admin-inspector-width": "320px",
   "--lp-size-layout-narrow-max": "400px",
   "--lp-size-layout-reading-col": "640px",
   "--lp-size-layout-main-max": "720px",
-  "--lp-size-layout-medium-max": "720px",
   "--lp-size-layout-wide-col": "800px",
   "--lp-size-layout-dashboard-max": "960px",
   "--lp-size-layout-max": "1200px",
@@ -662,7 +657,6 @@ export const COMPONENT_TOKEN_VALUES = {
   "--lp-border-hairline": "1px",
   "--lp-border-focus": "2px",
   "--lp-border-role-rule": "4px",
-  "--lp-border-banner-rule": "4px",
   "--lp-z-base": "0",
   "--lp-z-raised": "100",
   "--lp-z-sticky": "200",
@@ -671,9 +665,7 @@ export const COMPONENT_TOKEN_VALUES = {
   "--lp-z-modal": "500",
   "--lp-z-toast": "600",
   "--lp-z-skip": "1000",
-  "--lp-motion-duration-instant": "0.01ms",
   "--lp-motion-duration-fast": "80ms",
-  "--lp-motion-duration-item": "80ms",
   "--lp-motion-duration-base": "160ms",
   "--lp-motion-duration-slow": "240ms",
   "--lp-motion-duration-pulse": "960ms",
@@ -698,7 +690,12 @@ export const COMPONENT_TOKEN_VALUES = {
   "--lp-font-line-32": "32px",
   "--lp-font-line-reading": "1.65",
   "--lp-font-letter-normal": "0em",
-  "--lp-font-letter-wide": "0.03em"
+  "--lp-font-letter-wide": "0.03em",
+  "--lp-color-border-subtle-ring": "rgba(0, 0, 0, 0.1)",
+  "--lp-elevation-e1-blur": "16px",
+  "--lp-elevation-e2-blur": "32px",
+  "--lp-elevation-e0": "none",
+  "--lp-opacity-disabled": "0.5"
 } as const;
 
 export const RESPONSIVE_TOKEN_VALUES = {
@@ -726,7 +723,6 @@ export const SEMANTIC_LIGHT_VALUES = {
   "--lp-color-border-subtle": "#CBD3D8",
   "--lp-color-border-control": "#6B7B88",
   "--lp-color-border-overlay": "#CBD3D8",
-  "--lp-color-border-subtle-ring": "rgba(0, 0, 0, 0.1)",
   "--lp-color-accent-default": "#3A4FD0",
   "--lp-color-accent-focus-ring": "#3A4FD0",
   "--lp-color-role-action-fg": "#1E329E",
@@ -756,13 +752,9 @@ export const SEMANTIC_LIGHT_VALUES = {
   "--lp-color-passage-neutral": "#5A5F6B",
   "--lp-color-elevation-shadow-e1": "rgba(20, 32, 42, 0.14)",
   "--lp-color-elevation-shadow-e2": "rgba(20, 32, 42, 0.18)",
-  "--lp-elevation-e1-blur": "16px",
-  "--lp-elevation-e2-blur": "32px",
-  "--lp-elevation-e0": "none",
   "--lp-elevation-e1": "0 4px 16px rgba(20, 32, 42, 0.14)",
   "--lp-elevation-e1-up": "0 calc(-1 * 4px) 16px rgba(20, 32, 42, 0.14)",
   "--lp-elevation-e2": "0 8px 32px rgba(20, 32, 42, 0.18)",
-  "--lp-opacity-disabled": "0.5",
   "--lp-color-surface-page": "#FFFFFF",
   "--lp-color-surface-raised": "#FFFFFF",
   "--lp-color-surface-input": "#FFFFFF",
@@ -786,7 +778,6 @@ export const SEMANTIC_DARK_VALUES = {
   "--lp-color-border-subtle": "#2A3946",
   "--lp-color-border-control": "#7E8F9C",
   "--lp-color-border-overlay": "#334656",
-  "--lp-color-border-subtle-ring": "rgba(0, 0, 0, 0.1)",
   "--lp-color-accent-default": "#9AA8FF",
   "--lp-color-accent-focus-ring": "#9AA8FF",
   "--lp-color-role-action-fg": "#C5CEFF",
@@ -816,13 +807,9 @@ export const SEMANTIC_DARK_VALUES = {
   "--lp-color-passage-neutral": "#B4B9C4",
   "--lp-color-elevation-shadow-e1": "rgba(0, 0, 0, 0.55)",
   "--lp-color-elevation-shadow-e2": "rgba(0, 0, 0, 0.65)",
-  "--lp-elevation-e1-blur": "16px",
-  "--lp-elevation-e2-blur": "32px",
-  "--lp-elevation-e0": "none",
   "--lp-elevation-e1": "0 4px 16px rgba(0, 0, 0, 0.55)",
   "--lp-elevation-e1-up": "0 calc(-1 * 4px) 16px rgba(0, 0, 0, 0.55)",
   "--lp-elevation-e2": "0 8px 32px rgba(0, 0, 0, 0.65)",
-  "--lp-opacity-disabled": "0.5",
   "--lp-color-surface-page": "#0F1A22",
   "--lp-color-surface-raised": "#16232D",
   "--lp-color-surface-input": "#16232D",
@@ -993,7 +980,6 @@ export const PRIMITIVE_VALUES = {
   "--lp-prim-font-letter-tight": "-0.01em",
   "--lp-prim-font-letter-wide": "0.03em",
   "--lp-prim-motion-duration-0": "0ms",
-  "--lp-prim-motion-duration-instant": "0.01ms",
   "--lp-prim-motion-duration-fast": "80ms",
   "--lp-prim-motion-duration-base": "160ms",
   "--lp-prim-motion-duration-slow": "240ms",
@@ -1291,7 +1277,6 @@ export const TOKEN_TIERS = {
     "--lp-prim-font-letter-tight",
     "--lp-prim-font-letter-wide",
     "--lp-prim-motion-duration-0",
-    "--lp-prim-motion-duration-instant",
     "--lp-prim-motion-duration-fast",
     "--lp-prim-motion-duration-base",
     "--lp-prim-motion-duration-slow",
@@ -1338,7 +1323,6 @@ export const TOKEN_TIERS = {
     "--lp-color-border-subtle",
     "--lp-color-border-control",
     "--lp-color-border-overlay",
-    "--lp-color-border-subtle-ring",
     "--lp-color-accent-default",
     "--lp-color-accent-focus-ring",
     "--lp-color-role-action-fg",
@@ -1368,13 +1352,9 @@ export const TOKEN_TIERS = {
     "--lp-color-passage-neutral",
     "--lp-color-elevation-shadow-e1",
     "--lp-color-elevation-shadow-e2",
-    "--lp-elevation-e1-blur",
-    "--lp-elevation-e2-blur",
-    "--lp-elevation-e0",
     "--lp-elevation-e1",
     "--lp-elevation-e1-up",
-    "--lp-elevation-e2",
-    "--lp-opacity-disabled"
+    "--lp-elevation-e2"
   ],
   "component": [
     "--lp-color-surface-page",
@@ -1402,7 +1382,6 @@ export const TOKEN_TIERS = {
     "--lp-space-stack-item-body-to-actionbar",
     "--lp-space-stack-action-bar-after-control",
     "--lp-space-stack-dialog-body-to-actionbar",
-    "--lp-space-stack-section",
     "--lp-space-stack-section-to-section",
     "--lp-space-stack-action-bar-after-section",
     "--lp-space-inline-segment",
@@ -1438,37 +1417,20 @@ export const TOKEN_TIERS = {
     "--lp-size-icon-md",
     "--lp-size-icon-lg",
     "--lp-size-status-dot",
-    "--lp-size-notch-width",
     "--lp-size-indicator-md",
     "--lp-size-checkbox-sm",
     "--lp-size-switch-thumb",
     "--lp-size-tag-height",
     "--lp-size-track-height",
-    "--lp-size-progress-track-w",
-    "--lp-size-textarea-compact-min-h",
-    "--lp-size-textarea-min-h",
-    "--lp-size-card-min-h",
-    "--lp-size-col-min-xs",
-    "--lp-size-menu-min-w",
     "--lp-size-grid-card-min",
-    "--lp-size-popover-min-w",
-    "--lp-size-grid-field-min",
-    "--lp-size-popover-max-w",
     "--lp-size-editor-canvas-min-h",
-    "--lp-size-overlay-sample-max",
-    "--lp-size-form-compact-max",
     "--lp-size-dialog-max-w",
-    "--lp-size-card-max-w",
     "--lp-size-layout-list-col",
-    "--lp-size-layout-nav-compact",
-    "--lp-size-layout-inspector-compact",
-    "--lp-size-layout-rail-width",
     "--lp-size-admin-nav-width",
     "--lp-size-admin-inspector-width",
     "--lp-size-layout-narrow-max",
     "--lp-size-layout-reading-col",
     "--lp-size-layout-main-max",
-    "--lp-size-layout-medium-max",
     "--lp-size-layout-wide-col",
     "--lp-size-layout-dashboard-max",
     "--lp-size-layout-max",
@@ -1492,7 +1454,6 @@ export const TOKEN_TIERS = {
     "--lp-border-hairline",
     "--lp-border-focus",
     "--lp-border-role-rule",
-    "--lp-border-banner-rule",
     "--lp-z-base",
     "--lp-z-raised",
     "--lp-z-sticky",
@@ -1501,9 +1462,7 @@ export const TOKEN_TIERS = {
     "--lp-z-modal",
     "--lp-z-toast",
     "--lp-z-skip",
-    "--lp-motion-duration-instant",
     "--lp-motion-duration-fast",
-    "--lp-motion-duration-item",
     "--lp-motion-duration-base",
     "--lp-motion-duration-slow",
     "--lp-motion-duration-pulse",
@@ -1528,7 +1487,12 @@ export const TOKEN_TIERS = {
     "--lp-font-line-32",
     "--lp-font-line-reading",
     "--lp-font-letter-normal",
-    "--lp-font-letter-wide"
+    "--lp-font-letter-wide",
+    "--lp-color-border-subtle-ring",
+    "--lp-elevation-e1-blur",
+    "--lp-elevation-e2-blur",
+    "--lp-elevation-e0",
+    "--lp-opacity-disabled"
   ],
   "responsive": {
     "sm": {
@@ -1540,8 +1504,8 @@ export const TOKEN_TIERS = {
   }
 } as const;
 
-export const THEME_CSS = "/* AUTO-GENERATED FROM packages/design-tokens/tokens.json — DO NOT EDIT BY HAND */\n@font-face {\n  font-family: 'Literata';\n  font-style: normal;\n  font-weight: 400 700;\n  font-display: swap;\n  src: local('Literata'), local('Literata-Regular');\n}\n@font-face {\n  font-family: 'Atkinson Hyperlegible Next';\n  font-style: normal;\n  font-weight: 400 700;\n  font-display: swap;\n  src: local('Atkinson Hyperlegible Next'), local('AtkinsonHyperlegibleNext-Regular'), local('Atkinson Hyperlegible');\n}\n@font-face {\n  font-family: 'JetBrains Mono';\n  font-style: normal;\n  font-weight: 400 700;\n  font-display: swap;\n  src: local('JetBrains Mono'), local('JetBrainsMono-Regular');\n}\n\n:root {\n  /* Tier 2: Semantic (Light Default, primitives resolved at build) */\n  --lp-color-surface-l0: #FFFFFF;\n  --lp-color-surface-l1: #F5F6F7;\n  --lp-color-surface-l2: #EBEFF2;\n  --lp-color-surface-control: #EBEFF2;\n  --lp-color-surface-control-hover: #E1E6EA;\n  --lp-color-surface-control-active: #D2D9DF;\n  --lp-color-surface-control-selected: #EEF1FF;\n  --lp-color-surface-scrim: rgba(15, 26, 34, 0.45);\n  --lp-color-text-1: #14202A;\n  --lp-color-text-2: #4B5A66;\n  --lp-color-text-3: #63727E;\n  --lp-color-text-on-accent: #FFFFFF;\n  --lp-color-border-subtle: #CBD3D8;\n  --lp-color-border-control: #6B7B88;\n  --lp-color-border-overlay: #CBD3D8;\n  --lp-color-border-subtle-ring: rgba(0, 0, 0, 0.1);\n  --lp-color-accent-default: #3A4FD0;\n  --lp-color-accent-focus-ring: #3A4FD0;\n  --lp-color-role-action-fg: #1E329E;\n  --lp-color-role-action-bg: #EEF1FF;\n  --lp-color-role-action-border: #3A4FD0;\n  --lp-color-role-neutral-fg: #2D3B45;\n  --lp-color-role-neutral-bg: #EEF1F3;\n  --lp-color-role-neutral-border: #6B7B88;\n  --lp-color-role-success-fg: #145940;\n  --lp-color-role-success-bg: #E8F5E9;\n  --lp-color-role-success-border: #1F7A5A;\n  --lp-color-role-warning-fg: #6E4700;\n  --lp-color-role-warning-bg: #FFF8E1;\n  --lp-color-role-warning-border: #9A6A00;\n  --lp-color-role-danger-fg: #8E1B12;\n  --lp-color-role-danger-bg: #FFEBEE;\n  --lp-color-role-danger-border: #B42318;\n  --lp-color-role-info-fg: #1D437A;\n  --lp-color-role-info-bg: #EAF2FC;\n  --lp-color-role-info-border: #2F5FA8;\n  --lp-color-passage-goal: #2F5FA8;\n  --lp-color-passage-approach: #5A5F6B;\n  --lp-color-passage-friction: #9A6A00;\n  --lp-color-passage-decision: #5B3FA0;\n  --lp-color-passage-outcome: #1F7A5A;\n  --lp-color-passage-lesson: #A13A6B;\n  --lp-color-passage-neutral: #5A5F6B;\n  --lp-color-elevation-shadow-e1: rgba(20, 32, 42, 0.14);\n  --lp-color-elevation-shadow-e2: rgba(20, 32, 42, 0.18);\n  --lp-elevation-e1-blur: 16px;\n  --lp-elevation-e2-blur: 32px;\n  --lp-elevation-e0: none;\n  --lp-elevation-e1: 0 var(--lp-elevation-e1-offset-y) var(--lp-elevation-e1-blur) var(--lp-color-elevation-shadow-e1);\n  --lp-elevation-e1-up: 0 calc(-1 * var(--lp-elevation-e1-offset-y)) var(--lp-elevation-e1-blur) var(--lp-color-elevation-shadow-e1);\n  --lp-elevation-e2: 0 var(--lp-elevation-e2-offset-y) var(--lp-elevation-e2-blur) var(--lp-color-elevation-shadow-e2);\n  --lp-opacity-disabled: 0.5;\n\n  /* Tier 3: Component, Spacing (stack, inline, inset) & Typography Tokens */\n  --lp-color-surface-page: var(--lp-color-surface-l0);\n  --lp-color-surface-overlay: var(--lp-color-surface-l1);\n  --lp-color-surface-subtle: var(--lp-color-surface-l1);\n  --lp-space-proximity-1: 4px;\n  --lp-space-proximity-2: 8px;\n  --lp-space-proximity-3: 16px;\n  --lp-space-proximity-4: 24px;\n  --lp-space-proximity-5: 40px;\n  --lp-space-stack-none: 0px;\n  --lp-space-stack-label-to-control: 8px;\n  --lp-space-stack-tint-clearance: 8px;\n  --lp-space-stack-page-title-to-description: 8px;\n  --lp-space-stack-section-heading-to-intro: 8px;\n  --lp-space-stack-field-to-field: 16px;\n  --lp-space-stack-heading-to-first: 16px;\n  --lp-space-stack-heading-to-list-plain: 16px;\n  --lp-space-stack-heading-to-list-interactive: 16px;\n  --lp-space-stack-control-to-list: 16px;\n  --lp-space-stack-tabs-to-content: 16px;\n  --lp-space-stack-dialog-title-to-body: 16px;\n  --lp-space-stack-subsection-to-subsection: 24px;\n  --lp-space-stack-header-to-content: 24px;\n  --lp-space-stack-item-body-to-actionbar: 24px;\n  --lp-space-stack-action-bar-after-control: 24px;\n  --lp-space-stack-dialog-body-to-actionbar: 24px;\n  --lp-space-stack-section: 40px;\n  --lp-space-stack-section-to-section: 40px;\n  --lp-space-stack-action-bar-after-section: 40px;\n  --lp-space-inline-segment: 4px;\n  --lp-space-inline-dot-text: 8px;\n  --lp-space-inline-icon-text: 8px;\n  --lp-space-inline-button-button: 8px;\n  --lp-space-inline-tag-tag: 8px;\n  --lp-space-inset-tag-y: 2px;\n  --lp-space-inset-track: 4px;\n  --lp-space-inset-badge-x: 4px;\n  --lp-space-inset-item-x: 8px;\n  --lp-space-inset-tag-x: 8px;\n  --lp-space-inset-control-sm: 12px;\n  --lp-space-inset-item-y: 12px;\n  --lp-space-inset-control-x: 12px;\n  --lp-space-inset-panel: 12px;\n  --lp-space-inset-card-sm: 16px;\n  --lp-space-inset-page-gutter: 16px;\n  --lp-space-inset-section: 16px;\n  --lp-space-inset-dialog: 24px;\n  --lp-space-inset-empty: 32px;\n  --lp-space-inset-page-y: 40px;\n  --lp-space-inset-hero-y: 48px;\n  --lp-space-inset-stage-y: 64px;\n  --lp-size-control-height: 44px;\n  --lp-size-control-xs: 32px;\n  --lp-size-hit-area: 44px;\n  --lp-size-target-min: 36px;\n  --lp-size-bar-compact-height: 48px;\n  --lp-size-bar-editor-height: 56px;\n  --lp-size-bar-top-height: 60px;\n  --lp-size-icon-sm: 16px;\n  --lp-size-icon-md: 20px;\n  --lp-size-icon-lg: 24px;\n  --lp-size-status-dot: 8px;\n  --lp-size-notch-width: 8px;\n  --lp-size-indicator-md: 8px;\n  --lp-size-checkbox-sm: 16px;\n  --lp-size-switch-thumb: 16px;\n  --lp-size-tag-height: 28px;\n  --lp-size-track-height: 4px;\n  --lp-size-progress-track-w: 100px;\n  --lp-size-textarea-compact-min-h: 68px;\n  --lp-size-textarea-min-h: 144px;\n  --lp-size-card-min-h: 140px;\n  --lp-size-col-min-xs: 128px;\n  --lp-size-menu-min-w: 148px;\n  --lp-size-grid-card-min: 180px;\n  --lp-size-popover-min-w: 200px;\n  --lp-size-grid-field-min: 220px;\n  --lp-size-popover-max-w: 280px;\n  --lp-size-editor-canvas-min-h: 360px;\n  --lp-size-overlay-sample-max: 420px;\n  --lp-size-form-compact-max: 440px;\n  --lp-size-dialog-max-w: 480px;\n  --lp-size-card-max-w: 520px;\n  --lp-size-layout-list-col: 260px;\n  --lp-size-layout-nav-compact: 240px;\n  --lp-size-layout-inspector-compact: 320px;\n  --lp-size-layout-rail-width: 320px;\n  --lp-size-admin-nav-width: 240px;\n  --lp-size-admin-inspector-width: 320px;\n  --lp-size-layout-narrow-max: 400px;\n  --lp-size-layout-reading-col: 640px;\n  --lp-size-layout-main-max: 720px;\n  --lp-size-layout-medium-max: 720px;\n  --lp-size-layout-wide-col: 800px;\n  --lp-size-layout-dashboard-max: 960px;\n  --lp-size-layout-max: 1200px;\n  --lp-size-strata-band-min: 44px;\n  --lp-size-strata-band-max: 120px;\n  --lp-size-btn-item-min: 96px;\n  --lp-size-btn-action-min: 160px;\n  --lp-size-btn-action-max: 240px;\n  --lp-measure-reading: 68ch;\n  --lp-editor-min-h: 60vh;\n  --lp-elevation-e1-offset-y: 4px;\n  --lp-elevation-e2-offset-y: 8px;\n  --lp-radius-r1: 4px;\n  --lp-radius-r2: 8px;\n  --lp-radius-control: 8px;\n  --lp-radius-container: 8px;\n  --lp-radius-overlay: 8px;\n  --lp-radius-chip: 4px;\n  --lp-radius-card: 8px;\n  --lp-radius-full: 999px;\n  --lp-border-hairline: 1px;\n  --lp-border-focus: 2px;\n  --lp-border-role-rule: 4px;\n  --lp-border-banner-rule: 4px;\n  --lp-z-base: 0;\n  --lp-z-raised: 100;\n  --lp-z-sticky: 200;\n  --lp-z-overlay: 300;\n  --lp-z-popover: 400;\n  --lp-z-modal: 500;\n  --lp-z-toast: 600;\n  --lp-z-skip: 1000;\n  --lp-motion-duration-instant: 0.01ms;\n  --lp-motion-duration-fast: 80ms;\n  --lp-motion-duration-item: 80ms;\n  --lp-motion-duration-base: 160ms;\n  --lp-motion-duration-slow: 240ms;\n  --lp-motion-duration-pulse: 960ms;\n  --lp-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);\n  --lp-motion-easing-out: cubic-bezier(0, 0, 0.2, 1);\n  --lp-font-family-ui: 'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n  --lp-font-family-reading: 'Literata', Georgia, 'Times New Roman', serif;\n  --lp-font-family-code: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;\n  --lp-font-size-12: 12px;\n  --lp-font-size-14: 14px;\n  --lp-font-size-16: 16px;\n  --lp-font-size-18: 18px;\n  --lp-font-size-20: 20px;\n  --lp-font-size-24: 24px;\n  --lp-font-size-28: 28px;\n  --lp-font-size-32: 32px;\n  --lp-font-weight-400: 400;\n  --lp-font-weight-600: 600;\n  --lp-font-line-16: 16px;\n  --lp-font-line-20: 20px;\n  --lp-font-line-24: 24px;\n  --lp-font-line-32: 32px;\n  --lp-font-line-reading: 1.65;\n  --lp-font-letter-normal: 0em;\n  --lp-font-letter-wide: 0.03em;\n\n  /* Shorthand Aliases */\n  color-scheme: light;\n  --lp-color-surface-raised: var(--lp-color-surface-l0);\n  --lp-color-surface-input: var(--lp-color-surface-l0);\n  --surface-l0: var(--lp-color-surface-l0);\n  --surface-l1: var(--lp-color-surface-l1);\n  --surface-l2: var(--lp-color-surface-l2);\n  --surface-page: var(--lp-color-surface-page);\n  --surface-raised: var(--lp-color-surface-raised);\n  --surface-overlay: var(--lp-color-surface-overlay);\n  --surface-subtle: var(--lp-color-surface-subtle);\n  --surface: var(--lp-color-surface-l0);\n  --surface-input: var(--lp-color-surface-input);\n  --surface-control: var(--lp-color-surface-control);\n  --surface-control-hover: var(--lp-color-surface-control-hover);\n  --surface-control-active: var(--lp-color-surface-control-active);\n  --surface-control-selected: var(--lp-color-surface-control-selected);\n  --text-1: var(--lp-color-text-1);\n  --text-2: var(--lp-color-text-2);\n  --text-3: var(--lp-color-text-3);\n  --text: var(--lp-color-text-1);\n  --text-muted: var(--lp-color-text-2);\n  --text-on-accent: var(--lp-color-text-on-accent);\n  --rule: var(--lp-color-border-subtle);\n  --border-subtle: var(--lp-color-border-subtle);\n  --border-control: var(--lp-color-border-control);\n  --border-overlay: var(--lp-color-border-overlay);\n  --accent: var(--lp-color-accent-default);\n  --focus-ring: var(--lp-color-accent-focus-ring);\n  --role-action-fg: var(--lp-color-role-action-fg);\n  --role-action-bg: var(--lp-color-role-action-bg);\n  --role-action-border: var(--lp-color-role-action-border);\n  --role-neutral-fg: var(--lp-color-role-neutral-fg);\n  --role-neutral-bg: var(--lp-color-role-neutral-bg);\n  --role-success-fg: var(--lp-color-role-success-fg);\n  --role-success-bg: var(--lp-color-role-success-bg);\n  --role-success-border: var(--lp-color-role-success-border);\n  --role-warning-fg: var(--lp-color-role-warning-fg);\n  --role-warning-bg: var(--lp-color-role-warning-bg);\n  --role-warning-border: var(--lp-color-role-warning-border);\n  --role-danger-fg: var(--lp-color-role-danger-fg);\n  --role-danger-bg: var(--lp-color-role-danger-bg);\n  --role-danger-border: var(--lp-color-role-danger-border);\n  --role-info-fg: var(--lp-color-role-info-fg);\n  --role-info-bg: var(--lp-color-role-info-bg);\n  --role-info-border: var(--lp-color-role-info-border);\n  --layout-max: var(--lp-size-layout-max);\n  --vv-bottom: 0px;\n}\n\n:root[data-theme=\"dark\"],\n:root:not([data-theme=\"light\"]) {\n  @media (prefers-color-scheme: dark) {\n    color-scheme: dark;\n    --lp-color-surface-l0: #0F1A22;\n    --lp-color-surface-l1: #16232D;\n    --lp-color-surface-l2: #1E2E3B;\n    --lp-color-surface-control: #1E2E3B;\n    --lp-color-surface-control-hover: #273847;\n    --lp-color-surface-control-active: #314557;\n    --lp-color-surface-control-selected: #1A244D;\n    --lp-color-surface-scrim: rgba(0, 0, 0, 0.6);\n    --lp-color-text-1: #E6ECEF;\n    --lp-color-text-2: #A3B2BD;\n    --lp-color-text-3: #8A99A6;\n    --lp-color-text-on-accent: #0F1A22;\n    --lp-color-border-subtle: #2A3946;\n    --lp-color-border-control: #7E8F9C;\n    --lp-color-border-overlay: #334656;\n    --lp-color-border-subtle-ring: rgba(0, 0, 0, 0.1);\n    --lp-color-accent-default: #9AA8FF;\n    --lp-color-accent-focus-ring: #9AA8FF;\n    --lp-color-role-action-fg: #C5CEFF;\n    --lp-color-role-action-bg: #1A244D;\n    --lp-color-role-action-border: #9AA8FF;\n    --lp-color-role-neutral-fg: #D5DEE4;\n    --lp-color-role-neutral-bg: #1E2C38;\n    --lp-color-role-neutral-border: #7E8F9C;\n    --lp-color-role-success-fg: #8CE0BC;\n    --lp-color-role-success-bg: #122B22;\n    --lp-color-role-success-border: #6FCBA3;\n    --lp-color-role-warning-fg: #F7D070;\n    --lp-color-role-warning-bg: #2B210D;\n    --lp-color-role-warning-border: #E2B34A;\n    --lp-color-role-danger-fg: #FDA29B;\n    --lp-color-role-danger-bg: #2E1515;\n    --lp-color-role-danger-border: #F97066;\n    --lp-color-role-info-fg: #A9CBF4;\n    --lp-color-role-info-bg: #15263D;\n    --lp-color-role-info-border: #8DB4EA;\n    --lp-color-passage-goal: #8DB4EA;\n    --lp-color-passage-approach: #B4B9C4;\n    --lp-color-passage-friction: #E2B34A;\n    --lp-color-passage-decision: #B9A4EE;\n    --lp-color-passage-outcome: #6FCBA3;\n    --lp-color-passage-lesson: #EE9CC2;\n    --lp-color-passage-neutral: #B4B9C4;\n    --lp-color-elevation-shadow-e1: rgba(0, 0, 0, 0.55);\n    --lp-color-elevation-shadow-e2: rgba(0, 0, 0, 0.65);\n    --lp-elevation-e1-blur: 16px;\n    --lp-elevation-e2-blur: 32px;\n    --lp-elevation-e0: none;\n    --lp-elevation-e1: 0 var(--lp-elevation-e1-offset-y) var(--lp-elevation-e1-blur) var(--lp-color-elevation-shadow-e1);\n    --lp-elevation-e1-up: 0 calc(-1 * var(--lp-elevation-e1-offset-y)) var(--lp-elevation-e1-blur) var(--lp-color-elevation-shadow-e1);\n    --lp-elevation-e2: 0 var(--lp-elevation-e2-offset-y) var(--lp-elevation-e2-blur) var(--lp-color-elevation-shadow-e2);\n    --lp-opacity-disabled: 0.5;\n    --lp-color-surface-raised: var(--lp-color-surface-l1);\n    --lp-color-surface-input: var(--lp-color-surface-l1);\n  }\n}\n\n:root[data-theme=\"dark\"] {\n  color-scheme: dark;\n  --lp-color-surface-l0: #0F1A22;\n  --lp-color-surface-l1: #16232D;\n  --lp-color-surface-l2: #1E2E3B;\n  --lp-color-surface-control: #1E2E3B;\n  --lp-color-surface-control-hover: #273847;\n  --lp-color-surface-control-active: #314557;\n  --lp-color-surface-control-selected: #1A244D;\n  --lp-color-surface-scrim: rgba(0, 0, 0, 0.6);\n  --lp-color-text-1: #E6ECEF;\n  --lp-color-text-2: #A3B2BD;\n  --lp-color-text-3: #8A99A6;\n  --lp-color-text-on-accent: #0F1A22;\n  --lp-color-border-subtle: #2A3946;\n  --lp-color-border-control: #7E8F9C;\n  --lp-color-border-overlay: #334656;\n  --lp-color-border-subtle-ring: rgba(0, 0, 0, 0.1);\n  --lp-color-accent-default: #9AA8FF;\n  --lp-color-accent-focus-ring: #9AA8FF;\n  --lp-color-role-action-fg: #C5CEFF;\n  --lp-color-role-action-bg: #1A244D;\n  --lp-color-role-action-border: #9AA8FF;\n  --lp-color-role-neutral-fg: #D5DEE4;\n  --lp-color-role-neutral-bg: #1E2C38;\n  --lp-color-role-neutral-border: #7E8F9C;\n  --lp-color-role-success-fg: #8CE0BC;\n  --lp-color-role-success-bg: #122B22;\n  --lp-color-role-success-border: #6FCBA3;\n  --lp-color-role-warning-fg: #F7D070;\n  --lp-color-role-warning-bg: #2B210D;\n  --lp-color-role-warning-border: #E2B34A;\n  --lp-color-role-danger-fg: #FDA29B;\n  --lp-color-role-danger-bg: #2E1515;\n  --lp-color-role-danger-border: #F97066;\n  --lp-color-role-info-fg: #A9CBF4;\n  --lp-color-role-info-bg: #15263D;\n  --lp-color-role-info-border: #8DB4EA;\n  --lp-color-passage-goal: #8DB4EA;\n  --lp-color-passage-approach: #B4B9C4;\n  --lp-color-passage-friction: #E2B34A;\n  --lp-color-passage-decision: #B9A4EE;\n  --lp-color-passage-outcome: #6FCBA3;\n  --lp-color-passage-lesson: #EE9CC2;\n  --lp-color-passage-neutral: #B4B9C4;\n  --lp-color-elevation-shadow-e1: rgba(0, 0, 0, 0.55);\n  --lp-color-elevation-shadow-e2: rgba(0, 0, 0, 0.65);\n  --lp-elevation-e1-blur: 16px;\n  --lp-elevation-e2-blur: 32px;\n  --lp-elevation-e0: none;\n  --lp-elevation-e1: 0 var(--lp-elevation-e1-offset-y) var(--lp-elevation-e1-blur) var(--lp-color-elevation-shadow-e1);\n  --lp-elevation-e1-up: 0 calc(-1 * var(--lp-elevation-e1-offset-y)) var(--lp-elevation-e1-blur) var(--lp-color-elevation-shadow-e1);\n  --lp-elevation-e2: 0 var(--lp-elevation-e2-offset-y) var(--lp-elevation-e2-blur) var(--lp-color-elevation-shadow-e2);\n  --lp-opacity-disabled: 0.5;\n  --lp-color-surface-raised: var(--lp-color-surface-l1);\n  --lp-color-surface-input: var(--lp-color-surface-l1);\n}\n\n@media (min-width: 640px) {\n  :root {\n    --lp-size-control-height: 40px;\n  }\n}\n\n@media (min-width: 768px) {\n  :root {\n    --lp-space-inset-page-gutter: 24px;\n  }\n}\n\n@media (prefers-contrast: more) {\n  :root {\n    --rule: #4B5A66;\n    --border-control: #14202A;\n    --text-muted: #14202A;\n  }\n}\n\n:root[data-contrast=\"more\"] {\n  --rule: #4B5A66;\n  --border-control: #14202A;\n  --text-muted: #14202A;\n}\n\n:root[data-theme=\"dark\"][data-contrast=\"more\"] {\n  --rule: #9AA8B6;\n  --border-control: #D0DBE5;\n  --text-muted: #E6EDF3;\n}\n\n@media (prefers-contrast: more) {\n  :root[data-theme=\"dark\"] {\n    --rule: #9AA8B6;\n    --border-control: #D0DBE5;\n    --text-muted: #E6EDF3;\n  }\n}\n\n@media (forced-colors: active) {\n  :root {\n    --rule: CanvasText;\n    --border-control: ButtonBorder;\n    --border-focus: Highlight;\n    --text-muted: CanvasText;\n  }\n  .lp-btn,\n  .lp-icon-btn,\n  .lp-badge,\n  .lp-chip,\n  .lp-notice,\n  .lp-dialog,\n  .lp-drawer,\n  .lp-popover-menu,\n  .lp-empty-state {\n    border: 1px solid ButtonBorder;\n  }\n  .lp-btn:focus-visible,\n  .lp-icon-btn:focus-visible,\n  .lp-input:focus-visible,\n  .lp-select:focus-visible,\n  .lp-textarea:focus-visible,\n  a:focus-visible {\n    outline: 2px solid Highlight;\n    outline-offset: 2px;\n  }\n}\n";
+export const THEME_CSS = "/* AUTO-GENERATED FROM packages/design-tokens/tokens.json — DO NOT EDIT BY HAND */\n@font-face {\n  font-family: 'Literata';\n  font-style: normal;\n  font-weight: 400 700;\n  font-display: swap;\n  src: local('Literata'), local('Literata-Regular');\n}\n@font-face {\n  font-family: 'Atkinson Hyperlegible Next';\n  font-style: normal;\n  font-weight: 400 700;\n  font-display: swap;\n  src: local('Atkinson Hyperlegible Next'), local('AtkinsonHyperlegibleNext-Regular'), local('Atkinson Hyperlegible');\n}\n@font-face {\n  font-family: 'JetBrains Mono';\n  font-style: normal;\n  font-weight: 400 700;\n  font-display: swap;\n  src: local('JetBrains Mono'), local('JetBrainsMono-Regular');\n}\n\n:root {\n  /* Tier 2: Semantic (Light Default, primitives resolved at build) */\n  --lp-color-surface-l0: #FFFFFF;\n  --lp-color-surface-l1: #F5F6F7;\n  --lp-color-surface-l2: #EBEFF2;\n  --lp-color-surface-control: #EBEFF2;\n  --lp-color-surface-control-hover: #E1E6EA;\n  --lp-color-surface-control-active: #D2D9DF;\n  --lp-color-surface-control-selected: var(--lp-core-accent-50, #EEF1FF);\n  --lp-color-surface-scrim: rgba(15, 26, 34, 0.45);\n  --lp-color-text-1: #14202A;\n  --lp-color-text-2: #4B5A66;\n  --lp-color-text-3: #63727E;\n  --lp-color-text-on-accent: #FFFFFF;\n  --lp-color-border-subtle: #CBD3D8;\n  --lp-color-border-control: #6B7B88;\n  --lp-color-border-overlay: #CBD3D8;\n  --lp-color-accent-default: var(--lp-core-accent-600, #3A4FD0);\n  --lp-color-accent-focus-ring: var(--lp-core-accent-600, #3A4FD0);\n  --lp-color-role-action-fg: var(--lp-core-accent-800, #1E329E);\n  --lp-color-role-action-bg: var(--lp-core-accent-50, #EEF1FF);\n  --lp-color-role-action-border: var(--lp-core-accent-600, #3A4FD0);\n  --lp-color-role-neutral-fg: #2D3B45;\n  --lp-color-role-neutral-bg: #EEF1F3;\n  --lp-color-role-neutral-border: #6B7B88;\n  --lp-color-role-success-fg: #145940;\n  --lp-color-role-success-bg: #E8F5E9;\n  --lp-color-role-success-border: #1F7A5A;\n  --lp-color-role-warning-fg: #6E4700;\n  --lp-color-role-warning-bg: #FFF8E1;\n  --lp-color-role-warning-border: #9A6A00;\n  --lp-color-role-danger-fg: #8E1B12;\n  --lp-color-role-danger-bg: #FFEBEE;\n  --lp-color-role-danger-border: #B42318;\n  --lp-color-role-info-fg: #1D437A;\n  --lp-color-role-info-bg: #EAF2FC;\n  --lp-color-role-info-border: #2F5FA8;\n  --lp-color-passage-goal: #2F5FA8;\n  --lp-color-passage-approach: #5A5F6B;\n  --lp-color-passage-friction: #9A6A00;\n  --lp-color-passage-decision: #5B3FA0;\n  --lp-color-passage-outcome: #1F7A5A;\n  --lp-color-passage-lesson: #A13A6B;\n  --lp-color-passage-neutral: #5A5F6B;\n  --lp-color-elevation-shadow-e1: rgba(20, 32, 42, 0.14);\n  --lp-color-elevation-shadow-e2: rgba(20, 32, 42, 0.18);\n  --lp-elevation-e1: 0 var(--lp-elevation-e1-offset-y) var(--lp-elevation-e1-blur) var(--lp-color-elevation-shadow-e1);\n  --lp-elevation-e1-up: 0 calc(-1 * var(--lp-elevation-e1-offset-y)) var(--lp-elevation-e1-blur) var(--lp-color-elevation-shadow-e1);\n  --lp-elevation-e2: 0 var(--lp-elevation-e2-offset-y) var(--lp-elevation-e2-blur) var(--lp-color-elevation-shadow-e2);\n\n  /* Tier 3: Component, Spacing (stack, inline, inset) & Typography Tokens */\n  --lp-color-surface-page: var(--lp-color-surface-l0);\n  --lp-color-surface-overlay: var(--lp-color-surface-l1);\n  --lp-color-surface-subtle: var(--lp-color-surface-l1);\n  --lp-space-proximity-1: 4px;\n  --lp-space-proximity-2: 8px;\n  --lp-space-proximity-3: 16px;\n  --lp-space-proximity-4: 24px;\n  --lp-space-proximity-5: 40px;\n  --lp-space-stack-none: 0px;\n  --lp-space-stack-label-to-control: 8px;\n  --lp-space-stack-tint-clearance: 8px;\n  --lp-space-stack-page-title-to-description: 8px;\n  --lp-space-stack-section-heading-to-intro: 8px;\n  --lp-space-stack-field-to-field: 16px;\n  --lp-space-stack-heading-to-first: 16px;\n  --lp-space-stack-heading-to-list-plain: 16px;\n  --lp-space-stack-heading-to-list-interactive: 16px;\n  --lp-space-stack-control-to-list: 16px;\n  --lp-space-stack-tabs-to-content: 16px;\n  --lp-space-stack-dialog-title-to-body: 16px;\n  --lp-space-stack-subsection-to-subsection: 24px;\n  --lp-space-stack-header-to-content: 24px;\n  --lp-space-stack-item-body-to-actionbar: 24px;\n  --lp-space-stack-action-bar-after-control: 24px;\n  --lp-space-stack-dialog-body-to-actionbar: 24px;\n  --lp-space-stack-section-to-section: 40px;\n  --lp-space-stack-action-bar-after-section: 40px;\n  --lp-space-inline-segment: 4px;\n  --lp-space-inline-dot-text: 8px;\n  --lp-space-inline-icon-text: 8px;\n  --lp-space-inline-button-button: 8px;\n  --lp-space-inline-tag-tag: 8px;\n  --lp-space-inset-tag-y: 2px;\n  --lp-space-inset-track: 4px;\n  --lp-space-inset-badge-x: 4px;\n  --lp-space-inset-item-x: 8px;\n  --lp-space-inset-tag-x: 8px;\n  --lp-space-inset-control-sm: 12px;\n  --lp-space-inset-item-y: 12px;\n  --lp-space-inset-control-x: 12px;\n  --lp-space-inset-panel: 12px;\n  --lp-space-inset-card-sm: 16px;\n  --lp-space-inset-page-gutter: 16px;\n  --lp-space-inset-section: 16px;\n  --lp-space-inset-dialog: 24px;\n  --lp-space-inset-empty: 32px;\n  --lp-space-inset-page-y: 40px;\n  --lp-space-inset-hero-y: 48px;\n  --lp-space-inset-stage-y: 64px;\n  --lp-size-control-height: 44px;\n  --lp-size-control-xs: 32px;\n  --lp-size-hit-area: 44px;\n  --lp-size-target-min: 36px;\n  --lp-size-bar-compact-height: 48px;\n  --lp-size-bar-editor-height: 56px;\n  --lp-size-bar-top-height: 60px;\n  --lp-size-icon-sm: 16px;\n  --lp-size-icon-md: 20px;\n  --lp-size-icon-lg: 24px;\n  --lp-size-status-dot: 8px;\n  --lp-size-indicator-md: 8px;\n  --lp-size-checkbox-sm: 16px;\n  --lp-size-switch-thumb: 16px;\n  --lp-size-tag-height: 28px;\n  --lp-size-track-height: 4px;\n  --lp-size-grid-card-min: 180px;\n  --lp-size-editor-canvas-min-h: 360px;\n  --lp-size-dialog-max-w: 480px;\n  --lp-size-layout-list-col: 260px;\n  --lp-size-admin-nav-width: 240px;\n  --lp-size-admin-inspector-width: 320px;\n  --lp-size-layout-narrow-max: 400px;\n  --lp-size-layout-reading-col: 640px;\n  --lp-size-layout-main-max: 720px;\n  --lp-size-layout-wide-col: 800px;\n  --lp-size-layout-dashboard-max: 960px;\n  --lp-size-layout-max: 1200px;\n  --lp-size-strata-band-min: 44px;\n  --lp-size-strata-band-max: 120px;\n  --lp-size-btn-item-min: 96px;\n  --lp-size-btn-action-min: 160px;\n  --lp-size-btn-action-max: 240px;\n  --lp-measure-reading: 68ch;\n  --lp-editor-min-h: 60vh;\n  --lp-elevation-e1-offset-y: 4px;\n  --lp-elevation-e2-offset-y: 8px;\n  --lp-radius-r1: 4px;\n  --lp-radius-r2: 8px;\n  --lp-radius-control: 8px;\n  --lp-radius-container: 8px;\n  --lp-radius-overlay: 8px;\n  --lp-radius-chip: 4px;\n  --lp-radius-card: 8px;\n  --lp-radius-full: 999px;\n  --lp-border-hairline: 1px;\n  --lp-border-focus: 2px;\n  --lp-border-role-rule: 4px;\n  --lp-z-base: 0;\n  --lp-z-raised: 100;\n  --lp-z-sticky: 200;\n  --lp-z-overlay: 300;\n  --lp-z-popover: 400;\n  --lp-z-modal: 500;\n  --lp-z-toast: 600;\n  --lp-z-skip: 1000;\n  --lp-motion-duration-fast: 80ms;\n  --lp-motion-duration-base: 160ms;\n  --lp-motion-duration-slow: 240ms;\n  --lp-motion-duration-pulse: 960ms;\n  --lp-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);\n  --lp-motion-easing-out: cubic-bezier(0, 0, 0.2, 1);\n  --lp-font-family-ui: 'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n  --lp-font-family-reading: 'Literata', Georgia, 'Times New Roman', serif;\n  --lp-font-family-code: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;\n  --lp-font-size-12: 12px;\n  --lp-font-size-14: 14px;\n  --lp-font-size-16: 16px;\n  --lp-font-size-18: 18px;\n  --lp-font-size-20: 20px;\n  --lp-font-size-24: 24px;\n  --lp-font-size-28: 28px;\n  --lp-font-size-32: 32px;\n  --lp-font-weight-400: 400;\n  --lp-font-weight-600: 600;\n  --lp-font-line-16: 16px;\n  --lp-font-line-20: 20px;\n  --lp-font-line-24: 24px;\n  --lp-font-line-32: 32px;\n  --lp-font-line-reading: 1.65;\n  --lp-font-letter-normal: 0em;\n  --lp-font-letter-wide: 0.03em;\n  --lp-color-border-subtle-ring: rgba(0, 0, 0, 0.1);\n  --lp-elevation-e1-blur: 16px;\n  --lp-elevation-e2-blur: 32px;\n  --lp-elevation-e0: none;\n  --lp-opacity-disabled: 0.5;\n\n  /* Shorthand Aliases */\n  color-scheme: light;\n  --lp-color-surface-raised: var(--lp-color-surface-l0);\n  --lp-color-surface-input: var(--lp-color-surface-l0);\n  --surface-l0: var(--lp-color-surface-l0);\n  --surface-l1: var(--lp-color-surface-l1);\n  --surface-l2: var(--lp-color-surface-l2);\n  --surface-page: var(--lp-color-surface-page);\n  --surface-raised: var(--lp-color-surface-raised);\n  --surface-overlay: var(--lp-color-surface-overlay);\n  --surface-subtle: var(--lp-color-surface-subtle);\n  --surface: var(--lp-color-surface-l0);\n  --surface-input: var(--lp-color-surface-input);\n  --surface-control: var(--lp-color-surface-control);\n  --surface-control-hover: var(--lp-color-surface-control-hover);\n  --surface-control-active: var(--lp-color-surface-control-active);\n  --surface-control-selected: var(--lp-color-surface-control-selected);\n  --text-1: var(--lp-color-text-1);\n  --text-2: var(--lp-color-text-2);\n  --text-3: var(--lp-color-text-3);\n  --text: var(--lp-color-text-1);\n  --text-muted: var(--lp-color-text-2);\n  --text-on-accent: var(--lp-color-text-on-accent);\n  --rule: var(--lp-color-border-subtle);\n  --border-subtle: var(--lp-color-border-subtle);\n  --border-control: var(--lp-color-border-control);\n  --border-overlay: var(--lp-color-border-overlay);\n  --accent: var(--lp-color-accent-default);\n  --focus-ring: var(--lp-color-accent-focus-ring);\n  --role-action-fg: var(--lp-color-role-action-fg);\n  --role-action-bg: var(--lp-color-role-action-bg);\n  --role-action-border: var(--lp-color-role-action-border);\n  --role-neutral-fg: var(--lp-color-role-neutral-fg);\n  --role-neutral-bg: var(--lp-color-role-neutral-bg);\n  --role-success-fg: var(--lp-color-role-success-fg);\n  --role-success-bg: var(--lp-color-role-success-bg);\n  --role-success-border: var(--lp-color-role-success-border);\n  --role-warning-fg: var(--lp-color-role-warning-fg);\n  --role-warning-bg: var(--lp-color-role-warning-bg);\n  --role-warning-border: var(--lp-color-role-warning-border);\n  --role-danger-fg: var(--lp-color-role-danger-fg);\n  --role-danger-bg: var(--lp-color-role-danger-bg);\n  --role-danger-border: var(--lp-color-role-danger-border);\n  --role-info-fg: var(--lp-color-role-info-fg);\n  --role-info-bg: var(--lp-color-role-info-bg);\n  --role-info-border: var(--lp-color-role-info-border);\n  --layout-max: var(--lp-size-layout-max);\n  --vv-bottom: 0px;\n}\n\n:root[data-theme=\"dark\"],\n:root:not([data-theme=\"light\"]) {\n  @media (prefers-color-scheme: dark) {\n    color-scheme: dark;\n    --lp-color-surface-l0: #0F1A22;\n    --lp-color-surface-l1: #16232D;\n    --lp-color-surface-l2: #1E2E3B;\n    --lp-color-surface-control: #1E2E3B;\n    --lp-color-surface-control-hover: #273847;\n    --lp-color-surface-control-active: #314557;\n    --lp-color-surface-control-selected: var(--lp-core-accent-900, #1A244D);\n    --lp-color-surface-scrim: rgba(0, 0, 0, 0.6);\n    --lp-color-text-1: #E6ECEF;\n    --lp-color-text-2: #A3B2BD;\n    --lp-color-text-3: #8A99A6;\n    --lp-color-text-on-accent: #0F1A22;\n    --lp-color-border-subtle: #2A3946;\n    --lp-color-border-control: #7E8F9C;\n    --lp-color-border-overlay: #334656;\n    --lp-color-accent-default: var(--lp-core-accent-300, #9AA8FF);\n    --lp-color-accent-focus-ring: var(--lp-core-accent-300, #9AA8FF);\n    --lp-color-role-action-fg: var(--lp-core-accent-200, #C5CEFF);\n    --lp-color-role-action-bg: var(--lp-core-accent-900, #1A244D);\n    --lp-color-role-action-border: var(--lp-core-accent-300, #9AA8FF);\n    --lp-color-role-neutral-fg: #D5DEE4;\n    --lp-color-role-neutral-bg: #1E2C38;\n    --lp-color-role-neutral-border: #7E8F9C;\n    --lp-color-role-success-fg: #8CE0BC;\n    --lp-color-role-success-bg: #122B22;\n    --lp-color-role-success-border: #6FCBA3;\n    --lp-color-role-warning-fg: #F7D070;\n    --lp-color-role-warning-bg: #2B210D;\n    --lp-color-role-warning-border: #E2B34A;\n    --lp-color-role-danger-fg: #FDA29B;\n    --lp-color-role-danger-bg: #2E1515;\n    --lp-color-role-danger-border: #F97066;\n    --lp-color-role-info-fg: #A9CBF4;\n    --lp-color-role-info-bg: #15263D;\n    --lp-color-role-info-border: #8DB4EA;\n    --lp-color-passage-goal: #8DB4EA;\n    --lp-color-passage-approach: #B4B9C4;\n    --lp-color-passage-friction: #E2B34A;\n    --lp-color-passage-decision: #B9A4EE;\n    --lp-color-passage-outcome: #6FCBA3;\n    --lp-color-passage-lesson: #EE9CC2;\n    --lp-color-passage-neutral: #B4B9C4;\n    --lp-color-elevation-shadow-e1: rgba(0, 0, 0, 0.55);\n    --lp-color-elevation-shadow-e2: rgba(0, 0, 0, 0.65);\n    --lp-elevation-e1: 0 var(--lp-elevation-e1-offset-y) var(--lp-elevation-e1-blur) var(--lp-color-elevation-shadow-e1);\n    --lp-elevation-e1-up: 0 calc(-1 * var(--lp-elevation-e1-offset-y)) var(--lp-elevation-e1-blur) var(--lp-color-elevation-shadow-e1);\n    --lp-elevation-e2: 0 var(--lp-elevation-e2-offset-y) var(--lp-elevation-e2-blur) var(--lp-color-elevation-shadow-e2);\n    --lp-color-surface-raised: var(--lp-color-surface-l1);\n    --lp-color-surface-input: var(--lp-color-surface-l1);\n  }\n}\n\n:root[data-theme=\"dark\"] {\n  color-scheme: dark;\n  --lp-color-surface-l0: #0F1A22;\n  --lp-color-surface-l1: #16232D;\n  --lp-color-surface-l2: #1E2E3B;\n  --lp-color-surface-control: #1E2E3B;\n  --lp-color-surface-control-hover: #273847;\n  --lp-color-surface-control-active: #314557;\n  --lp-color-surface-control-selected: var(--lp-core-accent-900, #1A244D);\n  --lp-color-surface-scrim: rgba(0, 0, 0, 0.6);\n  --lp-color-text-1: #E6ECEF;\n  --lp-color-text-2: #A3B2BD;\n  --lp-color-text-3: #8A99A6;\n  --lp-color-text-on-accent: #0F1A22;\n  --lp-color-border-subtle: #2A3946;\n  --lp-color-border-control: #7E8F9C;\n  --lp-color-border-overlay: #334656;\n  --lp-color-accent-default: var(--lp-core-accent-300, #9AA8FF);\n  --lp-color-accent-focus-ring: var(--lp-core-accent-300, #9AA8FF);\n  --lp-color-role-action-fg: var(--lp-core-accent-200, #C5CEFF);\n  --lp-color-role-action-bg: var(--lp-core-accent-900, #1A244D);\n  --lp-color-role-action-border: var(--lp-core-accent-300, #9AA8FF);\n  --lp-color-role-neutral-fg: #D5DEE4;\n  --lp-color-role-neutral-bg: #1E2C38;\n  --lp-color-role-neutral-border: #7E8F9C;\n  --lp-color-role-success-fg: #8CE0BC;\n  --lp-color-role-success-bg: #122B22;\n  --lp-color-role-success-border: #6FCBA3;\n  --lp-color-role-warning-fg: #F7D070;\n  --lp-color-role-warning-bg: #2B210D;\n  --lp-color-role-warning-border: #E2B34A;\n  --lp-color-role-danger-fg: #FDA29B;\n  --lp-color-role-danger-bg: #2E1515;\n  --lp-color-role-danger-border: #F97066;\n  --lp-color-role-info-fg: #A9CBF4;\n  --lp-color-role-info-bg: #15263D;\n  --lp-color-role-info-border: #8DB4EA;\n  --lp-color-passage-goal: #8DB4EA;\n  --lp-color-passage-approach: #B4B9C4;\n  --lp-color-passage-friction: #E2B34A;\n  --lp-color-passage-decision: #B9A4EE;\n  --lp-color-passage-outcome: #6FCBA3;\n  --lp-color-passage-lesson: #EE9CC2;\n  --lp-color-passage-neutral: #B4B9C4;\n  --lp-color-elevation-shadow-e1: rgba(0, 0, 0, 0.55);\n  --lp-color-elevation-shadow-e2: rgba(0, 0, 0, 0.65);\n  --lp-elevation-e1: 0 var(--lp-elevation-e1-offset-y) var(--lp-elevation-e1-blur) var(--lp-color-elevation-shadow-e1);\n  --lp-elevation-e1-up: 0 calc(-1 * var(--lp-elevation-e1-offset-y)) var(--lp-elevation-e1-blur) var(--lp-color-elevation-shadow-e1);\n  --lp-elevation-e2: 0 var(--lp-elevation-e2-offset-y) var(--lp-elevation-e2-blur) var(--lp-color-elevation-shadow-e2);\n  --lp-color-surface-raised: var(--lp-color-surface-l1);\n  --lp-color-surface-input: var(--lp-color-surface-l1);\n}\n\n@media (min-width: 640px) {\n  :root {\n    --lp-size-control-height: 40px;\n  }\n}\n\n@media (min-width: 768px) {\n  :root {\n    --lp-space-inset-page-gutter: 24px;\n  }\n}\n\n@media (prefers-contrast: more) {\n  :root {\n    --rule: #4B5A66;\n    --border-control: #14202A;\n    --text-muted: #14202A;\n  }\n}\n\n:root[data-contrast=\"more\"] {\n  --rule: #4B5A66;\n  --border-control: #14202A;\n  --text-muted: #14202A;\n}\n\n:root[data-theme=\"dark\"][data-contrast=\"more\"] {\n  --rule: #9AA8B6;\n  --border-control: #D0DBE5;\n  --text-muted: #E6EDF3;\n}\n\n@media (prefers-contrast: more) {\n  :root[data-theme=\"dark\"] {\n    --rule: #9AA8B6;\n    --border-control: #D0DBE5;\n    --text-muted: #E6EDF3;\n  }\n}\n\n@media (forced-colors: active) {\n  :root {\n    --rule: CanvasText;\n    --border-control: ButtonBorder;\n    --border-focus: Highlight;\n    --text-muted: CanvasText;\n  }\n  .lp-btn,\n  .lp-icon-btn,\n  .lp-badge,\n  .lp-chip,\n  .lp-notice,\n  .lp-dialog,\n  .lp-drawer,\n  .lp-popover-menu,\n  .lp-empty-state {\n    border: 1px solid ButtonBorder;\n  }\n  .lp-btn:focus-visible,\n  .lp-icon-btn:focus-visible,\n  .lp-input:focus-visible,\n  .lp-select:focus-visible,\n  .lp-textarea:focus-visible,\n  a:focus-visible {\n    outline: 2px solid Highlight;\n    outline-offset: 2px;\n  }\n}\n";
 
-export const PUBLIC_THEME_CSS = "/* AUTO-GENERATED FROM packages/design-tokens/packs/public.json — DO NOT EDIT BY HAND */\n:root[data-lang=\"public\"],\n:root {\n  --pub-color-surface-canvas: #FFFFFF;\n  --pub-color-surface-paper: #F5F6F7;\n  --pub-color-surface-elevated: #EBEFF2;\n  --pub-color-text-primary: #14202A;\n  --pub-color-text-secondary: #4B5A66;\n  --pub-color-text-muted: #63727E;\n  --pub-color-text-on-accent: #FFFFFF;\n  --pub-color-border-rule: #CBD3D8;\n  --pub-color-border-strong: #6B7B88;\n  --pub-color-accent-primary: #3A4FD0;\n  --pub-color-accent-tint: #EEF1FF;\n  --pub-color-accent-ink: #1E329E;\n  --pub-color-strata-goal: #2F5FA8;\n  --pub-color-strata-friction: #9A6A00;\n  --pub-color-strata-decision: #5B3FA0;\n  --pub-color-strata-outcome: #1F7A5A;\n  --pub-color-strata-lesson: #A13A6B;\n  --pub-elevation-card: 0 4px 16px rgba(20, 32, 42, 0.08);\n  --pub-elevation-raised: 0 8px 32px rgba(20, 32, 42, 0.14);\n  --pub-space-page-gutter: 16px;\n  --pub-space-section: 48px;\n  --pub-space-atmosphere: 64px;\n  --pub-space-card-pad: 24px;\n  --pub-space-stack-sm: 8px;\n  --pub-space-stack-md: 16px;\n  --pub-space-stack-lg: 32px;\n  --pub-size-layout-max: 1200px;\n  --pub-size-reading-measure: 68ch;\n  --pub-radius-card: 8px;\n  --pub-radius-pill: 999px;\n  --pub-border-hairline: 1px;\n  --pub-border-accent: 4px;\n  --pub-font-family-display: 'Literata', Georgia, 'Times New Roman', serif;\n  --pub-font-family-prose: 'Literata', Georgia, 'Times New Roman', serif;\n  --pub-font-family-ui: 'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n  --pub-font-family-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;\n  --pub-font-size-caption: clamp(0.75rem, 0.72rem + 0.15vw, 0.875rem);\n  --pub-font-size-body: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);\n  --pub-font-size-lead: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);\n  --pub-font-size-heading-sm: clamp(1.125rem, 1.05rem + 0.4vw, 1.375rem);\n  --pub-font-size-heading-md: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);\n  --pub-font-size-display: clamp(1.75rem, 1.4rem + 1.6vw, 2.75rem);\n  --pub-font-line-tight: 1.2;\n  --pub-font-line-ui: 1.45;\n  --pub-font-line-prose: 1.65;\n  --pub-motion-duration-fast: 120ms;\n  --pub-motion-duration-base: 200ms;\n  --pub-motion-duration-slow: 320ms;\n  --pub-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);\n  --pub-motion-easing-out: cubic-bezier(0, 0, 0.2, 1);\n}\n\n:root[data-theme=\"dark\"][data-lang=\"public\"],\n:root[data-theme=\"dark\"] {\n  --pub-color-surface-canvas: #0F1A22;\n  --pub-color-surface-paper: #16232D;\n  --pub-color-surface-elevated: #1E2E3B;\n  --pub-color-text-primary: #E6ECEF;\n  --pub-color-text-secondary: #A3B2BD;\n  --pub-color-text-muted: #8A99A6;\n  --pub-color-text-on-accent: #0F1A22;\n  --pub-color-border-rule: #2A3946;\n  --pub-color-border-strong: #7E8F9C;\n  --pub-color-accent-primary: #9AA8FF;\n  --pub-color-accent-tint: #1A244D;\n  --pub-color-accent-ink: #C5CEFF;\n  --pub-color-strata-goal: #8DB4EA;\n  --pub-color-strata-friction: #E2B34A;\n  --pub-color-strata-decision: #B9A4EE;\n  --pub-color-strata-outcome: #6FCBA3;\n  --pub-color-strata-lesson: #EE9CC2;\n  --pub-elevation-card: 0 4px 16px rgba(0, 0, 0, 0.45);\n  --pub-elevation-raised: 0 8px 32px rgba(0, 0, 0, 0.60);\n}\n";
+export const PUBLIC_THEME_CSS = "/* AUTO-GENERATED FROM packages/design-tokens/packs/public.json — DO NOT EDIT BY HAND */\n:root[data-lang=\"public\"],\n:root {\n  --pub-color-surface-canvas: #FFFFFF;\n  --pub-color-surface-paper: #F5F6F7;\n  --pub-color-surface-elevated: #EBEFF2;\n  --pub-color-text-primary: #14202A;\n  --pub-color-text-secondary: #4B5A66;\n  --pub-color-text-muted: #63727E;\n  --pub-color-text-on-accent: #FFFFFF;\n  --pub-color-border-rule: #CBD3D8;\n  --pub-color-border-strong: #6B7B88;\n  --pub-color-accent-primary: var(--lp-core-accent-600, #3A4FD0);\n  --pub-color-accent-tint: var(--lp-core-accent-50, #EEF1FF);\n  --pub-color-accent-ink: var(--lp-core-accent-800, #1E329E);\n  --pub-color-strata-goal: #2F5FA8;\n  --pub-color-strata-friction: #9A6A00;\n  --pub-color-strata-decision: #5B3FA0;\n  --pub-color-strata-outcome: #1F7A5A;\n  --pub-color-strata-lesson: #A13A6B;\n  --pub-elevation-card: 0 4px 16px rgba(20, 32, 42, 0.08);\n  --pub-elevation-raised: 0 8px 32px rgba(20, 32, 42, 0.14);\n  --pub-space-page-gutter: 16px;\n  --pub-space-section: 48px;\n  --pub-space-atmosphere: 64px;\n  --pub-space-card-pad: 24px;\n  --pub-space-stack-sm: 8px;\n  --pub-space-stack-md: 16px;\n  --pub-space-stack-lg: 32px;\n  --pub-size-layout-max: 1200px;\n  --pub-size-reading-measure: 68ch;\n  --pub-radius-card: 8px;\n  --pub-radius-pill: 999px;\n  --pub-border-hairline: 1px;\n  --pub-border-accent: 4px;\n  --pub-font-family-display: 'Literata', Georgia, 'Times New Roman', serif;\n  --pub-font-family-prose: 'Literata', Georgia, 'Times New Roman', serif;\n  --pub-font-family-ui: 'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n  --pub-font-family-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;\n  --pub-font-size-caption: clamp(0.75rem, 0.72rem + 0.15vw, 0.875rem);\n  --pub-font-size-body: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);\n  --pub-font-size-lead: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);\n  --pub-font-size-heading-sm: clamp(1.125rem, 1.05rem + 0.4vw, 1.375rem);\n  --pub-font-size-heading-md: clamp(1.375rem, 1.2rem + 0.8vw, 1.75rem);\n  --pub-font-size-display: clamp(1.75rem, 1.4rem + 1.6vw, 2.75rem);\n  --pub-font-line-tight: 1.2;\n  --pub-font-line-ui: 1.45;\n  --pub-font-line-prose: 1.65;\n  --pub-motion-duration-fast: 120ms;\n  --pub-motion-duration-base: 200ms;\n  --pub-motion-duration-slow: 320ms;\n  --pub-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);\n  --pub-motion-easing-out: cubic-bezier(0, 0, 0.2, 1);\n}\n\n:root[data-theme=\"dark\"][data-lang=\"public\"],\n:root[data-theme=\"dark\"] {\n  --pub-color-surface-canvas: #0F1A22;\n  --pub-color-surface-paper: #16232D;\n  --pub-color-surface-elevated: #1E2E3B;\n  --pub-color-text-primary: #E6ECEF;\n  --pub-color-text-secondary: #A3B2BD;\n  --pub-color-text-muted: #8A99A6;\n  --pub-color-text-on-accent: #0F1A22;\n  --pub-color-border-rule: #2A3946;\n  --pub-color-border-strong: #7E8F9C;\n  --pub-color-accent-primary: var(--lp-core-accent-300, #9AA8FF);\n  --pub-color-accent-tint: var(--lp-core-accent-900, #1A244D);\n  --pub-color-accent-ink: var(--lp-core-accent-200, #C5CEFF);\n  --pub-color-strata-goal: #8DB4EA;\n  --pub-color-strata-friction: #E2B34A;\n  --pub-color-strata-decision: #B9A4EE;\n  --pub-color-strata-outcome: #6FCBA3;\n  --pub-color-strata-lesson: #EE9CC2;\n  --pub-elevation-card: 0 4px 16px rgba(0, 0, 0, 0.45);\n  --pub-elevation-raised: 0 8px 32px rgba(0, 0, 0, 0.60);\n}\n";
 
 export const CORE_THEME_CSS = "/* AUTO-GENERATED FROM packages/design-tokens/packs/core.json — DO NOT EDIT BY HAND */\n:root {\n  --lp-core-z-base: 0;\n  --lp-core-z-raised: 100;\n  --lp-core-z-sticky: 200;\n  --lp-core-z-overlay: 300;\n  --lp-core-z-popover: 400;\n  --lp-core-z-modal: 500;\n  --lp-core-z-toast: 600;\n  --lp-core-z-skip: 1000;\n}\n";

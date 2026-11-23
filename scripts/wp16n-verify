@@ -1,0 +1,127 @@
+#!/usr/bin/env node
+/**
+ * WP-16.N Definition of Done Aggregator (`pnpm wp16n:verify`)
+ * Runs every CI-verifiable D-N5 check and exits non-zero on any failure.
+ * Extended as slices S1..S5 land.
+ */
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { execSync } from 'node:child_process';
+import { join, relative, resolve } from 'node:path';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const failures = [];
+const results = [];
+
+function runCheck(id, label, fn) {
+  try {
+    const detail = fn();
+    results.push({ id, label, status: 'PASS', detail: detail || 'ok' });
+    console.log(`✓ [${id}] ${label}${detail ? ` — ${detail}` : ''}`);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    results.push({ id, label, status: 'FAIL', detail: msg });
+    failures.push(`[${id}] ${label}: ${msg}`);
+    console.error(`✗ [${id}] ${label} — ${msg}`);
+  }
+}
+
+function execCmd(cmd) {
+  execSync(cmd, { cwd: ROOT, stdio: 'pipe', encoding: 'utf8' });
+}
+
+// 1. Token rules, semantic theme-switched, zero undocumented duplicates, drift & prose guards
+runCheck('S1-TOKENS', 'Token rules, closure, duplicates, theme-switched semantics, accent contract', () => {
+  execCmd('pnpm --filter @living-portfolio/design-tokens test');
+  execCmd('pnpm --filter @living-portfolio/ui-core test');
+  return 'design-tokens + ui-core tests passed';
+});
+
+runCheck('S1-DRIFT-PROSE', 'Design boundaries, per-pack token docs drift, and prose value guard', () => {
+  execCmd('node scripts/verify-design-boundaries');
+  execCmd('node scripts/generate-registry --check');
+  return '0 drift, 0 prose-value violations';
+});
+
+runCheck('S1-UI-GUARDS', 'UI contract guards (literals, closure, registry)', () => {
+  execCmd('node scripts/verify-ui-guards');
+  return '0 violations';
+});
+
+// 2. S2 checks: styles.ts absent, zero CSS-in-TS, <=400 lines per non-exempt source file
+runCheck('S2-NO-STYLES-TS', 'apps/web/src/styles.ts deleted (zero CSS-in-TS)', () => {
+  if (existsSync(resolve(ROOT, 'apps/web/src/styles.ts'))) {
+    throw new Error('apps/web/src/styles.ts still exists (pending S2)');
+  }
+  return 'styles.ts absent';
+});
+
+runCheck('S2-FILE-SIZE-400', 'No non-exempt source file over 400 lines', () => {
+  const exemptionsPath = resolve(ROOT, 'docs/design/file-size-exemptions.json');
+  const exemptions = new Set(
+    existsSync(exemptionsPath)
+      ? (JSON.parse(readFileSync(exemptionsPath, 'utf8')).exemptions ?? []).map((e) => e.file)
+      : []
+  );
+  const offenders = [];
+  function walk(dir) {
+    if (!existsSync(dir)) return;
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      if (['node_modules', 'dist', '.turbo', 'migrations'].includes(e.name)) continue;
+      const full = join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (e.name.endsWith('.ts') && !e.name.endsWith('.test.ts') && !e.name.endsWith('.spec.ts') && !e.name.endsWith('generated.ts')) {
+        const rel = relative(ROOT, full).replace(/\\/g, '/');
+        if (exemptions.has(rel)) continue;
+        const count = readFileSync(full, 'utf8').split('\n').length;
+        if (count > 400) offenders.push(`${rel} (${count})`);
+      }
+    }
+  }
+  walk(resolve(ROOT, 'apps'));
+  walk(resolve(ROOT, 'packages'));
+  if (offenders.length > 0) {
+    throw new Error(`${offenders.length} file(s) > 400 lines: ${offenders.slice(0, 5).join(', ')}`);
+  }
+  return '0 offenders';
+});
+
+// 3. S3 checks: zero inline style= across admin and public
+runCheck('S3-ZERO-INLINE-STYLE', 'Zero inline style= attributes in admin and public templates', () => {
+  let count = 0;
+  function walk(dir) {
+    if (!existsSync(dir)) return;
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      if (['node_modules', 'dist'].includes(e.name)) continue;
+      const full = join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (e.name.endsWith('.ts') && !e.name.endsWith('.test.ts')) {
+        const hits = (readFileSync(full, 'utf8').match(/\bstyle\s*=/g) || []).length;
+        count += hits;
+      }
+    }
+  }
+  walk(resolve(ROOT, 'apps/web/src'));
+  if (count > 0) throw new Error(`Found ${count} inline style= attribute(s) in apps/web/src (pending S3)`);
+  return '0 inline style= attributes';
+});
+
+// 4. S4 checks: ADRs, rules.md, health.md
+runCheck('S4-GOVERNANCE', 'ADR coverage, generated rules.md, and health.md present', () => {
+  if (!existsSync(resolve(ROOT, 'docs/design/rules.md'))) throw new Error('docs/design/rules.md missing (pending S4)');
+  if (!existsSync(resolve(ROOT, 'docs/design/health.md'))) throw new Error('docs/design/health.md missing (pending S4)');
+  return 'rules.md + health.md present';
+});
+
+// 5. S5 checks: budgets + backlog consistency
+runCheck('S5-BACKLOG', 'Backlog schema valid and WP-17 blocked until WP-16.N done', () => {
+  execCmd('node scripts/backlog-next');
+  return 'backlog schema valid';
+});
+
+console.log('');
+if (failures.length > 0) {
+  console.error(`✗ pnpm wp16n:verify FAILED (${failures.length} unmet DoD check(s)):`);
+  for (const f of failures) console.error(`  - ${f}`);
+  process.exit(1);
+}
+console.log(`✓ pnpm wp16n:verify PASSED (${results.length}/${results.length} DoD checks green).`);

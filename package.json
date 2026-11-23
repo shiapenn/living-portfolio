@@ -10,6 +10,7 @@
     "test:e2e": "playwright test",
     "verify": "node scripts/verify-all",
     "verify:fast": "node scripts/verify-fast",
+    "wp16n:verify": "node scripts/wp16n-verify",
     "hooks:install": "git config core.hooksPath .githooks",
     "backlog:next": "node scripts/backlog-next",
     "verify:css-variables": "node scripts/verify-css-variables",

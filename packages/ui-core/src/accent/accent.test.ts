@@ -85,16 +85,12 @@ describe('core pack accent contract', () => {
     expect(validateAccentSeed(pack.accent.seed, pack.accent.canvas).ok).toBe(true);
   });
 
-  it("keeps today's admin accent within delta-E 2000 of 2, or lists an override with a reason", () => {
+  it("keeps today's admin accent within delta-E 2000 of 2 with zero overrides required", () => {
     const ramp = generateAccentRamp(pack.accent.seed);
+    expect(Object.keys(pack.accent.overrides)).toEqual([]);
     for (const [step, hex] of Object.entries(todayAdmin)) {
       const de = deltaE2000(ramp[Number(step) as AccentStep], hex);
-      const override = pack.accent.overrides[step];
-      if (de > 2) {
-        expect(override, `step ${step} (dE ${de.toFixed(2)}) needs an override`).toBeDefined();
-        expect(override!.reason.length).toBeGreaterThan(10);
-        expect(override!.value).toBe(hex);
-      }
+      expect(de, `step ${step} (dE ${de.toFixed(2)}) exceeds 2.0`).toBeLessThanOrEqual(2);
     }
   });
 });

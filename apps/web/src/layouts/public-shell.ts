@@ -1,5 +1,5 @@
 import { loadConfig } from "@living-portfolio/config";
-import { CORE_CSS_FILENAME } from "@living-portfolio/ui-core";
+import { CORE_CSS_FILENAME, DEFAULT_ACCENT_CSS_FILENAME } from "@living-portfolio/ui-core";
 import { PUBLIC_CSS_FILENAME } from "@living-portfolio/ui-public";
 import { escapeHtml, sanitizeHttpUrl } from "../lib/html.js";
 
@@ -76,6 +76,7 @@ export function renderLayout(
 ${robotsMetaHtml}${headSlotHtml}  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_NAME)}</title>
   <link rel="stylesheet" href="/assets/css/${CORE_CSS_FILENAME}" />
   <link rel="stylesheet" href="/assets/css/${PUBLIC_CSS_FILENAME}" />
+  <link rel="stylesheet" href="/assets/css/${DEFAULT_ACCENT_CSS_FILENAME}" />
 ${options?.nonce ? `  <style${nonceAttr}>/* public-pack-csp-nonce */</style>\n` : ''}</head>
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>

@@ -39,7 +39,7 @@ export function renderBookPage(queryParam?: string, facetsParam?: string): strin
           <input id="book-topic" name="topic" type="text" class="ask-input" style="width:100%" value="${escapeHtml(defaultTopic)}" placeholder="Describe your architecture constraint or review topic..." required />
         </div>
 
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(var(--lp-size-grid-field-min),1fr));gap:var(--lp-space-inset-item-y);margin-bottom:var(--lp-space-inset-item-y)">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(calc(var(--lp-size-icon-md) * 11),1fr));gap:var(--lp-space-inset-item-y);margin-bottom:var(--lp-space-inset-item-y)">
           <div>
             <label for="book-name" style="display:block;font-weight:600;margin-bottom:var(--lp-space-proximity-1);font-size:var(--lp-font-size-14)">Your Name / Organization</label>
             <input id="book-name" name="visitor_name" type="text" class="ask-input" style="width:100%" placeholder="e.g. Your Name or Engineering Lead" />
@@ -62,7 +62,7 @@ export function renderBookPage(queryParam?: string, facetsParam?: string): strin
 
         <div style="margin-bottom:var(--lp-space-stack-field-to-field)">
           <label for="book-notes" style="display:block;font-weight:600;margin-bottom:var(--lp-space-proximity-1);font-size:var(--lp-font-size-14)">Additional Background Notes</label>
-          <textarea id="book-notes" name="notes" class="ask-input" style="width:100%;min-height:var(--lp-size-textarea-compact-min-h);line-height:1.4" placeholder="Optional notes or links to relevant repos..."></textarea>
+          <textarea id="book-notes" name="notes" class="ask-input" style="width:100%;min-height:calc(var(--lp-space-proximity-3) * 4 + var(--lp-space-proximity-1));line-height:1.4" placeholder="Optional notes or links to relevant repos..."></textarea>
         </div>
 
         <button type="submit" id="btn-submit-booking" class="btn">Send request</button>

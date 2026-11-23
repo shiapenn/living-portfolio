@@ -128,7 +128,7 @@ export async function refreshEntriesList(selectedId?: string): Promise<void> {
           )}</span>`;
           return `
           <li data-entry-id="${escapeClientHtml(e.id)}" style="display:flex;align-items:center;justify-content:space-between;padding:var(--lp-space-inset-item-x) var(--lp-space-proximity-2);border-bottom:var(--lp-border-hairline) solid var(--rule);font-size:var(--lp-font-size-12);cursor:pointer;${selStyle}" class="admin-entry-item" role="button" tabindex="0">
-            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:var(--lp-size-card-min-h)">${escapeClientHtml(e.title || 'Untitled')}</span>
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(var(--lp-size-icon-md) * 7)">${escapeClientHtml(e.title || 'Untitled')}</span>
             ${visibilityBadge}
           </li>`;
         })

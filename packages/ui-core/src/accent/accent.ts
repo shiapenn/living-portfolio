@@ -172,25 +172,23 @@ export function deltaE2000(hexA: string, hexB: string): number {
   );
 }
 
-/** Lightness curve anchors: 50 (near white), 300 (dark-theme seed), 600 (light-theme seed), 900 (near black). */
+/** Lightness curve anchors: 50 (0.96), 300 (dark-theme seed), 600 (light-theme seed), 900 (0.276). */
 function lightnessFor(step: AccentStep, lLight: number, lDark: number): number {
-  const anchors: Array<[number, number]> = [
-    [50, 0.97],
-    [300, lDark],
-    [600, lLight],
-    [900, 0.27],
-  ];
-  for (let i = 0; i < anchors.length - 1; i++) {
-    const [s0, v0] = anchors[i]!;
-    const [s1, v1] = anchors[i + 1]!;
-    if (step >= s0 && step <= s1) return v0 + ((v1 - v0) * (step - s0)) / (s1 - s0);
+  if (step <= 300) {
+    const t = (step - 50) / 250;
+    return 0.96 + (lDark - 0.96) * Math.pow(t, 1.42);
   }
-  return lLight;
+  if (step <= 600) {
+    const t = (step - 300) / 300;
+    return lDark + (lLight - lDark) * t;
+  }
+  const t = (step - 600) / 300;
+  return lLight + (0.276 - lLight) * Math.pow(t, 1.65);
 }
 
 /** Chroma curve: peaks around the seeds, tapers toward the near-white and near-black ends. */
 function chromaFor(step: AccentStep, cLight: number, cDark: number): number {
-  const taper: Record<AccentStep, number> = { 50: 0.12, 100: 0.25, 200: 0.6, 300: 1, 400: 1, 500: 1, 600: 1, 700: 0.95, 800: 0.9, 900: 0.6 };
+  const taper: Record<AccentStep, number> = { 50: 0.15, 100: 0.32, 200: 0.545, 300: 1, 400: 1, 500: 1, 600: 1, 700: 0.96, 800: 0.88, 900: 0.385 };
   const base = step <= 300 ? cDark : cLight;
   return base * taper[step];
 }
