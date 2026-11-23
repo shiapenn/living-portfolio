@@ -183,13 +183,22 @@ test.describe('WP-16.L Live Verification & 42-State Census (UX-213..UX-215)', ()
     await page.setViewportSize({ width: 1280, height: 800 });
 
     const allIssues: string[] = [];
+    const edgesByState: Record<string, { pageColumnEdges: number[]; plainShared: number[]; listEdges: Record<string, number[]> }> = {};
     for (const st of STATES) {
       await navigateToState(page, st, ids);
       const l1 = await checkItemButtonGrammarL1(page, st.id);
       const l2 = await checkListVariantsAndTextEdgesL2(page, st.id);
       const l3 = await checkListSpacingAndHeadersL3(page, st.id);
+      if (l2.lists.length > 0 || l2.plainPageSharedEdges.length > 0) {
+        edgesByState[st.id] = {
+          pageColumnEdges: l2.pageColumnEdges,
+          plainShared: l2.plainPageSharedEdges,
+          listEdges: Object.fromEntries(l2.lists.map((l) => [`${l.listId}(${l.variant})`, l.itemTextEdges])),
+        };
+      }
       allIssues.push(...l1.issues, ...l2.issues, ...l3.flatMap((r) => r.issues));
     }
+    console.log('L2_EDGES_PER_PAGE:', JSON.stringify(edgesByState));
     expect(allIssues).toEqual([]);
   });
 
