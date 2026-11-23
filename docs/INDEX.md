@@ -180,6 +180,7 @@
 | `A172` | wp-16n-s2-admin-css-migration | `active` | [A172-wp-16n-s2-admin-css-migration.md](execution-reports/A172-wp-16n-s2-admin-css-migration.md) | — |
 | `A173` | wp-16n-s3-public-editorial-fonts | `active` | [A173-wp-16n-s3-public-editorial-fonts.md](execution-reports/A173-wp-16n-s3-public-editorial-fonts.md) | — |
 | `A174` | wp-16n-s4-governance-adrs-health | `active` | [A174-wp-16n-s4-governance-adrs-health.md](execution-reports/A174-wp-16n-s4-governance-adrs-health.md) | — |
+| `A175` | wp-16n-s5-performance-closure | `active` | [A175-wp-16n-s5-performance-closure.md](execution-reports/A175-wp-16n-s5-performance-closure.md) | — |
 
 ## Handover Snapshots (Class H)
 
