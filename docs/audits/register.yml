@@ -8018,17 +8018,20 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/259"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: tests/e2e/wp16-l-census.spec.ts
   history:
     - date: 2026-11-23
       status: open
       note: "Registered in WP-16.L L0."
+    - date: 2026-11-23
+      status: partial
+      note: "Implemented in WP-16.L L1/L2 (PRs #259, #260) and verified across all 42 states in L4; awaiting L review of ~/Desktop/wp16l-contact-sheets.zip."
   verified_by: null
 
 - id: 20261106-UX-214
@@ -8037,17 +8040,20 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/260"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: tests/e2e/wp16-l-census.spec.ts
   history:
     - date: 2026-11-23
       status: open
       note: "Registered in WP-16.L L0."
+    - date: 2026-11-23
+      status: partial
+      note: "Implemented in WP-16.L L1/L2 (PRs #259, #260) and verified across all 42 states in L4; awaiting L review of ~/Desktop/wp16l-contact-sheets.zip."
   verified_by: null
 
 - id: 20261106-UX-215
@@ -8056,17 +8062,20 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/260"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: tests/e2e/wp16-l-census.spec.ts
   history:
     - date: 2026-11-23
       status: open
       note: "Registered in WP-16.L L0."
+    - date: 2026-11-23
+      status: partial
+      note: "Implemented in WP-16.L L1/L2 (PRs #259, #260) and verified across all 42 states in L4; awaiting L review of ~/Desktop/wp16l-contact-sheets.zip."
   verified_by: null
 
 - id: 20261106-UX-216
@@ -8075,17 +8084,20 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/261"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: tests/e2e/wp16-l-census.spec.ts
   history:
     - date: 2026-11-23
       status: open
       note: "Registered in WP-16.L L0."
+    - date: 2026-11-23
+      status: partial
+      note: "Implemented in WP-16.L L3 (PR #261) with 0 unmapped items and monotonic proximity test; awaiting L review."
   verified_by: null
 
 - id: 20261106-UX-217
@@ -8094,15 +8106,18 @@
   spec_sections:
     - "12.8"
   severity: P1
-  status: open
+  status: partial
   owner: A
   links:
     issue: null
-    pr: null
+    pr: "https://github.com/shiapenn/living-portfolio/pull/261"
     plan: docs/plans/P004-ux-remediation-work-packages.md
   regression_test: tests/e2e/wp16-l-census.spec.ts
   history:
     - date: 2026-11-23
       status: open
       note: "Registered in WP-16.L L0."
+    - date: 2026-11-23
+      status: partial
+      note: "Implemented in WP-16.L L3 (PR #261) with arithmetic closure (227=227), 0 emitted primitives, -54.2% tokens.css bytes, and unified scrim; awaiting L review of ~/Desktop/wp16l-contact-sheets.zip."
   verified_by: null
