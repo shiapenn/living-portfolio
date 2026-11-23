@@ -13,56 +13,56 @@ export function renderBookPage(queryParam?: string, facetsParam?: string): strin
       <p>If your situation differs from what I've written about, a conversation will serve you better than a guess.</p>
 
       ${(defaultTopic || defaultFacets) ? `
-      <div style="padding:var(--lp-space-inset-control-sm) var(--lp-space-inset-card-sm);background:var(--surface-raised);border:var(--lp-border-hairline) solid var(--rule);border-radius:var(--lp-radius-control);margin-bottom:var(--lp-space-stack-field-to-field);font-size:var(--lp-font-size-12)">
+      <div class="pub-mb-md">
         <strong>Carried Context from Ask:</strong>
-        ${defaultTopic ? `<div style="margin-top:var(--lp-space-proximity-1)"><em>Topic:</em> "${escapeHtml(defaultTopic)}"</div>` : ''}
-        ${defaultFacets ? `<div style="margin-top:var(--lp-space-inset-tag-y);color:var(--text-muted)"><em>Facets:</em> ${escapeHtml(defaultFacets)}</div>` : ''}
+        ${defaultTopic ? `<div class="pub-mt-md"><em>Topic:</em> "${escapeHtml(defaultTopic)}"</div>` : ''}
+        ${defaultFacets ? `<div class="pub-muted pub-mt-md"><em>Facets:</em> ${escapeHtml(defaultFacets)}</div>` : ''}
       </div>` : ''}
 
-      <div id="booking-confirmation" style="display:none;padding:var(--lp-space-inset-section);border:var(--lp-border-hairline) solid var(--accent);background:var(--surface-raised);border-radius:var(--lp-radius-control);margin-bottom:var(--lp-space-stack-field-to-field)" role="region" aria-label="Booking Confirmation">
-        <span class="chip" style="background:var(--lp-color-role-success-bg);color:var(--lp-color-role-success-fg);font-weight:600;margin-bottom:var(--lp-space-stack-label-to-control);display:inline-block">✓ Request Confirmed</span>
-        <h2 style="font-size:var(--lp-font-size-18);margin:var(--lp-space-stack-label-to-control) 0 var(--lp-space-proximity-1) 0">Consultation Request Received</h2>
-        <p style="margin:0 0 var(--lp-space-inset-item-y) 0;font-size:var(--lp-font-size-14)">
+      <div id="booking-confirmation" class="pub-mb-md" role="region" aria-label="Booking Confirmation">
+        <span class="chip pub-mb-md">✓ Request Confirmed</span>
+        <h2>Consultation Request Received</h2>
+        <p class="pub-m-0">
           We've received your request for: <strong id="conf-topic"></strong>
         </p>
-        <p style="margin:0 0 var(--lp-space-inset-item-y) 0;font-size:var(--lp-font-size-12);color:var(--text-muted)">
+        <p class="pub-muted pub-m-0">
           The owner will review your architectural context and reach out at <strong id="conf-contact"></strong> within 24 hours to coordinate scheduling.
         </p>
-        <a href="/work" class="btn btn-secondary" style="text-decoration:none;display:inline-block">Explore Portfolio Records →</a>
+        <a href="/work" class="btn btn-secondary">Explore Portfolio Records →</a>
       </div>
 
-      <form id="booking-form" class="strata-section" style="border:var(--lp-border-hairline) solid var(--rule);padding:var(--lp-space-inset-section);border-radius:var(--lp-radius-control)">
-        <div id="booking-error" style="display:none;color:var(--lp-color-role-warning-fg);font-size:var(--lp-font-size-12);margin-bottom:var(--lp-space-inset-item-y)" role="alert"></div>
+      <form id="booking-form" class="strata-section">
+        <div id="booking-error" class="pub-mb-md" role="alert"></div>
 
-        <div style="margin-bottom:var(--lp-space-inset-item-y)">
-          <label for="book-topic" style="display:block;font-weight:600;margin-bottom:var(--lp-space-proximity-1);font-size:var(--lp-font-size-14)">Topic / Architecture Question <span style="color:var(--lp-color-role-warning-fg)">*</span></label>
-          <input id="book-topic" name="topic" type="text" class="ask-input" style="width:100%" value="${escapeHtml(defaultTopic)}" placeholder="Describe your architecture constraint or review topic..." required />
+        <div class="pub-mb-md">
+          <label for="book-topic" class="pub-mb-md">Topic / Architecture Question <span>*</span></label>
+          <input id="book-topic" name="topic" type="text" class="ask-input pub-btn-full" value="${escapeHtml(defaultTopic)}" placeholder="Describe your architecture constraint or review topic..." required />
         </div>
 
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(calc(var(--lp-size-icon-md) * 11),1fr));gap:var(--lp-space-inset-item-y);margin-bottom:var(--lp-space-inset-item-y)">
+        <div class="pub-grid-2 pub-mb-md">
           <div>
-            <label for="book-name" style="display:block;font-weight:600;margin-bottom:var(--lp-space-proximity-1);font-size:var(--lp-font-size-14)">Your Name / Organization</label>
-            <input id="book-name" name="visitor_name" type="text" class="ask-input" style="width:100%" placeholder="e.g. Your Name or Engineering Lead" />
+            <label for="book-name" class="pub-mb-md">Your Name / Organization</label>
+            <input id="book-name" name="visitor_name" type="text" class="ask-input pub-btn-full" placeholder="e.g. Your Name or Engineering Lead" />
           </div>
           <div>
-            <label for="book-contact" style="display:block;font-weight:600;margin-bottom:var(--lp-space-proximity-1);font-size:var(--lp-font-size-14)">Contact Email or Handle <span style="color:var(--lp-color-role-warning-fg)">*</span></label>
-            <input id="book-contact" name="visitor_contact" type="text" class="ask-input" style="width:100%" placeholder="e.g. alex@example.com or @handle" required />
+            <label for="book-contact" class="pub-mb-md">Contact Email or Handle <span>*</span></label>
+            <input id="book-contact" name="visitor_contact" type="text" class="ask-input pub-btn-full" placeholder="e.g. alex@example.com or @handle" required />
           </div>
         </div>
 
-        <div style="margin-bottom:var(--lp-space-inset-item-y)">
-          <label for="book-facets" style="display:block;font-weight:600;margin-bottom:var(--lp-space-proximity-1);font-size:var(--lp-font-size-14)">Context Facets / Production Constraints</label>
-          <input id="book-facets" name="facets" type="text" class="ask-input" style="width:100%" value="${escapeHtml(defaultFacets)}" placeholder="e.g. scale: high_volume, stack: postgres, cloud: aws" />
+        <div class="pub-mb-md">
+          <label for="book-facets" class="pub-mb-md">Context Facets / Production Constraints</label>
+          <input id="book-facets" name="facets" type="text" class="ask-input pub-btn-full" value="${escapeHtml(defaultFacets)}" placeholder="e.g. scale: high_volume, stack: postgres, cloud: aws" />
         </div>
 
-        <div style="margin-bottom:var(--lp-space-inset-item-y)">
-          <label for="book-time" style="display:block;font-weight:600;margin-bottom:var(--lp-space-proximity-1);font-size:var(--lp-font-size-14)">Preferred Times / Format</label>
-          <input id="book-time" name="preferred_time" type="text" class="ask-input" style="width:100%" placeholder="e.g. Weekday mornings (UTC+8), 30 min video call" />
+        <div class="pub-mb-md">
+          <label for="book-time" class="pub-mb-md">Preferred Times / Format</label>
+          <input id="book-time" name="preferred_time" type="text" class="ask-input pub-btn-full" placeholder="e.g. Weekday mornings (UTC+8), 30 min video call" />
         </div>
 
-        <div style="margin-bottom:var(--lp-space-stack-field-to-field)">
-          <label for="book-notes" style="display:block;font-weight:600;margin-bottom:var(--lp-space-proximity-1);font-size:var(--lp-font-size-14)">Additional Background Notes</label>
-          <textarea id="book-notes" name="notes" class="ask-input" style="width:100%;min-height:calc(var(--lp-space-proximity-3) * 4 + var(--lp-space-proximity-1));line-height:1.4" placeholder="Optional notes or links to relevant repos..."></textarea>
+        <div class="pub-mb-md">
+          <label for="book-notes" class="pub-mb-md">Additional Background Notes</label>
+          <textarea id="book-notes" name="notes" class="ask-input pub-btn-full" placeholder="Optional notes or links to relevant repos..."></textarea>
         </div>
 
         <button type="submit" id="btn-submit-booking" class="btn">Send request</button>

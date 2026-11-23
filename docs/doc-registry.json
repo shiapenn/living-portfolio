@@ -1889,5 +1889,13 @@
     "path": "docs/execution-reports/A172-wp-16n-s2-admin-css-migration.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A173",
+    "title": "wp-16n-s3-public-editorial-fonts",
+    "class": "A",
+    "path": "docs/execution-reports/A173-wp-16n-s3-public-editorial-fonts.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

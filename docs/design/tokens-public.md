@@ -5,23 +5,23 @@
 | Source | `packages/design-tokens/packs/public.json` |
 | Naming | `--pub-<category>-<role>[-<variant>]` |
 | Version | `1.0.0` |
-| Primitive | 93 |
+| Primitive | 94 |
 | Semantic (per theme) | 19 |
-| Component | 31 |
+| Component | 32 |
 
 ## Semantic Tokens (Theme-Switched)
 
 | Token | Light | Dark |
 | --- | --- | --- |
-| `--pub-color-surface-canvas` | `#FFFFFF` | `#0F1A22` |
-| `--pub-color-surface-paper` | `#F5F6F7` | `#16232D` |
-| `--pub-color-surface-elevated` | `#EBEFF2` | `#1E2E3B` |
-| `--pub-color-text-primary` | `#14202A` | `#E6ECEF` |
-| `--pub-color-text-secondary` | `#4B5A66` | `#A3B2BD` |
-| `--pub-color-text-muted` | `#63727E` | `#8A99A6` |
-| `--pub-color-text-on-accent` | `#FFFFFF` | `#0F1A22` |
-| `--pub-color-border-rule` | `#CBD3D8` | `#2A3946` |
-| `--pub-color-border-strong` | `#6B7B88` | `#7E8F9C` |
+| `--pub-color-surface-canvas` | `#FFFFFF` | `#111111` |
+| `--pub-color-surface-paper` | `#FAFAFA` | `#171717` |
+| `--pub-color-surface-elevated` | `#F0F0F0` | `#222222` |
+| `--pub-color-text-primary` | `#141414` | `#F2F2F2` |
+| `--pub-color-text-secondary` | `#525252` | `#B3B3B3` |
+| `--pub-color-text-muted` | `#666666` | `#8C8C8C` |
+| `--pub-color-text-on-accent` | `#FFFFFF` | `#111111` |
+| `--pub-color-border-rule` | `#D4D4D4` | `#333333` |
+| `--pub-color-border-strong` | `#737373` | `#8C8C8C` |
 | `--pub-color-accent-primary` | `#3A4FD0` | `#9AA8FF` |
 | `--pub-color-accent-tint` | `#EEF1FF` | `#1A244D` |
 | `--pub-color-accent-ink` | `#1E329E` | `#C5CEFF` |
@@ -50,9 +50,9 @@
 | `--pub-radius-pill` | `999px` |
 | `--pub-border-hairline` | `1px` |
 | `--pub-border-accent` | `4px` |
-| `--pub-font-family-display` | `'Literata', Georgia, 'Times New Roman', serif` |
-| `--pub-font-family-prose` | `'Literata', Georgia, 'Times New Roman', serif` |
-| `--pub-font-family-ui` | `'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif` |
+| `--pub-font-family-display` | `'Literata', 'Literata Fallback', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', Georgia, serif` |
+| `--pub-font-family-prose` | `'Literata', 'Literata Fallback', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', Georgia, serif` |
+| `--pub-font-family-ui` | `'Atkinson Hyperlegible Next', 'Atkinson Fallback', 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', -apple-system, BlinkMacSystemFont, sans-serif` |
 | `--pub-font-family-mono` | `'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace` |
 | `--pub-font-size-caption` | `clamp(0.75rem, 0.72rem + 0.15vw, 0.875rem)` |
 | `--pub-font-size-body` | `clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem)` |
@@ -68,6 +68,7 @@
 | `--pub-motion-duration-slow` | `320ms` |
 | `--pub-motion-easing-standard` | `cubic-bezier(0.2, 0, 0, 1)` |
 | `--pub-motion-easing-out` | `cubic-bezier(0, 0, 0.2, 1)` |
+| `--pub-font-line-zh` | `1.7` |
 
 ## Documented Aliases
 

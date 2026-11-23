@@ -40,6 +40,15 @@
     outline: 2px solid currentColor;
     outline-offset: 2px;
   }
+  :lang(zh) {
+    line-height: 1.7;
+    letter-spacing: 0;
+    quotes: "「" "」" "『" "』";
+  }
+  :lang(zh) em,
+  :lang(zh) i {
+    font-style: normal;
+  }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
       animation-duration: 0.01ms !important;

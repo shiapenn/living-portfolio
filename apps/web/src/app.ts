@@ -4,6 +4,7 @@ import {
   CORE_CSS_FILENAME,
   DEFAULT_ACCENT_CSS,
   DEFAULT_ACCENT_CSS_FILENAME,
+  FONT_ASSETS,
 } from '@living-portfolio/ui-core';
 import {
   ADMIN_BASE_CSS,
@@ -157,6 +158,18 @@ export function createWebApp(options?: WebAppOptions) {
     const isHashed = /\.[0-9a-f]{10}\.css$/.test(filename);
     return c.body(css, 200, {
       'Content-Type': 'text/css; charset=utf-8',
+      'Cache-Control': isHashed ? 'public, max-age=31536000, immutable' : 'public, max-age=3600',
+    });
+  });
+
+  // Self-hosted WOFF2 fonts with immutable caching (WP-16.N D-N1/D-N4)
+  app.get('/assets/fonts/:filename', (c) => {
+    const filename = c.req.param('filename');
+    const fontBuf = FONT_ASSETS[filename];
+    if (!fontBuf) return c.text('Not Found', 404);
+    const isHashed = /\.[0-9a-f]{10}\.woff2$/.test(filename);
+    return c.body(new Uint8Array(fontBuf), 200, {
+      'Content-Type': 'font/woff2',
       'Cache-Control': isHashed ? 'public, max-age=31536000, immutable' : 'public, max-age=3600',
     });
   });

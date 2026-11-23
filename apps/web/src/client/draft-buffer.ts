@@ -100,7 +100,7 @@ export function restoreDraftBuffer(): boolean {
       notice.style.display = 'flex';
       notice.innerHTML =
         `<span>Restored unsaved draft from local buffer.</span>` +
-        `<button type="button" class="btn btn-secondary" id="btn-discard-draft-buffer" style="padding:var(--lp-space-inset-tag-y) var(--lp-space-inset-item-x);font-size:var(--lp-font-size-12);margin-left:var(--lp-space-inline-icon-text)">Discard</button>`;
+        `<button type="button" class="btn btn-secondary pub-ml-sm" id="btn-discard-draft-buffer">Discard</button>`;
       const discardBtn = document.getElementById('btn-discard-draft-buffer');
       if (discardBtn) {
         discardBtn.addEventListener('click', () => {

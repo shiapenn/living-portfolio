@@ -69,19 +69,19 @@ export async function renderHomePage(repo: WebDataClient): Promise<string> {
     ${strataHtml}
 
     <section aria-labelledby="featured-heading">
-      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--lp-space-inset-item-y);flex-wrap:wrap;gap:var(--lp-space-stack-label-to-control)">
-        <h2 id="featured-heading" style="font-family:var(--lp-font-family-reading);font-size:var(--lp-font-size-20);margin:0">Recent work</h2>
-        <a href="/work" style="font-size:var(--lp-font-size-14);color:var(--accent);text-decoration:none">View all work (${publicEntries.length}) →</a>
+      <div class="pub-row-between pub-mb-md">
+        <h2 id="featured-heading" class="pub-m-0">Recent work</h2>
+        <a href="/work">View all work (${publicEntries.length}) →</a>
       </div>
       ${rowsHtml.length > 0 ? `
         <ul class="entry-list">
           ${rowsHtml.join('\n')}
         </ul>
       ` : `
-        <div class="empty-state" style="padding:var(--lp-space-inset-page-y) var(--lp-space-inset-section);text-align:center;border:var(--lp-border-hairline) dashed var(--rule);border-radius:var(--lp-radius-card);margin-top:var(--lp-space-stack-field-to-field)">
-          <p style="font-weight:600;font-size:var(--lp-font-size-18);margin:0 0 var(--lp-space-stack-label-to-control) 0">No entries published yet</p>
-          <p style="color:var(--text-muted);font-size:var(--lp-font-size-14);margin:0 0 var(--lp-size-icon-md) 0">Technical case studies and architectural decisions will appear here as they are published.</p>
-          <div style="display:flex;gap:var(--lp-space-inset-item-y);justify-content:center;flex-wrap:wrap">
+        <div class="empty-state pub-empty pub-mt-md">
+          <p class="pub-m-0">No entries published yet</p>
+          <p class="pub-muted pub-m-0">Technical case studies and architectural decisions will appear here as they are published.</p>
+          <div class="pub-row">
             <a href="/timeline" class="btn btn-secondary">Explore Timeline</a>
             <a href="/ask" class="btn">Ask Questions</a>
           </div>
@@ -90,8 +90,8 @@ export async function renderHomePage(repo: WebDataClient): Promise<string> {
     </section>
 
     <section class="ask-box" aria-labelledby="home-ask-heading">
-      <h2 id="home-ask-heading" style="margin:0;font-family:var(--lp-font-family-reading);font-size:var(--lp-font-size-20)">Ask about my work</h2>
-      <p style="margin:var(--lp-space-proximity-1) 0 0;color:var(--text-muted);font-size:var(--lp-font-size-14)">
+      <h2 id="home-ask-heading" class="pub-m-0">Ask about my work</h2>
+      <p class="pub-muted">
         Answers come from my own entries, with sources you can open. If I can't back something up, I'll say so.
       </p>
       <form action="/ask" method="GET" class="ask-input-row">

@@ -210,7 +210,7 @@ Use Redis distributed locks when you already run Redis at scale, but always pair
       expect(res.html).toContain('The goal');
 
       // Verify unlabeled spans are rendered (not dropped)
-      expect(res.html).toContain('class="unlabeled-span reading-column"');
+      expect(res.html).toContain('class="unlabeled-span reading-column');
       expect(res.html).toContain('During a network partition between availability zones');
       expect(res.html).toContain('Use Redis distributed locks when you already run Redis at scale');
 

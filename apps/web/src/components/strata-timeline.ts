@@ -104,7 +104,7 @@ export async function renderStrataTimelineSection(
          <a href="/timeline">Back to today</a>
        </div>`;
     } else {
-      asOfBanner = `<div class="as-of-banner" role="alert" style="border-left-color:var(--lp-color-passage-friction);background:var(--lp-color-surface-raised)">
+      asOfBanner = `<div class="as-of-banner" role="alert">
          <span><strong>Invalid as-of date ("${escapeHtml(asOfInfo.raw)}")</strong> — Showing records as of present.</span>
          <a href="/timeline">Back to today</a>
        </div>`;
@@ -133,7 +133,7 @@ export async function renderStrataTimelineSection(
       const isCursor = asOfInfo && asOfInfo.valid && ym === asOfInfo.raw.slice(0, 7);
 
       if (b.count === 0) {
-        return `<a href="/timeline?as_of=${bandAsOf}" class="strata-band strata-band-empty" style="height:var(--lp-size-strata-band-min)" data-ym="${ym}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" data-count="0"${isCursor ? ' data-cursor="true"' : ''} aria-label="${ym}: No entries (${formatMonthYear(ym)})${dimmed ? ' (after as-of date)' : ''}">
+        return `<a href="/timeline?as_of=${bandAsOf}" class="strata-band strata-band-empty" data-band-tier="1" data-ym="${ym}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" data-count="0"${isCursor ? ' data-cursor="true"' : ''} aria-label="${ym}: No entries (${formatMonthYear(ym)})${dimmed ? ' (after as-of date)' : ''}">
           <div class="band-empty-hairline" aria-hidden="true"></div>
           <span class="band-ym-empty">${month === 1 ? ym : monthStr}</span>
           ${dimmed ? '<div class="band-label-future">(future)</div>' : ''}
@@ -148,7 +148,7 @@ export async function renderStrataTimelineSection(
       const glyphs = uniqueProfiles.map((p) => profileGlyphMap[p] || '■').join(' ');
       const hasVenture = b.ventureIds.length > 0;
 
-      return `<a href="/timeline?as_of=${bandAsOf}" class="strata-band" data-profile="${escapeHtml(primaryProfile)}" style="height:${heightPx}px" data-ym="${ym}" data-slug="${b.slugs[0]}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" data-count="${b.count}"${isCursor ? ' data-cursor="true"' : ''} aria-label="${ym} (${formatMonthYear(ym)}): ${layerText} (${uniqueProfiles.join(', ')})${dimmed ? ' (after as-of date)' : ''}">
+      return `<a href="/timeline?as_of=${bandAsOf}" class="strata-band" data-profile="${escapeHtml(primaryProfile)}" data-band-tier="${Math.min(5, Math.max(1, Math.ceil((heightPx - 40) / 16)))}" data-ym="${ym}" data-slug="${b.slugs[0]}" data-asof="${bandAsOf}" data-dimmed="${dimmed}" data-count="${b.count}"${isCursor ? ' data-cursor="true"' : ''} aria-label="${ym} (${formatMonthYear(ym)}): ${layerText} (${uniqueProfiles.join(', ')})${dimmed ? ' (after as-of date)' : ''}">
         ${hasVenture ? '<span class="band-venture-notch" title="Venture project" aria-hidden="true"></span>' : ''}
         <div class="band-header">
           <span class="band-glyphs" aria-hidden="true">${glyphs}</span>
@@ -182,12 +182,12 @@ export async function renderStrataTimelineSection(
   const html = `<section class="strata-section" aria-labelledby="strata-heading">
     <div class="strata-header">
       <div>
-        <h2 id="strata-heading" style="margin:0;font-size:var(--lp-font-size-18);font-family:var(--lp-font-family-reading)">Strata timeline</h2>
-        <span style="font-size:var(--lp-font-size-14);color:var(--lp-color-text-2)">Pick a month to see this site as it was then. Gaps show time between projects.</span>
+        <h2 id="strata-heading" class="pub-m-0">Strata timeline</h2>
+        <span class="pub-muted">Pick a month to see this site as it was then. Gaps show time between projects.</span>
       </div>
-      <form method="GET" action="/timeline" style="display:flex;gap:var(--lp-space-stack-label-to-control);align-items:center">
-        <label for="as-of-input" style="font-size:var(--lp-font-size-14)">As of:</label>
-        <input id="as-of-input" name="as_of" type="date" value="${escapeHtml(defaultInputValue)}" class="ask-input" style="padding:var(--lp-space-inset-track) var(--lp-space-inset-item-x);width:auto" />
+      <form method="GET" action="/timeline" class="pub-row">
+        <label for="as-of-input">As of:</label>
+        <input id="as-of-input" name="as_of" type="date" value="${escapeHtml(defaultInputValue)}" class="ask-input pub-input-auto" />
         <button type="submit" class="btn btn-secondary">Apply Date</button>
       </form>
     </div>
@@ -202,12 +202,12 @@ export async function renderStrataTimelineSection(
       <span class="strata-legend-item" role="listitem"><span class="glyph-case-study" aria-hidden="true">■</span> Case study</span>
       <span class="strata-legend-item" role="listitem"><span class="glyph-decision-record" aria-hidden="true">◆</span> Decision record</span>
       <span class="strata-legend-item" role="listitem"><span class="glyph-design-project" aria-hidden="true">▲</span> Design project</span>
-      <span class="strata-legend-item" role="listitem"><span class="band-venture-notch" style="position:static;display:inline-block;margin-right:var(--lp-space-inline-segment)" aria-hidden="true"></span> Venture notch</span>
+      <span class="strata-legend-item" role="listitem"><span class="band-venture-notch band-venture-notch-inline" aria-hidden="true"></span> Venture notch</span>
       <span class="strata-legend-hint">Keyboard: Left/Right arrows move between months, PageUp/PageDown by year, Enter opens month.</span>
     </div>
-    <details style="margin-top:var(--lp-space-inset-item-y);font-size:var(--lp-font-size-14)">
-      <summary style="cursor:pointer;color:var(--lp-color-text-2)">Timeline as a list</summary>
-      <ul style="margin-top:var(--lp-space-stack-label-to-control)">
+    <details class="pub-mt-md">
+      <summary class="pub-muted">Timeline as a list</summary>
+      <ul class="pub-mt-md">
         ${textListHtml}
       </ul>
     </details>${STRATA_TIMELINE_SCRIPT}

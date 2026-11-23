@@ -1,5 +1,9 @@
 import { loadConfig } from "@living-portfolio/config";
-import { CORE_CSS_FILENAME, DEFAULT_ACCENT_CSS_FILENAME } from "@living-portfolio/ui-core";
+import {
+  CORE_CSS_FILENAME,
+  DEFAULT_ACCENT_CSS_FILENAME,
+  PUBLIC_FONT_PRELOAD_HTML,
+} from "@living-portfolio/ui-core";
 import { PUBLIC_CSS_FILENAME } from "@living-portfolio/ui-public";
 import { escapeHtml, sanitizeHttpUrl } from "../lib/html.js";
 
@@ -40,7 +44,7 @@ export function renderLayout(
 
   const stagingBannerHtml =
     cfg.DEPLOYMENT_CLASS === 'staging'
-      ? `<div class="as-of-banner pub-staging-banner" data-banner="staging-synthetic-only" role="status" style="position:sticky;top:0"><strong>Staging: synthetic data only.</strong></div>`
+      ? `<div class="as-of-banner pub-staging-banner" data-banner="staging-synthetic-only" role="status"><strong>Staging: synthetic data only.</strong></div>`
       : '';
 
   const robotsMetaHtml =
@@ -49,7 +53,7 @@ export function renderLayout(
       : '';
 
   const unofficialForkSlotHtml = cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE
-    ? `<div class="unofficial-fork-slot" data-slot="unofficial-fork-notice" style="margin-top:var(--pub-space-stack-sm);font-size:var(--pub-font-size-caption);color:var(--pub-color-text-secondary)">${escapeHtml(cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE)}</div>`
+    ? `<div class="unofficial-fork-slot pub-fork-notice" data-slot="unofficial-fork-notice">${escapeHtml(cfg.PUBLIC_UNOFFICIAL_FORK_NOTICE)}</div>`
     : '';
 
   const nonceAttr = options?.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : '';
@@ -74,6 +78,7 @@ export function renderLayout(
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 ${robotsMetaHtml}${headSlotHtml}  <title>${escapeHtml(title)} — ${escapeHtml(cfg.PUBLIC_SITE_NAME)}</title>
+  ${PUBLIC_FONT_PRELOAD_HTML}
   <link rel="stylesheet" href="/assets/css/${CORE_CSS_FILENAME}" />
   <link rel="stylesheet" href="/assets/css/${PUBLIC_CSS_FILENAME}" />
   <link rel="stylesheet" href="/assets/css/${DEFAULT_ACCENT_CSS_FILENAME}" />
@@ -95,8 +100,8 @@ ${headerSlotHtml}    <nav class="site-nav" aria-label="Primary navigation">
     ${safeMainContent}
   </main>
   <footer class="site-footer pub-footer">
-${footerSlotHtml}    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:var(--pub-space-stack-md);margin-bottom:var(--pub-space-stack-sm)">
-      <nav aria-label="Secondary navigation" style="display:flex;gap:var(--pub-space-stack-md);flex-wrap:wrap">
+${footerSlotHtml}    <div class="pub-footer-row">
+      <nav aria-label="Secondary navigation" class="pub-footer-nav">
         <a href="/about">About</a>
         <a href="/now">Now</a>
         <a href="/uses">Uses</a>

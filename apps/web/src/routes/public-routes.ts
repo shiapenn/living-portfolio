@@ -31,7 +31,14 @@ export function registerPublicRoutes(app: Hono, { client, siteName, primarySiteO
     c.html(await renderWorkOrWritingPage(client, 'work', c.req.query('outcome'), c.req.query('as_of')))
   );
   app.get('/work/:slug', async (c) => {
-    const res = await renderEntryDetailPage(client, c.req.param('slug'), c.req.query('view'), c.req.query('as_of'), '/work');
+    const res = await renderEntryDetailPage(
+      client,
+      c.req.param('slug'),
+      c.req.query('view'),
+      c.req.query('as_of'),
+      '/work',
+      c.req.query('lang')
+    );
     return c.html(res.html, res.status as any);
   });
   app.get('/writing', async (c) =>

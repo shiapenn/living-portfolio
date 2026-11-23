@@ -33,13 +33,10 @@ describe('Staging Safeguards & DEPLOYMENT_CLASS Handling (OSR-19, Gate G3, Spec 
 
         expect(html).toContain('data-banner="staging-synthetic-only"');
         expect(html).toContain('<strong>Staging: synthetic data only.</strong>');
-        if (route.startsWith('/admin')) {
-          const cssRes = await app.request('/assets/css/admin.css');
-          expect(cssRes.status).toBe(200);
-          expect(await cssRes.text()).toContain('position:sticky');
-        } else {
-          expect(html).toContain('position:sticky');
-        }
+        const cssUrl = route.startsWith('/admin') ? '/assets/css/admin.css' : '/assets/css/public.css';
+        const cssRes = await app.request(cssUrl);
+        expect(cssRes.status).toBe(200);
+        expect(await cssRes.text()).toMatch(/position:\s*sticky/);
       }
 
       delete process.env.DEPLOYMENT_CLASS;

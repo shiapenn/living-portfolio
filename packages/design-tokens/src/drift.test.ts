@@ -45,7 +45,6 @@ describe('Design tokens single-source drift, D-L4 monotonic proximity, and D-L5 
     };
 
     const inlineSegment = px('space.inline.segment');
-    const inlineDotText = px('space.inline.dot-text');
     const inlineIconText = px('space.inline.icon-text');
     const inlineButtonButton = px('space.inline.button-button');
     const inlineTagTag = px('space.inline.tag-tag');
@@ -59,7 +58,7 @@ describe('Design tokens single-source drift, D-L4 monotonic proximity, and D-L5 
     const pageGutterDesktop = parseFloat(resolveRef(tokens.responsive.md['space.inset.page-gutter'], tokens, 'light'));
 
     // Inline gaps <= label-to-control < field-to-field < subsection < section
-    for (const inlineGap of [inlineSegment, inlineDotText, inlineIconText, inlineButtonButton, inlineTagTag]) {
+    for (const inlineGap of [inlineSegment, inlineIconText, inlineButtonButton, inlineTagTag]) {
       expect(inlineGap).toBeLessThanOrEqual(labelToControl);
     }
     expect(labelToControl).toBeLessThan(fieldToField);

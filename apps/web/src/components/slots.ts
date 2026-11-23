@@ -20,9 +20,9 @@ export function renderEntryArticleWithSlots(slots: EntryArticleSlots): string {
       ${slots.laterThinkingBanner || ''}
       <header class="entry-header">
         ${slots.header}
-        ${slots.contextStrip ? `<div class="entry-context-slot" style="margin: var(--lp-space-stack-field-to-field) 0;">${slots.contextStrip}</div>` : ''}
+        ${slots.contextStrip ? `<div class="entry-context-slot">${slots.contextStrip}</div>` : ''}
       </header>
-      <div class="entry-layout" style="display: grid; grid-template-columns: 1fr; gap: var(--lp-space-proximity-4); margin-top: var(--lp-space-proximity-4);">
+      <div class="entry-layout pub-mt-md">
         <div class="entry-body reading-column">
           ${slots.body}
           ${slots.related || ''}
@@ -50,9 +50,9 @@ export function renderEntryStructuredWithSlots(slots: EntryStructuredSlots): str
       ${slots.laterThinkingBanner || ''}
       <header class="entry-header">
         ${slots.header}
-        ${slots.contextStrip ? `<div class="entry-context-slot" style="margin: var(--lp-space-stack-field-to-field) 0;">${slots.contextStrip}</div>` : ''}
+        ${slots.contextStrip ? `<div class="entry-context-slot">${slots.contextStrip}</div>` : ''}
       </header>
-      <div class="entry-layout" style="display: grid; grid-template-columns: 1fr; gap: var(--lp-space-proximity-4); margin-top: var(--lp-space-proximity-4);">
+      <div class="entry-layout pub-mt-md">
         <div class="entry-body reading-column">
           ${slots.roleSections}
           ${slots.outcome || ''}
@@ -78,7 +78,7 @@ export function renderVentureWithSlots(slots: VentureSlots): string {
       <header class="venture-header">
         ${slots.header}
       </header>
-      <div class="venture-layout" style="display: grid; grid-template-columns: 1fr; gap: var(--lp-space-proximity-4); margin-top: var(--lp-space-proximity-4);">
+      <div class="venture-layout pub-mt-md">
         <div class="venture-main reading-column">
           ${slots.overview}
           ${slots.productEmbed || ''}

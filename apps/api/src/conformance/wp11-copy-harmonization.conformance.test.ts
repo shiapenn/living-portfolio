@@ -124,7 +124,7 @@ describe('WP-11.5 Conformance: Copy Harmonization & Spec-Jargon Removal (2026102
     const entryRes = await app.request('/work/case-worked');
     const entryHtml = await entryRes.text();
     expect(entryHtml).toContain('Ask about this entry');
-    expect(entryHtml).toContain('<button type="submit" class="btn" style="width:100%">Ask</button>');
+    expect(entryHtml).toContain('<button type="submit" class="btn pub-btn-full">Ask</button>');
   });
 
   it('[CP-02] Removal of spec & schema jargon: no section numbers, data-role attributes, neutral structured chips', async () => {
