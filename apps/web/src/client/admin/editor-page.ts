@@ -433,10 +433,10 @@ function bootEditorPage(): void {
       };
       const renderSpanActionsHtml = (spanId: string, roleRaw: string, status: string) => {
         if (status === 'accepted') {
-          return `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-md" data-span-action="undo" data-span-id="${esc(spanId)}" data-span-role="${esc(roleRaw)}"><span>Undo</span></button></div>`;
+          return `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-md" data-span-action="undo" data-span-id="${esc(spanId)}" data-span-role="${esc(roleRaw)}"><span>Undo</span></button></div>`;
         }
         if (status === 'rejected') {
-          return `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-md" data-span-action="restore" data-span-id="${esc(spanId)}" data-span-role="${esc(roleRaw)}"><span>Restore</span></button></div>`;
+          return `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-md" data-span-action="restore" data-span-id="${esc(spanId)}" data-span-role="${esc(roleRaw)}"><span>Restore</span></button></div>`;
         }
         return `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-md" data-span-action="accept" data-span-id="${esc(spanId)}" data-span-role="${esc(roleRaw)}"><span>Accept</span></button><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-md" data-span-action="reject" data-span-id="${esc(spanId)}" data-span-role="${esc(roleRaw)}"><span>Ignore</span></button></div>`;
       };
@@ -589,9 +589,9 @@ function bootEditorPage(): void {
       const actionsEl = row.querySelector('.lp-item-actions');
       if (actionsEl) {
         if (nextStatus === 'accepted') {
-          actionsEl.innerHTML = `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-md" data-span-action="undo" data-span-id="${esc(span_id)}" data-span-role="${esc(role)}"><span>Undo</span></button></div>`;
+          actionsEl.innerHTML = `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-md" data-span-action="undo" data-span-id="${esc(span_id)}" data-span-role="${esc(role)}"><span>Undo</span></button></div>`;
         } else if (nextStatus === 'rejected') {
-          actionsEl.innerHTML = `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-md" data-span-action="restore" data-span-id="${esc(span_id)}" data-span-role="${esc(role)}"><span>Restore</span></button></div>`;
+          actionsEl.innerHTML = `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-md" data-span-action="restore" data-span-id="${esc(span_id)}" data-span-role="${esc(role)}"><span>Restore</span></button></div>`;
         } else {
           actionsEl.innerHTML = `<div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-md" data-span-action="accept" data-span-id="${esc(span_id)}" data-span-role="${esc(role)}"><span>Accept</span></button><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-md" data-span-action="reject" data-span-id="${esc(span_id)}" data-span-role="${esc(role)}"><span>Ignore</span></button></div>`;
         }

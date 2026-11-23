@@ -1,7 +1,7 @@
 import { escapeHtml } from '../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
-import { renderItem } from '../../primitives/index.js';
+import { renderItem, renderList } from '../../primitives/index.js';
 import { renderEmptyState, renderStatusLine } from '../../components/index.js';
 import { INBOX_STRINGS } from '../../strings/admin/inbox.js';
 
@@ -26,79 +26,82 @@ export async function renderAdminAuditRulesPage(
   </div>`;
 
   const listHtml = rules.length > 0
-    ? `<div id="audit-rules-list" class="lp-list">${rules
-        .map((rule) => {
-          const id = String(rule.id);
-          const quote = String(rule.source_quote || '');
-          const scopeEntries = rule.scope && typeof rule.scope === 'object' ? Object.entries(rule.scope) : [];
-          const scopeText = scopeEntries.length > 0
-            ? `Applies when ${scopeEntries.map(([k, v]) => `${k} is ${Array.isArray(v) ? v.join(', ') : String(v)}`).join(' and ')}.`
-            : 'Applies to all questions.';
-          const c = rule.constraint || {};
-          const cObj = typeof c === 'object' && c !== null ? (c as Record<string, unknown>) : null;
-          const summary =
-            cObj?.guidance ||
-            cObj?.summary ||
-            cObj?.rule ||
-            cObj?.description ||
-            cObj?.message ||
-            cObj?.text ||
-            (cObj?.disallow_claim ? `Do not claim ${String(cObj.disallow_claim)}` : undefined) ||
-            (cObj?.topic ? `Topic rule: ${String(cObj.topic)}` : undefined) ||
-            (typeof c === 'string' && c.trim() ? c : undefined) ||
-            (quote ? quote : undefined) ||
-            (cObj && Object.keys(cObj).length > 0
-              ? Object.entries(cObj)
-                  .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${String(v)}`)
-                  .join('; ')
-              : 'Answer rule');
-          const tone = activeStatus === 'confirmed' ? 'ok' : activeStatus === 'revoked' ? 'neutral' : 'warn';
-          const statusLabel = INBOX_STRINGS.audit.tabs[activeStatus as 'proposed' | 'confirmed' | 'revoked'];
-          return renderItem({
-            title: String(summary),
-            subtitle: scopeText,
-            segments: quote && quote.trim() !== String(summary).trim() ? [{ heading: 'From your reply', body: quote }] : undefined,
-            statusLabel: activeStatus === 'confirmed' ? 'Active' : activeStatus === 'revoked' ? 'Ignored' : 'Pending',
-            statusTone: tone,
-            actions: activeStatus === 'revoked'
-              ? {
-                  level: 'item',
-                  secondary: {
-                    label: 'Restore',
-                    variant: 'secondary',
-                    size: 'sm',
-                    dataAttrs: { 'rule-id': id, 'rule-action': 'confirmed' },
-                  },
-                }
-              : activeStatus === 'proposed'
+    ? renderList({
+        id: 'audit-rules-list',
+        variant: 'plain',
+        itemsHtml: rules
+          .map((rule) => {
+            const id = String(rule.id);
+            const quote = String(rule.source_quote || '');
+            const scopeEntries = rule.scope && typeof rule.scope === 'object' ? Object.entries(rule.scope) : [];
+            const scopeText = scopeEntries.length > 0
+              ? `Applies when ${scopeEntries.map(([k, v]) => `${k} is ${Array.isArray(v) ? v.join(', ') : String(v)}`).join(' and ')}.`
+              : 'Applies to all questions.';
+            const c = rule.constraint || {};
+            const cObj = typeof c === 'object' && c !== null ? (c as Record<string, unknown>) : null;
+            const summary =
+              cObj?.guidance ||
+              cObj?.summary ||
+              cObj?.rule ||
+              cObj?.description ||
+              cObj?.message ||
+              cObj?.text ||
+              (cObj?.disallow_claim ? `Do not claim ${String(cObj.disallow_claim)}` : undefined) ||
+              (cObj?.topic ? `Topic rule: ${String(cObj.topic)}` : undefined) ||
+              (typeof c === 'string' && c.trim() ? c : undefined) ||
+              (quote ? quote : undefined) ||
+              (cObj && Object.keys(cObj).length > 0
+                ? Object.entries(cObj)
+                    .map(([k, v]) => `${k.replace(/_/g, ' ')}: ${String(v)}`)
+                    .join('; ')
+                : 'Answer rule');
+            const tone = activeStatus === 'confirmed' ? 'ok' : activeStatus === 'revoked' ? 'neutral' : 'warn';
+            return renderItem({
+              title: String(summary),
+              subtitle: scopeText,
+              segments: quote && quote.trim() !== String(summary).trim() ? [{ heading: 'From your reply', body: quote }] : undefined,
+              statusLabel: activeStatus === 'confirmed' ? 'Active' : activeStatus === 'revoked' ? 'Ignored' : 'Pending',
+              statusTone: tone,
+              actions: activeStatus === 'revoked'
                 ? {
                     level: 'item',
-                    primary: {
-                      label: INBOX_STRINGS.audit.confirmRule,
-                      variant: 'primary',
+                    secondary: {
+                      label: 'Restore',
+                      variant: 'secondary',
                       size: 'sm',
                       dataAttrs: { 'rule-id': id, 'rule-action': 'confirmed' },
                     },
-                    secondary: {
-                      label: 'Discard',
-                      variant: 'secondary',
-                      size: 'sm',
-                      dataAttrs: { 'rule-id': id, 'rule-action': 'revoked' },
-                    },
                   }
-                : {
-                    level: 'item',
-                    secondary: {
-                      label: INBOX_STRINGS.audit.revokeRule,
-                      variant: 'secondary',
-                      size: 'sm',
-                      dataAttrs: { 'rule-id': id, 'rule-action': 'revoked' },
+                : activeStatus === 'proposed'
+                  ? {
+                      level: 'item',
+                      secondary: {
+                        label: INBOX_STRINGS.audit.confirmRule,
+                        variant: 'secondary',
+                        size: 'sm',
+                        dataAttrs: { 'rule-id': id, 'rule-action': 'confirmed' },
+                      },
+                      textAction: {
+                        label: 'Discard',
+                        variant: 'text',
+                        size: 'sm',
+                        dataAttrs: { 'rule-id': id, 'rule-action': 'revoked' },
+                      },
+                    }
+                  : {
+                      level: 'item',
+                      secondary: {
+                        label: INBOX_STRINGS.audit.revokeRule,
+                        variant: 'secondary',
+                        size: 'sm',
+                        dataAttrs: { 'rule-id': id, 'rule-action': 'revoked' },
+                      },
                     },
-                  },
-            attributes: `data-rule-row="${escapeHtml(id)}"`,
-          });
-        })
-        .join('')}</div>`
+              attributes: `data-rule-row="${escapeHtml(id)}"`,
+            });
+          })
+          .join(''),
+      })
     : renderEmptyState({ id: 'audit-empty', headingTag: 'h2', title: INBOX_STRINGS.audit.emptyTitle, body: INBOX_STRINGS.audit.emptyBody });
 
   const bodyHtml = `

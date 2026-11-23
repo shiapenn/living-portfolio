@@ -1,5 +1,5 @@
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderIconButton, renderItem, renderSectionHeader } from '../../primitives/index.js';
+import { renderFormSection, renderIconButton, renderItem, renderList, renderText } from '../../primitives/index.js';
 import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { escapeHtml } from '../../lib/html.js';
@@ -98,54 +98,63 @@ export async function renderAdminDashboardPage(
   }
 
   const attentionHtml = items.length
-    ? `<div id="today-attention-list" class="lp-list">
-${items
-  .map((item) =>
-    renderItem({
-      id: item.id,
-      href: item.actionHref,
-      title: item.summary,
-      showChevron: true,
-    })
-  )
-  .join('\n')}
-</div>`
-    : `<p id="today-attention-list" class="lp-page-description">Nothing needs your attention.</p>`;
+    ? renderList({
+        id: 'today-attention-list',
+        variant: 'interactive',
+        itemsHtml: items
+          .map((item) =>
+            renderItem({
+              id: item.id,
+              href: item.actionHref,
+              title: item.summary,
+              showChevron: true,
+            })
+          )
+          .join('\n'),
+      })
+    : renderText({ id: 'today-attention-list', variant: 'description', className: 'lp-page-description', text: 'Nothing needs your attention.' });
+
+  const attentionSectionHtml = renderFormSection({
+    id: 'today-attention-section',
+    headerId: 'today-attention-heading',
+    title: DASHBOARD_STRINGS.attention.heading,
+    attributes: 'aria-labelledby="today-attention-heading"',
+    fieldsHtml: attentionHtml,
+  });
 
   const checklistHtml = options.checklistDismissed
     ? ''
-    : `<section id="today-checklist-card" aria-labelledby="today-checklist-heading">
-  ${renderSectionHeader({
-    id: 'today-checklist-heading',
-    title: DASHBOARD_STRINGS.checklist.heading,
-    actionHtml: renderIconButton({
-      id: 'btn-dismiss-today-checklist',
-      ariaLabel: DASHBOARD_STRINGS.checklist.dismissLabel,
-      title: DASHBOARD_STRINGS.checklist.dismissLabel,
-      icon: 'close',
-      iconSize: 16,
-      variant: 'quiet',
-    }),
-  })}
-  <div class="lp-list">
-    ${DASHBOARD_STRINGS.checklist.steps
-      .map((step) =>
-        renderItem({
-          id: step.id,
-          href: step.href,
-          title: step.label,
-          showChevron: true,
-        })
-      )
-      .join('')}
-  </div>
-</section>`;
+    : renderFormSection({
+        id: 'today-checklist-card',
+        headerId: 'today-checklist-heading',
+        title: DASHBOARD_STRINGS.checklist.heading,
+        attributes: 'aria-labelledby="today-checklist-heading"',
+        headerActionHtml: renderIconButton({
+          id: 'btn-dismiss-today-checklist',
+          ariaLabel: DASHBOARD_STRINGS.checklist.dismissLabel,
+          title: DASHBOARD_STRINGS.checklist.dismissLabel,
+          icon: 'close',
+          iconSize: 16,
+          variant: 'quiet',
+        }),
+        fieldsHtml: renderList({
+          id: 'today-checklist-list',
+          variant: 'interactive',
+          itemsHtml: DASHBOARD_STRINGS.checklist.steps
+            .map((step) =>
+              renderItem({
+                id: step.id,
+                href: step.href,
+                title: step.label,
+                showChevron: true,
+              })
+            )
+            .join(''),
+        }),
+      });
 
   const bodyHtml = `
-  <section aria-labelledby="today-attention-heading">
-    ${renderSectionHeader({ id: 'today-attention-heading', title: DASHBOARD_STRINGS.attention.heading })}
-    ${attentionHtml}
-  </section>
+  ${attentionSectionHtml}
 
   ${checklistHtml}
 <script>

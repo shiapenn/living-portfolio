@@ -435,10 +435,11 @@ export async function checkPaintedGaps(
     if (includeDG) {
       const sections = Array.from(document.querySelectorAll('main [data-rel="section"], main .lp-form-section'));
       for (const sec of sections) {
+        const sHeader = sec.querySelector<HTMLElement>('[data-c="SectionHeader"]');
         const sTitle = sec.querySelector('[data-rel="section-title"], .lp-form-section-title, .lp-section-title');
         const sIntro = sec.querySelector('[data-rel="section-intro"], .lp-form-section-desc');
         if (sTitle && sIntro) checkPair('section-heading-to-intro', sTitle, sIntro, rel['section-heading-to-intro']);
-        const headerLead = sIntro ?? sTitle;
+        const headerLead = sIntro ?? sHeader ?? sTitle;
         const firstChild = sec.querySelector('.lp-level, [data-rel="field"], [data-rel="item"], [data-rel="subsection"], .lp-field, .lp-item, .lp-list, .lp-choice-group');
         if (headerLead && firstChild) checkPair('heading-or-intro-to-first', headerLead, firstChild, rel['heading-to-first']);
       }
@@ -1792,7 +1793,7 @@ export async function checkListVariantsAndTextEdgesL2(page: Page, stateId = ''):
         col.querySelectorAll<HTMLElement>(
           '.lp-page-header-title, .lp-form-section-title, .lp-section-header-title, .lp-subsection-title, .lp-field-label'
         )
-      ).filter((el) => isVisible(el) && !el.closest('.lp-dialog-panel, .lp-overlay-surface, .lp-gallery-overlay-sample, .lp-gallery-panel-sample'));
+      ).filter((el) => isVisible(el) && !el.closest('.lp-dialog-panel, .lp-overlay-surface, .lp-gallery-overlay-sample, .lp-gallery-panel-sample, .lp-entries-toolbar'));
       for (const el of headingAndLabelEls) {
         const x = el.getBoundingClientRect().left;
         rawPageEdges.push(x);
@@ -1881,7 +1882,7 @@ export async function checkListSpacingAndHeadersL3(page: Page, stateId = ''): Pr
         }
       }
       for (const ctrl of Array.from(
-        el.querySelectorAll<HTMLElement>('button, a.lp-btn, .lp-icon-btn, input, select, textarea, [data-c="StatusLabel"]')
+        el.querySelectorAll<HTMLElement>('button, a.lp-btn, .lp-icon-btn, input, select, textarea, [data-c="StatusLabel"], [role="tab"], .lp-tab')
       )) {
         if (!isVisible(ctrl)) continue;
         const r = ctrl.getBoundingClientRect();
@@ -1924,10 +1925,15 @@ export async function checkListSpacingAndHeadersL3(page: Page, stateId = ''): Pr
       // Find preceding visible element (heading, section header, search input, filter toolbar, or tabs)
       let prev: HTMLElement | null = list.previousElementSibling as HTMLElement | null;
       while (prev && !isVisible(prev)) prev = prev.previousElementSibling as HTMLElement | null;
-      if (!prev && list.parentElement) {
-        let pPrev = list.parentElement.previousElementSibling as HTMLElement | null;
+      let ancestor: HTMLElement | null = list.parentElement;
+      while (!prev && ancestor && ancestor.tagName !== 'MAIN' && ancestor.tagName !== 'ASIDE') {
+        let pPrev = ancestor.previousElementSibling as HTMLElement | null;
         while (pPrev && !isVisible(pPrev)) pPrev = pPrev.previousElementSibling as HTMLElement | null;
-        prev = pPrev;
+        if (pPrev) {
+          prev = pPrev;
+          break;
+        }
+        ancestor = ancestor.parentElement;
       }
       // If prev is a header stack container (e.g. .lp-editor-drawer-header-stack), measure from its last visible child or its full bounds
       const issues: string[] = [];
@@ -1955,16 +1961,19 @@ export async function checkListSpacingAndHeadersL3(page: Page, stateId = ''): Pr
           }
         }
 
+        const isAfterPageHeader = prev.matches('[data-c="PageHeader"], .lp-page-header');
+        const expectedGap = isAfterPageHeader ? 24 : 16;
+
         if (variant === 'plain') {
-          if (gapToInk !== null && (gapToInk < 14 || gapToInk > 22)) {
-            issues.push(`l3-plain-heading-to-ink(${sid}, ${listId}): gapToInk=${gapToInk}px (expected 16px)`);
+          if (gapToInk !== null && (gapToInk < expectedGap - 2 || gapToInk > expectedGap + 6)) {
+            issues.push(`l3-plain-heading-to-ink(${sid}, ${listId}): gapToInk=${gapToInk}px (expected ${expectedGap}px)`);
           }
         } else if (variant === 'interactive') {
           if (gapToTint !== null && gapToTint < 7.5) {
             issues.push(`l3-interactive-tint-clearance(${sid}, ${listId}): gapToTint=${gapToTint}px (< 8px clearance)`);
           }
-          if (gapToTint !== null && Math.abs(gapToTint - 16) > 2.5) {
-            issues.push(`l3-interactive-gap-to-tint(${sid}, ${listId}): gapToTint=${gapToTint}px (expected 16px)`);
+          if (gapToTint !== null && Math.abs(gapToTint - expectedGap) > 2.5) {
+            issues.push(`l3-interactive-gap-to-tint(${sid}, ${listId}): gapToTint=${gapToTint}px (expected ${expectedGap}px)`);
           }
         }
       }
