@@ -7,6 +7,7 @@ import {
   renderFormSection,
   renderIcon,
   renderItem,
+  renderList,
   renderLevel,
   renderSubsection,
   renderTabs,
@@ -241,13 +242,17 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
   const spansHtml = renderSubsection({
     title: 'Suggested roles',
     intro: 'Passages that may play a role in your story. Accept to label one, or ignore it.',
-    bodyHtml: `<div id="ref-spans-list" class="lp-list"></div>
+    bodyHtml: `${renderList({ id: 'ref-spans-list', variant: 'plain', itemsHtml: '' })}
     <div id="ref-spans-feedback" class="lp-sr-only" aria-live="polite"></div>`,
   });
 
   const claimsHtml = renderSubsection({
     title: 'Claims',
-    bodyHtml: `<div id="ref-claims-list" class="lp-list${claims.length ? '' : ' lp-is-empty'}">${claims.length
+    bodyHtml: `${renderList({
+      id: 'ref-claims-list',
+      variant: 'plain',
+      empty: claims.length === 0,
+      itemsHtml: claims.length
         ? claims
             .map((c: any) =>
               renderItem({
@@ -257,13 +262,14 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
               })
             )
             .join('')
-        : ''}</div>
+        : '',
+    })}
     <div id="ref-claim-form-wrap" class="lp-stack lp-gap-related lp-is-hidden">
       ${renderField({ kind: 'input', id: 'ref-claim-input', name: 'claimText', label: 'Claim', placeholder: 'Add a claim' })}
       ${renderActionBar({
         level: 'item',
-        primary: { id: 'ref-btn-add-claim', label: 'Add', variant: 'primary', type: 'button' },
-        secondary: { id: 'ref-btn-cancel-claim', label: 'Cancel', variant: 'secondary', type: 'button' },
+        secondary: { id: 'ref-btn-add-claim', label: 'Add', variant: 'secondary', type: 'button' },
+        textAction: { id: 'ref-btn-cancel-claim', label: 'Cancel', variant: 'text', type: 'button' },
       })}
     </div>`,
     actionBarHtml: renderActionBar({
@@ -275,7 +281,11 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
   const evidenceHtml = renderSubsection({
     title: 'Evidence',
     className: evidence.length ? undefined : 'lp-gap-related',
-    bodyHtml: `<div id="ref-evidence-list" class="lp-list${evidence.length ? '' : ' lp-is-empty'}">${evidence.length
+    bodyHtml: `${renderList({
+      id: 'ref-evidence-list',
+      variant: 'plain',
+      empty: evidence.length === 0,
+      itemsHtml: evidence.length
         ? evidence
             .map((ev: any) =>
               renderItem({
@@ -286,14 +296,15 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
               })
             )
             .join('')
-        : ''}</div>
+        : '',
+    })}
     <div id="ref-evidence-form-wrap" class="lp-stack lp-gap-related lp-is-hidden">
       ${renderField({ kind: 'input', id: 'ref-evidence-title', name: 'evidenceTitle', label: 'Evidence title', placeholder: 'Evidence title' })}
       ${renderField({ kind: 'input', inputType: 'url', id: 'ref-evidence-url', name: 'evidenceUrl', label: 'Evidence URL', placeholder: 'https://example.com' })}
       ${renderActionBar({
         level: 'item',
-        primary: { id: 'ref-btn-add-evidence', label: 'Add', variant: 'primary', type: 'button' },
-        secondary: { id: 'ref-btn-cancel-evidence', label: 'Cancel', variant: 'secondary', type: 'button' },
+        secondary: { id: 'ref-btn-add-evidence', label: 'Add', variant: 'secondary', type: 'button' },
+        textAction: { id: 'ref-btn-cancel-evidence', label: 'Cancel', variant: 'text', type: 'button' },
       })}
     </div>`,
     actionBarHtml: renderActionBar({

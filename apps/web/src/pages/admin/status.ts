@@ -3,7 +3,7 @@ import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { escapeHtml } from '../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderButton, renderItem, renderFormSection } from '../../primitives/index.js';
+import { renderButton, renderItem, renderList, renderFormSection } from '../../primitives/index.js';
 import { renderStatusLine } from '../../components/index.js';
 
 export interface StatusPageOptions {
@@ -43,8 +43,10 @@ export async function renderAdminStatusPage(
     ? `Connected (${activeProvider.label || activeProvider.id}${activeProvider.model ? ` · ${activeProvider.model}` : ''})`
     : 'Local only';
 
-  const listHtml = `<div class="lp-list">
-    ${renderItem({
+  const staticListHtml = renderList({
+    id: 'status-static-list',
+    variant: 'plain',
+    itemsHtml: `${renderItem({
       id: 'status-build-row',
       className: 'lp-item-trailing-status',
       title: 'Site',
@@ -71,8 +73,13 @@ export async function renderAdminStatusPage(
           dataAttrs: { enabled: answeringOn ? 'true' : 'false' },
         },
       },
-    })}
-    ${renderItem({
+    })}`,
+  });
+
+  const navListHtml = renderList({
+    id: 'status-nav-list',
+    variant: 'interactive',
+    itemsHtml: `${renderItem({
       id: 'status-backups-link',
       className: 'lp-item-trailing-status',
       href: '/admin/settings/backups',
@@ -88,7 +95,12 @@ export async function renderAdminStatusPage(
       title: 'Providers',
       trailingValue: providerState,
       showChevron: true,
-    })}
+    })}`,
+  });
+
+  const listHtml = `<div class="lp-stack lp-gap-related">
+    ${staticListHtml}
+    ${navListHtml}
   </div>`;
 
   const bodyHtml = `

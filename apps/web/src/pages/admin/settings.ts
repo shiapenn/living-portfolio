@@ -2,7 +2,7 @@ import { loadConfig } from '@living-portfolio/config';
 import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { escapeHtml } from '../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderItem } from '../../primitives/index.js';
+import { renderItem, renderList } from '../../primitives/index.js';
 import {
   ensureBuiltinSettingsModulesRegistered,
   getSettingsModule,
@@ -44,7 +44,7 @@ export function renderSettingsIndexPage(
 
   const bodyHtml = `
     <section aria-label="Settings areas">
-      <div class="lp-list">${rowsHtml}</div>
+      ${renderList({ id: 'settings-index-list', variant: 'interactive', itemsHtml: rowsHtml })}
     </section>
     <p class="lp-help-text" data-banner="alpha-warning" role="note">Early preview software. Back up your data before upgrading.</p>
   `;

@@ -5,6 +5,7 @@ import {
   renderField,
   renderFormSection,
   renderItem,
+  renderList,
   renderLevel,
   renderPageHeader,
   renderSectionHeader,
@@ -62,29 +63,33 @@ export function renderFixturePatternPage(): string {
   });
 
   const items = renderStack({
-    gap: 'tight',
+    gap: 'related',
     childrenHtml:
       renderSectionHeader({ title: 'Items' }) +
-      `<div class="lp-item-list">${renderItem({
-        title: 'First item row',
-        subtitle: 'Work',
-        statusLabel: 'Draft',
-        statusTone: 'neutral',
-        showChevron: true,
-        href: '/admin/entries',
-      })}${renderItem({
-        title: 'Second item row',
-        subtitle: 'Writing',
-        segments: [
-          { heading: 'From your reply', body: 'Quoted answer passage.' },
-          { heading: 'Rule', body: 'Always verify with primary evidence.' },
-        ],
-        statusLabel: 'Public',
-        statusTone: 'ok',
-        actions: {
-          secondary: { label: 'Review', variant: 'secondary', type: 'button' },
-        },
-      })}</div>`,
+      renderList({
+        id: 'fixture-list',
+        variant: 'plain',
+        itemsHtml:
+          renderItem({
+            title: 'First item row',
+            subtitle: 'Work',
+            statusLabel: 'Draft',
+            statusTone: 'neutral',
+          }) +
+          renderItem({
+            title: 'Second item row',
+            subtitle: 'Writing',
+            segments: [
+              { heading: 'From your reply', body: 'Quoted answer passage.' },
+              { heading: 'Rule', body: 'Always verify with primary evidence.' },
+            ],
+            statusLabel: 'Public',
+            statusTone: 'ok',
+            actions: {
+              secondary: { label: 'Review', variant: 'secondary', type: 'button' },
+            },
+          }),
+      }),
   });
 
   const sub1 = renderSubsection({

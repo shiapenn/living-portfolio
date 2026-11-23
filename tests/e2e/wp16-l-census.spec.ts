@@ -122,9 +122,8 @@ test.describe('WP-16.L Census Canaries (synthetic broken DOM, verifying L1, L2, 
   });
 });
 
-test.describe('WP-16.L Failing-First Defect Verification on 3d312a9 (UX-213..UX-215)', () => {
+test.describe('WP-16.L Live Verification & 42-State Census (UX-213..UX-215)', () => {
   test('20261106-UX-213 (L1): item-level bars never contain a primary; 1 action = secondary; 2 actions = secondary + text button', async ({ page }) => {
-    test.fail(true, 'Fails on 3d312a9: answer-rules uses primary Confirm rule + secondary Discard; editor-role-accepted uses text Undo');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -139,7 +138,6 @@ test.describe('WP-16.L Failing-First Defect Verification on 3d312a9 (UX-213..UX-
   });
 
   test('20261106-UX-214 (L2): List variants plain and interactive; plain Item content and buttons sit on column edge (1 text edge)', async ({ page }) => {
-    test.fail(true, 'Fails on 3d312a9: lists lack plain/interactive variants and plain items/buttons are inset 8px from column edge');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -156,7 +154,6 @@ test.describe('WP-16.L Failing-First Defect Verification on 3d312a9 (UX-213..UX-
   });
 
   test('20261106-UX-215a (L3): Today heading-to-first (Needs attention & Getting started) has 16px to tint edge and no dismiss button overlap', async ({ page }) => {
-    test.fail(true, 'Fails on 3d312a9: Today bypasses FormSection (0px gap) and absorbs 12px top padding (-12px tint overlap with dismiss button)');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -168,7 +165,6 @@ test.describe('WP-16.L Failing-First Defect Verification on 3d312a9 (UX-213..UX-
   });
 
   test('20261106-UX-215b (L3): Entries panel search-to-tint equals 16px (stack.control-to-list) with >= 8px tint clearance', async ({ page }) => {
-    test.fail(true, 'Fails on 3d312a9: #ref-entry-list absorbs 12px top padding so search-to-tint is 4px instead of 16px');
     await ensureAdminLoggedIn(page);
     const ids = await getSeededIds(page);
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -178,5 +174,22 @@ test.describe('WP-16.L Failing-First Defect Verification on 3d312a9 (UX-213..UX-
     const panelList = reports.find((r) => r.listId === 'ref-entry-list');
     expect(panelList).toBeTruthy();
     expect(panelList!.issues).toEqual([]);
+  });
+
+  test('Full 42-state census: L1 button grammar, L2 list variants & text-left-edge sets, and L3 list spacing across all states', async ({ page }) => {
+    test.setTimeout(180_000);
+    await ensureAdminLoggedIn(page);
+    const ids = await getSeededIds(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    const allIssues: string[] = [];
+    for (const st of STATES) {
+      await navigateToState(page, st, ids);
+      const l1 = await checkItemButtonGrammarL1(page, st.id);
+      const l2 = await checkListVariantsAndTextEdgesL2(page, st.id);
+      const l3 = await checkListSpacingAndHeadersL3(page, st.id);
+      allIssues.push(...l1.issues, ...l2.issues, ...l3.flatMap((r) => r.issues));
+    }
+    expect(allIssues).toEqual([]);
   });
 });

@@ -1,5 +1,5 @@
 import { renderAdminShell, renderPageTemplate } from '../../../layouts/admin-shell.js';
-import { renderButton, renderField, renderIcon, renderItem, renderText } from '../../../primitives/index.js';
+import { renderButton, renderField, renderIcon, renderItem, renderList, renderText } from '../../../primitives/index.js';
 import { renderDialog, renderEmptyState, renderPageNotice } from '../../../components/index.js';
 import { adaptDataSource, type WebDataClient } from '../../../lib/data-source.js';
 import { escapeHtml } from '../../../lib/html.js';
@@ -74,48 +74,50 @@ ${renderButton({ id: 'btn-entries-delete-confirm', label: ENTRIES_LIST_STRINGS.d
   ${renderPageNotice({ id: 'entries-error-banner', tone: 'danger', message: ENTRIES_LIST_STRINGS.states.error, hidden: !options.simulateError })}
   ${renderPageNotice({ id: 'entries-loading-banner', tone: 'info', message: ENTRIES_LIST_STRINGS.states.loading, hidden: true })}
 
-  <div class="lp-entries-toolbar">
-    <div class="lp-entries-filter-group">
-      ${renderField({
-        kind: 'select',
-        id: 'entries-filter-state',
-        name: 'filterState',
-        label: ENTRIES_LIST_STRINGS.filters.stateLabel,
-        options: [
-          { value: 'all', label: ENTRIES_LIST_STRINGS.filters.stateAll },
-          { value: 'private', label: ENTRIES_LIST_STRINGS.filters.stateDraft },
-          { value: 'unlisted', label: ENTRIES_LIST_STRINGS.filters.stateUnlisted },
-          { value: 'public', label: ENTRIES_LIST_STRINGS.filters.statePublic },
-        ],
-      })}
+  <div class="lp-stack lp-gap-related">
+    <div class="lp-entries-toolbar">
+      <div class="lp-entries-filter-group">
+        ${renderField({
+          kind: 'select',
+          id: 'entries-filter-state',
+          name: 'filterState',
+          label: ENTRIES_LIST_STRINGS.filters.stateLabel,
+          options: [
+            { value: 'all', label: ENTRIES_LIST_STRINGS.filters.stateAll },
+            { value: 'private', label: ENTRIES_LIST_STRINGS.filters.stateDraft },
+            { value: 'unlisted', label: ENTRIES_LIST_STRINGS.filters.stateUnlisted },
+            { value: 'public', label: ENTRIES_LIST_STRINGS.filters.statePublic },
+          ],
+        })}
+      </div>
+      <div class="lp-entries-filter-group">
+        ${renderField({
+          kind: 'select',
+          id: 'entries-filter-type',
+          name: 'filterType',
+          label: ENTRIES_LIST_STRINGS.filters.typeLabel,
+          options: [
+            { value: 'all', label: ENTRIES_LIST_STRINGS.filters.typeAll },
+            { value: 'work', label: ENTRIES_LIST_STRINGS.filters.typeWork },
+            { value: 'note', label: ENTRIES_LIST_STRINGS.filters.typeNote },
+            { value: 'venture', label: ENTRIES_LIST_STRINGS.filters.typeVenture },
+          ],
+        })}
+      </div>
+      <div class="lp-entries-search-group">
+        ${renderField({
+          kind: 'input',
+          id: 'entries-search',
+          name: 'search',
+          label: ENTRIES_LIST_STRINGS.filters.searchLabel,
+          placeholder: ENTRIES_LIST_STRINGS.filters.searchPlaceholder,
+        })}
+      </div>
     </div>
-    <div class="lp-entries-filter-group">
-      ${renderField({
-        kind: 'select',
-        id: 'entries-filter-type',
-        name: 'filterType',
-        label: ENTRIES_LIST_STRINGS.filters.typeLabel,
-        options: [
-          { value: 'all', label: ENTRIES_LIST_STRINGS.filters.typeAll },
-          { value: 'work', label: ENTRIES_LIST_STRINGS.filters.typeWork },
-          { value: 'note', label: ENTRIES_LIST_STRINGS.filters.typeNote },
-          { value: 'venture', label: ENTRIES_LIST_STRINGS.filters.typeVenture },
-        ],
-      })}
-    </div>
-    <div class="lp-entries-search-group">
-      ${renderField({
-        kind: 'input',
-        id: 'entries-search',
-        name: 'search',
-        label: ENTRIES_LIST_STRINGS.filters.searchLabel,
-        placeholder: ENTRIES_LIST_STRINGS.filters.searchPlaceholder,
-      })}
-    </div>
-  </div>
 
-  ${emptyStateHtml}
-  <div id="entries-list-region" class="lp-list">${rowsHtml}</div>
+    ${emptyStateHtml}
+    ${renderList({ id: 'entries-list-region', variant: 'interactive', itemsHtml: rowsHtml })}
+  </div>
 
   <div id="entries-pagination" class="lp-entries-pagination">
     ${renderButton({ id: 'btn-entries-prev', label: ENTRIES_LIST_STRINGS.pagination.prev, variant: 'secondary', size: 'sm', disabled: page <= 1 })}

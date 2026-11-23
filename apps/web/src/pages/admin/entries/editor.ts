@@ -8,6 +8,7 @@ import {
   renderFormSection,
   renderIconButton,
   renderItem,
+  renderList,
   renderStatusDot,
 } from '../../../primitives/index.js';
 import {
@@ -255,7 +256,7 @@ export function renderReferenceEditorPage(options: ReferenceEditorOptions): stri
         ${entries.length > 0 ? renderButton({ id: 'ref-btn-new-entry', label: EDITOR_STRINGS.sidebar.newEntry, variant: 'primary', size: 'sm', className: 'lp-btn-full' }) : ''}
         <input type="search" id="ref-entries-search" class="lp-input" placeholder="Search entries…" aria-label="Search entries" />
       </div>
-      <div id="ref-entry-list" class="lp-list">${sidebarItems}</div>
+      ${renderList({ id: 'ref-entry-list', variant: 'interactive', itemsHtml: sidebarItems })}
     </aside>
     <section id="ref-editor-main" class="lp-editor-main-fullscreen" aria-label="Entry editor">
       ${mainContent}

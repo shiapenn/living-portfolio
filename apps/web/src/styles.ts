@@ -4611,7 +4611,7 @@ a.lp-item:hover {
   flex-direction: column;
   align-items: stretch;
   padding: 0;
-  gap: var(--lp-space-8);
+  gap: var(--lp-space-stack-control-to-list);
 }
 .lp-editor-drawer .lp-section-header-title {
   text-align: left;
