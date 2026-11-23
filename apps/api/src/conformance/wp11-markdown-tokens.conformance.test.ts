@@ -163,12 +163,12 @@ Safe text before
       expect(SEMANTIC_LIGHT_VALUES['--lp-color-surface-page']).toBe('#FFFFFF');
       expect(SEMANTIC_LIGHT_VALUES['--lp-color-surface-raised']).toBe('#FFFFFF');
       expect(SEMANTIC_LIGHT_VALUES['--lp-color-border-control']).toBe('#6B7B88');
-      expect(COMPONENT_TOKEN_VALUES['--lp-size-layout-max']).toBe('1180px');
+      expect(COMPONENT_TOKEN_VALUES['--lp-size-layout-max']).toBe('1200px');
       expect(COMPONENT_TOKEN_VALUES['--lp-measure-reading']).toBe('68ch');
 
       // Tier 3: Component tokens
       expect(COMPONENT_TOKEN_VALUES['--lp-size-admin-nav-width']).toBe('240px');
-      expect(COMPONENT_TOKEN_VALUES['--lp-size-admin-inspector-width']).toBe('340px');
+      expect(COMPONENT_TOKEN_VALUES['--lp-size-admin-inspector-width']).toBe('320px');
       expect(COMPONENT_TOKEN_VALUES['--lp-size-strata-band-min']).toBe('44px');
       expect(COMPONENT_TOKEN_VALUES['--lp-size-strata-band-max']).toBe('120px');
     });

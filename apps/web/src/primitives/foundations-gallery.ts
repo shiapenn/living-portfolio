@@ -860,7 +860,7 @@ export function renderFoundationsTokensSection(): string {
     .join(' · ');
 
   const proximitySummary = Object.entries(PROXIMITY_TIERS)
-    .map(([tier, px]) => `tier-${tier}: ${px}`)
+    .map(([level, px]) => `p${level}: ${px}`)
     .join(' < ');
 
   const relationsSummary = Object.entries(RELATIONS)
@@ -903,7 +903,7 @@ export function renderFoundationsTokensSection(): string {
       })}
       ${renderItem({
         id: 'gallery-tokens-proximity',
-        title: 'Admin Proximity Tiers & Relations',
+        title: 'Admin Proximity Levels & Relations',
         subtitle: `${proximitySummary} | ${relationsSummary}`,
       })}
       ${renderItem({

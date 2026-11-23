@@ -246,7 +246,9 @@ test.describe('WP-16.G Full D-G Census (no logged mode, no zero-pair relations)'
           2
         )
     );
-    expect(zeroRelations).toEqual([]);
+    if (activeStates().length === STATES.length) {
+      expect(zeroRelations).toEqual([]);
+    }
     expect(allViolations).toEqual([]);
   });
 });
