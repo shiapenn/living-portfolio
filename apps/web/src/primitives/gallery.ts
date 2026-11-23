@@ -1,4 +1,5 @@
 import { renderLayout } from '../layouts/public-shell.js';
+import { STRATA_DESIGN_SYSTEM_CSS } from '../styles.js';
 import {
   renderIconSprite,
   renderButton,
@@ -129,6 +130,7 @@ ${renderDrawer({
 })}`;
 
   return renderLayout('Primitives Gallery', '/admin/dev/primitives', content, {
+    headSlot: `<style>${STRATA_DESIGN_SYSTEM_CSS}</style>`,
     clientScript: '/assets/client/gallery.js',
   });
 }

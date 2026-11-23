@@ -1,0 +1,73 @@
+#!/usr/bin/env node
+/**
+ * Self-Selecting Backlog Selector & Schema Validator (`pnpm backlog:next`, WP-16.M D-M7)
+ * Validates docs/plans/backlog.yml and prints the first item whose dependencies are `done`
+ * and whose gate is `none` (or satisfied).
+ */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { parse as parseYaml } from '../packages/core/node_modules/yaml/browser/index.js';
+
+const ROOT = resolve(import.meta.dirname, '..');
+const BACKLOG_PATH = resolve(ROOT, 'docs/plans/backlog.yml');
+
+const ALLOWED_TRACKS = new Set(['admin', 'public', 'core', 'functional', 'infra']);
+const ALLOWED_TYPES = new Set(['visual', 'functional', 'infra', 'docs']);
+const ALLOWED_SIZES = new Set(['S', 'M', 'L']);
+const ALLOWED_GATES = new Set(['none', 'L-review', 'owner', 'owner-direction']);
+const ALLOWED_STATUSES = new Set(['ready', 'in-progress', 'done', 'blocked-on-owner']);
+
+const doc = parseYaml(readFileSync(BACKLOG_PATH, 'utf8'));
+if (!doc || !Array.isArray(doc.items)) {
+  console.error('✗ Invalid docs/plans/backlog.yml: missing items array.');
+  process.exit(1);
+}
+
+const byId = new Map();
+const errors = [];
+
+for (const item of doc.items) {
+  if (!item.id || !item.title) errors.push(`Item missing id or title: ${JSON.stringify(item)}`);
+  if (byId.has(item.id)) errors.push(`Duplicate backlog id: ${item.id}`);
+  byId.set(item.id, item);
+  if (!ALLOWED_TRACKS.has(item.track)) errors.push(`${item.id}: invalid track "${item.track}"`);
+  if (!ALLOWED_TYPES.has(item.type)) errors.push(`${item.id}: invalid type "${item.type}"`);
+  if (!ALLOWED_SIZES.has(item.size)) errors.push(`${item.id}: invalid size "${item.size}"`);
+  if (typeof item.expected_minutes !== 'number' || item.expected_minutes <= 0) {
+    errors.push(`${item.id}: invalid expected_minutes`);
+  }
+  if (!ALLOWED_GATES.has(item.gate)) errors.push(`${item.id}: invalid gate "${item.gate}"`);
+  if (!ALLOWED_STATUSES.has(item.status)) errors.push(`${item.id}: invalid status "${item.status}"`);
+  if (!Array.isArray(item.depends_on)) errors.push(`${item.id}: depends_on must be an array`);
+  if (!item.acceptance) errors.push(`${item.id}: missing acceptance criteria`);
+}
+
+for (const item of doc.items) {
+  for (const dep of item.depends_on || []) {
+    if (!byId.has(dep)) errors.push(`${item.id}: unknown dependency "${dep}"`);
+  }
+}
+
+if (errors.length > 0) {
+  console.error(`✗ Backlog schema validation FAILED (${errors.length} error(s)):`);
+  errors.forEach((e) => console.error(`  - ${e}`));
+  process.exit(1);
+}
+
+if (process.argv.includes('--check')) {
+  console.log(`✓ docs/plans/backlog.yml schema valid (${doc.items.length} items).`);
+  process.exit(0);
+}
+
+const next = doc.items.find((item) => {
+  if (item.status !== 'ready') return false;
+  if (item.gate !== 'none') return false;
+  return (item.depends_on || []).every((dep) => byId.get(dep)?.status === 'done');
+});
+
+if (!next) {
+  console.log('No unblocked backlog items with gate=none (stopped at owner gate or active item).');
+  process.exit(0);
+}
+
+console.log(`${next.id} | ${next.title} | track=${next.track} | type=${next.type} | size=${next.size} (${next.expected_minutes}m) | gate=${next.gate}`);

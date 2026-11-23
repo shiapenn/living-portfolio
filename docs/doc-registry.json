@@ -1737,5 +1737,69 @@
     "path": "docs/audits/2026-11-design-system-architecture-audit.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L021",
+    "title": "Design System Map & Governance",
+    "class": "L",
+    "path": "docs/design/README.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L022",
+    "title": "Design & Architecture Decisions Index (Generated)",
+    "class": "L",
+    "path": "docs/design/decisions.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L023",
+    "title": "ADR-001: One Thin Core, Two Design Languages (D-M0 / D-M1)",
+    "class": "L",
+    "path": "docs/adr/ADR-001-two-design-languages.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L024",
+    "title": "ADR-002: Rule-Governed Scale Packs and Proximity Tiers (D-M2)",
+    "class": "L",
+    "path": "docs/adr/ADR-002-scale-rules-and-packs.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L025",
+    "title": "ADR-003: Dual Governance Modes and Universal Floors (D-M3 / D-J)",
+    "class": "L",
+    "path": "docs/adr/ADR-003-governance-modes-and-floors.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L026",
+    "title": "ADR-004: Spacing Taxonomy and Monotonic Proximity (D-L4)",
+    "class": "L",
+    "path": "docs/adr/ADR-004-spacing-taxonomy-and-tiers.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L027",
+    "title": "ADR-005: Three-Tier Tokens and Arithmetic Closure (D-L5)",
+    "class": "L",
+    "path": "docs/adr/ADR-005-token-tiers-and-closure.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L028",
+    "title": "ADR-006: Self-Selecting Backlog and Owner Gates (D-M7)",
+    "class": "L",
+    "path": "docs/adr/ADR-006-self-selecting-backlog.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

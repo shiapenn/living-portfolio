@@ -33,6 +33,8 @@ const definedVariables = new Set();
 
 const tokenFiles = [
   resolve(ROOT, 'packages/design-tokens/src/tokens.css'),
+  resolve(ROOT, 'packages/design-tokens/src/public.css'),
+  resolve(ROOT, 'packages/design-tokens/src/core.css'),
   resolve(WEB_SRC, 'tokens/index.ts'),
   resolve(WEB_SRC, 'styles.ts'),
 ];

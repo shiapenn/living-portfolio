@@ -1,0 +1,12 @@
+---
+id: ADR-001
+title: One Thin Core, Two Design Languages (D-M0 / D-M1)
+status: accepted
+date: 2026-11-23
+supersedes: null
+---
+
+# ADR-001: One Thin Core, Two Design Languages (`D-M0` / `D-M1`)
+
+## Decision
+Separate the UI into one thin shared core (`@living-portfolio/ui-core`) and two independent design languages: `@living-portfolio/ui-admin` (`lp-*`, `--lp-*`) and `@living-portfolio/ui-public` (`pub-*`, `--pub-*`). Ship separate hashed, immutable cascade-layered CSS bundles (`core.css`, `admin.css`, `public.css`). Admin ships zero public CSS/JS and public ships zero admin CSS/JS. Enforce boundaries via `.dependency-cruiser.cjs` and `scripts/verify-design-boundaries`.

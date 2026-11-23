@@ -53,6 +53,7 @@ This protocol establishes the binding operational procedure for all implementati
 
 ### 1.7 Gate Sign-Offs & Stop Points
 - **Work Package Gates:** Work proceeds autonomously between tasks within an active work package without awaiting review.
+- **Self-Selecting Backlog (`D-M7`, 2026-11-23):** After finishing a package, select the next unblocked item via `pnpm backlog:next` (`docs/plans/backlog.yml`). A visual package ends with its contact-sheets zip and the agent continues with the next unblocked item that does not depend on the review; stop only at owner gates (`Gate GFE`, `owner-direction`) or when nothing is unblocked. Owner feedback on sheets arrives as defects and is handled first. (For `WP-16.M` specifically: stop after `M6`.)
 - **Package Completion Stop Points:** At the conclusion of Work Package 1 (Gate 1b+ Closure) and Work Package 2 (Gate 2), the agent must halt and wait for L's formal review and sign-off before commencing work on the subsequent package.
 - **Closing Receipt & Handover:** The final receipt of a work package must include a comprehensive gate summary and the reproducible fresh-clone verification command for L. Handover evaluations are governed by [IAHP](P001-iterative-agent-handover-protocol.md) Section 4.
 
