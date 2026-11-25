@@ -46,6 +46,7 @@ export { renderAdminCalibrationPage } from "./pages/admin/calibration.js";
 export { renderAdminStructurePage } from "./pages/admin/structure.js";
 export { renderAdminBookingsPage } from "./pages/admin/bookings.js";
 export { renderAdminVenturesPage } from "./pages/admin/ventures.js";
+export { renderAdminPagesEditorPage } from "./pages/admin/pages.js";
 export { renderAdminSettingsPage, renderAdminSettingsModulePage } from "./pages/admin/settings.js";
 export { renderAdminLoginPage } from "./pages/admin/login.js";
 export { renderAdminSetupPage } from "./pages/admin/setup.js";

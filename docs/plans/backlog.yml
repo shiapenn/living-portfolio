@@ -101,7 +101,7 @@ items:
     expected_minutes: 55
     gate: none
     acceptance: Pages resource & migration for About/Now/Uses/Home statement with revisions, /admin/settings/home Featured count (default 3) & Recent count (default 10), featured toggle on entries & ventures; E2E + census green
-    status: ready
+    status: done
 
   - id: WP-17.8
     title: Appearance v2 (theme-pack schema, live preview, AA contrast validation, constrained customisation, admin+public scopes, theme.<hash>.css, import/export; UX-27, UI-04)
