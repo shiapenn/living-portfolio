@@ -34,7 +34,7 @@ test.describe('WP-16.6 Inbox & Answer Rules', () => {
     await ensureAdminLoggedIn(page);
 
     await page.goto('/admin/audit');
-    await expect(page.locator('h1')).toContainText('Answer rules');
+    await expect(page.locator('h1')).toContainText('Audit');
     await expect(page.locator('#audit-tab-proposed')).toBeVisible();
     await expect(page.locator('#audit-tab-confirmed')).toBeVisible();
     await expect(page.locator('#audit-tab-revoked')).toBeVisible();

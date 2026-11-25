@@ -7,7 +7,7 @@ import {
   contrastRatio,
   type ThemePackV2,
 } from '@living-portfolio/ui-core';
-import { renderActionBar, renderButton, renderChoiceGroup, renderField, renderFormSection, renderText } from '../../primitives/index.js';
+import { renderActionBar, renderChoiceGroup, renderField, renderFormSection, renderText } from '../../primitives/index.js';
 import { renderStatusLine, renderTable } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 import { renderAppearanceV2Script } from './appearance-script.js';
@@ -71,21 +71,15 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
     });
 
     const composedPreviewHtml = `
-      <link id="appearance-preview-link" rel="stylesheet" href="${previewHref}" />
       <div id="appearance-live-preview" class="lp-stack lp-gap-related">
-        ${renderText({ variant: 'body', text: 'Sample workspace — accent, radius, density, and font update live.' })}
-        <div data-c="ActionBar" data-level="item" class="lp-action-bar lp-action-bar-item">
-          ${renderButton({ id: 'preview-primary-btn', label: 'Primary', variant: 'primary', type: 'button', size: 'sm' })}
-          ${renderButton({ id: 'preview-secondary-btn', label: 'Secondary', variant: 'secondary', type: 'button', size: 'sm' })}
-          <a href="#appearance-live-preview" data-c="Button" class="lp-btn lp-btn-text lp-btn-sm">Sample link</a>
-        </div>
-        <div data-c="Notice" class="lp-notice lp-notice-ok">Preview reflects your selected tokens.</div>
         ${renderChoiceGroup({
           name: 'preview-choice-sample',
           mode: 'multiple',
           variant: 'card',
           options: [{ id: 'preview-choice-1', value: 'yes', label: 'Sample toggle option', checked: true }],
         })}
+        <div data-c="Notice" class="lp-notice lp-notice-ok">Preview reflects your selected tokens.</div>
+        ${renderText({ variant: 'body', text: 'Sample workspace — accent, radius, density, and font update live.' })}
       </div>
     `;
 
@@ -180,6 +174,11 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
           id: 'appearance-admin-preview-section',
           title: 'Live preview',
           fieldsHtml: composedPreviewHtml,
+          actionBarHtml: renderActionBar({
+            level: 'item',
+            secondary: { id: 'preview-secondary-btn', label: 'Sample action', variant: 'secondary', type: 'button', size: 'sm' },
+            textAction: { id: 'preview-text-btn', label: 'Sample link', variant: 'text', type: 'button', size: 'sm' },
+          }),
         })}
 
         <div id="appearance-public-contrast-section" class="lp-is-hidden">
@@ -213,6 +212,7 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
           primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
         })}
       </form>
+      <link id="appearance-preview-link" rel="stylesheet" href="${previewHref}" />
       ${renderAppearanceV2Script(adminPack, publicPack)}
     `;
   },
