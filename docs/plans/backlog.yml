@@ -79,7 +79,7 @@ items:
     expected_minutes: 60
     gate: none
     acceptance: Audit contradictions detect/list/resolve + stale claims, Calibration per-mechanism switches/proposals/history/rollback, Structure profiles/facets/hard constraints; E2E + census green
-    status: ready
+    status: done
 
   - id: WP-17.6
     title: Bookings & Ventures screens (/admin/bookings, /admin/ventures; UX-07, UX-19)

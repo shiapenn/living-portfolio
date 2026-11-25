@@ -7,6 +7,8 @@ import {
   renderEntryHistoryPage,
   renderAdminInboxPage,
   renderAdminAuditRulesPage,
+  renderAdminCalibrationPage,
+  renderAdminStructurePage,
   renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
@@ -113,6 +115,22 @@ export function mountBundledWeb(
         })
       )
     );
+    app.get('/admin/calibration', auth.requireAdminMiddleware(), async (c) =>
+      c.html(
+        await renderAdminCalibrationPage(repo, {
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+          initialSettings: runtimeState,
+        })
+      )
+    );
+    app.get('/admin/structure', auth.requireAdminMiddleware(), async (c) =>
+      c.html(
+        await renderAdminStructurePage(repo, {
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+          initialSettings: runtimeState,
+        })
+      )
+    );
     app.get('/admin/import', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminImportPage(repo))
     );
@@ -147,8 +165,6 @@ export function mountBundledWeb(
       '/quick-log',
       '/admin/pages',
       '/admin/bookings',
-      '/admin/calibration',
-      '/admin/structure',
       '/admin/theme',
     ];
     for (const routePath of adminSectionRoutes) {

@@ -53,6 +53,9 @@ export const STATES: readonly StateDefinition[] = [
   { id: 'inbox', kind: 'page', route: '/admin/inbox', fullPage: true, marker: { routePattern: '/admin/inbox', text: 'Inbox', selector: 'h1' } },
   { id: 'inbox-detail', kind: 'page', route: '/admin/inbox/:id', fullPage: true, marker: { routePattern: '/admin/inbox/', selector: 'h1' } },
   { id: 'answer-rules', kind: 'page', route: '/admin/audit', fullPage: true, marker: { routePattern: '/admin/audit', text: 'Answer rules', selector: 'h1' } },
+  { id: 'audit-contradictions', kind: 'page', route: '/admin/audit?status=contradictions', fullPage: true, marker: { routePattern: '/admin/audit', text: 'Answer rules', selector: '#audit-conflicts-section' } },
+  { id: 'calibration', kind: 'page', route: '/admin/calibration', fullPage: true, marker: { routePattern: '/admin/calibration', text: 'Calibration', selector: 'h1' } },
+  { id: 'structure', kind: 'page', route: '/admin/structure', fullPage: true, marker: { routePattern: '/admin/structure', text: 'Structure', selector: 'h1' } },
   { id: 'import', kind: 'page', route: '/admin/import', fullPage: true, marker: { routePattern: '/admin/import', text: 'Import', selector: 'h1' } },
   { id: 'status', kind: 'page', route: '/admin/status', fullPage: true, marker: { routePattern: '/admin/status', text: 'Status', selector: 'h1' } },
 

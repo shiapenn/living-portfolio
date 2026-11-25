@@ -34,6 +34,8 @@ import {
   renderEntryHistoryPage,
   renderAdminInboxPage,
   renderAdminAuditRulesPage,
+  renderAdminCalibrationPage,
+  renderAdminStructurePage,
   renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
@@ -304,6 +306,12 @@ export function createWebApp(options?: WebAppOptions) {
   app.get('/admin/audit', async (c) =>
     c.html(await renderAdminAuditRulesPage(client, { status: c.req.query('status'), siteName: cfg.PUBLIC_SITE_NAME }))
   );
+  app.get('/admin/calibration', async (c) =>
+    c.html(await renderAdminCalibrationPage(client, { siteName: cfg.PUBLIC_SITE_NAME }))
+  );
+  app.get('/admin/structure', async (c) =>
+    c.html(await renderAdminStructurePage(client, { siteName: cfg.PUBLIC_SITE_NAME }))
+  );
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
   app.get('/admin/status', async (c) => {
     const { renderAdminStatusPage } = await import('./pages/admin/status.js');
@@ -337,8 +345,6 @@ export function createWebApp(options?: WebAppOptions) {
     '/quick-log',
     '/admin/pages',
     '/admin/bookings',
-    '/admin/calibration',
-    '/admin/structure',
     '/admin/theme',
   ];
   for (const routePath of adminSectionRoutes) {

@@ -54,7 +54,9 @@ const BUILTIN_DESTINATIONS: AdminNavDestination[] = [
   { id: 'import', group: 'Write', href: '/admin/import', label: 'Import', icon: 'upload', order: 3 },
   { id: 'inbox', group: 'Respond', href: '/admin/inbox', label: 'Inbox', icon: 'inbox', order: 4 },
   { id: 'audit', group: 'Govern', href: '/admin/audit', label: 'Answer rules', icon: 'shield', order: 5 },
-  { id: 'status', group: 'Govern', href: '/admin/status', label: 'Status', icon: 'activity', order: 6 },
+  { id: 'calibration', group: 'Govern', href: '/admin/calibration', label: 'Calibration', icon: 'sliders', order: 6 },
+  { id: 'structure', group: 'Govern', href: '/admin/structure', label: 'Structure', icon: 'layers', order: 7 },
+  { id: 'status', group: 'Govern', href: '/admin/status', label: 'Status', icon: 'activity', order: 8 },
 ];
 for (const d of BUILTIN_DESTINATIONS) {
   registerAdminDestination(d);
