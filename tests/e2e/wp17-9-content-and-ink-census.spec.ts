@@ -2,16 +2,21 @@ import { test, expect } from '@playwright/test';
 import { ensureAdminLoggedIn } from './helpers.js';
 
 /**
- * WP-17.9 Content Standard & Painted-Ink Census (ADR-024, R-024-1..R-024-5).
+ * WP-17.9 / WP-17.10 Content Standard & Painted-Ink Census (ADR-024, R-024-1..R-024-6).
  *
  * Enforces on rendered DOM across admin routes x 1280/320 x light/dark:
- * - (a) Banned-pattern scan ([object Object], undefined, null, NaN, WP-N, ADR-N, <hash>, (s), filenames, API paths)
- * - (b) Default-route static prose word budget <= 60 words (measured by Text role, shrinking-only, max 3 exemptions)
- * - (c) Per-role length caps (page description <= 14, Settings index no subtitle & module summary <= 6,
+ * - (a) Banned-pattern scan ([object Object], undefined, null, NaN, WP-N, ADR-N, <hash>, (s), filenames, API paths, ISO YYYY-MM-DD dates)
+ * - (b) Reconciled static prose word budget <= 60 words (A7: exact roles/selectors defined in docs/design/content.md)
+ * - (c) Per-role length caps (page description <= 14, Settings index no subtitle & summary <= 6,
  *       section description <= 16, field helper <= 12, empty state <= 12, button <= 2)
- * - (d) Painted-ink Tabs check: active tab exists, label ink boxes pairwise non-intersecting & inside container, >= 44px height
- * - (e) Painted-ink EmptyState check: left ink edge equals section/page heading left ink edge within 1px, no raised surface/padding
- * - (f) Painted-ink Item anatomy check: status ink center within half a line height of title row at BOTH 1280px and 320px
+ * - (d) Painted-ink Tabs check (D1 + A1): active tab exists, label ink boxes pairwise non-intersecting, >= 44px height,
+ *       tab panel never repeats active tab name as a heading, no duplicate status/empty lines
+ * - (e) Painted-ink EmptyState check (D4): left ink edge equals heading left ink edge within 1px, no raised surface/padding
+ * - (f) Painted-ink Item anatomy & StatusDot gap check (D5 + A3): status ink center within half a line height of title row
+ *       at 1280 and 320, AND painted ink gap between .lp-status-dot and label text ink >= 4px on every StatusLabel
+ * - (g) Closed Status Vocabulary check (A6): Booking, Token, Rule, Revision
+ * - (h) Interactive checks: Account section-local error in viewport + QR <= 192px (A3), Appearance no static green Notice (A5),
+ *       Answering Pause dialog viewport-centred at 320px & 1280px (A10)
  *
  * Every relation reports exact node/pair counts; zero measured = fail.
  */
@@ -21,6 +26,8 @@ const ADMIN_ROUTES: Array<{ id: string; path: string }> = [
   { id: 'entries', path: '/admin/entries' },
   { id: 'inbox', path: '/admin/inbox' },
   { id: 'audit', path: '/admin/audit' },
+  { id: 'audit-confirmed', path: '/admin/audit?status=confirmed' },
+  { id: 'audit-revoked', path: '/admin/audit?status=revoked' },
   { id: 'audit-contradictions', path: '/admin/audit?status=contradictions' },
   { id: 'calibration', path: '/admin/calibration' },
   { id: 'structure', path: '/admin/structure' },
@@ -52,18 +59,28 @@ const BANNED_PATTERNS: Array<{ name: string; re: RegExp }> = [
   { name: 'paren-plural', re: /\(s\)/ },
   { name: 'source-filename', re: /\b[a-z0-9_.-]+\.(css|ts|tsx|js|json|txt|xml)\b/i },
   { name: 'api-path', re: /\/api\/[a-z0-9/_-]+/i },
+  { name: 'iso-date', re: /\b\d{4}-\d{2}-\d{2}\b/ },
   { name: 'explain-heading', re: /^How .+ works$/i },
   { name: 'explain-prefix', re: /^(What it does|When to change|Impact):/i },
 ];
+
+const ENTITY_STATUS_VOCAB: Record<string, ReadonlySet<string>> = {
+  bookings: new Set(['Pending', 'Confirmed', 'Declined', 'Cancelled']),
+  'settings-account': new Set(['Active', 'Revoked']),
+  audit: new Set(['Pending', 'Active', 'Discarded']),
+  'audit-confirmed': new Set(['Pending', 'Active', 'Discarded']),
+  'audit-revoked': new Set(['Pending', 'Active', 'Discarded']),
+  'audit-contradictions': new Set(['Pending', 'Active', 'Discarded']),
+};
 
 function wordCount(text: string): number {
   const cleaned = text.trim();
   return cleaned ? cleaned.split(/\s+/).length : 0;
 }
 
-test.describe('WP-17.9 Content Standard & Painted-Ink Census (ADR-024)', () => {
-  test('every admin route passes banned-pattern, word-budget, role-cap, and painted-ink checks across 1280/320 x light/dark', async ({ page }) => {
-    test.setTimeout(180_000);
+test.describe('WP-17.9 / WP-17.10 Content Standard & Painted-Ink Census (ADR-024)', () => {
+  test('every admin route passes banned-pattern, reconciled word-budget, role-cap, vocabulary, and painted-ink checks across 1280/320 x light/dark', async ({ page }) => {
+    test.setTimeout(240_000);
     await ensureAdminLoggedIn(page);
 
     const counts = {
@@ -73,12 +90,16 @@ test.describe('WP-17.9 Content Standard & Painted-Ink Census (ADR-024)', () => {
       roleCapsChecked: 0,
       tabPairsChecked: 0,
       tabsChecked: 0,
+      tabPanelHeadingsChecked: 0,
       emptyStatesChecked: 0,
       itemStatusRowsChecked: 0,
+      statusDotGapsChecked: 0,
+      entityStatusesChecked: 0,
     };
 
     const violations: string[] = [];
     const wordTable: Record<string, number> = {};
+    let answeringProseDump: Array<{ role: string; text: string; words: number }> = [];
 
     const viewports = [
       { width: 1280, height: 800 },
@@ -141,23 +162,46 @@ test.describe('WP-17.9 Content Standard & Painted-Ink Census (ADR-024)', () => {
               if (txt) visibleTextBlocks.push(txt);
             }
 
+            // Reconciled static prose nodes (A7)
+            const countedEls = new Set<Element>();
+            const proseNodes: Array<{ role: string; text: string }> = [];
+            const addProse = (el: Element, role: string) => {
+              if (countedEls.has(el) || !isVisible(el)) return;
+              const txt = (el.textContent || '').trim();
+              if (!txt) return;
+              countedEls.add(el);
+              proseNodes.push({ role, text: txt });
+            };
+
             const pageDesc = main.querySelector('.lp-page-description');
             const pageDescText = pageDesc && isVisible(pageDesc) ? (pageDesc.textContent || '').trim() : '';
+            if (pageDesc) addProse(pageDesc, 'page-description');
 
-            const sectionDescs = Array.from(main.querySelectorAll('.lp-form-section-description'))
-              .filter(isVisible)
-              .map((el) => (el.textContent || '').trim())
-              .filter(Boolean);
+            const sectionDescs: string[] = [];
+            for (const el of Array.from(main.querySelectorAll('.lp-form-section-desc, .lp-form-section-description'))) {
+              if (!isVisible(el)) continue;
+              const t = (el.textContent || '').trim();
+              if (t) {
+                sectionDescs.push(t);
+                addProse(el, 'section-description');
+              }
+            }
 
-            const helpers = Array.from(main.querySelectorAll('.lp-help-text, .lp-field-help'))
-              .filter(isVisible)
-              .map((el) => (el.textContent || '').trim())
-              .filter(Boolean);
+            const helpers: string[] = [];
+            for (const el of Array.from(main.querySelectorAll('.lp-help-text, .lp-field-help'))) {
+              if (!isVisible(el)) continue;
+              const t = (el.textContent || '').trim();
+              if (t) {
+                helpers.push(t);
+                addProse(el, 'field-helper');
+              }
+            }
 
             const empties = Array.from(main.querySelectorAll('.lp-empty-state'))
               .filter(isVisible)
               .map((el) => {
                 const body = el.querySelector('.lp-empty-body') || el;
+                addProse(body, 'empty-state');
                 const ink = textInkRect(body);
                 const style = getComputedStyle(el);
                 const section = el.closest('.lp-form-section');
@@ -172,10 +216,23 @@ test.describe('WP-17.9 Content Standard & Painted-Ink Census (ADR-024)', () => {
                 };
               });
 
-            const notices = Array.from(main.querySelectorAll('.lp-notice'))
-              .filter(isVisible)
-              .map((el) => (el.textContent || '').trim())
-              .filter(Boolean);
+            const notices: Array<{ text: string; isOk: boolean }> = [];
+            for (const el of Array.from(main.querySelectorAll('.lp-notice'))) {
+              if (!isVisible(el)) continue;
+              const t = (el.textContent || '').trim();
+              if (t) {
+                notices.push({ text: t, isOk: el.classList.contains('lp-notice-ok') });
+                addProse(el, 'notice');
+              }
+            }
+
+            // Static [data-c="Text"] outside items, tables, controls, and already-counted nodes
+            for (const el of Array.from(main.querySelectorAll('[data-c="Text"]'))) {
+              if (countedEls.has(el) || !isVisible(el)) continue;
+              if (el.closest('[data-c="Item"], table, button, a, label, [role="dialog"]')) continue;
+              if (el.id === 'theme-conformance-box') continue; // live computed contrast readout
+              addProse(el, 'static-text');
+            }
 
             const buttons = Array.from(main.querySelectorAll('button.lp-btn, a.lp-btn'))
               .filter(isVisible)
@@ -204,18 +261,22 @@ test.describe('WP-17.9 Content Standard & Painted-Ink Census (ADR-024)', () => {
                       right: r.right,
                       inkLeft: ink ? ink.left : r.left,
                       inkRight: ink ? ink.right : r.right,
-                      inkTop: ink ? ink.top : r.top,
-                      inkBottom: ink ? ink.bottom : r.bottom,
                     };
                   });
                 return {
                   tlLeft: tlRect.left,
                   tlRight: tlRect.right,
-                  scrollWidth: tl.scrollWidth,
-                  clientWidth: tl.clientWidth,
                   tabs,
                 };
               });
+
+            const panelHeadings = Array.from(main.querySelectorAll('h2, h3'))
+              .filter(isVisible)
+              .map((h) => (h.textContent || '').trim())
+              .filter(Boolean);
+
+            const statusLineEl = main.querySelector('#audit-status-line, #settings-status-banner');
+            const statusLineText = statusLineEl && isVisible(statusLineEl) ? (statusLineEl.textContent || '').trim() : '';
 
             const itemRows = Array.from(main.querySelectorAll('[data-c="Item"]'))
               .filter(isVisible)
@@ -237,8 +298,36 @@ test.describe('WP-17.9 Content Standard & Painted-Ink Census (ADR-024)', () => {
               })
               .filter(Boolean) as Array<{ title: string; deltaY: number; halfLineHeight: number }>;
 
+            const statusLabels = Array.from(main.querySelectorAll('[data-c="StatusLabel"]'))
+              .filter(isVisible)
+              .map((el) => {
+                const dot = el.querySelector('.lp-status-dot');
+                const labelEl = el.querySelector('.lp-status-label') || el.querySelector('span:last-child');
+                const text = (labelEl?.textContent || el.textContent || '').trim();
+                let dotGap: number | null = null;
+                if (dot && isVisible(dot) && labelEl) {
+                  const dotRect = dot.getBoundingClientRect();
+                  const labelInk = textInkRect(labelEl);
+                  if (labelInk) {
+                    dotGap = labelInk.left - dotRect.right;
+                  }
+                }
+                return { text, dotGap };
+              });
+
+            const pageRevisions = Array.from(main.querySelectorAll('#pages-revisions-list [data-c="Item"]'))
+              .filter(isVisible)
+              .map((el, idx) => {
+                const st = el.querySelector('[data-c="StatusLabel"]');
+                return {
+                  idx,
+                  statusText: st && isVisible(st) ? (st.textContent || '').trim() : null,
+                };
+              });
+
             return {
               visibleTextBlocks,
+              proseNodes,
               pageDescText,
               sectionDescs,
               helpers,
@@ -247,11 +336,15 @@ test.describe('WP-17.9 Content Standard & Painted-Ink Census (ADR-024)', () => {
               buttons,
               settingsIndexSubtitles,
               tabLists,
+              panelHeadings,
+              statusLineText,
               itemRows,
+              statusLabels,
+              pageRevisions,
             };
           });
 
-          // (a) Banned-pattern scan
+          // (a) Banned-pattern scan (including A8 ISO date ban)
           for (const txt of data.visibleTextBlocks) {
             counts.textNodesChecked++;
             counts.bannedScanned++;
@@ -262,17 +355,17 @@ test.describe('WP-17.9 Content Standard & Painted-Ink Census (ADR-024)', () => {
             }
           }
 
-          // (b) Static prose word budget on default 1280 light
+          // (b) Reconciled static prose word budget on default 1280 light (A7)
           if (vp.width === 1280 && theme === 'light') {
-            const proseParts = [
-              data.pageDescText,
-              ...data.sectionDescs,
-              ...data.helpers,
-              ...data.empties.map((e) => e.text),
-              ...data.notices,
-            ].filter(Boolean);
-            const totalWords = proseParts.reduce((acc, s) => acc + wordCount(s), 0);
+            const totalWords = data.proseNodes.reduce((acc, n) => acc + wordCount(n.text), 0);
             wordTable[route.id] = totalWords;
+            if (route.id === 'settings-answering') {
+              answeringProseDump = data.proseNodes.map((n) => ({
+                role: n.role,
+                text: n.text,
+                words: wordCount(n.text),
+              }));
+            }
             if (totalWords > 60 && !WORD_BUDGET_EXEMPTIONS[route.id]) {
               violations.push(`${tag} word-budget: ${totalWords} words > 60`);
             }
@@ -321,6 +414,10 @@ test.describe('WP-17.9 Content Standard & Painted-Ink Census (ADR-024)', () => {
             if (e.inkLeft !== null && e.headingInkLeft !== null && Math.abs(e.inkLeft - e.headingInkLeft) > 1.5) {
               violations.push(`${tag} empty-state inkLeft=${e.inkLeft.toFixed(1)} != headingInkLeft=${e.headingInkLeft.toFixed(1)} (D4)`);
             }
+            // A1: no duplicate status line matching empty state
+            if (data.statusLineText && data.statusLineText.toLowerCase() === e.text.toLowerCase()) {
+              violations.push(`${tag} duplicate status line "${data.statusLineText}" repeats empty state (A1)`);
+            }
           }
           for (const b of data.buttons) {
             counts.roleCapsChecked++;
@@ -329,11 +426,29 @@ test.describe('WP-17.9 Content Standard & Painted-Ink Census (ADR-024)', () => {
             }
           }
 
-          // (d) Painted-ink Tabs check (D1)
+          // A5: Appearance must not show an always-green success Notice on default load
+          if (route.id === 'settings-appearance') {
+            for (const n of data.notices) {
+              if (n.isOk) {
+                violations.push(`${tag} appearance default load has static success Notice: "${n.text}" (A5)`);
+              }
+            }
+          }
+
+          // (d) Painted-ink Tabs check (D1 + A1)
           for (const tl of data.tabLists) {
-            const selectedCount = tl.tabs.filter((t) => t.selected).length;
-            if (selectedCount !== 1) {
-              violations.push(`${tag} tablist selected count=${selectedCount} (expected 1)`);
+            const selectedTabs = tl.tabs.filter((t) => t.selected);
+            if (selectedTabs.length !== 1) {
+              violations.push(`${tag} tablist selected count=${selectedTabs.length} (expected 1)`);
+            }
+            const activeTabText = selectedTabs[0]?.text.toLowerCase();
+            if (activeTabText) {
+              for (const h of data.panelHeadings) {
+                counts.tabPanelHeadingsChecked++;
+                if (h.toLowerCase() === activeTabText) {
+                  violations.push(`${tag} tab panel heading "${h}" repeats active tab label (A1)`);
+                }
+              }
             }
             for (const t of tl.tabs) {
               counts.tabsChecked++;
@@ -353,20 +468,46 @@ test.describe('WP-17.9 Content Standard & Painted-Ink Census (ADR-024)', () => {
             }
           }
 
-          // (f) Painted-ink Item status alignment on title row at 1280 and 320 (D5)
+          // (f) Painted-ink Item status alignment (D5) and dot-to-label gap >= 4px (A3)
           for (const row of data.itemRows) {
             counts.itemStatusRowsChecked++;
             if (row.deltaY > row.halfLineHeight) {
               violations.push(`${tag} item "${row.title}" status off title row (deltaY=${row.deltaY.toFixed(1)} > ${row.halfLineHeight.toFixed(1)})`);
             }
           }
+          for (const st of data.statusLabels) {
+            if (st.dotGap !== null) {
+              counts.statusDotGapsChecked++;
+              if (st.dotGap < 4) {
+                violations.push(`${tag} status "${st.text}" dot-to-label painted ink gap=${st.dotGap.toFixed(1)}px < 4px (A3)`);
+              }
+            }
+            const allowedVocab = ENTITY_STATUS_VOCAB[route.id];
+            if (allowedVocab && st.text) {
+              counts.entityStatusesChecked++;
+              if (!allowedVocab.has(st.text)) {
+                violations.push(`${tag} status "${st.text}" outside closed vocabulary [${Array.from(allowedVocab).join(', ')}] (A6)`);
+              }
+            }
+          }
+          // A6: Pages revisions (newest = Current, older = no status)
+          for (const rev of data.pageRevisions) {
+            counts.entityStatusesChecked++;
+            if (rev.idx === 0 && rev.statusText !== 'Current') {
+              violations.push(`${tag} newest page revision status="${rev.statusText}" != "Current" (A6)`);
+            }
+            if (rev.idx > 0 && rev.statusText !== null) {
+              violations.push(`${tag} older page revision #${rev.idx} must show no status (got "${rev.statusText}") (A6)`);
+            }
+          }
         }
       }
     }
 
-    console.log('=== WP-17.9 CONTENT & PAINTED-INK CENSUS ===');
+    console.log('=== WP-17.10 CONTENT & PAINTED-INK CENSUS ===');
     console.log('COUNTS:', JSON.stringify(counts));
     console.log('WORD_TABLE:', JSON.stringify(wordTable));
+    console.log('ANSWERING_PROSE_NODES:', JSON.stringify(answeringProseDump, null, 2));
     if (violations.length > 0) {
       console.log('VIOLATIONS:', JSON.stringify(violations.slice(0, 30), null, 2));
     }
@@ -377,6 +518,87 @@ test.describe('WP-17.9 Content Standard & Painted-Ink Census (ADR-024)', () => {
     expect(counts.tabPairsChecked).toBeGreaterThan(0);
     expect(counts.emptyStatesChecked).toBeGreaterThan(0);
     expect(counts.itemStatusRowsChecked).toBeGreaterThan(0);
+    expect(counts.statusDotGapsChecked).toBeGreaterThan(0);
     expect(violations).toEqual([]);
+  });
+
+  test('interactive exit-gate invariants: A1 contradictions clean dedupe, A3 Account section-local errors & QR <= 192px, A10 dialog viewport centring', async ({ page }) => {
+    await ensureAdminLoggedIn(page);
+
+    // A1: Contradictions Run check clean must show "No contradictions found." exactly once and no ISO date
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/admin/audit?status=contradictions');
+    await page.click('#btn-detect-conflicts');
+    await expect(page.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', /clean|found/);
+    const auditState = await page.locator('#audit-contradictions-panel').getAttribute('data-contradictions-state');
+    if (auditState === 'clean') {
+      const cleanCount = await page.evaluate(() => {
+        const text = (document.querySelector('main')?.innerText || '');
+        return (text.match(/No contradictions found\./g) || []).length;
+      });
+      expect(cleanCount).toBe(1);
+      const lastCheckedText = (await page.locator('#audit-last-checked').textContent()) || '';
+      expect(lastCheckedText).not.toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(lastCheckedText).toMatch(/\d{1,2} [A-Z][a-z]{2} \d{4}, \d{2}:\d{2}/);
+    }
+
+    // A3: Account section-local error in viewport + same section ancestor, QR <= 192px
+    await page.goto('/admin/settings/account');
+    await page.fill('#account-current-password', 'wrong-password-check');
+    await page.fill('#account-new-password', 'NewValidPassphrase123!');
+    await page.click('#btn-update-credentials');
+    await expect(page.locator('#account-creds-notice.lp-notice-danger')).toBeVisible();
+    const credsCheck = await page.evaluate(() => {
+      const btn = document.getElementById('btn-update-credentials');
+      const notice = document.getElementById('account-creds-notice');
+      if (!btn || !notice) return { ok: false, reason: 'missing elements' };
+      const r = notice.getBoundingClientRect();
+      const inViewport = r.top >= 0 && r.bottom <= window.innerHeight && r.height > 0;
+      const sameSection = btn.closest('.lp-form-section') === notice.closest('.lp-form-section');
+      return { ok: inViewport && sameSection && notice.classList.contains('lp-notice-danger'), inViewport, sameSection };
+    });
+    expect(credsCheck.ok).toBe(true);
+
+    // Re-enrol TOTP -> QR <= 192px square, then bad code -> section-local error inside TOTP section
+    await page.click('#btn-reenrol-totp');
+    await expect(page.locator('#account-totp-qr svg')).toBeVisible();
+    const qrBox = await page.locator('#account-totp-qr svg').boundingBox();
+    expect(qrBox).not.toBeNull();
+    expect(qrBox!.width).toBeLessThanOrEqual(192);
+    expect(qrBox!.height).toBeLessThanOrEqual(192);
+
+    await page.fill('#account-totp-code', '000000');
+    await page.click('#btn-confirm-totp');
+    await expect(page.locator('#account-totp-notice.lp-notice-danger')).toBeVisible();
+    const totpCheck = await page.evaluate(() => {
+      const btn = document.getElementById('btn-confirm-totp');
+      const notice = document.getElementById('account-totp-notice');
+      if (!btn || !notice) return { ok: false };
+      const r = notice.getBoundingClientRect();
+      const inViewport = r.top >= 0 && r.bottom <= window.innerHeight && r.height > 0;
+      const sameSection = btn.closest('.lp-form-section') === notice.closest('.lp-form-section');
+      return { ok: inViewport && sameSection && notice.classList.contains('lp-notice-danger') };
+    });
+    expect(totpCheck.ok).toBe(true);
+
+    // A10: Dialog vertically centred in viewport at 320px
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto('/admin/settings/answering');
+    await page.locator('label:has(#setting-answering-enabled)').click();
+    await expect(page.locator('#answering-pause-dialog')).toBeVisible();
+    const dialogMetrics = await page.evaluate(() => {
+      const panel = document.querySelector('#answering-pause-dialog .lp-dialog-panel');
+      if (!panel) return null;
+      const r = panel.getBoundingClientRect();
+      return {
+        top: r.top,
+        bottom: r.bottom,
+        centerY: (r.top + r.bottom) / 2,
+        viewportCenterY: window.innerHeight / 2,
+      };
+    });
+    expect(dialogMetrics).not.toBeNull();
+    expect(Math.abs(dialogMetrics!.centerY - dialogMetrics!.viewportCenterY)).toBeLessThanOrEqual(4);
+    await page.click('#btn-cancel-pause-answering');
   });
 });

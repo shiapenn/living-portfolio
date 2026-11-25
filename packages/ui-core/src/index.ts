@@ -72,3 +72,8 @@ export {
   type ThemeScope,
   type VettedFontChoice,
 } from './theme/theme-pack.js';
+export {
+  formatAdminDate,
+  formatAdminDateTime,
+  ADMIN_DATETIME_FORMATTER_SCRIPT,
+} from './format/datetime.js';

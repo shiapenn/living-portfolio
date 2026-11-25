@@ -4,12 +4,20 @@ export const ACCOUNT_SCRIPT = `
 <script>
   (function() {
     ${ADMIN_API_CLIENT_SCRIPT}
-    var banner = document.getElementById('settings-status-banner');
-    var setBanner = function(msg, isErr) {
-      if (!banner) return;
-      var cls = isErr ? 'lp-notice lp-notice-danger' : 'lp-notice lp-notice-ok';
-      var role = isErr ? 'alert' : 'status';
-      banner.innerHTML = '<div class="' + cls + '" role="' + role + '">' + msg + '</div>';
+    var credsNotice = document.getElementById('account-creds-notice');
+    var totpNotice = document.getElementById('account-totp-notice');
+    var recoveryNotice = document.getElementById('account-recovery-notice');
+    var tokensNotice = document.getElementById('account-tokens-notice');
+    var tokensListNotice = document.getElementById('account-tokens-list-notice');
+    var sessionsNotice = document.getElementById('account-sessions-notice');
+
+    var showSectionNotice = function(el, msg, isErr) {
+      if (!el) return;
+      el.setAttribute('data-c', 'Notice');
+      el.className = 'lp-notice ' + (isErr ? 'lp-notice-danger' : 'lp-notice-ok');
+      el.textContent = msg;
+      try { el.scrollIntoView({ block: 'center', behavior: 'instant' }); } catch {}
+      try { el.focus({ preventScroll: true }); } catch {}
     };
 
     var btnCreds = document.getElementById('btn-update-credentials');
@@ -32,12 +40,12 @@ export const ACCOUNT_SCRIPT = `
           if (res.ok) {
             if (cur) cur.value = '';
             if (pwd) pwd.value = '';
-            setBanner('Credentials updated.', false);
+            showSectionNotice(credsNotice, 'Credentials updated.', false);
           } else {
-            setBanner(data.message || data.error || 'Could not update credentials.', true);
+            showSectionNotice(credsNotice, data.message || data.error || 'Could not update credentials.', true);
           }
         } catch {
-          setBanner('Network error updating credentials.', true);
+          showSectionNotice(credsNotice, 'Network error updating credentials.', true);
         } finally {
           btnCreds.disabled = false;
         }
@@ -59,9 +67,9 @@ export const ACCOUNT_SCRIPT = `
             if (totpBox) totpBox.classList.remove('lp-is-hidden');
             if (totpQr && data.qrCodeSvg) totpQr.innerHTML = data.qrCodeSvg;
             if (totpManual && data.totpSecretBase32) totpManual.textContent = 'Manual key: ' + data.totpSecretBase32;
-            setBanner('Scan the QR code and enter a 6-digit code to confirm.', false);
+            showSectionNotice(totpNotice, 'Scan the QR code and enter a 6-digit code to confirm.', false);
           } else {
-            setBanner(data.error || 'Could not start authenticator re-enrolment.', true);
+            showSectionNotice(totpNotice, data.error || 'Could not start authenticator re-enrolment.', true);
           }
         } finally {
           btnReenrol.disabled = false;
@@ -72,7 +80,7 @@ export const ACCOUNT_SCRIPT = `
       btnConfirmTotp.addEventListener('click', async function() {
         var codeEl = document.getElementById('account-totp-code');
         var code = codeEl ? codeEl.value.trim() : '';
-        if (!code) { setBanner('Enter the 6-digit code first.', true); return; }
+        if (!code) { showSectionNotice(totpNotice, 'Enter the 6-digit code first.', true); return; }
         btnConfirmTotp.disabled = true;
         try {
           var res = await apiClient('/api/auth/totp/reenrol/confirm', {
@@ -83,9 +91,9 @@ export const ACCOUNT_SCRIPT = `
           if (res.ok) {
             if (totpBox) totpBox.classList.add('lp-is-hidden');
             if (codeEl) codeEl.value = '';
-            setBanner('Authenticator updated.', false);
+            showSectionNotice(totpNotice, 'Authenticator updated.', false);
           } else {
-            setBanner(data.message || data.error || 'Invalid 6-digit code.', true);
+            showSectionNotice(totpNotice, data.message || data.error || 'Invalid 6-digit code.', true);
           }
         } finally {
           btnConfirmTotp.disabled = false;
@@ -103,9 +111,9 @@ export const ACCOUNT_SCRIPT = `
           var data = await res.json().catch(function() { return {}; });
           if (res.ok && Array.isArray(data.recoveryCodes)) {
             if (recOut) recOut.textContent = data.recoveryCodes.join('  ·  ');
-            setBanner('Generated 8 new recovery codes. Save them now.', false);
+            showSectionNotice(recoveryNotice, 'Generated 8 new recovery codes. Save them now.', false);
           } else {
-            setBanner(data.error || 'Could not regenerate recovery codes.', true);
+            showSectionNotice(recoveryNotice, data.error || 'Could not regenerate recovery codes.', true);
           }
         } finally {
           btnRegen.disabled = false;
@@ -121,7 +129,7 @@ export const ACCOUNT_SCRIPT = `
       var data = await res.json().catch(function() { return { tokens: [] }; });
       var list = Array.isArray(data.tokens) ? data.tokens : [];
       if (list.length === 0) {
-        tokensContainer.innerHTML = '<div class="lp-empty-state"><p class="lp-empty-body">No API tokens created yet.</p></div>';
+        tokensContainer.innerHTML = '<div class="lp-empty-state"><p data-c="Text" data-variant="description" class="lp-empty-body">No API tokens created yet.</p></div>';
         tokensContainer.classList.remove('lp-is-empty');
         return;
       }
@@ -130,7 +138,7 @@ export const ACCOUNT_SCRIPT = `
         var status = t.revokedAt ? 'Revoked' : 'Active';
         var tone = t.revokedAt ? 'neutral' : 'ok';
         var titleHtml = '<div data-rel="title" class="lp-item-title"><span>' + (t.label || 'Token') + '</span></div>';
-        var statusHtml = '<div class="lp-item-status"><span data-c="StatusLabel" class="lp-status-label lp-status-label-' + tone + '"><span class="lp-status-dot lp-status-dot-' + tone + '" aria-hidden="true"></span><span>' + status + '</span></span></div>';
+        var statusHtml = '<div class="lp-item-status"><span data-c="StatusLabel" class="lp-status-indicator"><span class="lp-status-dot lp-status-dot-' + tone + '" aria-hidden="true"></span><span class="lp-status-label">' + status + '</span></span></div>';
         if (t.revokedAt) {
           return '<div data-c="Item" data-rel="item" class="lp-item" data-token-id="' + t.id + '">' + titleHtml + statusHtml + '</div>';
         }
@@ -149,10 +157,10 @@ export const ACCOUNT_SCRIPT = `
         btn.disabled = true;
         var res = await apiClient('/api/auth/tokens/' + encodeURIComponent(id), { method: 'DELETE' });
         if (res.ok) {
-          setBanner('Token revoked.', false);
+          showSectionNotice(tokensListNotice, 'Token revoked.', false);
           loadTokens();
         } else {
-          setBanner('Could not revoke token.', true);
+          showSectionNotice(tokensListNotice, 'Could not revoke token.', true);
           btn.disabled = false;
         }
       });
@@ -174,10 +182,10 @@ export const ACCOUNT_SCRIPT = `
           if (res.ok && data.token) {
             if (tokenCreatedEl) tokenCreatedEl.textContent = 'Created token (' + label + '): ' + data.token;
             if (labelEl) labelEl.value = '';
-            setBanner('API token created. Copy it now.', false);
+            showSectionNotice(tokensNotice, 'API token created. Copy it now.', false);
             loadTokens();
           } else {
-            setBanner(data.error || 'Could not create token.', true);
+            showSectionNotice(tokensNotice, data.error || 'Could not create token.', true);
           }
         } finally {
           btnCreateToken.disabled = false;
@@ -196,9 +204,9 @@ export const ACCOUNT_SCRIPT = `
           if (res.ok) {
             var count = Number(data.revokedCount || 0);
             if (sessionsOut) sessionsOut.textContent = count === 1 ? 'Signed out 1 other session.' : 'Signed out ' + count + ' other sessions.';
-            setBanner('Other sessions signed out.', false);
+            showSectionNotice(sessionsNotice, 'Other sessions signed out.', false);
           } else {
-            setBanner('Could not sign out other sessions.', true);
+            showSectionNotice(sessionsNotice, 'Could not sign out other sessions.', true);
           }
         } finally {
           btnRevokeOthers.disabled = false;

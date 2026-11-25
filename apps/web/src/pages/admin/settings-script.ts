@@ -23,9 +23,12 @@ export const SETTINGS_SCRIPT = `
           if (!tier1Warning) return;
           const v1 = tier1Input ? parseFloat(tier1Input.value) : 0.82;
           const v2 = tier2Input ? parseFloat(tier2Input.value) : 0.55;
-          const v3 = facetInput ? parseFloat(facetInput.value) : 0.75;
-          const below = (!isNaN(v1) && v1 < 0.82) || (!isNaN(v2) && v2 < 0.55) || (!isNaN(v3) && v3 < 0.75);
-          tier1Warning.classList.toggle('lp-is-hidden', !below);
+          const v3 = facetInput ? parseFloat(facetInput.value) : 0.9;
+          const drifted =
+            (!isNaN(v1) && Math.abs(v1 - 0.82) > 0.001) ||
+            (!isNaN(v2) && Math.abs(v2 - 0.55) > 0.001) ||
+            (!isNaN(v3) && Math.abs(v3 - 0.9) > 0.001);
+          tier1Warning.classList.toggle('lp-is-hidden', !drifted);
         };
         if (tier1Input) tier1Input.addEventListener('input', updateThresholdWarning);
         if (tier2Input) tier2Input.addEventListener('input', updateThresholdWarning);
@@ -36,7 +39,7 @@ export const SETTINGS_SCRIPT = `
           restoreBtn.addEventListener('click', function() {
             if (tier1Input) tier1Input.value = '0.82';
             if (tier2Input) tier2Input.value = '0.55';
-            if (facetInput) facetInput.value = '0.75';
+            if (facetInput) facetInput.value = '0.9';
             updateThresholdWarning();
             setBanner('Recommended thresholds restored. Click Save to apply.', false);
           });

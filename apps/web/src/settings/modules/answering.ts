@@ -7,14 +7,14 @@ import type { SettingsModuleManifest } from '../registry.js';
 export const RECOMMENDED_THRESHOLDS = {
   directConfidenceFloor: 0.82,
   synthesisConfidenceFloor: 0.55,
-  topicMatchThreshold: 0.75,
+  topicMatchThreshold: 0.9,
 } as const;
 
 export const AnsweringConfigSchema = z.object({
   answeringEnabled: z.boolean().default(true),
   directConfidenceFloor: z.number().min(0.1).max(1.0).default(0.82),
   synthesisConfidenceFloor: z.number().min(0.1).max(1.0).default(0.55),
-  topicMatchThreshold: z.number().min(0.5).max(1.0).default(0.75),
+  topicMatchThreshold: z.number().min(0.5).max(1.0).default(0.9),
   replyTimeEstimate: z.string().default('Within 24 hours'),
   publicConfidenceDisclosure: z.boolean().default(true),
   suggestThresholds: z.boolean().default(false),
@@ -81,10 +81,10 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
     const mechTopology = typeof cal.topology_audit === 'boolean' ? cal.topology_audit : cfg.auditContradictions;
     const mechScoped = typeof cal.scoped_constraint_mining === 'boolean' ? cal.scoped_constraint_mining : cfg.rememberVisitorRules;
 
-    const belowRecommended =
-      directFloor < RECOMMENDED_THRESHOLDS.directConfidenceFloor ||
-      synthFloor < RECOMMENDED_THRESHOLDS.synthesisConfidenceFloor ||
-      topicThreshold < RECOMMENDED_THRESHOLDS.topicMatchThreshold;
+    const driftedFromRecommended =
+      Math.abs(directFloor - RECOMMENDED_THRESHOLDS.directConfidenceFloor) > 0.001 ||
+      Math.abs(synthFloor - RECOMMENDED_THRESHOLDS.synthesisConfidenceFloor) > 0.001 ||
+      Math.abs(topicThreshold - RECOMMENDED_THRESHOLDS.topicMatchThreshold) > 0.001;
 
     const pauseDialogHtml = renderDialog({
       id: 'answering-pause-dialog',
@@ -132,7 +132,7 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
               label: 'Direct quote threshold',
               inputType: 'number',
               value: String(directFloor),
-              help: 'Range 0.10 to 1.00.',
+              help: 'Recommended 0.82. Higher sends more questions to Inbox.',
               attributes: 'step="0.01" min="0.1" max="1.0"',
             })}
             ${renderField({
@@ -142,7 +142,7 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
               label: 'Summary answer threshold',
               inputType: 'number',
               value: String(synthFloor),
-              help: 'Range 0.10 to 1.00.',
+              help: 'Recommended 0.55. Higher requires stronger multi-entry matches.',
               attributes: 'step="0.01" min="0.1" max="1.0"',
             })}
             ${renderField({
@@ -152,16 +152,16 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
               label: 'Topic match threshold',
               inputType: 'number',
               value: String(topicThreshold),
-              help: 'Range 0.50 to 1.00.',
+              help: 'Recommended 0.90. Higher narrows topic matching.',
               attributes: 'step="0.01" min="0.5" max="1.0"',
             })}
-            <div id="tier1-warning" data-c="Notice" class="lp-notice lp-notice-warn${belowRecommended ? '' : ' lp-is-hidden'}">
-              Lower thresholds may send weaker answers without your review.
+            <div id="tier1-warning" data-c="Notice" class="lp-notice lp-notice-warn${driftedFromRecommended ? '' : ' lp-is-hidden'}">
+              Custom thresholds differ from recommended values and change how questions route.
             </div>
           `,
           actionBarHtml: renderActionBar({
             level: 'item',
-            secondary: { id: 'btn-restore-thresholds', label: 'Restore defaults', variant: 'secondary', type: 'button', size: 'sm' },
+            secondary: { id: 'btn-restore-thresholds', label: 'Restore recommended', variant: 'secondary', type: 'button', size: 'sm' },
           }),
         })}
 

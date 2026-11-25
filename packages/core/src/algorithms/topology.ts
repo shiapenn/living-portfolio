@@ -174,6 +174,10 @@ export function detectTopologyConflicts(
           question: 'Does the later claim supersede the earlier one, or do they apply to different situations?',
           claim_a_text: earlier.text,
           claim_b_text: later.text,
+          entry_a_id: earlier.entry_id,
+          entry_a_title: earlier.entry_title,
+          entry_b_id: later.entry_id,
+          entry_b_title: later.entry_title,
         });
       }
     }

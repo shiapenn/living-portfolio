@@ -147,6 +147,7 @@ export function renderAppearanceV2Script(adminPack: ThemePackV2, publicPack: The
         aaErrorEl.textContent = 'Accent seed must be a 6-digit hex colour (#RRGGBB).';
         aaErrorEl.classList.remove('lp-is-hidden');
       }
+      if (saveBtn) saveBtn.disabled = true;
       return false;
     }
     var lightCanvas = contrast(p.accent.light, canvas.light);
@@ -169,6 +170,7 @@ export function renderAppearanceV2Script(adminPack: ThemePackV2, publicPack: The
       aaErrorEl.textContent = failures.join(' ');
       aaErrorEl.classList.toggle('lp-is-hidden', ok);
     }
+    if (saveBtn) saveBtn.disabled = !ok;
     if (previewLink && getScope() === 'admin') {
       previewLink.setAttribute('href',
         '/assets/css/theme-preview.css?pack=' + encodeURIComponent(p.packId) +

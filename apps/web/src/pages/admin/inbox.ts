@@ -1,3 +1,4 @@
+import { formatAdminDate } from '@living-portfolio/ui-core';
 import { escapeHtml } from '../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
@@ -54,7 +55,7 @@ export async function renderAdminInboxPage(
           .map((item) => {
             const id = String(item.id);
             const due = getDueBadge(item);
-            const dateLabel = item.created_at ? String(item.created_at).slice(0, 10) : '';
+            const dateLabel = item.created_at ? formatAdminDate(item.created_at) : '';
             return renderItem({
               href: `/admin/inbox/${encodeURIComponent(id)}`,
               title: String(item.question || 'Untitled question'),

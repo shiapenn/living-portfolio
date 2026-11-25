@@ -24,7 +24,7 @@ export async function renderAdminBookingsPage(
         itemsHtml: bookings.slice().reverse().map((b) => {
           const id = String(b.id);
           const status = String(b.status || 'pending');
-          const statusLabel = status === 'confirmed' ? 'Active' : status === 'declined' || status === 'cancelled' ? 'Ignored' : 'Pending';
+          const statusLabel = status === 'confirmed' ? 'Confirmed' : status === 'declined' ? 'Declined' : status === 'cancelled' ? 'Cancelled' : 'Pending';
           const statusTone = status === 'confirmed' ? 'ok' : status === 'declined' || status === 'cancelled' ? 'neutral' : 'warn';
           const who = [b.visitor_name, b.visitor_contact].filter(Boolean).join(' · ');
           const metaParts = [who, b.preferred_time ? `Preferred: ${b.preferred_time}` : ''].filter(Boolean);

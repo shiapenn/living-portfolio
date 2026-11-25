@@ -47,8 +47,8 @@ export function createBookRoutes(repo: IPortfolioRepository) {
     const id = c.req.param('id');
     const body = await c.req.json().catch(() => ({}));
     const status = String(body.status || '').trim();
-    if (!['pending', 'confirmed', 'declined'].includes(status)) {
-      return c.json({ error: 'Invalid status: must be pending, confirmed, or declined' }, 400);
+    if (!['pending', 'confirmed', 'declined', 'cancelled'].includes(status)) {
+      return c.json({ error: 'Invalid status: must be pending, confirmed, declined, or cancelled' }, 400);
     }
     const booking = await repo.getBooking(id);
     if (!booking) return c.json({ error: 'Booking not found' }, 404);

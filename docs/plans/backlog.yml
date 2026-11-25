@@ -125,6 +125,17 @@ items:
     acceptance: Fix F1-F8 and apply D1-D6 (Tabs scroll-snap/non-overlap, Audit 4 tabs + Contradictions 6 states, EmptyState unboxed/unindented, uniform Item anatomy at 1280/320, single-source Home statement), ADR-024 + content.md + all admin copy rewritten within word/banned-pattern budgets, Appearance v2 composed preview + single accent seed + public contrast table, painted-ink & content census with fa0cf03 canaries, J1-J8 self-test journeys, full deterministic contact-sheet zip; CI + CodeQL green
     status: done
 
+  - id: WP-17.10
+    title: Exit-gate fixes (A1-A10; status vocabulary, ui-core datetime, word metric reconciliation, section-local errors, dialog viewport sheets)
+    track: admin
+    type: visual
+    depends_on: [WP-17.9]
+    size: L
+    expected_minutes: 60
+    gate: L-review
+    acceptance: Fix A1-A10 (tab panel heading/status dedupe, all 6 Contradictions states + extended J4, Account section-local errors/QR<=192px/status dot gap>=4px/optional labels, Answering threshold helpers with recommended+effect/drift warning/floor rule, Appearance no static green notice/AA reject/pack sheets, closed status vocabulary, reconciled word metric & Answering node dump, ui-core datetime formatter & ISO date ban, D5 intentional diff list + Entries/Inbox before/after sheets + wp16-c exemption rule, viewport-centred dialog sheets); canaries fail on 317f257; CI + CodeQL green
+    status: done
+
   # ── WP-18: Authoring canvas, media, storage & import (Report §7.9 + P004) ──
   - id: WP-18.1
     title: Authoring canvas layout (UI-02; covered by WP-16.L L2)
@@ -152,7 +163,7 @@ items:
     title: Media API (POST /media, GET /media/:id, storage adapter, limits, content sniffing; D-06, D-STORAGE)
     track: functional
     type: functional
-    depends_on: [WP-17.9]
+    depends_on: [WP-17.10]
     size: M
     expected_minutes: 50
     gate: none

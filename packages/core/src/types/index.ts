@@ -288,8 +288,7 @@ export interface TopologyReport {
   status: 'pending' | 'resolved' | 'dismissed';
   at: string;
   question?: string;
-  claim_a_text?: string;
-  claim_b_text?: string;
+  claim_a_text?: string; claim_b_text?: string; entry_a_id?: string; entry_a_title?: string; entry_b_id?: string; entry_b_title?: string;
   resolution?: string | null;
 }
 

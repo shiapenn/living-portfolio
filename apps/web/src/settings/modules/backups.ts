@@ -66,7 +66,7 @@ export const backupsModule: SettingsModuleManifest<BackupsConfig> = {
               inputType: 'text',
               value: ageKey,
               placeholder: 'age1...',
-              help: 'Optional key used to encrypt snapshots.',
+              help: 'Optional key; without it, snapshots are stored unencrypted.',
             })}
             ${drillStatusHtml}
           `,
