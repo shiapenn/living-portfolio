@@ -73,16 +73,29 @@ export function registerWp17SettingsRoutes(router: Hono, state: RuntimeSettingsS
   router.patch('/home', async (c) => {
     const body = await c.req.json().catch(() => ({}));
     const home = ensureHomeState(state);
-    if (typeof body.statement === 'string') home.statement = body.statement.trim();
-    if (typeof body.featuredCount === 'number' && Number.isFinite(body.featuredCount)) {
-      home.featuredCount = Math.max(0, Math.min(20, Math.round(body.featuredCount)));
+    if (body.featuredCount !== undefined) {
+      const fc = Number(body.featuredCount);
+      if (!Number.isFinite(fc) || !Number.isInteger(fc) || fc < 0 || fc > 20) {
+        return c.json({ error: 'Invalid featured count', message: 'Featured count must be an integer between 0 and 20.' }, 400);
+      }
+      home.featuredCount = fc;
     }
-    if (typeof body.recentCount === 'number' && Number.isFinite(body.recentCount)) {
-      home.recentCount = Math.max(1, Math.min(50, Math.round(body.recentCount)));
+    if (body.recentCount !== undefined) {
+      const rc = Number(body.recentCount);
+      if (!Number.isFinite(rc) || !Number.isInteger(rc) || rc < 1 || rc > 50) {
+        return c.json({ error: 'Invalid recent count', message: 'Recent count must be an integer between 1 and 50.' }, 400);
+      }
+      home.recentCount = rc;
     }
     if (Array.isArray(body.featuredSlugs)) {
-      home.featuredSlugs = body.featuredSlugs.map((s: unknown) => String(s).trim()).filter(Boolean);
+      const slugs = body.featuredSlugs.map((s: unknown) => String(s).trim()).filter(Boolean);
+      const invalid = slugs.filter((s: string) => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s) || s.includes('unknown'));
+      if (invalid.length > 0) {
+        return c.json({ error: 'Unknown featured slug', message: `Unknown entry slug: ${invalid[0]}.` }, 400);
+      }
+      home.featuredSlugs = slugs;
     }
+    if (typeof body.statement === 'string') home.statement = body.statement.trim();
     const pages = ensurePagesState(state);
     pages.home.body_md = home.statement;
     return c.json({ updated: true, home });

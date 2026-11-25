@@ -57,6 +57,8 @@ export {
   THEME_CANVAS,
   VETTED_FONT_STACKS,
   buildThemePackCss,
+  buildThemePreviewCss,
+  deriveAccentPairFromSeed,
   isDefaultThemePackV2,
   resolveAdminThemeCssAsset,
   themePackCssFilename,

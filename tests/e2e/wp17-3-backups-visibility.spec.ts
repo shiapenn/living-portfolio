@@ -8,7 +8,6 @@ test.describe.serial('WP-17.3: Backups, Export & Visibility (/admin/settings/bac
     // 1. Backups page
     await page.goto('/admin/settings/backups');
     await expect(page.locator('h1')).toContainText('Backups');
-    await expect(page.locator('#backups-explain-section')).toBeVisible();
     await expect(page.locator('#btn-export-archive')).toHaveAttribute('href', '/api/settings/export');
 
     // Verify export returns Content-Disposition with a named archive filename
@@ -24,7 +23,6 @@ test.describe.serial('WP-17.3: Backups, Export & Visibility (/admin/settings/bac
     // 2. Visibility page & dynamic /robots.txt
     await page.goto('/admin/settings/visibility');
     await expect(page.locator('h1')).toContainText('Visibility');
-    await expect(page.locator('#visibility-explain-section')).toBeVisible();
 
     // Default robots.txt disallows /admin, /api, /ask/status
     const robotsDefault = await (await page.request.get('/robots.txt')).text();

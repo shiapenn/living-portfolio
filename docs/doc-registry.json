@@ -2097,5 +2097,29 @@
     "path": "docs/execution-reports/A179-wp-177-and-178-pages-home-appearance.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L056",
+    "title": "ADR-024: Content Standard and Admin UI Polish Contracts",
+    "class": "L",
+    "path": "docs/adr/ADR-024-content-standard.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L057",
+    "title": "Admin Content Standard",
+    "class": "L",
+    "path": "docs/design/content.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "A180",
+    "title": "WP-17.9 polish states and content standard",
+    "class": "A",
+    "path": "docs/execution-reports/A180-wp-179-polish-states-and-content-standard.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

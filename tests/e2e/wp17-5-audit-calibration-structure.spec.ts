@@ -9,7 +9,7 @@ test.describe.serial('WP-17.5: Audit Contradictions, Calibration & Structure (/a
     await page.goto('/admin/audit?status=contradictions');
     await expect(page.locator('#audit-conflicts-section')).toBeVisible();
     await page.click('#btn-detect-conflicts');
-    await expect(page.locator('#audit-status-line')).toContainText('Check complete');
+    await expect(page.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', /clean|found/);
 
     // 2. Calibration: apply a parameter change via API and roll it back via UI
     const csrf = await page.evaluate(() => sessionStorage.getItem('lp_csrf_token') || '');

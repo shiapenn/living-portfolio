@@ -21,6 +21,7 @@ Authoritative live tracker for `WP-17` (Settings, maintenance, account, and Appe
 | S5 | WP-17.6 | Bookings (list, detail, status) & Ventures (create, edit, link entries feeding `/build`) | PR #276 (`0d06655`, A178) | done | CI run `45549332627` green; `wp17-6-bookings-ventures.spec.ts` |
 | S6 | WP-17.7 | Pages & Home settings (`/admin/pages` About/Now/Uses/Home statement with revisions, `/admin/settings/home` Featured/Recent counts, featured toggle) | PR #277 (`a8d2130`, A179) | done | CI run `45551672459` green; `wp17-7-pages-home.spec.ts` |
 | S7 | WP-17.8 | Appearance v2 (typed theme-pack schema, live preview, AA contrast validation, constrained customisation, admin+public scopes, `theme.<hash>.css`, JSON import/export; `gate: L-review`) | PR #277 (`a8d2130`, A179) | done (L-review sheets delivered) | CI run `45551672459` green; CodeQL `45551672449` green; `wp17-8-appearance-v2.spec.ts`; `~/Desktop/wp17-contact-sheets.zip` |
+| S8 | WP-17.9 | Polish, states and content standard (WP-17 exit gate; F1–F8, D1–D6, ADR-024, painted-ink census, J1–J8 self-tests; `gate: L-review`) | PR #278 (`39bf0cb`, A180) | done (L-review sheets delivered) | CI run `45561042710` green; CodeQL `45561042692` green; `wp17-9-content-and-ink-census.spec.ts` + `J1–J8`; `~/Desktop/wp17-9-contact-sheets.zip` |
 
 ## Time Ledger
 
@@ -32,3 +33,4 @@ Authoritative live tracker for `WP-17` (Settings, maintenance, account, and Appe
 | S3 (WP-17.4) | 2026-11-25 12:28 | 2026-11-25 12:34 | 6 | Account settings (stacked while PR #275 CI ran) |
 | S4-S5 (WP-17.5/17.6) | 2026-11-25 12:34 | 2026-11-25 12:53 | 19 | Audit Contradictions, Calibration, Structure, Bookings, Ventures + launcher scroll fix (PR #276, A178) |
 | S6-S7 (WP-17.7/17.8) | 2026-11-25 12:44 | 2026-11-25 13:15 | 31 | Pages editor, Home settings, Appearance v2 (`ui-core` theme-pack + `theme.<hash>.css`), full census, contact sheets (PR #277, A179) |
+| S8 (WP-17.9) | 2026-11-25 13:52 | 2026-11-25 14:37 | 45 | Polish contracts D1–D6, F1–F8, ADR-024 content standard, Appearance v2 composed preview & single seed, painted-ink census + fa0cf03 canary, J1–J8 journeys, deterministic sheets (PR #278, A180) |

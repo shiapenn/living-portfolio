@@ -15,6 +15,8 @@ import {
   ACCENT_VAR_PREFIX,
   contrastRatio,
   generateAccentRamp,
+  hexToOklch,
+  oklchToHex,
   validateAccentSeed,
   type AccentSeed,
 } from '../accent/accent.js';
@@ -315,6 +317,43 @@ export function buildThemePackCss(pack: ThemePackV2): string {
 
 export function themePackCssFilename(css: string): string {
   return `theme.${createHash('sha256').update(css).digest('hex').slice(0, 10)}.css`;
+}
+
+/**
+ * Derive a light/dark AccentSeed pair from a single #RRGGBB seed using OKLCH lightness & chroma bounds.
+ */
+export function deriveAccentPairFromSeed(seedHex: string): AccentSeed {
+  const light = seedHex.trim().toUpperCase();
+  if (!HEX_RE.test(light)) {
+    return { ...DEFAULT_ADMIN_THEME_PACK.accent };
+  }
+  const o = hexToOklch(light);
+  const dark = oklchToHex({
+    l: Math.max(0.78, Math.min(0.85, o.l + 0.3)),
+    c: Math.min(o.c, 0.13),
+    h: o.h,
+  });
+  return { light, dark };
+}
+
+/**
+ * Build a scoped preview stylesheet targeting `.lp-appearance-preview` so Appearance v2 renders
+ * a live composed preview without inline style= attributes.
+ */
+export function buildThemePreviewCss(pack: ThemePackV2): string {
+  const ramp = generateAccentRamp(pack.accent);
+  const density = DENSITY_PROXIMITY_TABLES[pack.density] || DENSITY_PROXIMITY_TABLES.comfortable;
+  const radius = RADIUS_SCALE_TABLES[pack.radiusScale] || RADIUS_SCALE_TABLES.default;
+  const font = VETTED_FONT_STACKS[pack.fontFamily] || VETTED_FONT_STACKS.system;
+  const lines = [
+    ...ACCENT_STEPS.map((s) => `${ACCENT_VAR_PREFIX}${s}: ${ramp[s]};`),
+    `--accent: ${pack.accent.light};`,
+    ...Object.entries(density).map(([k, v]) => `${k}: ${v};`),
+    ...Object.entries(radius).map(([k, v]) => `${k}: ${v};`),
+    `--lp-font-family-sans: ${font};`,
+    `font-family: ${font};`,
+  ];
+  return `@layer user-theme {\n#appearance-live-preview {\n  ${lines.join('\n  ')}\n}\n[data-theme="dark"] #appearance-live-preview {\n  --accent: ${pack.accent.dark};\n}\n}\n`;
 }
 
 /**

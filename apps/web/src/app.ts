@@ -5,8 +5,15 @@ import {
   DEFAULT_ACCENT_CSS,
   DEFAULT_ACCENT_CSS_FILENAME,
   FONT_ASSETS,
+  BUILTIN_THEME_PACKS_V2,
+  buildThemePreviewCss,
+  deriveAccentPairFromSeed,
   resolveAdminThemeCssAsset,
+  type DensityChoice,
+  type RadiusScaleChoice,
+  type ThemePackId,
   type ThemePackV2,
+  type VettedFontChoice,
 } from '@living-portfolio/ui-core';
 import {
   ADMIN_BASE_CSS,
@@ -192,6 +199,14 @@ export function createWebApp(options?: WebAppOptions) {
     [PUBLIC_CSS_FILENAME]: PUBLIC_BUNDLE_CSS,
     'public.css': PUBLIC_BUNDLE_CSS,
   };
+  app.get('/assets/css/theme-preview.css', (c) => {
+    const base = BUILTIN_THEME_PACKS_V2[(c.req.query('pack') || 'quiet-default') as ThemePackId] || BUILTIN_THEME_PACKS_V2['quiet-default'];
+    const rawSeed = (c.req.query('seed') || base.accent.light).trim();
+    const accent = /^#[0-9a-fA-F]{6}$/.test(rawSeed) ? deriveAccentPairFromSeed(rawSeed) : base.accent;
+    const previewPack: ThemePackV2 = { ...base, accent, density: (c.req.query('density') || base.density) as DensityChoice, radiusScale: (c.req.query('radius') || base.radiusScale) as RadiusScaleChoice, fontFamily: (c.req.query('font') || base.fontFamily) as VettedFontChoice };
+    return c.body(buildThemePreviewCss(previewPack), 200, { 'Content-Type': 'text/css; charset=utf-8', 'Cache-Control': 'no-store' });
+  });
+
   app.get('/assets/css/:filename', async (c) => {
     const filename = c.req.param('filename');
     let css: string | undefined = cssBundles[filename];

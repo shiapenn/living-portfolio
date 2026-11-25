@@ -28,17 +28,11 @@ export type AnsweringConfig = z.infer<typeof AnsweringConfigSchema>;
 export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
   id: 'answering',
   title: 'Answering',
-  summary: 'Automatic visitor replies, confidence thresholds, and self-checks.',
+  summary: 'Automatic replies and thresholds',
   icon: 'sliders',
   order: 1,
   route: '/admin/settings/answering',
   version: 1,
-  explain: {
-    what: 'Controls whether visitors receive automatic answers from your published entries and how strict those answers must be.',
-    when: 'Review before sharing your site publicly or whenever visitor questions are routed to your Inbox too often.',
-    how: 'Pause automatic replies at any time, adjust match thresholds, or restore the recommended defaults.',
-    impact: 'Changes apply to new visitor questions right away without altering existing published entries.',
-  },
   defaults: {
     answeringEnabled: true,
     directConfidenceFloor: RECOMMENDED_THRESHOLDS.directConfidenceFloor,
@@ -92,13 +86,12 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
       synthFloor < RECOMMENDED_THRESHOLDS.synthesisConfidenceFloor ||
       topicThreshold < RECOMMENDED_THRESHOLDS.topicMatchThreshold;
 
-    const explain = answeringModule.explain!;
     const pauseDialogHtml = renderDialog({
       id: 'answering-pause-dialog',
       title: 'Pause automatic answering?',
       bodyHtml: renderText({
         variant: 'body',
-        text: 'Visitors will see a notice that automatic answers are paused, and new questions will wait in your Inbox for your reply.',
+        text: 'Visitors see a paused notice and new questions wait in Inbox.',
       }),
       footerHtml: renderActionBar({
         level: 'dialog',
@@ -112,18 +105,8 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
         ${renderStatusLine({ id: 'settings-status-banner' })}
 
         ${renderFormSection({
-          id: 'answering-explain-section',
-          title: 'How answering works',
-          fieldsHtml: `
-            ${renderText({ variant: 'description', text: `What it does: ${explain.what}` })}
-            ${renderText({ variant: 'description', text: `When to change: ${explain.when}` })}
-            ${renderText({ variant: 'description', text: `Impact: ${explain.impact}` })}
-          `,
-        })}
-
-        ${renderFormSection({
           title: 'Automatic answering',
-          description: 'When paused, visitor questions wait for your reply in Inbox.',
+          description: 'When paused, new visitor questions wait in Inbox.',
           fieldsHtml: renderChoiceGroup({
             name: 'answering-enabled-group',
             mode: 'multiple',
@@ -132,7 +115,7 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
               {
                 id: 'setting-answering-enabled',
                 value: 'enabled',
-                label: 'Allow automatic visitor answers on the public site',
+                label: 'Allow automatic visitor answers',
                 checked: answeringEnabled,
               },
             ],
@@ -141,7 +124,6 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
 
         ${renderFormSection({
           title: 'Confidence thresholds',
-          description: 'Higher values keep answers stricter and route uncertain questions to your Inbox.',
           fieldsHtml: `
             ${renderField({
               kind: 'input',
@@ -150,7 +132,7 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
               label: 'Direct quote threshold',
               inputType: 'number',
               value: String(directFloor),
-              help: 'Minimum match score (0.10 to 1.00, recommended 0.82) before quoting an entry directly.',
+              help: 'Range 0.10 to 1.00.',
               attributes: 'step="0.01" min="0.1" max="1.0"',
             })}
             ${renderField({
@@ -160,32 +142,31 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
               label: 'Summary answer threshold',
               inputType: 'number',
               value: String(synthFloor),
-              help: 'Minimum match score (0.10 to 1.00, recommended 0.55) before combining multiple entries.',
+              help: 'Range 0.10 to 1.00.',
               attributes: 'step="0.01" min="0.1" max="1.0"',
             })}
             ${renderField({
               kind: 'input',
               id: 'setting-facet-threshold',
               name: 'topicMatchThreshold',
-              label: 'Topic recognition threshold',
+              label: 'Topic match threshold',
               inputType: 'number',
               value: String(topicThreshold),
-              help: 'Minimum similarity (0.50 to 1.00, recommended 0.75) to match a known topic.',
+              help: 'Range 0.50 to 1.00.',
               attributes: 'step="0.01" min="0.5" max="1.0"',
             })}
             <div id="tier1-warning" data-c="Notice" class="lp-notice lp-notice-warn${belowRecommended ? '' : ' lp-is-hidden'}">
-              Lowering thresholds below recommended values may allow weaker or less verified answers without your review.
+              Lower thresholds may send weaker answers without your review.
             </div>
           `,
           actionBarHtml: renderActionBar({
             level: 'item',
-            secondary: { id: 'btn-restore-thresholds', label: 'Restore recommended', variant: 'secondary', type: 'button', size: 'sm' },
+            secondary: { id: 'btn-restore-thresholds', label: 'Restore defaults', variant: 'secondary', type: 'button', size: 'sm' },
           }),
         })}
 
         ${renderFormSection({
-          title: 'Visitor disclosure and reply time',
-          description: 'Shown to visitors when a question is answered automatically or queued for your reply.',
+          title: 'Visitor disclosure',
           fieldsHtml: `
             ${renderChoiceGroup({
               name: 'public-disclosure-group',
@@ -195,7 +176,7 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
                 {
                   id: 'setting-public-disclosure',
                   value: 'enabled',
-                  label: 'Show answer source and confidence note to visitors',
+                  label: 'Show answer source and confidence note',
                   checked: publicDisclosure,
                 },
               ],
@@ -206,7 +187,6 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
               name: 'replyTimeEstimate',
               label: 'Expected reply time',
               value: replyTime,
-              help: 'Displayed when a visitor question is forwarded to your Inbox.',
               options: [
                 { value: 'Within 24 hours', label: 'Within 24 hours' },
                 { value: 'Within 48 hours', label: 'Within 48 hours' },

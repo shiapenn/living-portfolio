@@ -1,5 +1,5 @@
 import { z } from '@living-portfolio/core';
-import { renderActionBar, renderChoiceGroup, renderFormSection, renderItem, renderList, renderText } from '../../primitives/index.js';
+import { renderActionBar, renderChoiceGroup, renderFormSection, renderItem, renderList } from '../../primitives/index.js';
 import { renderStatusLine } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 
@@ -14,17 +14,11 @@ export type VisibilityConfig = z.infer<typeof VisibilityConfigSchema>;
 export const visibilityModule: SettingsModuleManifest<VisibilityConfig> = {
   id: 'visibility',
   title: 'Visibility',
-  summary: 'Search indexing, robots.txt crawler policy, feeds, and federation.',
+  summary: 'Search indexing and crawler policy',
   icon: 'external-link',
   order: 6,
   route: '/admin/settings/visibility',
   version: 1,
-  explain: {
-    what: 'Controls how search engines, AI crawlers, RSS readers, and sitemaps discover your public pages.',
-    when: 'Review when taking your site public or changing whether automated crawlers may index your work.',
-    how: 'Choose indexing and crawler preferences below. Admin, API, and private escalation routes are always disallowed.',
-    impact: 'Updates /robots.txt immediately; search engines pick up changes on their next crawl.',
-  },
   defaults: {
     allowSearchIndexing: true,
     blockAiCrawlers: false,
@@ -43,7 +37,6 @@ export const visibilityModule: SettingsModuleManifest<VisibilityConfig> = {
     const allowSearch = typeof vis.allowSearchIndexing === 'boolean' ? vis.allowSearchIndexing : cfg.allowSearchIndexing;
     const blockAi = typeof vis.blockAiCrawlers === 'boolean' ? vis.blockAiCrawlers : cfg.blockAiCrawlers;
     const federation = typeof vis.federationEnabled === 'boolean' ? vis.federationEnabled : cfg.federationEnabled;
-    const explain = visibilityModule.explain!;
 
     const feedsListHtml = renderList({
       id: 'visibility-feeds-list',
@@ -52,21 +45,21 @@ export const visibilityModule: SettingsModuleManifest<VisibilityConfig> = {
         ${renderItem({
           id: 'vis-rss-item',
           title: 'RSS feed',
-          subtitle: 'Published entries at /rss.xml',
+          subtitle: 'Syndication feed for published entries',
           statusLabel: 'Active',
           statusTone: 'ok',
         })}
         ${renderItem({
           id: 'vis-sitemap-item',
           title: 'Sitemap',
-          subtitle: 'Public index at /sitemap.xml',
+          subtitle: 'Public index for search engines',
           statusLabel: 'Active',
           statusTone: 'ok',
         })}
         ${renderItem({
           id: 'vis-robots-item',
-          title: 'Robots policy',
-          subtitle: 'Always disallows /admin, /api, and /ask/status at /robots.txt',
+          title: 'Crawler policy',
+          subtitle: 'Private and admin routes stay blocked',
           statusLabel: allowSearch ? 'Active' : 'Paused',
           statusTone: allowSearch ? 'ok' : 'warn',
         })}
@@ -78,17 +71,8 @@ export const visibilityModule: SettingsModuleManifest<VisibilityConfig> = {
         ${renderStatusLine({ id: 'settings-status-banner' })}
 
         ${renderFormSection({
-          id: 'visibility-explain-section',
-          title: 'How discovery works',
-          fieldsHtml: `
-            ${renderText({ variant: 'description', text: `What it does: ${explain.what}` })}
-            ${renderText({ variant: 'description', text: `Impact: ${explain.impact}` })}
-          `,
-        })}
-
-        ${renderFormSection({
-          title: 'Search and crawler policy',
-          description: 'Generated automatically at /robots.txt. Private and admin paths are always blocked.',
+          title: 'Search and crawlers',
+          description: 'Changes update crawler rules immediately.',
           fieldsHtml: renderChoiceGroup({
             name: 'visibility-crawler-options',
             mode: 'multiple',
@@ -103,13 +87,13 @@ export const visibilityModule: SettingsModuleManifest<VisibilityConfig> = {
               {
                 id: 'setting-vis-ai-crawlers',
                 value: 'blockAiCrawlers',
-                label: 'Block AI training crawlers in robots.txt',
+                label: 'Block AI training crawlers',
                 checked: blockAi,
               },
               {
                 id: 'setting-vis-federation',
                 value: 'federationEnabled',
-                label: 'Advertise optional federation manifest',
+                label: 'Advertise federation manifest',
                 checked: federation,
               },
             ],
@@ -117,7 +101,7 @@ export const visibilityModule: SettingsModuleManifest<VisibilityConfig> = {
         })}
 
         ${renderFormSection({
-          title: 'Discovery endpoints',
+          title: 'Discovery feeds',
           fieldsHtml: feedsListHtml,
         })}
 

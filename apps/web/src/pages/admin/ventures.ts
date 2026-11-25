@@ -2,7 +2,7 @@ import { loadConfig } from '@living-portfolio/config';
 import { escapeHtml } from '../../lib/html.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderActionBar, renderField, renderFormSection, renderItem, renderList, renderText } from '../../primitives/index.js';
+import { renderActionBar, renderField, renderFormSection, renderItem, renderList } from '../../primitives/index.js';
 import { renderEmptyState, renderStatusLine } from '../../components/index.js';
 
 export async function renderAdminVenturesPage(
@@ -23,7 +23,7 @@ export async function renderAdminVenturesPage(
         variant: 'plain',
         itemsHtml: ventures.map((v) => renderItem({
           title: String(v.name || v.slug),
-          subtitle: v.description ? String(v.description) : `/${String(v.slug)}`,
+          subtitle: v.description ? String(v.description) : 'Project in progress',
           statusLabel: v.status === 'archived' ? 'Archived' : 'Active',
           statusTone: v.status === 'archived' ? 'neutral' : 'ok',
           attributes: `data-venture-row="${escapeHtml(String(v.id))}"`,
@@ -31,23 +31,12 @@ export async function renderAdminVenturesPage(
       })
     : renderEmptyState({
         id: 'ventures-empty',
-        headingTag: 'h2',
-        title: 'No ventures yet',
-        body: 'Create a venture below to publish projects on your /build page.',
+        body: 'No ventures added yet.',
       });
 
   const bodyHtml = `
     <div class="lp-stack lp-gap-section">
       ${renderStatusLine({ id: 'ventures-status-line' })}
-
-      ${renderFormSection({
-        id: 'ventures-explain-section',
-        title: 'How ventures work',
-        fieldsHtml: renderText({
-          variant: 'description',
-          text: 'What it does: Manages projects shown on your public /build page and groups related dev-log entries.',
-        }),
-      })}
 
       ${renderFormSection({
         id: 'ventures-create-section',
@@ -133,7 +122,7 @@ export async function renderAdminVenturesPage(
 
   const content = renderPageTemplate({
     title: 'Ventures',
-    description: 'Manage projects displayed on your public Build page.',
+    description: 'Manage projects shown on your Build page.',
     bodyHtml,
   });
 

@@ -9,17 +9,18 @@ test.describe.serial('WP-17.8: Appearance v2 (/admin/settings/appearance & /admi
     await page.goto('/admin/theme');
     await expect(page.locator('h1')).toContainText('Appearance');
     await expect(page.locator('#appearance-live-preview')).toBeVisible();
-    await expect(page.locator('#theme-conformance-box')).toContainText('WCAG AA passed');
+    await expect(page.locator('#appearance-aa-error')).toBeHidden();
 
     // 2. Reject low-contrast accent (WCAG AA gate)
-    await page.fill('#setting-theme-light-accent', '#CCCCCC');
-    await expect(page.locator('#theme-conformance-box')).toContainText('WCAG AA failed');
+    await page.fill('#setting-theme-accent-seed', '#CCCCCC');
+    await expect(page.locator('#appearance-aa-error')).toBeVisible();
+    await expect(page.locator('#appearance-aa-error')).toContainText('4.5:1');
     await page.click('#btn-save-settings-module');
     await expect(page.locator('#settings-status-banner')).toContainText('4.5:1');
 
     // 3. Select built-in pack "Warm ink" for Admin scope -> saves & delivers cacheable theme.<hash>.css
     await page.selectOption('#setting-theme-pack', 'warm-ink');
-    await expect(page.locator('#theme-conformance-box')).toContainText('WCAG AA passed');
+    await expect(page.locator('#appearance-aa-error')).toBeHidden();
     await page.click('#btn-save-settings-module');
     await expect(page.locator('#settings-status-banner')).toContainText('Saved admin appearance');
 

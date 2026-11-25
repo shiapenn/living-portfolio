@@ -114,6 +114,17 @@ items:
     acceptance: Typed theme-pack schema, selectable packs with live preview and AA contrast rejection, constrained customisation (accent seed, density proximity table, allowed radius scales, vetted self-hosted fonts), JSON import/export, admin+public scopes stored via settings registry, admin applied via cacheable theme.<hash>.css (zero public restyle); contact sheets delivered; E2E + census green
     status: done
 
+  - id: WP-17.9
+    title: Polish, states and content standard (WP-17 exit gate; F1-F8, D1-D6, ADR-024)
+    track: admin
+    type: visual
+    depends_on: [WP-17.8]
+    size: L
+    expected_minutes: 60
+    gate: L-review
+    acceptance: Fix F1-F8 and apply D1-D6 (Tabs scroll-snap/non-overlap, Audit 4 tabs + Contradictions 6 states, EmptyState unboxed/unindented, uniform Item anatomy at 1280/320, single-source Home statement), ADR-024 + content.md + all admin copy rewritten within word/banned-pattern budgets, Appearance v2 composed preview + single accent seed + public contrast table, painted-ink & content census with fa0cf03 canaries, J1-J8 self-test journeys, full deterministic contact-sheet zip; CI + CodeQL green
+    status: done
+
   # ── WP-18: Authoring canvas, media, storage & import (Report §7.9 + P004) ──
   - id: WP-18.1
     title: Authoring canvas layout (UI-02; covered by WP-16.L L2)
@@ -141,7 +152,7 @@ items:
     title: Media API (POST /media, GET /media/:id, storage adapter, limits, content sniffing; D-06, D-STORAGE)
     track: functional
     type: functional
-    depends_on: [WP-17.8]
+    depends_on: [WP-17.9]
     size: M
     expected_minutes: 50
     gate: none

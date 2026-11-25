@@ -26,7 +26,7 @@ test.describe('WP-15.3a Design Foundations Conformance (D-FOUND-1..6)', () => {
       const chips = Array.from(document.querySelectorAll<HTMLElement>('button.lp-chip'));
       return {
         controls8: checkRadius('.lp-btn, .lp-icon-btn, .lp-input', '8px'),
-        containers8: checkRadius('.lp-card, .lp-notice, .lp-empty-state, #specimen-radius-container', '8px'),
+        containers8: checkRadius('.lp-card, .lp-notice, #specimen-radius-container', '8px'),
         overlays8: checkRadius('.lp-dialog-panel, .lp-drawer-panel, #specimen-radius-overlay', '8px'),
         chips4: checkRadius('.lp-chip', '4px'),
         dots999: checkRadius('.lp-status-dot', '999px'),

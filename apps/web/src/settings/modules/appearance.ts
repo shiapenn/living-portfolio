@@ -3,17 +3,18 @@ import {
   BUILTIN_THEME_PACKS_V2,
   DEFAULT_ADMIN_THEME_PACK,
   DEFAULT_PUBLIC_THEME_PACK,
+  THEME_CANVAS,
+  contrastRatio,
   type ThemePackV2,
 } from '@living-portfolio/ui-core';
-import { renderActionBar, renderField, renderFormSection, renderText } from '../../primitives/index.js';
-import { renderStatusLine } from '../../components/index.js';
+import { renderActionBar, renderChoiceGroup, renderField, renderFormSection, renderText } from '../../primitives/index.js';
+import { renderStatusLine, renderTable } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 import { renderAppearanceV2Script } from './appearance-script.js';
 
 export const AppearanceConfigSchema = z.object({
   packId: z.enum(['quiet-default', 'editorial-slate', 'warm-ink', 'high-contrast', 'builtin-light', 'builtin-dark']).default('quiet-default'),
-  lightAccent: z.string().default(DEFAULT_ADMIN_THEME_PACK.accent.light),
-  darkAccent: z.string().default(DEFAULT_ADMIN_THEME_PACK.accent.dark),
+  accentSeed: z.string().default(DEFAULT_ADMIN_THEME_PACK.accent.light),
 });
 
 export type AppearanceConfig = z.infer<typeof AppearanceConfigSchema>;
@@ -21,21 +22,14 @@ export type AppearanceConfig = z.infer<typeof AppearanceConfigSchema>;
 export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
   id: 'appearance',
   title: 'Appearance',
-  summary: 'Theme packs, constrained tokens, and WCAG AA contrast checks for admin and public scopes.',
-  explain: {
-    what: 'Choose a verified theme pack or customise accent seeds, density, corner radius, and self-hosted fonts for admin and public scopes.',
-    when: 'Whenever you want to adjust contrast, density, or accent colour without writing arbitrary CSS.',
-    how: 'All packs and overrides are validated against WCAG AA contrast (4.5:1 text, 3:1 controls) before saving.',
-    impact: 'Admin scope applies immediately via a cacheable theme.<hash>.css file; public scope is stored and validated for WP-19/WP-20.1.',
-  },
+  summary: 'Theme packs, accent, and typography',
   icon: 'sun',
   order: 3,
   route: '/admin/settings/appearance',
   version: 2,
   defaults: {
     packId: 'quiet-default',
-    lightAccent: DEFAULT_ADMIN_THEME_PACK.accent.light,
-    darkAccent: DEFAULT_ADMIN_THEME_PACK.accent.dark,
+    accentSeed: DEFAULT_ADMIN_THEME_PACK.accent.light,
   },
   schema: AppearanceConfigSchema,
   status: (_cfg, ctx) => {
@@ -48,11 +42,46 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
     const adminPack: ThemePackV2 = v2.admin || {
       ...DEFAULT_ADMIN_THEME_PACK,
       accent: {
-        light: themeObj.lightTokens?.['--accent'] || cfg.lightAccent || DEFAULT_ADMIN_THEME_PACK.accent.light,
-        dark: themeObj.darkTokens?.['--accent'] || cfg.darkAccent || DEFAULT_ADMIN_THEME_PACK.accent.dark,
+        light: themeObj.lightTokens?.['--accent'] || cfg.accentSeed || DEFAULT_ADMIN_THEME_PACK.accent.light,
+        dark: themeObj.darkTokens?.['--accent'] || DEFAULT_ADMIN_THEME_PACK.accent.dark,
       },
     };
     const publicPack: ThemePackV2 = v2.public || DEFAULT_PUBLIC_THEME_PACK;
+
+    const previewHref = `/assets/css/theme-preview.css?pack=${encodeURIComponent(adminPack.packId)}&seed=${encodeURIComponent(adminPack.accent.light)}&density=${encodeURIComponent(adminPack.density)}&radius=${encodeURIComponent(adminPack.radiusScale)}&font=${encodeURIComponent(adminPack.fontFamily)}`;
+    const pubLightCanvas = contrastRatio(publicPack.accent.light, THEME_CANVAS.light).toFixed(2);
+    const pubLightLabel = contrastRatio(THEME_CANVAS.light, publicPack.accent.light).toFixed(2);
+    const pubDarkCanvas = contrastRatio(publicPack.accent.dark, THEME_CANVAS.dark).toFixed(2);
+    const pubDarkLabel = contrastRatio(THEME_CANVAS.dark, publicPack.accent.dark).toFixed(2);
+
+    const publicContrastTableHtml = renderTable({
+      id: 'appearance-public-contrast-table',
+      caption: 'Public contrast pairs',
+      columns: [
+        { key: 'pair', label: 'Colour pair' },
+        { key: 'ratio', label: 'Ratio' },
+        { key: 'result', label: 'WCAG AA' },
+      ],
+      rows: [
+        { pair: 'Light accent on canvas', ratio: `${pubLightCanvas}:1`, result: Number(pubLightCanvas) >= 4.5 ? 'Pass' : 'Fail' },
+        { pair: 'Label on light accent', ratio: `${pubLightLabel}:1`, result: Number(pubLightLabel) >= 4.5 ? 'Pass' : 'Fail' },
+        { pair: 'Dark accent on canvas', ratio: `${pubDarkCanvas}:1`, result: Number(pubDarkCanvas) >= 4.5 ? 'Pass' : 'Fail' },
+        { pair: 'Label on dark accent', ratio: `${pubDarkLabel}:1`, result: Number(pubDarkLabel) >= 4.5 ? 'Pass' : 'Fail' },
+      ],
+    });
+
+    const composedPreviewHtml = `
+      <div id="appearance-live-preview" class="lp-stack lp-gap-related">
+        ${renderChoiceGroup({
+          name: 'preview-choice-sample',
+          mode: 'multiple',
+          variant: 'card',
+          options: [{ id: 'preview-choice-1', value: 'yes', label: 'Sample toggle option', checked: true }],
+        })}
+        <div data-c="Notice" class="lp-notice lp-notice-ok">Preview reflects your selected tokens.</div>
+        ${renderText({ variant: 'body', text: 'Sample workspace — accent, radius, density, and font update live.' })}
+      </div>
+    `;
 
     return `
       <form id="settings-module-form" data-settings-module="appearance" class="lp-stack lp-gap-section">
@@ -60,8 +89,7 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
 
         ${renderFormSection({
           id: 'appearance-scope-section',
-          title: 'Scope and theme pack',
-          description: 'Admin scope applies immediately via theme.<hash>.css. Public scope is stored and validated for WP-19/WP-20.1.',
+          title: 'Scope and pack',
           fieldsHtml: `
             ${renderField({
               kind: 'select',
@@ -70,8 +98,8 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
               label: 'Target scope',
               value: 'admin',
               options: [
-                { value: 'admin', label: 'Admin workspace (applies live)' },
-                { value: 'public', label: 'Public site (stored for WP-19/WP-20.1)' },
+                { value: 'admin', label: 'Admin workspace' },
+                { value: 'public', label: 'Public site' },
               ],
             })}
             ${renderField({
@@ -80,7 +108,6 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
               name: 'packId',
               label: 'Theme pack',
               value: adminPack.packId,
-              help: 'Selectable packs verified against WCAG AA contrast (4.5:1 text, 3:1 controls).',
               options: Object.values(BUILTIN_THEME_PACKS_V2).map((p) => ({
                 value: p.packId,
                 label: p.name,
@@ -91,35 +118,25 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
 
         ${renderFormSection({
           id: 'appearance-customisation-section',
-          title: 'Constrained customisation',
-          description: 'Only approved token tiers can be customised. Any colour failing WCAG AA contrast is rejected.',
+          title: 'Tokens',
           fieldsHtml: `
             ${renderField({
               kind: 'input',
-              id: 'setting-theme-light-accent',
-              name: 'lightAccent',
-              label: 'Light theme accent',
+              id: 'setting-theme-accent-seed',
+              name: 'accentSeed',
+              label: 'Accent seed',
               inputType: 'text',
               value: adminPack.accent.light,
-              help: 'Hex colour (#RRGGBB) used for primary buttons and links in light mode.',
-            })}
-            ${renderField({
-              kind: 'input',
-              id: 'setting-theme-dark-accent',
-              name: 'darkAccent',
-              label: 'Dark theme accent',
-              inputType: 'text',
-              value: adminPack.accent.dark,
-              help: 'Hex colour (#RRGGBB) used for primary buttons and links in dark mode.',
+              help: 'Hex format (#RRGGBB). Light and dark ramps derive automatically.',
             })}
             ${renderField({
               kind: 'select',
               id: 'setting-theme-density',
               name: 'density',
-              label: 'Density (proximity table)',
+              label: 'Density',
               value: adminPack.density,
               options: [
-                { value: 'comfortable', label: 'Comfortable (default)' },
+                { value: 'comfortable', label: 'Comfortable' },
                 { value: 'compact', label: 'Compact' },
                 { value: 'spacious', label: 'Spacious' },
               ],
@@ -128,42 +145,60 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
               kind: 'select',
               id: 'setting-theme-radius',
               name: 'radiusScale',
-              label: 'Corner radius scale',
+              label: 'Corner radius',
               value: adminPack.radiusScale,
               options: [
-                { value: 'default', label: 'Default (4 / 8 / 12 px)' },
-                { value: 'sharp', label: 'Sharp (2 / 4 / 6 px)' },
-                { value: 'soft', label: 'Soft (6 / 10 / 16 px)' },
+                { value: 'default', label: 'Default' },
+                { value: 'sharp', label: 'Sharp' },
+                { value: 'soft', label: 'Soft' },
               ],
             })}
             ${renderField({
               kind: 'select',
               id: 'setting-theme-font',
               name: 'fontFamily',
-              label: 'Self-hosted font family',
+              label: 'Font family',
               value: adminPack.fontFamily,
               options: [
-                { value: 'system', label: 'System UI (default)' },
+                { value: 'system', label: 'System UI' },
                 { value: 'atkinson', label: 'Atkinson Hyperlegible Next' },
                 { value: 'literata', label: 'Literata' },
               ],
             })}
-            ${renderText({ id: 'appearance-live-preview', variant: 'caption', text: 'Live preview ready.' })}
-            ${renderText({ id: 'theme-conformance-box', variant: 'caption', text: 'WCAG AA contrast checks active.' })}
+            ${renderText({ id: 'theme-conformance-box', variant: 'caption', text: 'Contrast verified.' })}
+            <div id="appearance-aa-error" data-c="Notice" class="lp-notice lp-notice-danger lp-is-hidden"></div>
           `,
         })}
 
         ${renderFormSection({
+          id: 'appearance-admin-preview-section',
+          title: 'Live preview',
+          fieldsHtml: composedPreviewHtml,
+          actionBarHtml: renderActionBar({
+            level: 'item',
+            secondary: { id: 'preview-secondary-btn', label: 'Sample action', variant: 'secondary', type: 'button', size: 'sm' },
+            textAction: { id: 'preview-text-btn', label: 'Sample link', variant: 'text', type: 'button', size: 'sm' },
+          }),
+        })}
+
+        <div id="appearance-public-contrast-section" class="lp-is-hidden">
+          ${renderFormSection({
+            title: 'Public contrast table',
+            description: 'Public site styling applies in a future release.',
+            fieldsHtml: publicContrastTableHtml,
+          })}
+        </div>
+
+        ${renderFormSection({
           id: 'appearance-portability-section',
-          title: 'Import and export theme pack',
-          description: 'Share or back up a typed JSON theme pack. Unknown properties and arbitrary CSS are rejected.',
+          title: 'Import and export',
           fieldsHtml: renderField({
             kind: 'textarea',
             id: 'setting-theme-import-json',
             name: 'importJson',
             label: 'Theme pack JSON',
             rows: 5,
-            placeholder: '{"version":2,"id":"custom","name":"Custom","packId":"quiet-default",...}',
+            help: 'Arbitrary CSS properties are rejected.',
           }),
           actionBarHtml: renderActionBar({
             level: 'item',
@@ -177,6 +212,7 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
           primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
         })}
       </form>
+      <link id="appearance-preview-link" rel="stylesheet" href="${previewHref}" />
       ${renderAppearanceV2Script(adminPack, publicPack)}
     `;
   },

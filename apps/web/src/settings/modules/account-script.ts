@@ -121,16 +121,16 @@ export const ACCOUNT_SCRIPT = `
       var data = await res.json().catch(function() { return { tokens: [] }; });
       var list = Array.isArray(data.tokens) ? data.tokens : [];
       if (list.length === 0) {
-        tokensContainer.innerHTML = '';
-        tokensContainer.classList.add('lp-is-empty');
+        tokensContainer.innerHTML = '<div class="lp-empty-state"><p class="lp-empty-body">No API tokens created yet.</p></div>';
+        tokensContainer.classList.remove('lp-is-empty');
         return;
       }
       tokensContainer.classList.remove('lp-is-empty');
       var items = list.map(function(t) {
         var status = t.revokedAt ? 'Revoked' : 'Active';
         var tone = t.revokedAt ? 'neutral' : 'ok';
-        var titleHtml = '<div data-rel="title" class="lp-item-title"><span>' + (t.label || t.id) + '</span></div>';
-        var statusHtml = '<div class="lp-item-status"><span data-c="StatusLabel" class="lp-status-label lp-status-label-' + tone + '">' + status + '</span></div>';
+        var titleHtml = '<div data-rel="title" class="lp-item-title"><span>' + (t.label || 'Token') + '</span></div>';
+        var statusHtml = '<div class="lp-item-status"><span data-c="StatusLabel" class="lp-status-label lp-status-label-' + tone + '"><span class="lp-status-dot lp-status-dot-' + tone + '" aria-hidden="true"></span><span>' + status + '</span></span></div>';
         if (t.revokedAt) {
           return '<div data-c="Item" data-rel="item" class="lp-item" data-token-id="' + t.id + '">' + titleHtml + statusHtml + '</div>';
         }
@@ -194,7 +194,8 @@ export const ACCOUNT_SCRIPT = `
           var res = await apiClient('/api/auth/sessions/revoke-others', { method: 'POST', body: '{}' });
           var data = await res.json().catch(function() { return {}; });
           if (res.ok) {
-            if (sessionsOut) sessionsOut.textContent = 'Signed out ' + (data.revokedCount || 0) + ' other session(s).';
+            var count = Number(data.revokedCount || 0);
+            if (sessionsOut) sessionsOut.textContent = count === 1 ? 'Signed out 1 other session.' : 'Signed out ' + count + ' other sessions.';
             setBanner('Other sessions signed out.', false);
           } else {
             setBanner('Could not sign out other sessions.', true);

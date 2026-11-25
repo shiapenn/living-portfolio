@@ -85,12 +85,27 @@ export const SETTINGS_SCRIPT = `
             saveBtn.setAttribute('disabled', 'true');
             try {
               if (moduleName === 'answering') {
+                const t1 = parseFloat(document.getElementById('setting-tier1-floor').value);
+                const t2 = parseFloat(document.getElementById('setting-tier2-floor').value);
+                const t3 = parseFloat(document.getElementById('setting-facet-threshold').value);
+                if (isNaN(t1) || t1 < 0.1 || t1 > 1.0) {
+                  setBanner('Direct quote threshold must be between 0.10 and 1.00.', true);
+                  return;
+                }
+                if (isNaN(t2) || t2 < 0.1 || t2 > 1.0) {
+                  setBanner('Summary answer threshold must be between 0.10 and 1.00.', true);
+                  return;
+                }
+                if (isNaN(t3) || t3 < 0.5 || t3 > 1.0) {
+                  setBanner('Topic match threshold must be between 0.50 and 1.00.', true);
+                  return;
+                }
                 const replyTimeEl = document.getElementById('setting-reply-time');
                 const disclosureEl = document.getElementById('setting-public-disclosure');
                 const payload = {
-                  tier1_floor: parseFloat(document.getElementById('setting-tier1-floor').value),
-                  tier2_floor: parseFloat(document.getElementById('setting-tier2-floor').value),
-                  facet_known_threshold: parseFloat(document.getElementById('setting-facet-threshold').value),
+                  tier1_floor: t1,
+                  tier2_floor: t2,
+                  facet_known_threshold: t3,
                   automatedAnsweringEnabled: document.getElementById('setting-answering-enabled').checked,
                   replyTimeEstimate: replyTimeEl ? replyTimeEl.value : 'Within 24 hours',
                   publicConfidenceDisclosure: disclosureEl ? disclosureEl.checked : true,
@@ -165,12 +180,13 @@ export const SETTINGS_SCRIPT = `
                   method: 'PATCH',
                   body: JSON.stringify({
                     statement: stmtEl ? stmtEl.value.trim() : '',
-                    featuredCount: fcEl ? parseInt(fcEl.value, 10) : 3,
-                    recentCount: rcEl ? parseInt(rcEl.value, 10) : 10,
+                    featuredCount: fcEl ? Number(fcEl.value) : 3,
+                    recentCount: rcEl ? Number(rcEl.value) : 10,
                     featuredSlugs: slugs,
                   }),
                 });
-                setBanner(res.ok ? 'Saved.' : 'Could not save home settings.', !res.ok);
+                const homeData = await res.json().catch(() => ({}));
+                setBanner(res.ok ? 'Saved.' : (homeData && homeData.message ? String(homeData.message) : 'Could not save home settings.'), !res.ok);
               }
             } catch {
               setBanner('Network error saving settings.', true);

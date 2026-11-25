@@ -1,8 +1,10 @@
-/* Item (D-COMP #3) */
+/* Item (D-COMP #3, D5 / ADR-024): uniform anatomy at 320px and 1280px */
 .lp-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lp-space-stack-label-to-control);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: var(--lp-space-proximity-3);
+  row-gap: var(--lp-space-proximity-1);
+  align-items: start;
   padding: var(--lp-space-inset-section) 0;
   border-bottom: var(--lp-border-hairline) solid var(--border-subtle);
   color: var(--text);
@@ -19,6 +21,9 @@ a.lp-item:hover {
 }
 
 .lp-item-title {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: var(--lp-space-stack-label-to-control);
@@ -72,6 +77,10 @@ a.lp-item:hover {
 }
 
 .lp-item-status {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  white-space: nowrap;
   display: flex;
   align-items: center;
   gap: var(--lp-space-stack-label-to-control);
@@ -82,31 +91,10 @@ a.lp-item:hover {
   color: var(--text-muted);
 }
 
-@media (min-width: 640px) {
-  .lp-item {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    column-gap: var(--lp-space-proximity-3);
-    row-gap: var(--lp-space-proximity-1);
-    align-items: start;
-  }
-
-  .lp-item-title {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .lp-item-status {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-  }
-
-  .lp-item-subtitle,
-  .lp-item-meta,
-  .lp-item-body,
-  .lp-item-segments,
-  .lp-item-actions {
-    grid-column: 1 / -1;
-  }
+.lp-item-subtitle,
+.lp-item-meta,
+.lp-item-body,
+.lp-item-segments,
+.lp-item-actions {
+  grid-column: 1 / -1;
 }

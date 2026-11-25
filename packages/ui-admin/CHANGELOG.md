@@ -10,6 +10,10 @@ WP-16.N design system consolidation:
 - Migrated all admin CSS out of `apps/web/src/styles.ts` into layered, route-split hashed bundles in `@living-portfolio/ui-admin` with zero pixel regression.
 - Added ADR-generated `rules.md`, `ds:impact`, `ds:health`, nightly health workflow, and changeset governance.
 
+## MINOR (wp17-9-polish-contracts)
+
+Implement WP-17.9 polish contracts (ADR-024, D1-D6): horizontal scroll-snap + edge-fade Tabs with >= 44px targets, unboxed/unindented EmptyState aligned to heading ink edge, uniform Item anatomy across 320px and 1280px, Appearance v2 composed preview container, and single-seed OKLCH light/dark accent derivation.
+
 ## PATCH (wp17-launcher-scroll)
 
 Constrain `.lp-launcher-panel` max-height to viewport minus header and section inset with vertical scroll so expanded admin navigation stays within 320x640 viewports.

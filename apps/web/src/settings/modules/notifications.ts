@@ -12,7 +12,7 @@ export type NotificationsConfig = z.infer<typeof NotificationsConfigSchema>;
 export const notificationsModule: SettingsModuleManifest<NotificationsConfig> = {
   id: 'notifications',
   title: 'Notifications',
-  summary: 'Delivery topic for Inbox escalations and health alerts.',
+  summary: 'Inbox escalation and health alerts',
   icon: 'bell',
   order: 4,
   route: '/admin/settings/notifications',
@@ -43,7 +43,7 @@ export const notificationsModule: SettingsModuleManifest<NotificationsConfig> = 
               inputType: 'text',
               value: topicUrl,
               placeholder: 'https://ntfy.sh/owner-alerts',
-              help: 'Endpoint notified when a visitor question needs your attention.',
+              help: 'Notified when a question needs your attention.',
             })}
             <div id="notify-test-result" class="lp-help-text"></div>
           `,
@@ -51,7 +51,7 @@ export const notificationsModule: SettingsModuleManifest<NotificationsConfig> = 
         ${renderActionBar({
           pageLevel: true,
           primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
-          secondary: { id: 'btn-test-notification', label: 'Send test alert', variant: 'secondary', type: 'button' },
+          secondary: { id: 'btn-test-notification', label: 'Test alert', variant: 'secondary', type: 'button' },
         })}
       </form>
     `;

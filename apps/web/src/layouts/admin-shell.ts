@@ -35,19 +35,8 @@ export interface AdminNavDestination {
 
 const LAUNCHER_REGISTRY = new Map<string, AdminNavDestination>();
 
-/**
- * Register a destination in the admin launcher registry (D-LAYOUT #1).
- */
-export function registerAdminDestination(dest: AdminNavDestination): void {
-  LAUNCHER_REGISTRY.set(dest.id, dest);
-}
-
-/**
- * Return all registered launcher destinations sorted by order.
- */
-export function getAdminDestinations(): AdminNavDestination[] {
-  return Array.from(LAUNCHER_REGISTRY.values()).sort((a, b) => a.order - b.order);
-}
+export function registerAdminDestination(dest: AdminNavDestination): void { LAUNCHER_REGISTRY.set(dest.id, dest); }
+export function getAdminDestinations(): AdminNavDestination[] { return Array.from(LAUNCHER_REGISTRY.values()).sort((a, b) => a.order - b.order); }
 
 const BUILTIN_DESTINATIONS: AdminNavDestination[] = [
   { id: 'today', group: 'Write', href: '/admin', label: 'Today', icon: 'sun', order: 1 },
@@ -57,7 +46,7 @@ const BUILTIN_DESTINATIONS: AdminNavDestination[] = [
   { id: 'ventures', group: 'Write', href: '/admin/ventures', label: 'Ventures', icon: 'layers', order: 5 },
   { id: 'inbox', group: 'Respond', href: '/admin/inbox', label: 'Inbox', icon: 'inbox', order: 5 },
   { id: 'bookings', group: 'Respond', href: '/admin/bookings', label: 'Bookings', icon: 'clock', order: 6 },
-  { id: 'audit', group: 'Govern', href: '/admin/audit', label: 'Answer rules', icon: 'shield', order: 7 },
+  { id: 'audit', group: 'Govern', href: '/admin/audit', label: 'Audit', icon: 'shield', order: 7 },
   { id: 'calibration', group: 'Govern', href: '/admin/calibration', label: 'Calibration', icon: 'sliders', order: 8 },
   { id: 'structure', group: 'Govern', href: '/admin/structure', label: 'Structure', icon: 'layers', order: 9 },
   { id: 'status', group: 'Govern', href: '/admin/status', label: 'Status', icon: 'activity', order: 10 },
@@ -160,6 +149,13 @@ function renderShellThemeAndMenuScript(nonceAttr: string, includeAdminMenus: boo
     bindPopover('lp-launcher-btn', 'lp-launcher-panel', 'a.lp-launcher-item');
     bindPopover('lp-status-popover-btn', 'lp-status-popover', null);
     bindPopover('lp-account-menu-btn', 'lp-account-menu', '[role="menuitem"]');
+
+    document.querySelectorAll('.lp-tabs[role="tablist"], .lp-tablist').forEach((tl) => {
+      const sync = () => tl.classList.toggle('lp-tabs-overflow-end', tl.scrollWidth - tl.clientWidth - tl.scrollLeft > 2);
+      const sel = tl.querySelector('[aria-selected="true"]');
+      if (sel && sel.scrollIntoView) sel.scrollIntoView({ inline: 'nearest', block: 'nearest' });
+      sync(); tl.addEventListener('scroll', sync, { passive: true }); window.addEventListener('resize', sync, { passive: true });
+    });
 
     const logoutBtn = document.getElementById('btn-admin-logout');
     if (logoutBtn) {

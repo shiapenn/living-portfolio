@@ -2,7 +2,7 @@ import { loadConfig } from '@living-portfolio/config';
 import { escapeHtml } from '../../lib/html.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderFormSection, renderItem, renderList, renderText } from '../../primitives/index.js';
+import { renderFormSection, renderItem, renderList } from '../../primitives/index.js';
 import { renderEmptyState, renderStatusLine } from '../../components/index.js';
 
 export async function renderAdminBookingsPage(
@@ -24,8 +24,8 @@ export async function renderAdminBookingsPage(
         itemsHtml: bookings.slice().reverse().map((b) => {
           const id = String(b.id);
           const status = String(b.status || 'pending');
-          const statusLabel = status === 'confirmed' ? 'Active' : status === 'declined' ? 'Ignored' : 'Pending';
-          const statusTone = status === 'confirmed' ? 'ok' : status === 'declined' ? 'neutral' : 'warn';
+          const statusLabel = status === 'confirmed' ? 'Active' : status === 'declined' || status === 'cancelled' ? 'Ignored' : 'Pending';
+          const statusTone = status === 'confirmed' ? 'ok' : status === 'declined' || status === 'cancelled' ? 'neutral' : 'warn';
           const who = [b.visitor_name, b.visitor_contact].filter(Boolean).join(' · ');
           const metaParts = [who, b.preferred_time ? `Preferred: ${b.preferred_time}` : ''].filter(Boolean);
           return renderItem({
@@ -40,30 +40,24 @@ export async function renderAdminBookingsPage(
                   secondary: { label: 'Confirm', variant: 'secondary', size: 'sm', dataAttrs: { 'booking-id': id, 'booking-status': 'confirmed' } },
                   textAction: { label: 'Decline', variant: 'text', size: 'sm', dataAttrs: { 'booking-id': id, 'booking-status': 'declined' } },
                 }
-              : undefined,
+              : status === 'confirmed'
+                ? {
+                    level: 'item',
+                    secondary: { label: 'Cancel', variant: 'secondary', size: 'sm', dataAttrs: { 'booking-id': id, 'booking-status': 'cancelled' } },
+                  }
+                : undefined,
             attributes: `data-booking-row="${escapeHtml(id)}"`,
           });
         }).join(''),
       })
     : renderEmptyState({
         id: 'bookings-empty',
-        headingTag: 'h2',
-        title: 'No booking requests yet',
-        body: 'Consultation requests submitted from your public Book page will appear here.',
+        body: 'No booking requests yet.',
       });
 
   const bodyHtml = `
     <div class="lp-stack lp-gap-section">
       ${renderStatusLine({ id: 'bookings-status-line' })}
-
-      ${renderFormSection({
-        id: 'bookings-explain-section',
-        title: 'How bookings work',
-        fieldsHtml: renderText({
-          variant: 'description',
-          text: 'What it does: Lists consultation requests from /book so you can confirm or decline them in one place.',
-        }),
-      })}
 
       ${renderFormSection({
         id: 'bookings-requests-section',
@@ -100,7 +94,7 @@ export async function renderAdminBookingsPage(
 
   const content = renderPageTemplate({
     title: 'Bookings',
-    description: 'Review and respond to public consultation requests.',
+    description: 'Confirm or decline consultation requests.',
     bodyHtml,
   });
 
