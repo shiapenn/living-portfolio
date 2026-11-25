@@ -181,6 +181,11 @@ export function mountBundledWeb(
       if (html) return c.html(html);
       return c.html(renderAdminSectionPage(c.req.path));
     });
+    app.get('/admin/theme', auth.requireAdminMiddleware(), async (c) => {
+      const html = await renderAdminSettingsModulePage(repo, 'appearance', runtimeState);
+      if (html) return c.html(html);
+      return c.html(renderAdminSectionPage(c.req.path));
+    });
     app.get('/admin/settings/:id', auth.requireAdminMiddleware(), async (c) => {
       const html = await renderAdminSettingsModulePage(repo, c.req.param('id') || '', runtimeState);
       if (html) return c.html(html);
@@ -189,7 +194,6 @@ export function mountBundledWeb(
     const adminSectionRoutes = [
       '/admin/quick-log',
       '/quick-log',
-      '/admin/theme',
     ];
     for (const routePath of adminSectionRoutes) {
       app.get(routePath, auth.requireAdminMiddleware(), async (c) =>

@@ -96,7 +96,7 @@ export async function renderAdminStructurePage(
 
   const content = renderPageTemplate({
     title: 'Structure',
-    description: 'Entry profiles, facet vocabulary, and private detail exclusions.',
+    description: 'Entry profiles, topic vocabulary, and private detail exclusions.',
     bodyHtml,
   });
 

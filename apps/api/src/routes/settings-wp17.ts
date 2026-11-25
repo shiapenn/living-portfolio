@@ -1,4 +1,13 @@
 import type { Hono } from 'hono';
+import {
+  BUILTIN_THEME_PACKS_V2,
+  DEFAULT_ADMIN_THEME_PACK,
+  DEFAULT_PUBLIC_THEME_PACK,
+  resolveAdminThemeCssAsset,
+  validateThemePackV2,
+  type ThemePackV2,
+  type ThemeScope,
+} from '@living-portfolio/ui-core';
 import type { RuntimeSettingsState } from './settings.js';
 
 export type StaticPageSlug = 'about' | 'now' | 'uses' | 'home';
@@ -102,5 +111,64 @@ export function registerWp17SettingsRoutes(router: Hono, state: RuntimeSettingsS
       ensureHomeState(state).statement = bodyMd.trim();
     }
     return c.json({ updated: true, page: prev, revisionId: revId });
+  });
+
+  // Appearance v2 (WP-17.8, ADR-023): typed theme packs, AA contrast gate, admin + public scopes
+  const ensureAppearanceV2 = (): { admin: ThemePackV2; public: ThemePackV2 } => {
+    if (!state.appearanceV2 || typeof state.appearanceV2 !== 'object') {
+      state.appearanceV2 = {
+        admin: { ...DEFAULT_ADMIN_THEME_PACK, accent: { ...DEFAULT_ADMIN_THEME_PACK.accent } },
+        public: { ...DEFAULT_PUBLIC_THEME_PACK, accent: { ...DEFAULT_PUBLIC_THEME_PACK.accent } },
+      };
+    }
+    return state.appearanceV2 as { admin: ThemePackV2; public: ThemePackV2 };
+  };
+
+  router.get('/appearance-v2', (c) => {
+    const scopes = ensureAppearanceV2();
+    const adminAsset = resolveAdminThemeCssAsset(scopes.admin);
+    return c.json({
+      admin: scopes.admin,
+      public: scopes.public,
+      adminCssFilename: adminAsset.filename,
+      packs: BUILTIN_THEME_PACKS_V2,
+    });
+  });
+
+  router.patch('/appearance-v2', async (c) => {
+    const body = await c.req.json().catch(() => ({}));
+    const scope: ThemeScope = body.scope === 'public' ? 'public' : 'admin';
+    const rawPack = body.pack ?? body[scope];
+    const check = validateThemePackV2(rawPack);
+    if (!check.ok) {
+      return c.json({ error: 'Theme pack validation failed', errors: check.errors }, 400);
+    }
+    const scopes = ensureAppearanceV2();
+    scopes[scope] = check.pack;
+    if (scope === 'admin') {
+      state.theme = {
+        ...state.theme,
+        lightTokens: { ...state.theme.lightTokens, '--accent': check.pack.accent.light },
+        darkTokens: { ...state.theme.darkTokens, '--accent': check.pack.accent.dark },
+      };
+    }
+    const adminAsset = resolveAdminThemeCssAsset(scopes.admin);
+    return c.json({
+      updated: true,
+      scope,
+      pack: check.pack,
+      contrast: check.contrast,
+      adminCssFilename: adminAsset.filename,
+    });
+  });
+
+  router.get('/appearance-v2/export', (c) => {
+    const scope: ThemeScope = c.req.query('scope') === 'public' ? 'public' : 'admin';
+    const scopes = ensureAppearanceV2();
+    const payload = JSON.stringify(scopes[scope], null, 2);
+    return c.body(payload, 200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Content-Disposition': `attachment; filename="living-portfolio-theme-${scope}.json"`,
+    });
   });
 }

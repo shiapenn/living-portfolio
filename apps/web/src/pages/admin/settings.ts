@@ -1,4 +1,5 @@
 import { loadConfig } from '@living-portfolio/config';
+import { resolveAdminThemeCssAsset, type ThemePackV2 } from '@living-portfolio/ui-core';
 import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { escapeHtml } from '../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
@@ -84,9 +85,11 @@ export async function renderAdminSettingsPage(
   const answeringOn = typeof settings.answering_enabled === 'boolean' ? settings.answering_enabled : true;
 
   const content = renderSettingsIndexPage(settings, cfg as unknown as Record<string, unknown>, providers);
+  const adminPack = (settings.appearanceV2 as { admin?: ThemePackV2 } | undefined)?.admin;
   return renderAdminShell('Settings', '/admin/settings', content, {
     answeringEnabled: answeringOn,
     siteName: cfg.PUBLIC_SITE_NAME,
+    themeCssFilename: resolveAdminThemeCssAsset(adminPack).filename,
   });
 }
 
@@ -113,9 +116,11 @@ export async function renderAdminSettingsModulePage(
   };
   const modCfg = readModuleConfig(mod, settings);
   const content = renderSettingsModulePage(mod, modCfg, ctx);
+  const adminPack = (settings.appearanceV2 as { admin?: ThemePackV2 } | undefined)?.admin;
   return renderAdminShell(`${mod.title} — Settings`, mod.route, content, {
     answeringEnabled: answeringOn,
     siteName: cfg.PUBLIC_SITE_NAME,
+    themeCssFilename: resolveAdminThemeCssAsset(adminPack).filename,
   });
 }
 

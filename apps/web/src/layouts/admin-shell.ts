@@ -19,6 +19,7 @@ export interface AdminShellOptions {
   fullWidth?: boolean;
   authenticated?: boolean;
   template?: 'standard' | 'narrow' | 'editor';
+  themeCssFilename?: string;
 }
 
 export type LauncherGroupId = 'Write' | 'Respond' | 'Govern' | 'Configure';
@@ -352,7 +353,7 @@ export function renderAdminShell(
     `<link rel="stylesheet" href="/assets/css/${ADMIN_CSS_FILENAME}" />`,
     isEditorRoute ? `<link rel="stylesheet" href="/assets/css/${ADMIN_EDITOR_CSS_FILENAME}" />` : '',
     isGalleryRoute ? `<link rel="stylesheet" href="/assets/css/${ADMIN_GALLERY_CSS_FILENAME}" />` : '',
-    `<link rel="stylesheet" href="/assets/css/${DEFAULT_ACCENT_CSS_FILENAME}" />`,
+    `<link rel="stylesheet" href="/assets/css/${options?.themeCssFilename || DEFAULT_ACCENT_CSS_FILENAME}" />`,
   ]
     .filter(Boolean)
     .join('\n  ');
