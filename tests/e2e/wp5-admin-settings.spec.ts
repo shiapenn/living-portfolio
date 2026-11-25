@@ -24,9 +24,11 @@ test.describe.serial('WP-5.1: Admin Operations, Calibration, Scoped Constraints 
 
     await tier1Input.fill('0.85');
     await tier1Input.dispatchEvent('input');
-    await expect(warning).toBeHidden();
+    await expect(warning).toBeVisible();
 
     await tier1Input.fill('0.82');
+    await tier1Input.dispatchEvent('input');
+    await expect(warning).toBeHidden();
     await page.click('#btn-save-settings-module');
     await expect(page.locator('#settings-status-banner')).toContainText('Saved.');
 

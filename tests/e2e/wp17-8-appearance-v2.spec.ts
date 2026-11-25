@@ -15,8 +15,7 @@ test.describe.serial('WP-17.8: Appearance v2 (/admin/settings/appearance & /admi
     await page.fill('#setting-theme-accent-seed', '#CCCCCC');
     await expect(page.locator('#appearance-aa-error')).toBeVisible();
     await expect(page.locator('#appearance-aa-error')).toContainText('4.5:1');
-    await page.click('#btn-save-settings-module');
-    await expect(page.locator('#settings-status-banner')).toContainText('4.5:1');
+    await expect(page.locator('#btn-save-settings-module')).toBeDisabled();
 
     // 3. Select built-in pack "Warm ink" for Admin scope -> saves & delivers cacheable theme.<hash>.css
     await page.selectOption('#setting-theme-pack', 'warm-ink');
