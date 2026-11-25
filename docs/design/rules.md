@@ -5,10 +5,10 @@
 
 | Metric | Value |
 | --- | --- |
-| Accepted ADRs | 22 |
+| Accepted ADRs | 23 |
 | Superseded ADRs (excluded) | 1 |
-| Effective Rules | 29 |
-| Areas Covered | 10 |
+| Effective Rules | 34 |
+| Areas Covered | 11 |
 
 ## architecture
 
@@ -28,6 +28,16 @@
 | `R-014-1` | Admin primitives and components pass composition and markup contract unit tests | [ADR-014](../adr/ADR-014-d-comp-primitive-composition.md) | `apps/web/src/primitives/dcomp.test.ts` |
 | `R-015-1` | Public and admin routes render complete empty, error, and 404 system states with actionable CTAs | [ADR-015](../adr/ADR-015-d-sys-system-states.md) | `apps/api/src/conformance/wp11-nav-states.conformance.test.ts` |
 | `R-019-1` | Named z-index tokens enforce modal and toast stacking order without magic numbers | [ADR-019](../adr/ADR-019-d-i-overlays-and-focus.md) | `packages/design-tokens/src/drift.test.ts` |
+
+## content
+
+| Rule | Requirement | Source ADR | Enforced By |
+| --- | --- | --- | --- |
+| `R-024-1` | Admin copy follows the remove-rather-than-add content standard: page description <= 14 words (omitted if self-explanatory; none on Settings index), Settings index module descriptions <= 6 words, section description <= 16 words, field helper <= 12 words, empty state <= 12 words, notice <= 2 sentences, buttons <= 2 words sentence case, and default route static prose <= 60 words | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-024-2` | Rendered admin UI must never contain banned internal tokens ([object Object], undefined, null, NaN, WP-N, ADR-N, <hash>, (s), filenames, API paths, or raw IDs) | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-024-3` | Tabs always have an active selected tab matching the URL (unknown values fall back to the first tab), labels are 1-2 short words, painted label ink boxes never intersect or clip, targets are >= 44px, and overflowing tablists scroll horizontally with scroll-snap and edge fade | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-024-4` | EmptyState has no raised surface and no padding indent: left ink edge aligns with the section heading left ink edge within 1px, renders one sentence <= 12 words plus optional action, and is used consistently across lists, panels, and tab panels | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-024-5` | Item anatomy is uniform at 1280px and 320px: row 1 holds title + trailing status (dot + text + chevron if navigable) aligned to the title row within half a line height, row 2 holds description (wrapping at 320px), optional meta, and trailing item actions per D-L1 | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
 
 ## editor
 

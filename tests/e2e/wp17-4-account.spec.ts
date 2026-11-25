@@ -7,7 +7,6 @@ test.describe.serial('WP-17.4: Account settings (/admin/settings/account, /admin
 
     await page.goto('/admin/account');
     await expect(page.locator('h1')).toContainText('Account');
-    await expect(page.locator('#account-explain-section')).toBeVisible();
 
     // 1. Regenerate recovery codes (UX-47)
     await page.click('#btn-regen-recovery');

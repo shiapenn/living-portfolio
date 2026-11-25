@@ -24,15 +24,12 @@
   gap: var(--lp-space-stack-item-body-to-actionbar) !important;
 }
 .lp-item-content {
+  width: 100%;
   display: grid;
-  grid-template-columns: 1fr;
-  row-gap: var(--lp-space-stack-label-to-control);
-}
-@container (min-width: 400px) {
-  .lp-item-content {
-    grid-template-columns: 1fr auto;
-    column-gap: var(--lp-space-proximity-3);
-  }
+  grid-template-columns: 1fr auto;
+  column-gap: var(--lp-space-proximity-3);
+  row-gap: var(--lp-space-proximity-1);
+  align-items: start;
 }
 
 .lp-btn-as-link {

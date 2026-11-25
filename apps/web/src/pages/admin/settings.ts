@@ -52,7 +52,6 @@ export function renderSettingsIndexPage(
 
   return renderPageTemplate({
     title: 'Settings',
-    description: 'Configure answering, providers, appearance, notifications, and backups.',
     bodyHtml,
   });
 }

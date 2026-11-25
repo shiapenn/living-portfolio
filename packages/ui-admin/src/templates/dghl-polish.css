@@ -23,8 +23,8 @@
   column-gap: var(--lp-space-inset-item-y);
   align-items: start;
 }
-.lp-item-title { grid-column: 1; grid-row: 1; order: 1; }
-.lp-item-status { grid-column: 2; grid-row: 1; align-self: center; justify-self: end; display: inline-flex; align-items: center; gap: var(--lp-space-inline-tag-tag); order: 2; }
+.lp-item-title { grid-column: 1; grid-row: 1; min-width: 0; order: 1; }
+.lp-item-status { grid-column: 2; grid-row: 1; align-self: start; justify-self: end; white-space: nowrap; display: inline-flex; align-items: center; gap: var(--lp-space-inline-tag-tag); order: 2; }
 .lp-item-subtitle { grid-column: 1 / -1; order: 3; }
 .lp-item-body, .lp-item-segments { grid-column: 1 / -1; order: 4; }
 .lp-item-meta { grid-column: 1 / -1; order: 5; }
@@ -34,24 +34,17 @@
 .lp-item-segment { display: flex; flex-direction: column; gap: var(--lp-space-proximity-1); }
 .lp-item-segment-heading { font-size: var(--lp-font-size-12); font-weight: 400; color: var(--text-2); line-height: var(--lp-font-line-16); }
 
+/* D5 (ADR-024): Status stays on the title row at 320px; only description/title wraps */
 @container (max-width: 399px) {
-  .lp-item {
-    grid-template-columns: 1fr;
-  }
-  .lp-item-status {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: stretch;
-    justify-content: space-between;
-  }
-  .lp-item.lp-item-trailing-status,
-  .lp-item.lp-item-trailing-status .lp-item-content {
+  .lp-item,
+  .lp-item .lp-item-content {
     grid-template-columns: 1fr auto;
     column-gap: var(--lp-space-proximity-3);
   }
-  .lp-item.lp-item-trailing-status .lp-item-status {
+  .lp-item-status {
     grid-column: 2;
     grid-row: 1;
+    align-self: start;
     justify-self: end;
     justify-content: flex-end;
   }

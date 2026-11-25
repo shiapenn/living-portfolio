@@ -3,11 +3,11 @@ import { BUILTIN_PROFILES } from '@living-portfolio/core';
 import { escapeHtml } from '../../lib/html.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderActionBar, renderField, renderFormSection, renderItem, renderList, renderText } from '../../primitives/index.js';
+import { renderActionBar, renderField, renderFormSection, renderItem, renderList } from '../../primitives/index.js';
 import { renderStatusLine } from '../../components/index.js';
 
 export async function renderAdminStructurePage(
-  clientOrRepo: any,
+  _clientOrRepo: any,
   options: { siteName?: string; answeringEnabled?: boolean; initialSettings?: Record<string, unknown>; nonce?: string } = {}
 ): Promise<string> {
   const cfg = loadConfig();
@@ -22,12 +22,21 @@ export async function renderAdminStructurePage(
   const profilesListHtml = renderList({
     id: 'structure-profiles-list',
     variant: 'plain',
-    itemsHtml: profiles.map((p: any) => renderItem({
-      title: String(p.label || p.name || p.id),
-      subtitle: `Roles: ${Array.isArray(p.roles) ? p.roles.join(', ') : 'General'}`,
-      statusLabel: 'Active',
-      statusTone: 'ok',
-    })).join(''),
+    itemsHtml: profiles
+      .map((p) => {
+        const roleLabels = Array.isArray(p.roles)
+          ? p.roles
+              .map((r) => (typeof r === 'string' ? r : String(r?.label || r?.id || '')))
+              .filter(Boolean)
+          : [];
+        return renderItem({
+          title: String(p.label || p.id),
+          subtitle: roleLabels.length > 0 ? `Roles: ${roleLabels.join(', ')}` : undefined,
+          statusLabel: 'Active',
+          statusTone: 'ok',
+        });
+      })
+      .join(''),
   });
 
   const bodyHtml = `
@@ -35,25 +44,15 @@ export async function renderAdminStructurePage(
       ${renderStatusLine({ id: 'structure-status-line' })}
 
       ${renderFormSection({
-        id: 'structure-explain-section',
-        title: 'How structure and exclusions work',
-        fieldsHtml: `
-          ${renderText({ variant: 'description', text: 'What it does: Lists entry types and manages private names or client terms blocked during publishing checks.' })}
-          ${renderText({ variant: 'description', text: 'Impact: Terms added to exclusions trigger a confirmation warning before any entry can be published.' })}
-        `,
-      })}
-
-      ${renderFormSection({
         id: 'structure-profiles-section',
         title: 'Entry profiles',
-        description: 'Built-in profiles organize your writing into Work, Writing, and Build sections.',
         fieldsHtml: profilesListHtml,
       })}
 
       ${renderFormSection({
         id: 'structure-exclusions-section',
         title: 'Private detail exclusions',
-        description: 'One client, project, or codename per line. Matches are flagged before publishing.',
+        description: 'Matched terms require confirmation before publishing.',
         fieldsHtml: renderField({
           kind: 'textarea',
           id: 'structure-redaction-exclusions',
@@ -61,7 +60,7 @@ export async function renderAdminStructurePage(
           label: 'Excluded terms',
           value: exclusions.join('\n'),
           rows: 5,
-          help: 'Entries containing these terms require explicit confirmation before becoming public.',
+          help: 'One client, project, or codename per line.',
         }),
       })}
 
@@ -96,7 +95,7 @@ export async function renderAdminStructurePage(
 
   const content = renderPageTemplate({
     title: 'Structure',
-    description: 'Entry profiles, topic vocabulary, and private detail exclusions.',
+    description: 'Entry profiles and private detail exclusions.',
     bodyHtml,
   });
 

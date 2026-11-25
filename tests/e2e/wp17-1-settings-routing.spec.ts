@@ -8,8 +8,6 @@ test.describe.serial('WP-17.1: Settings templates & Routing (/admin/settings/ans
     // 1. /admin/routing renders the Answering settings module
     await page.goto('/admin/routing');
     await expect(page.locator('h1')).toContainText('Answering');
-    await expect(page.locator('#answering-explain-section')).toBeVisible();
-    await expect(page.locator('#answering-explain-section')).toContainText('What it does:');
 
     const bodyText = await page.locator('main').innerText();
     expect(bodyText).not.toMatch(/Simulated Degradation Mode|Facet Known Threshold|Spec §11|shipped default/i);

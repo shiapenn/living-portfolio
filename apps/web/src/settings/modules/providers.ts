@@ -17,7 +17,7 @@ function toProviderId(name: string): string {
 export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
   id: 'providers',
   title: 'Providers',
-  summary: 'The local search model runs on this server. Configure your answering model and fallback behaviour.',
+  summary: 'Answering model and fallback mode',
   icon: 'layers',
   order: 2,
   route: '/admin/settings/providers',

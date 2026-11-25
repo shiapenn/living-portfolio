@@ -7,7 +7,7 @@ import { INBOX_STRINGS } from '../../strings/admin/inbox.js';
 
 export async function renderAdminAuditRulesPage(
   clientOrRepo: any,
-  options: { status?: string; siteName?: string; answeringEnabled?: boolean; nonce?: string } = {}
+  options: { status?: string; siteName?: string; answeringEnabled?: boolean; nonce?: string; lastCheckedAt?: string | null } = {}
 ): Promise<string> {
   const activeStatus =
     options.status === 'confirmed' || options.status === 'revoked' || options.status === 'contradictions'
@@ -32,51 +32,73 @@ export async function renderAdminAuditRulesPage(
     } catch { rules = []; }
   }
 
-  const tabsHtml = `<div data-c="Tabs" data-rel="tabs" class="lp-tabs" role="tablist" aria-label="Rule status filters">
+  const tabsHtml = `<div data-c="Tabs" data-rel="tabs" class="lp-tabs" role="tablist" aria-label="Audit views">
     <a id="audit-tab-proposed" href="/admin/audit?status=proposed" role="tab" aria-selected="${activeStatus === 'proposed' ? 'true' : 'false'}" class="lp-tab${activeStatus === 'proposed' ? ' lp-tab-active' : ''}">${escapeHtml(INBOX_STRINGS.audit.tabs.proposed)}</a>
     <a id="audit-tab-confirmed" href="/admin/audit?status=confirmed" role="tab" aria-selected="${activeStatus === 'confirmed' ? 'true' : 'false'}" class="lp-tab${activeStatus === 'confirmed' ? ' lp-tab-active' : ''}">${escapeHtml(INBOX_STRINGS.audit.tabs.confirmed)}</a>
     <a id="audit-tab-revoked" href="/admin/audit?status=revoked" role="tab" aria-selected="${activeStatus === 'revoked' ? 'true' : 'false'}" class="lp-tab${activeStatus === 'revoked' ? ' lp-tab-active' : ''}">${escapeHtml(INBOX_STRINGS.audit.tabs.revoked)}</a>
+    <a id="audit-tab-contradictions" href="/admin/audit?status=contradictions" role="tab" aria-selected="${activeStatus === 'contradictions' ? 'true' : 'false'}" class="lp-tab${activeStatus === 'contradictions' ? ' lp-tab-active' : ''}">Contradictions</a>
   </div>`;
 
   let mainContentHtml = '';
   if (activeStatus === 'contradictions') {
     const activeConflicts = conflicts.filter((c) => c.status !== 'dismissed' && c.status !== 'resolved');
-    const conflictItemsHtml = activeConflicts.length > 0
+    const initialState = activeConflicts.length > 0 ? 'found' : options.lastCheckedAt ? 'clean' : 'idle';
+    const conflictBodyHtml = activeConflicts.length > 0
       ? renderList({
           id: 'audit-conflicts-list',
           variant: 'plain',
-          itemsHtml: activeConflicts.map((c) => renderItem({
-            title: `Claim pair: ${String(c.claim_a)} vs ${String(c.claim_b)}`,
-            subtitle: `Detected ${c.at ? new Date(c.at).toISOString().slice(0, 10) : 'recently'} · confidence ${Math.round((Number(c.confidence) || 0.8) * 100)}%`,
-            statusLabel: 'Pending',
-            statusTone: 'warn',
-            actions: {
-              level: 'item',
-              secondary: { label: 'Supersede', variant: 'secondary', size: 'sm', dataAttrs: { 'conflict-id': String(c.id), 'conflict-res': 'supersedes' } },
-              textAction: { label: 'Dismiss', variant: 'text', size: 'sm', dataAttrs: { 'conflict-id': String(c.id), 'conflict-res': 'dismiss' } },
-            },
-            attributes: `data-conflict-row="${escapeHtml(String(c.id))}"`,
-          })).join(''),
+          itemsHtml: activeConflicts.map((c) => {
+            const claimA = String(c.claim_a_text || c.claim_a || 'Claim A');
+            const claimB = String(c.claim_b_text || c.claim_b || 'Claim B');
+            const entryALink = c.entry_a_id ? `Entry: ${String(c.entry_a_title || 'View entry')}` : '';
+            const entryBLink = c.entry_b_id ? `Entry: ${String(c.entry_b_title || 'View entry')}` : '';
+            return renderItem({
+              title: 'Conflicting claims',
+              subtitle: `Confidence ${Math.round((Number(c.confidence) || 0.8) * 100)}%`,
+              segments: [
+                { heading: entryALink || 'First claim', body: `"${claimA}"` },
+                { heading: entryBLink || 'Second claim', body: `"${claimB}"` },
+              ],
+              statusLabel: 'Pending',
+              statusTone: 'warn',
+              actions: {
+                level: 'item',
+                secondary: { label: 'Supersede', variant: 'secondary', size: 'sm', dataAttrs: { 'conflict-id': String(c.id), 'conflict-res': 'supersedes' } },
+                textAction: { label: 'Dismiss', variant: 'text', size: 'sm', dataAttrs: { 'conflict-id': String(c.id), 'conflict-res': 'dismiss' } },
+              },
+              attributes: `data-conflict-row="${escapeHtml(String(c.id))}"`,
+            });
+          }).join(''),
         })
       : renderEmptyState({
           id: 'audit-conflicts-empty',
-          headingTag: 'h2',
-          title: 'No contradictions detected',
-          body: 'Run the contradiction check to scan published claims for conflicting statements.',
+          body: initialState === 'clean' ? 'No contradictions found.' : 'Not checked yet.',
         });
 
+    const checkedMetaHtml = options.lastCheckedAt
+      ? renderText({ id: 'audit-last-checked', variant: 'caption', text: `Last checked ${new Date(options.lastCheckedAt).toISOString().slice(0, 16).replace('T', ' ')}` })
+      : `<p id="audit-last-checked" data-c="Text" data-variant="caption" class="lp-caption lp-is-hidden"></p>`;
+
     mainContentHtml = `
-      ${renderFormSection({
-        id: 'audit-conflicts-section',
-        title: 'Contradictions and stale claims',
-        description: 'Review conflicting claims across entries and record whether a newer claim supersedes an earlier one.',
-        fieldsHtml: renderText({ id: 'audit-detect-summary', variant: 'caption', text: `${activeConflicts.length} pending contradiction(s).` }),
-        actionBarHtml: renderActionBar({
-          level: 'item',
-          secondary: { id: 'btn-detect-conflicts', label: 'Run check', variant: 'secondary', type: 'button', size: 'sm' },
-        }),
-      })}
-      ${conflictItemsHtml}
+      <div id="audit-contradictions-panel" data-contradictions-state="${initialState}" class="lp-stack lp-gap-section">
+        ${renderFormSection({
+          id: 'audit-conflicts-section',
+          title: 'Contradictions',
+          fieldsHtml: `
+            <div id="audit-conflicts-region" aria-live="polite" class="lp-stack lp-gap-related">
+              ${conflictBodyHtml}
+              ${checkedMetaHtml}
+            </div>
+            <div id="audit-conflicts-error" data-c="Notice" class="lp-notice lp-notice-danger lp-is-hidden">
+              Could not run contradiction check.
+            </div>
+          `,
+          actionBarHtml: renderActionBar({
+            level: 'item',
+            secondary: { id: 'btn-detect-conflicts', label: 'Run check', variant: 'secondary', type: 'button', size: 'sm' },
+          }),
+        })}
+      </div>
     `;
   } else {
     mainContentHtml = rules.length > 0
@@ -123,7 +145,7 @@ export async function renderAdminAuditRulesPage(
             })
             .join(''),
         })
-      : renderEmptyState({ id: 'audit-empty', headingTag: 'h2', title: INBOX_STRINGS.audit.emptyTitle, body: INBOX_STRINGS.audit.emptyBody });
+      : renderEmptyState({ id: 'audit-empty', body: INBOX_STRINGS.audit.emptyBody });
   }
 
   const bodyHtml = `
@@ -154,21 +176,54 @@ export async function renderAdminAuditRulesPage(
             window.location.reload();
           });
         }
+        var panel = document.getElementById('audit-contradictions-panel');
         var detectBtn = document.getElementById('btn-detect-conflicts');
-        if (detectBtn) {
-          detectBtn.addEventListener('click', async function () {
-            detectBtn.disabled = true;
+        var region = document.getElementById('audit-conflicts-region');
+        var errBox = document.getElementById('audit-conflicts-error');
+        var lastCheckedEl = document.getElementById('audit-last-checked');
+        var runCheck = async function () {
+          if (!detectBtn || !panel) return;
+          panel.setAttribute('data-contradictions-state', 'running');
+          panel.setAttribute('aria-busy', 'true');
+          detectBtn.disabled = true;
+          detectBtn.textContent = 'Checking…';
+          if (errBox) errBox.classList.add('lp-is-hidden');
+          try {
             var res = await apiClient('/api/audit/topology-conflicts/detect', { method: 'POST', body: '{}' });
-            if (res && res.ok) {
-              var data = await res.json().catch(function () { return {}; });
-              if (statusEl) statusEl.textContent = 'Check complete. Found ' + (data.detected || 0) + ' contradiction(s).';
-              if ((data.detected || 0) > 0) window.location.reload();
-            } else if (statusEl) {
-              statusEl.textContent = 'Could not run contradiction check.';
+            if (!res || !res.ok) throw new Error('Check failed');
+            var data = await res.json().catch(function () { return {}; });
+            var count = Number(data.detected || 0);
+            var nowStr = new Date().toISOString().slice(0, 16).replace('T', ' ');
+            if (count > 0) {
+              panel.setAttribute('data-contradictions-state', 'found');
+              if (statusEl) statusEl.textContent = count === 1 ? 'Found 1 contradiction.' : 'Found ' + count + ' contradictions.';
+              window.location.reload();
+              return;
             }
+            panel.setAttribute('data-contradictions-state', 'clean');
+            if (region) {
+              var emptyP = region.querySelector('#audit-conflicts-empty .lp-empty-body');
+              if (emptyP) emptyP.textContent = 'No contradictions found.';
+            }
+            if (lastCheckedEl) {
+              lastCheckedEl.textContent = 'Last checked ' + nowStr;
+              lastCheckedEl.classList.remove('lp-is-hidden');
+            }
+            if (statusEl) statusEl.textContent = 'No contradictions found.';
+          } catch {
+            panel.setAttribute('data-contradictions-state', 'error');
+            if (errBox) errBox.classList.remove('lp-is-hidden');
+            detectBtn.textContent = 'Retry';
+          } finally {
+            panel.removeAttribute('aria-busy');
             detectBtn.disabled = false;
-          });
-        }
+            if (panel.getAttribute('data-contradictions-state') !== 'error') {
+              detectBtn.textContent = 'Run check';
+            }
+          }
+        };
+        if (detectBtn) detectBtn.addEventListener('click', runCheck);
+
         var conflictList = document.getElementById('audit-conflicts-list');
         if (conflictList) {
           conflictList.addEventListener('click', async function (e) {
@@ -182,8 +237,14 @@ export async function renderAdminAuditRulesPage(
               body: JSON.stringify({ resolution: resolution }),
             });
             if (res && res.ok) {
+              var row = conflictList.querySelector('[data-conflict-row="' + id + '"]');
+              if (row) row.remove();
+              var remaining = conflictList.querySelectorAll('[data-conflict-row]').length;
+              if (panel) panel.setAttribute('data-contradictions-state', remaining === 0 ? 'clean' : 'resolved');
+              if (remaining === 0 && region) {
+                region.innerHTML = '<div id="audit-conflicts-empty" class="lp-empty-state"><p class="lp-empty-body">No contradictions found.</p></div>';
+              }
               if (statusEl) statusEl.textContent = 'Contradiction resolved.';
-              window.location.reload();
             } else {
               if (statusEl) statusEl.textContent = 'Could not resolve contradiction.';
               btn.disabled = false;

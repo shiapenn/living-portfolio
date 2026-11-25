@@ -156,6 +156,13 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
           return cs.position !== 'fixed' && cs.position !== 'absolute';
         });
         for (let i = 1; i < kids.length; i++) {
+          // D5 (ADR-024): Item title and trailing status intentionally share row 1 at 320px
+          if (
+            kids[i - 1].classList.contains('lp-item-title') &&
+            kids[i].classList.contains('lp-item-status')
+          ) {
+            continue;
+          }
           const prev = kids[i - 1].getBoundingClientRect();
           const curr = kids[i].getBoundingClientRect();
           if (curr.top < prev.bottom - 2) {
@@ -350,7 +357,9 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
             }
           }
         }
-        if (tl.scrollWidth > tl.clientWidth + 2) {
+        // D1 (ADR-024): overflowing tablists scroll horizontally with scroll-snap & edge fade
+        const tlOverflowX = getComputedStyle(tl).overflowX;
+        if (tl.scrollWidth > tl.clientWidth + 2 && tlOverflowX !== 'auto' && tlOverflowX !== 'scroll') {
           violations.tabs++;
           details.tabs.push(`Tablist overflows horizontally (${tl.scrollWidth} > ${tl.clientWidth})`);
         }

@@ -1,7 +1,7 @@
 export const INBOX_STRINGS = {
   inbox: {
     title: 'Inbox',
-    subtitle: 'Visitor questions routed to you for review. Reply directly or turn an answer into a reusable rule.',
+    subtitle: 'Visitor questions awaiting review or reusable answer rules.',
     filters: {
       pending: 'Pending',
       approved: 'Replied',
@@ -36,8 +36,8 @@ export const INBOX_STRINGS = {
     ruleSavedStatus: 'Saved as a pending answer rule. Review it in Answer rules.',
   },
   audit: {
-    title: 'Answer rules',
-    subtitle: 'Rules learned from your inbox replies and rejections. Pending rules require confirmation before affecting answers.',
+    title: 'Audit',
+    subtitle: 'Review answer rules and contradictions before they affect replies.',
     tabs: {
       proposed: 'Pending',
       confirmed: 'Active',
@@ -48,7 +48,7 @@ export const INBOX_STRINGS = {
     confirmRule: 'Confirm rule',
     revokeRule: 'Revoke',
     emptyTitle: 'No rules in this state',
-    emptyBody: 'Rules created from Inbox replies or declined questions appear here.',
+    emptyBody: 'No rules in this view yet.',
     updatedStatus: 'Answer rule updated.',
     errorStatus: 'Could not update rule. Please try again.',
   },

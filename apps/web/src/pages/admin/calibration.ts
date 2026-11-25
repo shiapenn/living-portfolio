@@ -2,8 +2,8 @@ import { loadConfig } from '@living-portfolio/config';
 import { escapeHtml } from '../../lib/html.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderActionBar, renderChoiceGroup, renderFormSection, renderItem, renderList, renderText } from '../../primitives/index.js';
-import { renderStatusLine } from '../../components/index.js';
+import { renderActionBar, renderChoiceGroup, renderFormSection, renderItem, renderList } from '../../primitives/index.js';
+import { renderEmptyState, renderStatusLine } from '../../components/index.js';
 
 export async function renderAdminCalibrationPage(
   clientOrRepo: any,
@@ -42,34 +42,25 @@ export async function renderAdminCalibrationPage(
           attributes: `data-calibration-id="${escapeHtml(String(h.id))}"`,
         })).join(''),
       })
-    : renderText({ id: 'calibration-history-empty', variant: 'caption', text: 'No parameter changes have been applied yet.' });
+    : renderEmptyState({ id: 'calibration-history-empty', body: 'No parameter changes applied yet.' });
 
   const bodyHtml = `
     <div class="lp-stack lp-gap-section">
       ${renderStatusLine({ id: 'calibration-status-line' })}
 
       ${renderFormSection({
-        id: 'calibration-explain-section',
-        title: 'How self-calibration works',
-        fieldsHtml: `
-          ${renderText({ variant: 'description', text: 'What it does: Controls automatic threshold proposals and lets you apply or roll back parameter adjustments.' })}
-          ${renderText({ variant: 'description', text: 'Safety gate: Parameter adjustments ship off by default, require at least 20 samples, and change by at most 0.05 per step.' })}
-        `,
-      })}
-
-      ${renderFormSection({
         id: 'calibration-mechanisms-section',
-        title: 'Calibration mechanisms',
-        description: 'Each mechanism can be switched on or off independently.',
+        title: 'Calibration switches',
+        description: 'Adjustments require 20 samples and step at most 0.05.',
         fieldsHtml: renderChoiceGroup({
           name: 'calibration-mechanisms',
           mode: 'multiple',
           variant: 'card',
           options: [
-            { id: 'cal-mech-suggest', value: 'suggest', label: 'Suggestion thresholds (min 20 samples, max step 0.05)', checked: mechSuggest },
-            { id: 'cal-mech-routing', value: 'routing', label: 'Routing calibration (min 20 samples, max step 0.05)', checked: mechRouting },
-            { id: 'cal-mech-topology', value: 'topology', label: 'Contradiction detection (proposals only)', checked: mechTopology },
-            { id: 'cal-mech-scoped', value: 'scoped', label: 'Answer rule proposals after replies (proposals only)', checked: mechScoped },
+            { id: 'cal-mech-suggest', value: 'suggest', label: 'Suggestion thresholds', checked: mechSuggest },
+            { id: 'cal-mech-routing', value: 'routing', label: 'Routing calibration', checked: mechRouting },
+            { id: 'cal-mech-topology', value: 'topology', label: 'Contradiction detection', checked: mechTopology },
+            { id: 'cal-mech-scoped', value: 'scoped', label: 'Answer rule proposals', checked: mechScoped },
           ],
         }),
         actionBarHtml: renderActionBar({
@@ -81,14 +72,12 @@ export async function renderAdminCalibrationPage(
       ${renderFormSection({
         id: 'calibration-proposals-section',
         title: 'Pending proposals',
-        description: 'Review suggested threshold changes before applying them.',
-        fieldsHtml: `<div id="calibration-proposals-list" data-c="List" data-variant="plain" class="lp-list lp-list-plain lp-is-empty"></div>${renderText({ id: 'calibration-proposals-empty', variant: 'caption', text: 'No pending proposals right now.' })}`,
+        fieldsHtml: renderEmptyState({ id: 'calibration-proposals-empty', body: 'No pending proposals right now.' }),
       })}
 
       ${renderFormSection({
         id: 'calibration-history-section',
         title: 'Change history',
-        description: 'Every applied change can be rolled back in one click.',
         fieldsHtml: historyItemsHtml,
       })}
     </div>
@@ -142,7 +131,7 @@ export async function renderAdminCalibrationPage(
 
   const content = renderPageTemplate({
     title: 'Calibration',
-    description: 'Self-tuning switches, pending proposals, and rollback history.',
+    description: 'Self-tuning switches, proposals, and rollback history.',
     bodyHtml,
   });
 

@@ -286,4 +286,6 @@
 | `L053` | Design System Health Report (Generated) | `active` | [health.md](design/health.md) | — |
 | `L054` | ADR-023: Unified Design Framework, Differentiated Languages | `active` | [ADR-023-unified-design-framework.md](adr/ADR-023-unified-design-framework.md) | — |
 | `L055` | WP-17 Progress & Time Ledger | `active` | [wp17-progress.md](plans/wp17-progress.md) | — |
+| `L056` | ADR-024: Content Standard and Admin UI Polish Contracts | `active` | [ADR-024-content-standard.md](adr/ADR-024-content-standard.md) | — |
+| `L057` | Admin Content Standard | `active` | [content.md](design/content.md) | — |
 

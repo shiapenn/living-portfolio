@@ -297,27 +297,43 @@
   min-width: var(--lp-size-grid-card-min);
 }
 
-.lp-tablist {
+.lp-tablist,
+.lp-tabs {
   display: flex;
   flex-wrap: nowrap;
   gap: var(--lp-space-stack-field-to-field);
   border-bottom: var(--lp-border-hairline) solid var(--border-subtle);
   margin: 0;
   overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.lp-tablist::-webkit-scrollbar,
+.lp-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.lp-tabs.lp-tabs-overflow-end,
+.lp-tablist.lp-tabs-overflow-end {
+  -webkit-mask-image: linear-gradient(to right, var(--text) 88%, transparent 100%);
+  mask-image: linear-gradient(to right, var(--text) 88%, transparent 100%);
 }
 
 .lp-tab {
   position: relative;
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
+  scroll-snap-align: start;
   box-sizing: border-box;
   background: transparent;
   border: none;
-  border-bottom: var(--lp-border-focus) solid transparent;
+  border-bottom: 0;
   border-radius: var(--lp-radius-r1) var(--lp-radius-r1) 0 0;
   padding: 0 var(--lp-space-inset-item-x);
-  height: var(--lp-size-target-min);
-  min-height: var(--lp-size-target-min);
+  height: var(--lp-size-hit-area);
+  min-height: var(--lp-size-hit-area);
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14);
   font-weight: 600;
@@ -327,9 +343,11 @@
   cursor: pointer;
 }
 
-.lp-tab[aria-selected="true"] {
+.lp-tab[aria-selected="true"],
+.lp-tab.lp-tab-active {
   color: var(--accent);
-  border-bottom-color: var(--accent);
+  border-bottom: 0;
+  box-shadow: inset 0 calc(-1 * var(--lp-border-focus)) 0 0 var(--accent);
 }
 
 .lp-table-wrap {
@@ -357,12 +375,12 @@
 
 .lp-empty-state {
   text-align: left;
-  padding: var(--lp-space-inset-dialog);
-  border-radius: var(--lp-radius-container);
-  background: var(--surface-raised);
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
   display: flex;
   flex-direction: column;
-  gap: var(--lp-space-stack-field-to-field);
+  gap: var(--lp-space-stack-label-to-control);
 }
 
 .lp-empty-title {

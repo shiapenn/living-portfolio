@@ -10,6 +10,10 @@ WP-16.N design system consolidation:
 - Migrated all admin CSS out of `apps/web/src/styles.ts` into layered, route-split hashed bundles in `@living-portfolio/ui-admin` with zero pixel regression.
 - Added ADR-generated `rules.md`, `ds:impact`, `ds:health`, nightly health workflow, and changeset governance.
 
+## MINOR (wp17-9-polish-contracts)
+
+Implement WP-17.9 polish contracts (ADR-024, D1-D6): horizontal scroll-snap + edge-fade Tabs with >= 44px targets, unboxed/unindented EmptyState aligned to heading ink edge, uniform Item anatomy across 320px and 1280px, Appearance v2 composed preview container, and single-seed OKLCH light/dark accent derivation.
+
 ## MINOR (wp17-appearance-v2)
 
 Add Appearance v2 typed theme-pack schema, WCAG AA contrast validation, built-in packs, and cacheable `theme.<hash>.css` (`@layer user-theme`) generator with zero-cost default fallback (WP-17.8).
