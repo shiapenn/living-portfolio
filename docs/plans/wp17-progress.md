@@ -19,8 +19,8 @@ Authoritative live tracker for `WP-17` (Settings, maintenance, account, and Appe
 | S3 | WP-17.4 | Account (`/admin/settings/account` & `/admin/account`: username/password, TOTP re-enrol, recovery codes, API tokens, sign out other sessions, UX-49) | PR #276 (`0d06655`, A178) | done | CI run `45549332627` green; `wp17-4-account.spec.ts` |
 | S4 | WP-17.5 | Audit (Contradictions, Stale claims), Calibration (per-mechanism switches, proposals, history, rollback), Structure (profiles, facets, hard constraints) | PR #276 (`0d06655`, A178) | done | CI run `45549332627` green; `wp17-5-audit-calibration-structure.spec.ts` |
 | S5 | WP-17.6 | Bookings (list, detail, status) & Ventures (create, edit, link entries feeding `/build`) | PR #276 (`0d06655`, A178) | done | CI run `45549332627` green; `wp17-6-bookings-ventures.spec.ts` |
-| S6 | WP-17.7 | Pages & Home settings (`/admin/pages` About/Now/Uses/Home statement with revisions, `/admin/settings/home` Featured/Recent counts, featured toggle) | pending | pending | — |
-| S7 | WP-17.8 | Appearance v2 (typed theme-pack schema, live preview, AA contrast validation, constrained customisation, admin+public scopes, `theme.<hash>.css`, JSON import/export; `gate: L-review`) | pending | pending | — |
+| S6 | WP-17.7 | Pages & Home settings (`/admin/pages` About/Now/Uses/Home statement with revisions, `/admin/settings/home` Featured/Recent counts, featured toggle) | PR #277 (`a8d2130`, A179) | done | CI run `45551672459` green; `wp17-7-pages-home.spec.ts` |
+| S7 | WP-17.8 | Appearance v2 (typed theme-pack schema, live preview, AA contrast validation, constrained customisation, admin+public scopes, `theme.<hash>.css`, JSON import/export; `gate: L-review`) | PR #277 (`a8d2130`, A179) | done (L-review sheets delivered) | CI run `45551672459` green; CodeQL `45551672449` green; `wp17-8-appearance-v2.spec.ts`; `~/Desktop/wp17-contact-sheets.zip` |
 
 ## Time Ledger
 
@@ -31,3 +31,4 @@ Authoritative live tracker for `WP-17` (Settings, maintenance, account, and Appe
 | S2 (WP-17.3) | 2026-11-25 12:22 | 2026-11-25 12:27 | 5 | Backups, Export & Visibility (stacked while PR #275 CI ran) |
 | S3 (WP-17.4) | 2026-11-25 12:28 | 2026-11-25 12:34 | 6 | Account settings (stacked while PR #275 CI ran) |
 | S4-S5 (WP-17.5/17.6) | 2026-11-25 12:34 | 2026-11-25 12:53 | 19 | Audit Contradictions, Calibration, Structure, Bookings, Ventures + launcher scroll fix (PR #276, A178) |
+| S6-S7 (WP-17.7/17.8) | 2026-11-25 12:44 | 2026-11-25 13:15 | 31 | Pages editor, Home settings, Appearance v2 (`ui-core` theme-pack + `theme.<hash>.css`), full census, contact sheets (PR #277, A179) |

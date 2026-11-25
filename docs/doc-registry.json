@@ -2089,5 +2089,13 @@
     "path": "docs/execution-reports/A178-wp-173-to-176-settings-and-governance-modules.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A179",
+    "title": "WP-17.7 and 17.8 pages home appearance",
+    "class": "A",
+    "path": "docs/execution-reports/A179-wp-177-and-178-pages-home-appearance.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
