@@ -322,14 +322,32 @@ export function createApp(
   app.route('/healthz', healthRouter);
   app.get('/openapi.json', (c) => c.json(openApiDoc));
 
-  // Search engine crawler instructions (§6.4 item 2, OSR-19)
+  // Search engine crawler instructions (§6.4 item 2, OSR-19, WP-17.3 UX-42)
   app.get('/robots.txt', (c) => {
     if (cfg.DEPLOYMENT_CLASS === 'staging') {
       return c.text('User-agent: *\nDisallow: /\n', 200, {
         'Content-Type': 'text/plain; charset=utf-8',
       });
     }
-    return c.text('User-agent: *\nDisallow: /api/\n', 200, {
+    const allowSearch = runtimeState.allowSearchIndexing !== false;
+    const blockAi = Boolean(runtimeState.blockAiCrawlers);
+    const lines: string[] = ['User-agent: *'];
+    if (!allowSearch) {
+      lines.push('Disallow: /');
+    } else {
+      lines.push('Allow: /');
+      lines.push('Disallow: /admin');
+      lines.push('Disallow: /api/');
+      lines.push('Disallow: /api');
+      lines.push('Disallow: /ask/status');
+    }
+    if (blockAi) {
+      for (const bot of ['GPTBot', 'ClaudeBot', 'CCBot']) {
+        lines.push('', `User-agent: ${bot}`, 'Disallow: /');
+      }
+    }
+    lines.push('');
+    return c.text(lines.join('\n'), 200, {
       'Content-Type': 'text/plain; charset=utf-8',
     });
   });

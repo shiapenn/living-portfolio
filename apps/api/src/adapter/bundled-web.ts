@@ -7,6 +7,10 @@ import {
   renderEntryHistoryPage,
   renderAdminInboxPage,
   renderAdminAuditRulesPage,
+  renderAdminCalibrationPage,
+  renderAdminStructurePage,
+  renderAdminBookingsPage,
+  renderAdminVenturesPage,
   renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
@@ -113,6 +117,36 @@ export function mountBundledWeb(
         })
       )
     );
+    app.get('/admin/calibration', auth.requireAdminMiddleware(), async (c) =>
+      c.html(
+        await renderAdminCalibrationPage(repo, {
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+          initialSettings: runtimeState,
+        })
+      )
+    );
+    app.get('/admin/structure', auth.requireAdminMiddleware(), async (c) =>
+      c.html(
+        await renderAdminStructurePage(repo, {
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+          initialSettings: runtimeState,
+        })
+      )
+    );
+    app.get('/admin/bookings', auth.requireAdminMiddleware(), async (c) =>
+      c.html(
+        await renderAdminBookingsPage(repo, {
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+        })
+      )
+    );
+    app.get('/admin/ventures', auth.requireAdminMiddleware(), async (c) =>
+      c.html(
+        await renderAdminVenturesPage(repo, {
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+        })
+      )
+    );
     app.get('/admin/import', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminImportPage(repo))
     );
@@ -132,6 +166,11 @@ export function mountBundledWeb(
       if (html) return c.html(html);
       return c.html(renderAdminSectionPage(c.req.path));
     });
+    app.get('/admin/account', auth.requireAdminMiddleware(), async (c) => {
+      const html = await renderAdminSettingsModulePage(repo, 'account', runtimeState);
+      if (html) return c.html(html);
+      return c.html(renderAdminSectionPage(c.req.path));
+    });
     app.get('/admin/settings/:id', auth.requireAdminMiddleware(), async (c) => {
       const html = await renderAdminSettingsModulePage(repo, c.req.param('id') || '', runtimeState);
       if (html) return c.html(html);
@@ -141,9 +180,6 @@ export function mountBundledWeb(
       '/admin/quick-log',
       '/quick-log',
       '/admin/pages',
-      '/admin/bookings',
-      '/admin/calibration',
-      '/admin/structure',
       '/admin/theme',
     ];
     for (const routePath of adminSectionRoutes) {
@@ -170,7 +206,11 @@ export function mountBundledWeb(
     : undefined;
 
   // Mount the public web application routes
-  const { app: webApp } = createWebApp({ client: repo as any, checkSession });
+  const { app: webApp } = createWebApp({
+    client: repo as any,
+    checkSession,
+    getSettings: () => (runtimeState as unknown as Record<string, unknown>) ?? {},
+  });
   app.route('/', webApp);
 
   app.notFound((c) => {

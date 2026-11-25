@@ -42,6 +42,10 @@ export {
 export { renderEntryHistoryPage } from "./pages/admin/entries/history.js";
 export { renderAdminInboxPage } from "./pages/admin/inbox.js";
 export { renderAdminAuditRulesPage } from "./pages/admin/audit.js";
+export { renderAdminCalibrationPage } from "./pages/admin/calibration.js";
+export { renderAdminStructurePage } from "./pages/admin/structure.js";
+export { renderAdminBookingsPage } from "./pages/admin/bookings.js";
+export { renderAdminVenturesPage } from "./pages/admin/ventures.js";
 export { renderAdminSettingsPage, renderAdminSettingsModulePage } from "./pages/admin/settings.js";
 export { renderAdminLoginPage } from "./pages/admin/login.js";
 export { renderAdminSetupPage } from "./pages/admin/setup.js";

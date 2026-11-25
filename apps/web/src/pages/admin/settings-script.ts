@@ -132,7 +132,29 @@ export const SETTINGS_SCRIPT = `
                 });
                 setBanner(res.ok ? 'Saved.' : 'Could not save notification settings.', !res.ok);
               } else if (moduleName === 'backups') {
-                setBanner('Saved.', false);
+                const destEl = document.getElementById('setting-backup-destination');
+                const keyEl = document.getElementById('setting-backup-age-key');
+                const res = await apiClient('/api/settings/backups', {
+                  method: 'PATCH',
+                  body: JSON.stringify({
+                    destination: destEl ? destEl.value.trim() : '',
+                    agePublicKey: keyEl ? keyEl.value.trim() : '',
+                  })
+                });
+                setBanner(res.ok ? 'Saved.' : 'Could not save backup settings.', !res.ok);
+              } else if (moduleName === 'visibility') {
+                const searchEl = document.getElementById('setting-vis-search');
+                const aiEl = document.getElementById('setting-vis-ai-crawlers');
+                const fedEl = document.getElementById('setting-vis-federation');
+                const res = await apiClient('/api/settings/visibility', {
+                  method: 'PATCH',
+                  body: JSON.stringify({
+                    allowSearchIndexing: searchEl ? searchEl.checked : true,
+                    blockAiCrawlers: aiEl ? aiEl.checked : false,
+                    federationEnabled: fedEl ? fedEl.checked : false,
+                  })
+                });
+                setBanner(res.ok ? 'Saved.' : 'Could not save visibility settings.', !res.ok);
               }
             } catch {
               setBanner('Network error saving settings.', true);
@@ -164,8 +186,23 @@ export const SETTINGS_SCRIPT = `
           btnDrill.addEventListener('click', async function() {
             btnDrill.setAttribute('disabled', 'true');
             try {
-              const res = await apiClient('/api/settings/backups/run-drill', { method: 'POST', body: '{}' });
-              drillResult.textContent = res.ok ? 'Restore drill passed.' : 'Restore drill is not enabled in this environment.';
+              const destEl = document.getElementById('setting-backup-destination');
+              const keyEl = document.getElementById('setting-backup-age-key');
+              const dest = destEl && 'value' in destEl ? String(destEl.value).trim() : '';
+              const ageKey = keyEl && 'value' in keyEl ? String(keyEl.value).trim() : '';
+              const res = await apiClient('/api/settings/backups/run-drill', {
+                method: 'POST',
+                body: JSON.stringify({
+                  ...(dest ? { destinationDir: dest } : {}),
+                  ...(ageKey ? { agePublicKey: ageKey } : {}),
+                }),
+              });
+              const data = await res.json().catch(() => ({}));
+              drillResult.textContent = res.ok
+                ? 'Restore drill passed.'
+                : (res.status === 501
+                    ? 'Restore drill is not enabled until a backup folder is set.'
+                    : (data && data.message ? String(data.message) : 'Restore drill is not enabled in this environment.'));
             } catch {
               drillResult.textContent = 'Could not run restore drill.';
             } finally {

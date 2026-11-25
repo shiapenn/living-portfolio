@@ -9,3 +9,7 @@ WP-16.N design system consolidation:
 - Added self-hosted variable Latin WOFF2 fonts (Literata + Atkinson Hyperlegible Next) with metric fallbacks and CJK `:lang(zh)` rules in `@living-portfolio/ui-core` and `@living-portfolio/ui-public`.
 - Migrated all admin CSS out of `apps/web/src/styles.ts` into layered, route-split hashed bundles in `@living-portfolio/ui-admin` with zero pixel regression.
 - Added ADR-generated `rules.md`, `ds:impact`, `ds:health`, nightly health workflow, and changeset governance.
+
+## PATCH (wp17-launcher-scroll)
+
+Constrain `.lp-launcher-panel` max-height to viewport minus header and section inset with vertical scroll so expanded admin navigation stays within 320x640 viewports.

@@ -52,9 +52,13 @@ const BUILTIN_DESTINATIONS: AdminNavDestination[] = [
   { id: 'today', group: 'Write', href: '/admin', label: 'Today', icon: 'sun', order: 1 },
   { id: 'entries', group: 'Write', href: '/admin/entries', label: 'Entries', icon: 'file-text', order: 2 },
   { id: 'import', group: 'Write', href: '/admin/import', label: 'Import', icon: 'upload', order: 3 },
-  { id: 'inbox', group: 'Respond', href: '/admin/inbox', label: 'Inbox', icon: 'inbox', order: 4 },
-  { id: 'audit', group: 'Govern', href: '/admin/audit', label: 'Answer rules', icon: 'shield', order: 5 },
-  { id: 'status', group: 'Govern', href: '/admin/status', label: 'Status', icon: 'activity', order: 6 },
+  { id: 'ventures', group: 'Write', href: '/admin/ventures', label: 'Ventures', icon: 'layers', order: 4 },
+  { id: 'inbox', group: 'Respond', href: '/admin/inbox', label: 'Inbox', icon: 'inbox', order: 5 },
+  { id: 'bookings', group: 'Respond', href: '/admin/bookings', label: 'Bookings', icon: 'clock', order: 6 },
+  { id: 'audit', group: 'Govern', href: '/admin/audit', label: 'Answer rules', icon: 'shield', order: 7 },
+  { id: 'calibration', group: 'Govern', href: '/admin/calibration', label: 'Calibration', icon: 'sliders', order: 8 },
+  { id: 'structure', group: 'Govern', href: '/admin/structure', label: 'Structure', icon: 'layers', order: 9 },
+  { id: 'status', group: 'Govern', href: '/admin/status', label: 'Status', icon: 'activity', order: 10 },
 ];
 for (const d of BUILTIN_DESTINATIONS) {
   registerAdminDestination(d);

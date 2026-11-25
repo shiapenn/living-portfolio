@@ -3,6 +3,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { Hono, type Context, type Next } from 'hono';
 import { hexToBase32, buildOtpAuthUri, generateQrCodeSvg } from './totp.js';
+import { registerAccountRoutes } from './account-routes.js';
 
 export interface AdminAccount {
   username: string;
@@ -807,15 +808,11 @@ export function createAuthRoutes(auth: AuthManager) {
     try {
       const body = await c.req.json().catch(() => ({}));
       const { rawCodes } = auth.regenerateRecoveryCodes({ legacyFormat: Boolean((body as any)?.legacyFormat) });
-      return c.json({
-        regenerated: true,
-        recoveryCodes: rawCodes,
-        message: 'New recovery codes generated. Old recovery codes are permanently invalidated. Save these codes immediately.',
-      });
+      return c.json({ regenerated: true, recoveryCodes: rawCodes, message: 'New recovery codes generated. Old recovery codes are permanently invalidated. Save these codes immediately.' });
     } catch (err: any) {
       return c.json({ error: err.message || 'Failed to regenerate recovery codes' }, 500);
     }
   });
-
+  registerAccountRoutes(router, auth);
   return router;
 }
