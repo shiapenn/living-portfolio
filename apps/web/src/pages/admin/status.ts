@@ -3,8 +3,8 @@ import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { escapeHtml } from '../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderActionBar, renderButton, renderItem, renderList, renderFormSection, renderText } from '../../primitives/index.js';
-import { renderDialog, renderStatusLine } from '../../components/index.js';
+import { renderButton, renderItem, renderList, renderFormSection } from '../../primitives/index.js';
+import { renderStatusLine } from '../../components/index.js';
 
 export interface StatusPageOptions {
   nonce?: string;
@@ -103,33 +103,15 @@ export async function renderAdminStatusPage(
     ${navListHtml}
   </div>`;
 
-  const pauseDialogHtml = renderDialog({
-    id: 'status-pause-dialog',
-    title: 'Pause automatic answering?',
-    bodyHtml: renderText({
-      variant: 'body',
-      text: 'Visitors will see a notice that automatic answers are paused, and new questions will wait in your Inbox for your reply.',
-    }),
-    footerHtml: renderActionBar({
-      level: 'dialog',
-      primary: { id: 'status-pause-confirm', label: 'Pause answering', variant: 'primary', type: 'button' },
-      secondary: { id: 'status-pause-cancel', label: 'Cancel', variant: 'secondary', type: 'button' },
-    }),
-  });
-
   const bodyHtml = `
     ${renderStatusLine({ id: 'status-page-line' })}
     ${listHtml}
-    ${pauseDialogHtml}
     <script${options.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : ''}>
       ${ADMIN_API_CLIENT_SCRIPT}
       (function () {
         var line = document.getElementById('status-page-line');
         var rebuildBtn = document.getElementById('status-rebuild-btn');
         var toggleBtn = document.getElementById('status-answering-toggle');
-        var pauseDialog = document.getElementById('status-pause-dialog');
-        var pauseConfirm = document.getElementById('status-pause-confirm');
-        var pauseCancel = document.getElementById('status-pause-cancel');
         var setLine = function (msg) {
           if (!line) return;
           line.textContent = msg;
@@ -142,30 +124,13 @@ export async function renderAdminStatusPage(
           }
           var row = document.getElementById('status-answering-row');
           if (row) {
+            var dotCircle = row.querySelector('.lp-status-dot');
             var labelEl = row.querySelector('.lp-status-label');
-            if (labelEl) {
-              labelEl.className = 'lp-status-label lp-status-label-' + (enabled ? 'ok' : 'warn');
+            if (dotCircle && labelEl) {
+              dotCircle.className = 'lp-status-dot lp-status-dot-' + (enabled ? 'ok' : 'warn');
               labelEl.textContent = enabled ? 'Active' : 'Paused';
             }
           }
-        };
-        var commitAnswering = async function (nextEnabled) {
-          if (toggleBtn) toggleBtn.disabled = true;
-          try {
-            var res = await apiClient('/api/settings/routing', {
-              method: 'PATCH',
-              body: JSON.stringify({ automatedAnsweringEnabled: nextEnabled }),
-            });
-            if (res && res.ok) {
-              applyAnsweringState(nextEnabled);
-              setLine(nextEnabled ? 'Automated answering resumed.' : 'Automated answering paused.');
-            } else {
-              setLine('Could not update automated answering.');
-            }
-          } catch (_err) {
-            setLine('Could not update automated answering.');
-          }
-          if (toggleBtn) toggleBtn.disabled = false;
         };
         apiClient('/api/settings', { method: 'GET' }).then(function (r) {
           if (r && r.ok) return r.json();
@@ -177,7 +142,9 @@ export async function renderAdminStatusPage(
           if (data && data.activeProvider && data.activeProvider.configured && data.activeProvider.id !== 'local') {
             var provLink = document.getElementById('status-providers-link');
             if (provLink) {
+              var provDot = provLink.querySelector('.lp-status-dot');
               var provLabel = provLink.querySelector('.lp-status-label');
+              if (provDot) provDot.className = 'lp-status-dot lp-status-dot-ok';
               if (provLabel) {
                 provLabel.textContent = 'Connected (' + (data.activeProvider.label || data.activeProvider.id) + (data.activeProvider.model ? ' · ' + data.activeProvider.model : '') + ')';
               }
@@ -196,39 +163,27 @@ export async function renderAdminStatusPage(
             rebuildBtn.disabled = false;
           });
         }
-        var closePause = function () {
-          if (pauseDialog) pauseDialog.setAttribute('hidden', '');
-          if (toggleBtn) toggleBtn.focus();
-        };
-        if (pauseConfirm) {
-          pauseConfirm.addEventListener('click', async function () {
-            if (pauseDialog) pauseDialog.setAttribute('hidden', '');
-            await commitAnswering(false);
-          });
-        }
-        if (pauseCancel) {
-          pauseCancel.addEventListener('click', closePause);
-        }
-        if (pauseDialog) {
-          pauseDialog.querySelectorAll('[data-lp-dialog-close]').forEach(function (el) {
-            el.addEventListener('click', closePause);
-          });
-          document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && !pauseDialog.hasAttribute('hidden')) {
-              e.preventDefault();
-              closePause();
-            }
-          });
-        }
         if (toggleBtn) {
           toggleBtn.addEventListener('click', async function () {
             var isEnabled = toggleBtn.getAttribute('data-enabled') === 'true';
-            if (isEnabled && pauseDialog) {
-              pauseDialog.removeAttribute('hidden');
-              if (pauseConfirm) pauseConfirm.focus();
-              return;
+            if (isEnabled && !window.confirm('Pause automated answering on the public site?')) return;
+            toggleBtn.disabled = true;
+            try {
+              var res = await apiClient('/api/settings/routing', {
+                method: 'PATCH',
+                body: JSON.stringify({ automatedAnsweringEnabled: !isEnabled }),
+              });
+              if (res && res.ok) {
+                applyAnsweringState(!isEnabled);
+                setLine(!isEnabled ? 'Automated answering resumed.' : 'Automated answering paused.');
+                toggleBtn.disabled = false;
+                return;
+              }
+              setLine('Could not update automated answering.');
+            } catch (_err) {
+              setLine('Could not update automated answering.');
             }
-            await commitAnswering(true);
+            toggleBtn.disabled = false;
           });
         }
       })();
