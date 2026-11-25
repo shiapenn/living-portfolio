@@ -74,10 +74,12 @@ export function renderAppearanceV2Script(adminPack: ThemePackV2, publicPack: The
     };
   }
   function loadScopeIntoFields(scope) {
-    var p = scopes[scope] || (scope === 'public' ? ${JSON.stringify(DEFAULT_PUBLIC_THEME_PACK)} : ${JSON.stringify(DEFAULT_ADMIN_THEME_PACK)});
+    var defAdmin = ${JSON.stringify(DEFAULT_ADMIN_THEME_PACK)};
+    var defPublic = ${JSON.stringify(DEFAULT_PUBLIC_THEME_PACK)};
+    var p = scopes[scope] || (scope === 'public' ? defPublic : defAdmin);
     if (packEl) packEl.value = p.packId || 'quiet-default';
-    if (lightEl) lightEl.value = p.accent && p.accent.light ? p.accent.light : '#3A4FD0';
-    if (darkEl) darkEl.value = p.accent && p.accent.dark ? p.accent.dark : '#A5B4FC';
+    if (lightEl) lightEl.value = p.accent && p.accent.light ? p.accent.light : defAdmin.accent.light;
+    if (darkEl) darkEl.value = p.accent && p.accent.dark ? p.accent.dark : defAdmin.accent.dark;
     if (densityEl) densityEl.value = p.density || 'comfortable';
     if (radiusEl) radiusEl.value = p.radiusScale || 'default';
     if (fontEl) fontEl.value = p.fontFamily || 'system';
@@ -93,7 +95,7 @@ export function renderAppearanceV2Script(adminPack: ThemePackV2, publicPack: The
       return false;
     }
     var lightCanvas = contrast(p.accent.light, canvas.light);
-    var lightLabel = contrast('#FFFFFF', p.accent.light);
+    var lightLabel = contrast(canvas.light, p.accent.light);
     var darkCanvas = contrast(p.accent.dark, canvas.dark);
     var darkLabel = contrast(canvas.dark, p.accent.dark);
     var ok = lightCanvas >= 4.5 && lightLabel >= 4.5 && darkCanvas >= 4.5 && darkLabel >= 4.5;
