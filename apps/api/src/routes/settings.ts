@@ -19,6 +19,7 @@ import {
   type NotificationChannel,
 } from '@living-portfolio/core';
 import { getDefaultExclusions, type BudgetGovernor, type ModelProvider, runEvaluation } from '@living-portfolio/ai';
+import { registerWp17SettingsRoutes } from './settings-wp17.js';
 
 export interface RuntimeSettingsState {
   automatedAnsweringEnabled: boolean;
@@ -231,36 +232,15 @@ export function createSettingsRoutes(
   // Update routing & kill-switch settings (§1, §10.5)
   router.patch('/routing', async (c) => {
     const body = await c.req.json();
-    if (typeof body.automatedAnsweringEnabled === 'boolean') {
-      state.automatedAnsweringEnabled = body.automatedAnsweringEnabled;
-    }
-    if (typeof body.calibrationFrozen === 'boolean') {
-      state.calibrationFrozen = body.calibrationFrozen;
-    }
-    if (body.simulatedDegradationMode) {
-      state.simulatedDegradationMode = body.simulatedDegradationMode;
-    }
-    if (typeof body.tier1_floor === 'number') {
-      state.tier1_floor = Math.max(0.1, Math.min(1.0, body.tier1_floor));
-    }
-    if (typeof body.tier2_floor === 'number') {
-      state.tier2_floor = Math.max(0.1, Math.min(1.0, body.tier2_floor));
-    }
-    if (body.calibration && typeof body.calibration === 'object') {
-      state.calibration = {
-        ...state.calibration,
-        ...body.calibration,
-      };
-    }
-    if (typeof body.facet_known_threshold === 'number') {
-      state.facet_known_threshold = Math.max(0.5, Math.min(1.0, body.facet_known_threshold));
-    }
-    if (typeof body.replyTimeEstimate === 'string' && body.replyTimeEstimate.trim()) {
-      state.replyTimeEstimate = body.replyTimeEstimate.trim();
-    }
-    if (typeof body.publicConfidenceDisclosure === 'boolean') {
-      state.publicConfidenceDisclosure = body.publicConfidenceDisclosure;
-    }
+    if (typeof body.automatedAnsweringEnabled === 'boolean') state.automatedAnsweringEnabled = body.automatedAnsweringEnabled;
+    if (typeof body.calibrationFrozen === 'boolean') state.calibrationFrozen = body.calibrationFrozen;
+    if (body.simulatedDegradationMode) state.simulatedDegradationMode = body.simulatedDegradationMode;
+    if (typeof body.tier1_floor === 'number') state.tier1_floor = Math.max(0.1, Math.min(1.0, body.tier1_floor));
+    if (typeof body.tier2_floor === 'number') state.tier2_floor = Math.max(0.1, Math.min(1.0, body.tier2_floor));
+    if (body.calibration && typeof body.calibration === 'object') state.calibration = { ...state.calibration, ...body.calibration };
+    if (typeof body.facet_known_threshold === 'number') state.facet_known_threshold = Math.max(0.5, Math.min(1.0, body.facet_known_threshold));
+    if (typeof body.replyTimeEstimate === 'string' && body.replyTimeEstimate.trim()) state.replyTimeEstimate = body.replyTimeEstimate.trim();
+    if (typeof body.publicConfidenceDisclosure === 'boolean') state.publicConfidenceDisclosure = body.publicConfidenceDisclosure;
 
     const warning =
       state.tier1_floor < 0.82
@@ -349,37 +329,7 @@ export function createSettingsRoutes(
     const body = await c.req.json();
     if (body.destination !== undefined) state.backupDestination = String(body.destination);
     if (body.agePublicKey !== undefined) state.backupAgePublicKey = String(body.agePublicKey);
-    return c.json({
-      updated: true,
-      backups: {
-        destination: state.backupDestination || null,
-        agePublicKey: state.backupAgePublicKey || null,
-      },
-    });
-  });
-
-  // Update visibility & crawler policy settings (WP-17.3, UX-42)
-  router.patch('/visibility', async (c) => {
-    const body = await c.req.json();
-    if (typeof body.allowSearchIndexing === 'boolean') {
-      state.allowSearchIndexing = body.allowSearchIndexing;
-    }
-    if (typeof body.blockAiCrawlers === 'boolean') {
-      state.blockAiCrawlers = body.blockAiCrawlers;
-    }
-    if (typeof body.federationEnabled === 'boolean') {
-      state.federationEnabled = body.federationEnabled;
-    }
-    return c.json({
-      updated: true,
-      visibility: {
-        allowSearchIndexing: state.allowSearchIndexing ?? true,
-        blockAiCrawlers: state.blockAiCrawlers ?? false,
-        federationEnabled: state.federationEnabled ?? false,
-        rssEnabled: true,
-        sitemapEnabled: true,
-      },
-    });
+    return c.json({ updated: true, backups: { destination: state.backupDestination || null, agePublicKey: state.backupAgePublicKey || null } });
   });
 
   // Update theme tokens & theme preset (§12.3, §12.10, WP-13.4)
@@ -679,14 +629,9 @@ export function createSettingsRoutes(
 
   router.patch('/dashboard', async (c) => {
     const body = await c.req.json().catch(() => ({}));
-    if (typeof body.checklistDismissed === 'boolean') {
-      state.dashboardChecklistDismissed = body.checklistDismissed;
-    }
-    return c.json({
-      ok: true,
-      dashboardChecklistDismissed: Boolean(state.dashboardChecklistDismissed),
-    });
+    if (typeof body.checklistDismissed === 'boolean') state.dashboardChecklistDismissed = body.checklistDismissed;
+    return c.json({ ok: true, dashboardChecklistDismissed: Boolean(state.dashboardChecklistDismissed) });
   });
-
+  registerWp17SettingsRoutes(router, state);
   return router;
 }

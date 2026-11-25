@@ -5,6 +5,7 @@ import { appearanceModule } from './modules/appearance.js';
 import { notificationsModule } from './modules/notifications.js';
 import { backupsModule } from './modules/backups.js';
 import { visibilityModule } from './modules/visibility.js';
+import { accountModule } from './modules/account.js';
 
 export {
   registerSettingsModule,
@@ -35,6 +36,7 @@ export function ensureBuiltinSettingsModulesRegistered(): void {
   registerSettingsModule(notificationsModule);
   registerSettingsModule(backupsModule);
   registerSettingsModule(visibilityModule);
+  registerSettingsModule(accountModule);
 }
 
 ensureBuiltinSettingsModulesRegistered();

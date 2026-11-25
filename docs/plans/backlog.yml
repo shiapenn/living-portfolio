@@ -68,7 +68,7 @@ items:
     expected_minutes: 55
     gate: none
     acceptance: Change username/password, re-enrol authenticator, regenerate 64-bit recovery codes, list/create/revoke API tokens (Developer access), sign out other sessions, and unconfirmed setup wizard recovery (UX-49); E2E + census green
-    status: ready
+    status: done
 
   - id: WP-17.5
     title: Audit, Calibration & Structure screens (/admin/audit, /admin/calibration, /admin/structure; UX-07)

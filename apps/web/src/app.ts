@@ -323,6 +323,10 @@ export function createWebApp(options?: WebAppOptions) {
     const html = await renderAdminSettingsModulePage(client, 'answering');
     return html ? c.html(html) : c.html(renderAdminSectionPage(c.req.path));
   });
+  app.get('/admin/account', async (c) => {
+    const html = await renderAdminSettingsModulePage(client, 'account');
+    return html ? c.html(html) : c.html(renderAdminSectionPage(c.req.path));
+  });
   app.get('/admin/settings/:id', async (c) => {
     const html = await renderAdminSettingsModulePage(client, c.req.param('id'));
     if (html) return c.html(html);

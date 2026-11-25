@@ -132,6 +132,11 @@ export function mountBundledWeb(
       if (html) return c.html(html);
       return c.html(renderAdminSectionPage(c.req.path));
     });
+    app.get('/admin/account', auth.requireAdminMiddleware(), async (c) => {
+      const html = await renderAdminSettingsModulePage(repo, 'account', runtimeState);
+      if (html) return c.html(html);
+      return c.html(renderAdminSectionPage(c.req.path));
+    });
     app.get('/admin/settings/:id', auth.requireAdminMiddleware(), async (c) => {
       const html = await renderAdminSettingsModulePage(repo, c.req.param('id') || '', runtimeState);
       if (html) return c.html(html);

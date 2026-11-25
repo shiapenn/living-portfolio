@@ -3891,13 +3891,13 @@
     - "5.1"
     - "13.4"
   severity: P1
-  status: partial
+  status: fixed
   owner: A
   links:
     issue: null
     pr: "https://github.com/shiapenn/living-portfolio/pull/76"
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: tests/e2e/auth.spec.ts
+  regression_test: tests/e2e/wp17-4-account.spec.ts
   history:
     - date: 2026-11-06
       status: open
@@ -3905,7 +3905,10 @@
     - date: 2026-11-07
       status: partial
       note: "Partially addressed in WP-13.6 (A066): Added Sign out action to admin workspace navigation header that calls POST /api/auth/logout, clears session, and redirects to login. Full account management screens (change username/password, re-enrol authenticator, API token management) complete in WP-17.4."
-  verified_by: null
+    - date: 2026-11-25
+      status: fixed
+      note: "Fixed in WP-17.4: Account settings module (/admin/settings/account, /admin/account) implements username/password change, authenticator re-enrolment, API token lifecycle, and revoking other sessions (tests/e2e/wp17-4-account.spec.ts)."
+  verified_by: A
 - id: 20261106-UX-42
   audit: AUD-2026-11-06
   title: 'robots.txt allows all paths including /admin and /api with no crawler policies or owner controls'
@@ -4020,8 +4023,9 @@
     - "13.4"
     - "13.13"
   severity: P2
-  status: open
+  status: fixed
   owner: A
+  regression_test: tests/e2e/wp17-4-account.spec.ts
   links:
     issue: null
     pr: null
@@ -4030,7 +4034,10 @@
     - date: 2026-11-07
       status: open
       note: "Follow-up registered in WP-13.12 (A072): Backend regeneration endpoint POST /api/auth/recovery-codes/regenerate built with 64-bit salted entropy and single-use burn; Settings > Account UI to trigger regeneration and download new codes to be delivered in WP-17.4."
-  verified_by: null
+    - date: 2026-11-25
+      status: fixed
+      note: "Fixed in WP-17.4: Recovery codes regeneration UI in Settings > Account generates 8 fresh 64-bit codes and invalidates older codes (tests/e2e/wp17-4-account.spec.ts)."
+  verified_by: A
 - id: 20261106-UX-48
   audit: AUD-2026-11-06
   title: 'docs/START-HERE.md runbook errors: unverified Recommended label, SQLite/in-memory confusion, 8-hex recovery codes, step mismatch, false API key input claim, and missing troubleshooting'
@@ -4060,18 +4067,21 @@
     - "13.1"
     - "17"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp17-4-account.spec.ts
   history:
     - date: 2026-11-08
       status: open
       note: "Registered in WP-13.14: In-memory mode vs Postgres behavior when browser closes after account creation (Step 1) but before TOTP confirmation (Step 2). While server runs in memory, `hasAccount()` is true but `totpConfirmed` is false (`isSetupCompleted()` false); visiting /admin/setup shows Step 1 again, but resubmission throws 409 Conflict ('Admin account already configured') while TOTP secret/QR code is unrecoverable. In-memory mode recovers if process is restarted (memory wiped). In Postgres / persistent mode (auth-state.json persisted), restarting the server preserves `totpConfirmed: false`, leaving the owner permanently dead-ended (login redirects to setup, setup rejects account creation) without manual filesystem or DB deletion. Planned under WP-17.4."
-  verified_by: null
+    - date: 2026-11-25
+      status: fixed
+      note: "Fixed in WP-17.4: POST /api/auth/setup/reset clears unconfirmed setup state and returns 409 once confirmed (tests/e2e/wp17-4-account.spec.ts)."
+  verified_by: A
 - id: 20261106-UX-50
   audit: AUD-2026-11-06
   title: 'docs/START-HERE.md keeps unmeasured "< 15 min" figure retained to satisfy conformance check'
