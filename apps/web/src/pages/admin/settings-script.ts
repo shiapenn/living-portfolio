@@ -200,7 +200,9 @@ export const SETTINGS_SCRIPT = `
               const data = await res.json().catch(() => ({}));
               drillResult.textContent = res.ok
                 ? 'Restore drill passed.'
-                : (data && data.message ? String(data.message) : 'Not available until a backup folder is set.');
+                : (res.status === 501
+                    ? 'Restore drill is not enabled until a backup folder is set.'
+                    : (data && data.message ? String(data.message) : 'Restore drill is not enabled in this environment.'));
             } catch {
               drillResult.textContent = 'Could not run restore drill.';
             } finally {

@@ -36,7 +36,6 @@ export async function renderAdminAuditRulesPage(
     <a id="audit-tab-proposed" href="/admin/audit?status=proposed" role="tab" aria-selected="${activeStatus === 'proposed' ? 'true' : 'false'}" class="lp-tab${activeStatus === 'proposed' ? ' lp-tab-active' : ''}">${escapeHtml(INBOX_STRINGS.audit.tabs.proposed)}</a>
     <a id="audit-tab-confirmed" href="/admin/audit?status=confirmed" role="tab" aria-selected="${activeStatus === 'confirmed' ? 'true' : 'false'}" class="lp-tab${activeStatus === 'confirmed' ? ' lp-tab-active' : ''}">${escapeHtml(INBOX_STRINGS.audit.tabs.confirmed)}</a>
     <a id="audit-tab-revoked" href="/admin/audit?status=revoked" role="tab" aria-selected="${activeStatus === 'revoked' ? 'true' : 'false'}" class="lp-tab${activeStatus === 'revoked' ? ' lp-tab-active' : ''}">${escapeHtml(INBOX_STRINGS.audit.tabs.revoked)}</a>
-    <a id="audit-tab-contradictions" href="/admin/audit?status=contradictions" role="tab" aria-selected="${activeStatus === 'contradictions' ? 'true' : 'false'}" class="lp-tab${activeStatus === 'contradictions' ? ' lp-tab-active' : ''}">Contradictions</a>
   </div>`;
 
   let mainContentHtml = '';

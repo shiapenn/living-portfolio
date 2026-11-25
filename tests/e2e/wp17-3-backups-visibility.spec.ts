@@ -19,7 +19,7 @@ test.describe.serial('WP-17.3: Backups, Export & Visibility (/admin/settings/bac
 
     // Clicking restore drill without destination shows honest plain-language message
     await page.click('#btn-run-backup-drill');
-    await expect(page.locator('#backup-drill-result')).toContainText(/Not available|passed/i);
+    await expect(page.locator('#backup-drill-result')).toContainText(/not enabled|passed/i);
 
     // 2. Visibility page & dynamic /robots.txt
     await page.goto('/admin/settings/visibility');
