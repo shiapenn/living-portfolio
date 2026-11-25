@@ -2121,5 +2121,13 @@
     "path": "docs/execution-reports/A180-wp-179-polish-states-and-content-standard.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A181",
+    "title": "WP-17.10 exit gate fixes",
+    "class": "A",
+    "path": "docs/execution-reports/A181-wp-1710-exit-gate-fixes.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
