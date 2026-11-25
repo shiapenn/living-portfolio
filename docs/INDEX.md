@@ -280,4 +280,6 @@
 | `L051` | ADR-022: Consolidation, Health Budgets and Changesets (D-L / D-N) | `active` | [ADR-022-d-l-consolidation-health-changesets.md](adr/ADR-022-d-l-consolidation-health-changesets.md) | — |
 | `L052` | Effective Design & Architecture Rules (Generated) | `active` | [rules.md](design/rules.md) | — |
 | `L053` | Design System Health Report (Generated) | `active` | [health.md](design/health.md) | — |
+| `L054` | ADR-023: Unified Design Framework, Differentiated Languages | `active` | [ADR-023-unified-design-framework.md](adr/ADR-023-unified-design-framework.md) | — |
+| `L055` | WP-17 Progress & Time Ledger | `active` | [wp17-progress.md](plans/wp17-progress.md) | — |
 

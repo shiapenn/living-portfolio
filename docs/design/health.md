@@ -24,5 +24,5 @@
 | Metric | Value |
 | --- | --- |
 | Registered UI Components | 21 |
-| Architecture Decision Records | 22 |
+| Architecture Decision Records | 23 |
 | History Trend | Public CSS +0 B; Admin CSS +0 B |

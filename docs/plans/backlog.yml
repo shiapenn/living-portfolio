@@ -1,4 +1,5 @@
 # Living Portfolio Self-Selecting Backlog (WP-16.M D-M7)
+# Reconciled 2026-11-25 against docs/audits/2026-11-06-ux-specification-audit/report.md (§7.8–§7.11) and P004.
 # Validated and queried by `pnpm backlog:next` (`scripts/backlog-next`).
 schema_version: 1
 items:
@@ -21,75 +22,199 @@ items:
     size: L
     expected_minutes: 90
     gate: owner-direction
-    acceptance: D-N5 definition of done holds; owner reviews public sheets once; at most one fix round. WP-17 is unblocked only when this item is done
+    acceptance: D-N5 definition of done holds; owner accepted WP-16 closure on 2026-11-23. WP-17 is unblocked
     status: done
 
+  # ── WP-17: Settings, maintenance and account (Report §7.8 + P004) ──────────
   - id: WP-17.1
-    title: Settings templates & Routing page (/admin/settings, /admin/routing)
+    title: Settings templates & Routing page (/admin/settings/answering, /admin/routing; UX-16, CP-13, UX-95)
+    track: admin
+    type: visual
+    depends_on: [WP-16.N]
+    size: M
+    expected_minutes: 55
+    gate: none
+    acceptance: Settings template + Routing/Answering module with confidence consequence copy, restore defaults, reply-time setting, automatic-answers switch with confirmation dialog updating /admin/status, zero jargon; E2E + census green
+    status: ready
+
+  - id: WP-17.2
+    title: Setup wizard step 3 Model Providers interactive configuration (UX-09; ProviderFlow)
+    track: admin
+    type: functional
+    depends_on: [WP-16.N]
+    size: M
+    expected_minutes: 45
+    gate: none
+    acceptance: Fixed in WP-16.G (ProviderFlow embedded in Setup Step 3 and Settings > Providers; verified by tests/e2e/auth.spec.ts tests 3 & 3b and wp16-g-census.spec.ts)
+    status: done
+
+  - id: WP-17.3
+    title: Backups, Export & Visibility settings (/admin/settings/backups, /admin/settings/visibility; UX-33, UX-34, UX-42)
+    track: admin
+    type: visual
+    depends_on: [WP-17.1]
+    size: M
+    expected_minutes: 55
+    gate: none
+    acceptance: Backups module with honest availability, named archive export download, and Visibility settings module generating /robots.txt (disallowing /admin, /api, /ask/status + AI-crawler switch), RSS/sitemap/federation status and public confidence disclosure; E2E + census green
+    status: ready
+
+  - id: WP-17.4
+    title: Account settings (/admin/settings/account, /admin/account; UX-41, UX-47, UX-49)
+    track: admin
+    type: visual
+    depends_on: [WP-17.1]
+    size: M
+    expected_minutes: 55
+    gate: none
+    acceptance: Change username/password, re-enrol authenticator, regenerate 64-bit recovery codes, list/create/revoke API tokens (Developer access), sign out other sessions, and unconfirmed setup wizard recovery (UX-49); E2E + census green
+    status: ready
+
+  - id: WP-17.5
+    title: Audit, Calibration & Structure screens (/admin/audit, /admin/calibration, /admin/structure; UX-07)
+    track: admin
+    type: visual
+    depends_on: [WP-17.1]
+    size: L
+    expected_minutes: 60
+    gate: none
+    acceptance: Audit contradictions detect/list/resolve + stale claims, Calibration per-mechanism switches/proposals/history/rollback, Structure profiles/facets/hard constraints; E2E + census green
+    status: ready
+
+  - id: WP-17.6
+    title: Bookings & Ventures screens (/admin/bookings, /admin/ventures; UX-07, UX-19)
+    track: admin
+    type: visual
+    depends_on: [WP-17.1]
+    size: M
+    expected_minutes: 50
+    gate: none
+    acceptance: Bookings list/detail/status from public submissions; Ventures create/edit/link entries feeding /build; E2E + census green
+    status: ready
+
+  - id: WP-17.7
+    title: Pages & Home settings (/admin/pages, /admin/settings/home; UX-17, A-04, D-09)
+    track: admin
+    type: visual
+    depends_on: [WP-17.1]
+    size: M
+    expected_minutes: 55
+    gate: none
+    acceptance: Pages resource & migration for About/Now/Uses/Home statement with revisions, /admin/settings/home Featured count (default 3) & Recent count (default 10), featured toggle on entries & ventures; E2E + census green
+    status: ready
+
+  - id: WP-17.8
+    title: Appearance v2 (theme-pack schema, live preview, AA contrast validation, constrained customisation, admin+public scopes, theme.<hash>.css, import/export; UX-27, UI-04)
+    track: admin
+    type: visual
+    depends_on: [WP-17.1]
+    size: L
+    expected_minutes: 60
+    gate: L-review
+    acceptance: Typed theme-pack schema, selectable packs with live preview and AA contrast rejection, constrained customisation (accent seed, density proximity table, allowed radius scales, vetted self-hosted fonts), JSON import/export, admin+public scopes stored via settings registry, admin applied via cacheable theme.<hash>.css (zero public restyle); contact sheets delivered; E2E + census green
+    status: ready
+
+  # ── WP-18: Authoring canvas, media, storage & import (Report §7.9 + P004) ──
+  - id: WP-18.1
+    title: Authoring canvas layout (UI-02; covered by WP-16.L L2)
     track: admin
     type: visual
     depends_on: [WP-16.N]
     size: M
     expected_minutes: 45
     gate: none
-    acceptance: Dedicated settings/routing routes on ui-admin, E2E + census green
-    status: ready
-
-  - id: WP-17.2
-    title: Setup wizard step 3 Model Providers interactive configuration (UX-09)
-    track: admin
-    type: functional
-    depends_on: [WP-17.1]
-    size: M
-    expected_minutes: 45
-    gate: none
-    acceptance: Step 3 allows provider configuration & validation; UX-09 fixed
-    status: ready
-
-  - id: WP-17.3
-    title: Storage settings & Media API foundations
-    track: functional
-    type: functional
-    depends_on: [WP-17.1]
-    size: M
-    expected_minutes: 50
-    gate: none
-    acceptance: Storage settings UI + /api/media endpoints with conformance tests
-    status: ready
-
-  - id: WP-17.4
-    title: Appearance v2 (theme packs, density tier table, live preview, accent seed for both languages)
-    track: admin
-    type: visual
-    depends_on: [WP-17.1]
-    size: M
-    expected_minutes: 45
-    gate: L-review
-    acceptance: Appearance settings drive density & theme packs cleanly; configures the core accent.seed (D-N2) for both languages through the accent.<hash>.css user-theme contract
-    status: ready
-
-  - id: WP-18.1
-    title: Real file import & Authoring Canvas polish
-    track: admin
-    type: functional
-    depends_on: [WP-17.3]
-    size: L
-    expected_minutes: 60
-    gate: none
-    acceptance: Multipart/markdown/zip import wired to real storage API + E2E
-    status: ready
+    acceptance: Full-screen editor layout with 760px serif writing column, sticky toolbar, left entries drawer, right Structure drawer, Source toggle (delivered in WP-16.L L2)
+    status: done
 
   - id: WP-18.2
-    title: Quick Log capture flow
+    title: Editor engine with Tiptap/ProseMirror and 100% Markdown round-trip (D-05; covered by WP-16.L L2)
     track: admin
     type: functional
     depends_on: [WP-18.1]
-    size: S
-    expected_minutes: 30
+    size: M
+    expected_minutes: 45
     gate: none
-    acceptance: Fast keyboard-first quick log entry creation + E2E
+    acceptance: Tiptap block editor on block registry with slash menu, toolbar, shortcuts, and 100% Markdown round-trip gate (delivered in WP-16.L L2)
+    status: done
+
+  - id: WP-18.3
+    title: Media API (POST /media, GET /media/:id, storage adapter, limits, content sniffing; D-06, D-STORAGE)
+    track: functional
+    type: functional
+    depends_on: [WP-17.8]
+    size: M
+    expected_minutes: 50
+    gate: none
+    acceptance: Auth+CSRF media upload/serve endpoints, local volume/S3 adapter, config-driven limits, sniffing, SVG rejection/sanitisation, migration + conformance tests
     status: ready
 
+  - id: WP-18.4
+    title: Images and video in editor and public Markdown rendering (D-06, D-STORAGE)
+    track: admin
+    type: functional
+    depends_on: [WP-18.3]
+    size: M
+    expected_minutes: 55
+    gate: none
+    acceptance: Paste/drop/pick image upload, alt-text prompt, captions, lazy loading, consent-gated video embeds, CSP from config, public rendering + E2E
+    status: ready
+
+  - id: WP-18.5
+    title: Columns container directive in parser, renderer and editor (D-EDITOR-3)
+    track: admin
+    type: functional
+    depends_on: [WP-18.4]
+    size: M
+    expected_minutes: 50
+    gate: none
+    acceptance: 2-4 columns directive with responsive collapse, source reading order, nested columns & drop-to-columns, 100% Markdown round-trip + E2E
+    status: ready
+
+  - id: WP-18.6
+    title: Import stepper polish (Plan conditional provider cards, Review per-item actions, Done screen; UX-35)
+    track: admin
+    type: visual
+    depends_on: [WP-18.3]
+    size: M
+    expected_minutes: 45
+    gate: none
+    acceptance: Real radio Plan cards when external provider configured, Review Include/Leave out/Change type/Set date, Done screen with next steps + E2E
+    status: ready
+
+  - id: WP-18.7
+    title: Real file import (POST /import/files multipart md/txt/html/docx/pdf/zip + backup/export media inclusion; UX-36, D-11)
+    track: functional
+    type: functional
+    depends_on: [WP-18.6]
+    size: L
+    expected_minutes: 60
+    gate: none
+    acceptance: Multipart import across all D-11 formats, embedded images via Media API, per-file errors, backup/drill/export media inclusion conformance test + E2E
+    status: ready
+
+  - id: WP-18.8
+    title: Quick Log capture route (/admin/quick-log, /quick-log; UX-18, A-06, D-17)
+    track: admin
+    type: functional
+    depends_on: [WP-18.7]
+    size: S
+    expected_minutes: 35
+    gate: none
+    acceptance: Mobile-first 4-field Quick Log route, 390px viewport capture in under 30s + E2E
+    status: ready
+
+  - id: WP-18.9
+    title: Storage settings module (/admin/settings/storage; D-STORAGE, UX-125)
+    track: admin
+    type: visual
+    depends_on: [WP-18.3]
+    size: M
+    expected_minutes: 50
+    gate: none
+    acceptance: Registered Storage settings module with quota bar, backend config, editable upload limits, media list with reference counts, guarded delete, Remove unused, 80% quota warning on Today + E2E
+    status: ready
+
+  # ── WP-19: Design framework unification & Public frame (ADR-023 + Report §7.10) ──
   - id: P-1
     title: Build chosen public direction (decided in ADR-007; delivered by WP-16.N N3)
     track: public
@@ -101,22 +226,110 @@ items:
     acceptance: Direction decided as Quiet Editorial, neutral (ADR-007); realised by WP-16.N N3 on ui-public
     status: done
 
-  - id: P-2
-    title: Public components, templates, and Strata time-travel polish (WP-19 Public Frame)
-    track: public
+  - id: WP-19.0
+    title: Design framework review and unification (ADR-023 token contract, ui-core shared components, public rhythm/role checks, visible public defect fixes)
+    track: core
     type: visual
     depends_on: [WP-16.N]
     size: L
-    expected_minutes: 75
+    expected_minutes: 90
     gate: L-review
-    acceptance: All public templates on ui-public with zero inline styles; UX-44 time travel fixed
+    acceptance: Audit both packs against ADR-023 contract, define contract schema implemented by admin & public packs, extract shared components into ui-core, systematise public type/space/radius/colour scales + rhythm relation tokens & census checks, fix visible public defects (UX-218..UX-226; timeline component P-4 out of scope)
+    status: ready
+
+  - id: WP-19.1
+    title: Owner bar and View as visitor (UX-40)
+    track: public
+    type: visual
+    depends_on: [WP-19.0]
+    size: M
+    expected_minutes: 45
+    gate: none
+    acceptance: Owner bar injected only when authenticated; View as visitor hides bar with Back to admin pill; identical static HTML + E2E
+    status: ready
+
+  - id: WP-19.2
+    title: Public shell, About and Home (A-01, A-03, A-04; UX-17, UX-19, UX-20; absorbs P-2)
+    track: public
+    type: visual
+    depends_on: [WP-19.0, WP-17.7]
+    size: L
+    expected_minutes: 60
+    gate: L-review
+    acceptance: Header About/Work/Writing/Build + Book CTA + theme/RSS icons, About composed from pages resource with /now & /uses redirects, Home statement + Featured/Recent counts from settings, all public templates on ui-public with zero inline styles + E2E
+    status: ready
+
+  - id: WP-19.3
+    title: Three-region layout and Frame slot contract (A-02, A-07, §5.4.5)
+    track: public
+    type: visual
+    depends_on: [WP-19.2, P-5]
+    size: L
+    expected_minutes: 60
+    gate: L-review
+    acceptance: Time rail, Story, and Conversation panel extruding grid across 1440/1100/800/390px, URL flags as_of/ask/timeline, /ask & /timeline redirects, reading page JS <= 70 KB gzip + E2E
+    status: ready
+
+  - id: WP-19.4
+    title: Conversation panel (Ask panel extraction, sessionStorage persistence; §5.4.4, D-03)
+    track: public
+    type: visual
+    depends_on: [WP-19.3]
+    size: M
+    expected_minutes: 50
+    gate: none
+    acceptance: Shared Ask panel component with entry/site scope switch, date chip, sessionStorage persistence, live region, Book hand-off, /ask/status/:token preserved + E2E
+    status: ready
+
+  - id: WP-19.5
+    title: Time travel correctness (resolveRevisionAsOf across lists, detail, timeline, Ask; UX-44, UX-45, D-04)
+    track: public
+    type: functional
+    depends_on: [WP-19.0]
+    size: M
+    expected_minutes: 55
+    gate: none
+    acceptance: Shared resolveRevisionAsOf in packages/core applied across Work/Writing/Home/detail/timeline/Ask; owner scenario fixture passes at both dates with zero private/draft leakage + E2E
+    status: ready
+
+  - id: WP-19.6
+    title: Time rail integration (vertical strata timeline + text-equivalent list view; §5.4.4, P-4)
+    track: public
+    type: visual
+    depends_on: [WP-19.3, WP-19.5, P-4]
+    size: M
+    expected_minutes: 50
+    gate: none
+    acceptance: Time rail integrated with as_of re-render, Return to now banner, keyboard navigation, text-equivalent list view, /timeline page retired + E2E
+    status: ready
+
+  - id: WP-19.7
+    title: Public discovery (robots.txt from settings, sitemap, RSS link, canonical URLs, noindex on as-of; UX-42)
+    track: public
+    type: functional
+    depends_on: [WP-19.2]
+    size: S
+    expected_minutes: 35
+    gate: none
+    acceptance: Dynamic robots.txt, visibility-respecting sitemap without /ask & /timeline, RSS head link, canonical URLs, noindex on as_of variants + unit/E2E
+    status: ready
+
+  - id: WP-19.8
+    title: Compare mode (parallel Story columns ?as_of=A&compare=B; D-18)
+    track: public
+    type: visual
+    depends_on: [WP-19.6]
+    size: M
+    expected_minutes: 50
+    gate: none
+    acceptance: Side-by-side Story columns at >=1440px, stacked switcher below, independent revision resolution, Ask follows focused column + E2E
     status: ready
 
   - id: P-3
     title: Public performance budget enforcement (LCP/CLS/INP/font/gzip CI gate)
     track: public
     type: infra
-    depends_on: [P-2]
+    depends_on: [WP-19.2]
     size: M
     expected_minutes: 40
     gate: L-review
@@ -131,7 +344,7 @@ items:
     size: L
     expected_minutes: 90
     gate: owner-direction
-    acceptance: Not in scope for WP-16. Owner direction gate before design; component delivered on ui-public with census and UX-44 fixed
+    acceptance: Owner direction gate before design; component delivered on ui-public with census and UX-44 fixed
     status: blocked-on-owner
 
   - id: P-5
@@ -142,27 +355,94 @@ items:
     size: L
     expected_minutes: 90
     gate: owner-direction
-    acceptance: Not in scope for WP-16. Frame built on ui-public once P-4 exists; current public pages keep their structure until then
+    acceptance: Frame built on ui-public once P-4 exists; current public pages keep their structure until then
     status: blocked-on-owner
 
   - id: GATE-GFE
     title: Milestone Gate GFE — Owner Front-End Acceptance Walkthrough (J1-J11)
     track: core
     type: visual
-    depends_on: [WP-17.2, WP-17.4, WP-18.2, P-2]
+    depends_on: [WP-17.8, WP-18.8, WP-18.9, WP-19.8]
     size: M
     expected_minutes: 45
     gate: owner
-    acceptance: Owner completes front-end-acceptance.md journeys J1-J11
+    acceptance: Owner completes front-end-acceptance.md journeys J1-J11 on fresh clone
     status: ready
 
+  # ── WP-20: Shape system, locale readiness, accessibility & release (Report §7.11) ──
   - id: WP-20.1
-    title: Live public theme application & post-GFE hardening (UX-27)
+    title: Theme shape contract & live public theme application (A-08, UX-27, UI-04)
     track: public
     type: functional
-    depends_on: [GATE-GFE, P-3]
+    depends_on: [WP-19.2, WP-17.8, GATE-GFE, P-3]
+    size: M
+    expected_minutes: 50
+    gate: none
+    acceptance: Public scope from Appearance v2 applied live on public site with shape presets and AA contrast conformance; UX-27 & UI-04 fixed
+    status: ready
+
+  - id: WP-20.2
+    title: Interface translation readiness (locale config, ICU strings, RTL logical CSS; D-07)
+    track: core
+    type: functional
+    depends_on: [WP-20.1]
+    size: M
+    expected_minutes: 50
+    gate: none
+    acceptance: Locale config, ICU message catalogue, RTL logical properties, footer locale selector shown only with >1 locale, hreflang + tests
+    status: ready
+
+  - id: WP-20.3
+    title: Accessibility sweep (axe across every route, keyboard-only journeys, shortcut toggle; UX-24)
+    track: core
+    type: functional
+    depends_on: [WP-20.2]
+    size: M
+    expected_minutes: 50
+    gate: none
+    acceptance: Zero serious/critical axe violations across all routes, keyboard-only journeys pass, triage single-key shortcut toggle (UX-24) + E2E
+    status: ready
+
+  - id: WP-20.4
+    title: Copy sweep (first-person answer label A-09, glossary & terminology guard; CP-01..CP-15)
+    track: core
+    type: functional
+    depends_on: [WP-20.3]
     size: M
     expected_minutes: 45
     gate: none
-    acceptance: Public theme pack switching live in production; UX-27 fixed
+    acceptance: First-person automated-answer label (A-09), terminology guard passes with zero internal jargon in owner-facing markup
+    status: ready
+
+  - id: WP-20.5
+    title: Performance sweep (remove Home N+1 queries, measure reading-page JS and LCP)
+    track: core
+    type: infra
+    depends_on: [WP-20.4]
+    size: M
+    expected_minutes: 45
+    gate: none
+    acceptance: Query-count test on Home passes, reading-page JS & LCP within spec §12.5 budgets
+    status: ready
+
+  - id: WP-20.6
+    title: Documentation and spec amendments (A-01..A-09, architecture/security/upgrading docs, UX-50)
+    track: core
+    type: docs
+    depends_on: [WP-20.5]
+    size: M
+    expected_minutes: 45
+    gate: none
+    acceptance: All A-01..A-09 amendments present in docs/spec/, runbook timings verified (UX-50), pnpm docs:check passes
+    status: ready
+
+  - id: WP-20.7
+    title: Release v0.2.0 (changelog, version bump, fresh-clone verification, final handover H021)
+    track: core
+    type: infra
+    depends_on: [WP-20.6]
+    size: M
+    expected_minutes: 45
+    gate: owner
+    acceptance: L signs Gate G20 on fresh clone; v0.2.0 tagged and H021 merged
     status: ready

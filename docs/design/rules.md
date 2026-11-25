@@ -5,9 +5,9 @@
 
 | Metric | Value |
 | --- | --- |
-| Accepted ADRs | 21 |
+| Accepted ADRs | 22 |
 | Superseded ADRs (excluded) | 1 |
-| Effective Rules | 26 |
+| Effective Rules | 29 |
 | Areas Covered | 10 |
 
 ## architecture
@@ -17,6 +17,9 @@
 | `R-001-1` | Separate UI into ui-core, ui-admin (lp-*), and ui-public (pub-*) with zero cross-language imports or bundles | [ADR-001](../adr/ADR-001-two-design-languages.md) | `scripts/verify-design-boundaries` |
 | `R-001-2` | Share one core accent seed across admin and public via user-theme accent.<hash>.css | [ADR-001](../adr/ADR-001-two-design-languages.md) | `packages/ui-core/src/accent/accent.test.ts` |
 | `R-012-1` | apps/web has zero database dependencies or imports; apps/api has zero static imports of apps/web | [ADR-012](../adr/ADR-012-d-storage-decoupling.md) | `scripts/verify-dependency-rules` |
+| `R-023-1` | Global design framework defines a shared token contract (type, space/rhythm relations, colour, radius, elevation, motion, density) implemented by both admin and public packs | [ADR-023](../adr/ADR-023-unified-design-framework.md) | `packages/design-tokens/src/rules.test.ts` |
+| `R-023-2` | Shared UI components (button, icon, theme toggle, link, tag, field, choice, notice) live in ui-core using contract tokens only; changes to shared components must pass both admin and public regression suites | [ADR-023](../adr/ADR-023-unified-design-framework.md) | `scripts/verify-design-boundaries` |
+| `R-023-3` | Admin operates in system mode (no new component without L prior approval; variants only); public operates in expressive mode (PR brief recorded and reviewed after the fact) | [ADR-023](../adr/ADR-023-unified-design-framework.md) | `scripts/verify-ui-guards` |
 
 ## components
 

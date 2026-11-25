@@ -26,3 +26,4 @@
 | `ADR-020` | Component Registry and Governance (D-J) | `accepted` | 2026-11-23 | — | [ADR-020](../adr/ADR-020-d-j-component-registry-governance.md) |
 | `ADR-021` | Item Flush Alignment Replacing Bleed (D-K) | `accepted` | 2026-11-23 | ADR-018 | [ADR-021](../adr/ADR-021-d-k-item-flush-alignment.md) |
 | `ADR-022` | Consolidation, Health Budgets and Changesets (D-L / D-N) | `accepted` | 2026-11-23 | — | [ADR-022](../adr/ADR-022-d-l-consolidation-health-changesets.md) |
+| `ADR-023` | Unified Design Framework, Differentiated Languages | `accepted` | 2026-11-25 | — | [ADR-023](../adr/ADR-023-unified-design-framework.md) |
