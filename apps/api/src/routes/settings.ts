@@ -43,6 +43,9 @@ export interface RuntimeSettingsState {
   allowSearchIndexing?: boolean;
   blockAiCrawlers?: boolean;
   federationEnabled?: boolean;
+  home?: { statement: string; featuredCount: number; recentCount: number; featuredSlugs: string[] };
+  pages?: Record<string, { slug: string; title: string; body_md: string; updatedAt: string; revisions: Array<{ id: string; body_md: string; savedAt: string }> }>;
+  appearanceV2?: Record<string, unknown>;
   selectedThemePreset?: string;
   activeProvider?: {
     id: string;

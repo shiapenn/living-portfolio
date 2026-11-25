@@ -16,7 +16,7 @@
 | --- | --- | --- | --- |
 | Public CSS (core + public, gzip) | 4129 | 15360 | PASS |
 | Public WOFF2 Fonts (raw, 2 faces) | 73284 | 102400 | PASS |
-| Admin Entry CSS (core + admin, gzip) | 19448 | 30720 | PASS |
+| Admin Entry CSS (core + admin, gzip) | 19469 | 30720 | PASS |
 | Admin Editor JS (gzip) | 139207 | 153600 | PASS |
 
 ## Governance Coverage

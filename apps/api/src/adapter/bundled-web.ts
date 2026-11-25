@@ -11,6 +11,7 @@ import {
   renderAdminStructurePage,
   renderAdminBookingsPage,
   renderAdminVenturesPage,
+  renderAdminPagesEditorPage,
   renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
@@ -147,6 +148,15 @@ export function mountBundledWeb(
         })
       )
     );
+    app.get('/admin/pages', auth.requireAdminMiddleware(), async (c) =>
+      c.html(
+        await renderAdminPagesEditorPage(repo, {
+          section: c.req.query('section'),
+          answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+          initialSettings: runtimeState,
+        })
+      )
+    );
     app.get('/admin/import', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminImportPage(repo))
     );
@@ -171,6 +181,11 @@ export function mountBundledWeb(
       if (html) return c.html(html);
       return c.html(renderAdminSectionPage(c.req.path));
     });
+    app.get('/admin/theme', auth.requireAdminMiddleware(), async (c) => {
+      const html = await renderAdminSettingsModulePage(repo, 'appearance', runtimeState);
+      if (html) return c.html(html);
+      return c.html(renderAdminSectionPage(c.req.path));
+    });
     app.get('/admin/settings/:id', auth.requireAdminMiddleware(), async (c) => {
       const html = await renderAdminSettingsModulePage(repo, c.req.param('id') || '', runtimeState);
       if (html) return c.html(html);
@@ -179,8 +194,6 @@ export function mountBundledWeb(
     const adminSectionRoutes = [
       '/admin/quick-log',
       '/quick-log',
-      '/admin/pages',
-      '/admin/theme',
     ];
     for (const routePath of adminSectionRoutes) {
       app.get(routePath, auth.requireAdminMiddleware(), async (c) =>

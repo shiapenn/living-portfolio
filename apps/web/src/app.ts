@@ -5,6 +5,8 @@ import {
   DEFAULT_ACCENT_CSS,
   DEFAULT_ACCENT_CSS_FILENAME,
   FONT_ASSETS,
+  resolveAdminThemeCssAsset,
+  type ThemePackV2,
 } from '@living-portfolio/ui-core';
 import {
   ADMIN_BASE_CSS,
@@ -38,6 +40,7 @@ import {
   renderAdminStructurePage,
   renderAdminBookingsPage,
   renderAdminVenturesPage,
+  renderAdminPagesEditorPage,
   renderAdminEntriesListPage,
   renderAdminDashboardPage,
   renderAdminImportPage,
@@ -189,9 +192,17 @@ export function createWebApp(options?: WebAppOptions) {
     [PUBLIC_CSS_FILENAME]: PUBLIC_BUNDLE_CSS,
     'public.css': PUBLIC_BUNDLE_CSS,
   };
-  app.get('/assets/css/:filename', (c) => {
+  app.get('/assets/css/:filename', async (c) => {
     const filename = c.req.param('filename');
-    const css = cssBundles[filename];
+    let css: string | undefined = cssBundles[filename];
+    if (!css && /^theme\.[0-9a-f]{10}\.css$/.test(filename)) {
+      const s = (await options?.getSettings?.()) ?? {};
+      const adminPack = (s.appearanceV2 as { admin?: ThemePackV2 } | undefined)?.admin;
+      const asset = resolveAdminThemeCssAsset(adminPack);
+      if (asset.css && asset.filename === filename) {
+        css = asset.css;
+      }
+    }
     if (!css) return c.text('Not Found', 404);
     const isHashed = /\.[0-9a-f]{10}\.css$/.test(filename);
     return c.body(css, 200, {
@@ -320,6 +331,9 @@ export function createWebApp(options?: WebAppOptions) {
   app.get('/admin/ventures', async (c) =>
     c.html(await renderAdminVenturesPage(client, { siteName: cfg.PUBLIC_SITE_NAME }))
   );
+  app.get('/admin/pages', async (c) =>
+    c.html(await renderAdminPagesEditorPage(client, { section: c.req.query('section'), siteName: cfg.PUBLIC_SITE_NAME }))
+  );
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
   app.get('/admin/status', async (c) => {
     const { renderAdminStatusPage } = await import('./pages/admin/status.js');
@@ -343,6 +357,10 @@ export function createWebApp(options?: WebAppOptions) {
     const html = await renderAdminSettingsModulePage(client, 'account');
     return html ? c.html(html) : c.html(renderAdminSectionPage(c.req.path));
   });
+  app.get('/admin/theme', async (c) => {
+    const html = await renderAdminSettingsModulePage(client, 'appearance');
+    return html ? c.html(html) : c.html(renderAdminSectionPage(c.req.path));
+  });
   app.get('/admin/settings/:id', async (c) => {
     const html = await renderAdminSettingsModulePage(client, c.req.param('id'));
     if (html) return c.html(html);
@@ -351,8 +369,6 @@ export function createWebApp(options?: WebAppOptions) {
   const adminSectionRoutes = [
     '/admin/quick-log',
     '/quick-log',
-    '/admin/pages',
-    '/admin/theme',
   ];
   for (const routePath of adminSectionRoutes) {
     app.get(routePath, async (c) => c.html(renderAdminSectionPage(c.req.path)));

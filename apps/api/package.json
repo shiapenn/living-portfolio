@@ -19,6 +19,7 @@
     "@living-portfolio/config": "workspace:*",
     "@living-portfolio/core": "workspace:*",
     "@living-portfolio/db": "workspace:*",
+    "@living-portfolio/ui-core": "workspace:*",
     "@living-portfolio/web": "workspace:*",
     "@living-portfolio/worker": "workspace:*",
     "hono": "^4.13.18",

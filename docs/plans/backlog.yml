@@ -101,7 +101,7 @@ items:
     expected_minutes: 55
     gate: none
     acceptance: Pages resource & migration for About/Now/Uses/Home statement with revisions, /admin/settings/home Featured count (default 3) & Recent count (default 10), featured toggle on entries & ventures; E2E + census green
-    status: ready
+    status: done
 
   - id: WP-17.8
     title: Appearance v2 (theme-pack schema, live preview, AA contrast validation, constrained customisation, admin+public scopes, theme.<hash>.css, import/export; UX-27, UI-04)
@@ -112,7 +112,7 @@ items:
     expected_minutes: 60
     gate: L-review
     acceptance: Typed theme-pack schema, selectable packs with live preview and AA contrast rejection, constrained customisation (accent seed, density proximity table, allowed radius scales, vetted self-hosted fonts), JSON import/export, admin+public scopes stored via settings registry, admin applied via cacheable theme.<hash>.css (zero public restyle); contact sheets delivered; E2E + census green
-    status: ready
+    status: done
 
   # ── WP-18: Authoring canvas, media, storage & import (Report §7.9 + P004) ──
   - id: WP-18.1

@@ -5521,18 +5521,21 @@
     - "10.1"
     - "12.7"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp17-8-appearance-v2.spec.ts
   history:
     - date: 2026-11-15
       status: open
       note: "Registered at Gate G15 contact-sheet review (D-CONTRACT-1 and D-HELP): /admin/settings exposes raw hex inputs for theme colours and developer/spec strings ('Simulated Degradation Mode', 'bge-small-en-v1.5 dim 384', 'Facet Known Threshold', 'Self-Calibration Mechanisms (Spec §11, UX-08)', 'shipped default: 0.82'). Planned for WP-17.1 and WP-17.8."
-  verified_by: null
+    - date: 2026-11-25
+      status: fixed
+      note: "WP-17.1 + WP-17.8: replaced developer/spec jargon in Answering/Providers settings with plain language and Explain blocks, and upgraded Appearance to v2 with selectable WCAG AA theme packs, live preview, constrained token customisation, and JSON import/export."
+  verified_by: A
 - id: 20261106-UX-96
   audit: AUD-2026-11-06
   title: 'Draft buffer, restore prompt, beforeunload unsaved-changes guard, and offline banner lost when workspace.ts was deleted'

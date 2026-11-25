@@ -19,6 +19,7 @@ export interface AdminShellOptions {
   fullWidth?: boolean;
   authenticated?: boolean;
   template?: 'standard' | 'narrow' | 'editor';
+  themeCssFilename?: string;
 }
 
 export type LauncherGroupId = 'Write' | 'Respond' | 'Govern' | 'Configure';
@@ -52,7 +53,8 @@ const BUILTIN_DESTINATIONS: AdminNavDestination[] = [
   { id: 'today', group: 'Write', href: '/admin', label: 'Today', icon: 'sun', order: 1 },
   { id: 'entries', group: 'Write', href: '/admin/entries', label: 'Entries', icon: 'file-text', order: 2 },
   { id: 'import', group: 'Write', href: '/admin/import', label: 'Import', icon: 'upload', order: 3 },
-  { id: 'ventures', group: 'Write', href: '/admin/ventures', label: 'Ventures', icon: 'layers', order: 4 },
+  { id: 'pages', group: 'Write', href: '/admin/pages', label: 'Pages', icon: 'file-text', order: 4 },
+  { id: 'ventures', group: 'Write', href: '/admin/ventures', label: 'Ventures', icon: 'layers', order: 5 },
   { id: 'inbox', group: 'Respond', href: '/admin/inbox', label: 'Inbox', icon: 'inbox', order: 5 },
   { id: 'bookings', group: 'Respond', href: '/admin/bookings', label: 'Bookings', icon: 'clock', order: 6 },
   { id: 'audit', group: 'Govern', href: '/admin/audit', label: 'Answer rules', icon: 'shield', order: 7 },
@@ -351,7 +353,7 @@ export function renderAdminShell(
     `<link rel="stylesheet" href="/assets/css/${ADMIN_CSS_FILENAME}" />`,
     isEditorRoute ? `<link rel="stylesheet" href="/assets/css/${ADMIN_EDITOR_CSS_FILENAME}" />` : '',
     isGalleryRoute ? `<link rel="stylesheet" href="/assets/css/${ADMIN_GALLERY_CSS_FILENAME}" />` : '',
-    `<link rel="stylesheet" href="/assets/css/${DEFAULT_ACCENT_CSS_FILENAME}" />`,
+    `<link rel="stylesheet" href="/assets/css/${options?.themeCssFilename || DEFAULT_ACCENT_CSS_FILENAME}" />`,
   ]
     .filter(Boolean)
     .join('\n  ');

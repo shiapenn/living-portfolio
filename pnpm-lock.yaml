@@ -207,6 +207,9 @@ importers:
       '@living-portfolio/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@living-portfolio/ui-core':
+        specifier: workspace:*
+        version: link:../../packages/ui-core
       '@living-portfolio/web':
         specifier: workspace:*
         version: link:../web

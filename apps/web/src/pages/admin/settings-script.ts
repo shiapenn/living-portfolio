@@ -155,6 +155,22 @@ export const SETTINGS_SCRIPT = `
                   })
                 });
                 setBanner(res.ok ? 'Saved.' : 'Could not save visibility settings.', !res.ok);
+              } else if (moduleName === 'home') {
+                const stmtEl = document.getElementById('setting-home-statement');
+                const fcEl = document.getElementById('setting-home-featured-count');
+                const rcEl = document.getElementById('setting-home-recent-count');
+                const slugsEl = document.getElementById('setting-home-featured-slugs');
+                const slugs = slugsEl ? slugsEl.value.split(',').map((s) => s.trim()).filter(Boolean) : [];
+                const res = await apiClient('/api/settings/home', {
+                  method: 'PATCH',
+                  body: JSON.stringify({
+                    statement: stmtEl ? stmtEl.value.trim() : '',
+                    featuredCount: fcEl ? parseInt(fcEl.value, 10) : 3,
+                    recentCount: rcEl ? parseInt(rcEl.value, 10) : 10,
+                    featuredSlugs: slugs,
+                  }),
+                });
+                setBanner(res.ok ? 'Saved.' : 'Could not save home settings.', !res.ok);
               }
             } catch {
               setBanner('Network error saving settings.', true);
