@@ -2081,5 +2081,13 @@
     "path": "docs/execution-reports/A177-wp-171-settings-templates-and-routing-page.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A178",
+    "title": "WP-17.3 to 17.6 settings and governance modules",
+    "class": "A",
+    "path": "docs/execution-reports/A178-wp-173-to-176-settings-and-governance-modules.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

@@ -15,10 +15,10 @@ Authoritative live tracker for `WP-17` (Settings, maintenance, account, and Appe
 | Docs-0 | WP-16 closure | ADR-023, ADR-001/rules.md, backlog reconciliation, register updates | PR #274 (`3b6453d`, A176) | done | CI run `45545070317` green; `auth.spec.ts` 19/19 |
 | S1 | WP-17.1 | Settings templates & Routing (`/admin/settings/answering`, `/admin/routing`, consequence copy, reply-time, confirm dialog, zero jargon) | PR #275 (`84bd133`, A177) | done | CI run `45546978226` green; CodeQL `45546978196` green; census 0 violations |
 | — | WP-17.2 | Setup Step 3 Model Providers (`ProviderFlow`, `UX-09`) | PR #234 (WP-16.G, A155) | done | Verified `tests/e2e/auth.spec.ts` tests 3 & 3b (19/19 passed) |
-| S2 | WP-17.3 | Backups, Export & Visibility (`/admin/settings/backups`, `/admin/settings/visibility`, named archive, dynamic `/robots.txt`, AI-crawler switch) | pending | pending | — |
-| S3 | WP-17.4 | Account (`/admin/settings/account` & `/admin/account`: username/password, TOTP re-enrol, recovery codes, API tokens, sign out other sessions, UX-49) | pending | pending | — |
-| S4 | WP-17.5 | Audit (Contradictions, Stale claims), Calibration (per-mechanism switches, proposals, history, rollback), Structure (profiles, facets, hard constraints) | pending | pending | — |
-| S5 | WP-17.6 | Bookings (list, detail, status) & Ventures (create, edit, link entries feeding `/build`) | pending | pending | — |
+| S2 | WP-17.3 | Backups, Export & Visibility (`/admin/settings/backups`, `/admin/settings/visibility`, named archive, dynamic `/robots.txt`, AI-crawler switch) | PR #276 (`0d06655`, A178) | done | CI run `45549332627` green; CodeQL `45549332531` green; `wp17-3-backups-visibility.spec.ts` |
+| S3 | WP-17.4 | Account (`/admin/settings/account` & `/admin/account`: username/password, TOTP re-enrol, recovery codes, API tokens, sign out other sessions, UX-49) | PR #276 (`0d06655`, A178) | done | CI run `45549332627` green; `wp17-4-account.spec.ts` |
+| S4 | WP-17.5 | Audit (Contradictions, Stale claims), Calibration (per-mechanism switches, proposals, history, rollback), Structure (profiles, facets, hard constraints) | PR #276 (`0d06655`, A178) | done | CI run `45549332627` green; `wp17-5-audit-calibration-structure.spec.ts` |
+| S5 | WP-17.6 | Bookings (list, detail, status) & Ventures (create, edit, link entries feeding `/build`) | PR #276 (`0d06655`, A178) | done | CI run `45549332627` green; `wp17-6-bookings-ventures.spec.ts` |
 | S6 | WP-17.7 | Pages & Home settings (`/admin/pages` About/Now/Uses/Home statement with revisions, `/admin/settings/home` Featured/Recent counts, featured toggle) | pending | pending | — |
 | S7 | WP-17.8 | Appearance v2 (typed theme-pack schema, live preview, AA contrast validation, constrained customisation, admin+public scopes, `theme.<hash>.css`, JSON import/export; `gate: L-review`) | pending | pending | — |
 
@@ -30,3 +30,4 @@ Authoritative live tracker for `WP-17` (Settings, maintenance, account, and Appe
 | S1 (WP-17.1) | 2026-11-25 12:15 | 2026-11-25 12:34 | 19 | Settings templates & Routing (PR #275) |
 | S2 (WP-17.3) | 2026-11-25 12:22 | 2026-11-25 12:27 | 5 | Backups, Export & Visibility (stacked while PR #275 CI ran) |
 | S3 (WP-17.4) | 2026-11-25 12:28 | 2026-11-25 12:34 | 6 | Account settings (stacked while PR #275 CI ran) |
+| S4-S5 (WP-17.5/17.6) | 2026-11-25 12:34 | 2026-11-25 12:53 | 19 | Audit Contradictions, Calibration, Structure, Bookings, Ventures + launcher scroll fix (PR #276, A178) |
