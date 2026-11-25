@@ -2113,5 +2113,13 @@
     "path": "docs/design/content.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A180",
+    "title": "WP-17.9 polish states and content standard",
+    "class": "A",
+    "path": "docs/execution-reports/A180-wp-179-polish-states-and-content-standard.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

@@ -185,6 +185,7 @@
 | `A177` | WP-17.1 settings templates and routing page | `active` | [A177-wp-171-settings-templates-and-routing-page.md](execution-reports/A177-wp-171-settings-templates-and-routing-page.md) | — |
 | `A178` | WP-17.3 to 17.6 settings and governance modules | `active` | [A178-wp-173-to-176-settings-and-governance-modules.md](execution-reports/A178-wp-173-to-176-settings-and-governance-modules.md) | — |
 | `A179` | WP-17.7 and 17.8 pages home appearance | `active` | [A179-wp-177-and-178-pages-home-appearance.md](execution-reports/A179-wp-177-and-178-pages-home-appearance.md) | — |
+| `A180` | WP-17.9 polish states and content standard | `active` | [A180-wp-179-polish-states-and-content-standard.md](execution-reports/A180-wp-179-polish-states-and-content-standard.md) | — |
 
 ## Handover Snapshots (Class H)
 
