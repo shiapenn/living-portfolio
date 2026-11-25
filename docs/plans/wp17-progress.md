@@ -13,7 +13,7 @@ Authoritative live tracker for `WP-17` (Settings, maintenance, account, and Appe
 | Slice | Backlog ID | Scope | PR / Commit | Status | Evidence |
 | --- | --- | --- | --- | --- | --- |
 | Docs-0 | WP-16 closure | ADR-023, ADR-001/rules.md, backlog reconciliation, register updates | PR #274 (`3b6453d`, A176) | done | CI run `45545070317` green; `auth.spec.ts` 19/19 |
-| S1 | WP-17.1 | Settings templates & Routing (`/admin/settings/answering`, `/admin/routing`, consequence copy, reply-time, confirm dialog, zero jargon) | pending | pending | — |
+| S1 | WP-17.1 | Settings templates & Routing (`/admin/settings/answering`, `/admin/routing`, consequence copy, reply-time, confirm dialog, zero jargon) | PR #275 (`84bd133`, A177) | done | CI run `45546978226` green; CodeQL `45546978196` green; census 0 violations |
 | — | WP-17.2 | Setup Step 3 Model Providers (`ProviderFlow`, `UX-09`) | PR #234 (WP-16.G, A155) | done | Verified `tests/e2e/auth.spec.ts` tests 3 & 3b (19/19 passed) |
 | S2 | WP-17.3 | Backups, Export & Visibility (`/admin/settings/backups`, `/admin/settings/visibility`, named archive, dynamic `/robots.txt`, AI-crawler switch) | pending | pending | — |
 | S3 | WP-17.4 | Account (`/admin/settings/account` & `/admin/account`: username/password, TOTP re-enrol, recovery codes, API tokens, sign out other sessions, UX-49) | pending | pending | — |
@@ -27,4 +27,6 @@ Authoritative live tracker for `WP-17` (Settings, maintenance, account, and Appe
 | Slice | Start (UTC+8) | End (UTC+8) | Wall-Clock (min) | Notes |
 | --- | --- | --- | --- | --- |
 | Docs-0 | 2026-11-25 12:05 | 2026-11-25 12:15 | 10 | Intake, verification, ADR-023, backlog & register reconciliation (PR #274) |
-| S1 (WP-17.1) | 2026-11-25 12:15 | pending | — | Settings templates & Routing (`/admin/settings/answering`, `/admin/routing`) |
+| S1 (WP-17.1) | 2026-11-25 12:15 | 2026-11-25 12:34 | 19 | Settings templates & Routing (PR #275) |
+| S2 (WP-17.3) | 2026-11-25 12:22 | 2026-11-25 12:27 | 5 | Backups, Export & Visibility (stacked while PR #275 CI ran) |
+| S3 (WP-17.4) | 2026-11-25 12:28 | 2026-11-25 12:34 | 6 | Account settings (stacked while PR #275 CI ran) |
