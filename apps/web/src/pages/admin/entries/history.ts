@@ -1,3 +1,4 @@
+import { formatAdminDateTime } from '@living-portfolio/ui-core';
 import { escapeHtml } from '../../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../../layouts/admin-shell.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../../lib/admin-api-client.js';
@@ -71,7 +72,7 @@ export async function renderEntryHistoryPage(
             const rawValidFrom = String(rev.valid_from ?? '');
             const temporalLevel = String(rev.temporal_level ?? 'exact');
             const rawDate = String(rev.valid_from ?? rev.created_at ?? '');
-            const dateLabel = rawDate ? rawDate.replace('T', ' ').slice(0, 16) : 'Revision';
+            const dateLabel = rawDate ? formatAdminDateTime(rawDate) : 'Revision';
             const plain = stripMarkdownMarkers(bodyMd);
             const preview = plain.length > 160 ? `${plain.slice(0, 160)}…` : plain;
             const stateLabel = idx === 0 ? INSPECTOR_STRINGS.historyPage.currentBadge : undefined;

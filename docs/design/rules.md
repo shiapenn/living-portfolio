@@ -7,7 +7,7 @@
 | --- | --- |
 | Accepted ADRs | 23 |
 | Superseded ADRs (excluded) | 1 |
-| Effective Rules | 34 |
+| Effective Rules | 35 |
 | Areas Covered | 11 |
 
 ## architecture
@@ -33,11 +33,12 @@
 
 | Rule | Requirement | Source ADR | Enforced By |
 | --- | --- | --- | --- |
-| `R-024-1` | Admin copy follows the remove-rather-than-add content standard: page description <= 14 words (omitted if self-explanatory; none on Settings index), Settings index module descriptions <= 6 words, section description <= 16 words, field helper <= 12 words, empty state <= 12 words, notice <= 2 sentences, buttons <= 2 words sentence case, and default route static prose <= 60 words | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
-| `R-024-2` | Rendered admin UI must never contain banned internal tokens ([object Object], undefined, null, NaN, WP-N, ADR-N, <hash>, (s), filenames, API paths, or raw IDs) | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
-| `R-024-3` | Tabs always have an active selected tab matching the URL (unknown values fall back to the first tab), labels are 1-2 short words, painted label ink boxes never intersect or clip, targets are >= 44px, and overflowing tablists scroll horizontally with scroll-snap and edge fade | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-024-1` | Admin copy follows the remove-rather-than-add content standard with an operational floor: page description <= 14 words (omitted on Settings index), Settings index summaries <= 6 words, section description <= 16 words, field helper <= 12 words (numeric/consequential controls keep recommended value or consequence), empty state <= 12 words, notice <= 2 sentences (success notices follow events only), buttons <= 2 words sentence case, and default route static prose <= 60 words | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-024-2` | Rendered admin UI must never contain banned internal tokens ([object Object], undefined, null, NaN, WP-N, ADR-N, <hash>, (s), filenames, API paths, raw IDs, or raw ISO YYYY-MM-DD dates); timestamps use the ui-core formatter (25 Nov 2026, 14:29) | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-024-3` | Tabs always have an active selected tab matching the URL (unknown values fall back to the first tab), labels are 1-2 short words, painted label ink boxes never intersect or clip, targets are >= 44px, overflowing tablists scroll horizontally with scroll-snap and edge fade, and tab panels never repeat their active tab name as a heading or duplicate status lines | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
 | `R-024-4` | EmptyState has no raised surface and no padding indent: left ink edge aligns with the section heading left ink edge within 1px, renders one sentence <= 12 words plus optional action, and is used consistently across lists, panels, and tab panels | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
-| `R-024-5` | Item anatomy is uniform at 1280px and 320px: row 1 holds title + trailing status (dot + text + chevron if navigable) aligned to the title row within half a line height, row 2 holds description (wrapping at 320px), optional meta, and trailing item actions per D-L1 | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-024-5` | Item anatomy is uniform at 1280px and 320px: row 1 holds title + trailing status (dot + text with >= 4px painted gap + chevron if navigable) aligned to the title row within half a line height (wp16-c 320px stacking exemption is keyed strictly to adjacent lp-item-title and lp-item-status), row 2 holds description (wrapping at 320px), optional meta, and trailing item actions per D-L1 | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-024-6` | Entity status labels obey the closed vocabulary in docs/design/content.md: Booking (Pending, Confirmed, Declined, Cancelled), Token (Active, Revoked), Rule (Pending, Active, Discarded), and Page Revision (newest labelled Current, older rows show no status) | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
 
 ## editor
 

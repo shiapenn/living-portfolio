@@ -290,12 +290,23 @@ button.lp-chip.is-hover {
 .lp-status-indicator {
   display: inline-flex;
   align-items: center;
-  gap: var(--lp-space-stack-label-to-control);
+  gap: var(--lp-space-inline-icon-text);
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14);
   font-weight: 400;
   color: var(--text);
   cursor: default;
+}
+
+#account-totp-qr {
+  max-width: var(--lp-size-grid-card-min);
+}
+
+#account-totp-qr svg {
+  display: block;
+  width: 100%;
+  max-width: var(--lp-size-grid-card-min);
+  height: auto;
 }
 
 .lp-status-dot {

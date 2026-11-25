@@ -20,6 +20,12 @@ export const STATUS_VOCABULARY = [
   'Unlisted',
   'Key invalid',
   'Unreachable',
+  'Confirmed',
+  'Declined',
+  'Cancelled',
+  'Discarded',
+  'Revoked',
+  'Current',
 ] as const;
 
 export interface ChipProps {

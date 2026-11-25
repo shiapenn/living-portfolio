@@ -23,8 +23,11 @@ test.describe.serial('WP-17.6: Bookings & Ventures (/admin/bookings, /admin/vent
     await expect(page.locator('h1')).toContainText('Bookings');
     await expect(page.locator('#bookings-list')).toContainText('Distributed systems review');
     const confirmBtn = page.locator('[data-c="Item"]:has-text("Distributed systems review") button[data-booking-status="confirmed"]').first();
-    await confirmBtn.click();
-    await expect(page.locator('[data-c="Item"]:has-text("Distributed systems review")')).toContainText('Active');
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'load' }),
+      confirmBtn.click(),
+    ]);
+    await expect(page.locator('[data-c="Item"]:has-text("Distributed systems review")')).toContainText('Confirmed');
 
     // 3. Create venture on /admin/ventures and verify it appears on /build
     await page.goto('/admin/ventures');

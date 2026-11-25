@@ -1103,6 +1103,12 @@ export const STATUS_VOCABULARY = [
   'Unlisted',
   'Key invalid',
   'Unreachable',
+  'Confirmed',
+  'Declined',
+  'Cancelled',
+  'Discarded',
+  'Revoked',
+  'Current',
 ] as const;
 
 export async function checkStatusVocabularyI5(page: Page, stateId = ''): Promise<string[]> {

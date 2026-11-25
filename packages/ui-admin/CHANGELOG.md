@@ -10,6 +10,10 @@ WP-16.N design system consolidation:
 - Migrated all admin CSS out of `apps/web/src/styles.ts` into layered, route-split hashed bundles in `@living-portfolio/ui-admin` with zero pixel regression.
 - Added ADR-generated `rules.md`, `ds:impact`, `ds:health`, nightly health workflow, and changeset governance.
 
+## PATCH (wp17-10-exit-gate)
+
+WP-17.10 exit-gate fixes: add unified `formatAdminDate` / `formatAdminDateTime` in `ui-core`, constrain Account QR code to `<= 192px` via `--lp-size-grid-card-min` token, and ensure status dot-to-label gap uses `--lp-space-inline-icon-text`.
+
 ## MINOR (wp17-9-polish-contracts)
 
 Implement WP-17.9 polish contracts (ADR-024, D1-D6): horizontal scroll-snap + edge-fade Tabs with >= 44px targets, unboxed/unindented EmptyState aligned to heading ink edge, uniform Item anatomy across 320px and 1280px, Appearance v2 composed preview container, and single-seed OKLCH light/dark accent derivation.

@@ -10,7 +10,7 @@ test.describe.serial('WP-17.4: Account settings (/admin/settings/account, /admin
 
     // 1. Regenerate recovery codes (UX-47)
     await page.click('#btn-regen-recovery');
-    await expect(page.locator('#settings-status-banner')).toContainText('Generated 8 new recovery codes');
+    await expect(page.locator('#account-recovery-notice')).toContainText('Generated 8 new recovery codes');
     const codesText = await page.locator('#account-recovery-output').innerText();
     expect(codesText.match(/[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}/g)?.length).toBe(8);
 
@@ -21,7 +21,7 @@ test.describe.serial('WP-17.4: Account settings (/admin/settings/account, /admin
     const revokeBtn = page.locator('[data-c="Item"]:has-text("wp17-ci-token") button[data-revoke-token]').first();
     await expect(revokeBtn).toBeVisible();
     await revokeBtn.click();
-    await expect(page.locator('#settings-status-banner')).toContainText('Token revoked.');
+    await expect(page.locator('#account-tokens-list-notice')).toContainText('Token revoked.');
 
     // 3. Re-enrol authenticator shows QR + manual key
     await page.click('#btn-reenrol-totp');
@@ -30,7 +30,7 @@ test.describe.serial('WP-17.4: Account settings (/admin/settings/account, /admin
 
     // 4. Sign out other sessions
     await page.click('#btn-revoke-other-sessions');
-    await expect(page.locator('#settings-status-banner')).toContainText('Other sessions signed out.');
+    await expect(page.locator('#account-sessions-notice')).toContainText('Other sessions signed out.');
 
     // 5. Unconfirmed setup reset endpoint returns 409 once confirmed (UX-49)
     const resetRes = await page.request.post('/api/auth/setup/reset');

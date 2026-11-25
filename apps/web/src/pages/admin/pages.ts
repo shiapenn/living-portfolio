@@ -1,4 +1,5 @@
 import { loadConfig } from '@living-portfolio/config';
+import { formatAdminDateTime } from '@living-portfolio/ui-core';
 import { escapeHtml } from '../../lib/html.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
@@ -47,10 +48,10 @@ export async function renderAdminPagesEditorPage(
           .map((rev, idx) =>
             renderItem({
               title: `Revision ${revisions.length - idx}`,
-              subtitle: `Saved ${new Date(rev.savedAt).toISOString().slice(0, 19).replace('T', ' ')}`,
+              subtitle: `Saved ${formatAdminDateTime(rev.savedAt)}`,
               body: rev.body_md.slice(0, 140),
-              statusLabel: 'Archived',
-              statusTone: 'neutral',
+              statusLabel: idx === 0 ? 'Current' : undefined,
+              statusTone: idx === 0 ? 'ok' : undefined,
             })
           )
           .join(''),
@@ -66,7 +67,7 @@ export async function renderAdminPagesEditorPage(
 
       ${renderFormSection({
         id: 'pages-editor-section',
-        title: SECTION_LABELS[active],
+        title: 'Content',
         fieldsHtml: renderField({
           kind: 'textarea',
           id: 'pages-body-md',

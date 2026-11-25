@@ -78,7 +78,6 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
           variant: 'card',
           options: [{ id: 'preview-choice-1', value: 'yes', label: 'Sample toggle option', checked: true }],
         })}
-        <div data-c="Notice" class="lp-notice lp-notice-ok">Preview reflects your selected tokens.</div>
         ${renderText({ variant: 'body', text: 'Sample workspace — accent, radius, density, and font update live.' })}
       </div>
     `;

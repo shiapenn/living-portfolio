@@ -39,7 +39,7 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
             kind: 'input',
             id: 'account-new-username',
             name: 'newUsername',
-            label: 'New username',
+            label: 'New username (optional)',
             inputType: 'text',
             value: '',
             attributes: 'autocomplete="username"',
@@ -48,12 +48,13 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
             kind: 'input',
             id: 'account-new-password',
             name: 'newPassword',
-            label: 'New password',
+            label: 'New password (optional)',
             inputType: 'password',
             value: '',
             help: 'Minimum 12 characters.',
             attributes: 'autocomplete="new-password"',
           })}
+          <div id="account-creds-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
         `,
         actionBarHtml: renderActionBar({
           level: 'item',
@@ -79,6 +80,7 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
               placeholder: '123456',
             })}
           </div>
+          <div id="account-totp-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
         `,
         actionBarHtml: renderActionBar({
           level: 'item',
@@ -91,7 +93,10 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
         id: 'account-recovery-section',
         title: 'Recovery codes',
         description: 'Regenerating invalidates all older recovery codes immediately.',
-        fieldsHtml: renderText({ id: 'account-recovery-output', variant: 'caption', text: 'Shown once when generated.' }),
+        fieldsHtml: `
+          ${renderText({ id: 'account-recovery-output', variant: 'caption', text: 'Shown once when generated.' })}
+          <div id="account-recovery-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
+        `,
         actionBarHtml: renderActionBar({
           level: 'item',
           secondary: { id: 'btn-regen-recovery', label: 'Regenerate codes', variant: 'secondary', type: 'button', size: 'sm' },
@@ -113,6 +118,7 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
             help: 'Shown once when created.',
           })}
           ${renderText({ id: 'account-token-created', variant: 'caption', text: '' })}
+          <div id="account-tokens-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
         `,
         actionBarHtml: renderActionBar({
           level: 'item',
@@ -123,14 +129,20 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
       ${renderFormSection({
         id: 'account-tokens-list-section',
         title: 'Active tokens',
-        fieldsHtml: `<div id="account-tokens-container" data-c="List" data-variant="plain" class="lp-list lp-list-plain"></div>`,
+        fieldsHtml: `
+          <div id="account-tokens-container" data-c="List" data-variant="plain" class="lp-list lp-list-plain"></div>
+          <div id="account-tokens-list-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
+        `,
       })}
 
       ${renderFormSection({
         id: 'account-sessions-section',
         title: 'Other sessions',
         description: 'Signs out all other browsers and devices immediately.',
-        fieldsHtml: renderText({ id: 'account-sessions-result', variant: 'caption', text: '' }),
+        fieldsHtml: `
+          ${renderText({ id: 'account-sessions-result', variant: 'caption', text: '' })}
+          <div id="account-sessions-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
+        `,
         actionBarHtml: renderActionBar({
           level: 'item',
           secondary: { id: 'btn-revoke-other-sessions', label: 'End sessions', variant: 'secondary', type: 'button', size: 'sm' },

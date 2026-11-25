@@ -1,7 +1,8 @@
+import { ADMIN_DATETIME_FORMATTER_SCRIPT, formatAdminDateTime } from '@living-portfolio/ui-core';
 import { escapeHtml } from '../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
-import { renderActionBar, renderFormSection, renderItem, renderList, renderText } from '../../primitives/index.js';
+import { renderActionBar, renderItem, renderList, renderText } from '../../primitives/index.js';
 import { renderEmptyState, renderStatusLine } from '../../components/index.js';
 import { INBOX_STRINGS } from '../../strings/admin/inbox.js';
 
@@ -76,28 +77,24 @@ export async function renderAdminAuditRulesPage(
         });
 
     const checkedMetaHtml = options.lastCheckedAt
-      ? renderText({ id: 'audit-last-checked', variant: 'caption', text: `Last checked ${new Date(options.lastCheckedAt).toISOString().slice(0, 16).replace('T', ' ')}` })
+      ? renderText({ id: 'audit-last-checked', variant: 'caption', text: `Last checked ${formatAdminDateTime(options.lastCheckedAt)}` })
       : `<p id="audit-last-checked" data-c="Text" data-variant="caption" class="lp-caption lp-is-hidden"></p>`;
 
     mainContentHtml = `
-      <div id="audit-contradictions-panel" data-contradictions-state="${initialState}" class="lp-stack lp-gap-section">
-        ${renderFormSection({
-          id: 'audit-conflicts-section',
-          title: 'Contradictions',
-          fieldsHtml: `
-            <div id="audit-conflicts-region" aria-live="polite" class="lp-stack lp-gap-related">
-              ${conflictBodyHtml}
-              ${checkedMetaHtml}
-            </div>
-            <div id="audit-conflicts-error" data-c="Notice" class="lp-notice lp-notice-danger lp-is-hidden">
-              Could not run contradiction check.
-            </div>
-          `,
-          actionBarHtml: renderActionBar({
+      <div id="audit-contradictions-panel" data-contradictions-state="${initialState}" class="lp-stack lp-gap-group">
+        <div id="audit-conflicts-section" class="lp-stack lp-gap-group">
+          <div id="audit-conflicts-region" aria-live="polite" class="lp-stack lp-gap-related">
+            ${conflictBodyHtml}
+            ${checkedMetaHtml}
+          </div>
+          <div id="audit-conflicts-error" data-c="Notice" class="lp-notice lp-notice-danger lp-is-hidden">
+            Could not run contradiction check.
+          </div>
+          ${renderActionBar({
             level: 'item',
             secondary: { id: 'btn-detect-conflicts', label: 'Run check', variant: 'secondary', type: 'button', size: 'sm' },
-          }),
-        })}
+          })}
+        </div>
       </div>
     `;
   } else {
@@ -129,7 +126,7 @@ export async function renderAdminAuditRulesPage(
                 title: String(summary),
                 subtitle: scopeText,
                 segments: quote && quote.trim() !== String(summary).trim() ? [{ heading: 'From your reply', body: quote }] : undefined,
-                statusLabel: activeStatus === 'confirmed' ? 'Active' : activeStatus === 'revoked' ? 'Ignored' : 'Pending',
+                statusLabel: activeStatus === 'confirmed' ? 'Active' : activeStatus === 'revoked' ? 'Discarded' : 'Pending',
                 statusTone: tone,
                 actions: activeStatus === 'revoked'
                   ? { level: 'item', secondary: { label: 'Restore', variant: 'secondary', size: 'sm', dataAttrs: { 'rule-id': id, 'rule-action': 'confirmed' } } }
@@ -153,6 +150,7 @@ export async function renderAdminAuditRulesPage(
     ${mainContentHtml}
     <script${options.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : ''}>
       ${ADMIN_API_CLIENT_SCRIPT}
+      ${ADMIN_DATETIME_FORMATTER_SCRIPT}
       (function () {
         var list = document.getElementById('audit-rules-list');
         var statusEl = document.getElementById('audit-status-line');
@@ -193,10 +191,10 @@ export async function renderAdminAuditRulesPage(
             if (!res || !res.ok) throw new Error('Check failed');
             var data = await res.json().catch(function () { return {}; });
             var count = Number(data.detected || 0);
-            var nowStr = new Date().toISOString().slice(0, 16).replace('T', ' ');
+            var nowStr = lpFormatAdminDateTime(new Date());
             if (count > 0) {
               panel.setAttribute('data-contradictions-state', 'found');
-              if (statusEl) statusEl.textContent = count === 1 ? 'Found 1 contradiction.' : 'Found ' + count + ' contradictions.';
+              if (statusEl) statusEl.textContent = '';
               window.location.reload();
               return;
             }
@@ -209,10 +207,11 @@ export async function renderAdminAuditRulesPage(
               lastCheckedEl.textContent = 'Last checked ' + nowStr;
               lastCheckedEl.classList.remove('lp-is-hidden');
             }
-            if (statusEl) statusEl.textContent = 'No contradictions found.';
+            if (statusEl) statusEl.textContent = '';
           } catch {
             panel.setAttribute('data-contradictions-state', 'error');
             if (errBox) errBox.classList.remove('lp-is-hidden');
+            if (statusEl) statusEl.textContent = '';
             detectBtn.textContent = 'Retry';
           } finally {
             panel.removeAttribute('aria-busy');
@@ -242,9 +241,11 @@ export async function renderAdminAuditRulesPage(
               var remaining = conflictList.querySelectorAll('[data-conflict-row]').length;
               if (panel) panel.setAttribute('data-contradictions-state', remaining === 0 ? 'clean' : 'resolved');
               if (remaining === 0 && region) {
-                region.innerHTML = '<div id="audit-conflicts-empty" class="lp-empty-state"><p class="lp-empty-body">No contradictions found.</p></div>';
+                region.innerHTML = '<div id="audit-conflicts-empty" class="lp-empty-state"><p data-c="Text" data-variant="description" class="lp-empty-body">No contradictions found.</p></div>';
+                if (statusEl) statusEl.textContent = '';
+              } else if (statusEl) {
+                statusEl.textContent = remaining === 1 ? '1 contradiction remaining.' : remaining + ' contradictions remaining.';
               }
-              if (statusEl) statusEl.textContent = 'Contradiction resolved.';
             } else {
               if (statusEl) statusEl.textContent = 'Could not resolve contradiction.';
               btn.disabled = false;
