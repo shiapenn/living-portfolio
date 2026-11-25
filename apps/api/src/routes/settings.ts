@@ -27,6 +27,8 @@ export interface RuntimeSettingsState {
   tier1_floor: number;
   tier2_floor: number;
   facet_known_threshold: number;
+  replyTimeEstimate?: string;
+  publicConfidenceDisclosure?: boolean;
   setupWizardCompleted: boolean;
   dashboardChecklistDismissed?: boolean;
   theme: typeof DEFAULT_STRATA_THEME;
@@ -118,6 +120,8 @@ export function createSettingsRoutes(
         tier1_floor: state.tier1_floor,
         tier2_floor: state.tier2_floor,
         facet_known_threshold: state.facet_known_threshold,
+        replyTimeEstimate: state.replyTimeEstimate || 'Within 24 hours',
+        publicConfidenceDisclosure: state.publicConfidenceDisclosure ?? true,
         shippedDefaults: { tier1_floor: 0.82, tier2_floor: 0.55, facet_known_threshold: 0.9 },
         warning: tier1Warning,
       },
@@ -241,6 +245,12 @@ export function createSettingsRoutes(
     if (typeof body.facet_known_threshold === 'number') {
       state.facet_known_threshold = Math.max(0.5, Math.min(1.0, body.facet_known_threshold));
     }
+    if (typeof body.replyTimeEstimate === 'string' && body.replyTimeEstimate.trim()) {
+      state.replyTimeEstimate = body.replyTimeEstimate.trim();
+    }
+    if (typeof body.publicConfidenceDisclosure === 'boolean') {
+      state.publicConfidenceDisclosure = body.publicConfidenceDisclosure;
+    }
 
     const warning =
       state.tier1_floor < 0.82
@@ -259,6 +269,8 @@ export function createSettingsRoutes(
         tier1_floor: state.tier1_floor,
         tier2_floor: state.tier2_floor,
         facet_known_threshold: state.facet_known_threshold,
+        replyTimeEstimate: state.replyTimeEstimate || 'Within 24 hours',
+        publicConfidenceDisclosure: state.publicConfidenceDisclosure ?? true,
         warning,
       },
     });

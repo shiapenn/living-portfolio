@@ -6,6 +6,13 @@ export interface SettingsRenderContext {
   providers?: Array<{ id?: string; name?: string; model?: string; enabled?: boolean; capabilities?: string[] }>;
 }
 
+export interface SettingsExplainBlock {
+  what: string;
+  when: string;
+  how: string;
+  impact: string;
+}
+
 export interface SettingsModuleManifest<TConfig = Record<string, unknown>> {
   id: string;
   title: string;
@@ -16,6 +23,7 @@ export interface SettingsModuleManifest<TConfig = Record<string, unknown>> {
   version: number;
   defaults: TConfig;
   schema: z.ZodType<TConfig>;
+  explain?: SettingsExplainBlock;
   status: (config: TConfig, ctx?: SettingsRenderContext) => string;
   render: (config: TConfig, ctx: SettingsRenderContext) => string;
   migrate?: (raw: unknown, fromVersion: number) => TConfig;

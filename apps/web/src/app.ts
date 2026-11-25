@@ -287,6 +287,10 @@ export function createWebApp(options?: WebAppOptions) {
     const model = c.req.query('model') || undefined;
     return c.html(renderProviderChangePage({ step, provider, model }));
   });
+  app.get('/admin/routing', async (c) => {
+    const html = await renderAdminSettingsModulePage(client, 'answering');
+    return html ? c.html(html) : c.html(renderAdminSectionPage(c.req.path));
+  });
   app.get('/admin/settings/:id', async (c) => {
     const html = await renderAdminSettingsModulePage(client, c.req.param('id'));
     if (html) return c.html(html);
@@ -299,7 +303,6 @@ export function createWebApp(options?: WebAppOptions) {
     '/admin/bookings',
     '/admin/calibration',
     '/admin/structure',
-    '/admin/routing',
     '/admin/theme',
   ];
   for (const routePath of adminSectionRoutes) {

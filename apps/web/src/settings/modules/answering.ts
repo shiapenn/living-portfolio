@@ -1,14 +1,22 @@
 import { z } from '@living-portfolio/core';
 import { escapeHtml } from '../../lib/html.js';
-import { renderActionBar, renderChoiceGroup, renderField, renderFormSection } from '../../primitives/index.js';
-import { renderStatusLine } from '../../components/index.js';
+import { renderActionBar, renderChoiceGroup, renderField, renderFormSection, renderText } from '../../primitives/index.js';
+import { renderDialog, renderStatusLine } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
+
+export const RECOMMENDED_THRESHOLDS = {
+  directConfidenceFloor: 0.82,
+  synthesisConfidenceFloor: 0.55,
+  topicMatchThreshold: 0.75,
+} as const;
 
 export const AnsweringConfigSchema = z.object({
   answeringEnabled: z.boolean().default(true),
   directConfidenceFloor: z.number().min(0.1).max(1.0).default(0.82),
-  synthesisConfidenceFloor: z.number().min(0.1).max(1.0).default(0.65),
+  synthesisConfidenceFloor: z.number().min(0.1).max(1.0).default(0.55),
   topicMatchThreshold: z.number().min(0.5).max(1.0).default(0.75),
+  replyTimeEstimate: z.string().default('Within 24 hours'),
+  publicConfidenceDisclosure: z.boolean().default(true),
   suggestThresholds: z.boolean().default(false),
   autoCalibrateRouting: z.boolean().default(false),
   auditContradictions: z.boolean().default(true),
@@ -25,33 +33,93 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
   order: 1,
   route: '/admin/settings/answering',
   version: 1,
+  explain: {
+    what: 'Controls whether visitors receive automatic answers from your published entries and how strict those answers must be.',
+    when: 'Review before sharing your site publicly or whenever visitor questions are routed to your Inbox too often.',
+    how: 'Pause automatic replies at any time, adjust match thresholds, or restore the recommended defaults.',
+    impact: 'Changes apply to new visitor questions right away without altering existing published entries.',
+  },
   defaults: {
     answeringEnabled: true,
-    directConfidenceFloor: 0.82,
-    synthesisConfidenceFloor: 0.65,
-    topicMatchThreshold: 0.75,
+    directConfidenceFloor: RECOMMENDED_THRESHOLDS.directConfidenceFloor,
+    synthesisConfidenceFloor: RECOMMENDED_THRESHOLDS.synthesisConfidenceFloor,
+    topicMatchThreshold: RECOMMENDED_THRESHOLDS.topicMatchThreshold,
+    replyTimeEstimate: 'Within 24 hours',
+    publicConfidenceDisclosure: true,
     suggestThresholds: false,
     autoCalibrateRouting: false,
     auditContradictions: true,
     rememberVisitorRules: true,
   },
   schema: AnsweringConfigSchema,
-  status: (cfg) => (cfg.answeringEnabled ? 'Active' : 'Paused'),
+  status: (cfg, ctx) => {
+    const raw = ctx?.settings || {};
+    const runtime = (raw.runtime && typeof raw.runtime === 'object' ? raw.runtime : raw) as Record<string, unknown>;
+    const enabled =
+      typeof runtime.automatedAnsweringEnabled === 'boolean'
+        ? runtime.automatedAnsweringEnabled
+        : typeof raw.answering_enabled === 'boolean'
+          ? raw.answering_enabled
+          : cfg.answeringEnabled;
+    return enabled ? 'Active' : 'Paused';
+  },
   render: (cfg, ctx) => {
     const raw = ctx.settings || {};
-    const answeringEnabled = typeof raw.answering_enabled === 'boolean' ? raw.answering_enabled : cfg.answeringEnabled;
-    const directFloor = typeof raw.tier1_floor === 'number' ? raw.tier1_floor : cfg.directConfidenceFloor;
-    const synthFloor = typeof raw.tier2_floor === 'number' ? raw.tier2_floor : cfg.synthesisConfidenceFloor;
-    const topicThreshold = typeof raw.facet_known_threshold === 'number' ? raw.facet_known_threshold : cfg.topicMatchThreshold;
+    const runtime = (raw.runtime && typeof raw.runtime === 'object' ? raw.runtime : raw) as Record<string, unknown>;
+    const routing = (raw.routing && typeof raw.routing === 'object' ? raw.routing : raw) as Record<string, unknown>;
+    const answeringEnabled =
+      typeof runtime.automatedAnsweringEnabled === 'boolean'
+        ? runtime.automatedAnsweringEnabled
+        : typeof raw.answering_enabled === 'boolean'
+          ? raw.answering_enabled
+          : cfg.answeringEnabled;
+    const directFloor = typeof routing.tier1_floor === 'number' ? routing.tier1_floor : cfg.directConfidenceFloor;
+    const synthFloor = typeof routing.tier2_floor === 'number' ? routing.tier2_floor : cfg.synthesisConfidenceFloor;
+    const topicThreshold = typeof routing.facet_known_threshold === 'number' ? routing.facet_known_threshold : cfg.topicMatchThreshold;
+    const replyTime = typeof routing.replyTimeEstimate === 'string' ? routing.replyTimeEstimate : cfg.replyTimeEstimate;
+    const publicDisclosure =
+      typeof routing.publicConfidenceDisclosure === 'boolean'
+        ? routing.publicConfidenceDisclosure
+        : cfg.publicConfidenceDisclosure;
     const cal = (raw.calibration && typeof raw.calibration === 'object' ? raw.calibration : {}) as Record<string, unknown>;
-    const mechSuggest = typeof cal.suggestion_thresholds === 'boolean' ? cal.suggestion_thresholds : typeof raw.mech_suggestion_thresholds === 'boolean' ? raw.mech_suggestion_thresholds : cfg.suggestThresholds;
-    const mechRouting = typeof cal.routing_calibration === 'boolean' ? cal.routing_calibration : typeof raw.mech_routing_calibration === 'boolean' ? raw.mech_routing_calibration : cfg.autoCalibrateRouting;
-    const mechTopology = typeof cal.topology_audit === 'boolean' ? cal.topology_audit : typeof raw.mech_topology_audit === 'boolean' ? raw.mech_topology_audit : cfg.auditContradictions;
-    const mechScoped = typeof cal.scoped_constraint_mining === 'boolean' ? cal.scoped_constraint_mining : typeof raw.mech_scoped_constraints === 'boolean' ? raw.mech_scoped_constraints : cfg.rememberVisitorRules;
+    const mechSuggest = typeof cal.suggestion_thresholds === 'boolean' ? cal.suggestion_thresholds : cfg.suggestThresholds;
+    const mechRouting = typeof cal.routing_calibration === 'boolean' ? cal.routing_calibration : cfg.autoCalibrateRouting;
+    const mechTopology = typeof cal.topology_audit === 'boolean' ? cal.topology_audit : cfg.auditContradictions;
+    const mechScoped = typeof cal.scoped_constraint_mining === 'boolean' ? cal.scoped_constraint_mining : cfg.rememberVisitorRules;
+
+    const belowRecommended =
+      directFloor < RECOMMENDED_THRESHOLDS.directConfidenceFloor ||
+      synthFloor < RECOMMENDED_THRESHOLDS.synthesisConfidenceFloor ||
+      topicThreshold < RECOMMENDED_THRESHOLDS.topicMatchThreshold;
+
+    const explain = answeringModule.explain!;
+    const pauseDialogHtml = renderDialog({
+      id: 'answering-pause-dialog',
+      title: 'Pause automatic answering?',
+      bodyHtml: renderText({
+        variant: 'body',
+        text: 'Visitors will see a notice that automatic answers are paused, and new questions will wait in your Inbox for your reply.',
+      }),
+      footerHtml: renderActionBar({
+        level: 'dialog',
+        primary: { id: 'btn-confirm-pause-answering', label: 'Pause answering', variant: 'primary', type: 'button' },
+        secondary: { id: 'btn-cancel-pause-answering', label: 'Cancel', variant: 'secondary', type: 'button' },
+      }),
+    });
 
     return `
       <form id="settings-module-form" data-settings-module="answering" class="lp-stack lp-gap-section">
         ${renderStatusLine({ id: 'settings-status-banner' })}
+
+        ${renderFormSection({
+          id: 'answering-explain-section',
+          title: 'How answering works',
+          fieldsHtml: `
+            ${renderText({ variant: 'description', text: `What it does: ${explain.what}` })}
+            ${renderText({ variant: 'description', text: `When to change: ${explain.when}` })}
+            ${renderText({ variant: 'description', text: `Impact: ${explain.impact}` })}
+          `,
+        })}
 
         ${renderFormSection({
           title: 'Automatic answering',
@@ -73,6 +141,7 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
 
         ${renderFormSection({
           title: 'Confidence thresholds',
+          description: 'Higher values keep answers stricter and route uncertain questions to your Inbox.',
           fieldsHtml: `
             ${renderField({
               kind: 'input',
@@ -84,9 +153,6 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
               help: 'Minimum match score (0.10 to 1.00, recommended 0.82) before quoting an entry directly.',
               attributes: 'step="0.01" min="0.1" max="1.0"',
             })}
-            <div id="tier1-warning" class="lp-notice lp-notice-warn${directFloor < 0.82 ? '' : ' lp-is-hidden'}">
-              Lowering this below 0.82 may allow weaker direct quotes.
-            </div>
             ${renderField({
               kind: 'input',
               id: 'setting-tier2-floor',
@@ -94,7 +160,7 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
               label: 'Summary answer threshold',
               inputType: 'number',
               value: String(synthFloor),
-              help: 'Minimum match score (0.10 to 1.00, recommended 0.65) before combining multiple entries.',
+              help: 'Minimum match score (0.10 to 1.00, recommended 0.55) before combining multiple entries.',
               attributes: 'step="0.01" min="0.1" max="1.0"',
             })}
             ${renderField({
@@ -106,6 +172,47 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
               value: String(topicThreshold),
               help: 'Minimum similarity (0.50 to 1.00, recommended 0.75) to match a known topic.',
               attributes: 'step="0.01" min="0.5" max="1.0"',
+            })}
+            <div id="tier1-warning" data-c="Notice" class="lp-notice lp-notice-warn${belowRecommended ? '' : ' lp-is-hidden'}">
+              Lowering thresholds below recommended values may allow weaker or less verified answers without your review.
+            </div>
+          `,
+          actionBarHtml: renderActionBar({
+            level: 'item',
+            secondary: { id: 'btn-restore-thresholds', label: 'Restore recommended', variant: 'secondary', type: 'button', size: 'sm' },
+          }),
+        })}
+
+        ${renderFormSection({
+          title: 'Visitor disclosure and reply time',
+          description: 'Shown to visitors when a question is answered automatically or queued for your reply.',
+          fieldsHtml: `
+            ${renderChoiceGroup({
+              name: 'public-disclosure-group',
+              mode: 'multiple',
+              variant: 'card',
+              options: [
+                {
+                  id: 'setting-public-disclosure',
+                  value: 'enabled',
+                  label: 'Show answer source and confidence note to visitors',
+                  checked: publicDisclosure,
+                },
+              ],
+            })}
+            ${renderField({
+              kind: 'select',
+              id: 'setting-reply-time',
+              name: 'replyTimeEstimate',
+              label: 'Expected reply time',
+              value: replyTime,
+              help: 'Displayed when a visitor question is forwarded to your Inbox.',
+              options: [
+                { value: 'Within 24 hours', label: 'Within 24 hours' },
+                { value: 'Within 48 hours', label: 'Within 48 hours' },
+                { value: 'Within 3 business days', label: 'Within 3 business days' },
+                { value: 'Within a week', label: 'Within a week' },
+              ],
             })}
           `,
         })}
@@ -149,6 +256,7 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
           primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
         })}
       </form>
+      ${pauseDialogHtml}
       <div class="lp-is-hidden" data-module-meta="${escapeHtml(answeringModule.id)}"></div>
     `;
   },
