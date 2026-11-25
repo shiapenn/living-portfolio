@@ -39,6 +39,9 @@ export interface RuntimeSettingsState {
   notificationTarget?: string;
   backupDestination?: string;
   backupAgePublicKey?: string;
+  allowSearchIndexing?: boolean;
+  blockAiCrawlers?: boolean;
+  federationEnabled?: boolean;
   selectedThemePreset?: string;
   activeProvider?: {
     id: string;
@@ -193,6 +196,13 @@ export function createSettingsRoutes(
       theme: state.theme,
       themePreset: state.selectedThemePreset || 'editorial-classic',
       themeConformance: verifyThemeConformance(state.theme),
+      visibility: {
+        allowSearchIndexing: state.allowSearchIndexing ?? true,
+        blockAiCrawlers: state.blockAiCrawlers ?? false,
+        federationEnabled: state.federationEnabled ?? false,
+        rssEnabled: true,
+        sitemapEnabled: true,
+      },
       activeProvider: state.activeProvider ?? null,
       redaction: {
         exclusions: state.redactionExclusions ?? [],
@@ -344,6 +354,30 @@ export function createSettingsRoutes(
       backups: {
         destination: state.backupDestination || null,
         agePublicKey: state.backupAgePublicKey || null,
+      },
+    });
+  });
+
+  // Update visibility & crawler policy settings (WP-17.3, UX-42)
+  router.patch('/visibility', async (c) => {
+    const body = await c.req.json();
+    if (typeof body.allowSearchIndexing === 'boolean') {
+      state.allowSearchIndexing = body.allowSearchIndexing;
+    }
+    if (typeof body.blockAiCrawlers === 'boolean') {
+      state.blockAiCrawlers = body.blockAiCrawlers;
+    }
+    if (typeof body.federationEnabled === 'boolean') {
+      state.federationEnabled = body.federationEnabled;
+    }
+    return c.json({
+      updated: true,
+      visibility: {
+        allowSearchIndexing: state.allowSearchIndexing ?? true,
+        blockAiCrawlers: state.blockAiCrawlers ?? false,
+        federationEnabled: state.federationEnabled ?? false,
+        rssEnabled: true,
+        sitemapEnabled: true,
       },
     });
   });
@@ -604,6 +638,8 @@ export function createSettingsRoutes(
       });
     }
 
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    c.header('Content-Disposition', `attachment; filename="living-portfolio-export-${dateStamp}.json"`);
     return c.json({
       exportedAt: new Date().toISOString(),
       schemaVersion: 'qrxp_v1.0.0',

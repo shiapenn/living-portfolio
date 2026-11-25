@@ -3715,13 +3715,13 @@
     - "12.9"
     - "13.13"
   severity: P1
-  status: partial
+  status: fixed
   owner: A
   links:
     issue: null
     pr: "https://github.com/shiapenn/living-portfolio/pull/77"
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: apps/api/src/conformance/wp13-auth.conformance.test.ts
+  regression_test: tests/e2e/wp17-3-backups-visibility.spec.ts
   history:
     - date: 2026-11-06
       status: open
@@ -3729,7 +3729,10 @@
     - date: 2026-11-07
       status: partial
       note: "Partially addressed in WP-13.5 (A065): disabled unconfigured buttons. Walkthrough identified live delivery test showing 501 and backup drill failing on default /var/backups. Remediation in WP-13.9: disable notification test with clear reason ('Test alerts aren't available in this version yet'), move default backup path under app data directory with configuration support, and map disk errors cleanly without HTTP/raw leaks. UX-33 completes in WP-17.2 and WP-17.3."
-  verified_by: null
+    - date: 2026-11-25
+      status: fixed
+      note: "Fixed in WP-17.3: Backups settings displays honest availability, destination & Age key fields, and plain-language restore drill feedback (tests/e2e/wp17-3-backups-visibility.spec.ts)."
+  verified_by: A
 - id: 20261106-UX-34
   audit: AUD-2026-11-06
   title: 'Export is a bare anchor link rendering raw JSON text in browser instead of downloading named archive file'
@@ -3737,18 +3740,21 @@
     - "6.2"
     - "13.13"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp17-3-backups-visibility.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
-  verified_by: null
+    - date: 2026-11-25
+      status: fixed
+      note: "Fixed in WP-17.3: GET /api/settings/export sets Content-Disposition attachment with dated filename and Backups module links to Download archive (tests/e2e/wp17-3-backups-visibility.spec.ts)."
+  verified_by: A
 - id: 20261106-UX-35
   audit: AUD-2026-11-06
   title: 'Import workflow presents disabled-looking plan cards, lacks success screen, has duplicate back links and jargon'
@@ -3907,13 +3913,13 @@
     - "12.6"
     - "13.13"
   severity: P2
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp17-3-backups-visibility.spec.ts
   history:
     - date: 2026-11-06
       status: open
@@ -3921,7 +3927,10 @@
     - date: 2026-11-13
       status: open
       note: "Explicit partial WP mapping (WP-17 part, WP-19 part): WP-17.3 builds the admin Visibility settings screen for crawler/robots policy; WP-19.7 wires dynamic robots.txt, sitemap, and noindex discovery generation from those settings."
-  verified_by: null
+    - date: 2026-11-25
+      status: fixed
+      note: "Fixed in WP-17.3: Visibility settings module generates dynamic /robots.txt disallowing /admin, /api, /ask/status with configurable search indexing and AI-crawler toggle (tests/e2e/wp17-3-backups-visibility.spec.ts)."
+  verified_by: A
 - id: 20261106-UX-43
   audit: AUD-2026-11-06
   title: 'Editor results written to banner at top of page away from action, with no auto-scroll, focus move, or list refresh'

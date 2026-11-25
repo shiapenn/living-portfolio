@@ -54,6 +54,7 @@ export interface WebAppOptions {
   client?: LivingPortfolioClient | WebDataClient;
   apiBaseUrl?: string;
   checkSession?: (cookieHeader?: string) => Promise<{ authenticated: boolean; setupRequired?: boolean; legacyRecoveryUsed?: boolean }>;
+  getSettings?: () => Promise<Record<string, unknown>> | Record<string, unknown>;
 }
 
 /**
@@ -126,14 +127,45 @@ export function createWebApp(options?: WebAppOptions) {
   // Liveness / health endpoint for load balancers & container health checks
   app.get('/healthz', (c) => c.json({ status: 'ok', service: 'web' }));
 
-  // Search engine crawler instructions (§6.4 item 2, OSR-19)
-  app.get('/robots.txt', (c) => {
+  // Search engine crawler instructions (§6.4 item 2, OSR-19, WP-17.3 UX-42)
+  app.get('/robots.txt', async (c) => {
     if (cfg.DEPLOYMENT_CLASS === 'staging') {
       return c.text('User-agent: *\nDisallow: /\n', 200, {
         'Content-Type': 'text/plain; charset=utf-8',
       });
     }
-    return c.text(`User-agent: *\nAllow: /\nSitemap: ${primarySiteOrigin}/sitemap.xml\n`, 200, {
+    let settingsObj: Record<string, unknown> = {};
+    try {
+      if (options?.getSettings) {
+        settingsObj = (await options.getSettings()) || {};
+      } else if ((client as any)?.settings?.get) {
+        settingsObj = ((await (client as any).settings.get()) as Record<string, unknown>) || {};
+      }
+    } catch {
+      settingsObj = {};
+    }
+    const vis = (settingsObj.visibility && typeof settingsObj.visibility === 'object'
+      ? settingsObj.visibility
+      : settingsObj) as Record<string, unknown>;
+    const allowSearch = vis.allowSearchIndexing !== false;
+    const blockAi = Boolean(vis.blockAiCrawlers);
+
+    const lines: string[] = ['User-agent: *'];
+    if (!allowSearch) {
+      lines.push('Disallow: /');
+    } else {
+      lines.push('Allow: /');
+      lines.push('Disallow: /admin');
+      lines.push('Disallow: /api');
+      lines.push('Disallow: /ask/status');
+    }
+    if (blockAi) {
+      for (const bot of ['GPTBot', 'ClaudeBot', 'CCBot']) {
+        lines.push('', `User-agent: ${bot}`, 'Disallow: /');
+      }
+    }
+    lines.push('', `Sitemap: ${primarySiteOrigin}/sitemap.xml`, '');
+    return c.text(lines.join('\n'), 200, {
       'Content-Type': 'text/plain; charset=utf-8',
     });
   });

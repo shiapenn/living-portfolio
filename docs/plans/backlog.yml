@@ -57,7 +57,7 @@ items:
     expected_minutes: 55
     gate: none
     acceptance: Backups module with honest availability, named archive export download, and Visibility settings module generating /robots.txt (disallowing /admin, /api, /ask/status + AI-crawler switch), RSS/sitemap/federation status and public confidence disclosure; E2E + census green
-    status: ready
+    status: done
 
   - id: WP-17.4
     title: Account settings (/admin/settings/account, /admin/account; UX-41, UX-47, UX-49)

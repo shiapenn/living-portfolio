@@ -170,7 +170,11 @@ export function mountBundledWeb(
     : undefined;
 
   // Mount the public web application routes
-  const { app: webApp } = createWebApp({ client: repo as any, checkSession });
+  const { app: webApp } = createWebApp({
+    client: repo as any,
+    checkSession,
+    getSettings: () => (runtimeState as unknown as Record<string, unknown>) ?? {},
+  });
   app.route('/', webApp);
 
   app.notFound((c) => {

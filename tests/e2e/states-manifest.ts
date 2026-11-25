@@ -65,6 +65,7 @@ export const STATES: readonly StateDefinition[] = [
   { id: 'settings-appearance', kind: 'page', route: '/admin/settings/appearance', fullPage: true, marker: { routePattern: '/admin/settings/appearance', text: 'Appearance', selector: 'h1' } },
   { id: 'settings-notifications', kind: 'page', route: '/admin/settings/notifications', fullPage: true, marker: { routePattern: '/admin/settings/notifications', text: 'Notifications', selector: 'h1' } },
   { id: 'settings-backups', kind: 'page', route: '/admin/settings/backups', fullPage: true, marker: { routePattern: '/admin/settings/backups', text: 'Backups', selector: 'h1' } },
+  { id: 'settings-visibility', kind: 'page', route: '/admin/settings/visibility', fullPage: true, marker: { routePattern: '/admin/settings/visibility', text: 'Visibility', selector: 'h1' } },
 
   // Auth & Setup (steps 1 to 6)
   { id: 'login', kind: 'auth', route: '/admin/login', fullPage: true, marker: { routePattern: '/admin/login', text: 'Sign in', selector: 'h1' } },
