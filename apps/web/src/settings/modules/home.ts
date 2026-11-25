@@ -7,7 +7,7 @@ export const HomeConfigSchema = z.object({
   statement: z.string().default('Independent builder documenting real engineering work, decisions, and outcomes.'),
   featuredCount: z.number().int().min(0).max(20).default(3),
   recentCount: z.number().int().min(1).max(50).default(10),
-  featuredSlugs: z.array(z.string()).default([]),
+  featuredSlugs: z.custom<string[]>((v) => Array.isArray(v)).default([]),
 });
 
 export type HomeConfig = z.infer<typeof HomeConfigSchema>;
