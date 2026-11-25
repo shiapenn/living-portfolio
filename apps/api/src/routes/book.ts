@@ -42,5 +42,19 @@ export function createBookRoutes(repo: IPortfolioRepository) {
     return c.json({ bookings });
   });
 
+  // Update booking status (WP-17.6, UX-07, UX-19)
+  router.patch('/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json().catch(() => ({}));
+    const status = String(body.status || '').trim();
+    if (!['pending', 'confirmed', 'declined'].includes(status)) {
+      return c.json({ error: 'Invalid status: must be pending, confirmed, or declined' }, 400);
+    }
+    const booking = await repo.getBooking(id);
+    if (!booking) return c.json({ error: 'Booking not found' }, 404);
+    (booking as any).status = status;
+    return c.json({ updated: true, booking });
+  });
+
   return router;
 }

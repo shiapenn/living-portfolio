@@ -186,5 +186,18 @@ export function createStructureRoutes(repo: IPortfolioRepository, answerCache?: 
     return c.json({ venture }, 201);
   });
 
+  router.patch('/ventures/:id', async (c) => {
+    const id = c.req.param('id');
+    const body = await c.req.json().catch(() => ({}));
+    const venture = await repo.getVenture(id);
+    if (!venture) return c.json({ error: 'Venture not found' }, 404);
+    if (typeof body.name === 'string' && body.name.trim()) (venture as any).name = body.name.trim();
+    if (typeof body.description === 'string') (venture as any).description = body.description;
+    if (typeof body.status === 'string' && ['building', 'launched', 'paused', 'archived'].includes(body.status)) {
+      (venture as any).status = body.status;
+    }
+    return c.json({ updated: true, venture });
+  });
+
   return router;
 }

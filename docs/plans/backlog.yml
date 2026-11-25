@@ -90,7 +90,7 @@ items:
     expected_minutes: 50
     gate: none
     acceptance: Bookings list/detail/status from public submissions; Ventures create/edit/link entries feeding /build; E2E + census green
-    status: ready
+    status: done
 
   - id: WP-17.7
     title: Pages & Home settings (/admin/pages, /admin/settings/home; UX-17, A-04, D-09)

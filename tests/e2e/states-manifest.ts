@@ -56,6 +56,8 @@ export const STATES: readonly StateDefinition[] = [
   { id: 'audit-contradictions', kind: 'page', route: '/admin/audit?status=contradictions', fullPage: true, marker: { routePattern: '/admin/audit', text: 'Answer rules', selector: '#audit-conflicts-section' } },
   { id: 'calibration', kind: 'page', route: '/admin/calibration', fullPage: true, marker: { routePattern: '/admin/calibration', text: 'Calibration', selector: 'h1' } },
   { id: 'structure', kind: 'page', route: '/admin/structure', fullPage: true, marker: { routePattern: '/admin/structure', text: 'Structure', selector: 'h1' } },
+  { id: 'bookings', kind: 'page', route: '/admin/bookings', fullPage: true, marker: { routePattern: '/admin/bookings', text: 'Bookings', selector: 'h1' } },
+  { id: 'ventures', kind: 'page', route: '/admin/ventures', fullPage: true, marker: { routePattern: '/admin/ventures', text: 'Ventures', selector: 'h1' } },
   { id: 'import', kind: 'page', route: '/admin/import', fullPage: true, marker: { routePattern: '/admin/import', text: 'Import', selector: 'h1' } },
   { id: 'status', kind: 'page', route: '/admin/status', fullPage: true, marker: { routePattern: '/admin/status', text: 'Status', selector: 'h1' } },
 
