@@ -2065,5 +2065,13 @@
     "path": "docs/plans/wp17-progress.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A176",
+    "title": "WP-16 closure ADR-023 backlog reconciliation",
+    "class": "A",
+    "path": "docs/execution-reports/A176-wp-16-closure-adr-023-backlog-reconciliation.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
