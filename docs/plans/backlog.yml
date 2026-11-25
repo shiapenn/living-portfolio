@@ -35,7 +35,7 @@ items:
     expected_minutes: 55
     gate: none
     acceptance: Settings template + Routing/Answering module with confidence consequence copy, restore defaults, reply-time setting, automatic-answers switch with confirmation dialog updating /admin/status, zero jargon; E2E + census green
-    status: ready
+    status: done
 
   - id: WP-17.2
     title: Setup wizard step 3 Model Providers interactive configuration (UX-09; ProviderFlow)

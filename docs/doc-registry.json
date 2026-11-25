@@ -2073,5 +2073,13 @@
     "path": "docs/execution-reports/A176-wp-16-closure-adr-023-backlog-reconciliation.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A177",
+    "title": "WP-17.1 settings templates and routing page",
+    "class": "A",
+    "path": "docs/execution-reports/A177-wp-171-settings-templates-and-routing-page.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

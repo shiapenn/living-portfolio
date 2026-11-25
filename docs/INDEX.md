@@ -182,6 +182,7 @@
 | `A174` | wp-16n-s4-governance-adrs-health | `active` | [A174-wp-16n-s4-governance-adrs-health.md](execution-reports/A174-wp-16n-s4-governance-adrs-health.md) | — |
 | `A175` | wp-16n-s5-performance-closure | `active` | [A175-wp-16n-s5-performance-closure.md](execution-reports/A175-wp-16n-s5-performance-closure.md) | — |
 | `A176` | WP-16 closure ADR-023 backlog reconciliation | `active` | [A176-wp-16-closure-adr-023-backlog-reconciliation.md](execution-reports/A176-wp-16-closure-adr-023-backlog-reconciliation.md) | — |
+| `A177` | WP-17.1 settings templates and routing page | `active` | [A177-wp-171-settings-templates-and-routing-page.md](execution-reports/A177-wp-171-settings-templates-and-routing-page.md) | — |
 
 ## Handover Snapshots (Class H)
 

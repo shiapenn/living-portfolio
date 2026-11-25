@@ -16,11 +16,66 @@ export const SETTINGS_SCRIPT = `
         };
 
         const tier1Input = document.getElementById('setting-tier1-floor');
+        const tier2Input = document.getElementById('setting-tier2-floor');
+        const facetInput = document.getElementById('setting-facet-threshold');
         const tier1Warning = document.getElementById('tier1-warning');
-        if (tier1Input && tier1Warning) {
-          tier1Input.addEventListener('input', function() {
-            const val = parseFloat(tier1Input.value);
-            tier1Warning.classList.toggle('lp-is-hidden', isNaN(val) || val >= 0.82);
+        const updateThresholdWarning = () => {
+          if (!tier1Warning) return;
+          const v1 = tier1Input ? parseFloat(tier1Input.value) : 0.82;
+          const v2 = tier2Input ? parseFloat(tier2Input.value) : 0.55;
+          const v3 = facetInput ? parseFloat(facetInput.value) : 0.75;
+          const below = (!isNaN(v1) && v1 < 0.82) || (!isNaN(v2) && v2 < 0.55) || (!isNaN(v3) && v3 < 0.75);
+          tier1Warning.classList.toggle('lp-is-hidden', !below);
+        };
+        if (tier1Input) tier1Input.addEventListener('input', updateThresholdWarning);
+        if (tier2Input) tier2Input.addEventListener('input', updateThresholdWarning);
+        if (facetInput) facetInput.addEventListener('input', updateThresholdWarning);
+
+        const restoreBtn = document.getElementById('btn-restore-thresholds');
+        if (restoreBtn) {
+          restoreBtn.addEventListener('click', function() {
+            if (tier1Input) tier1Input.value = '0.82';
+            if (tier2Input) tier2Input.value = '0.55';
+            if (facetInput) facetInput.value = '0.75';
+            updateThresholdWarning();
+            setBanner('Recommended thresholds restored. Click Save to apply.', false);
+          });
+        }
+
+        const answeringCheckbox = document.getElementById('setting-answering-enabled');
+        const pauseDialog = document.getElementById('answering-pause-dialog');
+        const confirmPauseBtn = document.getElementById('btn-confirm-pause-answering');
+        const cancelPauseBtn = document.getElementById('btn-cancel-pause-answering');
+        if (answeringCheckbox && pauseDialog) {
+          const closePauseDialog = (revert) => {
+            pauseDialog.setAttribute('hidden', '');
+            if (revert) answeringCheckbox.checked = true;
+            answeringCheckbox.focus();
+          };
+          answeringCheckbox.addEventListener('change', function() {
+            if (!answeringCheckbox.checked) {
+              pauseDialog.removeAttribute('hidden');
+              if (confirmPauseBtn) confirmPauseBtn.focus();
+            }
+          });
+          if (confirmPauseBtn) {
+            confirmPauseBtn.addEventListener('click', function() {
+              closePauseDialog(false);
+            });
+          }
+          if (cancelPauseBtn) {
+            cancelPauseBtn.addEventListener('click', function() {
+              closePauseDialog(true);
+            });
+          }
+          pauseDialog.querySelectorAll('[data-lp-dialog-close]').forEach(function(el) {
+            el.addEventListener('click', function() { closePauseDialog(true); });
+          });
+          document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !pauseDialog.hasAttribute('hidden')) {
+              e.preventDefault();
+              closePauseDialog(true);
+            }
           });
         }
 
@@ -30,11 +85,15 @@ export const SETTINGS_SCRIPT = `
             saveBtn.setAttribute('disabled', 'true');
             try {
               if (moduleName === 'answering') {
+                const replyTimeEl = document.getElementById('setting-reply-time');
+                const disclosureEl = document.getElementById('setting-public-disclosure');
                 const payload = {
                   tier1_floor: parseFloat(document.getElementById('setting-tier1-floor').value),
                   tier2_floor: parseFloat(document.getElementById('setting-tier2-floor').value),
                   facet_known_threshold: parseFloat(document.getElementById('setting-facet-threshold').value),
                   automatedAnsweringEnabled: document.getElementById('setting-answering-enabled').checked,
+                  replyTimeEstimate: replyTimeEl ? replyTimeEl.value : 'Within 24 hours',
+                  publicConfidenceDisclosure: disclosureEl ? disclosureEl.checked : true,
                   calibration: {
                     suggestion_thresholds: document.getElementById('setting-mech-suggestion-thresholds').checked,
                     routing_calibration: document.getElementById('setting-mech-routing-calibration').checked,

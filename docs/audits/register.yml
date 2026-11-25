@@ -3344,18 +3344,21 @@
     - "5.1"
     - "12.8"
   severity: P1
-  status: open
+  status: fixed
   owner: A
   links:
     issue: null
     pr: null
     plan: docs/plans/P004-ux-remediation-work-packages.md
-  regression_test: null
+  regression_test: tests/e2e/wp17-1-settings-routing.spec.ts
   history:
     - date: 2026-11-06
       status: open
       note: Raised by UX specification audit AUD-2026-11-06 (L015)
-  verified_by: null
+    - date: 2026-11-25
+      status: fixed
+      note: "Fixed in WP-17.1: accessible pause confirmation dialogs on /admin/settings/answering (/admin/routing) and /admin/status, consequence notice + restore defaults, reply time & public disclosure, verified in tests/e2e/wp17-1-settings-routing.spec.ts."
+  verified_by: A
 - id: 20261106-UX-17
   audit: AUD-2026-11-06
   title: 'About, Now, and Uses pages cannot be edited in admin; Featured entry list cannot be curated'
