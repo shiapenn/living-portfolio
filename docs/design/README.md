@@ -1,14 +1,14 @@
 # Design System Map & Governance
 
-> **Principle (`D-M0`):** One thin shared core (`@living-portfolio/ui-core`), two independent design languages (`@living-portfolio/ui-admin` and `@living-portfolio/ui-public`).
+> **Principle (`D-M0`, amended by `ADR-023`):** One unified design framework (shared token contract, rules, shared components in `@living-portfolio/ui-core`, and tooling) governing two differentiated design languages (`@living-portfolio/ui-admin` and `@living-portfolio/ui-public`).
 
 ## 1. Which Language to Use Where
 
 | Surface | Package | Token Pack | Class / Var Prefix | Governance Mode |
 | --- | --- | --- | --- | --- |
-| Shared core floor (a11y, theme, layout, icons) | `@living-portfolio/ui-core` | `packs/core.json` | `lp-core-*` / `--lp-core-*` | Semver-versioned; requires both regression suites green |
-| Admin workspace (`/admin/*`) | `@living-portfolio/ui-admin` | `packs/admin.json` | `lp-*` / `--lp-*` | **System mode (`D-J`)**: no new component without L approval |
-| Public site (`/`, `/work`, `/writing`, `/build`, `/timeline`, `/ask`, `/book`) | `@living-portfolio/ui-public` | `packs/public.json` | `pub-*` / `--pub-*` | **Expressive mode (`D-M3`)**: new components/tokens allowed with a PR brief; reviewed at sheet time |
+| Shared framework & primitives (a11y, theme, layout, icons, button, link, tag, field, choice, notice) | `@living-portfolio/ui-core` | `packs/core.json` + contract | `lp-core-*` / `--lp-core-*` | Semver-versioned; uses contract tokens only; requires both admin and public suites green |
+| Admin workspace (`/admin/*`) | `@living-portfolio/ui-admin` | `packs/admin.json` | `lp-*` / `--lp-*` | **System mode (`D-J`, `ADR-023`)**: no new component without L approval; variants only |
+| Public site (`/`, `/work`, `/writing`, `/build`, `/timeline`, `/ask`, `/book`) | `@living-portfolio/ui-public` | `packs/public.json` | `pub-*` / `--pub-*` | **Expressive mode (`D-M3`, `ADR-023`)**: brief recorded in PR, reviewed after the fact |
 
 ## 2. How to Choose a Token, Component, and Template
 

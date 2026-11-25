@@ -493,8 +493,9 @@
     },
     "WP-19": {
       "name": "Work Package 19 (Gate G19 Public Frame & Time Travel)",
-      "description": "Owner bar & visitor preview, public shell with About & Home, three-region extruding layout, conversation panel, shared resolveRevisionAsOf time travel correctness, vertical strata time rail, discovery metadata, and compare mode (UX-17 part, UX-19 part, UX-20, UX-40, UX-42 part, UX-44, UX-45).",
+      "description": "Design framework review & unification (WP-19.0), owner bar & visitor preview, public shell with About & Home, three-region extruding layout, conversation panel, shared resolveRevisionAsOf time travel correctness, vertical strata time rail, discovery metadata, and compare mode (UX-17 part, UX-19 part, UX-20, UX-40, UX-42 part, UX-44, UX-45, UX-218, UX-219, UX-220, UX-221, UX-222, UX-223, UX-224, UX-225, UX-226).",
       "requiredTaskIds": [
+        "WP-19.0",
         "WP-19.1",
         "WP-19.2",
         "WP-19.3",

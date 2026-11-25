@@ -2049,5 +2049,29 @@
     "path": "docs/execution-reports/A175-wp-16n-s5-performance-closure.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L054",
+    "title": "ADR-023: Unified Design Framework, Differentiated Languages",
+    "class": "L",
+    "path": "docs/adr/ADR-023-unified-design-framework.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L055",
+    "title": "WP-17 Progress & Time Ledger",
+    "class": "L",
+    "path": "docs/plans/wp17-progress.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "A176",
+    "title": "WP-16 closure ADR-023 backlog reconciliation",
+    "class": "A",
+    "path": "docs/execution-reports/A176-wp-16-closure-adr-023-backlog-reconciliation.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

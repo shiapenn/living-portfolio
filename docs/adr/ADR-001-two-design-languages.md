@@ -21,3 +21,6 @@ Separate the UI into one thin shared core (`@living-portfolio/ui-core`) and two 
 
 ## Amendment (WP-16.N, `D-N1`)
 The public language direction is decided in [ADR-007](ADR-007-public-direction-quiet-editorial-neutral.md): Quiet Editorial, made neutral. The exploration lab (`/_lab/public/*`) and the direction packs no longer exist. Both languages share one accent seed from the core pack (`D-N2`).
+
+## Amendment (2026-11-25, `ADR-023`)
+Clarified by [ADR-023](ADR-023-unified-design-framework.md): the global framework is a shared token contract, rules, shared components, and tooling governing both languages. Shared components (`button`, `icon`, `theme toggle`, `link`, `tag`, `field`, `choice`, `notice`, etc.) live in `@living-portfolio/ui-core` using contract tokens only (differentiated by pack token values and variants, not forks), while language-specific structure stays in `@living-portfolio/ui-admin` and `@living-portfolio/ui-public`. Changes to shared components must pass both suites.

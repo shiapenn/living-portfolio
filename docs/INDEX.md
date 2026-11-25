@@ -181,6 +181,7 @@
 | `A173` | wp-16n-s3-public-editorial-fonts | `active` | [A173-wp-16n-s3-public-editorial-fonts.md](execution-reports/A173-wp-16n-s3-public-editorial-fonts.md) | — |
 | `A174` | wp-16n-s4-governance-adrs-health | `active` | [A174-wp-16n-s4-governance-adrs-health.md](execution-reports/A174-wp-16n-s4-governance-adrs-health.md) | — |
 | `A175` | wp-16n-s5-performance-closure | `active` | [A175-wp-16n-s5-performance-closure.md](execution-reports/A175-wp-16n-s5-performance-closure.md) | — |
+| `A176` | WP-16 closure ADR-023 backlog reconciliation | `active` | [A176-wp-16-closure-adr-023-backlog-reconciliation.md](execution-reports/A176-wp-16-closure-adr-023-backlog-reconciliation.md) | — |
 
 ## Handover Snapshots (Class H)
 
@@ -280,4 +281,6 @@
 | `L051` | ADR-022: Consolidation, Health Budgets and Changesets (D-L / D-N) | `active` | [ADR-022-d-l-consolidation-health-changesets.md](adr/ADR-022-d-l-consolidation-health-changesets.md) | — |
 | `L052` | Effective Design & Architecture Rules (Generated) | `active` | [rules.md](design/rules.md) | — |
 | `L053` | Design System Health Report (Generated) | `active` | [health.md](design/health.md) | — |
+| `L054` | ADR-023: Unified Design Framework, Differentiated Languages | `active` | [ADR-023-unified-design-framework.md](adr/ADR-023-unified-design-framework.md) | — |
+| `L055` | WP-17 Progress & Time Ledger | `active` | [wp17-progress.md](plans/wp17-progress.md) | — |
 
