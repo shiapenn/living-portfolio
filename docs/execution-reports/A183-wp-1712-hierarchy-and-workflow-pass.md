@@ -6,7 +6,7 @@
 | Date | 2026-11-26 |
 | Author | A (Implementer) |
 | Task ID | `WP-17.12` |
-| Evidence SHA | `cf85e3b57bc1b6bda5569c76999096eb0b8163cd` |
+| Evidence SHA | `4a78c71f6db9ce98962be6c0d1af412503e66b71` |
 | CI run | pending PR #281 CI |
 
 ---
@@ -111,8 +111,8 @@ $ pnpm receipt:check A183
 === Validating Receipt A183-wp-1712-hierarchy-and-workflow-pass.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA 'cf85e3b57bc1b6bda5569c76999096eb0b8163cd' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff 1d1979e573c74067a47d7230b5477e39cc1b8481..cf85e3b57bc1b6bda5569c76999096eb0b8163cd (48 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA '4a78c71f6db9ce98962be6c0d1af412503e66b71' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 1d1979e573c74067a47d7230b5477e39cc1b8481..4a78c71f6db9ce98962be6c0d1af412503e66b71 (48 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A183-wp-1712-hierarchy-and-workflow-pass.md.
 Found 0 section(s) marked verbatim.
 
