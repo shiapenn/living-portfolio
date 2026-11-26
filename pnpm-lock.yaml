@@ -413,8 +413,8 @@ importers:
         specifier: ^8.13.3
         version: 8.23.1
       pgvector:
-        specifier: ^0.2.0
-        version: 0.2.1
+        specifier: ^0.3.1
+        version: 0.3.1
     devDependencies:
       '@types/pg':
         specifier: ^8.11.11
@@ -1354,9 +1354,9 @@ packages:
   pgpass@1.0.5:
     resolution: {integrity: sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==}
 
-  pgvector@0.2.1:
-    resolution: {integrity: sha512-nKaQY9wtuiidwLMdVIce1O3kL0d+FxrigCVzsShnoqzOSaWWWOvuctb/sYwlai5cTwwzRSNa+a/NtN2kVZGNJw==}
-    engines: {node: '>= 18'}
+  pgvector@0.3.1:
+    resolution: {integrity: sha512-POqnLYO9ZwdvUS/jsqDbOpaWAt1VfpKsoiZM7LHPB3RjSrVPEJYICL5pNju5GRhWZHKzNbQyjF1PyC21zi3gnA==}
+    engines: {node: '>=22'}
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -2300,7 +2300,7 @@ snapshots:
     dependencies:
       split2: 4.2.0
 
-  pgvector@0.2.1: {}
+  pgvector@0.3.1: {}
 
   picocolors@1.1.1: {}
 
