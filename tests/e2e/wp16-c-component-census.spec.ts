@@ -256,7 +256,7 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
         const expected =
           prev.matches('h2, h3, .lp-form-section-title') && curr.matches('p, .lp-form-section-desc')
             ? [4, 8]
-            : curr.classList.contains('lp-action-bar')
+            : curr.classList.contains('lp-action-bar') || curr.classList.contains('lp-action-bar-group') || Boolean(curr.querySelector(':scope > .lp-action-bar, :scope > .lp-action-bar-group'))
               ? [16, 24]
               : [16];
         pairs.push([prev, curr, expected]);

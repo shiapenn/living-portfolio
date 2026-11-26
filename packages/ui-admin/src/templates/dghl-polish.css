@@ -44,9 +44,9 @@
 .lp-select-chevron {
   position: absolute;
   right: var(--lp-space-inset-item-y);
-  top: 50%;
-  transform: translateY(-50%);
-  height: var(--lp-size-icon-sm);
+  top: 0;
+  bottom: 0;
+  height: 100%;
   width: var(--lp-size-icon-sm);
   display: inline-flex;
   align-items: center;

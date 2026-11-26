@@ -220,8 +220,10 @@ test.describe('WP-16.G Full D-G Census (no logged mode, no zero-pair relations)'
       }
     }
 
+    // WP-17.13 D2 retired section-heading-to-intro and subsection-title-to-intro (section/subsection intros banned)
+    const retiredRelations = new Set(['section-heading-to-intro', 'subsection-title-to-intro']);
     const zeroRelations = Object.entries(totalPairs)
-      .filter(([, count]) => count === 0)
+      .filter(([rel, count]) => count === 0 && !retiredRelations.has(rel))
       .map(([rel]) => rel);
     console.log(
       '=== WP-16.G FULL D-G CENSUS REPORT ===\n' +

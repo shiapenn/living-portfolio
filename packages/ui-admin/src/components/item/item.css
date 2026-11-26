@@ -243,7 +243,6 @@ a.lp-item:hover {
 .lp-item-actions {
   grid-column: 1 / -1;
   grid-row: 6;
-  padding-top: var(--lp-space-inset-item-y);
 }
 
 /* List definition variant (WP-17.13 D5): label above value <640px, 2-col >=640px, no per-row dividers */

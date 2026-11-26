@@ -7,7 +7,7 @@ import { renderSectionHeader } from './section-header.js';
 export function renderStateMatrixSection(): string {
   return `<section id="gallery-state-matrix" class="lp-gallery-section" data-component="StateMatrix">
     ${renderSectionHeader({ title: 'State Matrix (D7 — Interactive Controls)' })}
-    <div class="lp-state-matrix-grid">
+    <div data-c="Text" class="lp-state-matrix-grid">
       <div class="lp-stack lp-gap-tight" data-state-group="Button">
         <span data-purpose="label" class="lp-caption">Button (primary / secondary / text × default / hover / focus-visible / active / disabled / busy)</span>
         <div class="lp-state-matrix-row">

@@ -503,7 +503,8 @@ export async function checkPaintedGaps(
           const r2 = btns[i + 1].getBoundingClientRect();
           if (r2.top >= r1.bottom - 1) checkPair('button-to-button', btns[i], btns[i + 1], 8);
         }
-        let prev: Element | null = bar.previousElementSibling;
+        const barContainer = bar.parentElement?.classList.contains('lp-action-bar-group') ? bar.parentElement : bar;
+        let prev: Element | null = barContainer.previousElementSibling;
         while (prev && (prev.classList.contains('lp-sr-only') || getComputedStyle(prev).display === 'none' || getComputedStyle(prev).position === 'absolute')) {
           prev = prev.previousElementSibling;
         }
@@ -514,7 +515,7 @@ export async function checkPaintedGaps(
           : false;
         const isHeadingOnlyWrapper = Boolean(prev && prev.querySelector('[data-rel="subsection-title"]') && !hasVisibleControl);
         if (prev && !isHeadingOnlyWrapper && !prev.matches('[data-rel="section"], .lp-form-section, h1, h2, h3') && !bar.closest('[role="dialog"]') && !bar.classList.contains('lp-item-actions')) {
-          checkPair('last-control-to-action-bar', prev, bar, 24);
+          checkPair('last-control-to-action-bar', prev, barContainer, 24);
         }
       }
 
@@ -652,7 +653,7 @@ export async function checkTypeRolesAndControlLabel(page: Page): Promise<string[
     for (const tag of tags) {
       const cs = getComputedStyle(tag);
       const fs = Math.round(parseFloat(cs.fontSize) || 0);
-      if (fs !== 12) issues.push(`tag-font-size: expected 12px caption, got ${fs}px`);
+      if (fs !== 13) issues.push(`tag-font-size: expected 13px secondary, got ${fs}px`);
     }
     const disabledEls = Array.from(document.querySelectorAll(':disabled'));
     for (const el of disabledEls) {
@@ -1249,17 +1250,21 @@ export async function checkActionBarJ2(page: Page, stateId = ''): Promise<Action
 
       const issues: string[] = [];
 
-      // Preceding element gap check
-      let prevEl: HTMLElement | null = bar.previousElementSibling as HTMLElement | null;
+      // Preceding element gap check (WP-17.13 D1: measure above .lp-action-bar-group when consequence precedes ActionBar)
+      const gapTarget = bar.parentElement?.classList.contains('lp-action-bar-group') ? bar.parentElement : bar;
+      let prevEl: HTMLElement | null = gapTarget.previousElementSibling as HTMLElement | null;
       while (prevEl && !isVisible(prevEl)) {
         prevEl = prevEl.previousElementSibling as HTMLElement | null;
       }
-      if (!prevEl && bar.parentElement?.classList.contains('lp-item-actions')) {
-        prevEl = bar.parentElement.previousElementSibling as HTMLElement | null;
+      if (!prevEl && gapTarget.parentElement?.classList.contains('lp-item-actions')) {
+        prevEl = gapTarget.parentElement.previousElementSibling as HTMLElement | null;
+      }
+      if (!prevEl && gapTarget.parentElement?.classList.contains('lp-stack')) {
+        prevEl = gapTarget.parentElement.previousElementSibling as HTMLElement | null;
       }
       let precedingGap: number | null = null;
       if (prevEl && isVisible(prevEl)) {
-        precedingGap = Math.round((barR.top - prevEl.getBoundingClientRect().bottom) * 10) / 10;
+        precedingGap = Math.round((gapTarget.getBoundingClientRect().top - prevEl.getBoundingClientRect().bottom) * 10) / 10;
       }
 
       if (level === 'item') {
