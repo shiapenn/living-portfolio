@@ -6,7 +6,7 @@
 | Date | 2026-11-26 |
 | Author | A (Implementer) |
 | Task ID | `WP-17.11` |
-| Evidence SHA | `b2bf7b85eea58b20b5bab1c98025d3dd040e40ca` |
+| Evidence SHA | `1d1979e573c74067a47d7230b5477e39cc1b8481` |
 | CI run | pending PR #280 CI |
 
 ---
@@ -80,6 +80,7 @@ WP-17.11 closes the WP-17 exit gate (C1–C5, K1–K5) in one package and one PR
 - `docs/design/rules.md`
 - `docs/doc-registry.json`
 - `docs/execution-reports/A181-wp-1710-exit-gate-fixes.md`
+- `docs/execution-reports/A182-wp-1711-feedback-model-credential-item-accent.md`
 - `docs/plans/backlog.yml`
 - `docs/plans/wp17-progress.md`
 - `packages/ui-admin/CHANGELOG.md`
@@ -96,6 +97,8 @@ WP-17.11 closes the WP-17 exit gate (C1–C5, K1–K5) in one package and one PR
 - `packages/ui-core/src/theme/theme-pack.ts`
 - `tests/e2e/wp16-c-component-census.spec.ts`
 - `tests/e2e/wp16-g-census.spec.ts`
+- `tests/e2e/wp16-h-census.spec.ts`
+- `tests/e2e/wp16-s-system-census.spec.ts`
 - `tests/e2e/wp17-4-account.spec.ts`
 - `tests/e2e/wp17-8-appearance-v2.spec.ts`
 - `tests/e2e/wp17-9-content-and-ink-census.spec.ts`
@@ -122,8 +125,8 @@ $ pnpm receipt:check A182
 === Validating Receipt A182-wp-1711-feedback-model-credential-item-accent.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA 'b2bf7b85eea58b20b5bab1c98025d3dd040e40ca' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff 2841a14314ef694f3ce5b19cfe75769951a54e2b..b2bf7b85eea58b20b5bab1c98025d3dd040e40ca (54 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA '1d1979e573c74067a47d7230b5477e39cc1b8481' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 2841a14314ef694f3ce5b19cfe75769951a54e2b..1d1979e573c74067a47d7230b5477e39cc1b8481 (56 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A182-wp-1711-feedback-model-credential-item-accent.md.
 Found 0 section(s) marked verbatim.
 
