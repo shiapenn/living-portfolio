@@ -42,7 +42,7 @@ describe('WP-16.C C1 D-COMP Primitives', () => {
     });
     expect(html).toContain('lp-back-link');
     expect(html).toContain('#lp-icon-chevron-left');
-    expect(html).toContain('<h1 class="lp-page-header-title">Answering</h1>');
+    expect(html).toContain('<h1 class="lp-page-header-title" data-purpose="title">Answering</h1>');
     expect(html).toContain('lp-page-description');
     expect(html).toContain('lp-page-header-action');
   });
@@ -165,12 +165,12 @@ describe('WP-16.C C1 D-COMP Primitives', () => {
 
     const fs = renderFormSection({
       title: 'Identity',
-      description: 'Public name',
+      consequence: 'Updates public display immediately.',
       fieldsHtml: '<div class="lp-field">Field</div>',
       actionBarHtml: renderActionBar({ primary: { label: 'Save' } }),
     });
     expect(fs).toContain('lp-form-section-title');
-    expect(fs).toContain('lp-form-section-desc');
+    expect(fs).toContain('data-purpose="consequence"');
     expect(fs).toContain('lp-action-bar');
   });
 });

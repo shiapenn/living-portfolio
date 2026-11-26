@@ -22,7 +22,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--lp-space-stack-label-to-control);
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
 }
 
 .lp-canary-stacking {

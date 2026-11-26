@@ -6,7 +6,7 @@
 }
 .lp-undo-btn {
   padding: var(--lp-space-inset-tag-y) var(--lp-space-inset-item-x);
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
 }
 
 /* WP-15.3 & WP-15.3a Feedback, Containers & Design Foundations */
@@ -49,7 +49,7 @@
 
 .lp-field-error {
   margin: 0;
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   line-height: var(--lp-font-line-16);
   color: var(--role-danger-fg);
 }
@@ -468,7 +468,7 @@
 }
 
 .lp-type-caption {
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   line-height: var(--lp-font-line-16);
   font-weight: 400;
   color: var(--text-muted);

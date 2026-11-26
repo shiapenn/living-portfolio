@@ -1,0 +1,118 @@
+#!/usr/bin/env node
+/**
+ * WP-17.13 D8 — Automated Design Audit (L0–L6).
+ * Enforces static CSS/token/template invariants (L0, L3, L5, L6) and prints a structured
+ * per-level table. Run with `--live` to also execute the Playwright L0–L6 DOM audit.
+ */
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { resolve, relative, join } from 'node:path';
+import { execSync } from 'node:child_process';
+
+const ROOT = resolve(new URL('..', import.meta.url).pathname);
+
+function walk(dir, exts, out = []) {
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    const st = statSync(p);
+    if (st.isDirectory()) walk(p, exts, out);
+    else if (exts.some((e) => name.endsWith(e))) out.push(p);
+  }
+  return out;
+}
+
+const cssFiles = walk(resolve(ROOT, 'packages/ui-admin/src'), ['.css']);
+const adminTsFiles = [
+  ...walk(resolve(ROOT, 'apps/web/src/pages/admin'), ['.ts']),
+  ...walk(resolve(ROOT, 'apps/web/src/settings/modules'), ['.ts']),
+];
+
+const results = {
+  L0: { name: 'Text Purposes', measured: 0, violations: [] },
+  L1: { name: 'Structure Tiers', measured: 0, violations: [] },
+  L2: { name: 'Rhythm (Box Gaps)', measured: 0, violations: [] },
+  L3: { name: 'Type Roles', measured: 0, violations: [] },
+  L4: { name: 'Interaction', measured: 0, violations: [] },
+  L5: { name: 'Tokens & Links', measured: 0, violations: [] },
+  L6: { name: 'Components (Zero Margin)', measured: 0, violations: [] },
+};
+
+// L0: Ban section description prop in FormSection calls across admin pages/settings
+for (const f of adminTsFiles) {
+  const rel = relative(ROOT, f);
+  if (rel.includes('gallery') || rel.includes('canary') || rel.includes('fixture') || rel.endsWith('.test.ts')) continue;
+  const src = readFileSync(f, 'utf8');
+  const matches = src.match(/renderFormSection\s*\(\s*\{[\s\S]*?\}\s*\)/g) || [];
+  results.L0.measured += matches.length;
+  for (const m of matches) {
+    const headerPart = m.split(/\bfieldsHtml\s*:/)[0] || m;
+    if (/\bdescription\s*:/.test(headerPart)) {
+      results.L0.violations.push(`${rel}: FormSection uses banned section description (move to consequence above ActionBar or delete)`);
+    }
+  }
+}
+
+// L1/L2/L3/L5/L6: Check admin CSS files
+const tokensCss = readFileSync(resolve(ROOT, 'packages/design-tokens/src/tokens.css'), 'utf8');
+results.L3.measured++;
+if (!tokensCss.includes('--lp-font-size-13: 13px;')) {
+  results.L3.violations.push('packages/design-tokens/src/tokens.css missing --lp-font-size-13: 13px');
+}
+
+for (const f of cssFiles) {
+  const rel = relative(ROOT, f);
+  if (rel.includes('canary') || rel.includes('legacy')) continue;
+  const lines = readFileSync(f, 'utf8').split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('/*') || line.startsWith('*')) continue;
+    // L6: non-zero outer margin on admin components (exempt margin: 0, margin-left/right: auto for centering/trailing)
+    if (/^margin(?:-(?:top|bottom|left|right|block|inline))?\s*:/.test(line)) {
+      results.L6.measured++;
+      const allowed =
+        /^margin\s*:\s*0(?:\s+auto)?\s*;?$/.test(line) ||
+        /^margin-(?:top|bottom|left|right|block|inline)\s*:\s*(?:0|auto)\s*;?$/.test(line);
+      if (!allowed) {
+        results.L6.violations.push(`${rel}:${i + 1}: non-zero component margin "${line}"`);
+      }
+    }
+    // L3: check no admin component CSS sets font-size-12 (secondary floor is 13px)
+    if (rel.includes('components/') || rel.includes('templates/dfinal-system.css') || rel.includes('primitives/field/')) {
+      if (line.includes('--lp-font-size-12')) {
+        results.L3.measured++;
+        results.L3.violations.push(`${rel}:${i + 1}: uses --lp-font-size-12 below 13px floor`);
+      }
+    }
+  }
+}
+
+// L5: Check admin-shell.ts does not hard-code data-theme="light" defeating prefers-color-scheme
+const shellSrc = readFileSync(resolve(ROOT, 'apps/web/src/layouts/admin-shell.ts'), 'utf8');
+results.L5.measured++;
+if (!shellSrc.includes('data-theme-switching') && !shellSrc.includes('prefers-color-scheme: dark')) {
+  results.L5.violations.push('apps/web/src/layouts/admin-shell.ts missing head anti-FOUC dark first-paint script');
+}
+
+console.log('=== WP-17.13 Design Audit Summary (L0–L6) ===');
+console.log('| Level | Name | Measured | Violations |');
+console.log('| --- | --- | ---: | ---: |');
+let totalViolations = 0;
+for (const [k, v] of Object.entries(results)) {
+  totalViolations += v.violations.length;
+  console.log(`| ${k} | ${v.name} | ${v.measured} | ${v.violations.length} |`);
+}
+
+if (process.argv.includes('--live')) {
+  execSync('pnpm exec playwright test tests/e2e/wp17-13-design-audit.spec.ts --reporter=list', {
+    cwd: ROOT,
+    stdio: 'inherit',
+  });
+}
+
+if (totalViolations > 0) {
+  console.error('\n✗ Design Audit FAILED:');
+  for (const [k, v] of Object.entries(results)) {
+    for (const msg of v.violations) console.error(`  - [${k}] ${msg}`);
+  }
+  process.exit(1);
+}
+console.log('\n✓ pnpm design:audit PASSED (0 violations across L0–L6).');

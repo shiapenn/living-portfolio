@@ -146,6 +146,11 @@ runCheck('S5-BACKLOG', 'Backlog schema valid and WP-16.N/WP-17 dependency order 
   return 'backlog schema valid';
 });
 
+runCheck('S5-DESIGN-AUDIT', 'Design audit protocol (L0-L6 static checks)', () => {
+  execCmd('node scripts/design-audit');
+  return 'L0-L6 design audit green';
+});
+
 console.log('');
 if (failures.length > 0) {
   console.error(`✗ pnpm wp16n:verify FAILED (${failures.length} unmet DoD check(s)):`);

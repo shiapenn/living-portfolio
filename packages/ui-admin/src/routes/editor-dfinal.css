@@ -46,7 +46,7 @@
   background: transparent;
   border: 0;
   padding: 0;
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   line-height: var(--lp-font-line-16);
   color: var(--text-2);
   cursor: pointer;

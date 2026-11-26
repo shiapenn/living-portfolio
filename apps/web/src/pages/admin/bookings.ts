@@ -189,21 +189,34 @@ export async function renderAdminBookingDetailPage(
     ? booking.status_history
     : [{ status, at: String(booking.created_at || new Date().toISOString()) }];
 
-  const detailsListHtml = renderList({
-    id: 'booking-detail-fields',
-    variant: 'plain',
-    itemsHtml: [
-      renderItem({ title: 'Status', statusLabel, statusTone }),
-      renderItem({ title: 'Requested slot', body: slotText, attributes: 'data-booking-detail-slot="true"' }),
-      renderItem({ title: 'Requester', body: requesterName, attributes: 'data-booking-detail-requester="true"' }),
-      `<div data-c="Item" data-rel="item" class="lp-item" data-booking-detail-email="true">
-        <div data-rel="title" class="lp-item-title"><span>Contact</span></div>
-        <div data-rel="itembody" class="lp-item-body">${isEmail ? `<a href="${escapeHtml(mailtoHref)}" class="lp-item-link">${escapeHtml(contact)}</a>` : escapeHtml(contact || 'Not provided')}</div>
-      </div>`,
-      renderItem({ title: 'Context facets', body: facetsText, attributes: 'data-booking-detail-facets="true"' }),
-      renderItem({ title: 'Background notes', body: notesText, attributes: 'data-booking-detail-notes="true"' }),
-      renderItem({ title: 'Received', body: receivedText, attributes: 'data-booking-detail-received="true"' }),
-    ].join(''),
+  const requestListHtml = renderList({
+    id: 'booking-detail-request',
+    variant: 'definition',
+    definitionRows: [
+      { label: 'Requested slot', value: slotText },
+      { label: 'Requester', value: requesterName },
+      {
+        label: 'Contact',
+        valueHtml: isEmail
+          ? `<a href="${escapeHtml(mailtoHref)}" class="lp-item-link">${escapeHtml(contact)}</a>`
+          : escapeHtml(contact || 'Not provided'),
+      },
+    ],
+  });
+
+  const contextListHtml = renderList({
+    id: 'booking-detail-context',
+    variant: 'definition',
+    definitionRows: [
+      { label: 'Context facets', value: facetsText },
+      { label: 'Background notes', value: notesText },
+    ],
+  });
+
+  const metaListHtml = renderList({
+    id: 'booking-detail-meta',
+    variant: 'definition',
+    definitionRows: [{ label: 'Received', value: receivedText }],
   });
 
   const historyHtml = renderList({
@@ -211,42 +224,45 @@ export async function renderAdminBookingDetailPage(
     variant: 'plain',
     itemsHtml: history.map((h) => {
       const hm = bookingStatusMeta(h.status);
-      return renderItem({
-        title: hm.label,
-        meta: h.at ? formatAdminDateTime(h.at) : '',
-      });
+      const when = h.at ? formatAdminDateTime(h.at) : '';
+      const line = when ? `${hm.label} · ${when}` : hm.label;
+      return `<div data-c="Item" data-rel="item" class="lp-item"><div data-purpose="meta" class="lp-item-meta">${escapeHtml(line)}</div></div>`;
     }).join(''),
   });
 
-  const emailLinkHtml = `<a id="btn-booking-email" href="${escapeHtml(mailtoHref)}" class="lp-btn lp-btn-text lp-btn-sm">Email requester</a>`;
+  const hasStatusActions = status === 'pending' || status === 'confirmed';
   const actionBar = status === 'pending'
-    ? `<div class="lp-stack lp-gap-tight">${renderActionBar({
+    ? renderActionBar({
         level: 'item',
         secondary: { id: 'btn-booking-confirm', label: 'Confirm', variant: 'secondary', size: 'sm', type: 'button', dataAttrs: { 'booking-id': id, 'booking-status': 'confirmed' } },
         textAction: { id: 'btn-booking-decline', label: 'Decline', variant: 'text', size: 'sm', type: 'button', dataAttrs: { 'booking-id': id, 'booking-status': 'declined' } },
-      })}<div>${emailLinkHtml}</div></div>`
+      })
     : status === 'confirmed'
       ? renderActionBar({
           level: 'item',
           secondary: { id: 'btn-booking-cancel', label: 'Cancel', variant: 'secondary', size: 'sm', type: 'button', dataAttrs: { 'booking-id': id, 'booking-status': 'cancelled' } },
-          textAction: { id: 'btn-booking-email', label: 'Email requester', variant: 'text', size: 'sm', href: mailtoHref },
         })
-      : renderActionBar({
-          level: 'item',
-          textAction: { id: 'btn-booking-email', label: 'Email requester', variant: 'text', size: 'sm', href: mailtoHref },
-        });
+      : undefined;
 
   const bodyHtml = `
     <div id="booking-detail-page" data-booking-detail-id="${escapeHtml(id)}" data-booking-status="${escapeHtml(status)}" class="lp-stack lp-gap-section">
       ${renderFormSection({
         id: 'booking-detail-section',
-        title: 'Request details',
-        fieldsHtml: detailsListHtml,
+        title: 'Request',
+        fieldsHtml: requestListHtml,
+        consequence: hasStatusActions ? "Status changes here only. The visitor isn't notified." : undefined,
         actionBarHtml: actionBar,
-        feedbackHtml: `
-          ${renderText({ id: 'booking-visitor-helper', variant: 'caption', className: 'lp-field-help', text: 'Confirming or declining updates status here only. No email is sent automatically.' })}
-          <div id="booking-detail-feedback" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
-        `,
+        feedbackHtml: `<div id="booking-detail-feedback" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>`,
+      })}
+      ${renderFormSection({
+        id: 'booking-context-section',
+        title: 'Context',
+        fieldsHtml: contextListHtml,
+      })}
+      ${renderFormSection({
+        id: 'booking-meta-section',
+        title: 'Meta',
+        fieldsHtml: metaListHtml,
       })}
       ${renderFormSection({
         id: 'booking-history-section',
@@ -284,6 +300,7 @@ export async function renderAdminBookingDetailPage(
   const content = renderPageTemplate({
     backHref: '/admin/bookings',
     title: topic,
+    actionsHtml: renderStatusDot({ label: statusLabel, tone: statusTone }),
     bodyHtml,
   });
 

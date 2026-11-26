@@ -241,7 +241,6 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
 
   const spansHtml = renderSubsection({
     title: 'Suggested roles',
-    intro: 'Passages that may play a role in your story. Accept to label one, or ignore it.',
     bodyHtml: `${renderList({ id: 'ref-spans-list', variant: 'plain', itemsHtml: '' })}
     <div id="ref-spans-feedback" class="lp-sr-only" aria-live="polite"></div>`,
   });
@@ -316,7 +315,6 @@ export function renderStructureSection(inspector?: StructureInspectorData): stri
   return renderFormSection({
     id: 'ref-structure-section',
     title: 'Structure',
-    description: 'Tags, suggested roles, claims, and evidence.',
     fieldsHtml: `<div class="lp-stack lp-gap-group">${levelHtml}${tagsHtml}${spansHtml}${claimsHtml}${evidenceHtml}</div>`,
   });
 }

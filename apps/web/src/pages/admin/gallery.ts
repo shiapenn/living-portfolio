@@ -229,7 +229,6 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
         <div id="gallery-text-sample" class="lp-stack lp-gap-related">
           ${renderText({ variant: 'body', text: `Body text role (${TYPE_ROLES.body.size}/${TYPE_ROLES.body.lineHeight}, text-1).` })}
           ${renderText({ variant: 'description', text: `Secondary text role (${TYPE_ROLES.secondary.size}/${TYPE_ROLES.secondary.lineHeight}, text-2).` })}
-          ${renderText({ variant: 'caption', text: `Meta/helper text role (${TYPE_ROLES.meta.size}/${TYPE_ROLES.meta.lineHeight}, text-3).` })}
           ${renderText({ variant: 'prose', text: 'Prose text role for structured multi-paragraph copy.' })}
         </div>
       </section>
@@ -348,7 +347,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
         ${renderFormSection({
           id: 'gallery-fs-sample',
           title: 'Section heading',
-          description: 'Optional one-line description under the heading.',
+          consequence: 'Optional consequence note directly above ActionBar.',
           fieldsHtml: [
             renderField({ id: 'gallery-f1', name: 'f1', label: 'Text field', kind: 'input', value: 'Sample' }),
             renderField({ id: 'gallery-f2', name: 'f2', label: 'Error field', kind: 'input', value: '', error: 'Enter a value.' }),
@@ -362,7 +361,6 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
         ${renderSubsection({
           id: 'gallery-subsection',
           title: 'Subsection heading',
-          intro: 'Optional intro inside FormSection.',
           bodyHtml: renderText({ variant: 'body', text: 'Subsection body content.' }),
         })}
       </section>

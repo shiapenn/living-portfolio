@@ -52,7 +52,6 @@ export async function renderAdminStructurePage(
       ${renderFormSection({
         id: 'structure-exclusions-section',
         title: 'Private detail exclusions',
-        description: 'Matched terms require confirmation before publishing.',
         fieldsHtml: renderField({
           kind: 'textarea',
           id: 'structure-redaction-exclusions',
@@ -60,7 +59,7 @@ export async function renderAdminStructurePage(
           label: 'Excluded terms',
           value: exclusions.join('\n'),
           rows: 5,
-          help: 'One client, project, or codename per line.',
+          help: 'One per line. Matched terms require confirmation before publishing.',
         }),
       })}
 
@@ -95,7 +94,6 @@ export async function renderAdminStructurePage(
 
   const content = renderPageTemplate({
     title: 'Structure',
-    description: 'Entry profiles and private detail exclusions.',
     bodyHtml,
   });
 

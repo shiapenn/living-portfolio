@@ -307,11 +307,11 @@ a,
   width: 100%;
   height: var(--lp-border-hairline);
   background: var(--rule);
-  margin-bottom: auto;
+  align-self: stretch;
 }
 
 .band-ym-empty {
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   color: var(--text-muted);
   display: block;
   text-align: center;
@@ -377,7 +377,7 @@ a,
   transform: translateX(-50%);
   background: var(--accent);
   color: var(--text-on-accent, var(--lp-color-text-on-accent));
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   font-weight: 600;
   padding: var(--lp-space-inset-tag-y) var(--lp-space-proximity-2);
   border-radius: var(--lp-radius-chip);
@@ -399,7 +399,7 @@ a,
 }
 
 .strata-band .band-label-future {
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   text-transform: uppercase;
   letter-spacing: var(--lp-font-letter-wide);
   color: var(--text-muted);
@@ -415,7 +415,7 @@ a,
 }
 
 .strata-band .band-glyphs {
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   color: var(--accent);
 }
 
@@ -425,7 +425,7 @@ a,
 }
 
 .strata-band .band-count {
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   color: var(--text-muted);
 }
 
@@ -447,7 +447,7 @@ a,
 
 .strata-legend-hint {
   margin-left: auto;
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   color: var(--text-muted);
 }
 

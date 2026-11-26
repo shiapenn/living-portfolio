@@ -296,4 +296,5 @@
 | `L059` | Admin Feedback Placement & Timing | `active` | [feedback.md](design/feedback.md) | — |
 | `L060` | Admin Rhythm, Type & Mobile Input Standard | `active` | [rhythm-type.md](design/rhythm-type.md) | — |
 | `L061` | Admin Screen Brief Gate (Part C) | `active` | [screen-brief.md](design/screen-brief.md) | — |
+| `L062` | Admin Design Audit Protocol (D8) | `active` | [audit-protocol.md](design/audit-protocol.md) | — |
 

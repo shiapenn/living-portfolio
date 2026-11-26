@@ -1,7 +1,7 @@
 /* Shell menu header & < 640px bottom-sheet overlays (D-COMP #7, #8) */
 .lp-menu-header {
   padding: var(--lp-space-inset-track) var(--lp-space-inset-control-x) var(--lp-space-inset-item-x);
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   line-height: var(--lp-font-line-16);
   font-weight: 600;
   color: var(--text-muted);

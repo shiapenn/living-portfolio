@@ -48,19 +48,24 @@ export async function renderAdminAuditRulesPage(
   let mainContentHtml = '';
   if (activeStatus === 'contradictions') {
     const activeConflicts = conflicts.filter((c) => c.status !== 'dismissed' && c.status !== 'resolved');
-    const initialState = activeConflicts.length > 0 ? 'found' : options.lastCheckedAt ? 'clean' : 'idle';
+    const inferredLastChecked =
+      options.lastCheckedAt ||
+      (activeConflicts.length > 0
+        ? String(activeConflicts[0]?.created_at || activeConflicts[0]?.detected_at || activeConflicts[0]?.at || new Date().toISOString())
+        : null);
+    const initialState = activeConflicts.length > 0 ? 'found' : inferredLastChecked ? 'clean' : 'idle';
     const initialHeadline = initialState === 'found'
       ? (activeConflicts.length === 1 ? '1 possible contradiction' : `${activeConflicts.length} possible contradictions`)
       : initialState === 'clean'
         ? 'No contradictions found'
         : 'Not checked yet';
-    const initialMeta = options.lastCheckedAt
-      ? `Last checked ${formatAdminDateTime(options.lastCheckedAt)}`
+    const initialMeta = inferredLastChecked
+      ? `Last checked ${formatAdminDateTime(inferredLastChecked)}`
       : 'Not run yet';
-    const initialBtnLabel = options.lastCheckedAt || activeConflicts.length > 0 ? 'Check again' : 'Run check';
+    const initialBtnLabel = inferredLastChecked || activeConflicts.length > 0 ? 'Check again' : 'Run check';
 
     const conflictResultsHtml = activeConflicts.length > 0
-      ? `<p id="audit-conflicts-intro" data-c="Text" data-variant="description" class="lp-description">Keep newer stops answers using the older claim. Keep both leaves both.</p>` +
+      ? `<p id="audit-conflicts-intro" data-c="Text" data-variant="description" data-purpose="helper" class="lp-description">Keep newer stops answers using the older claim. Keep both leaves both.</p>` +
         renderList({
           id: 'audit-conflicts-list',
           variant: 'plain',
@@ -71,9 +76,21 @@ export async function renderAdminAuditRulesPage(
             const titleB = String(c.entry_b_title || 'Later entry');
             const dateA = c.entry_a_date ? String(c.entry_a_date) : '';
             const dateB = c.entry_b_date ? String(c.entry_b_date) : '';
-            const sameDate = Boolean(dateA && dateB && formatAdminDate(dateA) === formatAdminDate(dateB));
-            const eyebrowA = formatClaimEyebrow(sameDate ? 'Same date' : 'Older', dateA);
-            const eyebrowB = formatClaimEyebrow(sameDate ? 'Same date' : 'Newer', dateB);
+            const recA = c.claim_a_recorded_at ? String(c.claim_a_recorded_at) : '';
+            const recB = c.claim_b_recorded_at ? String(c.claim_b_recorded_at) : '';
+            const sameDay = Boolean(dateA && dateB && formatAdminDate(dateA) === formatAdminDate(dateB));
+            const entryTimeA = Date.parse(dateA);
+            const entryTimeB = Date.parse(dateB);
+            const recTimeA = Date.parse(recA);
+            const recTimeB = Date.parse(recB);
+            const timeA = sameDay && !Number.isNaN(recTimeA) && !Number.isNaN(recTimeB) ? recTimeA : entryTimeA;
+            const timeB = sameDay && !Number.isNaN(recTimeA) && !Number.isNaN(recTimeB) ? recTimeB : entryTimeB;
+            const hasDistinctOrder =
+              !sameDay ||
+              (!Number.isNaN(timeA) && !Number.isNaN(timeB) && timeA !== timeB);
+            const aIsNewer = !Number.isNaN(timeA) && !Number.isNaN(timeB) && timeA > timeB;
+            const eyebrowA = formatClaimEyebrow(!hasDistinctOrder ? 'Same date' : aIsNewer ? 'Newer' : 'Older', dateA);
+            const eyebrowB = formatClaimEyebrow(!hasDistinctOrder ? 'Same date' : aIsNewer ? 'Older' : 'Newer', dateB);
             const hrefA = c.entry_a_id ? `/admin/entries/${encodeURIComponent(String(c.entry_a_id))}` : '';
             const hrefB = c.entry_b_id ? `/admin/entries/${encodeURIComponent(String(c.entry_b_id))}` : '';
             const topicTitle = (c.overlap && typeof c.overlap.topic === 'string' && c.overlap.topic.trim())
@@ -81,24 +98,27 @@ export async function renderAdminAuditRulesPage(
               : 'Possible contradiction';
             const pct = Math.round((Number(c.confidence) || 0.8) * 100);
             const linkA = hrefA
-              ? `<a href="${escapeHtml(hrefA)}" class="lp-item-link lp-caption">From ${escapeHtml(titleA)}</a>`
-              : `<span class="lp-caption">From ${escapeHtml(titleA)}</span>`;
+              ? `<a href="${escapeHtml(hrefA)}" class="lp-item-link">From ${escapeHtml(titleA)}</a>`
+              : `<span data-purpose="meta" class="lp-caption">From ${escapeHtml(titleA)}</span>`;
             const linkB = hrefB
-              ? `<a href="${escapeHtml(hrefB)}" class="lp-item-link lp-caption">From ${escapeHtml(titleB)}</a>`
-              : `<span class="lp-caption">From ${escapeHtml(titleB)}</span>`;
+              ? `<a href="${escapeHtml(hrefB)}" class="lp-item-link">From ${escapeHtml(titleB)}</a>`
+              : `<span data-purpose="meta" class="lp-caption">From ${escapeHtml(titleB)}</span>`;
+            const sameDateNoteHtml = !hasDistinctOrder
+              ? `<p data-c="Text" data-variant="description" data-purpose="helper" class="lp-description">Same date. Edit an entry to resolve.</p>`
+              : '';
             const claimsHtml = `<div class="lp-item-claims-grid" data-claims-grid="true">
-              <div class="lp-item-claim-card" data-claim-side="older">
-                <div class="lp-item-claim-eyebrow">${escapeHtml(eyebrowA)}</div>
-                <blockquote data-c="Text" data-variant="quote" class="lp-item-quote">${escapeHtml(claimA)}</blockquote>
+              <div class="lp-item-claim-card" data-claim-side="${!hasDistinctOrder ? 'same' : aIsNewer ? 'newer' : 'older'}">
+                <div data-purpose="meta" class="lp-item-claim-eyebrow">${escapeHtml(eyebrowA)}</div>
+                <blockquote data-c="Text" data-variant="quote" data-purpose="value" class="lp-item-quote">${escapeHtml(claimA)}</blockquote>
                 <div>${linkA}</div>
               </div>
               <div class="lp-item-claims-vs" aria-hidden="true">vs</div>
-              <div class="lp-item-claim-card" data-claim-side="newer">
-                <div class="lp-item-claim-eyebrow">${escapeHtml(eyebrowB)}</div>
-                <blockquote data-c="Text" data-variant="quote" class="lp-item-quote">${escapeHtml(claimB)}</blockquote>
+              <div class="lp-item-claim-card" data-claim-side="${!hasDistinctOrder ? 'same' : aIsNewer ? 'older' : 'newer'}">
+                <div data-purpose="meta" class="lp-item-claim-eyebrow">${escapeHtml(eyebrowB)}</div>
+                <blockquote data-c="Text" data-variant="quote" data-purpose="value" class="lp-item-quote">${escapeHtml(claimB)}</blockquote>
                 <div>${linkB}</div>
               </div>
-            </div>`;
+            </div>${sameDateNoteHtml}`;
             return renderItem({
               title: topicTitle,
               titleVariant: 'content',
@@ -106,7 +126,7 @@ export async function renderAdminAuditRulesPage(
               customBodyHtml: claimsHtml,
               actions: {
                 level: 'item',
-                secondary: { label: 'Keep newer', variant: 'secondary', size: 'sm', dataAttrs: { 'conflict-id': String(c.id), 'conflict-res': 'supersedes' } },
+                secondary: { label: 'Keep newer', variant: 'secondary', size: 'sm', disabled: !hasDistinctOrder, dataAttrs: { 'conflict-id': String(c.id), 'conflict-res': 'supersedes' } },
                 textAction: { label: 'Keep both', variant: 'text', size: 'sm', dataAttrs: { 'conflict-id': String(c.id), 'conflict-res': 'dismiss' } },
               },
               attributes: `data-conflict-row="${escapeHtml(String(c.id))}"`,
@@ -119,8 +139,8 @@ export async function renderAdminAuditRulesPage(
       <div id="audit-contradictions-panel" data-contradictions-state="${initialState}" class="lp-stack lp-gap-group">
         <div id="audit-conflicts-section" class="lp-stack lp-gap-group">
           <div class="lp-stack lp-gap-tight">
-            <div id="audit-state-headline" data-c="Text" class="lp-item-title" aria-live="polite">${escapeHtml(initialHeadline)}</div>
-            <p id="audit-last-checked" data-c="Text" data-variant="caption" class="lp-field-help">${escapeHtml(initialMeta)}</p>
+            <div id="audit-state-headline" data-c="Text" data-purpose="status" class="lp-item-title" aria-live="polite">${escapeHtml(initialHeadline)}</div>
+            <p id="audit-last-checked" data-c="Text" data-variant="caption" data-purpose="meta" class="lp-field-help">${escapeHtml(initialMeta)}</p>
           </div>
           <div class="lp-stack lp-gap-related">
             ${renderActionBar({
