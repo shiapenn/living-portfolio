@@ -578,7 +578,9 @@ export async function checkLines(page: Page, opts: { hasTopBar: boolean; hasPush
       if (i > 0 && items[i].parentElement === items[i - 1].parentElement) {
         const bt = parseFloat(getComputedStyle(items[i]).borderTopWidth) || 0;
         const bbPrev = parseFloat(getComputedStyle(items[i - 1]).borderBottomWidth) || 0;
-        if (bt < 0.5 && bbPrev < 0.5) {
+        const afterPrev = getComputedStyle(items[i - 1], '::after');
+        const hasAfterHairline = afterPrev.content !== 'none' && (parseFloat(afterPrev.height) || 0) >= 0.5;
+        if (bt < 0.5 && bbPrev < 0.5 && !hasAfterHairline) {
           issues.push(`missing-item-hairline at index ${i}`);
         }
       }
@@ -884,15 +886,21 @@ export async function checkControlsRadiusTextButtonsSrOnly(page: Page): Promise<
     for (const el of painted) {
       const cs = getComputedStyle(el);
       const rad = parseFloat(cs.borderTopLeftRadius || '0');
-      const allowed = rad === 0 || Math.abs(rad - 4) <= 0.5 || Math.abs(rad - 8) <= 0.5 || rad >= 100;
+      const allowed = rad === 0 || Math.abs(rad - 4) <= 0.5 || Math.abs(rad - 8) <= 0.5 || Math.abs(rad - 12) <= 0.5 || rad >= 100;
       if (!allowed) {
         issues.push(`c3-radius-scale: ${el.tagName.toLowerCase()}.${el.className} radius=${rad}px`);
       }
       if (
-        el.matches('button.lp-btn:not(.lp-btn-text), a.lp-btn:not(.lp-btn-text), input.lp-input, select.lp-select, .lp-segmented-control, .lp-dialog-panel, .lp-item.is-selected') &&
+        el.matches('button.lp-btn:not(.lp-btn-text), a.lp-btn:not(.lp-btn-text), input.lp-input, select.lp-select, .lp-segmented-control') &&
         Math.abs(rad - 8) > 0.5
       ) {
         issues.push(`c3-radius-r2: ${el.tagName.toLowerCase()}.${el.className} got ${rad}px expected 8px`);
+      }
+      if (
+        el.matches('.lp-dialog-panel, .lp-item.is-selected') &&
+        Math.abs(rad - 12) > 0.5
+      ) {
+        issues.push(`c3-radius-container: ${el.tagName.toLowerCase()}.${el.className} got ${rad}px expected 12px`);
       }
       if (el.matches('.lp-tag') && Math.abs(rad - 4) > 0.5) {
         issues.push(`c3-radius-r1: ${el.tagName.toLowerCase()}.${el.className} got ${rad}px expected 4px`);

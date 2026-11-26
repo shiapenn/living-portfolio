@@ -176,7 +176,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--lp-space-proximity-1);
-  padding: var(--lp-space-inset-panel);
+  padding: var(--lp-space-inset-section);
   border-radius: var(--lp-radius-container);
   border: var(--lp-border-hairline) solid var(--lp-color-border-hairline);
   background: var(--lp-color-surface-canvas);

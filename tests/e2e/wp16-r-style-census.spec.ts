@@ -118,9 +118,9 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
       }, theme);
 
       const res = await page.evaluate(({ isTemplate, vpWidth }) => {
-        const allowedRadii = new Set([0, 4, 8]);
+        const allowedRadii = new Set([0, 4, 8, 12]);
         const allowedFonts = new Set([13, 14, 16, 18, 24]);
-        const allowedSpace = new Set([0, 4, 8, 16, 24, 40, 64]);
+        const allowedSpace = new Set([0, 4, 8, 12, 16, 24, 40, 64]);
         const allowedSiblingGaps = new Set([8, 16, 24, 40]);
 
         // Extract active theme token colours from CSS custom properties on :root

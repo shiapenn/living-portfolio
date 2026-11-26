@@ -47,7 +47,7 @@
   --lp-color-text-on-accent: #FFFFFF;
   --lp-color-border-hairline: #CBD3D8;
   --lp-color-border-subtle: #CBD3D8;
-  --lp-color-border-control: #81909D;
+  --lp-color-border-control: #7E8D9A;
   --lp-color-border-strong: var(--lp-core-accent-600, #3A4FD0);
   --lp-color-border-overlay: #CBD3D8;
   --lp-color-accent-default: var(--lp-core-accent-600, #3A4FD0);
@@ -64,7 +64,7 @@
   --lp-color-role-action-border: var(--lp-core-accent-600, #3A4FD0);
   --lp-color-role-neutral-fg: #2D3B45;
   --lp-color-role-neutral-bg: #EEF1F3;
-  --lp-color-role-neutral-border: #81909D;
+  --lp-color-role-neutral-border: #7E8D9A;
   --lp-color-role-success-fg: #145940;
   --lp-color-role-success-bg: #E8F5E9;
   --lp-color-role-success-border: #1E7E5A;
@@ -305,7 +305,7 @@
     --lp-color-text-on-accent: #0F1A22;
     --lp-color-border-hairline: #2A3946;
     --lp-color-border-subtle: #2A3946;
-    --lp-color-border-control: #5B6D7B;
+    --lp-color-border-control: #607280;
     --lp-color-border-strong: var(--lp-core-accent-300, #9AA8FF);
     --lp-color-border-overlay: #334656;
     --lp-color-accent-default: var(--lp-core-accent-300, #9AA8FF);
@@ -322,7 +322,7 @@
     --lp-color-role-action-border: var(--lp-core-accent-300, #9AA8FF);
     --lp-color-role-neutral-fg: #D5DEE4;
     --lp-color-role-neutral-bg: #1E2C38;
-    --lp-color-role-neutral-border: #5B6D7B;
+    --lp-color-role-neutral-border: #607280;
     --lp-color-role-success-fg: #8CE0BC;
     --lp-color-role-success-bg: #122B22;
     --lp-color-role-success-border: #4CC38A;
@@ -377,7 +377,7 @@
   --lp-color-text-on-accent: #0F1A22;
   --lp-color-border-hairline: #2A3946;
   --lp-color-border-subtle: #2A3946;
-  --lp-color-border-control: #5B6D7B;
+  --lp-color-border-control: #607280;
   --lp-color-border-strong: var(--lp-core-accent-300, #9AA8FF);
   --lp-color-border-overlay: #334656;
   --lp-color-accent-default: var(--lp-core-accent-300, #9AA8FF);
@@ -394,7 +394,7 @@
   --lp-color-role-action-border: var(--lp-core-accent-300, #9AA8FF);
   --lp-color-role-neutral-fg: #D5DEE4;
   --lp-color-role-neutral-bg: #1E2C38;
-  --lp-color-role-neutral-border: #5B6D7B;
+  --lp-color-role-neutral-border: #607280;
   --lp-color-role-success-fg: #8CE0BC;
   --lp-color-role-success-bg: #122B22;
   --lp-color-role-success-border: #4CC38A;

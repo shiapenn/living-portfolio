@@ -162,7 +162,7 @@ Safe text before
       // Tier 2: Semantics
       expect(SEMANTIC_LIGHT_VALUES['--lp-color-surface-page']).toBe('#FFFFFF');
       expect(SEMANTIC_LIGHT_VALUES['--lp-color-surface-raised']).toBe('#FFFFFF');
-      expect(SEMANTIC_LIGHT_VALUES['--lp-color-border-control']).toBe('#6B7B88');
+      expect(SEMANTIC_LIGHT_VALUES['--lp-color-border-control']).toBe('#7E8D9A');
       expect(COMPONENT_TOKEN_VALUES['--lp-size-layout-max']).toBe('1200px');
       expect(COMPONENT_TOKEN_VALUES['--lp-measure-reading']).toBe('68ch');
 

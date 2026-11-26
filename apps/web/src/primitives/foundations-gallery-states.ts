@@ -8,7 +8,7 @@ import { renderPageNotice } from '../components/feedback.js';
  */
 export function renderStateMatrixSection(): string {
   const ladderTile = (swatchClass: string, title: string, meta: string) =>
-    `<div class="lp-gallery-ladder-tile"><div class="lp-gallery-ladder-swatch ${swatchClass}"></div><span class="lp-body">${title}</span><span class="lp-caption">${meta}</span></div>`;
+    `<div class="lp-gallery-ladder-tile"><div class="lp-gallery-ladder-swatch ${swatchClass}" aria-hidden="true"><span class="sr-only">${title}</span></div><span data-c="Text" class="lp-body">${title}</span><span data-c="Text" class="lp-caption">${meta}</span></div>`;
 
   return `<section id="gallery-state-matrix" class="lp-gallery-section" data-component="StateMatrix">
     ${renderSectionHeader({ title: 'State Matrix (D7 / V1–V8 — Interactive Controls)' })}
@@ -92,8 +92,8 @@ export function renderStateMatrixSection(): string {
           ${renderStatusDot({ label: 'Active', tone: 'ok' })}
           ${renderStatusDot({ label: 'Pending', tone: 'warn' })}
           ${renderStatusDot({ label: 'Error', tone: 'danger' })}
-          ${renderStatusDot({ label: 'Info', tone: 'info' })}
-          ${renderStatusDot({ label: 'Neutral', tone: 'neutral' })}
+          ${renderStatusDot({ label: 'Suggested', tone: 'info' })}
+          ${renderStatusDot({ label: 'Draft', tone: 'neutral' })}
         </div>
       </div>
       <div id="gallery-closeups-notice" class="lp-stack lp-gap-tight" data-state-group="Notice">
@@ -109,7 +109,7 @@ export function renderStateMatrixSection(): string {
   </section>
   <section id="gallery-ladder-specimen" class="lp-gallery-section" data-component="LadderSpecimen">
     ${renderSectionHeader({ title: 'Token Ladders Specimen (V3 & V6)' })}
-    <div class="lp-stack lp-gap-related">
+    <div data-c="Text" class="lp-stack lp-gap-related">
       <div class="lp-stack lp-gap-tight">
         <span data-purpose="label" class="lp-caption">Surface ladder</span>
         <div class="lp-gallery-ladder-grid">

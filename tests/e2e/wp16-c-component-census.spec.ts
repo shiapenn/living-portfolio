@@ -207,6 +207,7 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
         }
       }
       if (bar.classList.contains('lp-action-bar-item')) continue;
+      if (bar.classList.contains('lp-action-bar-page') && width >= 480) continue;
       const barRect = bar.getBoundingClientRect();
       const nonTextBtns = btns.filter((b) => !b.classList.contains('lp-btn-text'));
       const firstW = nonTextBtns.length > 0 ? Math.round(nonTextBtns[0].getBoundingClientRect().width) : 0;

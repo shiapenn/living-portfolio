@@ -86,7 +86,7 @@
 | `--lp-color-text-on-accent` | `#FFFFFF` | `#0F1A22` |
 | `--lp-color-border-hairline` | `#CBD3D8` | `#2A3946` |
 | `--lp-color-border-subtle` | `#CBD3D8` | `#2A3946` |
-| `--lp-color-border-control` | `#81909D` | `#5B6D7B` |
+| `--lp-color-border-control` | `#7E8D9A` | `#607280` |
 | `--lp-color-border-strong` | `#3A4FD0` | `#9AA8FF` |
 | `--lp-color-border-overlay` | `#CBD3D8` | `#334656` |
 | `--lp-color-accent-default` | `#3A4FD0` | `#9AA8FF` |
@@ -103,7 +103,7 @@
 | `--lp-color-role-action-border` | `#3A4FD0` | `#9AA8FF` |
 | `--lp-color-role-neutral-fg` | `#2D3B45` | `#D5DEE4` |
 | `--lp-color-role-neutral-bg` | `#EEF1F3` | `#1E2C38` |
-| `--lp-color-role-neutral-border` | `#81909D` | `#5B6D7B` |
+| `--lp-color-role-neutral-border` | `#7E8D9A` | `#607280` |
 | `--lp-color-role-success-fg` | `#145940` | `#8CE0BC` |
 | `--lp-color-role-success-bg` | `#E8F5E9` | `#122B22` |
 | `--lp-color-role-success-border` | `#1E7E5A` | `#4CC38A` |
