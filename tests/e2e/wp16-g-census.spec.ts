@@ -120,8 +120,8 @@ test.describe('WP-16.G G0 Failing-First Defect Tests (20261106-UX-170..UX-181)',
     expect(firstSpanBody.trim().length).toBeGreaterThan(0);
   });
 
-  test('20261106-UX-174: Item container stacking (<400px), gallery Confirm gap 24px, Status uses StatusLabel', async ({ page }) => {
-    const stylesSrc = readFileSync(resolve(process.cwd(), 'packages/ui-admin/src/templates/dghl-polish.css'), 'utf8');
+  test('20261106-UX-174: Item container stacking (<480px), gallery Confirm gap 24px, Status uses StatusLabel', async ({ page }) => {
+    const stylesSrc = readFileSync(resolve(process.cwd(), 'packages/ui-admin/src/components/item/item.css'), 'utf8');
     expect(stylesSrc).toContain('@container');
   });
 

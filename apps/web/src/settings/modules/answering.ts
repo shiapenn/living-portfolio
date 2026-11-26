@@ -102,8 +102,6 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
 
     return `
       <form id="settings-module-form" data-settings-module="answering" class="lp-stack lp-gap-section">
-        ${renderStatusLine({ id: 'settings-status-banner' })}
-
         ${renderFormSection({
           title: 'Automatic answering',
           description: 'When paused, new visitor questions wait in Inbox.',
@@ -163,6 +161,7 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
             level: 'item',
             secondary: { id: 'btn-restore-thresholds', label: 'Restore recommended', variant: 'secondary', type: 'button', size: 'sm' },
           }),
+          feedbackHtml: `<div id="answering-thresholds-feedback" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>`,
         })}
 
         ${renderFormSection({
@@ -231,10 +230,13 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
             ],
           }),
         })}
-        ${renderActionBar({
-          pageLevel: true,
-          primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
-        })}
+        <div class="lp-stack lp-gap-related">
+          ${renderActionBar({
+            pageLevel: true,
+            primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
+          })}
+          <div id="settings-status-banner" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
+        </div>
       </form>
       ${pauseDialogHtml}
       <div class="lp-is-hidden" data-module-meta="${escapeHtml(answeringModule.id)}"></div>

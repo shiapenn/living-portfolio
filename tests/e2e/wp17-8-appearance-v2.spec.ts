@@ -45,7 +45,7 @@ test.describe.serial('WP-17.8: Appearance v2 (/admin/settings/appearance & /admi
 
     await page.fill('#setting-theme-import-json', JSON.stringify({ ...parsedExport, customCss: 'body{display:none}' }));
     await page.click('#btn-import-theme-pack');
-    await expect(page.locator('#settings-status-banner')).toContainText('customCss');
+    await expect(page.locator('#appearance-import-feedback')).toContainText('customCss');
 
     // 5. Public scope saves & validates, without restyling public pages
     await page.selectOption('#setting-appearance-scope', 'public');

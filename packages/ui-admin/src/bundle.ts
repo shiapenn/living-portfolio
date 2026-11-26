@@ -24,6 +24,7 @@ const BASE_CSS_PARTS: Array<[string, string]> = [
   ['components', 'primitives/controls/controls.css'],
   ['components', 'primitives/field/field.css'],
   ['components', 'components/feedback/feedback.css'],
+  ['components', 'components/credential/credential.css'],
   ['components', 'shell/admin-header.css'],
   ['components', 'routes/gallery-foundations.css'],
   ['components', 'routes/editor-reference.css'],

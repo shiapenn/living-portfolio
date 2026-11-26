@@ -5,7 +5,14 @@ import { renderActionBar, type ActionBarProps } from './action-bar.js';
 
 export interface ItemBodySegment {
   heading?: string;
+  headingHref?: string;
   body: string;
+  quote?: boolean;
+}
+
+export interface ItemMetaField {
+  text: string;
+  breakable?: boolean;
 }
 
 export interface ItemProps {
@@ -13,10 +20,12 @@ export interface ItemProps {
   href?: string;
   leadingIcon?: IconName;
   title: string;
+  titleClamp2?: boolean;
   subtitle?: string;
   body?: string;
   segments?: ItemBodySegment[];
   meta?: string;
+  metaFields?: ItemMetaField[];
   statusLabel?: string;
   statusTone?: StatusTone;
   trailingValue?: string;
@@ -48,18 +57,27 @@ export function renderItem(props: ItemProps): string {
     ? `<span class="lp-item-leading" aria-hidden="true">${renderIcon(props.leadingIcon, 16)}</span>`
     : '';
 
-  const titleHtml = `<div data-rel="title" class="lp-item-title">${leadingHtml}<span>${escapeHtml(props.title)}</span></div>`;
+  const titleCls = props.titleClamp2 ? 'lp-item-title lp-item-title-clamp-2' : 'lp-item-title';
+  const titleHtml = `<div data-rel="title" class="${titleCls}">${leadingHtml}<span>${escapeHtml(props.title)}</span></div>`;
   const subtitleHtml = props.subtitle ? `<div class="lp-item-subtitle">${escapeHtml(props.subtitle)}</div>` : '';
 
   let bodyHtml = '';
   if (props.segments && props.segments.length > 0) {
     bodyHtml = `<div data-rel="itembody" class="lp-item-segments">${props.segments
-      .map(
-        (seg) => `<div data-rel="segment" class="lp-item-segment">
-          ${seg.heading ? `<div data-rel="segment-label" class="lp-item-segment-heading">${escapeHtml(seg.heading)}</div>` : ''}
-          <div data-rel="segment-text" class="lp-item-body">${escapeHtml(seg.body)}</div>
-        </div>`
-      )
+      .map((seg) => {
+        const headingInner = seg.heading
+          ? seg.headingHref
+            ? `<a href="${escapeHtml(seg.headingHref)}" class="lp-item-link lp-caption">${escapeHtml(seg.heading)}</a>`
+            : escapeHtml(seg.heading)
+          : '';
+        const headingHtml = headingInner
+          ? `<div data-rel="segment-label" class="lp-item-segment-heading">${headingInner}</div>`
+          : '';
+        const textHtml = seg.quote
+          ? `<blockquote data-c="Text" data-variant="quote" data-rel="segment-text" class="lp-item-quote">${escapeHtml(seg.body)}</blockquote>`
+          : `<div data-rel="segment-text" class="lp-item-body">${escapeHtml(seg.body)}</div>`;
+        return `<div data-rel="segment" class="lp-item-segment">${headingHtml}${textHtml}</div>`;
+      })
       .join('')}</div>`;
   } else if (props.body) {
     bodyHtml = `<div data-rel="itembody" class="lp-item-body">${escapeHtml(props.body)}</div>`;
@@ -77,7 +95,18 @@ export function renderItem(props: ItemProps): string {
         ? `<div class="lp-item-status"><span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span></div>`
         : '';
 
-  const metaHtml = props.meta ? `<div class="lp-item-meta">${escapeHtml(props.meta)}</div>` : '';
+  const metaHtml =
+    props.metaFields && props.metaFields.length > 0
+      ? `<div class="lp-item-meta">${props.metaFields
+          .filter((f) => f.text.trim().length > 0)
+          .map(
+            (f) =>
+              `<span class="lp-item-meta-field${f.breakable ? ' lp-item-meta-break' : ''}">${escapeHtml(f.text)}</span>`
+          )
+          .join('')}</div>`
+      : props.meta
+        ? `<div class="lp-item-meta"><span class="lp-item-meta-field">${escapeHtml(props.meta)}</span></div>`
+        : '';
   const actionsHtml = hasActions && props.actions ? `<div data-rel="actions" class="lp-item-actions">${renderActionBar(props.actions)}</div>` : '';
 
   const contentInner = `${titleHtml}${statusHtml}${subtitleHtml}${bodyHtml}${metaHtml}`;

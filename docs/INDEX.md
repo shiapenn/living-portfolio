@@ -187,6 +187,7 @@
 | `A179` | WP-17.7 and 17.8 pages home appearance | `active` | [A179-wp-177-and-178-pages-home-appearance.md](execution-reports/A179-wp-177-and-178-pages-home-appearance.md) | — |
 | `A180` | WP-17.9 polish states and content standard | `active` | [A180-wp-179-polish-states-and-content-standard.md](execution-reports/A180-wp-179-polish-states-and-content-standard.md) | — |
 | `A181` | WP-17.10 exit gate fixes | `active` | [A181-wp-1710-exit-gate-fixes.md](execution-reports/A181-wp-1710-exit-gate-fixes.md) | — |
+| `A182` | WP-17.11 feedback model credential item accent | `active` | [A182-wp-1711-feedback-model-credential-item-accent.md](execution-reports/A182-wp-1711-feedback-model-credential-item-accent.md) | — |
 
 ## Handover Snapshots (Class H)
 
@@ -290,4 +291,6 @@
 | `L055` | WP-17 Progress & Time Ledger | `active` | [wp17-progress.md](plans/wp17-progress.md) | — |
 | `L056` | ADR-024: Content Standard and Admin UI Polish Contracts | `active` | [ADR-024-content-standard.md](adr/ADR-024-content-standard.md) | — |
 | `L057` | Admin Content Standard | `active` | [content.md](design/content.md) | — |
+| `L058` | ADR-025: Feedback Placement and Timing | `active` | [ADR-025-feedback-placement-and-timing.md](adr/ADR-025-feedback-placement-and-timing.md) | — |
+| `L059` | Admin Feedback Placement & Timing | `active` | [feedback.md](design/feedback.md) | — |
 

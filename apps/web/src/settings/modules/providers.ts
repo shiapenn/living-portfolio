@@ -80,7 +80,6 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
 
     return `
       <form id="settings-module-form" data-settings-module="providers" class="lp-stack lp-gap-section">
-        ${renderStatusLine({ id: 'settings-status-banner' })}
         ${answeringSectionHtml}
 
         ${renderFormSection({
@@ -109,6 +108,7 @@ export const providersModule: SettingsModuleManifest<ProvidersConfig> = {
             type: 'button',
           },
         })}
+        <div id="settings-status-banner" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
       </form>
     `;
   },

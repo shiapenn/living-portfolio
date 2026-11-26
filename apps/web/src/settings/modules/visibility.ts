@@ -68,8 +68,6 @@ export const visibilityModule: SettingsModuleManifest<VisibilityConfig> = {
 
     return `
       <form id="settings-module-form" data-settings-module="visibility" class="lp-stack lp-gap-section">
-        ${renderStatusLine({ id: 'settings-status-banner' })}
-
         ${renderFormSection({
           title: 'Search and crawlers',
           description: 'Changes update crawler rules immediately.',
@@ -105,10 +103,13 @@ export const visibilityModule: SettingsModuleManifest<VisibilityConfig> = {
           fieldsHtml: feedsListHtml,
         })}
 
-        ${renderActionBar({
-          pageLevel: true,
-          primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
-        })}
+        <div class="lp-stack lp-gap-related">
+          ${renderActionBar({
+            pageLevel: true,
+            primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
+          })}
+          <div id="settings-status-banner" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
+        </div>
       </form>
     `;
   },

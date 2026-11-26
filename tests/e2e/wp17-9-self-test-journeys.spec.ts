@@ -30,10 +30,11 @@ test.describe.serial('WP-17.9 / WP-17.10 Self-Test User Journeys (J1–J8)', () 
     await page.fill('#setting-tier1-floor', '0.90');
     await expect(page.locator('#tier1-warning')).toBeVisible();
 
-    // Set invalid threshold -> rejected with danger notice
+    // Set invalid threshold -> inline field error (aria-invalid) + danger notice
     await page.fill('#setting-tier1-floor', '1.50');
     await page.click('#btn-save-settings-module');
-    await expect(page.locator('#settings-status-banner .lp-notice-danger')).toContainText('0.10 and 1.00');
+    await expect(page.locator('#setting-tier1-floor')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#settings-status-banner.lp-notice-danger')).toContainText('0.10 and 1.00');
 
     // Switch to 320px and restore recommended via keyboard
     await page.setViewportSize({ width: 320, height: 640 });
@@ -77,33 +78,38 @@ test.describe.serial('WP-17.9 / WP-17.10 Self-Test User Journeys (J1–J8)', () 
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/settings/account');
 
-    // Wrong current password -> error inside credentials section
+    // Wrong current password -> error inside credentials section below ActionBar (K2)
     await page.fill('#account-current-password', 'definitely-wrong-password');
     await page.fill('#account-new-password', 'NewValidPassphrase123!');
     await page.click('#btn-update-credentials');
     await expect(page.locator('#account-credentials-section #account-creds-notice.lp-notice-danger')).toBeVisible();
 
-    // Re-enrol authenticator & enter invalid 6-digit code -> error inside TOTP section
+    // Re-enrol authenticator (QR <= 192px + manual key in Credential) & invalid 6-digit code -> section-local error
     await page.click('#btn-reenrol-totp');
     await expect(page.locator('#account-totp-reenrol-box')).toBeVisible();
+    await expect(page.locator('#account-totp-manual-cred[data-c="Credential"]')).toBeVisible();
     const qrBox = await page.locator('#account-totp-qr svg').boundingBox();
     expect(qrBox!.width).toBeLessThanOrEqual(192);
     await page.fill('#account-totp-code', '000000');
     await page.click('#btn-confirm-totp');
     await expect(page.locator('#account-totp-section #account-totp-notice.lp-notice-danger')).toBeVisible();
 
-    // Regenerate recovery codes (8 shown once)
+    // Regenerate recovery codes (8 in Credential list grid + Copy all -> Copied)
     await page.click('#btn-regen-recovery');
-    await expect(page.locator('#account-recovery-output')).toContainText('·');
+    await expect(page.locator('#account-recovery-output[data-c="Credential"] .lp-credential-cell')).toHaveCount(8);
+    await page.click('#account-recovery-output-copy-btn');
+    await expect(page.locator('#account-recovery-output-copied')).toHaveText('Copied');
 
-    // Create then revoke a token (with status dot visible and >= 4px gap)
+    // Create then revoke a token (Credential single + Copy -> Copied + StatusLine on revoke)
     await page.fill('#account-token-label', 'journey-j3-token');
     await page.click('#btn-create-token');
-    await expect(page.locator('#account-token-created')).toContainText('journey-j3-token');
+    await expect(page.locator('#account-token-created[data-c="Credential"]')).toContainText('lp_pat_');
+    await page.click('#account-token-created-copy-btn');
+    await expect(page.locator('#account-token-created-copied')).toHaveText('Copied');
     const tokenItem = page.locator('#account-tokens-container [data-c="Item"]', { hasText: 'journey-j3-token' }).first();
     await expect(tokenItem.locator('.lp-status-dot')).toBeVisible();
     await tokenItem.locator('button[data-revoke-token]').click();
-    await expect(page.locator('#account-tokens-list-notice')).toContainText('Token revoked.');
+    await expect(page.locator('#account-tokens-list-notice.lp-status-line-ok')).toContainText('Token revoked.');
   });
 
   test('J4 (extended A2): Found (2 seeded contradictions) -> supersede one -> dismiss one -> error -> retry -> clean', async ({ page }) => {
@@ -230,16 +236,16 @@ test.describe.serial('WP-17.9 / WP-17.10 Self-Test User Journeys (J1–J8)', () 
     // Out-of-range featured count
     await page.fill('#setting-home-featured-count', '99');
     await page.click('#btn-save-settings-module');
-    await expect(page.locator('#settings-status-banner .lp-notice-danger')).toContainText('between 0 and 20');
+    await expect(page.locator('#settings-status-banner.lp-notice-danger')).toContainText('between 0 and 20');
 
     // Valid count + unknown slug
     await page.fill('#setting-home-featured-count', '3');
     await page.fill('#setting-home-featured-slugs', 'unknown-nonexistent-slug');
     await page.click('#btn-save-settings-module');
-    await expect(page.locator('#settings-status-banner .lp-notice-danger')).toContainText('Unknown entry slug');
+    await expect(page.locator('#settings-status-banner.lp-notice-danger')).toContainText('Unknown entry slug');
   });
 
-  test('J7: Pick pack, fail AA (Save disabled + Notice), import bad then good JSON, switch scope, reload persistence', async ({ page }) => {
+  test('J7: Pick pack, fail AA (Save disabled + Notice), import bad then good JSON (K2 section-local), switch scope, reload persistence', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.goto('/admin/settings/appearance');
 
@@ -250,26 +256,26 @@ test.describe.serial('WP-17.9 / WP-17.10 Self-Test User Journeys (J1–J8)', () 
     await expect(page.locator('#appearance-aa-error')).toContainText('4.5:1');
     await expect(page.locator('#btn-save-settings-module')).toBeDisabled();
 
-    // Import bad JSON (arbitrary CSS) -> rejected
+    // Import bad JSON (arbitrary CSS) -> rejected in Import section below ActionBar (K2)
     await page.selectOption('#setting-theme-pack', 'warm-ink');
     await expect(page.locator('#btn-save-settings-module')).toBeEnabled();
     await page.click('#btn-export-theme-pack');
     const validJson = await page.locator('#setting-theme-import-json').inputValue();
     await page.fill('#setting-theme-import-json', JSON.stringify({ ...JSON.parse(validJson), customCss: 'body{}' }));
     await page.click('#btn-import-theme-pack');
-    await expect(page.locator('#settings-status-banner .lp-notice-danger')).toContainText('customCss');
+    await expect(page.locator('#appearance-portability-section #appearance-import-feedback.lp-notice-danger')).toContainText('customCss');
 
-    // Import good JSON -> succeeds
+    // Import good JSON -> StatusLine (not green Notice) in Import section below ActionBar (K2)
     await page.fill('#setting-theme-import-json', validJson);
     await page.click('#btn-import-theme-pack');
-    await expect(page.locator('#settings-status-banner .lp-notice-ok')).toContainText('Saved admin appearance');
+    await expect(page.locator('#appearance-portability-section #appearance-import-feedback.lp-status-line-ok')).toContainText('Imported');
 
     // Switch scope to public -> shows contrast table, persists across reload
     await page.selectOption('#setting-appearance-scope', 'public');
     await expect(page.locator('#appearance-public-contrast-table')).toBeVisible();
     await page.selectOption('#setting-theme-pack', 'high-contrast');
     await page.click('#btn-save-settings-module');
-    await expect(page.locator('#settings-status-banner .lp-notice-ok')).toContainText('Saved public appearance');
+    await expect(page.locator('#settings-status-banner.lp-status-line-ok')).toContainText('Saved public appearance');
 
     await page.reload();
     await expect(page.locator('#setting-theme-pack')).toHaveValue('warm-ink');

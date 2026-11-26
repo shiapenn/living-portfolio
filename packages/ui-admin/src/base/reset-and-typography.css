@@ -2,6 +2,10 @@
   box-sizing: border-box;
 }
 
+:root {
+  accent-color: var(--accent);
+}
+
 body {
   margin: 0;
   background-color: var(--surface-page);
@@ -50,7 +54,10 @@ blockquote, .reading-quote {
   hanging-punctuation: first allow-end;
 }
 
-a {
+a,
+.lp-link,
+.lp-notice a,
+.lp-empty-state a {
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: var(--lp-border-role-rule);

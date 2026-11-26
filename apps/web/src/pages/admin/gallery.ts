@@ -23,7 +23,7 @@ import {
   renderText,
   STATUS_VOCABULARY,
 } from '../../primitives/index.js';
-import { renderPageNotice } from '../../components/index.js';
+import { renderCredential, renderPageNotice } from '../../components/index.js';
 import { renderFoundationsTokensSection } from '../../primitives/foundations-gallery.js';
 
 export interface GalleryOptions {
@@ -367,6 +367,13 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
         })}
       </section>
 
+      <section id="gallery-credential-sample" class="lp-gallery-section" data-component="Credential">
+        ${renderSectionHeader({ title: 'Credential (single | list)' })}
+        <div class="lp-stack lp-gap-related">
+          ${renderCredential({ id: 'gallery-cred-single', variant: 'single', value: 'JBSWY3DPEHPK3PXP', groupBy4: true })}
+          ${renderCredential({ id: 'gallery-cred-list', variant: 'list', values: ['a1b2-c3d4', 'e5f6-0718', '9a0b-1c2d', '3e4f-5a6b'] })}
+        </div>
+      </section>
       ${renderFoundationsTokensSection()}
     </div>
   `;

@@ -1,6 +1,6 @@
 import { z } from '@living-portfolio/core';
 import { renderActionBar, renderField, renderFormSection, renderText } from '../../primitives/index.js';
-import { renderStatusLine } from '../../components/index.js';
+import { renderCredential } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 import { ACCOUNT_SCRIPT } from './account-script.js';
 
@@ -20,8 +20,6 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
   status: () => 'Configured',
   render: () => `
     <form id="settings-module-form" data-settings-module="account" class="lp-stack lp-gap-section">
-      ${renderStatusLine({ id: 'settings-status-banner' })}
-
       ${renderFormSection({
         id: 'account-credentials-section',
         title: 'Sign-in credentials',
@@ -54,12 +52,12 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
             help: 'Minimum 12 characters.',
             attributes: 'autocomplete="new-password"',
           })}
-          <div id="account-creds-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
         `,
         actionBarHtml: renderActionBar({
           level: 'item',
           secondary: { id: 'btn-update-credentials', label: 'Save credentials', variant: 'secondary', type: 'button', size: 'sm' },
         }),
+        feedbackHtml: `<div id="account-creds-notice" class="lp-is-hidden" aria-live="assertive" tabindex="-1"></div>`,
       })}
 
       ${renderFormSection({
@@ -69,7 +67,13 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
         fieldsHtml: `
           <div id="account-totp-reenrol-box" class="lp-stack lp-gap-related lp-is-hidden">
             <div id="account-totp-qr"></div>
-            ${renderText({ id: 'account-totp-manual', variant: 'caption', text: '' })}
+            ${renderCredential({
+              id: 'account-totp-manual-cred',
+              variant: 'single',
+              value: '',
+              groupBy4: true,
+              hidden: true,
+            })}
             ${renderField({
               kind: 'input',
               id: 'account-totp-code',
@@ -80,27 +84,33 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
               placeholder: '123456',
             })}
           </div>
-          <div id="account-totp-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
         `,
         actionBarHtml: renderActionBar({
           level: 'item',
           secondary: { id: 'btn-reenrol-totp', label: 'Re-enrol app', variant: 'secondary', type: 'button', size: 'sm' },
           textAction: { id: 'btn-confirm-totp', label: 'Confirm app', variant: 'text', type: 'button', size: 'sm' },
         }),
+        feedbackHtml: `<div id="account-totp-notice" class="lp-is-hidden" aria-live="assertive" tabindex="-1"></div>`,
       })}
 
       ${renderFormSection({
         id: 'account-recovery-section',
         title: 'Recovery codes',
         description: 'Regenerating invalidates all older recovery codes immediately.',
-        fieldsHtml: `
-          ${renderText({ id: 'account-recovery-output', variant: 'caption', text: 'Shown once when generated.' })}
-          <div id="account-recovery-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
-        `,
+        fieldsHtml: renderText({ id: 'account-recovery-hint', variant: 'caption', text: 'Shown once when generated.' }),
         actionBarHtml: renderActionBar({
           level: 'item',
           secondary: { id: 'btn-regen-recovery', label: 'Regenerate codes', variant: 'secondary', type: 'button', size: 'sm' },
         }),
+        feedbackHtml: `
+          ${renderCredential({
+            id: 'account-recovery-output',
+            variant: 'list',
+            values: [],
+            hidden: true,
+          })}
+          <div id="account-recovery-notice" class="lp-is-hidden" aria-live="assertive" tabindex="-1"></div>
+        `,
       })}
 
       ${renderFormSection({
@@ -117,36 +127,39 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
             placeholder: 'ci-deploy',
             help: 'Shown once when created.',
           })}
-          ${renderText({ id: 'account-token-created', variant: 'caption', text: '' })}
-          <div id="account-tokens-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
         `,
         actionBarHtml: renderActionBar({
           level: 'item',
           secondary: { id: 'btn-create-token', label: 'Create token', variant: 'secondary', type: 'button', size: 'sm' },
         }),
+        feedbackHtml: `
+          ${renderCredential({
+            id: 'account-token-created',
+            variant: 'single',
+            value: '',
+            hidden: true,
+          })}
+          <div id="account-tokens-notice" class="lp-is-hidden" aria-live="assertive" tabindex="-1"></div>
+        `,
       })}
 
       ${renderFormSection({
         id: 'account-tokens-list-section',
         title: 'Active tokens',
-        fieldsHtml: `
-          <div id="account-tokens-container" data-c="List" data-variant="plain" class="lp-list lp-list-plain"></div>
-          <div id="account-tokens-list-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
-        `,
+        fieldsHtml: `<div id="account-tokens-container" data-c="List" data-variant="plain" class="lp-list lp-list-plain"></div>`,
+        feedbackHtml: `<div id="account-tokens-list-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>`,
       })}
 
       ${renderFormSection({
         id: 'account-sessions-section',
         title: 'Other sessions',
         description: 'Signs out all other browsers and devices immediately.',
-        fieldsHtml: `
-          ${renderText({ id: 'account-sessions-result', variant: 'caption', text: '' })}
-          <div id="account-sessions-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
-        `,
+        fieldsHtml: renderText({ id: 'account-sessions-result', variant: 'caption', text: '' }),
         actionBarHtml: renderActionBar({
           level: 'item',
           secondary: { id: 'btn-revoke-other-sessions', label: 'End sessions', variant: 'secondary', type: 'button', size: 'sm' },
         }),
+        feedbackHtml: `<div id="account-sessions-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>`,
       })}
     </form>
     ${ACCOUNT_SCRIPT}

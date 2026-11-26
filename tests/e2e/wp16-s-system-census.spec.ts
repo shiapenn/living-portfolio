@@ -204,7 +204,7 @@ async function scanDSysOnPage(
 
         const isGallerySampleBorder =
           Boolean(el.closest('#dcomp-gallery')) &&
-          el.matches('.lp-dialog-panel, .lp-overlay-surface, .lp-notice');
+          el.matches('.lp-dialog-panel, .lp-overlay-surface, .lp-notice, .lp-credential-surface, .lp-credential-cell');
         if (!isTopBarBottom && !isItemSeparator && !isGallerySampleBorder) {
           violations.lineBudget++;
           details.lineBudget.push(`${el.tagName.toLowerCase()}.${el.className} bt=${bt} bb=${bb}`);

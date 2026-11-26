@@ -60,8 +60,6 @@ export async function renderAdminInboxPage(
               href: `/admin/inbox/${encodeURIComponent(id)}`,
               title: String(item.question || 'Untitled question'),
               meta: dateLabel || undefined,
-              statusLabel: due.label,
-              statusTone: due.tone === 'danger' ? 'danger' : due.tone === 'warn' ? 'warn' : due.tone === 'ok' ? 'ok' : 'neutral',
               showChevron: true,
               attributes: `data-inbox-row="${escapeHtml(id)}"`,
             });
