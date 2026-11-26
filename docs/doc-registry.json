@@ -2217,5 +2217,13 @@
     "path": "docs/execution-reports/A185-wp-1714-archetypes-closed-world-audit.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A186",
+    "title": "wp-1715-visual-system-pass",
+    "class": "A",
+    "path": "docs/execution-reports/A186-wp-1715-visual-system-pass.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
