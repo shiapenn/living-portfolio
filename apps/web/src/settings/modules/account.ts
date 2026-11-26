@@ -1,5 +1,5 @@
 import { z } from '@living-portfolio/core';
-import { renderActionBar, renderField, renderFormSection, renderText } from '../../primitives/index.js';
+import { renderActionBar, renderField, renderFormSection, renderSubsection } from '../../primitives/index.js';
 import { renderCredential } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 import { ACCOUNT_SCRIPT } from './account-script.js';
@@ -61,67 +61,87 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
       })}
 
       ${renderFormSection({
-        id: 'account-totp-section',
-        title: 'Authenticator app',
-        consequence: 'Current authenticator stays active until you confirm a new code.',
-        fieldsHtml: '',
-        actionBarHtml: `<div id="account-totp-start-actions">${renderActionBar({
-          level: 'item',
-          secondary: { id: 'btn-reenrol-totp', label: 'Re-enrol app', variant: 'secondary', type: 'button', size: 'sm' },
-        })}</div>`,
-        feedbackHtml: `
-          <div id="account-totp-reenrol-box" class="lp-stack lp-gap-group lp-is-hidden">
-            <div class="lp-stack lp-gap-related">
-              <div id="account-totp-qr"></div>
-              ${renderCredential({
-                id: 'account-totp-manual-cred',
-                variant: 'single',
-                value: '',
-                groupBy4: true,
-                showNotice: false,
-                helperText: "Enter this key if you can't scan the code.",
-                hidden: true,
-              })}
-            </div>
-            ${renderField({
-              kind: 'input',
-              id: 'account-totp-code',
-              name: 'totpCode',
-              label: '6-digit code',
-              inputType: 'text',
-              value: '',
-              placeholder: '123456',
-            })}
-            <div id="account-totp-confirm-actions">
+        id: 'account-security-section',
+        title: 'Security',
+        fieldsHtml: `<div class="lp-stack lp-gap-group">
+          ${renderSubsection({
+            id: 'account-totp-section',
+            title: 'Authenticator app',
+            consequence: 'Current authenticator stays active until you confirm a new code.',
+            bodyHtml: '',
+            actionBarHtml: `<div class="lp-stack lp-gap-related">
+              <div id="account-totp-start-actions">${renderActionBar({
+                level: 'item',
+                secondary: { id: 'btn-reenrol-totp', label: 'Re-enrol app', variant: 'secondary', type: 'button', size: 'sm' },
+              })}</div>
+              <div id="account-totp-reenrol-box" class="lp-stack lp-gap-group lp-is-hidden">
+                <div class="lp-stack lp-gap-related">
+                  <div id="account-totp-qr"></div>
+                  ${renderCredential({
+                    id: 'account-totp-manual-cred',
+                    variant: 'single',
+                    value: '',
+                    groupBy4: true,
+                    showNotice: false,
+                    helperText: "Enter this key if you can't scan the code.",
+                    hidden: true,
+                  })}
+                </div>
+                ${renderField({
+                  kind: 'input',
+                  id: 'account-totp-code',
+                  name: 'totpCode',
+                  label: '6-digit code',
+                  inputType: 'text',
+                  value: '',
+                  placeholder: '123456',
+                })}
+                <div id="account-totp-confirm-actions">
+                  ${renderActionBar({
+                    level: 'item',
+                    secondary: { id: 'btn-confirm-totp', label: 'Confirm app', variant: 'secondary', type: 'button', size: 'sm' },
+                    textAction: { id: 'btn-cancel-totp', label: 'Cancel', variant: 'text', type: 'button', size: 'sm' },
+                  })}
+                </div>
+              </div>
+              <div id="account-totp-notice" class="lp-is-hidden" aria-live="assertive" tabindex="-1"></div>
+            </div>`,
+          })}
+
+          ${renderSubsection({
+            id: 'account-recovery-section',
+            title: 'Recovery codes',
+            consequence: 'Regenerating invalidates all older recovery codes immediately.',
+            bodyHtml: '',
+            actionBarHtml: `<div class="lp-stack lp-gap-related">
               ${renderActionBar({
                 level: 'item',
-                secondary: { id: 'btn-confirm-totp', label: 'Confirm app', variant: 'secondary', type: 'button', size: 'sm' },
-                textAction: { id: 'btn-cancel-totp', label: 'Cancel', variant: 'text', type: 'button', size: 'sm' },
+                secondary: { id: 'btn-regen-recovery', label: 'Regenerate codes', variant: 'secondary', type: 'button', size: 'sm' },
               })}
-            </div>
-          </div>
-          <div id="account-totp-notice" class="lp-is-hidden" aria-live="assertive" tabindex="-1"></div>
-        `,
-      })}
-
-      ${renderFormSection({
-        id: 'account-recovery-section',
-        title: 'Recovery codes',
-        consequence: 'Regenerating invalidates all older recovery codes immediately.',
-        fieldsHtml: '',
-        actionBarHtml: renderActionBar({
-          level: 'item',
-          secondary: { id: 'btn-regen-recovery', label: 'Regenerate codes', variant: 'secondary', type: 'button', size: 'sm' },
-        }),
-        feedbackHtml: `
-          ${renderCredential({
-            id: 'account-recovery-output',
-            variant: 'list',
-            values: [],
-            hidden: true,
+              ${renderCredential({
+                id: 'account-recovery-output',
+                variant: 'list',
+                values: [],
+                hidden: true,
+              })}
+              <div id="account-recovery-notice" class="lp-is-hidden" aria-live="assertive" tabindex="-1"></div>
+            </div>`,
           })}
-          <div id="account-recovery-notice" class="lp-is-hidden" aria-live="assertive" tabindex="-1"></div>
-        `,
+
+          ${renderSubsection({
+            id: 'account-sessions-section',
+            title: 'Other sessions',
+            consequence: 'Signs out all other browsers and devices immediately.',
+            bodyHtml: '',
+            actionBarHtml: `<div class="lp-stack lp-gap-related">
+              ${renderActionBar({
+                level: 'item',
+                secondary: { id: 'btn-revoke-other-sessions', label: 'End sessions', variant: 'secondary', type: 'button', size: 'sm' },
+              })}
+              <div id="account-sessions-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
+            </div>`,
+          })}
+        </div>`,
       })}
 
       ${renderFormSection({
@@ -158,18 +178,6 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
         title: 'Active tokens',
         fieldsHtml: `<div id="account-tokens-container" data-c="List" data-variant="plain" class="lp-list lp-list-plain"></div>`,
         feedbackHtml: `<div id="account-tokens-list-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>`,
-      })}
-
-      ${renderFormSection({
-        id: 'account-sessions-section',
-        title: 'Other sessions',
-        consequence: 'Signs out all other browsers and devices immediately.',
-        fieldsHtml: '',
-        actionBarHtml: renderActionBar({
-          level: 'item',
-          secondary: { id: 'btn-revoke-other-sessions', label: 'End sessions', variant: 'secondary', type: 'button', size: 'sm' },
-        }),
-        feedbackHtml: `<div id="account-sessions-notice" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>`,
       })}
     </form>
     ${ACCOUNT_SCRIPT}

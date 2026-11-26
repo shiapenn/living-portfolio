@@ -123,6 +123,7 @@ export async function renderAdminVenturesPage(
   const content = renderPageTemplate({
     title: 'Ventures',
     description: 'Manage projects shown on your Build page.',
+    archetype: 'list',
     bodyHtml,
   });
 

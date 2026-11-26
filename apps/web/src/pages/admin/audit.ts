@@ -6,8 +6,9 @@ import { renderActionBar, renderItem, renderList, renderText } from '../../primi
 import { renderEmptyState, renderStatusLine } from '../../components/index.js';
 import { INBOX_STRINGS } from '../../strings/admin/inbox.js';
 
-function formatClaimEyebrow(role: 'Older' | 'Newer' | 'Same date', iso?: string): string {
-  const d = iso ? formatAdminDate(iso) : '';
+function formatClaimEyebrowPrefix(role: 'Older' | 'Newer' | 'Same time', iso?: string, includeTime = false): string {
+  if (role === 'Same time') return 'Same time';
+  const d = iso ? (includeTime ? formatAdminDateTime(iso) : formatAdminDate(iso)) : '';
   return d ? `${role} · ${d}` : role;
 }
 
@@ -85,44 +86,42 @@ export async function renderAdminAuditRulesPage(
             const recTimeB = Date.parse(recB);
             const timeA = sameDay && !Number.isNaN(recTimeA) && !Number.isNaN(recTimeB) ? recTimeA : entryTimeA;
             const timeB = sameDay && !Number.isNaN(recTimeA) && !Number.isNaN(recTimeB) ? recTimeB : entryTimeB;
+            const isoA = sameDay && !Number.isNaN(recTimeA) ? recA : dateA;
+            const isoB = sameDay && !Number.isNaN(recTimeB) ? recB : dateB;
+            const dispA = isoA ? (sameDay ? formatAdminDateTime(isoA) : formatAdminDate(isoA)) : '';
+            const dispB = isoB ? (sameDay ? formatAdminDateTime(isoB) : formatAdminDate(isoB)) : '';
             const hasDistinctOrder =
               !sameDay ||
-              (!Number.isNaN(timeA) && !Number.isNaN(timeB) && timeA !== timeB);
-            const aIsNewer = !Number.isNaN(timeA) && !Number.isNaN(timeB) && timeA > timeB;
-            const eyebrowA = formatClaimEyebrow(!hasDistinctOrder ? 'Same date' : aIsNewer ? 'Newer' : 'Older', dateA);
-            const eyebrowB = formatClaimEyebrow(!hasDistinctOrder ? 'Same date' : aIsNewer ? 'Older' : 'Newer', dateB);
+              (!Number.isNaN(timeA) && !Number.isNaN(timeB) && timeA !== timeB && dispA !== dispB);
+            const aIsNewer = hasDistinctOrder && !Number.isNaN(timeA) && !Number.isNaN(timeB) && timeA > timeB;
+            const prefixA = formatClaimEyebrowPrefix(!hasDistinctOrder ? 'Same time' : aIsNewer ? 'Newer' : 'Older', isoA, sameDay);
+            const prefixB = formatClaimEyebrowPrefix(!hasDistinctOrder ? 'Same time' : aIsNewer ? 'Older' : 'Newer', isoB, sameDay);
             const hrefA = c.entry_a_id ? `/admin/entries/${encodeURIComponent(String(c.entry_a_id))}` : '';
             const hrefB = c.entry_b_id ? `/admin/entries/${encodeURIComponent(String(c.entry_b_id))}` : '';
-            const topicTitle = (c.overlap && typeof c.overlap.topic === 'string' && c.overlap.topic.trim())
-              ? c.overlap.topic.trim()
-              : 'Possible contradiction';
             const pct = Math.round((Number(c.confidence) || 0.8) * 100);
-            const linkA = hrefA
-              ? `<a href="${escapeHtml(hrefA)}" class="lp-item-link">From ${escapeHtml(titleA)}</a>`
-              : `<span data-purpose="meta" class="lp-caption">From ${escapeHtml(titleA)}</span>`;
-            const linkB = hrefB
-              ? `<a href="${escapeHtml(hrefB)}" class="lp-item-link">From ${escapeHtml(titleB)}</a>`
-              : `<span data-purpose="meta" class="lp-caption">From ${escapeHtml(titleB)}</span>`;
+            const titleLinkA = hrefA
+              ? `<a href="${escapeHtml(hrefA)}" class="lp-item-claim-link">${escapeHtml(titleA)}</a>`
+              : `<span>${escapeHtml(titleA)}</span>`;
+            const titleLinkB = hrefB
+              ? `<a href="${escapeHtml(hrefB)}" class="lp-item-claim-link">${escapeHtml(titleB)}</a>`
+              : `<span>${escapeHtml(titleB)}</span>`;
             const sameDateNoteHtml = !hasDistinctOrder
               ? `<p data-c="Text" data-variant="description" data-purpose="helper" class="lp-description">Same date. Edit an entry to resolve.</p>`
               : '';
             const claimsHtml = `<div class="lp-item-claims-grid" data-claims-grid="true">
               <div class="lp-item-claim-card" data-claim-side="${!hasDistinctOrder ? 'same' : aIsNewer ? 'newer' : 'older'}">
-                <div data-purpose="meta" class="lp-item-claim-eyebrow">${escapeHtml(eyebrowA)}</div>
+                <div data-purpose="meta" class="lp-item-claim-eyebrow lp-line-clamp-2">${escapeHtml(prefixA)} · ${titleLinkA}</div>
                 <blockquote data-c="Text" data-variant="quote" data-purpose="value" class="lp-item-quote">${escapeHtml(claimA)}</blockquote>
-                <div>${linkA}</div>
               </div>
               <div class="lp-item-claims-vs" aria-hidden="true">vs</div>
               <div class="lp-item-claim-card" data-claim-side="${!hasDistinctOrder ? 'same' : aIsNewer ? 'older' : 'newer'}">
-                <div data-purpose="meta" class="lp-item-claim-eyebrow">${escapeHtml(eyebrowB)}</div>
+                <div data-purpose="meta" class="lp-item-claim-eyebrow lp-line-clamp-2">${escapeHtml(prefixB)} · ${titleLinkB}</div>
                 <blockquote data-c="Text" data-variant="quote" data-purpose="value" class="lp-item-quote">${escapeHtml(claimB)}</blockquote>
-                <div>${linkB}</div>
               </div>
             </div>${sameDateNoteHtml}`;
             return renderItem({
-              title: topicTitle,
+              title: `${pct}% likely conflict`,
               titleVariant: 'content',
-              trailingValue: `${pct}% likely conflict`,
               customBodyHtml: claimsHtml,
               actions: {
                 level: 'item',
@@ -324,6 +323,7 @@ export async function renderAdminAuditRulesPage(
   const content = renderPageTemplate({
     title: INBOX_STRINGS.audit.title,
     description: INBOX_STRINGS.audit.subtitle,
+    archetype: 'review',
     tabsHtml,
     bodyHtml,
   });

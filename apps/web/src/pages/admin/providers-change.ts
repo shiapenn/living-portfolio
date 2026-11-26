@@ -76,6 +76,7 @@ export function renderProviderChangePage(opts: {
   const content = renderPageTemplate({
     title: 'Change answering model',
     description: 'Choose a provider, model, and optional API key.',
+    archetype: 'form',
     backHref: '/admin/settings/providers',
     backLabel: 'Back',
     bodyHtml: flowHtml,

@@ -32,6 +32,12 @@ function formatBookingSlot(preferredTime?: string | null, fallbackIso?: string |
   return `${refDate}, time flexible (UTC)`;
 }
 
+function humaniseText(raw: string): string {
+  const cleaned = String(raw || '').trim().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ');
+  if (!cleaned) return '';
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
 function bookingStatusMeta(statusRaw: string): { label: string; tone: 'ok' | 'warn' | 'neutral' } {
   const status = String(statusRaw || 'pending');
   if (status === 'confirmed') return { label: 'Confirmed', tone: 'ok' };
@@ -55,7 +61,7 @@ export async function renderAdminBookingsPage(
   const listHtml = bookings.length > 0
     ? renderList({
         id: 'bookings-list',
-        variant: 'plain',
+        variant: 'interactive',
         itemsHtml: bookings.slice().reverse().map((b) => {
           const id = String(b.id);
           const detailHref = `/admin/bookings/${encodeURIComponent(id)}`;
@@ -66,11 +72,6 @@ export async function renderAdminBookingsPage(
           const requesterName = String(b.visitor_name || 'Anonymous requester');
           const receivedShort = formatAdminDate(rawCreated).replace(/\s+\d{4}$/, '');
           const receivedText = `Received ${receivedShort}`;
-          const detailRowsHtml = `<div class="lp-stack lp-gap-tight">
-            <div class="lp-item-meta"><span class="lp-item-meta-field lp-item-meta-strong" data-booking-slot="true">${escapeHtml(slotText)}</span></div>
-            <div class="lp-item-meta"><span class="lp-item-meta-field" data-booking-requester="true">${escapeHtml(requesterName)}</span></div>
-            <div class="lp-item-meta"><span class="lp-item-meta-field" data-booking-received="true">${escapeHtml(receivedText)}</span></div>
-          </div>`;
           const actions = status === 'pending'
             ? {
                 level: 'item' as const,
@@ -83,13 +84,14 @@ export async function renderAdminBookingsPage(
                   secondary: { label: 'Cancel', variant: 'secondary' as const, size: 'sm' as const, dataAttrs: { 'booking-id': id, 'booking-status': 'cancelled' } },
                 }
               : undefined;
-          const statusHtml = `<div class="lp-item-status">${renderStatusDot({ label: statusLabel, tone: statusTone })}<a href="${escapeHtml(detailHref)}" class="lp-item-chevron" aria-label="View booking details">${renderIcon('chevron-right', 16)}</a></div>`;
+          const statusHtml = `<div class="lp-item-status">${renderStatusDot({ label: statusLabel, tone: statusTone })}<a href="${escapeHtml(detailHref)}" class="lp-item-row-link" aria-label="View booking details"><span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span></a></div>`;
           const actionsHtml = actions ? `<div data-rel="actions" class="lp-item-actions">${renderActionBar(actions)}</div>` : '';
           return `<div data-c="Item" data-rel="item" class="lp-item${actions ? ' lp-item-has-actions' : ''}" data-booking-row="${escapeHtml(id)}">
             <div class="lp-item-content">
-              <div data-rel="title" class="lp-item-title"><a href="${escapeHtml(detailHref)}" class="lp-item-title-link">${escapeHtml(String(b.topic || 'Consultation request'))}</a></div>
+              <div data-rel="title" data-purpose="title" class="lp-item-title"><span>${escapeHtml(String(b.topic || 'Consultation request'))}</span></div>
               ${statusHtml}
-              <div data-rel="itembody" class="lp-item-segments">${detailRowsHtml}</div>
+              <div data-purpose="meta" class="lp-item-meta"><span class="lp-item-meta-field lp-item-meta-strong" data-booking-slot="true">${escapeHtml(slotText)}</span></div>
+              <div data-purpose="meta" class="lp-item-meta lp-item-meta-inline"><span class="lp-item-meta-field" data-booking-requester="true">${escapeHtml(requesterName)}</span><span aria-hidden="true">·</span><span class="lp-item-meta-field" data-booking-received="true">${escapeHtml(receivedText)}</span></div>
             </div>
             ${actionsHtml}
           </div>`;
@@ -139,6 +141,7 @@ export async function renderAdminBookingsPage(
   const content = renderPageTemplate({
     title: 'Bookings',
     description: 'Confirm or decline consultation requests.',
+    archetype: 'list',
     bodyHtml,
   });
 
@@ -182,15 +185,15 @@ export async function renderAdminBookingDetailPage(
   const facetsObj = booking.facets && typeof booking.facets === 'object' ? booking.facets : {};
   const facetEntries = Object.entries(facetsObj).filter(([, v]) => String(v || '').trim().length > 0);
   const facetsText = facetEntries.length > 0
-    ? facetEntries.map(([k, v]) => `${k}: ${String(v)}`).join(' · ')
+    ? facetEntries.map(([k, v]) => `${humaniseText(k)}: ${humaniseText(String(v))}`).join(' · ')
     : 'None provided';
   const notesText = booking.notes ? String(booking.notes) : 'None provided';
   const history: Array<{ status: string; at: string }> = Array.isArray(booking.status_history) && booking.status_history.length > 0
     ? booking.status_history
     : [{ status, at: String(booking.created_at || new Date().toISOString()) }];
 
-  const requestListHtml = renderList({
-    id: 'booking-detail-request',
+  const detailListHtml = renderList({
+    id: 'booking-detail-list',
     variant: 'definition',
     definitionRows: [
       { label: 'Requested slot', value: slotText },
@@ -201,22 +204,10 @@ export async function renderAdminBookingDetailPage(
           ? `<a href="${escapeHtml(mailtoHref)}" class="lp-item-link">${escapeHtml(contact)}</a>`
           : escapeHtml(contact || 'Not provided'),
       },
+      { label: 'Context', value: facetsText },
+      { label: 'Notes', value: notesText },
+      { label: 'Received', value: receivedText },
     ],
-  });
-
-  const contextListHtml = renderList({
-    id: 'booking-detail-context',
-    variant: 'definition',
-    definitionRows: [
-      { label: 'Context facets', value: facetsText },
-      { label: 'Background notes', value: notesText },
-    ],
-  });
-
-  const metaListHtml = renderList({
-    id: 'booking-detail-meta',
-    variant: 'definition',
-    definitionRows: [{ label: 'Received', value: receivedText }],
   });
 
   const historyHtml = renderList({
@@ -244,29 +235,23 @@ export async function renderAdminBookingDetailPage(
         })
       : undefined;
 
+  const decisionBarHtml = hasStatusActions && actionBar
+    ? `<div id="booking-decision-bar" class="lp-stack lp-gap-related">
+        <div class="lp-action-bar-group">
+          <p data-c="Text" data-purpose="consequence" class="lp-description">Status changes here only. The visitor isn't notified.</p>
+          ${actionBar}
+        </div>
+        <div id="booking-detail-feedback" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
+      </div>`
+    : `<div id="booking-detail-feedback" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>`;
+
   const bodyHtml = `
     <div id="booking-detail-page" data-booking-detail-id="${escapeHtml(id)}" data-booking-status="${escapeHtml(status)}" class="lp-stack lp-gap-section">
-      ${renderFormSection({
-        id: 'booking-detail-section',
-        title: 'Request',
-        fieldsHtml: requestListHtml,
-        consequence: hasStatusActions ? "Status changes here only. The visitor isn't notified." : undefined,
-        actionBarHtml: actionBar,
-        feedbackHtml: `<div id="booking-detail-feedback" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>`,
-      })}
-      ${renderFormSection({
-        id: 'booking-context-section',
-        title: 'Context',
-        fieldsHtml: contextListHtml,
-      })}
-      ${renderFormSection({
-        id: 'booking-meta-section',
-        title: 'Meta',
-        fieldsHtml: metaListHtml,
-      })}
+      ${decisionBarHtml}
+      ${detailListHtml}
       ${renderFormSection({
         id: 'booking-history-section',
-        title: 'Status history',
+        title: 'History',
         fieldsHtml: historyHtml,
       })}
     </div>
@@ -300,6 +285,7 @@ export async function renderAdminBookingDetailPage(
   const content = renderPageTemplate({
     backHref: '/admin/bookings',
     title: topic,
+    archetype: 'detail',
     actionsHtml: renderStatusDot({ label: statusLabel, tone: statusTone }),
     bodyHtml,
   });

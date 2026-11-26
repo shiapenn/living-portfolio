@@ -13,6 +13,7 @@
   flex-wrap: nowrap;
   width: 100%;
   gap: var(--lp-space-stack-label-to-control);
+  padding: var(--lp-space-proximity-1);
   overflow-x: auto;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
@@ -44,6 +45,7 @@
   background: transparent;
   border: 0;
   border-bottom: 0;
+  border-radius: var(--lp-radius-r1);
   text-decoration: none;
   cursor: pointer;
 }

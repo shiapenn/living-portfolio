@@ -379,6 +379,7 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
   const content = renderPageTemplate({
     title: 'Component Gallery',
     description: 'Contract document for D-COMP primitives and interactive states.',
+    archetype: 'dashboard',
     bodyHtml,
   });
 

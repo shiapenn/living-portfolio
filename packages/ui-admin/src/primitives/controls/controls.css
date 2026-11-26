@@ -56,12 +56,17 @@
 .lp-input:focus-visible,
 .lp-chip:focus-visible,
 .lp-switch:focus-visible,
+.lp-tab:focus-visible,
+.lp-item:focus-visible,
+.lp-item-link:focus-visible,
+.lp-back-link:focus-visible,
 .lp-btn.is-focus-visible,
 .lp-icon-btn.is-focus-visible,
 .lp-input.is-focus-visible,
 .lp-chip.is-focus-visible {
   outline: var(--lp-border-focus) solid var(--focus-ring);
   outline-offset: var(--lp-border-focus);
+  box-shadow: none;
 }
 
 .lp-btn:active:not(:disabled),
@@ -86,18 +91,32 @@
 
 .lp-btn-primary:hover:not(:disabled),
 .lp-btn-primary.is-hover {
-  opacity: 0.92;
+  background: var(--lp-color-accent-hover);
+  border-color: var(--lp-color-accent-hover);
+  opacity: 1;
+}
+
+.lp-btn-primary:active:not(:disabled),
+.lp-btn-primary.is-active {
+  background: var(--lp-color-accent-active);
+  border-color: var(--lp-color-accent-active);
+  opacity: 1;
 }
 
 .lp-btn-secondary {
-  background: var(--surface-raised);
+  background: var(--surface-l0);
   border-color: var(--border-control);
   color: var(--text);
 }
 
 .lp-btn-secondary:hover:not(:disabled),
 .lp-btn-secondary.is-hover {
-  background: var(--role-neutral-bg);
+  background: var(--surface-control-hover);
+}
+
+.lp-btn-secondary:active:not(:disabled),
+.lp-btn-secondary.is-active {
+  background: var(--surface-control-active);
 }
 
 .lp-btn-danger {
@@ -125,7 +144,14 @@
   background: var(--role-neutral-bg);
 }
 
-.lp-btn:disabled:not([aria-busy="true"]),
+.lp-btn:disabled:not([aria-busy="true"]) {
+  background: var(--lp-color-surface-disabled);
+  border-color: var(--border-subtle);
+  color: var(--text-3);
+  opacity: 1;
+  cursor: not-allowed;
+}
+
 .lp-icon-btn:disabled:not([aria-busy="true"]),
 .lp-switch:disabled,
 .lp-input:disabled,

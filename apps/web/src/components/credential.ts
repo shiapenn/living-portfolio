@@ -1,5 +1,5 @@
 import { escapeHtml } from '../lib/html.js';
-import { renderButton } from '../primitives/index.js';
+import { renderButton, renderIcon } from '../primitives/index.js';
 
 export type CredentialVariant = 'single' | 'list';
 
@@ -56,15 +56,17 @@ export function renderCredential(props: CredentialProps): string {
         .join('')}</div>`
     : `<div class="lp-credential-single" data-credential-value>${escapeHtml(displaySingle)}</div>`;
 
-  const leadHtml = showNotice
-    ? `<div data-c="Notice" class="lp-notice lp-notice-warn">${escapeHtml(warning)}</div>`
-    : props.helperText
-      ? `<p data-c="Text" data-variant="caption" class="lp-field-help">${escapeHtml(props.helperText)}</p>`
-      : '';
+  const headerHtml = showNotice
+    ? `<div class="lp-credential-header"><span class="lp-credential-header-icon" aria-hidden="true">${renderIcon('alert-triangle', 16)}</span><span data-purpose="helper">${escapeHtml(warning)}</span></div>`
+    : '';
+  const leadHtml = !showNotice && props.helperText
+    ? `<p data-c="Text" data-variant="caption" data-purpose="helper" class="lp-field-help">${escapeHtml(props.helperText)}</p>`
+    : '';
 
   return `<div id="${escapeHtml(props.id)}" data-c="Credential" data-variant="${props.variant}" class="${escapeHtml(classes)}" data-copy-value="${escapeHtml(copyPayload)}">
   ${leadHtml}
   <div class="lp-credential-surface">
+    ${headerHtml}
     ${surfaceInner}
     <div class="lp-credential-footer">
       ${renderButton({

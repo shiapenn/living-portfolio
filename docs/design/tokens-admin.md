@@ -6,7 +6,7 @@
 | Naming | `--lp-<category>-<role>[-<variant>][-<state>]` |
 | Version | `3.0.0` |
 | Primitive | 194 |
-| Semantic (per theme) | 47 |
+| Semantic (per theme) | 50 |
 | Component | 129 |
 | Responsive | 2 |
 
@@ -37,7 +37,7 @@
 | `label-to-control` | `--lp-space-stack-label-to-control` | `8px` |
 | `field-to-field` | `--lp-space-stack-field-to-field` | `16px` |
 | `item-to-item` | `--lp-space-stack-item-to-item` | `0px` |
-| `item-body-to-actionbar` | `--lp-space-stack-item-body-to-actionbar` | `24px` |
+| `item-body-to-actionbar` | `--lp-space-stack-item-body-to-actionbar` | `16px` |
 | `section-to-section` | `--lp-space-stack-section-to-section` | `40px` |
 | `action-bar-after-section` | `--lp-space-stack-action-bar-after-section` | `40px` |
 | `action-bar-after-control` | `--lp-space-stack-action-bar-after-control` | `24px` |
@@ -68,6 +68,7 @@
 | `--lp-color-surface-control-hover` | `#E1E6EA` | `#273847` |
 | `--lp-color-surface-control-active` | `#D2D9DF` | `#314557` |
 | `--lp-color-surface-control-selected` | `#EEF1FF` | `#1A244D` |
+| `--lp-color-surface-disabled` | `#EEF1F3` | `#16232D` |
 | `--lp-color-surface-scrim` | `rgba(15, 26, 34, 0.45)` | `rgba(0, 0, 0, 0.6)` |
 | `--lp-color-text-1` | `#14202A` | `#E6ECEF` |
 | `--lp-color-text-2` | `#4B5A66` | `#A3B2BD` |
@@ -77,6 +78,8 @@
 | `--lp-color-border-control` | `#6B7B88` | `#7E8F9C` |
 | `--lp-color-border-overlay` | `#CBD3D8` | `#334656` |
 | `--lp-color-accent-default` | `#3A4FD0` | `#9AA8FF` |
+| `--lp-color-accent-hover` | `#1E329E` | `#C5CEFF` |
+| `--lp-color-accent-active` | `#1A244D` | `#EEF1FF` |
 | `--lp-color-accent-focus-ring` | `#3A4FD0` | `#9AA8FF` |
 | `--lp-color-role-action-fg` | `#1E329E` | `#C5CEFF` |
 | `--lp-color-role-action-bg` | `#EEF1FF` | `#1A244D` |
@@ -135,7 +138,7 @@
 | `--lp-space-stack-dialog-title-to-body` | `16px` |
 | `--lp-space-stack-subsection-to-subsection` | `24px` |
 | `--lp-space-stack-header-to-content` | `24px` |
-| `--lp-space-stack-item-body-to-actionbar` | `24px` |
+| `--lp-space-stack-item-body-to-actionbar` | `16px` |
 | `--lp-space-stack-action-bar-after-control` | `24px` |
 | `--lp-space-stack-dialog-body-to-actionbar` | `24px` |
 | `--lp-space-stack-section-to-section` | `40px` |

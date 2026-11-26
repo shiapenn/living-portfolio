@@ -298,4 +298,6 @@
 | `L060` | Admin Rhythm, Type & Mobile Input Standard | `active` | [rhythm-type.md](design/rhythm-type.md) | — |
 | `L061` | Admin Screen Brief Gate (Part C) | `active` | [screen-brief.md](design/screen-brief.md) | — |
 | `L062` | Admin Design Audit Protocol (D8) | `active` | [audit-protocol.md](design/audit-protocol.md) | — |
+| `L063` | Admin Page Archetypes (D1) | `active` | [archetypes.md](design/archetypes.md) | — |
+| `L064` | Admin Interaction Conventions (D5) | `active` | [interaction.md](design/interaction.md) | — |
 

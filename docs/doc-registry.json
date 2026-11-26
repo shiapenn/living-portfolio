@@ -2193,5 +2193,21 @@
     "path": "docs/execution-reports/A184-wp-1713-spacing-purposes-audit.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L063",
+    "title": "Admin Page Archetypes (D1)",
+    "class": "L",
+    "path": "docs/design/archetypes.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L064",
+    "title": "Admin Interaction Conventions (D5)",
+    "class": "L",
+    "path": "docs/design/interaction.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

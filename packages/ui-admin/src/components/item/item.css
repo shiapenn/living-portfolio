@@ -4,20 +4,34 @@
 }
 
 .lp-item {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  column-gap: var(--lp-space-proximity-3);
-  row-gap: var(--lp-space-proximity-1);
-  align-items: start;
-  padding: var(--lp-space-inset-section) 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-proximity-1);
+  padding: var(--lp-space-proximity-3) 0;
   border-bottom: var(--lp-border-hairline) solid var(--border-subtle);
+  border-radius: var(--lp-radius-r1);
   color: var(--text);
   text-decoration: none;
   min-width: 0;
 }
 
-a.lp-item:hover {
-  background: var(--surface-subtle);
+.lp-item-content {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-proximity-1);
+}
+
+a.lp-item:hover,
+.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):hover {
+  background: var(--surface-control-hover);
+}
+
+a.lp-item:active,
+.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):active {
+  background: var(--surface-control-active);
 }
 
 .lp-item.is-selected {
@@ -25,9 +39,28 @@ a.lp-item:hover {
   border-radius: var(--lp-radius-r2);
 }
 
+.lp-item.lp-item-has-actions {
+  gap: var(--lp-space-stack-item-body-to-actionbar);
+}
+
+.lp-item-row-link {
+  position: static;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-2);
+  text-decoration: none;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.lp-item-row-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: var(--lp-z-base);
+}
+
 .lp-item-title {
-  grid-column: 1 / -1;
-  grid-row: 1;
   min-width: 0;
   width: 100%;
   display: flex;
@@ -57,9 +90,21 @@ a.lp-item:hover {
   overflow: visible;
 }
 
+.lp-item:has(.lp-item-chevron-only) {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: var(--lp-space-proximity-3);
+  row-gap: var(--lp-space-proximity-1);
+  align-items: start;
+}
+
 .lp-item:has(.lp-item-chevron-only) .lp-item-title {
   grid-column: 1;
   grid-row: 1;
+}
+
+.lp-item:has(.lp-item-chevron-only) > :not(.lp-item-title):not(.lp-item-chevron-only) {
+  grid-column: 1 / -1;
 }
 
 .lp-item-status.lp-item-chevron-only {
@@ -87,11 +132,8 @@ a.lp-item:hover {
 }
 
 .lp-item-status {
-  grid-column: 1 / -1;
-  grid-row: 2;
   width: 100%;
   min-width: 0;
-  justify-self: stretch;
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -112,8 +154,6 @@ a.lp-item:hover {
 }
 
 .lp-item-subtitle {
-  grid-column: 1 / -1;
-  grid-row: 3;
   font-size: var(--lp-font-size-13);
   font-weight: var(--lp-font-weight-400);
   line-height: var(--lp-font-line-20);
@@ -123,8 +163,6 @@ a.lp-item:hover {
 
 .lp-item-body,
 .lp-item-segments {
-  grid-column: 1 / -1;
-  grid-row: 4;
   min-width: 0;
 }
 
@@ -170,8 +208,6 @@ a.lp-item:hover {
 }
 
 .lp-item-meta {
-  grid-column: 1 / -1;
-  grid-row: 5;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -181,6 +217,10 @@ a.lp-item:hover {
   line-height: var(--lp-font-line-20);
   color: var(--text-2);
   min-width: 0;
+}
+
+.lp-item-meta-inline {
+  column-gap: var(--lp-space-proximity-1);
 }
 
 .lp-item-meta-field {
@@ -221,6 +261,16 @@ a.lp-item:hover {
   color: var(--text-2);
 }
 
+.lp-item-claim-link {
+  color: var(--accent);
+  text-decoration: none;
+  border-radius: var(--lp-radius-r1);
+}
+
+.lp-item-claim-link:hover {
+  text-decoration: underline;
+}
+
 .lp-item-claims-vs {
   font-size: var(--lp-font-size-13);
   line-height: var(--lp-font-line-20);
@@ -241,8 +291,8 @@ a.lp-item:hover {
 }
 
 .lp-item-actions {
-  grid-column: 1 / -1;
-  grid-row: 6;
+  position: relative;
+  z-index: var(--lp-z-raised);
 }
 
 /* List definition variant (WP-17.13 D5): label above value <640px, 2-col >=640px, no per-row dividers */
@@ -289,6 +339,15 @@ a.lp-item:hover {
 }
 
 @container (min-width: 480px) {
+  .lp-item:not(.lp-item-has-actions),
+  .lp-item-content {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    column-gap: var(--lp-space-proximity-3);
+    row-gap: var(--lp-space-proximity-1);
+    align-items: start;
+  }
+
   .lp-item-title {
     grid-column: 1;
     grid-row: 1;
@@ -303,24 +362,16 @@ a.lp-item:hover {
     align-self: start;
   }
 
-  .lp-item-chevron {
+  .lp-item-chevron,
+  .lp-item-row-link {
     margin-left: 0;
   }
 
-  .lp-item-subtitle {
-    grid-row: 2;
-  }
-
+  .lp-item-subtitle,
   .lp-item-body,
-  .lp-item-segments {
-    grid-row: 3;
-  }
-
-  .lp-item-meta {
-    grid-row: 4;
-  }
-
+  .lp-item-segments,
+  .lp-item-meta,
   .lp-item-actions {
-    grid-row: 5;
+    grid-column: 1 / -1;
   }
 }

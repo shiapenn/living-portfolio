@@ -45,22 +45,24 @@ test.describe('WP-17.12 Hierarchy & Workflow Checks (K6–K13)', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/admin/settings/account');
 
-    // Recovery codes: Copy all inside surface + Notice->surface gap = S3 (16px)
+    // Recovery codes: D7 single-container Credential with internal .lp-credential-header & Copy inside surface (no separate Notice)
     await page.click('#btn-regen-recovery');
     await expect(page.locator('#account-recovery-output[data-c="Credential"]')).toBeVisible();
     const recCheck = await page.evaluate(() => {
       const root = document.getElementById('account-recovery-output')!;
-      const notice = root.querySelector('.lp-notice')!;
+      const noticeCount = root.querySelectorAll('.lp-notice').length;
       const surface = root.querySelector('.lp-credential-surface')!;
+      const header = surface.querySelector('.lp-credential-header');
       const copyBtn = document.getElementById('account-recovery-output-copy-btn')!;
-      const gapNoticeToSurface = Math.round(surface.getBoundingClientRect().top - notice.getBoundingClientRect().bottom);
       return {
+        noticeCount,
+        hasHeaderInsideSurface: Boolean(header),
         copyInsideSurface: Boolean(copyBtn.closest('.lp-credential-surface') === surface),
-        gapNoticeToSurface,
       };
     });
+    expect(recCheck.noticeCount).toBe(0);
+    expect(recCheck.hasHeaderInsideSurface).toBe(true);
     expect(recCheck.copyInsideSurface).toBe(true);
-    expect(Math.abs(recCheck.gapNoticeToSurface - 16)).toBeLessThanOrEqual(1);
 
     // TOTP manual key: NO Notice, helper "Enter this key if you can't scan the code.", Copy inside surface, S4 (24px) to 6-digit field
     await page.click('#btn-reenrol-totp');
@@ -261,7 +263,7 @@ test.describe('WP-17.12 Hierarchy & Workflow Checks (K6–K13)', () => {
       requester: (el.querySelector('[data-booking-requester]')?.textContent || '').trim(),
       received: (el.querySelector('[data-booking-received]')?.textContent || '').trim(),
       hasEmailInList: (el.textContent || '').includes('jordan@example.com'),
-      detailHref: el.querySelector('a.lp-item-chevron')?.getAttribute('href') || '',
+      detailHref: el.querySelector('a.lp-item-row-link')?.getAttribute('href') || '',
     }));
     expect(listCheck.slot).toMatch(/\d{1,2}\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)/);
     expect(listCheck.slot).toMatch(/UTC|GMT|your time/i);
@@ -273,19 +275,15 @@ test.describe('WP-17.12 Hierarchy & Workflow Checks (K6–K13)', () => {
     await page.goto(listCheck.detailHref);
     await expect(page.locator('#booking-detail-page')).toBeVisible();
     const detailCheck = await page.evaluate(() => ({
-      slot: (document.querySelector('#booking-detail-request')?.textContent || '').trim(),
-      requester: (document.querySelector('#booking-detail-request')?.textContent || '').trim(),
-      emailHref: document.querySelector('#booking-detail-request a[href^="mailto:"]')?.getAttribute('href') || '',
-      facets: (document.querySelector('#booking-detail-context')?.textContent || '').trim(),
-      notes: (document.querySelector('#booking-detail-context')?.textContent || '').trim(),
-      received: (document.querySelector('#booking-detail-meta')?.textContent || '').trim(),
+      listText: (document.querySelector('#booking-detail-list')?.textContent || '').trim(),
+      emailHref: document.querySelector('#booking-detail-list a[href^="mailto:"]')?.getAttribute('href') || '',
       historyCount: document.querySelectorAll('#booking-status-history [data-c="Item"]').length,
-      visitorHelper: (document.querySelector('#booking-detail-section [data-purpose="consequence"]')?.textContent || '').trim(),
+      visitorHelper: (document.querySelector('#booking-decision-bar [data-purpose="consequence"]')?.textContent || '').trim(),
     }));
     expect(detailCheck.emailHref).toContain('mailto:jordan%40example.com');
     expect(detailCheck.emailHref).toContain('Re%3A%20K10%20Architecture%20Review');
-    expect(detailCheck.facets).toContain('scale: high_volume');
-    expect(detailCheck.notes).toContain('Evaluating Postgres advisory locks.');
+    expect(detailCheck.listText).toContain('Scale: High volume');
+    expect(detailCheck.listText).toContain('Evaluating Postgres advisory locks.');
     expect(detailCheck.historyCount).toBeGreaterThanOrEqual(1);
     expect(detailCheck.visitorHelper).toMatch(/visitor isn't notified/i);
     console.log('=== WP-17.12 K10 PROOF ===', JSON.stringify({ listCheck, detailCheck }));

@@ -55,6 +55,8 @@ for (const d of BUILTIN_DESTINATIONS) {
   registerAdminDestination(d);
 }
 
+export type PageArchetype = 'form' | 'list' | 'detail' | 'review' | 'dashboard';
+
 export interface PageTemplateOptions {
   title: string;
   description?: string;
@@ -65,12 +67,14 @@ export interface PageTemplateOptions {
   actionsHtml?: string;
   className?: string;
   template?: 'standard' | 'narrow' | 'editor';
+  archetype?: PageArchetype;
 }
 
-/** Unified page template (D-SYS #4): standard (720px), narrow (400px), editor. */
+/** Unified page template (D-SYS #4, WP-17.14 D1): standard (720px), narrow (400px), editor. */
 export function renderPageTemplate(opts: PageTemplateOptions): string {
   const tmplClass = opts.template === 'narrow' ? 'lp-page-column-narrow' : '';
   const cls = ['lp-page-column', tmplClass, opts.className].filter(Boolean).join(' ');
+  const archAttr = opts.archetype ? ` data-archetype="${escapeHtml(opts.archetype)}"` : '';
   const headerHtml = renderPageHeader({
     title: opts.title,
     description: opts.description,
@@ -83,7 +87,7 @@ export function renderPageTemplate(opts: PageTemplateOptions): string {
     ? `<div class="lp-stack lp-gap-related">${opts.tabsHtml}<div class="lp-page-sections">${opts.bodyHtml}</div></div>`
     : `<div class="lp-page-sections">${opts.bodyHtml}</div>`;
 
-  return `<div class="${escapeHtml(cls)}">
+  return `<div class="${escapeHtml(cls)}"${archAttr}>
   ${headerHtml}
   ${bodyWithTabs}
 </div>`;

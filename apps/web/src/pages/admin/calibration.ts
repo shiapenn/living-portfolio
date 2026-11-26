@@ -131,6 +131,7 @@ export async function renderAdminCalibrationPage(
 
   const content = renderPageTemplate({
     title: 'Calibration',
+    archetype: 'form',
     bodyHtml,
   });
 

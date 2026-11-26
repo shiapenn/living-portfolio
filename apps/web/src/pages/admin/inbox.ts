@@ -153,6 +153,7 @@ export async function renderAdminInboxPage(
   const content = renderPageTemplate({
     title: INBOX_STRINGS.inbox.title,
     description: INBOX_STRINGS.inbox.subtitle,
+    archetype: selectedItem ? 'detail' : 'list',
     backHref: selectedItem ? '/admin/inbox' : undefined,
     backLabel: selectedItem ? INBOX_STRINGS.inbox.detailBack : undefined,
     tabsHtml,

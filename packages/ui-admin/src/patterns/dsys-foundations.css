@@ -221,7 +221,6 @@
 .skip-link,
 .lp-admin-header,
 .lp-chip,
-.lp-choice,
 .lp-section-block,
 .lp-gallery-section,
 .lp-editor-toolbar,
@@ -230,8 +229,7 @@
 .lp-overlay-footer {
   border: 0;
 }
-.lp-chip,
-.lp-choice {
+.lp-chip {
   background: var(--surface-control);
 }
 .lp-choice:has(input:checked),
