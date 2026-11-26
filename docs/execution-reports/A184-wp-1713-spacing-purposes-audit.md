@@ -6,7 +6,7 @@
 | Date | 2026-11-26 |
 | Author | A (Implementer) |
 | Task ID | `WP-17.13` |
-| Evidence SHA | `603df00c2dcad779e0d3ac5133cd68c31e718e44` |
+| Evidence SHA | `5ed0f7545c804c3c196664260389cdf8122d56ab` |
 | CI run | pending PR #282 CI |
 
 ---
@@ -115,6 +115,7 @@
 - `tests/e2e/census-helpers.ts`
 - `tests/e2e/wp16-c-component-census.spec.ts`
 - `tests/e2e/wp16-g-census.spec.ts`
+- `tests/e2e/wp16-r-style-census.spec.ts`
 - `tests/e2e/wp17-12-hierarchy-workflow-census.spec.ts`
 - `tests/e2e/wp17-13-design-audit.spec.ts`
 - `tests/e2e/wp17-contact-sheets.spec.ts`
@@ -138,8 +139,8 @@ $ pnpm receipt:check A184
 === Validating Receipt A184-wp-1713-spacing-purposes-audit.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA '603df00c2dcad779e0d3ac5133cd68c31e718e44' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff 4a78c71f6db9ce98962be6c0d1af412503e66b71..603df00c2dcad779e0d3ac5133cd68c31e718e44 (75 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA '5ed0f7545c804c3c196664260389cdf8122d56ab' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 4a78c71f6db9ce98962be6c0d1af412503e66b71..5ed0f7545c804c3c196664260389cdf8122d56ab (76 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A184-wp-1713-spacing-purposes-audit.md.
 Found 0 section(s) marked verbatim.
 
