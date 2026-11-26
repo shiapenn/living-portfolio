@@ -665,6 +665,80 @@
         "registeredComponents": 22,
         "adrCount": 25
       }
+    },
+    {
+      "recordedAt": "2026-11-26",
+      "tokens": {
+        "core": {
+          "primitive": 34,
+          "semanticLight": 0,
+          "semanticDark": 0,
+          "component": 0,
+          "aliases": 0
+        },
+        "admin": {
+          "primitive": 205,
+          "semanticLight": 66,
+          "semanticDark": 66,
+          "component": 135,
+          "aliases": 47
+        },
+        "public": {
+          "primitive": 94,
+          "semanticLight": 19,
+          "semanticDark": 19,
+          "component": 32,
+          "aliases": 2
+        }
+      },
+      "budgets": {
+        "publicCssGzipBytes": 4129,
+        "publicFontsRawBytes": 73284,
+        "publicFontFaces": 2,
+        "adminEntryCssGzipBytes": 22233,
+        "editorJsGzipBytes": 139207
+      },
+      "governance": {
+        "registeredComponents": 22,
+        "adrCount": 25
+      }
+    },
+    {
+      "recordedAt": "2026-11-26",
+      "tokens": {
+        "core": {
+          "primitive": 34,
+          "semanticLight": 0,
+          "semanticDark": 0,
+          "component": 0,
+          "aliases": 0
+        },
+        "admin": {
+          "primitive": 205,
+          "semanticLight": 66,
+          "semanticDark": 66,
+          "component": 135,
+          "aliases": 47
+        },
+        "public": {
+          "primitive": 94,
+          "semanticLight": 19,
+          "semanticDark": 19,
+          "component": 32,
+          "aliases": 2
+        }
+      },
+      "budgets": {
+        "publicCssGzipBytes": 4129,
+        "publicFontsRawBytes": 73284,
+        "publicFontFaces": 2,
+        "adminEntryCssGzipBytes": 22229,
+        "editorJsGzipBytes": 139207
+      },
+      "governance": {
+        "registeredComponents": 22,
+        "adrCount": 25
+      }
     }
   ]
 }

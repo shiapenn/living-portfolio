@@ -38,7 +38,7 @@
   border-radius: var(--lp-radius-overlay) var(--lp-radius-overlay) 0 0;
 }
 
-@media (min-width: 640px) {
+@media (min-width: __LP_BP_SM__) {
   .lp-overlay-actions .lp-overlay-backdrop {
     background: transparent;
   }
@@ -79,7 +79,7 @@
 .lp-overlay-title {
   font-size: var(--lp-font-size-16);
   line-height: var(--lp-font-line-24);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   margin: 0;
   color: var(--text);
 }

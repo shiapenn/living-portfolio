@@ -60,7 +60,7 @@
   overflow-x: auto;
 }
 
-@media (max-width: 767px) {
+@media (max-width: __LP_BP_MD_MAX__) {
   .wizard-step-labels {
     display: none !important;
   }
@@ -76,7 +76,7 @@
     bottom: 0;
     z-index: var(--lp-z-sticky);
     transform: translateX(-100%);
-    transition: transform 0.18s ease;
+    transition: transform var(--lp-motion-duration-base) var(--lp-motion-easing-standard);
     box-shadow: var(--lp-elevation-e2);
   }
 
@@ -118,9 +118,9 @@
 
 .lp-dashboard-explain-grid dt {
   font-size: var(--lp-font-size-13);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--lp-font-letter-wide);
   color: var(--text-muted);
   margin: 0;
 }
@@ -141,7 +141,7 @@
 .lp-dashboard-card-title {
   margin: 0;
   font-size: var(--lp-font-size-16);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
 }
 
 .lp-dashboard-card-header .lp-dashboard-card-title {
@@ -213,7 +213,7 @@
   margin: 0;
 }
 
-@media (min-width: 640px) {
+@media (min-width: __LP_BP_SM__) {
   .lp-entries-toolbar {
     flex-direction: row;
     flex-wrap: wrap;
@@ -271,7 +271,7 @@
 }
 
 .lp-entries-row-title {
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   color: var(--text);
   text-decoration: none;
   word-break: break-word;
@@ -340,7 +340,7 @@
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-24);
   line-height: var(--lp-font-line-32);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
 }
 
 .lp-page-subtitle {
@@ -354,7 +354,7 @@
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-16);
   line-height: var(--lp-font-line-24);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
 }
 
 .lp-section-grid {

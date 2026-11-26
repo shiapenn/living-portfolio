@@ -90,7 +90,7 @@
   gap: var(--lp-space-stack-field-to-field);
 }
 
-@media (min-width: 768px) {
+@media (min-width: __LP_BP_MD__) {
   .lp-editor-writing-col {
     padding: var(--lp-space-inset-page-y) var(--lp-space-inset-dialog) var(--lp-space-inset-stage-y);
   }
@@ -105,8 +105,8 @@
   color: var(--text);
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-24);
-  font-weight: 600;
-  line-height: 1.3;
+  font-weight: var(--lp-font-weight-600);
+  line-height: var(--lp-font-line-20);
   padding: 0;
   outline: none;
 }
@@ -139,7 +139,7 @@
 .lp-tiptap-prose {
   font-family: var(--lp-font-family-reading);
   font-size: var(--lp-font-size-16);
-  line-height: 1.7;
+  line-height: var(--lp-font-line-reading);
   color: var(--text);
   outline: none;
   min-height: var(--lp-size-editor-canvas-min-h);
@@ -159,7 +159,7 @@
 .lp-editor-source-textarea {
   font-family: var(--lp-font-family-code);
   font-size: var(--lp-font-size-14);
-  line-height: 1.6;
+  line-height: var(--lp-font-line-reading);
   min-height: var(--lp-size-editor-canvas-min-h);
 }
 
@@ -189,7 +189,7 @@
   gap: var(--lp-space-stack-field-to-field);
   transition: width var(--lp-motion-duration-slow) var(--lp-motion-easing-out), flex-basis var(--lp-motion-duration-slow) var(--lp-motion-easing-out);
 }
-@media (min-width: 768px) {
+@media (min-width: __LP_BP_MD__) {
   .lp-editor-drawer {
     position: relative;
     top: auto;

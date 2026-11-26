@@ -11,7 +11,7 @@
   width: 100%;
 }
 
-@media (min-width: 640px) {
+@media (min-width: __LP_BP_SM__) {
   .lp-action-bar {
     align-items: flex-start;
   }

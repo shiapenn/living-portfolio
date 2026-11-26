@@ -12,7 +12,7 @@
 .lp-field-label {
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   color: var(--text);
 }
 
@@ -23,7 +23,7 @@
   padding: 0 var(--lp-space-inset-item-x);
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14);
-  font-weight: 400;
+  font-weight: var(--lp-font-weight-400);
   color: var(--text);
   background: var(--surface-input);
   border: var(--lp-border-hairline) solid var(--lp-color-border-control);
@@ -107,7 +107,7 @@ input[type="date"].lp-input {
 .lp-field-error {
   margin: 0;
   font-size: var(--lp-font-size-13);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   color: var(--lp-color-role-danger-fg);
 }
 

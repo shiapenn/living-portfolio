@@ -9,7 +9,7 @@
 .lp-form-section-title {
   font-size: var(--lp-font-size-16);
   line-height: var(--lp-font-line-24);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   margin: 0;
   color: var(--text);
 }

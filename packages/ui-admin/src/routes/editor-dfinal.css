@@ -19,11 +19,11 @@
 .lp-editor-toolbar-left { justify-self: start; display: flex; align-items: center; gap: var(--lp-space-stack-label-to-control); }
 .lp-editor-toolbar-center-slot { justify-self: center; display: flex; align-items: center; }
 .lp-editor-toolbar-right { justify-self: end; display: flex; align-items: center; gap: var(--lp-space-proximity-1); }
-@media (min-width: 640px) {
+@media (min-width: __LP_BP_SM__) {
   .lp-editor-toolbar-right { gap: var(--lp-space-stack-label-to-control); }
   .lp-editor-mobile-only { display: none; }
 }
-@media (max-width: 639px) {
+@media (max-width: __LP_BP_SM_MAX__) {
   .lp-editor-desktop-only { display: none; }
   .lp-editor-toolbar-right .lp-btn { padding: 0 var(--lp-space-inset-item-x); }
 }
@@ -78,7 +78,7 @@
   align-items: center;
   gap: var(--lp-space-proximity-1);
 }
-@media (min-width: 768px) {
+@media (min-width: __LP_BP_MD__) {
   .lp-editor-drawer:not([hidden]) + .lp-editor-main-fullscreen .lp-format-bar {
     left: var(--lp-size-layout-list-col);
   }
