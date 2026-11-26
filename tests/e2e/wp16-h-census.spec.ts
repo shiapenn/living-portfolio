@@ -180,17 +180,26 @@ test.describe('WP-16.H H0 Failing-First Defect Tests (20261106-UX-182..UX-193)',
     expect(Math.abs(evGap.gap - 16)).toBeLessThanOrEqual(2);
   });
 
-  test('20261106-UX-193 (H12): StatusItem consistency across Status, Providers, Backups', async ({ page }) => {
+  test('20261106-UX-193 (H12): StatusItem consistency across Status, Providers, Backups (Item v2 C3)', async ({ page }) => {
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 320, height: 640 });
     await page.goto('/admin/status');
-    const rows = await page.locator('.lp-list [data-c="Item"]').evaluateAll((items) =>
+    const compactRows = await page.locator('.lp-list [data-c="Item"]').evaluateAll((items) =>
+      items.map((it) => ({
+        titleBottom: Math.round(it.querySelector('.lp-item-title')!.getBoundingClientRect().bottom),
+        statusTop: Math.round(it.querySelector('.lp-item-status')!.getBoundingClientRect().top),
+      }))
+    );
+    for (const r of compactRows) expect(r.statusTop).toBeGreaterThanOrEqual(r.titleBottom - 1);
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const regularRows = await page.locator('.lp-list [data-c="Item"]').evaluateAll((items) =>
       items.map((it) => ({
         titleTop: Math.round(it.querySelector('.lp-item-title')!.getBoundingClientRect().top),
         statusTop: Math.round(it.querySelector('.lp-item-status')!.getBoundingClientRect().top),
       }))
     );
-    for (const r of rows) expect(Math.abs(r.titleTop - r.statusTop)).toBeLessThanOrEqual(4);
+    for (const r of regularRows) expect(Math.abs(r.titleTop - r.statusTop)).toBeLessThanOrEqual(4);
   });
 });
 
