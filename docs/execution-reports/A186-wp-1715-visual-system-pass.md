@@ -6,7 +6,7 @@
 | Date | 2026-11-26 |
 | Author | A (Implementer) |
 | Task ID | `WP-17.15` |
-| Evidence SHA | `6739610890dec39bd58dcc3edba6a5ee692f5116` |
+| Evidence SHA | `d7e4b6fe1ae8eb384e7b9c34a56220090c0ec193` |
 | CI run | pending PR CI |
 
 ---
@@ -45,9 +45,12 @@
 
 ## 4. Files Touched
 
+- `apps/api/src/conformance/wp11-markdown-tokens.conformance.test.ts`
+- `apps/api/src/conformance/wp12-strata-craft.conformance.test.ts`
 - `apps/web/src/primitives/foundations-gallery-states.ts`
 - `apps/web/src/primitives/page-header.ts`
 - `apps/web/src/web.test.ts`
+- `docs/INDEX.md`
 - `docs/design/archetypes.md`
 - `docs/design/hardcode-allowlist.json`
 - `docs/design/health-history.json`
@@ -55,7 +58,9 @@
 - `docs/design/interaction.md`
 - `docs/design/tokens-admin.md`
 - `docs/design/tokens.md`
+- `docs/doc-registry.json`
 - `docs/execution-reports/A185-wp-1714-archetypes-closed-world-audit.md`
+- `docs/execution-reports/A186-wp-1715-visual-system-pass.md`
 - `docs/plans/backlog.yml`
 - `packages/design-tokens/packs/admin.json`
 - `packages/design-tokens/src/generated.ts`
@@ -90,8 +95,14 @@
 - `packages/ui-admin/src/templates/dfinal-system.css`
 - `packages/ui-admin/src/templates/dghl-polish.css`
 - `scripts/design-audit`
+- `tests/e2e/census-helpers.ts`
+- `tests/e2e/wp15-3a-design-foundations.spec.ts`
+- `tests/e2e/wp16-c-component-census.spec.ts`
+- `tests/e2e/wp16-r-style-census.spec.ts`
+- `tests/e2e/wp16-s-system-census.spec.ts`
 - `tests/e2e/wp17-14-closed-world-audit.spec.ts`
 - `tests/e2e/wp17-15-visual-system-audit.spec.ts`
+- `tests/e2e/wp17-9-content-and-ink-census.spec.ts`
 - `tests/e2e/wp17-contact-sheets.spec.ts`
 
 ## 5. Register and Backlog Changes
@@ -114,8 +125,8 @@ $ pnpm receipt:check A186
 === Validating Receipt A186-wp-1715-visual-system-pass.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA '6739610890dec39bd58dcc3edba6a5ee692f5116' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff 23f9201f47c55047e65284d143013078e47148ee..6739610890dec39bd58dcc3edba6a5ee692f5116 (48 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA 'd7e4b6fe1ae8eb384e7b9c34a56220090c0ec193' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 23f9201f47c55047e65284d143013078e47148ee..d7e4b6fe1ae8eb384e7b9c34a56220090c0ec193 (59 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A186-wp-1715-visual-system-pass.md.
 Found 0 section(s) marked verbatim.
 
