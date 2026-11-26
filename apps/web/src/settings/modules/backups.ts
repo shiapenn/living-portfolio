@@ -76,11 +76,8 @@ export const backupsModule: SettingsModuleManifest<BackupsConfig> = {
 
         ${renderFormSection({
           title: 'Archive export',
-          description: 'Download all entries and metadata as a portable archive.',
-          fieldsHtml: renderText({
-            variant: 'caption',
-            text: 'Exporting never modifies live entries.',
-          }),
+          consequence: 'Exporting never modifies live entries.',
+          fieldsHtml: '',
           actionBarHtml: renderActionBar({
             level: 'item',
             secondary: {

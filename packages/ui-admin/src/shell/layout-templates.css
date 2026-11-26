@@ -90,7 +90,7 @@
 }
 
 .lp-launcher-heading {
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   font-weight: 600;
   color: var(--text-muted);
   padding: var(--lp-space-inset-track) var(--lp-space-inset-item-x);
@@ -145,7 +145,7 @@
 
 .lp-help-text {
   margin: 0;
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   color: var(--text-muted);
 }
 

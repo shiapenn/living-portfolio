@@ -63,8 +63,13 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
       ${renderFormSection({
         id: 'account-totp-section',
         title: 'Authenticator app',
-        description: 'Current authenticator stays active until you confirm a new code.',
-        fieldsHtml: `
+        consequence: 'Current authenticator stays active until you confirm a new code.',
+        fieldsHtml: '',
+        actionBarHtml: `<div id="account-totp-start-actions">${renderActionBar({
+          level: 'item',
+          secondary: { id: 'btn-reenrol-totp', label: 'Re-enrol app', variant: 'secondary', type: 'button', size: 'sm' },
+        })}</div>`,
+        feedbackHtml: `
           <div id="account-totp-reenrol-box" class="lp-stack lp-gap-group lp-is-hidden">
             <div class="lp-stack lp-gap-related">
               <div id="account-totp-qr"></div>
@@ -87,21 +92,23 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
               value: '',
               placeholder: '123456',
             })}
+            <div id="account-totp-confirm-actions">
+              ${renderActionBar({
+                level: 'item',
+                secondary: { id: 'btn-confirm-totp', label: 'Confirm app', variant: 'secondary', type: 'button', size: 'sm' },
+                textAction: { id: 'btn-cancel-totp', label: 'Cancel', variant: 'text', type: 'button', size: 'sm' },
+              })}
+            </div>
           </div>
+          <div id="account-totp-notice" class="lp-is-hidden" aria-live="assertive" tabindex="-1"></div>
         `,
-        actionBarHtml: renderActionBar({
-          level: 'item',
-          secondary: { id: 'btn-reenrol-totp', label: 'Re-enrol app', variant: 'secondary', type: 'button', size: 'sm' },
-          textAction: { id: 'btn-confirm-totp', label: 'Confirm app', variant: 'text', type: 'button', size: 'sm' },
-        }),
-        feedbackHtml: `<div id="account-totp-notice" class="lp-is-hidden" aria-live="assertive" tabindex="-1"></div>`,
       })}
 
       ${renderFormSection({
         id: 'account-recovery-section',
         title: 'Recovery codes',
-        description: 'Regenerating invalidates all older recovery codes immediately.',
-        fieldsHtml: renderText({ id: 'account-recovery-hint', variant: 'caption', text: 'Shown once when generated.' }),
+        consequence: 'Regenerating invalidates all older recovery codes immediately.',
+        fieldsHtml: '',
         actionBarHtml: renderActionBar({
           level: 'item',
           secondary: { id: 'btn-regen-recovery', label: 'Regenerate codes', variant: 'secondary', type: 'button', size: 'sm' },
@@ -129,7 +136,6 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
             inputType: 'text',
             value: '',
             placeholder: 'ci-deploy',
-            help: 'Shown once when created.',
           })}
         `,
         actionBarHtml: renderActionBar({
@@ -157,8 +163,8 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
       ${renderFormSection({
         id: 'account-sessions-section',
         title: 'Other sessions',
-        description: 'Signs out all other browsers and devices immediately.',
-        fieldsHtml: renderText({ id: 'account-sessions-result', variant: 'caption', text: '' }),
+        consequence: 'Signs out all other browsers and devices immediately.',
+        fieldsHtml: '',
         actionBarHtml: renderActionBar({
           level: 'item',
           secondary: { id: 'btn-revoke-other-sessions', label: 'End sessions', variant: 'secondary', type: 'button', size: 'sm' },

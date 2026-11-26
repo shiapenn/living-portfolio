@@ -180,12 +180,12 @@ export function renderEmptyState(props: EmptyStateProps): string {
   const hiddenAttr = props.hidden ? ' hidden' : '';
   const headingTag = props.headingTag ?? 'h3';
   const titleHtml = props.title
-    ? `<${headingTag} data-c="SectionHeader" class="lp-empty-title">${escapeHtml(props.title)}</${headingTag}>`
+    ? `<${headingTag} data-c="SectionHeader" data-purpose="title" class="lp-empty-title">${escapeHtml(props.title)}</${headingTag}>`
     : '';
   return `<div class="${escapeHtml(classes)}"${idAttr}${hiddenAttr}>
   ${props.dismissHtml ? `<div class="lp-empty-dismiss">${props.dismissHtml}</div>` : ''}
   ${titleHtml}
-  <p data-c="Text" data-variant="description" class="lp-empty-body">${escapeHtml(props.body)}</p>
+  <p data-c="Text" data-variant="description" data-purpose="empty" class="lp-empty-body">${escapeHtml(props.body)}</p>
   ${guideHtml}
   ${props.actionHtml ? `<div class="lp-empty-action">${props.actionHtml}</div>` : ''}
 </div>`;

@@ -81,8 +81,16 @@ export const ACCOUNT_SCRIPT = `
 
     var btnReenrol = document.getElementById('btn-reenrol-totp');
     var btnConfirmTotp = document.getElementById('btn-confirm-totp');
+    var btnCancelTotp = document.getElementById('btn-cancel-totp');
+    var totpStartActions = document.getElementById('account-totp-start-actions');
     var totpBox = document.getElementById('account-totp-reenrol-box');
     var totpQr = document.getElementById('account-totp-qr');
+    var closeTotpEnrol = function() {
+      if (totpBox) totpBox.classList.add('lp-is-hidden');
+      if (totpStartActions) totpStartActions.classList.remove('lp-is-hidden');
+      var codeEl = document.getElementById('account-totp-code');
+      if (codeEl) codeEl.value = '';
+    };
     if (btnReenrol) {
       btnReenrol.addEventListener('click', async function() {
         clearSectionFeedback(totpNotice);
@@ -91,6 +99,7 @@ export const ACCOUNT_SCRIPT = `
           var res = await apiClient('/api/auth/totp/reenrol', { method: 'POST', body: '{}' });
           var data = await res.json().catch(function() { return {}; });
           if (res.ok) {
+            if (totpStartActions) totpStartActions.classList.add('lp-is-hidden');
             if (totpBox) totpBox.classList.remove('lp-is-hidden');
             if (totpQr && data.qrCodeSvg) totpQr.innerHTML = data.qrCodeSvg;
             if (data.totpSecretBase32) lpSetCredentialSingle('account-totp-manual-cred', data.totpSecretBase32, true);
@@ -100,6 +109,12 @@ export const ACCOUNT_SCRIPT = `
         } finally {
           btnReenrol.disabled = false;
         }
+      });
+    }
+    if (btnCancelTotp) {
+      btnCancelTotp.addEventListener('click', function() {
+        clearSectionFeedback(totpNotice);
+        closeTotpEnrol();
       });
     }
     if (btnConfirmTotp) {
@@ -116,8 +131,7 @@ export const ACCOUNT_SCRIPT = `
           });
           var data = await res.json().catch(function() { return {}; });
           if (res.ok) {
-            if (totpBox) totpBox.classList.add('lp-is-hidden');
-            if (codeEl) codeEl.value = '';
+            closeTotpEnrol();
             showSectionStatus(totpNotice, 'Authenticator updated.');
           } else {
             showSectionError(totpNotice, data.message || data.error || 'Invalid 6-digit code.');
@@ -157,7 +171,7 @@ export const ACCOUNT_SCRIPT = `
       var data = await res.json().catch(function() { return { tokens: [] }; });
       var list = Array.isArray(data.tokens) ? data.tokens.filter(function(t) { return !t.revokedAt; }) : [];
       if (list.length === 0) {
-        tokensContainer.innerHTML = '<div class="lp-empty-state"><p data-c="Text" data-variant="description" class="lp-empty-body">No active API tokens.</p></div>';
+        tokensContainer.innerHTML = '<div class="lp-empty-state"><p data-c="Text" data-variant="description" data-purpose="empty" class="lp-empty-body">No active API tokens.</p></div>';
         tokensContainer.classList.remove('lp-is-empty');
         return;
       }
@@ -170,13 +184,13 @@ export const ACCOUNT_SCRIPT = `
         return d.getDate() + ' ' + m + ' ' + d.getFullYear();
       };
       var items = list.map(function(t) {
-        var titleHtml = '<div data-rel="title" class="lp-item-title"><span>' + (t.label || 'Token') + '</span></div>';
+        var titleHtml = '<div data-rel="title" data-purpose="title" class="lp-item-title"><span>' + (t.label || 'Token') + '</span></div>';
         var created = fmtTokenDate(t.createdAt || t.created_at);
         var lastUsed = fmtTokenDate(t.lastUsedAt || t.last_used_at);
         var metaParts = [];
         if (created) metaParts.push('<span class="lp-item-meta-field">Created ' + created + '</span>');
         if (lastUsed) metaParts.push('<span class="lp-item-meta-field">Last used ' + lastUsed + '</span>');
-        var metaHtml = metaParts.length > 0 ? '<div class="lp-item-meta">' + metaParts.join('') + '</div>' : '';
+        var metaHtml = metaParts.length > 0 ? '<div data-purpose="meta" class="lp-item-meta">' + metaParts.join('') + '</div>' : '';
         var actionsHtml = '<div data-rel="actions" class="lp-item-actions"><div data-c="ActionBar" data-level="item" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-sm" data-revoke-token="' + t.id + '">Revoke</button></div></div>';
         return '<div data-c="Item" data-rel="item" class="lp-item lp-item-has-actions" data-token-id="' + t.id + '"><div class="lp-item-content">' + titleHtml + metaHtml + '</div>' + actionsHtml + '</div>';
       }).join('');

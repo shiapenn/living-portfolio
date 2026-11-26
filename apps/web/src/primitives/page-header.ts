@@ -29,7 +29,7 @@ export function renderPageHeader(props: PageHeaderProps): string {
     : '';
 
   const descHtml = props.description
-    ? `<p data-rel="description" class="lp-page-description">${escapeHtml(props.description)}</p>`
+    ? `<p data-rel="description" data-purpose="intro" class="lp-page-description">${escapeHtml(props.description)}</p>`
     : '';
 
   const actionHtml = props.actionHtml
@@ -38,7 +38,7 @@ export function renderPageHeader(props: PageHeaderProps): string {
 
   return `<header${idAttr} data-c="PageHeader" data-rel="header" class="${escapeHtml(classes)}">
   ${backHtml}
-  <h1 class="lp-page-header-title">${escapeHtml(props.title)}</h1>
+  <h1 class="lp-page-header-title" data-purpose="title">${escapeHtml(props.title)}</h1>
   ${descHtml}
   ${actionHtml}
 </header>`;

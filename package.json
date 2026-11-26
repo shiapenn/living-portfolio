@@ -15,6 +15,7 @@
     "ds:rules": "node scripts/generate-rules",
     "ds:impact": "node scripts/ds-impact",
     "ds:health": "node scripts/ds-health",
+    "design:audit": "node scripts/design-audit",
     "ds:changelog": "node scripts/generate-changelog",
     "hooks:install": "git config core.hooksPath .githooks",
     "backlog:next": "node scripts/backlog-next",

@@ -5,7 +5,7 @@
 | Source | `packages/design-tokens/packs/admin.json` |
 | Naming | `--lp-<category>-<role>[-<variant>][-<state>]` |
 | Version | `3.0.0` |
-| Primitive | 193 |
+| Primitive | 194 |
 | Semantic (per theme) | 47 |
 | Component | 129 |
 | Responsive | 2 |
@@ -54,9 +54,8 @@
 | `item-title` | `16px` | `500` | `20px` | `--lp-color-text-1` |
 | `label` | `14px` | `500` | `20px` | `--lp-color-text-2` |
 | `body` | `14px` | `400` | `20px` | `--lp-color-text-1` |
-| `secondary` | `12px` | `500` | `16px` | `--lp-color-text-2` |
-| `meta` | `12px` | `400` | `16px` | `--lp-color-text-3` |
-| `mono` | `12px` | `400` | `20px` | `--lp-color-text-1` |
+| `secondary` | `13px` | `400` | `20px` | `--lp-color-text-2` |
+| `mono` | `13px` | `400` | `20px` | `--lp-color-text-1` |
 
 ## Semantic Tokens (Theme-Switched)
 
@@ -221,7 +220,7 @@
 | `--lp-font-family-ui` | `'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', sans-serif` |
 | `--lp-font-family-reading` | `'Literata', Georgia, 'Times New Roman', 'Songti SC', 'Noto Serif CJK SC', 'Source Han Serif SC', serif` |
 | `--lp-font-family-code` | `'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace` |
-| `--lp-font-size-12` | `12px` |
+| `--lp-font-size-13` | `13px` |
 | `--lp-font-size-14` | `14px` |
 | `--lp-font-size-16` | `16px` |
 | `--lp-font-size-18` | `18px` |

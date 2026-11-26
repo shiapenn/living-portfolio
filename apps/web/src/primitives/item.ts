@@ -69,8 +69,8 @@ export function renderItem(props: ItemProps): string {
   ]
     .filter(Boolean)
     .join(' ');
-  const titleHtml = `<div data-rel="title" class="${titleCls}"${props.titleVariant === 'content' ? ' data-title-variant="content"' : ''}>${leadingHtml}<span>${escapeHtml(props.title)}</span></div>`;
-  const subtitleHtml = props.subtitle ? `<div class="lp-item-subtitle">${escapeHtml(props.subtitle)}</div>` : '';
+  const titleHtml = `<div data-rel="title" data-purpose="title" class="${titleCls}"${props.titleVariant === 'content' ? ' data-title-variant="content"' : ''}>${leadingHtml}<span>${escapeHtml(props.title)}</span></div>`;
+  const subtitleHtml = props.subtitle ? `<div data-purpose="meta" class="lp-item-subtitle">${escapeHtml(props.subtitle)}</div>` : '';
 
   let bodyHtml = '';
   if (props.customBodyHtml) {
@@ -80,20 +80,20 @@ export function renderItem(props: ItemProps): string {
       .map((seg) => {
         const headingInner = seg.heading
           ? seg.headingHref
-            ? `<a href="${escapeHtml(seg.headingHref)}" class="lp-item-link lp-caption">${escapeHtml(seg.heading)}</a>`
+            ? `<a href="${escapeHtml(seg.headingHref)}" class="lp-item-link">${escapeHtml(seg.heading)}</a>`
             : escapeHtml(seg.heading)
           : '';
         const headingHtml = headingInner
-          ? `<div data-rel="segment-label" class="lp-item-segment-heading">${headingInner}</div>`
+          ? `<div data-rel="segment-label" data-purpose="label" class="lp-item-segment-heading">${headingInner}</div>`
           : '';
         const textHtml = seg.quote
-          ? `<blockquote data-c="Text" data-variant="quote" data-rel="segment-text" class="lp-item-quote">${escapeHtml(seg.body)}</blockquote>`
-          : `<div data-rel="segment-text" class="lp-item-body">${escapeHtml(seg.body)}</div>`;
+          ? `<blockquote data-c="Text" data-variant="quote" data-purpose="value" data-rel="segment-text" class="lp-item-quote">${escapeHtml(seg.body)}</blockquote>`
+          : `<div data-rel="segment-text" data-purpose="value" class="lp-item-body">${escapeHtml(seg.body)}</div>`;
         return `<div data-rel="segment" class="lp-item-segment">${headingHtml}${textHtml}</div>`;
       })
       .join('')}</div>`;
   } else if (props.body) {
-    bodyHtml = `<div data-rel="itembody" class="lp-item-body">${escapeHtml(props.body)}</div>`;
+    bodyHtml = `<div data-rel="itembody" data-purpose="value" class="lp-item-body">${escapeHtml(props.body)}</div>`;
   }
 
   const statusHtml = props.statusLabel
@@ -101,7 +101,7 @@ export function renderItem(props: ItemProps): string {
         props.showChevron ? `<span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span>` : ''
       }</div>`
     : props.trailingValue
-      ? `<div class="lp-item-status"><span class="lp-caption">${escapeHtml(props.trailingValue)}</span>${
+      ? `<div class="lp-item-status"><span data-purpose="value" class="lp-caption">${escapeHtml(props.trailingValue)}</span>${
           props.showChevron ? `<span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span>` : ''
         }</div>`
       : props.showChevron
@@ -110,7 +110,7 @@ export function renderItem(props: ItemProps): string {
 
   const metaHtml =
     props.metaFields && props.metaFields.length > 0
-      ? `<div class="lp-item-meta">${props.metaFields
+      ? `<div data-purpose="meta" class="lp-item-meta">${props.metaFields
           .filter((f) => f.text.trim().length > 0)
           .map(
             (f) =>
@@ -118,7 +118,7 @@ export function renderItem(props: ItemProps): string {
           )
           .join('')}</div>`
       : props.meta
-        ? `<div class="lp-item-meta"><span class="lp-item-meta-field">${escapeHtml(props.meta)}</span></div>`
+        ? `<div data-purpose="meta" class="lp-item-meta"><span class="lp-item-meta-field">${escapeHtml(props.meta)}</span></div>`
         : '';
   const actionsHtml = hasActions && props.actions ? `<div data-rel="actions" class="lp-item-actions">${renderActionBar(props.actions)}</div>` : '';
 
@@ -133,23 +133,29 @@ export function renderItem(props: ItemProps): string {
   return `<div${idAttr} data-c="Item" data-rel="item" class="${escapeHtml(classes)}"${extra}>${inner}</div>`;
 }
 
-export type ListVariant = 'plain' | 'interactive';
+export type ListVariant = 'plain' | 'interactive' | 'definition';
+
+export interface DefinitionRow {
+  label: string;
+  value?: string;
+  valueHtml?: string;
+}
 
 export interface ListProps {
   id?: string;
   variant: ListVariant;
-  itemsHtml: string;
+  itemsHtml?: string;
+  definitionRows?: DefinitionRow[];
   empty?: boolean;
   className?: string;
   attributes?: string;
 }
 
 /**
- * Unified List primitive (D-L2, D-L3):
- * - plain: no hover/selected/pressed tint, no chevron; Item content and buttons sit flush on the column edge;
- *   absorbs first/last Item vertical padding (ink-measured).
- * - interactive: rows that navigate or select; Item rect equals column, content inset, hover and selected tint;
- *   keeps top/bottom padding for tint clearance.
+ * Unified List primitive (D-L2, D-L3, WP-17.13 D5):
+ * - plain: no hover/selected/pressed tint, no chevron; Item content and buttons sit flush on the column edge.
+ * - interactive: rows that navigate or select; Item rect equals column, content inset, hover and selected tint.
+ * - definition: semantic <dl> for detail screens (label above value <640px, 2-col >=640px, no per-row dividers).
  */
 export function renderList(props: ListProps): string {
   const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
@@ -162,5 +168,14 @@ export function renderList(props: ListProps): string {
     .filter(Boolean)
     .join(' ');
   const extra = props.attributes ? ` ${props.attributes}` : '';
-  return `<div${idAttr} data-c="List" data-variant="${props.variant}" class="${escapeHtml(classes)}"${extra}>${props.itemsHtml}</div>`;
+  if (props.variant === 'definition' && props.definitionRows) {
+    const rowsHtml = props.definitionRows
+      .map((row) => {
+        const val = row.valueHtml !== undefined ? row.valueHtml : escapeHtml(row.value ?? '');
+        return `<div class="lp-list-def-row"><dt data-purpose="label" class="lp-list-def-label">${escapeHtml(row.label)}</dt><dd data-purpose="value" class="lp-list-def-value">${val}</dd></div>`;
+      })
+      .join('');
+    return `<dl${idAttr} data-c="List" data-variant="definition" class="${escapeHtml(classes)}"${extra}>${rowsHtml}</dl>`;
+  }
+  return `<div${idAttr} data-c="List" data-variant="${props.variant}" class="${escapeHtml(classes)}"${extra}>${props.itemsHtml ?? ''}</div>`;
 }

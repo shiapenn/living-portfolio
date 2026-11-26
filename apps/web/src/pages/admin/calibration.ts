@@ -51,7 +51,7 @@ export async function renderAdminCalibrationPage(
       ${renderFormSection({
         id: 'calibration-mechanisms-section',
         title: 'Calibration switches',
-        description: 'Adjustments require 20 samples and step at most 0.05.',
+        consequence: 'Adjustments require 20 samples and step at most 0.05.',
         fieldsHtml: renderChoiceGroup({
           name: 'calibration-mechanisms',
           mode: 'multiple',
@@ -131,7 +131,6 @@ export async function renderAdminCalibrationPage(
 
   const content = renderPageTemplate({
     title: 'Calibration',
-    description: 'Self-tuning switches, proposals, and rollback history.',
     bodyHtml,
   });
 

@@ -146,11 +146,19 @@ export function detectTopologyConflicts(
       }
 
       if (conflictDetected && confidence >= minConfidence) {
-        // Determine earlier vs later claim (prefer entry published/updated date, fallback to claim.recorded_at)
+        // Determine earlier vs later claim (entry_date first, tie-break with claim.recorded_at per WP-17.13 D6)
         const dateA = claimA.entry_date || claimA.recorded_at || '';
         const dateB = claimB.entry_date || claimB.recorded_at || '';
-        const timeA = dateA ? new Date(dateA).getTime() : 0;
-        const timeB = dateB ? new Date(dateB).getTime() : 0;
+        let timeA = dateA ? new Date(dateA).getTime() : 0;
+        let timeB = dateB ? new Date(dateB).getTime() : 0;
+        if (timeA === timeB || (dateA && dateB && dateA.slice(0, 10) === dateB.slice(0, 10))) {
+          const recA = claimA.recorded_at ? new Date(claimA.recorded_at).getTime() : timeA;
+          const recB = claimB.recorded_at ? new Date(claimB.recorded_at).getTime() : timeB;
+          if (!Number.isNaN(recA) && !Number.isNaN(recB) && recA !== recB) {
+            timeA = recA;
+            timeB = recB;
+          }
+        }
         const [earlier, later] = timeA <= timeB ? [claimA, claimB] : [claimB, claimA];
         const earlierDate = earlier.entry_date || earlier.recorded_at || undefined;
         const laterDate = later.entry_date || later.recorded_at || undefined;
@@ -179,6 +187,8 @@ export function detectTopologyConflicts(
           question: 'Does the later claim supersede the earlier one, or do they apply to different situations?',
           claim_a_text: earlier.text,
           claim_b_text: later.text,
+          claim_a_recorded_at: earlier.recorded_at,
+          claim_b_recorded_at: later.recorded_at,
           entry_a_id: earlier.entry_id,
           entry_a_title: earlier.entry_title,
           entry_a_date: earlierDate,

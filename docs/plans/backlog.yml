@@ -148,7 +148,7 @@ items:
     status: done
 
   - id: WP-17.12
-    title: Hierarchy and workflow pass (WP-17 exit gate, last; A1-A6, B1-B5, Part C, K6-K13)
+    title: Hierarchy and workflow pass (WP-17 exit gate; A1-A6, B1-B5, Part C, K6-K13)
     track: admin
     type: visual
     depends_on: [WP-17.11]
@@ -156,6 +156,17 @@ items:
     expected_minutes: 90
     gate: L-review
     acceptance: Credential 1/2-col nowrap + Copy inside surface + TOTP manual key under QR (A1), fixed 5-part State panel order across all 6 Contradictions states (A2), Contradictions side-by-side >=640px / stacked with vs + Older/Newer dates + edit links (A3), Bookings list date+timezone + new detail route with visitor behaviour helper (A4), Item trailing chevron when status omitted + unclamped content titles + Active tokens single-status (A5), content.md text roles (A6), B1-B5 rhythm/type/mobile-16px normalisation + specimen, Part C screen-brief gate + retroactive briefs + C2 owner sweep + decision-completeness journeys, K6-K13 checks failing on cd6a3d1 canary, contact-sheet zip; CI + CodeQL green
+    status: done
+
+  - id: WP-17.13
+    title: Spacing ownership, text purposes, token integrity, design audit (WP-17 exit gate, last; D1-D8, K14-K21)
+    track: admin
+    type: visual
+    depends_on: [WP-17.12]
+    size: L
+    expected_minutes: 90
+    gate: L-review
+    acceptance: Zero component outer margins + relation-based box-gap spacing ownership S1-S5 (D1), closed data-purpose text roles + ban section intros + full route text table in content.md (D2), merged 13px secondary role with >=7:1 contrast and zero text <13px (D3), single-row <=2 action groups + Authenticator progressive reveal + remove Email requester button (D4), Booking detail definition List variant + header status + consequence note + 1-line history (D5), Contradictions recorded_at tie-break + same-date disabled Keep newer + unified 2 link styles (D6), D7 dark first-paint root cause & fix + palette-membership & parity census + state-matrix gallery + pointer off-page harness, D8 audit-protocol.md + pnpm design:audit in wp16n:verify, K14-K21 failing on e29cc38 canary, contact-sheet zip; CI + CodeQL green
     status: done
 
   # ── WP-18: Authoring canvas, media, storage & import (Report §7.9 + P004) ──
@@ -185,7 +196,7 @@ items:
     title: Media API (POST /media, GET /media/:id, storage adapter, limits, content sniffing; D-06, D-STORAGE)
     track: functional
     type: functional
-    depends_on: [WP-17.12]
+    depends_on: [WP-17.13]
     size: M
     expected_minutes: 50
     gate: none

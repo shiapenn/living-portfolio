@@ -50,12 +50,12 @@ export function renderField(props: FieldProps): string {
     const checkedAttr = props.checked ? ' checked' : '';
     const valueAttr = props.value !== undefined ? ` value="${escapeHtml(props.value)}"` : '';
     return `<div class="${escapeHtml(wrapperClass)}">
-  <label class="lp-choice-label" for="${escapeHtml(props.id)}">
+  <label class="lp-choice-label" data-purpose="label" for="${escapeHtml(props.id)}">
     <input type="${props.kind}" id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-choice-input"${valueAttr}${checkedAttr}${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr} />
     <span>${escapeHtml(props.label)}</span>
   </label>
-  ${props.help ? `<p class="lp-field-help" id="${escapeHtml(helpId)}">${escapeHtml(props.help)}</p>` : ''}
-  ${props.error ? `<p class="lp-field-error" id="${escapeHtml(errorId)}" role="alert">${escapeHtml(props.error)}</p>` : ''}
+  ${props.help ? `<p class="lp-field-help" data-purpose="helper" id="${escapeHtml(helpId)}">${escapeHtml(props.help)}</p>` : ''}
+  ${props.error ? `<p class="lp-field-error" data-purpose="feedback" id="${escapeHtml(errorId)}" role="alert">${escapeHtml(props.error)}</p>` : ''}
 </div>`;
   }
 
@@ -85,9 +85,9 @@ export function renderField(props: FieldProps): string {
   }
 
   return `<div data-c="Field" data-rel="field" class="${escapeHtml(wrapperClass)}">
-  <label class="lp-field-label" for="${escapeHtml(props.id)}" data-rel="label">${escapeHtml(props.label)}${props.required ? ' <span class="lp-field-required" aria-hidden="true">*</span>' : ''}</label>
+  <label class="lp-field-label" for="${escapeHtml(props.id)}" data-rel="label" data-purpose="label">${escapeHtml(props.label)}${props.required ? ' <span class="lp-field-required" aria-hidden="true">*</span>' : ''}</label>
   ${controlHtml}
-  ${props.help ? `<p data-rel="help" class="lp-field-help" id="${escapeHtml(helpId)}">${escapeHtml(props.help)}</p>` : ''}
-  ${props.error ? `<p class="lp-field-error" id="${escapeHtml(errorId)}" role="alert">${escapeHtml(props.error)}</p>` : ''}
+  ${props.help ? `<p data-rel="help" data-purpose="helper" class="lp-field-help" id="${escapeHtml(helpId)}">${escapeHtml(props.help)}</p>` : ''}
+  ${props.error ? `<p class="lp-field-error" data-purpose="feedback" id="${escapeHtml(errorId)}" role="alert">${escapeHtml(props.error)}</p>` : ''}
 </div>`;
 }

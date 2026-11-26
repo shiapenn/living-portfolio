@@ -181,8 +181,7 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
         <div id="appearance-public-contrast-section" class="lp-is-hidden">
           ${renderFormSection({
             title: 'Public contrast table',
-            description: 'Public site styling applies in a future release.',
-            fieldsHtml: publicContrastTableHtml,
+            fieldsHtml: `${renderText({ variant: 'caption', purpose: 'meta', text: 'Public site styling applies in a future release.' })}${publicContrastTableHtml}`,
           })}
         </div>
 

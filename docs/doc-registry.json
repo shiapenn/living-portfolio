@@ -2177,5 +2177,21 @@
     "path": "docs/execution-reports/A183-wp-1712-hierarchy-and-workflow-pass.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L062",
+    "title": "Admin Design Audit Protocol (D8)",
+    "class": "L",
+    "path": "docs/design/audit-protocol.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "A184",
+    "title": "WP-17.13 spacing ownership, text purposes, token integrity, design audit",
+    "class": "A",
+    "path": "docs/execution-reports/A184-wp-1713-spacing-purposes-audit.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

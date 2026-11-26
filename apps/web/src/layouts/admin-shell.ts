@@ -67,9 +67,7 @@ export interface PageTemplateOptions {
   template?: 'standard' | 'narrow' | 'editor';
 }
 
-/**
- * Unified page template (D-SYS #4): standard (720px), narrow (400px, login only), editor.
- */
+/** Unified page template (D-SYS #4): standard (720px), narrow (400px), editor. */
 export function renderPageTemplate(opts: PageTemplateOptions): string {
   const tmplClass = opts.template === 'narrow' ? 'lp-page-column-narrow' : '';
   const cls = ['lp-page-column', tmplClass, opts.className].filter(Boolean).join(' ');
@@ -201,8 +199,9 @@ function renderShellThemeAndMenuScript(nonceAttr: string, includeAdminMenus: boo
   (function() {
     const html = document.documentElement;
     const saved = (function(){ try { return localStorage.getItem('strata-theme'); } catch { return null; } })();
-    const initial = saved === 'dark' || (!saved && html.getAttribute('data-theme') === 'dark') ? 'dark' : 'light';
-    html.setAttribute('data-theme', initial);
+    const prefersDark = Boolean(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const initial = saved === 'dark' || (!saved && (html.getAttribute('data-theme') === 'dark' || prefersDark)) ? 'dark' : 'light';
+    if (saved || initial === 'dark') html.setAttribute('data-theme', initial);
     const themeBtn = document.getElementById('theme-toggle');
     const syncThemeBtn = (t) => {
       if (!themeBtn) return;
@@ -220,21 +219,19 @@ function renderShellThemeAndMenuScript(nonceAttr: string, includeAdminMenus: boo
     if (themeBtn) {
       themeBtn.addEventListener('click', () => {
         const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme-switching', 'true');
         html.setAttribute('data-theme', next);
+        void html.offsetHeight;
         syncThemeBtn(next);
         try { localStorage.setItem('strata-theme', next); } catch {}
+        requestAnimationFrame(() => html.removeAttribute('data-theme-switching'));
       });
     }${adminMenuJs}
   })();
   </script>`;
 }
 
-/**
- * Single Admin Shell (D-SYS #8, #9, #10):
- * One top bar and page frame for every admin page including editor, login, and setup.
- * Left: launcher icon button (authenticated only) + fixed text "Admin".
- * Right: theme toggle icon button + account icon button (authenticated only).
- */
+/** Single Admin Shell (D-SYS #8..#10): one top bar and page frame for every admin page. */
 export function renderAdminShell(
   title: string,
   activePath: string,
@@ -354,12 +351,16 @@ export function renderAdminShell(
     .filter(Boolean)
     .join('\n  ');
 
+  const htmlThemeAttr = options?.initialTheme ? ` data-theme="${theme}"` : '';
+  const headThemeScript = `<script${nonceAttr}>(function(){try{var s=localStorage.getItem('strata-theme');var d=s==='dark'||(!s&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.setAttribute('data-theme','dark');else if(s==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}})();</script>`;
+
   return `<!DOCTYPE html>
-<html lang="en" data-theme="${theme}">
+<html lang="en"${htmlThemeAttr}>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(title)} — ${escapeHtml(siteName)}</title>
+  ${headThemeScript}
   ${routeCssLinks}
 </head>
 <body class="lp-admin-body">

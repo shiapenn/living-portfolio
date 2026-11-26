@@ -65,9 +65,10 @@ export function renderSettingsModulePage<T>(
   ctx: SettingsRenderContext
 ): string {
   const bodyHtml = `${mod.render(modConfig, ctx)}${SETTINGS_SCRIPT}`;
+  const omitRedundantIntro = mod.id === 'account';
   return renderPageTemplate({
     title: mod.title,
-    description: mod.summary,
+    description: omitRedundantIntro ? undefined : mod.summary,
     bodyHtml,
   });
 }

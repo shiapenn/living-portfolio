@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ensureAdminLoggedIn } from './helpers.js';
 
-const OUT_DIR = join(process.cwd(), 'test-results', 'wp17-12-contact-sheets');
+const OUT_DIR = join(process.cwd(), 'test-results', 'wp17-13-contact-sheets');
+const BEFORE_STAGING = '/tmp/wp17-13-sheets-staging';
 
 type ShotSpec = { width: number; height: number; theme: 'light' | 'dark' };
 const SHOTS_FULL: ShotSpec[] = [
@@ -18,10 +19,10 @@ const SHOTS_B3: ShotSpec[] = [
   { width: 1280, height: 800, theme: 'light' },
 ];
 
-test.describe('WP-17.12 Contact Sheets Capture', () => {
+test.describe('WP-17.13 Contact Sheets Capture', () => {
   test.skip(process.env.CAPTURE_WP17_SHEETS !== '1', 'Run with CAPTURE_WP17_SHEETS=1 to capture contact sheets');
 
-  test('seeds fixtures and captures all required WP-17.12 states across 320/1280/1920', async ({ page }) => {
+  test('seeds fixtures and captures all required WP-17.13 states across 320/1280/1920', async ({ page }) => {
     test.setTimeout(300_000);
     mkdirSync(OUT_DIR, { recursive: true });
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -34,10 +35,23 @@ test.describe('WP-17.12 Contact Sheets Capture', () => {
     const headers = { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf };
     const manifest: Array<{ file: string; state: string; assertion: string }> = [];
 
+    // Include e29cc38 before-sheets if staged
+    if (existsSync(BEFORE_STAGING)) {
+      for (const f of readdirSync(BEFORE_STAGING).filter((n) => n.endsWith('.png')).sort()) {
+        copyFileSync(join(BEFORE_STAGING, f), join(OUT_DIR, f));
+        manifest.push({ file: f, state: 'e29cc38 baseline (before WP-17.13)', assertion: 'Pre-fix baseline comparison sheet' });
+      }
+    }
+
     const shoot = async (slug: string, state: string, assertion: string, shots: ShotSpec[], fullPage = true) => {
       for (const s of shots) {
         await page.setViewportSize({ width: s.width, height: s.height });
+        // D7(c): Move pointer off-page and blur focus before non-state sheets
+        await page.mouse.move(0, 0);
         await page.evaluate(({ theme, strip }) => {
+          if (document.activeElement && typeof (document.activeElement as HTMLElement).blur === 'function') {
+            (document.activeElement as HTMLElement).blur();
+          }
           document.documentElement.setAttribute('data-theme', theme);
           let bar = document.getElementById('wp17-marker-strip');
           if (!bar) {
@@ -76,7 +90,18 @@ test.describe('WP-17.12 Contact Sheets Capture', () => {
       await page.evaluate((theme) => document.documentElement.setAttribute('data-theme', theme), s.theme);
       const file = `type-specimen-${s.width}px-${s.theme}.png`;
       await page.locator('#gallery-type-specimen').screenshot({ path: join(OUT_DIR, file) });
-      manifest.push({ file, state: `type-specimen (${s.width}px ${s.theme})`, assertion: 'B3: 8 closed roles with >=2-axis separation' });
+      manifest.push({ file, state: `type-specimen (${s.width}px ${s.theme})`, assertion: 'D3: 7 closed roles, secondary 13px/400/text-2, no text <13px' });
+    }
+    for (const s of [
+      { width: 1280, height: 900, theme: 'light' as const },
+      { width: 1280, height: 900, theme: 'dark' as const },
+      { width: 320, height: 640, theme: 'dark' as const },
+    ]) {
+      await page.setViewportSize({ width: s.width, height: s.height });
+      await page.evaluate((theme) => document.documentElement.setAttribute('data-theme', theme), s.theme);
+      const file = `state-matrix-${s.width}px-${s.theme}.png`;
+      await page.locator('#gallery-state-matrix').screenshot({ path: join(OUT_DIR, file) });
+      manifest.push({ file, state: `state-matrix (${s.width}px ${s.theme})`, assertion: 'D7(c): Button, Link, Choice, Field, Tab, Item across states' });
     }
 
     // 3. Today, Entries, Inbox
@@ -195,7 +220,7 @@ test.describe('WP-17.12 Contact Sheets Capture', () => {
     await shoot('contradictions-resolved', 'state=resolved (StatusLine Resolved, count updated)', 'A2 + A3 + K8', SHOTS_FULL);
 
     const idxLines = [
-      '# WP-17.12 Contact Sheets Index',
+      '# WP-17.13 Contact Sheets Index',
       '',
       '| File | State | Assertion |',
       '| --- | --- | --- |',
@@ -203,6 +228,6 @@ test.describe('WP-17.12 Contact Sheets Capture', () => {
       '',
     ];
     writeFileSync(join(OUT_DIR, 'INDEX.md'), idxLines.join('\n'), 'utf8');
-    console.log(`Captured ${manifest.length} WP-17.12 contact sheets.`);
+    console.log(`Captured ${manifest.length} WP-17.13 contact sheets.`);
   });
 });

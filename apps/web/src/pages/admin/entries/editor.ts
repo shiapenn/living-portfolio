@@ -104,7 +104,6 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
   const visibilitySection = renderFormSection({
     id: 'ref-vis-section',
     title: EDITOR_STRINGS.actions.visibility,
-    description: 'Choose who can view this entry.',
     fieldsHtml: `${renderChoiceGroup({
       name: 'ref-visibility-choice',
       mode: 'single',
@@ -123,7 +122,6 @@ function renderEditorCanvas(selected: ReferenceEditorEntry, options: ReferenceEd
   const detailsSection = renderFormSection({
     id: 'ref-details-section',
     title: 'Details',
-    description: 'Slug, type, date, and precision.',
     fieldsHtml: detailsBody,
   });
 

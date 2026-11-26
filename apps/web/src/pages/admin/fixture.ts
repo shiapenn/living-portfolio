@@ -94,19 +94,17 @@ export function renderFixturePatternPage(): string {
 
   const sub1 = renderSubsection({
     title: 'First subsection',
-    intro: 'Intro for first subsection.',
     bodyHtml: renderField({ id: 'fix-sub-a', name: 'fixSubA', label: 'Sub field', kind: 'input' }),
   });
   const sub2 = renderSubsection({
     title: 'Second subsection',
-    intro: 'Intro for second subsection.',
     bodyHtml: renderField({ id: 'fix-sub-b', name: 'fixSubB', label: 'Sub field B', kind: 'input' }),
   });
 
   const form = renderFormSection({
     id: 'fixture-form',
     title: 'Settings fields',
-    description: 'Vertical fields only.',
+    consequence: 'Changes apply immediately.',
     fieldsHtml:
       renderField({
         kind: 'input',
@@ -158,7 +156,6 @@ export function renderFixturePatternPage(): string {
   const extraSection = renderFormSection({
     id: 'fixture-subsections',
     title: 'Subsections',
-    description: 'Nested subsections inside a FormSection.',
     fieldsHtml: renderStack({ gap: 'group', childrenHtml: `${sub1}${sub2}` }),
   });
 

@@ -139,7 +139,7 @@
 }
 
 .lp-choice-card-desc {
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   line-height: var(--lp-font-line-16);
   color: var(--text-muted);
 }

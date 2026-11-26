@@ -104,7 +104,6 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
       <form id="settings-module-form" data-settings-module="answering" class="lp-stack lp-gap-section">
         ${renderFormSection({
           title: 'Automatic answering',
-          description: 'When paused, new visitor questions wait in Inbox.',
           fieldsHtml: renderChoiceGroup({
             name: 'answering-enabled-group',
             mode: 'multiple',
@@ -114,6 +113,7 @@ export const answeringModule: SettingsModuleManifest<AnsweringConfig> = {
                 id: 'setting-answering-enabled',
                 value: 'enabled',
                 label: 'Allow automatic visitor answers',
+                description: 'When paused, new visitor questions wait in Inbox.',
                 checked: answeringEnabled,
               },
             ],

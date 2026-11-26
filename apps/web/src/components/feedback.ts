@@ -65,7 +65,7 @@ export function renderPageNotice(props: PageNoticeProps): string {
   <div class="lp-notice-main">
     ${toneIcon}
     <div class="lp-notice-content">
-      <span class="lp-notice-text">${escapeHtml(props.message)}</span>
+      <span data-purpose="feedback" class="lp-notice-text">${escapeHtml(props.message)}</span>
       ${actionLink}
     </div>
   </div>
@@ -92,6 +92,6 @@ export function renderStatusLine(props: StatusLineProps): string {
   const emptyAttr = message ? '' : ' data-empty="true"';
   return `<div id="${escapeHtml(props.id)}" class="${escapeHtml(classes)}" role="${role}" aria-live="${role === 'alert' ? 'assertive' : 'polite'}" aria-atomic="true"${emptyAttr}>
   ${toneIcon}
-  <span class="lp-status-line-body"><span class="lp-status-line-text">${escapeHtml(message)}</span>${undoBtn}</span>
+  <span class="lp-status-line-body"><span data-purpose="feedback" class="lp-status-line-text">${escapeHtml(message)}</span>${undoBtn}</span>
 </div>`;
 }

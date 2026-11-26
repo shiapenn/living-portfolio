@@ -24,7 +24,7 @@
 
 .lp-item-segments { display: flex; flex-direction: column; gap: var(--lp-space-stack-tabs-to-content); }
 .lp-item-segment { display: flex; flex-direction: column; gap: var(--lp-space-proximity-1); }
-.lp-item-segment-heading { font-size: var(--lp-font-size-12); font-weight: 400; color: var(--text-2); line-height: var(--lp-font-line-16); }
+.lp-item-segment-heading { font-size: var(--lp-font-size-13); font-weight: 400; color: var(--text-2); line-height: var(--lp-font-line-20); }
 
 /* Subsection & ActionBar spacing (D-G #10) */
 .lp-subsection-title { font-size: var(--lp-font-size-14); font-weight: 600; color: var(--text-1); line-height: var(--lp-size-icon-md); margin: 0; }
@@ -46,8 +46,7 @@
   right: var(--lp-space-inset-item-y);
   top: 0;
   bottom: 0;
-  margin: auto 0;
-  height: var(--lp-size-icon-sm);
+  height: 100%;
   width: var(--lp-size-icon-sm);
   display: inline-flex;
   align-items: center;
@@ -88,7 +87,7 @@
 /* D-L: List variants (plain vs interactive) & list spacing */
 .lp-list,
 .lp-item-list {
-  --item-pad-y: var(--lp-space-inset-item-y);
+  --item-pad-y: var(--lp-space-proximity-3);
   --item-pad-x: var(--lp-space-inset-item-x);
   --list-control-gap: var(--lp-space-stack-control-to-list);
   --list-heading-plain-gap: var(--lp-space-stack-heading-to-list-plain);
@@ -188,7 +187,7 @@
 /* Tag symmetric ink inset (D-H H4) */
 .lp-tag {
   padding: 0 var(--lp-space-inset-item-x);
-  font-size: var(--lp-font-size-12);
+  font-size: var(--lp-font-size-13);
   font-weight: 400;
   height: var(--lp-size-tag-height);
   border-radius: var(--lp-radius-r1);

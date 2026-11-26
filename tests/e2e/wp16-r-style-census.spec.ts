@@ -119,7 +119,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
 
       const res = await page.evaluate(({ isTemplate, vpWidth }) => {
         const allowedRadii = new Set([0, 4, 8]);
-        const allowedFonts = new Set([12, 14, 16, 24]);
+        const allowedFonts = new Set([13, 14, 16, 18, 24]);
         const allowedSpace = new Set([0, 4, 8, 16, 24, 40, 64]);
         const allowedSiblingGaps = new Set([8, 16, 24, 40]);
 

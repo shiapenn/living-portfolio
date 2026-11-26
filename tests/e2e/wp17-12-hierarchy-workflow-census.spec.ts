@@ -273,22 +273,21 @@ test.describe('WP-17.12 Hierarchy & Workflow Checks (K6–K13)', () => {
     await page.goto(listCheck.detailHref);
     await expect(page.locator('#booking-detail-page')).toBeVisible();
     const detailCheck = await page.evaluate(() => ({
-      slot: (document.querySelector('[data-booking-detail-slot]')?.textContent || '').trim(),
-      requester: (document.querySelector('[data-booking-detail-requester]')?.textContent || '').trim(),
-      emailHref: document.querySelector('[data-booking-detail-email] a')?.getAttribute('href') || '',
-      facets: (document.querySelector('[data-booking-detail-facets]')?.textContent || '').trim(),
-      notes: (document.querySelector('[data-booking-detail-notes]')?.textContent || '').trim(),
-      received: (document.querySelector('[data-booking-detail-received]')?.textContent || '').trim(),
+      slot: (document.querySelector('#booking-detail-request')?.textContent || '').trim(),
+      requester: (document.querySelector('#booking-detail-request')?.textContent || '').trim(),
+      emailHref: document.querySelector('#booking-detail-request a[href^="mailto:"]')?.getAttribute('href') || '',
+      facets: (document.querySelector('#booking-detail-context')?.textContent || '').trim(),
+      notes: (document.querySelector('#booking-detail-context')?.textContent || '').trim(),
+      received: (document.querySelector('#booking-detail-meta')?.textContent || '').trim(),
       historyCount: document.querySelectorAll('#booking-status-history [data-c="Item"]').length,
-      emailBtnHref: document.getElementById('btn-booking-email')?.getAttribute('href') || '',
-      visitorHelper: (document.getElementById('booking-visitor-helper')?.textContent || '').trim(),
+      visitorHelper: (document.querySelector('#booking-detail-section [data-purpose="consequence"]')?.textContent || '').trim(),
     }));
     expect(detailCheck.emailHref).toContain('mailto:jordan%40example.com');
-    expect(detailCheck.emailBtnHref).toContain('Re%3A%20K10%20Architecture%20Review');
+    expect(detailCheck.emailHref).toContain('Re%3A%20K10%20Architecture%20Review');
     expect(detailCheck.facets).toContain('scale: high_volume');
     expect(detailCheck.notes).toContain('Evaluating Postgres advisory locks.');
     expect(detailCheck.historyCount).toBeGreaterThanOrEqual(1);
-    expect(detailCheck.visitorHelper).toMatch(/No email is sent/i);
+    expect(detailCheck.visitorHelper).toMatch(/visitor isn't notified/i);
     console.log('=== WP-17.12 K10 PROOF ===', JSON.stringify({ listCheck, detailCheck }));
   });
 
@@ -365,11 +364,9 @@ test.describe('WP-17.12 Hierarchy & Workflow Checks (K6–K13)', () => {
     expect(specimen!.label?.color).not.toBe(specimen!.sectionTitle?.color);
     expect(specimen!.body?.size).toBe(14);
     expect(specimen!.body?.weight).toBe(400);
-    expect(specimen!.secondary?.size).toBe(12);
-    expect(specimen!.secondary?.weight).toBe(500);
-    expect(specimen!.meta?.size).toBe(12);
-    expect(specimen!.meta?.weight).toBe(400);
-    expect(specimen!.mono?.size).toBe(12);
+    expect(specimen!.secondary?.size).toBe(13);
+    expect(specimen!.secondary?.weight).toBe(400);
+    expect(specimen!.mono?.size).toBe(13);
 
     // Check B2 S1 (4px) title->description and S2/S3/S4/S5 on Answering
     await page.goto('/admin/settings/answering');

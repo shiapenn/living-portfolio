@@ -13,7 +13,7 @@ Remove rather than add — without stripping operational guidance. Every word on
 | Page title | Noun | Concise noun (e.g. `Audit`, `Pages`, `Appearance`, `Settings`). |
 | Page description | `<= 14` words (1 line) | Omit if the title is self-explanatory. **Omitted on Settings index.** |
 | Settings index module summary | `<= 6` words | Describe purpose, not a field list (e.g. `Automatic replies and thresholds`). |
-| Section description | `<= 16` words (1 sentence) | Optional; omit if heading and fields are self-explanatory. |
+| Section description | **Banned (D2)** | Section intro text is banned. Move operational consequences to `consequence` directly above the section's `ActionBar` (tier `S2` gap), or delete. |
 | Field helper | `<= 12` words | For format, unit, range, recommended value, or consequence. Never restate the label. |
 | Empty state | `<= 12` words (1 sentence) | Plus optional single action. No raised surface, no indent (`D4`). |
 | Notice | `<= 2` sentences | Concise warning, error, or confirmation. Success notices follow an event only (never static). |
@@ -83,3 +83,55 @@ The following must **never** appear in rendered admin DOM text:
 - Awkward parenthetical plurals: `(s)`
 - Implementation artifacts: source/asset filenames (`.css`, `.ts`, `.json`), API paths (`/api/...`), raw internal IDs
 - Raw ISO date strings: `\d{4}-\d{2}-\d{2}`
+
+## Closed Text Purposes (WP-17.13 D2)
+
+Every visible text node on admin screens carries an explicit `data-purpose` from the closed set:
+
+| Purpose | Meaning | Allowed Placement |
+| --- | --- | --- |
+| `title` | Page, section, subsection, item, or empty-state heading | `h1`, `h2`, `h3`, `.lp-item-title` |
+| `label` | Field label, choice label, or definition term | `<label>`, `<dt>`, segment label |
+| `value` | Body copy, item content, claim quote, or definition value | `<dd>`, `.lp-body`, `.lp-item-body`, `blockquote` |
+| `helper` | Format, range, recommended value, or resolution rule | Below control (field help) or above list (legend) |
+| `consequence` | Operational or irreversible effect of an action | Directly above its `ActionBar` inside `.lp-action-group` (`S2` gap) |
+| `status` | Closed-vocabulary entity state or panel state headline | `StatusLabel`, panel headline |
+| `feedback` | Post-action result, validation error, or alert | Below `ActionBar` (`S3` gap) or below invalid field (`S2` gap) |
+| `empty` | Empty-state single sentence | `.lp-empty-body` |
+| `meta` | Timestamps, provenance, subtitles, secondary identifiers | `.lp-item-meta`, `.lp-item-subtitle`, `.lp-item-claim-eyebrow` |
+| `intro` | Page-level orientation line (omitted when redundant) | Page header only (never section-level) |
+
+## Route Text Purpose Audit Table (WP-17.13 D2)
+
+| Route | Text Node | Purpose | Disposition |
+| --- | --- | --- | --- |
+| `/admin/settings/account` | `Password, authenticator, tokens, and sessions` | `intro` | **Deleted** (redundant section list) |
+| `/admin/settings/account` | `Current authenticator stays active until you confirm a new code.` | `consequence` | **Moved** from section intro to `.lp-action-group` above `Re-enrol app` |
+| `/admin/settings/account` | `Regenerating invalidates all older recovery codes immediately.` | `consequence` | **Moved** from section intro to `.lp-action-group` above `Regenerate codes` |
+| `/admin/settings/account` | `Shown once when generated.` | `helper` | **Deleted** (covered by `Credential` Notice when shown) |
+| `/admin/settings/account` | `Shown once when created.` | `helper` | **Deleted** (covered by `Credential` Notice when shown) |
+| `/admin/settings/account` | `Signs out all other browsers and devices immediately.` | `consequence` | **Moved** from section intro to `.lp-action-group` above `End sessions` |
+| `/admin/settings/account` | `Minimum 12 characters.` | `helper` | **Kept** below `New password (optional)` |
+| `/admin/settings/account` | `Enter this key if you can't scan the code.` | `helper` | **Kept** inside `Credential` manual key block |
+| `/admin/settings/answering` | `When paused, new visitor questions wait in Inbox.` | `helper` | **Moved** from section intro to choice option description |
+| `/admin/settings/answering` | `Recommended 0.82. Higher sends more questions to Inbox.` | `helper` | **Kept** below `Direct quote threshold` |
+| `/admin/settings/answering` | `Recommended 0.55. Higher requires stronger multi-entry matches.` | `helper` | **Kept** below `Summary answer threshold` |
+| `/admin/settings/answering` | `Recommended 0.90. Higher narrows topic matching.` | `helper` | **Kept** below `Topic match threshold` |
+| `/admin/settings/appearance` | `Public site styling applies in a future release.` | `meta` | **Moved** from section intro to `Text[data-purpose="meta"]` |
+| `/admin/settings/appearance` | `Hex format (#RRGGBB). Light and dark ramps derive automatically.` | `helper` | **Kept** below `Accent seed` |
+| `/admin/settings/appearance` | `Arbitrary CSS properties are rejected.` | `helper` | **Kept** below `Theme pack JSON` |
+| `/admin/settings/backups` | `Download all entries and metadata as a portable archive.` | `intro` | **Deleted** (restates heading and button) |
+| `/admin/settings/backups` | `Exporting never modifies live entries.` | `consequence` | **Moved** to `.lp-action-group` above `Download archive` |
+| `/admin/settings/visibility` | `Changes update crawler rules immediately.` | `consequence` | **Moved** from section intro to `.lp-action-group` above `Save` |
+| `/admin/calibration` | `Self-tuning switches, proposals, and rollback history.` | `intro` | **Deleted** (redundant section list) |
+| `/admin/calibration` | `Adjustments require 20 samples and step at most 0.05.` | `consequence` | **Moved** from section intro to `.lp-action-group` above `Save switches` |
+| `/admin/structure` | `Entry profiles and private detail exclusions.` | `intro` | **Deleted** (redundant section list) |
+| `/admin/structure` | `Matched terms require confirmation before publishing.` | `helper` | **Moved** from section intro into `Excluded terms` field helper |
+| `/admin/bookings/:id` | `Status changes here only. The visitor isn't notified.` | `consequence` | **Moved** from post-action helper to `.lp-action-group` above Confirm/Decline/Cancel |
+| `/admin/bookings/:id` | `Pending · {date}` | `meta` | **Kept** as single-line `secondary` history entry |
+| `/admin/audit?status=contradictions` | `Keep newer stops answers using the older claim. Keep both leaves both.` | `helper` | **Kept** in `secondary` role above conflict list |
+| `/admin/audit?status=contradictions` | `Same date. Edit an entry to resolve.` | `helper` | **Added** when `Keep newer` is disabled on equal timestamps |
+| `/admin/entries/new` | `Choose who can view this entry.` | `intro` | **Deleted** (restates `Visibility` heading) |
+| `/admin/entries/new` | `Slug, type, date, and precision.` | `intro` | **Deleted** (redundant field list) |
+| `/admin/entries/new` | `Tags, suggested roles, claims, and evidence.` | `intro` | **Deleted** (redundant subsection list) |
+| `/admin/entries/new` | `Passages that may play a role in your story. Accept to label one, or ignore it.` | `intro` | **Deleted** (subsection intro banned) |

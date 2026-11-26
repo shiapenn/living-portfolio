@@ -52,6 +52,12 @@
   width: 100%;
 }
 
+.lp-action-bar-item .lp-btn,
+.lp-item-actions .lp-action-bar .lp-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .lp-action-bar-item .lp-btn:not(.lp-btn-text),
 .lp-item-actions .lp-action-bar .lp-btn:not(.lp-btn-text) {
   width: auto;
