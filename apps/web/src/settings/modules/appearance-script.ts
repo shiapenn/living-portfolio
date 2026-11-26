@@ -45,6 +45,7 @@ export function renderAppearanceV2Script(adminPack: ThemePackV2, publicPack: The
   var conformanceEl = document.getElementById('theme-conformance-box');
   var aaErrorEl = document.getElementById('appearance-aa-error');
   var banner = document.getElementById('settings-status-banner');
+  var importFeedback = document.getElementById('appearance-import-feedback');
   var exportBtn = document.getElementById('btn-export-theme-pack');
   var importBtn = document.getElementById('btn-import-theme-pack');
   var importInput = document.getElementById('setting-theme-import-json');
@@ -182,26 +183,74 @@ export function renderAppearanceV2Script(adminPack: ThemePackV2, publicPack: The
     }
     return ok;
   }
-  function setNotice(msg, isErr) {
-    if (!banner) return;
-    banner.innerHTML = '<div data-c="Notice" class="lp-notice ' + (isErr ? 'lp-notice-danger' : 'lp-notice-ok') + '" role="' + (isErr ? 'alert' : 'status') + '">' + msg + '</div>';
+  function mapShortValidationError(raw) {
+    var s = String(raw || '').trim();
+    if (/Unknown property "([^"]+)"/i.test(s)) return 'Unsupported field "' + s.match(/Unknown property "([^"]+)"/i)[1] + '".';
+    if (/version must be 2/i.test(s)) return 'Theme pack version must be 2.';
+    if (/id must be/i.test(s)) return 'Pack id must use lowercase letters, digits, or hyphens.';
+    if (/name must be/i.test(s)) return 'Pack name is required.';
+    if (/packId must be/i.test(s)) return 'Choose a supported theme pack id.';
+    if (/density must be/i.test(s)) return 'Density must be comfortable, compact, or spacious.';
+    if (/radiusScale must be/i.test(s)) return 'Corner radius must be default, sharp, or soft.';
+    if (/fontFamily must be/i.test(s)) return 'Font must be system, atkinson, or literata.';
+    if (/accent/i.test(s) && /hex/i.test(s)) return 'Accent colours must be 6-digit hex values.';
+    if (/4\.5/i.test(s) || /contrast/i.test(s)) return 'Accent contrast must meet WCAG AA (4.5:1).';
+    var words = s.split(/\s+/);
+    return words.length > 12 ? words.slice(0, 12).join(' ') + '…' : s;
+  }
+  function showFeedback(el, linesOrMsg, isErr) {
+    if (!el) return;
+    var items = Array.isArray(linesOrMsg) ? linesOrMsg.map(mapShortValidationError) : [String(linesOrMsg || '')];
+    if (isErr) {
+      el.setAttribute('data-c', 'Notice');
+      el.setAttribute('aria-live', 'assertive');
+      el.className = 'lp-notice lp-notice-danger';
+      if (items.length === 1) {
+        el.textContent = items[0];
+      } else {
+        var shown = items.slice(0, 3);
+        var extra = items.length - shown.length;
+        if (extra > 0) shown.push('and ' + extra + ' more');
+        el.innerHTML = '<ul class="lp-notice-list">' + shown.map(function (t) { return '<li>' + t.replace(/</g, '&lt;') + '</li>'; }).join('') + '</ul>';
+      }
+      try { el.scrollIntoView({ block: 'center', behavior: 'instant' }); } catch {}
+      try { el.focus({ preventScroll: true }); } catch {}
+    } else {
+      el.removeAttribute('data-c');
+      el.setAttribute('aria-live', 'polite');
+      el.className = 'lp-status-line lp-status-line-ok';
+      el.textContent = items[0];
+    }
+  }
+  function clearFeedback(el) {
+    if (!el) return;
+    el.className = 'lp-is-hidden';
+    el.textContent = '';
   }
   function swapAdminThemeLink(filename) {
-    if (!filename) return;
+    if (!filename) return Promise.resolve();
     var links = document.querySelectorAll('link[rel="stylesheet"]');
     for (var i = 0; i < links.length; i++) {
       var href = links[i].getAttribute('href') || '';
       if (/\\/assets\\/css\\/(accent|theme)\\.[0-9a-f]{10}\\.css$/.test(href)) {
-        links[i].setAttribute('href', '/assets/css/' + filename);
-        return;
+        var link = links[i];
+        return new Promise(function (resolve) {
+          var done = false;
+          var finish = function () { if (!done) { done = true; resolve(); } };
+          link.addEventListener('load', finish, { once: true });
+          link.addEventListener('error', finish, { once: true });
+          link.setAttribute('href', '/assets/css/' + filename);
+          setTimeout(finish, 400);
+        });
       }
     }
+    return Promise.resolve();
   }
   function getCsrf() {
     var m = document.cookie.match(/(?:^|;\\s*)lp_csrf=([^;]+)/);
     return m ? decodeURIComponent(m[1]) : (sessionStorage.getItem('lp_csrf_token') || '');
   }
-  async function savePack(scope, payload) {
+  async function savePack(scope, payload, targetEl, successLabel) {
     var res = await fetch('/api/settings/appearance-v2', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrf() },
@@ -209,21 +258,23 @@ export function renderAppearanceV2Script(adminPack: ThemePackV2, publicPack: The
     });
     var data = await res.json().catch(function () { return {}; });
     if (!res.ok) {
-      var msg = Array.isArray(data.errors) && data.errors.length ? data.errors.join(' ') : 'Theme pack failed validation.';
-      setNotice(msg, true);
+      var errs = Array.isArray(data.errors) && data.errors.length ? data.errors : ['Theme pack failed validation.'];
+      showFeedback(targetEl, errs, true);
       return false;
     }
     scopes[scope] = data.pack || payload;
     if (scope === 'admin' && data.adminCssFilename) {
-      swapAdminThemeLink(data.adminCssFilename);
+      await swapAdminThemeLink(data.adminCssFilename);
     }
-    setNotice(scope === 'admin' ? 'Saved admin appearance.' : 'Saved public appearance.', false);
+    showFeedback(targetEl, successLabel || (scope === 'admin' ? 'Saved admin appearance.' : 'Saved public appearance.'), false);
     return true;
   }
 
-  if (scopeEl) scopeEl.addEventListener('change', function () { loadScopeIntoFields(getScope()); });
+  form.addEventListener('input', function () { clearFeedback(banner); clearFeedback(importFeedback); });
+  if (scopeEl) scopeEl.addEventListener('change', function () { clearFeedback(banner); loadScopeIntoFields(getScope()); });
   if (packEl) {
     packEl.addEventListener('change', function () {
+      clearFeedback(banner);
       var chosen = packs[packEl.value];
       if (!chosen) return;
       if (seedEl) seedEl.value = chosen.accent.light;
@@ -242,14 +293,16 @@ export function renderAppearanceV2Script(adminPack: ThemePackV2, publicPack: The
     saveBtn.addEventListener('click', async function (e) {
       e.stopImmediatePropagation();
       if (!updatePreview()) {
-        setNotice(aaErrorEl && aaErrorEl.textContent ? aaErrorEl.textContent : 'Contrast check failed (minimum 4.5:1 required).', true);
+        showFeedback(banner, aaErrorEl && aaErrorEl.textContent ? aaErrorEl.textContent : 'Contrast check failed (minimum 4.5:1 required).', true);
         return;
       }
       saveBtn.setAttribute('disabled', 'true');
+      saveBtn.textContent = 'Saving…';
       try {
-        await savePack(getScope(), currentPackPayload());
+        await savePack(getScope(), currentPackPayload(), banner);
       } finally {
         saveBtn.removeAttribute('disabled');
+        saveBtn.textContent = 'Save';
       }
     }, true);
   }
@@ -258,27 +311,28 @@ export function renderAppearanceV2Script(adminPack: ThemePackV2, publicPack: The
     exportBtn.addEventListener('click', function () {
       var p = currentPackPayload();
       if (importInput) importInput.value = JSON.stringify(p, null, 2);
-      setNotice('Exported theme pack JSON below.', false);
+      showFeedback(importFeedback, 'Exported pack JSON above.', false);
     });
   }
 
   if (importBtn && importInput) {
     importBtn.addEventListener('click', async function () {
+      clearFeedback(importFeedback);
       var raw = importInput.value.trim();
       if (!raw) {
-        setNotice('Paste a JSON theme pack before importing.', true);
+        showFeedback(importFeedback, 'Paste a JSON theme pack before importing.', true);
         return;
       }
       var parsed;
       try {
         parsed = JSON.parse(raw);
       } catch {
-        setNotice('Invalid JSON syntax in theme pack.', true);
+        showFeedback(importFeedback, 'Invalid JSON syntax in theme pack.', true);
         return;
       }
       importBtn.setAttribute('disabled', 'true');
       try {
-        var ok = await savePack(getScope(), parsed);
+        var ok = await savePack(getScope(), parsed, importFeedback, 'Imported.');
         if (ok) loadScopeIntoFields(getScope());
       } finally {
         importBtn.removeAttribute('disabled');

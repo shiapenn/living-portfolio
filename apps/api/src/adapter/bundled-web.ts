@@ -1,5 +1,6 @@
 import type { Hono } from 'hono';
 import type { IPortfolioRepository } from '@living-portfolio/db';
+import { DEFAULT_ACCENT_CSS_FILENAME, resolveAdminThemeCssAsset } from '@living-portfolio/ui-core';
 import {
   createWebApp,
   renderAdminEntriesPage,
@@ -36,6 +37,20 @@ export function mountBundledWeb(
   runtimeState?: any,
   auth?: AuthManager
 ) {
+  // C4: Apply saved admin Appearance v2 theme.<hash>.css across ALL /admin/* HTML routes
+  app.use('/admin/*', async (c, next) => {
+    await next();
+    const ct = c.res.headers.get('content-type') || '';
+    if (!ct.includes('text/html')) return;
+    const activeFile = resolveAdminThemeCssAsset(runtimeState?.appearanceV2?.admin).filename;
+    if (activeFile === DEFAULT_ACCENT_CSS_FILENAME) return;
+    const html = await c.res.text();
+    const updated = html.replace(`/assets/css/${DEFAULT_ACCENT_CSS_FILENAME}`, `/assets/css/${activeFile}`);
+    const headers = new Headers(c.res.headers);
+    headers.delete('content-length');
+    c.res = new Response(updated, { status: c.res.status, headers });
+  });
+
   // Admin UI routes with authentication
   if (auth) {
     app.get('/admin/setup', (c) => {

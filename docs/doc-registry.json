@@ -2129,5 +2129,21 @@
     "path": "docs/execution-reports/A181-wp-1710-exit-gate-fixes.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L058",
+    "title": "ADR-025: Feedback Placement and Timing",
+    "class": "L",
+    "path": "docs/adr/ADR-025-feedback-placement-and-timing.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L059",
+    "title": "Admin Feedback Placement & Timing",
+    "class": "L",
+    "path": "docs/design/feedback.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

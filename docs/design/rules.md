@@ -5,10 +5,10 @@
 
 | Metric | Value |
 | --- | --- |
-| Accepted ADRs | 23 |
+| Accepted ADRs | 24 |
 | Superseded ADRs (excluded) | 1 |
-| Effective Rules | 35 |
-| Areas Covered | 11 |
+| Effective Rules | 39 |
+| Areas Covered | 12 |
 
 ## architecture
 
@@ -37,7 +37,7 @@
 | `R-024-2` | Rendered admin UI must never contain banned internal tokens ([object Object], undefined, null, NaN, WP-N, ADR-N, <hash>, (s), filenames, API paths, raw IDs, or raw ISO YYYY-MM-DD dates); timestamps use the ui-core formatter (25 Nov 2026, 14:29) | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
 | `R-024-3` | Tabs always have an active selected tab matching the URL (unknown values fall back to the first tab), labels are 1-2 short words, painted label ink boxes never intersect or clip, targets are >= 44px, overflowing tablists scroll horizontally with scroll-snap and edge fade, and tab panels never repeat their active tab name as a heading or duplicate status lines | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
 | `R-024-4` | EmptyState has no raised surface and no padding indent: left ink edge aligns with the section heading left ink edge within 1px, renders one sentence <= 12 words plus optional action, and is used consistently across lists, panels, and tab panels | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
-| `R-024-5` | Item anatomy is uniform at 1280px and 320px: row 1 holds title + trailing status (dot + text with >= 4px painted gap + chevron if navigable) aligned to the title row within half a line height (wp16-c 320px stacking exemption is keyed strictly to adjacent lp-item-title and lp-item-status), row 2 holds description (wrapping at 320px), optional meta, and trailing item actions per D-L1 | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-024-5` | Item v2 uses a container query at 480px on its own container: compact (<480px) places full-width title on row 1 (clamp 3 lines in lists), status (dot + label with >= 4px painted gap) + trailing chevron on row 2, description on row 3, atomic-field meta on row 4, and actions on row 5; regular (>=480px) places title + trailing status/chevron on row 1. Status is omitted in single-status filtered views (Audit tabs, Inbox tabs, Contradictions) | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
 | `R-024-6` | Entity status labels obey the closed vocabulary in docs/design/content.md: Booking (Pending, Confirmed, Declined, Cancelled), Token (Active, Revoked), Rule (Pending, Active, Discarded), and Page Revision (newest labelled Current, older rows show no status) | [ADR-024](../adr/ADR-024-content-standard.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
 
 ## editor
@@ -45,6 +45,15 @@
 | Rule | Requirement | Source ADR | Enforced By |
 | --- | --- | --- | --- |
 | `R-010-1` | Admin editor preserves lossless markdown roundtrip and loads route-split editor CSS only on editor routes | [ADR-010](../adr/ADR-010-d-editor-markdown-architecture.md) | `apps/web/src/editor/roundtrip.test.ts` |
+
+## feedback
+
+| Rule | Requirement | Source ADR | Enforced By |
+| --- | --- | --- | --- |
+| `R-025-1` | Admin uses no toasts; all feedback follows the 9 closed scenarios in docs/design/feedback.md: field-invalid inline replacing helper (aria-invalid + aria-describedby, focus first invalid), action-error danger Notice directly below the trigger section ActionBar (aria-live=assertive, scrolled into view), action-success without follow-up as StatusLine below ActionBar (not a green Notice, cleared on dirty), secret-bearing success as warning Notice + Credential in trigger section, state-derived warning Notice directly above ActionBar, destructive confirmation via Overlay dialog, page-level failure as page-top danger Notice with Retry, in-progress disabling trigger with Saving…/Checking… + aria-busy, and empty/idle via EmptyState | [ADR-025](../adr/ADR-025-feedback-placement-and-timing.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-025-2` | All Notices span full container width (within 1px of container width); server validation errors are mapped to concise copy (at most 3 lines, each <= 12 words, with 'and N more' if truncated; no raw validator dumps); errors never auto-dismiss and clear only on next edit or retry | [ADR-025](../adr/ADR-025-feedback-placement-and-timing.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-025-3` | One-time secrets (TOTP manual key, recovery codes, API tokens) render via the registered Credential component (variants single and list): warning Notice ('Shown once. Save it now.') above a bordered monospace Credential surface with Copy/Copy all + Copied StatusLine, single wrapping with overflow-wrap:anywhere (zero horizontal overflow), manual key grouped in blocks of 4, and list in a 2-col compact / 4-col regular grid | [ADR-025](../adr/ADR-025-feedback-placement-and-timing.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
+| `R-025-4` | Every accent-bearing admin role (primary Button fill/label, text Button, Link, focus ring, selected Tab indicator, selected Choice tint/check, native accent-color, EmptyState/Notice links) binds strictly to the derived accent tokens in light and dark themes with zero hard-coded legacy accent ink | [ADR-025](../adr/ADR-025-feedback-placement-and-timing.md) | `tests/e2e/wp17-9-content-and-ink-census.spec.ts` |
 
 ## governance
 

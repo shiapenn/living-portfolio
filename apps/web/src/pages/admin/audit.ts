@@ -51,21 +51,22 @@ export async function renderAdminAuditRulesPage(
           itemsHtml: activeConflicts.map((c) => {
             const claimA = String(c.claim_a_text || c.claim_a || 'Claim A');
             const claimB = String(c.claim_b_text || c.claim_b || 'Claim B');
-            const entryALink = c.entry_a_id ? `Entry: ${String(c.entry_a_title || 'View entry')}` : '';
-            const entryBLink = c.entry_b_id ? `Entry: ${String(c.entry_b_title || 'View entry')}` : '';
+            const titleA = String(c.entry_a_title || 'Earlier entry');
+            const titleB = String(c.entry_b_title || 'Later entry');
+            const hrefA = c.entry_a_id ? `/admin/entries/${encodeURIComponent(String(c.entry_a_id))}` : undefined;
+            const hrefB = c.entry_b_id ? `/admin/entries/${encodeURIComponent(String(c.entry_b_id))}` : undefined;
             return renderItem({
-              title: 'Conflicting claims',
-              subtitle: `Confidence ${Math.round((Number(c.confidence) || 0.8) * 100)}%`,
+              title: `${titleA} vs ${titleB}`,
+              titleClamp2: true,
+              meta: `${Math.round((Number(c.confidence) || 0.8) * 100)}% confidence`,
               segments: [
-                { heading: entryALink || 'First claim', body: `"${claimA}"` },
-                { heading: entryBLink || 'Second claim', body: `"${claimB}"` },
+                { heading: titleA, headingHref: hrefA, body: claimA, quote: true },
+                { heading: titleB, headingHref: hrefB, body: claimB, quote: true },
               ],
-              statusLabel: 'Pending',
-              statusTone: 'warn',
               actions: {
                 level: 'item',
-                secondary: { label: 'Supersede', variant: 'secondary', size: 'sm', dataAttrs: { 'conflict-id': String(c.id), 'conflict-res': 'supersedes' } },
-                textAction: { label: 'Dismiss', variant: 'text', size: 'sm', dataAttrs: { 'conflict-id': String(c.id), 'conflict-res': 'dismiss' } },
+                secondary: { label: 'Keep newer', variant: 'secondary', size: 'sm', dataAttrs: { 'conflict-id': String(c.id), 'conflict-res': 'supersedes' } },
+                textAction: { label: 'Keep both', variant: 'text', size: 'sm', dataAttrs: { 'conflict-id': String(c.id), 'conflict-res': 'dismiss' } },
               },
               attributes: `data-conflict-row="${escapeHtml(String(c.id))}"`,
             });
@@ -83,17 +84,17 @@ export async function renderAdminAuditRulesPage(
     mainContentHtml = `
       <div id="audit-contradictions-panel" data-contradictions-state="${initialState}" class="lp-stack lp-gap-group">
         <div id="audit-conflicts-section" class="lp-stack lp-gap-group">
-          <div id="audit-conflicts-region" aria-live="polite" class="lp-stack lp-gap-related">
-            ${conflictBodyHtml}
-            ${checkedMetaHtml}
-          </div>
-          <div id="audit-conflicts-error" data-c="Notice" class="lp-notice lp-notice-danger lp-is-hidden">
-            Could not run contradiction check.
-          </div>
           ${renderActionBar({
             level: 'item',
             secondary: { id: 'btn-detect-conflicts', label: 'Run check', variant: 'secondary', type: 'button', size: 'sm' },
           })}
+          <div id="audit-conflicts-error" data-c="Notice" class="lp-notice lp-notice-danger lp-is-hidden" aria-live="assertive">
+            Could not run contradiction check.
+          </div>
+          <div id="audit-conflicts-region" aria-live="polite" class="lp-stack lp-gap-related">
+            ${conflictBodyHtml}
+            ${checkedMetaHtml}
+          </div>
         </div>
       </div>
     `;
@@ -121,13 +122,10 @@ export async function renderAdminAuditRulesPage(
                 (cObj && Object.keys(cObj).length > 0
                   ? Object.entries(cObj).map(([k, v]) => `${k.replace(/_/g, ' ')}: ${String(v)}`).join('; ')
                   : 'Answer rule');
-              const tone = activeStatus === 'confirmed' ? 'ok' : activeStatus === 'revoked' ? 'neutral' : 'warn';
               return renderItem({
                 title: String(summary),
                 subtitle: scopeText,
                 segments: quote && quote.trim() !== String(summary).trim() ? [{ heading: 'From your reply', body: quote }] : undefined,
-                statusLabel: activeStatus === 'confirmed' ? 'Active' : activeStatus === 'revoked' ? 'Discarded' : 'Pending',
-                statusTone: tone,
                 actions: activeStatus === 'revoked'
                   ? { level: 'item', secondary: { label: 'Restore', variant: 'secondary', size: 'sm', dataAttrs: { 'rule-id': id, 'rule-action': 'confirmed' } } }
                   : activeStatus === 'proposed'

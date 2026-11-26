@@ -35,6 +35,8 @@ export { renderTable } from './table.js';
 export type { TableColumn, TableProps } from './table.js';
 export { renderProviderRow } from './provider-row.js';
 export type { ProviderRowProps } from './provider-row.js';
+export { renderCredential, formatManualKeyGroups, CREDENTIAL_CLIENT_SCRIPT } from './credential.js';
+export type { CredentialProps, CredentialVariant } from './credential.js';
 export type {
   DialogProps,
   DisclosureProps,

@@ -84,8 +84,6 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
 
     return `
       <form id="settings-module-form" data-settings-module="appearance" class="lp-stack lp-gap-section">
-        ${renderStatusLine({ id: 'settings-status-banner' })}
-
         ${renderFormSection({
           id: 'appearance-scope-section',
           title: 'Scope and pack',
@@ -204,12 +202,16 @@ export const appearanceModule: SettingsModuleManifest<AppearanceConfig> = {
             secondary: { id: 'btn-import-theme-pack', label: 'Import pack', variant: 'secondary', type: 'button', size: 'sm' },
             textAction: { id: 'btn-export-theme-pack', label: 'Export pack', variant: 'text', type: 'button', size: 'sm' },
           }),
+          feedbackHtml: `<div id="appearance-import-feedback" class="lp-is-hidden" aria-live="assertive" tabindex="-1"></div>`,
         })}
 
-        ${renderActionBar({
-          pageLevel: true,
-          primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
-        })}
+        <div class="lp-stack lp-gap-related">
+          ${renderActionBar({
+            pageLevel: true,
+            primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
+          })}
+          <div id="settings-status-banner" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
+        </div>
       </form>
       <link id="appearance-preview-link" rel="stylesheet" href="${previewHref}" />
       ${renderAppearanceV2Script(adminPack, publicPack)}

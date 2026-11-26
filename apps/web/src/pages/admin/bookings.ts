@@ -26,12 +26,15 @@ export async function renderAdminBookingsPage(
           const status = String(b.status || 'pending');
           const statusLabel = status === 'confirmed' ? 'Confirmed' : status === 'declined' ? 'Declined' : status === 'cancelled' ? 'Cancelled' : 'Pending';
           const statusTone = status === 'confirmed' ? 'ok' : status === 'declined' || status === 'cancelled' ? 'neutral' : 'warn';
-          const who = [b.visitor_name, b.visitor_contact].filter(Boolean).join(' · ');
-          const metaParts = [who, b.preferred_time ? `Preferred: ${b.preferred_time}` : ''].filter(Boolean);
+          const metaFields = [
+            b.visitor_name ? { text: String(b.visitor_name) } : null,
+            b.visitor_contact ? { text: String(b.visitor_contact), breakable: true } : null,
+            b.preferred_time ? { text: String(b.preferred_time) } : null,
+          ].filter(Boolean) as Array<{ text: string; breakable?: boolean }>;
           return renderItem({
             title: String(b.topic || 'Consultation request'),
-            subtitle: metaParts.join(' · ') || 'Visitor request',
             body: b.notes ? String(b.notes) : undefined,
+            metaFields: metaFields.length > 0 ? metaFields : [{ text: 'Visitor request' }],
             statusLabel,
             statusTone,
             actions: status === 'pending'

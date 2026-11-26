@@ -10,9 +10,59 @@ export const SETTINGS_SCRIPT = `
 
         const setBanner = (msg, isError) => {
           if (!banner) return;
-          const cls = isError ? 'lp-notice lp-notice-danger' : 'lp-notice lp-notice-ok';
-          const role = isError ? 'alert' : 'status';
-          banner.innerHTML = '<div class="' + cls + '" role="' + role + '">' + msg + '</div>';
+          if (isError) {
+            banner.setAttribute('data-c', 'Notice');
+            banner.setAttribute('aria-live', 'assertive');
+            banner.className = 'lp-notice lp-notice-danger';
+            banner.textContent = msg;
+            try { banner.scrollIntoView({ block: 'center', behavior: 'instant' }); } catch {}
+            try { banner.focus({ preventScroll: true }); } catch {}
+          } else {
+            banner.removeAttribute('data-c');
+            banner.setAttribute('aria-live', 'polite');
+            banner.className = 'lp-status-line lp-status-line-ok';
+            banner.textContent = msg;
+          }
+        };
+        const clearBanner = () => {
+          if (!banner) return;
+          banner.className = 'lp-is-hidden';
+          banner.textContent = '';
+        };
+        if (form) form.addEventListener('input', clearBanner);
+
+        const setFieldInvalid = (inputEl, msg) => {
+          if (!inputEl) { setBanner(msg, true); return; }
+          inputEl.setAttribute('aria-invalid', 'true');
+          const field = inputEl.closest('.lp-field');
+          if (field) {
+            const errId = inputEl.id + '-error';
+            let helpEl = field.querySelector('.lp-field-help, .lp-help-text, .lp-field-error');
+            if (!helpEl) {
+              helpEl = document.createElement('p');
+              field.appendChild(helpEl);
+            }
+            if (!helpEl.getAttribute('data-orig-help')) {
+              helpEl.setAttribute('data-orig-help', helpEl.textContent || '');
+            }
+            helpEl.id = errId;
+            helpEl.className = 'lp-field-error';
+            helpEl.textContent = msg;
+            inputEl.setAttribute('aria-describedby', errId);
+          }
+          setBanner(msg, true);
+          try { inputEl.focus(); } catch {}
+        };
+        const clearFieldInvalid = (inputEl) => {
+          if (!inputEl || inputEl.getAttribute('aria-invalid') !== 'true') return;
+          inputEl.removeAttribute('aria-invalid');
+          const field = inputEl.closest('.lp-field');
+          const errEl = field ? field.querySelector('.lp-field-error') : null;
+          if (errEl) {
+            const orig = errEl.getAttribute('data-orig-help') || '';
+            errEl.className = 'lp-field-help';
+            errEl.textContent = orig;
+          }
         };
 
         const tier1Input = document.getElementById('setting-tier1-floor');
@@ -30,18 +80,23 @@ export const SETTINGS_SCRIPT = `
             (!isNaN(v3) && Math.abs(v3 - 0.9) > 0.001);
           tier1Warning.classList.toggle('lp-is-hidden', !drifted);
         };
-        if (tier1Input) tier1Input.addEventListener('input', updateThresholdWarning);
-        if (tier2Input) tier2Input.addEventListener('input', updateThresholdWarning);
-        if (facetInput) facetInput.addEventListener('input', updateThresholdWarning);
+        if (tier1Input) tier1Input.addEventListener('input', () => { clearFieldInvalid(tier1Input); updateThresholdWarning(); });
+        if (tier2Input) tier2Input.addEventListener('input', () => { clearFieldInvalid(tier2Input); updateThresholdWarning(); });
+        if (facetInput) facetInput.addEventListener('input', () => { clearFieldInvalid(facetInput); updateThresholdWarning(); });
 
         const restoreBtn = document.getElementById('btn-restore-thresholds');
+        const thresholdsFeedback = document.getElementById('answering-thresholds-feedback');
         if (restoreBtn) {
           restoreBtn.addEventListener('click', function() {
-            if (tier1Input) tier1Input.value = '0.82';
-            if (tier2Input) tier2Input.value = '0.55';
-            if (facetInput) facetInput.value = '0.9';
+            if (tier1Input) { tier1Input.value = '0.82'; clearFieldInvalid(tier1Input); }
+            if (tier2Input) { tier2Input.value = '0.55'; clearFieldInvalid(tier2Input); }
+            if (facetInput) { facetInput.value = '0.9'; clearFieldInvalid(facetInput); }
             updateThresholdWarning();
-            setBanner('Recommended thresholds restored. Click Save to apply.', false);
+            clearBanner();
+            if (thresholdsFeedback) {
+              thresholdsFeedback.className = 'lp-status-line lp-status-line-ok';
+              thresholdsFeedback.textContent = 'Restored recommended values. Click Save to apply.';
+            }
           });
         }
 
@@ -92,15 +147,15 @@ export const SETTINGS_SCRIPT = `
                 const t2 = parseFloat(document.getElementById('setting-tier2-floor').value);
                 const t3 = parseFloat(document.getElementById('setting-facet-threshold').value);
                 if (isNaN(t1) || t1 < 0.1 || t1 > 1.0) {
-                  setBanner('Direct quote threshold must be between 0.10 and 1.00.', true);
+                  setFieldInvalid(tier1Input, 'Direct quote threshold must be between 0.10 and 1.00.');
                   return;
                 }
                 if (isNaN(t2) || t2 < 0.1 || t2 > 1.0) {
-                  setBanner('Summary answer threshold must be between 0.10 and 1.00.', true);
+                  setFieldInvalid(tier2Input, 'Summary answer threshold must be between 0.10 and 1.00.');
                   return;
                 }
                 if (isNaN(t3) || t3 < 0.5 || t3 > 1.0) {
-                  setBanner('Topic match threshold must be between 0.50 and 1.00.', true);
+                  setFieldInvalid(facetInput, 'Topic match threshold must be between 0.50 and 1.00.');
                   return;
                 }
                 const replyTimeEl = document.getElementById('setting-reply-time');

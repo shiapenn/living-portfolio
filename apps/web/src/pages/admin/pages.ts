@@ -63,8 +63,6 @@ export async function renderAdminPagesEditorPage(
 
   const bodyHtml = `
     <form id="admin-pages-form" data-page-section="${escapeHtml(active)}" class="lp-stack lp-gap-section">
-      ${renderStatusLine({ id: 'pages-status-line' })}
-
       ${renderFormSection({
         id: 'pages-editor-section',
         title: 'Content',
@@ -85,10 +83,13 @@ export async function renderAdminPagesEditorPage(
         fieldsHtml: revListHtml,
       })}
 
-      ${renderActionBar({
-        pageLevel: true,
-        primary: { id: 'btn-save-page-section', label: 'Save', variant: 'primary', type: 'button' },
-      })}
+      <div class="lp-stack lp-gap-related">
+        ${renderActionBar({
+          pageLevel: true,
+          primary: { id: 'btn-save-page-section', label: 'Save', variant: 'primary', type: 'button' },
+        })}
+        <div id="pages-status-line" class="lp-is-hidden" aria-live="assertive" tabindex="-1"></div>
+      </div>
     </form>
     <script${options.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : ''}>
       ${ADMIN_API_CLIENT_SCRIPT}

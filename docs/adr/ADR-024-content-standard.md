@@ -19,7 +19,7 @@ rules:
     text: "EmptyState has no raised surface and no padding indent: left ink edge aligns with the section heading left ink edge within 1px, renders one sentence <= 12 words plus optional action, and is used consistently across lists, panels, and tab panels"
     enforced_by: tests/e2e/wp17-9-content-and-ink-census.spec.ts
   - id: R-024-5
-    text: "Item anatomy is uniform at 1280px and 320px: row 1 holds title + trailing status (dot + text with >= 4px painted gap + chevron if navigable) aligned to the title row within half a line height (wp16-c 320px stacking exemption is keyed strictly to adjacent lp-item-title and lp-item-status), row 2 holds description (wrapping at 320px), optional meta, and trailing item actions per D-L1"
+    text: "Item v2 uses a container query at 480px on its own container: compact (<480px) places full-width title on row 1 (clamp 3 lines in lists), status (dot + label with >= 4px painted gap) + trailing chevron on row 2, description on row 3, atomic-field meta on row 4, and actions on row 5; regular (>=480px) places title + trailing status/chevron on row 1. Status is omitted in single-status filtered views (Audit tabs, Inbox tabs, Contradictions)"
     enforced_by: tests/e2e/wp17-9-content-and-ink-census.spec.ts
   - id: R-024-6
     text: "Entity status labels obey the closed vocabulary in docs/design/content.md: Booking (Pending, Confirmed, Declined, Cancelled), Token (Active, Revoked), Rule (Pending, Active, Discarded), and Page Revision (newest labelled Current, older rows show no status)"

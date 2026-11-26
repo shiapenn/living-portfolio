@@ -136,6 +136,17 @@ items:
     acceptance: Fix A1-A10 (tab panel heading/status dedupe, all 6 Contradictions states + extended J4, Account section-local errors/QR<=192px/status dot gap>=4px/optional labels, Answering threshold helpers with recommended+effect/drift warning/floor rule, Appearance no static green notice/AA reject/pack sheets, closed status vocabulary, reconciled word metric & Answering node dump, ui-core datetime formatter & ISO date ban, D5 intentional diff list + Entries/Inbox before/after sheets + wp16-c exemption rule, viewport-centred dialog sheets); canaries fail on 317f257; CI + CodeQL green
     status: done
 
+  - id: WP-17.11
+    title: Feedback model, Credential display, Item v2, accent coverage (WP-17 exit gate, last; C1-C5, K1-K5, ADR-025)
+    track: admin
+    type: visual
+    depends_on: [WP-17.10]
+    size: L
+    expected_minutes: 75
+    gate: L-review
+    acceptance: Extract registered Credential component (C1), implement ADR-025 9-scenario feedback model + feedback.md across all admin screens (C2), implement Item v2 480px container-query compact/regular anatomy + atomic meta + single-status omission + Contradiction layout (C3), full derived accent coverage across all roles in light/dark (C4), verify 320/1280/1920 widths (C5), K1-K5 checks failing on 40f87ad canary, extended J3/J7, contact-sheet zip; CI + CodeQL green
+    status: done
+
   # ── WP-18: Authoring canvas, media, storage & import (Report §7.9 + P004) ──
   - id: WP-18.1
     title: Authoring canvas layout (UI-02; covered by WP-16.L L2)
@@ -163,7 +174,7 @@ items:
     title: Media API (POST /media, GET /media/:id, storage adapter, limits, content sniffing; D-06, D-STORAGE)
     track: functional
     type: functional
-    depends_on: [WP-17.10]
+    depends_on: [WP-17.11]
     size: M
     expected_minutes: 50
     gate: none

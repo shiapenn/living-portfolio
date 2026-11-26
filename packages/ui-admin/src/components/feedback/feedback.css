@@ -24,6 +24,8 @@
 }
 
 .lp-notice {
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -35,6 +37,27 @@
   color: var(--role-neutral-fg);
   font-size: var(--lp-font-size-14);
   line-height: var(--lp-font-line-20);
+}
+
+.lp-notice-list {
+  margin: 0;
+  padding-left: var(--lp-space-inset-section);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-proximity-1);
+}
+
+.lp-field-error {
+  margin: 0;
+  font-size: var(--lp-font-size-12);
+  line-height: var(--lp-font-line-16);
+  color: var(--role-danger-fg);
+}
+
+.lp-input[aria-invalid="true"],
+.lp-textarea[aria-invalid="true"],
+.lp-select[aria-invalid="true"] {
+  border-color: var(--role-danger-border);
 }
 
 .lp-notice-main {

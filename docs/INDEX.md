@@ -290,4 +290,6 @@
 | `L055` | WP-17 Progress & Time Ledger | `active` | [wp17-progress.md](plans/wp17-progress.md) | — |
 | `L056` | ADR-024: Content Standard and Admin UI Polish Contracts | `active` | [ADR-024-content-standard.md](adr/ADR-024-content-standard.md) | — |
 | `L057` | Admin Content Standard | `active` | [content.md](design/content.md) | — |
+| `L058` | ADR-025: Feedback Placement and Timing | `active` | [ADR-025-feedback-placement-and-timing.md](adr/ADR-025-feedback-placement-and-timing.md) | — |
+| `L059` | Admin Feedback Placement & Timing | `active` | [feedback.md](design/feedback.md) | — |
 

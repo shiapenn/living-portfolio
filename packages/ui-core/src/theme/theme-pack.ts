@@ -286,60 +286,52 @@ export function isDefaultThemePackV2(pack?: Partial<ThemePackV2> | null): boolea
 /**
  * Build the single cacheable `@layer user-theme` CSS file from a validated ThemePackV2.
  */
+function accentRoleVars(ramp: Record<number, string>, mode: 'light' | 'dark'): string[] {
+  const fg = mode === 'light' ? ramp[600] : ramp[300];
+  const actionFg = mode === 'light' ? ramp[800] : ramp[200];
+  const bg = mode === 'light' ? ramp[50] : ramp[900];
+  return [
+    `--lp-color-accent-default: ${fg};`, `--lp-color-accent-focus-ring: ${fg};`,
+    `--lp-color-role-action-fg: ${actionFg};`, `--lp-color-role-action-bg: ${bg};`,
+    `--lp-color-role-action-border: ${fg};`, `--lp-color-surface-control-selected: ${bg};`,
+    `--accent: ${fg};`, `--focus-ring: ${fg};`,
+    `--role-action-fg: ${actionFg};`, `--role-action-bg: ${bg};`, `--role-action-border: ${fg};`,
+    `accent-color: ${fg};`,
+  ];
+}
+
 export function buildThemePackCss(pack: ThemePackV2): string {
   const checked = validateThemePackV2(pack);
-  if (!checked.ok) {
-    throw new Error(`Theme pack rejected: ${checked.errors.join('; ')}`);
-  }
+  if (!checked.ok) throw new Error(`Theme pack rejected: ${checked.errors.join('; ')}`);
   const p = checked.pack;
   const ramp = generateAccentRamp(p.accent);
-  const lines: string[] = [];
-
-  for (const step of ACCENT_STEPS) {
-    lines.push(`${ACCENT_VAR_PREFIX}${step}: ${ramp[step]};`);
-  }
+  const lines: string[] = [
+    ...ACCENT_STEPS.map((s) => `${ACCENT_VAR_PREFIX}${s}: ${ramp[s]};`),
+    ...accentRoleVars(ramp, 'light'),
+  ];
   if (p.density !== 'comfortable') {
-    for (const [k, v] of Object.entries(DENSITY_PROXIMITY_TABLES[p.density])) {
-      lines.push(`${k}: ${v};`);
-    }
+    for (const [k, v] of Object.entries(DENSITY_PROXIMITY_TABLES[p.density])) lines.push(`${k}: ${v};`);
   }
   if (p.radiusScale !== 'default') {
-    for (const [k, v] of Object.entries(RADIUS_SCALE_TABLES[p.radiusScale])) {
-      lines.push(`${k}: ${v};`);
-    }
+    for (const [k, v] of Object.entries(RADIUS_SCALE_TABLES[p.radiusScale])) lines.push(`${k}: ${v};`);
   }
-  if (p.fontFamily !== 'system') {
-    lines.push(`--lp-font-family-sans: ${VETTED_FONT_STACKS[p.fontFamily]};`);
-  }
-
-  return `@layer user-theme {\n:root {\n  ${lines.join('\n  ')}\n}\n}\n`;
+  if (p.fontFamily !== 'system') lines.push(`--lp-font-family-sans: ${VETTED_FONT_STACKS[p.fontFamily]};`);
+  const darkLines = accentRoleVars(ramp, 'dark');
+  return `@layer user-theme {\n:root {\n  ${lines.join('\n  ')}\n}\n:root[data-theme="dark"] {\n  ${darkLines.join('\n  ')}\n}\n}\n`;
 }
 
 export function themePackCssFilename(css: string): string {
   return `theme.${createHash('sha256').update(css).digest('hex').slice(0, 10)}.css`;
 }
 
-/**
- * Derive a light/dark AccentSeed pair from a single #RRGGBB seed using OKLCH lightness & chroma bounds.
- */
 export function deriveAccentPairFromSeed(seedHex: string): AccentSeed {
   const light = seedHex.trim().toUpperCase();
-  if (!HEX_RE.test(light)) {
-    return { ...DEFAULT_ADMIN_THEME_PACK.accent };
-  }
+  if (!HEX_RE.test(light)) return { ...DEFAULT_ADMIN_THEME_PACK.accent };
   const o = hexToOklch(light);
-  const dark = oklchToHex({
-    l: Math.max(0.78, Math.min(0.85, o.l + 0.3)),
-    c: Math.min(o.c, 0.13),
-    h: o.h,
-  });
+  const dark = oklchToHex({ l: Math.max(0.78, Math.min(0.85, o.l + 0.3)), c: Math.min(o.c, 0.13), h: o.h });
   return { light, dark };
 }
 
-/**
- * Build a scoped preview stylesheet targeting `.lp-appearance-preview` so Appearance v2 renders
- * a live composed preview without inline style= attributes.
- */
 export function buildThemePreviewCss(pack: ThemePackV2): string {
   const ramp = generateAccentRamp(pack.accent);
   const density = DENSITY_PROXIMITY_TABLES[pack.density] || DENSITY_PROXIMITY_TABLES.comfortable;
@@ -347,13 +339,13 @@ export function buildThemePreviewCss(pack: ThemePackV2): string {
   const font = VETTED_FONT_STACKS[pack.fontFamily] || VETTED_FONT_STACKS.system;
   const lines = [
     ...ACCENT_STEPS.map((s) => `${ACCENT_VAR_PREFIX}${s}: ${ramp[s]};`),
-    `--accent: ${pack.accent.light};`,
+    ...accentRoleVars(ramp, 'light'),
     ...Object.entries(density).map(([k, v]) => `${k}: ${v};`),
     ...Object.entries(radius).map(([k, v]) => `${k}: ${v};`),
-    `--lp-font-family-sans: ${font};`,
-    `font-family: ${font};`,
+    `--lp-font-family-sans: ${font};`, `font-family: ${font};`,
   ];
-  return `@layer user-theme {\n#appearance-live-preview {\n  ${lines.join('\n  ')}\n}\n[data-theme="dark"] #appearance-live-preview {\n  --accent: ${pack.accent.dark};\n}\n}\n`;
+  const darkLines = accentRoleVars(ramp, 'dark');
+  return `@layer user-theme {\n#appearance-admin-preview-section, #appearance-live-preview {\n  ${lines.join('\n  ')}\n}\n[data-theme="dark"] #appearance-admin-preview-section, [data-theme="dark"] #appearance-live-preview {\n  ${darkLines.join('\n  ')}\n}\n}\n`;
 }
 
 /**

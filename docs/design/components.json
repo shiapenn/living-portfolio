@@ -315,6 +315,29 @@
       "variantOf": null
     },
     {
+      "name": "Credential",
+      "variants": [
+        "single",
+        "list"
+      ],
+      "gallerySampleId": "gallery-credential-sample",
+      "parent": [
+        "FormSection",
+        "Page"
+      ],
+      "children": [
+        "Notice",
+        "Button",
+        "StatusLine"
+      ],
+      "classFamilies": [
+        "lp-credential"
+      ],
+      "variantOf": null,
+      "status": "active",
+      "since": "WP-17.11"
+    },
+    {
       "name": "SegmentedControl",
       "variants": [
         "mode-switch",
@@ -560,6 +583,7 @@
     "lp-provider",
     "lp-publish",
     "lp-qr",
+    "lp-credential",
     "lp-radio",
     "lp-row",
     "lp-section",
@@ -603,6 +627,7 @@
   "generatedFrom": [
     "packages/ui-core/src/primitives/accessibility/accessibility.gallery.ts",
     "packages/ui-core/src/primitives/layout/layout.gallery.ts",
+    "packages/ui-admin/src/components/credential/credential.gallery.ts",
     "packages/ui-admin/src/primitives/button/button.gallery.ts",
     "packages/ui-public/src/components/shell/shell.gallery.ts"
   ]

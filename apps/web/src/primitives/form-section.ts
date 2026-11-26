@@ -6,6 +6,8 @@ export interface FormSectionProps {
   description?: string;
   fieldsHtml: string;
   actionBarHtml?: string;
+  /** Optional section-local feedback (Notice, StatusLine, or Credential) rendered directly below ActionBar (ADR-025). */
+  feedbackHtml?: string;
   headerId?: string;
   headerActionHtml?: string;
   id?: string;
@@ -60,6 +62,7 @@ export function renderFormSection(props: FormSectionProps): string {
     ? `<p data-rel="section-intro" class="lp-form-section-desc">${escapeHtml(props.description)}</p>`
     : '';
   const actionHtml = props.actionBarHtml ?? '';
+  const feedbackHtml = props.feedbackHtml ?? '';
 
   const titleOrSectionHeader =
     props.headerActionHtml || props.headerId
@@ -76,5 +79,6 @@ export function renderFormSection(props: FormSectionProps): string {
     <div class="lp-stack lp-gap-related">${props.fieldsHtml}</div>
   </div>
   ${actionHtml}
+  ${feedbackHtml}
 </section>`;
 }

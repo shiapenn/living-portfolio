@@ -16,13 +16,13 @@
 | --- | --- | --- | --- |
 | Public CSS (core + public, gzip) | 4129 | 15360 | PASS |
 | Public WOFF2 Fonts (raw, 2 faces) | 73284 | 102400 | PASS |
-| Admin Entry CSS (core + admin, gzip) | 19641 | 30720 | PASS |
+| Admin Entry CSS (core + admin, gzip) | 20076 | 30720 | PASS |
 | Admin Editor JS (gzip) | 139207 | 153600 | PASS |
 
 ## Governance Coverage
 
 | Metric | Value |
 | --- | --- |
-| Registered UI Components | 21 |
-| Architecture Decision Records | 24 |
+| Registered UI Components | 22 |
+| Architecture Decision Records | 25 |
 | History Trend | Public CSS +0 B; Admin CSS +0 B |

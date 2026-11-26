@@ -43,8 +43,6 @@ export const backupsModule: SettingsModuleManifest<BackupsConfig> = {
 
     return `
       <form id="settings-module-form" data-settings-module="backups" class="lp-stack lp-gap-section">
-        ${renderStatusLine({ id: 'settings-status-banner' })}
-
         ${renderFormSection({
           title: 'Backup destination',
           fieldsHtml: `
@@ -95,10 +93,13 @@ export const backupsModule: SettingsModuleManifest<BackupsConfig> = {
           }),
         })}
 
-        ${renderActionBar({
-          pageLevel: true,
-          primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
-        })}
+        <div class="lp-stack lp-gap-related">
+          ${renderActionBar({
+            pageLevel: true,
+            primary: { id: 'btn-save-settings-module', label: 'Save', variant: 'primary', type: 'button' },
+          })}
+          <div id="settings-status-banner" class="lp-is-hidden" aria-live="polite" tabindex="-1"></div>
+        </div>
       </form>
     `;
   },

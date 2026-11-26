@@ -53,20 +53,17 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 .lp-action-bar { margin-top: 0; }
 .lp-item-actions .lp-action-bar { margin-top: 0; }
 
-/* Item contract & hairlines (D-FINAL #5, #10, #24; D5 / ADR-024) */
+/* Item contract & hairlines (D-FINAL #5, #10, #24; Item v2 / C3) */
 .lp-item:not(:last-child) { border-bottom: var(--lp-border-hairline) solid var(--border-subtle); }
-.lp-item {
+.lp-item-content {
+  width: 100%;
+  min-width: 0;
   display: grid;
   grid-template-columns: 1fr auto;
   column-gap: var(--lp-space-proximity-3);
   row-gap: var(--lp-space-proximity-1);
+  align-items: start;
 }
-.lp-item-title { grid-column: 1; grid-row: 1; min-width: 0; order: 1; }
-.lp-item-status { grid-column: 2; grid-row: 1; align-self: start; justify-self: end; white-space: nowrap; order: 2; }
-.lp-item-subtitle { grid-column: 1 / -1; order: 3; }
-.lp-item-body, .lp-item-segments { grid-column: 1 / -1; order: 4; }
-.lp-item-meta { grid-column: 1 / -1; order: 5; }
-.lp-item-actions { grid-column: 1 / -1; order: 6; }
 
 /* Dialogs (D-FINAL #11, D-H H1) */
 .lp-dialog-panel {
