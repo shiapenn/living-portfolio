@@ -12,7 +12,7 @@ body {
   color: var(--text);
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14);
-  line-height: 1.5;
+  line-height: var(--lp-font-line-20);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -61,7 +61,7 @@ a,
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: var(--lp-border-role-rule);
-  transition: color var(--lp-motion-duration-fast) ease;
+  transition: color var(--lp-motion-duration-fast) var(--lp-motion-easing-standard);
 }
 
 /* §12.4 Semantic Typography Scale (Finding 20261020-UI-02) */
@@ -69,34 +69,34 @@ a,
   font-family: var(--lp-font-family-reading);
   font-size: var(--lp-font-size-24));
   font-weight: var(--lp-font-weight-600);
-  line-height: 1.4;
+  line-height: var(--lp-font-line-20);
 }
 
 .text-h1 {
   font-family: var(--lp-font-family-reading);
   font-size: var(--lp-font-size-24));
-  font-weight: 600;
-  line-height: 1.25;
+  font-weight: var(--lp-font-weight-600);
+  line-height: var(--lp-font-line-20);
 }
 
 .text-h2 {
   font-family: var(--lp-font-family-reading);
   font-size: var(--lp-font-size-16));
-  font-weight: 600;
-  line-height: 1.3;
+  font-weight: var(--lp-font-weight-600);
+  line-height: var(--lp-font-line-20);
 }
 
 .text-h3 {
   font-family: var(--lp-font-family-reading);
   font-size: var(--lp-font-size-16));
-  font-weight: 600;
-  line-height: 1.35;
+  font-weight: var(--lp-font-weight-600);
+  line-height: var(--lp-font-line-20);
 }
 
 .text-body {
   font-family: var(--lp-font-family-reading);
   font-size: var(--lp-font-size-16));
-  font-weight: 400;
+  font-weight: var(--lp-font-weight-400);
   line-height: var(--lp-font-line-reading);
   max-width: var(--lp-measure-reading);
 }
@@ -104,22 +104,22 @@ a,
 .text-ui {
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14));
-  font-weight: 400;
-  line-height: 1.5;
+  font-weight: var(--lp-font-weight-400);
+  line-height: var(--lp-font-line-20);
 }
 
 .text-ui-sm {
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14));
-  font-weight: 400;
-  line-height: 1.45;
+  font-weight: var(--lp-font-weight-400);
+  line-height: var(--lp-font-line-20);
 }
 
 .text-code {
   font-family: var(--lp-font-family-code);
   font-size: var(--lp-font-size-14));
-  font-weight: 400;
-  line-height: 1.6;
+  font-weight: var(--lp-font-weight-400);
+  line-height: var(--lp-font-line-reading);
 }
 
 /* Header & Navigation */
@@ -194,16 +194,16 @@ a,
 .reading-column {
   font-family: var(--lp-font-family-reading);
   font-size: var(--lp-font-size-16));
-  line-height: 1.65;
+  line-height: var(--lp-font-line-reading);
   max-width: var(--lp-measure-reading);
 }
 
 .owner-statement {
   font-family: var(--lp-font-family-reading);
   font-size: var(--lp-font-size-24));
-  line-height: 1.4;
-  font-weight: 500;
-  max-width: 64ch;
+  line-height: var(--lp-font-line-20);
+  font-weight: var(--lp-font-weight-500);
+  max-width: var(--lp-measure-reading);
   margin: 0;
 }
 
@@ -271,7 +271,7 @@ a,
   border-radius: var(--lp-radius-chip);
   position: relative;
   transition: transform var(--lp-motion-duration-fast) var(--lp-motion-easing-out),
-              border-color var(--lp-motion-duration-fast) ease,
+              border-color var(--lp-motion-duration-fast) var(--lp-motion-easing-standard),
               background-color var(--lp-motion-duration-fast) ease;
 }
 
@@ -378,7 +378,7 @@ a,
   background: var(--accent);
   color: var(--text-on-accent, var(--lp-color-text-on-accent));
   font-size: var(--lp-font-size-13);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   padding: var(--lp-space-inset-tag-y) var(--lp-space-proximity-2);
   border-radius: var(--lp-radius-chip);
   white-space: nowrap;
@@ -403,7 +403,7 @@ a,
   text-transform: uppercase;
   letter-spacing: var(--lp-font-letter-wide);
   color: var(--text-muted);
-  font-weight: 700;
+  font-weight: var(--lp-font-weight-700);
   display: inline-block;
   margin: 0;
 }
@@ -420,7 +420,7 @@ a,
 }
 
 .strata-band .band-ym {
-  font-weight: 700;
+  font-weight: var(--lp-font-weight-700);
   font-size: var(--lp-font-size-14);
 }
 
@@ -486,7 +486,7 @@ button.chip {
 .chip-provisional {
   border-style: dashed;
   border-color: var(--lp-color-text-2);
-  opacity: 0.85;
+  opacity: 1;
 }
 
 .chip-facet {
@@ -504,7 +504,7 @@ button.chip {
   padding: var(--lp-space-inset-section);
   border-radius: var(--lp-radius-control);
   overflow-x: auto;
-  line-height: 1.6;
+  line-height: var(--lp-font-line-reading);
   margin: 0;
 }
 
@@ -515,7 +515,7 @@ button.chip {
 
 .inline-code {
   font-family: var(--lp-font-family-code);
-  font-size: 0.9em;
+  font-size: var(--lp-font-size-13);
   background: var(--surface-page);
   border: var(--lp-border-hairline) solid var(--rule);
   padding: var(--lp-border-hairline) var(--lp-space-inset-track);
@@ -533,7 +533,7 @@ button.chip {
 .reading-list {
   padding-left: var(--lp-space-inset-dialog);
   margin: 0;
-  line-height: 1.6;
+  line-height: var(--lp-font-line-reading);
 }
 
 .reading-list li {
@@ -569,7 +569,7 @@ button.chip {
 
 .data-table th {
   background: var(--surface-raised);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
 }
 
 /* Entry Details Two-Column Layout with Margin Rail */
@@ -579,7 +579,7 @@ button.chip {
   gap: var(--lp-space-proximity-4);
 }
 
-@media (min-width: 1024px) {
+@media (min-width: __LP_BP_LG__) {
   .entry-detail-layout {
     grid-template-columns: minmax(0, var(--lp-measure-reading)) var(--lp-size-admin-inspector-width);
     align-items: start;
@@ -644,7 +644,7 @@ button.chip {
   padding: var(--lp-space-inset-item-x) var(--lp-space-inset-section);
   font-size: var(--lp-font-size-14));
   font-family: var(--lp-font-family-ui);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   border-radius: var(--lp-radius-control);
   border: var(--lp-border-hairline) solid var(--lp-color-accent-default);
   background: var(--lp-color-accent-default);
@@ -655,7 +655,7 @@ button.chip {
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  transition: opacity var(--lp-motion-duration-fast) ease;
+  transition: opacity var(--lp-motion-duration-fast) var(--lp-motion-easing-standard);
 }
 
 .btn:disabled,

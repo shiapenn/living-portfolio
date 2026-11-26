@@ -11,7 +11,7 @@
   border: 0;
 }
 
-@media (max-width: 639px) {
+@media (max-width: __LP_BP_SM_MAX__) {
   .lp-editor-toolbar {
     flex-wrap: nowrap;
     padding: var(--lp-space-inset-item-x) var(--lp-space-inset-track);
@@ -50,7 +50,7 @@
 
 .lp-input-code {
   font-family: var(--lp-font-family-code);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--lp-font-letter-wide);
 }
 
 .lp-code-grid {
@@ -109,7 +109,7 @@
   height: 100%;
   width: 16.6%;
   background: var(--accent);
-  transition: width 0.3s ease;
+  transition: width var(--lp-motion-duration-slow) var(--lp-motion-easing-standard);
 }
 
 .lp-wizard-progress-fill[data-step="1"] { width: 16.6%; }
@@ -129,12 +129,12 @@
 }
 
 .lp-wizard-step-label.is-active {
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   color: var(--text);
 }
 
 .lp-wizard-step-label.is-done {
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   color: var(--accent);
 }
 
@@ -195,7 +195,7 @@
   align-items: center;
   gap: var(--lp-space-stack-label-to-control);
   font-size: var(--lp-font-size-14);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   cursor: pointer;
 }
 
@@ -230,8 +230,8 @@
 .lp-admin-body .lp-type-h1 {
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-24);
-  line-height: 1.3;
-  font-weight: 600;
+  line-height: var(--lp-font-line-20);
+  font-weight: var(--lp-font-weight-600);
 }
 
 .lp-admin-body h2,
@@ -240,6 +240,6 @@
 .lp-admin-body .lp-type-h3 {
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-16);
-  line-height: 1.4;
-  font-weight: 600;
+  line-height: var(--lp-font-line-20);
+  font-weight: var(--lp-font-weight-600);
 }

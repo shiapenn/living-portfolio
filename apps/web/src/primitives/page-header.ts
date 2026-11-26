@@ -38,8 +38,10 @@ export function renderPageHeader(props: PageHeaderProps): string {
 
   return `<header${idAttr} data-c="PageHeader" data-rel="header" class="${escapeHtml(classes)}">
   ${backHtml}
-  <h1 class="lp-page-header-title" data-purpose="title">${escapeHtml(props.title)}</h1>
-  ${descHtml}
+  <div class="lp-page-header-main">
+    <h1 class="lp-page-header-title" data-purpose="title">${escapeHtml(props.title)}</h1>
+    ${descHtml}
+  </div>
   ${actionHtml}
 </header>`;
 }

@@ -25,7 +25,7 @@
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-16);
   line-height: var(--lp-font-line-24);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   color: var(--text);
   white-space: nowrap;
   min-width: 0;
@@ -43,7 +43,7 @@
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14);
   line-height: var(--lp-font-line-20);
-  font-weight: 500;
+  font-weight: var(--lp-font-weight-500);
   color: var(--text);
   text-decoration: none;
   padding: var(--lp-space-inset-track) var(--lp-space-inset-item-x);
@@ -66,7 +66,7 @@
   display: none;
 }
 
-@media (max-width: 767px) {
+@media (max-width: __LP_BP_MD_MAX__) {
   .lp-admin-header {
     height: var(--lp-size-bar-top-height);
     min-height: var(--lp-size-bar-top-height);
@@ -93,7 +93,7 @@
   gap: var(--lp-space-stack-field-to-field);
 }
 
-@media (min-width: 768px) {
+@media (min-width: __LP_BP_MD__) {
   .lp-details-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -146,7 +146,7 @@
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-13);
   line-height: var(--lp-font-line-16);
-  font-weight: 500;
+  font-weight: var(--lp-font-weight-500);
   white-space: nowrap;
 }
 
@@ -272,7 +272,7 @@
 .lp-entry-row-active {
   background: var(--role-action-bg);
   color: var(--role-action-fg);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
 }
 
 .lp-editor-action-bar {

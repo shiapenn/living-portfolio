@@ -1,0 +1,17 @@
+{
+  "maxEntries": 10,
+  "entries": [
+    {
+      "file": "apps/web/src/pages/admin/setup-script-part2.ts",
+      "category": "inline-style",
+      "pattern": "fillEl.style.width = pct + '%'",
+      "reason": "Dynamic runtime progress-bar percentage width computed from step progress"
+    },
+    {
+      "file": "apps/web/src/primitives/foundations-gallery-preview.ts",
+      "category": "inline-style",
+      "pattern": "el.style.height = (el.scrollHeight + 4) + 'px'",
+      "reason": "Dynamic runtime auto-size for gallery preview iframe content height"
+    }
+  ]
+}

@@ -736,7 +736,7 @@ test.describe('WP-17.11 Content, Item v2, Overflow, Feedback, Accent & Credentia
         await page.goto('/admin/audit');
         await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme);
         await page.waitForTimeout(40);
-        const tabShadow = await page.evaluate(() => getComputedStyle(document.querySelector('.lp-tab-active')!).boxShadow);
+        const tabShadow = await page.evaluate(() => getComputedStyle(document.querySelector('.lp-tab-active')!, '::after').backgroundColor);
         const tabRgb = parseRgb(tabShadow);
         expect(tabRgb, `${seed.id} ${theme} tabShadow=${tabShadow}`).not.toBeNull();
         expect(rgbWithin1(tabRgb!, expectedRgb), `${seed.id} ${theme} tabShadow got ${tabRgb} expected ${expectedRgb}`).toBe(true);

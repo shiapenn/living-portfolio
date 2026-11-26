@@ -3,12 +3,19 @@
  * ========================================================= */
 
 
-/* PageHeader (D-COMP #2) */
+/* PageHeader (D-COMP #2, WP-17.15 V5) */
 .lp-page-header-dcomp {
   display: flex;
   flex-direction: column;
-  gap: var(--lp-space-stack-label-to-control);
+  gap: var(--lp-space-proximity-4);
   margin: 0;
+}
+
+.lp-page-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-stack-page-title-to-description);
+  min-width: 0;
 }
 
 .lp-page-header-back {
@@ -30,15 +37,19 @@
 .lp-page-header h1 {
   font-size: var(--lp-font-size-24);
   line-height: var(--lp-font-line-32);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-700);
+  letter-spacing: var(--lp-font-letter-tight);
+  text-wrap: balance;
   margin: 0;
   color: var(--text);
 }
 
 .lp-page-header .lp-page-description {
-  font-size: var(--lp-font-size-14);
-  line-height: var(--lp-size-icon-md);
-  color: var(--text-muted);
+  font-size: var(--lp-font-size-13);
+  line-height: var(--lp-font-line-20);
+  color: var(--text-2);
+  max-width: var(--lp-measure-reading);
+  text-wrap: pretty;
   margin: 0;
 }
 
@@ -50,7 +61,7 @@
   width: 100%;
 }
 
-@media (min-width: 640px) {
+@media (min-width: __LP_BP_REGULAR__) {
   .lp-page-header-dcomp {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -59,14 +70,13 @@
     align-items: start;
   }
 
-  .lp-page-header-back {
+  .lp-page-header-back,
+  .lp-back-link {
     grid-column: 1 / -1;
   }
 
-  .lp-page-header-title,
-  .lp-page-header h1 {
+  .lp-page-header-main {
     grid-column: 1;
-    line-height: var(--lp-size-target-min);
   }
 
   .lp-page-header-action {
@@ -76,15 +86,12 @@
     justify-self: end;
   }
 
-  .lp-page-header-back ~ .lp-page-header-action {
+  .lp-page-header-back ~ .lp-page-header-action,
+  .lp-back-link ~ .lp-page-header-action {
     grid-row: 2;
   }
 
   .lp-page-header-action .lp-btn {
     width: auto;
-  }
-
-  .lp-page-header .lp-page-description {
-    grid-column: 1 / -1;
   }
 }

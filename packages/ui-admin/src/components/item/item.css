@@ -9,11 +9,23 @@
   flex-direction: column;
   gap: var(--lp-space-proximity-1);
   padding: var(--lp-space-proximity-3) 0;
-  border-bottom: var(--lp-border-hairline) solid var(--border-subtle);
-  border-radius: var(--lp-radius-r1);
+  border: 0;
+  border-radius: var(--lp-radius-container);
   color: var(--text);
   text-decoration: none;
   min-width: 0;
+}
+
+.lp-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--lp-border-hairline);
+  background: var(--lp-color-border-hairline);
+  border-radius: var(--lp-radius-none);
+  pointer-events: none;
 }
 
 .lp-item-content {
@@ -24,19 +36,42 @@
   gap: var(--lp-space-proximity-1);
 }
 
+a.lp-item,
+.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link),
+.lp-item.lp-state-hover,
+.lp-item.lp-state-active,
+.lp-item.lp-state-focus {
+  padding-inline: var(--lp-space-inset-item-x);
+}
+
 a.lp-item:hover,
-.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):hover {
-  background: var(--surface-control-hover);
+.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):hover,
+.lp-item.lp-state-hover {
+  background: var(--lp-color-fill-neutral-tint-2);
 }
 
 a.lp-item:active,
-.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):active {
-  background: var(--surface-control-active);
+.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):active,
+.lp-item.lp-state-active {
+  background: var(--lp-color-fill-neutral-tint-3);
+}
+
+a.lp-item:hover::after,
+a.lp-item:active::after,
+.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):hover::after,
+.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):active::after,
+.lp-item.lp-state-hover::after,
+.lp-item.lp-state-active::after,
+.lp-item:has(+ a.lp-item:hover)::after,
+.lp-item:has(+ .lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):hover)::after,
+.lp-item:has(+ .lp-item.lp-state-hover)::after,
+.lp-item:has(+ .lp-item.lp-state-active)::after {
+  background: transparent;
 }
 
 .lp-item.is-selected {
-  background: var(--role-action-bg);
-  border-radius: var(--lp-radius-r2);
+  background: var(--lp-color-fill-accent-tint-1);
+  border-radius: var(--lp-radius-container);
 }
 
 .lp-item.lp-item-has-actions {
@@ -74,14 +109,14 @@ a.lp-item:active,
 
 .lp-list .lp-item-title > span:not(.lp-item-leading) {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: var(--lp-line-clamp-2);
   -webkit-box-orient: vertical;
   overflow: hidden;
   min-width: 0;
 }
 
 .lp-item-title-clamp-2 > span:not(.lp-item-leading) {
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: var(--lp-line-clamp-2);
 }
 
 .lp-list .lp-item-title.lp-item-title-content > span:not(.lp-item-leading) {
@@ -198,7 +233,7 @@ a.lp-item:active,
   border-left: var(--lp-border-focus) solid var(--border-control);
   font-size: var(--lp-font-size-14);
   line-height: var(--lp-font-line-20);
-  font-weight: 400;
+  font-weight: var(--lp-font-weight-600);
   color: var(--text-1);
 }
 
@@ -279,7 +314,7 @@ a.lp-item:active,
   text-align: center;
 }
 
-@container (min-width: 640px) {
+@container (min-width: __LP_BP_SM__) {
   .lp-item-claims-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--lp-space-proximity-4);
@@ -329,7 +364,7 @@ a.lp-item:active,
   overflow-wrap: anywhere;
 }
 
-@container (min-width: 640px) {
+@container (min-width: __LP_BP_SM__) {
   .lp-list-def-row {
     display: grid;
     grid-template-columns: minmax(var(--lp-size-grid-card-min), 28%) minmax(0, 1fr);
@@ -338,7 +373,7 @@ a.lp-item:active,
   }
 }
 
-@container (min-width: 480px) {
+@container (min-width: __LP_BP_REGULAR__) {
   .lp-item:not(.lp-item-has-actions),
   .lp-item-content {
     display: grid;

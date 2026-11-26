@@ -22,7 +22,7 @@
   border-radius: var(--lp-radius-control);
   font-size: var(--lp-font-size-14);
   line-height: var(--lp-font-line-20);
-  font-weight: 500;
+  font-weight: var(--lp-font-weight-600);
 }
 
 .lp-specimen-swatch-action {
@@ -72,7 +72,7 @@
   align-items: start;
 }
 
-@media (max-width: 767px) {
+@media (max-width: __LP_BP_MD_MAX__) {
   .lp-admin-split-preview {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--lp-space-stack-field-to-field);
@@ -134,6 +134,10 @@
   padding: var(--lp-space-proximity-1);
 }
 
+.lp-state-matrix-grid > [data-state-group] {
+  padding: var(--lp-space-proximity-1);
+}
+
 .lp-state-matrix-row {
   display: flex;
   flex-wrap: wrap;
@@ -141,18 +145,67 @@
   gap: var(--lp-space-proximity-2);
 }
 
-.lp-btn-secondary.lp-state-hover { background: var(--lp-color-surface-control-hover); }
-.lp-btn-secondary.lp-state-active { background: var(--lp-color-surface-control-active); }
-.lp-btn-primary.lp-state-hover { background: var(--lp-color-accent-hover); border-color: var(--lp-color-accent-hover); opacity: 1; }
-.lp-btn-primary.lp-state-active { background: var(--lp-color-accent-active); border-color: var(--lp-color-accent-active); opacity: 1; }
-.lp-btn-text.lp-state-hover { background: var(--lp-color-surface-control-hover); }
-.lp-btn-text.lp-state-active { background: var(--lp-color-surface-control-active); }
+.lp-btn-secondary.lp-state-hover { background: var(--lp-color-fill-neutral-tint-2); }
+.lp-btn-secondary.lp-state-active { background: var(--lp-color-fill-neutral-tint-3); }
+.lp-btn-primary.lp-state-hover { background: var(--lp-color-accent-hover); border-color: transparent; opacity: 1; }
+.lp-btn-primary.lp-state-active { background: var(--lp-color-accent-active); border-color: transparent; opacity: 1; }
+.lp-btn-text.lp-state-hover { background: var(--lp-color-fill-neutral-tint-2); }
+.lp-btn-text.lp-state-active { background: var(--lp-color-fill-neutral-tint-3); }
 .lp-state-focus {
   outline: var(--lp-border-focus) solid var(--focus-ring);
   outline-offset: var(--lp-border-focus);
   box-shadow: none;
 }
-.lp-choice.lp-state-hover { background: var(--lp-color-surface-control-hover); }
-.lp-item.lp-state-hover { background: var(--lp-color-surface-control-hover); }
-.lp-item.lp-state-active { background: var(--lp-color-surface-control-active); }
-.lp-tab.lp-state-hover { color: var(--text-1); background: var(--lp-color-surface-control-hover); }
+.lp-tab.lp-state-focus {
+  outline: var(--lp-border-focus) solid var(--focus-ring);
+  outline-offset: calc(-1 * var(--lp-border-focus));
+  border-radius: var(--lp-radius-control);
+}
+.lp-choice.lp-state-hover { background: var(--lp-color-fill-neutral-tint-2); }
+.lp-item.lp-state-hover { background: var(--lp-color-fill-neutral-tint-2); }
+.lp-item.lp-state-active { background: var(--lp-color-fill-neutral-tint-3); }
+.lp-tab.lp-state-hover { color: var(--text-1); background: transparent; }
+
+/* WP-17.15 V3/V6 Ladder Specimen */
+.lp-gallery-ladder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--lp-size-grid-card-min), 1fr));
+  gap: var(--lp-space-proximity-2);
+}
+.lp-gallery-ladder-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-proximity-1);
+  padding: var(--lp-space-inset-section);
+  border-radius: var(--lp-radius-container);
+  border: var(--lp-border-hairline) solid var(--lp-color-border-hairline);
+  background: var(--lp-color-surface-canvas);
+}
+.lp-gallery-ladder-swatch {
+  height: var(--lp-size-control-xs);
+  border-radius: var(--lp-radius-control);
+  border: var(--lp-border-hairline) solid var(--lp-color-border-hairline);
+}
+.lp-gallery-swatch-canvas { background: var(--lp-color-surface-canvas); }
+.lp-gallery-swatch-raised { background: var(--lp-color-surface-raised); }
+.lp-gallery-swatch-sunken { background: var(--lp-color-surface-sunken); }
+.lp-gallery-swatch-overlay { background: var(--lp-color-surface-overlay); box-shadow: var(--lp-elevation-e1); }
+.lp-gallery-swatch-border-hairline { background: var(--lp-color-surface-canvas); border: var(--lp-border-hairline) solid var(--lp-color-border-hairline); }
+.lp-gallery-swatch-border-control { background: var(--lp-color-surface-canvas); border: var(--lp-border-hairline) solid var(--lp-color-border-control); }
+.lp-gallery-swatch-border-strong { background: var(--lp-color-surface-canvas); border: var(--lp-border-focus) solid var(--lp-color-border-strong); }
+.lp-gallery-swatch-tint-1 { background: var(--lp-color-fill-neutral-tint-1); border-color: transparent; }
+.lp-gallery-swatch-tint-2 { background: var(--lp-color-fill-neutral-tint-2); border-color: transparent; }
+.lp-gallery-swatch-tint-3 { background: var(--lp-color-fill-neutral-tint-3); border-color: transparent; }
+.lp-gallery-swatch-accent-1 { background: var(--lp-color-fill-accent-tint-1); border-color: var(--lp-color-border-strong); }
+.lp-gallery-swatch-accent-2 { background: var(--lp-color-fill-accent-tint-2); border-color: var(--lp-color-border-strong); }
+.lp-gallery-swatch-e0 { background: var(--lp-color-surface-canvas); box-shadow: var(--lp-elevation-e0); }
+.lp-gallery-swatch-e1 { background: var(--lp-color-surface-overlay); box-shadow: var(--lp-elevation-e1); }
+.lp-gallery-swatch-e2 { background: var(--lp-color-surface-overlay); box-shadow: var(--lp-elevation-e2); }
+.lp-gallery-swatch-r-ctrl { background: var(--lp-color-fill-neutral-tint-1); border-radius: var(--lp-radius-control); }
+.lp-gallery-swatch-r-cont { background: var(--lp-color-fill-neutral-tint-1); border-radius: var(--lp-radius-container); }
+.lp-gallery-swatch-r-pill { background: var(--lp-color-fill-neutral-tint-1); border-radius: var(--lp-radius-full); }
+.lp-gallery-swatch-status-ok { background: var(--lp-color-status-success); border-color: transparent; }
+.lp-gallery-swatch-status-warn { background: var(--lp-color-status-warning); border-color: transparent; }
+.lp-gallery-swatch-status-danger { background: var(--lp-color-status-danger); border-color: transparent; }
+.lp-gallery-swatch-status-info { background: var(--lp-color-status-info); border-color: transparent; }
+.lp-gallery-swatch-status-neutral { background: var(--lp-color-status-neutral); border-color: transparent; }

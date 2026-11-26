@@ -11,7 +11,7 @@
   border: 0;
 }
 
-@media (max-width: 639px) {
+@media (max-width: __LP_BP_SM_MAX__) {
   .lp-editor-toolbar {
     flex-wrap: nowrap;
     padding: var(--lp-space-inset-item-x) var(--lp-space-inset-track);
@@ -48,7 +48,7 @@
   }
 }
 
-@media (max-width: 639px) {
+@media (max-width: __LP_BP_SM_MAX__) {
   .lp-popover-menu,
   .lp-launcher-panel,
   .lp-status-popover {

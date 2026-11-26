@@ -42,7 +42,7 @@ a.lp-admin-header-brand {
   gap: var(--lp-space-stack-field-to-field);
 }
 
-@media (max-width: 767px) {
+@media (max-width: __LP_BP_MD_MAX__) {
   .lp-editor-main {
     order: 1;
   }
@@ -60,7 +60,7 @@ a.lp-admin-header-brand {
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: __LP_BP_MD__) {
   .lp-editor-shell {
     grid-template-columns: var(--lp-size-btn-action-max) minmax(0, var(--lp-size-layout-main-max));
     gap: var(--lp-space-stack-field-to-field);
@@ -72,7 +72,7 @@ a.lp-admin-header-brand {
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: __LP_BP_LG__) {
   .lp-editor-shell {
     grid-template-columns: var(--lp-size-admin-nav-width) minmax(0, 1fr) var(--lp-size-admin-inspector-width);
     gap: var(--lp-space-stack-field-to-field);
@@ -186,7 +186,7 @@ a.lp-admin-header-brand {
   display: inline-flex;
 }
 
-@media (min-width: 768px) {
+@media (min-width: __LP_BP_MD__) {
   .lp-admin-header-mobile-only {
     display: none;
   }
@@ -215,7 +215,7 @@ a.lp-admin-header-brand {
   margin: 0;
   font-size: var(--lp-font-size-16);
   line-height: var(--lp-font-line-24);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
 }
 
 .lp-publish-step p {
@@ -317,7 +317,7 @@ a.lp-admin-header-brand {
 .lp-escalations-title {
   margin: 0;
   font-size: var(--lp-font-size-16);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
 }
 
 .lp-escalation-list {
@@ -341,7 +341,7 @@ a.lp-admin-header-brand {
 
 .lp-escalation-question {
   margin: 0;
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   font-size: var(--lp-font-size-14);
 }
 

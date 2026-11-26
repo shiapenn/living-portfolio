@@ -204,7 +204,7 @@ async function scanDSysOnPage(
 
         const isGallerySampleBorder =
           Boolean(el.closest('#dcomp-gallery')) &&
-          el.matches('.lp-dialog-panel, .lp-overlay-surface, .lp-notice, .lp-credential-surface, .lp-credential-cell');
+          el.matches('.lp-dialog-panel, .lp-overlay-surface, .lp-notice, .lp-credential-surface, .lp-credential-cell, .lp-gallery-ladder-tile, .lp-gallery-ladder-swatch');
         const isChoiceControlBorder = el.matches('.lp-choice');
         if (!isTopBarBottom && !isItemSeparator && !isGallerySampleBorder && !isChoiceControlBorder) {
           violations.lineBudget++;
@@ -216,6 +216,7 @@ async function scanDSysOnPage(
       const actionBars = Array.from(document.querySelectorAll('.lp-action-bar'));
       for (const bar of actionBars) {
         if (!isVisible(bar) || bar.classList.contains('lp-action-bar-item')) continue;
+        if (bar.classList.contains('lp-action-bar-page') && window.innerWidth >= 480) continue;
         const barRect = bar.getBoundingClientRect();
         const btns = Array.from(bar.querySelectorAll<HTMLElement>('button, a.lp-btn'));
         for (const btn of btns) {

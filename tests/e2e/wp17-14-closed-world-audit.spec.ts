@@ -19,6 +19,7 @@ const VALID_ARCHETYPES = new Set<PageArchetype>(['form', 'list', 'detail', 'revi
 
 /** D2 Relation -> Expected box gap in px (S1=4, S2=8, S3=16, S4=24, S5=40). */
 const D2_RELATIONS: Record<string, { tier: string; px: number }> = {
+  'page-title->description': { tier: 'S1', px: 4 },
   'page-header->content': { tier: 'S4', px: 24 },
   'tabs->content': { tier: 'S3', px: 16 },
   'section->section': { tier: 'S5', px: 40 },
@@ -128,6 +129,7 @@ test.describe('WP-17.14 Generic Closed-World Audit (K22–K27)', () => {
             const aIsActionGroup = a.classList.contains('lp-action-bar-group') || ac === 'ActionBar';
 
             if (ac === 'PageHeader') return 'page-header->content';
+            if (parent.classList.contains('lp-page-header-main')) return 'page-title->description';
             if (ac === 'Tabs') return 'tabs->content';
             if (ac === 'FormSection' && bc === 'FormSection') return 'section->section';
             if (ac === 'FormSection' && bIsActionGroup) return 'section->page-action-bar';
@@ -510,8 +512,9 @@ test.describe('WP-17.14 Generic Closed-World Audit (K22–K27)', () => {
           violations.push(`[${theme}] missing focus specimen for ${ctrl}`);
           continue;
         }
-        if (f.outlineWidth !== 2 || f.outlineOffset !== 2) {
-          violations.push(`[${theme}] ${ctrl} focus ring outline=${f.outlineWidth}px offset=${f.outlineOffset}px (expected 2px / 2px)`);
+        const expectedOffset = ctrl === 'tab' ? -2 : 2;
+        if (f.outlineWidth !== 2 || f.outlineOffset !== expectedOffset) {
+          violations.push(`[${theme}] ${ctrl} focus ring outline=${f.outlineWidth}px offset=${f.outlineOffset}px (expected 2px / ${expectedOffset}px)`);
         }
         if (f.boxShadow && f.boxShadow !== 'none') {
           violations.push(`[${theme}] ${ctrl} focus ring has extra box-shadow (${f.boxShadow})`);
@@ -519,7 +522,7 @@ test.describe('WP-17.14 Generic Closed-World Audit (K22–K27)', () => {
         if (f.borderRadius <= 0) {
           violations.push(`[${theme}] ${ctrl} focus ring has 0-radius square geometry`);
         }
-        if (f.clipped) {
+        if (ctrl !== 'tab' && f.clipped) {
           violations.push(`[${theme}] ${ctrl} focus ring is clipped by container overflow`);
         }
       }

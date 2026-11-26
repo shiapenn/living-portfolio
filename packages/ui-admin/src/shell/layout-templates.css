@@ -11,7 +11,7 @@
   padding: var(--lp-space-inset-page-y) var(--lp-space-inset-section) var(--lp-space-inset-stage-y);
 }
 
-@media (min-width: 768px) {
+@media (min-width: __LP_BP_MD__) {
   .lp-page-column {
     padding: var(--lp-space-inset-page-y) var(--lp-space-inset-dialog) var(--lp-space-inset-stage-y);
   }
@@ -67,7 +67,7 @@
   overflow-y: auto;
 }
 
-@media (min-width: 768px) {
+@media (min-width: __LP_BP_MD__) {
   .lp-launcher-panel {
     position: absolute;
     top: calc(100% + var(--lp-space-proximity-1));
@@ -91,7 +91,7 @@
 
 .lp-launcher-heading {
   font-size: var(--lp-font-size-13);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   color: var(--text-muted);
   padding: var(--lp-space-inset-track) var(--lp-space-inset-item-x);
 }
@@ -115,7 +115,7 @@
 .lp-launcher-item.is-current {
   background: var(--role-action-bg);
   color: var(--role-action-fg);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
 }
 
 .lp-launcher-footer {

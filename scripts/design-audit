@@ -1,17 +1,20 @@
 #!/usr/bin/env node
 /**
- * WP-17.13 D8 — Automated Design Audit (L0–L6).
- * Enforces static CSS/token/template invariants (L0, L3, L5, L6) and prints a structured
- * per-level table. Run with `--live` to also execute the Playwright L0–L6 DOM audit.
+ * WP-17.13 / WP-17.14 / WP-17.15 — Automated Design Audit (L0–L7).
+ * Enforces static CSS/token/template invariants (L0–L6) and L7 hard-coded value audit.
+ * Run with `--live` to also execute Playwright DOM audits.
+ * Run with `--l7-json` to emit machine-readable L7 counts per category.
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { resolve, relative, join } from 'node:path';
 import { execSync } from 'node:child_process';
 
 const ROOT = resolve(new URL('..', import.meta.url).pathname);
 
 function walk(dir, exts, out = []) {
+  if (!existsSync(dir)) return out;
   for (const name of readdirSync(dir)) {
+    if (name === 'node_modules' || name === 'dist' || name === '.turbo') continue;
     const p = join(dir, name);
     const st = statSync(p);
     if (st.isDirectory()) walk(p, exts, out);
@@ -34,6 +37,7 @@ const results = {
   L4: { name: 'Interaction', measured: 0, violations: [] },
   L5: { name: 'Tokens & Links', measured: 0, violations: [] },
   L6: { name: 'Components (Zero Margin)', measured: 0, violations: [] },
+  L7: { name: 'Hard-Coded Value Audit', measured: 0, violations: [] },
 };
 
 // L0: Ban section description prop in FormSection calls across admin pages/settings
@@ -65,7 +69,6 @@ for (const f of cssFiles) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     if (line.startsWith('/*') || line.startsWith('*')) continue;
-    // L6: non-zero outer margin on admin components (exempt margin: 0, margin-left/right: auto for centering/trailing)
     if (/^margin(?:-(?:top|bottom|left|right|block|inline))?\s*:/.test(line)) {
       results.L6.measured++;
       const allowed =
@@ -75,7 +78,6 @@ for (const f of cssFiles) {
         results.L6.violations.push(`${rel}:${i + 1}: non-zero component margin "${line}"`);
       }
     }
-    // L3: check no admin component CSS sets font-size-12 (secondary floor is 13px)
     if (rel.includes('components/') || rel.includes('templates/dfinal-system.css') || rel.includes('primitives/field/')) {
       if (line.includes('--lp-font-size-12')) {
         results.L3.measured++;
@@ -85,7 +87,7 @@ for (const f of cssFiles) {
   }
 }
 
-// L5: Check admin-shell.ts does not hard-code data-theme="light" defeating prefers-color-scheme and emits data-archetype
+// L5: Check admin-shell.ts anti-FOUC + data-archetype
 const shellSrc = readFileSync(resolve(ROOT, 'apps/web/src/layouts/admin-shell.ts'), 'utf8');
 results.L5.measured++;
 if (!shellSrc.includes('data-theme-switching') && !shellSrc.includes('prefers-color-scheme: dark')) {
@@ -96,7 +98,7 @@ if (!shellSrc.includes('data-archetype=')) {
   results.L1.violations.push('apps/web/src/layouts/admin-shell.ts missing data-archetype emission');
 }
 
-// L4/D4: Manifest coverage check (WP-17.14)
+// L4/D4: Manifest coverage check
 const manifestSrc = readFileSync(resolve(ROOT, 'tests/e2e/wp17-manifest.ts'), 'utf8');
 const manifestEntries = (manifestSrc.match(/\bid:\s*'/g) || []).length;
 results.L4.measured += manifestEntries;
@@ -104,7 +106,199 @@ if (manifestEntries < 20) {
   results.L4.violations.push(`tests/e2e/wp17-manifest.ts has only ${manifestEntries} entries (expected >= 20)`);
 }
 
-console.log('=== WP-17.14 Design Audit Summary (L0–L6, Manifest=' + manifestEntries + ' states) ===');
+// ============================================================================
+// L7: Hard-Coded Value Audit (WP-17.15)
+// Scans *.css, *.ts (admin UI/primitives/components/pages/settings), *.svg
+// outside the token layer (packages/design-tokens).
+// ============================================================================
+const allowlistPath = resolve(ROOT, 'docs/design/hardcode-allowlist.json');
+const allowlistData = existsSync(allowlistPath)
+  ? JSON.parse(readFileSync(allowlistPath, 'utf8'))
+  : { maxEntries: 10, entries: [] };
+const allowEntries = allowlistData.entries || [];
+if (allowEntries.length > 10) {
+  results.L7.violations.push(`docs/design/hardcode-allowlist.json has ${allowEntries.length} entries (max allowed: 10)`);
+}
+const allowKeys = new Set(allowEntries.map((e) => `${e.file}|${e.category}|${e.pattern}`));
+
+const l7Categories = {
+  colour: [],
+  length: [],
+  'border-radius': [],
+  'box-shadow': [],
+  opacity: [],
+  motion: [],
+  'z-index': [],
+  typography: [],
+  'line-clamp': [],
+  'outline-offset': [],
+  breakpoint: [],
+  'max-width': [],
+  'inline-style': [],
+};
+
+function recordL7(category, file, line, snippet) {
+  results.L7.measured++;
+  const clean = snippet.trim().slice(0, 120);
+  // Check allowlist
+  for (const e of allowEntries) {
+    if (e.file === file && e.category === category && clean.includes(e.pattern)) {
+      return;
+    }
+  }
+  l7Categories[category].push(`${file}:${line}: ${clean}`);
+  results.L7.violations.push(`[${category}] ${file}:${line}: ${clean}`);
+}
+
+const l7CssFiles = walk(resolve(ROOT, 'packages/ui-admin/src'), ['.css']);
+for (const f of l7CssFiles) {
+  const rel = relative(ROOT, f);
+  if (rel.includes('canary')) continue; // synthetic canary files test intentional breaks
+  const lines = readFileSync(f, 'utf8').split('\n');
+  let inComment = false;
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    if (inComment) {
+      if (line.includes('*/')) inComment = false;
+      continue;
+    }
+    if (line.trim().startsWith('/*')) {
+      if (!line.includes('*/')) inComment = true;
+      continue;
+    }
+    // Strip inline comments
+    line = line.replace(/\/\*.*?\*\//g, '').trim();
+    if (!line || line.startsWith('//')) continue;
+
+    // 1. Breakpoints (@media / @container with raw px/em/rem)
+    if (/^@(?:media|container)\b/.test(line) && /\b\d+(?:\.\d+)?(?:px|rem|em)\b/.test(line)) {
+      recordL7('breakpoint', rel, i + 1, line);
+      continue;
+    }
+
+    // 2. Colour literals (hex, rgb/rgba, hsl/hsla, oklch)
+    if (/#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch)\s*\(/.test(line)) {
+      recordL7('colour', rel, i + 1, line);
+    }
+
+    // 3. Border-radius literal (non-zero, non-var)
+    if (/^border(?:-[a-z]+)?-radius\s*:/.test(line) && !line.includes('var(')) {
+      const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
+      if (val !== '0' && val !== '0px' && val !== 'inherit' && val !== 'none') {
+        recordL7('border-radius', rel, i + 1, line);
+      }
+    }
+
+    // 4. Box-shadow literal (non-none, non-var)
+    if (/^box-shadow\s*:/.test(line) && !line.includes('var(')) {
+      const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
+      if (val !== 'none' && val !== 'inherit') {
+        recordL7('box-shadow', rel, i + 1, line);
+      }
+    }
+
+    // 5. Opacity literal (fractional opacity like 0.5, 0.85, etc.; 0 and 1 are visibility states)
+    if (/^opacity\s*:/.test(line) && !line.includes('var(')) {
+      const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
+      if (val !== '0' && val !== '1' && val !== 'inherit') {
+        recordL7('opacity', rel, i + 1, line);
+      }
+    }
+
+    // 6. Motion durations & easings (ms/s or cubic-bezier/ease literals)
+    if (/^(?:transition|animation)(?:-[a-z-]+)?\s*:/.test(line)) {
+      if (/\b\d+(?:\.\d+)?m?s\b/.test(line) || /\b(?:cubic-bezier\(|ease-in-out|ease-in|ease-out|\bease\b)\b/.test(line)) {
+        recordL7('motion', rel, i + 1, line);
+      }
+    }
+
+    // 7. z-index literal number
+    if (/^z-index\s*:/.test(line) && !line.includes('var(')) {
+      const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
+      if (val !== 'auto' && val !== 'inherit' && val !== '0') {
+        recordL7('z-index', rel, i + 1, line);
+      }
+    }
+
+    // 8. Typography literals (font-size, font-weight, line-height, letter-spacing without var())
+    if (/^(?:font-size|font-weight|line-height|letter-spacing)\s*:/.test(line) && !line.includes('var(')) {
+      const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
+      if (!['inherit', 'normal', '0', 'initial', 'unset'].includes(val)) {
+        recordL7('typography', rel, i + 1, line);
+      }
+    }
+
+    // 9. line-clamp literal count
+    if (/^(?:-webkit-)?line-clamp\s*:/.test(line) && !line.includes('var(')) {
+      const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
+      if (val !== 'unset' && val !== 'none') {
+        recordL7('line-clamp', rel, i + 1, line);
+      }
+    }
+
+    // 10. outline-offset literal
+    if (/^outline-offset\s*:/.test(line) && !line.includes('var(')) {
+      const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
+      if (val !== '0' && val !== '0px') {
+        recordL7('outline-offset', rel, i + 1, line);
+      }
+    }
+
+    // 11. max-width in ch/px literal
+    if (/^max-width\s*:/.test(line) && !line.includes('var(') && /\b\d+(?:\.\d+)?(?:px|ch|rem|em)\b/.test(line)) {
+      recordL7('max-width', rel, i + 1, line);
+    }
+
+    // 12. General px/rem/em lengths outside already-counted properties (except 0, 1px hairline)
+    if (
+      !/^(?:border(?:-[a-z]+)?-radius|box-shadow|font-size|line-height|letter-spacing|outline-offset|max-width|@)/.test(line) &&
+      line.includes(':') &&
+      !line.startsWith('--')
+    ) {
+      const rhs = line.slice(line.indexOf(':') + 1);
+      const units = rhs.match(/\b(\d+(?:\.\d+)?)(px|rem|em)\b/g) || [];
+      const bad = units.filter((u) => u !== '0px' && u !== '0rem' && u !== '0em');
+      if (bad.length > 0) {
+        recordL7('length', rel, i + 1, line);
+      }
+    }
+  }
+}
+
+// Scan admin TS/SVG files for inline style= attributes and el.style.* mutations
+const l7TsFiles = [
+  ...walk(resolve(ROOT, 'apps/web/src/pages/admin'), ['.ts']),
+  ...walk(resolve(ROOT, 'apps/web/src/settings/modules'), ['.ts']),
+  ...walk(resolve(ROOT, 'apps/web/src/primitives'), ['.ts']),
+  ...walk(resolve(ROOT, 'apps/web/src/components'), ['.ts']),
+  ...walk(resolve(ROOT, 'apps/web/src/layouts'), ['.ts']),
+];
+for (const f of l7TsFiles) {
+  const rel = relative(ROOT, f);
+  if (rel.endsWith('.test.ts') || rel.includes('canary')) continue;
+  const lines = readFileSync(f, 'utf8').split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('//') || line.startsWith('*')) continue;
+    if (/\bstyle\s*=\s*["'`]/.test(line) && !rel.includes('appearance')) {
+      recordL7('inline-style', rel, i + 1, line);
+    }
+    if (/\.style\.(?:color|background|backgroundColor|border|borderColor|borderRadius|padding|margin|fontSize|fontWeight|opacity|boxShadow|gap|width|height)\s*=/.test(line) && !rel.includes('appearance')) {
+      recordL7('inline-style', rel, i + 1, line);
+    }
+  }
+}
+
+if (process.argv.includes('--l7-json')) {
+  const summary = {};
+  for (const [cat, items] of Object.entries(l7Categories)) {
+    summary[cat] = { count: items.length, sample: items.slice(0, 5) };
+  }
+  console.log(JSON.stringify({ totalL7Violations: results.L7.violations.length, allowlistCount: allowEntries.length, categories: summary }, null, 2));
+  process.exit(results.L7.violations.length > 0 ? 1 : 0);
+}
+
+console.log('=== WP-17.15 Design Audit Summary (L0–L7, Manifest=' + manifestEntries + ' states) ===');
 console.log('| Level | Name | Measured | Violations |');
 console.log('| --- | --- | ---: | ---: |');
 let totalViolations = 0;
@@ -113,8 +307,13 @@ for (const [k, v] of Object.entries(results)) {
   console.log(`| ${k} | ${v.name} | ${v.measured} | ${v.violations.length} |`);
 }
 
+console.log('\n--- L7 Hard-Coded Value Breakdown ---');
+for (const [cat, items] of Object.entries(l7Categories)) {
+  console.log(`  ${cat}: ${items.length}`);
+}
+
 if (process.argv.includes('--live')) {
-  execSync('pnpm exec playwright test tests/e2e/wp17-14-closed-world-audit.spec.ts --reporter=list', {
+  execSync('pnpm exec playwright test tests/e2e/wp17-14-closed-world-audit.spec.ts tests/e2e/wp17-15-visual-system-audit.spec.ts --reporter=list', {
     cwd: ROOT,
     stdio: 'inherit',
   });
@@ -123,8 +322,9 @@ if (process.argv.includes('--live')) {
 if (totalViolations > 0) {
   console.error('\n✗ Design Audit FAILED:');
   for (const [k, v] of Object.entries(results)) {
-    for (const msg of v.violations) console.error(`  - [${k}] ${msg}`);
+    for (const msg of v.violations.slice(0, 40)) console.error(`  - [${k}] ${msg}`);
+    if (v.violations.length > 40) console.error(`  ... and ${v.violations.length - 40} more [${k}] violations`);
   }
   process.exit(1);
 }
-console.log('\n✓ pnpm design:audit PASSED (0 violations across L0–L6).');
+console.log('\n✓ pnpm design:audit PASSED (0 violations across L0–L7).');

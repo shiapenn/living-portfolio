@@ -38,7 +38,7 @@
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14);
   line-height: var(--lp-font-line-20);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   white-space: nowrap;
   border-radius: var(--lp-radius-r2);
   border: var(--lp-border-hairline) solid var(--lp-color-role-neutral-border);
@@ -48,7 +48,7 @@
   min-width: var(--lp-size-target-min);
   cursor: pointer;
   text-decoration: none;
-  transition: opacity var(--lp-motion-duration-base) ease, transform var(--lp-motion-duration-base) ease;
+  var(--lp-motion-easing-standard), transform var(--lp-motion-duration-base) ease;
 }
 
 .lp-btn:focus-visible,
@@ -85,50 +85,51 @@
 
 .lp-btn-primary {
   background: var(--lp-color-accent-default);
-  border-color: var(--lp-color-accent-default);
+  border-color: transparent;
   color: var(--lp-color-text-on-accent);
 }
 
 .lp-btn-primary:hover:not(:disabled),
 .lp-btn-primary.is-hover {
   background: var(--lp-color-accent-hover);
-  border-color: var(--lp-color-accent-hover);
+  border-color: transparent;
   opacity: 1;
 }
 
 .lp-btn-primary:active:not(:disabled),
 .lp-btn-primary.is-active {
   background: var(--lp-color-accent-active);
-  border-color: var(--lp-color-accent-active);
+  border-color: transparent;
   opacity: 1;
 }
 
 .lp-btn-secondary {
-  background: var(--surface-l0);
-  border-color: var(--border-control);
-  color: var(--text);
+  background: var(--lp-color-fill-neutral-tint-1);
+  border-color: transparent;
+  color: var(--text-1);
 }
 
 .lp-btn-secondary:hover:not(:disabled),
 .lp-btn-secondary.is-hover {
-  background: var(--surface-control-hover);
+  background: var(--lp-color-fill-neutral-tint-2);
 }
 
 .lp-btn-secondary:active:not(:disabled),
 .lp-btn-secondary.is-active {
-  background: var(--surface-control-active);
+  background: var(--lp-color-fill-neutral-tint-3);
 }
 
 .lp-btn-danger {
-  background: var(--role-danger-bg);
-  border-color: var(--role-danger-border);
+  background: transparent;
+  border-color: transparent;
   color: var(--role-danger-fg);
 }
 
+.lp-dialog-panel .lp-btn-danger,
 .lp-btn-danger-confirm {
   background: var(--role-danger-border);
-  border-color: var(--role-danger-border);
-  color: var(--surface-raised);
+  border-color: transparent;
+  color: var(--lp-color-text-on-accent);
 }
 
 .lp-btn-quiet {
@@ -163,7 +164,7 @@
 .lp-switch:disabled,
 .lp-input:disabled,
 .lp-chip:disabled {
-  opacity: 0.5;
+  opacity: var(--lp-opacity-disabled);
   cursor: not-allowed;
 }
 
@@ -203,9 +204,9 @@
   color: var(--text);
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14);
-  line-height: 1;
+  line-height: var(--lp-font-line-16);
   cursor: pointer;
-  transition: opacity var(--lp-motion-duration-base) ease, transform var(--lp-motion-duration-base) ease;
+  var(--lp-motion-easing-standard), transform var(--lp-motion-duration-base) ease;
 }
 
 .lp-icon-btn-ghost {
@@ -266,7 +267,7 @@
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14);
   line-height: var(--lp-font-line-20);
-  font-weight: 400;
+  font-weight: var(--lp-font-weight-600);
   white-space: nowrap;
   cursor: default;
 }
@@ -303,7 +304,7 @@ button.lp-chip.is-hover {
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14);
   line-height: var(--lp-font-line-20);
-  font-weight: 400;
+  font-weight: var(--lp-font-weight-600);
   white-space: nowrap;
   cursor: default;
   background: transparent;
@@ -326,7 +327,7 @@ button.lp-chip.is-hover {
   gap: var(--lp-space-inline-icon-text);
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14);
-  font-weight: 400;
+  font-weight: var(--lp-font-weight-600);
   color: var(--text);
   cursor: default;
 }
@@ -380,7 +381,7 @@ button.lp-chip.is-hover {
   color: var(--text);
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14));
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   cursor: pointer;
   text-align: left;
 }
@@ -407,5 +408,5 @@ button.lp-chip.is-hover {
   height: var(--lp-size-switch-thumb);
   border-radius: var(--lp-radius-r1);
   background: var(--surface-raised);
-  transition: transform var(--lp-motion-duration-fast) ease;
+  var(--lp-motion-easing-standard);
 }

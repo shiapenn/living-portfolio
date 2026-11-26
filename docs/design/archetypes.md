@@ -16,6 +16,12 @@
 
 Every new admin route MUST declare its archetype (`form | list | detail | review | dashboard`) in its screen brief (`docs/design/screen-brief.md`) and emit `data-archetype` via `renderPageTemplate({ archetype, ... })`.
 
+## PageHeader Slot Contract (V5)
+
+`PageHeader` slots are `title`, `description`, and `actions`:
+- At regular width (`breakpoints.container.regular` and above), the primary page action sits on the `title` row, trailing.
+- At compact width (below `breakpoints.container.regular`), the action sits below `description` with `S4` above (`page-header-description -> action = S4`) and `S4` below (`page-header -> content = S4`).
+
 ## Route-to-Archetype Registry
 
 | Route | Archetype | Notes |

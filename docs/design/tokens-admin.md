@@ -5,9 +5,9 @@
 | Source | `packages/design-tokens/packs/admin.json` |
 | Naming | `--lp-<category>-<role>[-<variant>][-<state>]` |
 | Version | `3.0.0` |
-| Primitive | 194 |
-| Semantic (per theme) | 50 |
-| Component | 129 |
+| Primitive | 205 |
+| Semantic (per theme) | 66 |
+| Component | 135 |
 | Responsive | 2 |
 
 ## Breakpoints
@@ -25,6 +25,7 @@
 | Relation | Token | Value |
 | --- | --- | --- |
 | `page-title-to-description` | `--lp-space-stack-page-title-to-description` | `4px` |
+| `page-header-description-to-action` | `--lp-space-stack-page-header-description-to-action` | `24px` |
 | `header-to-content` | `--lp-space-stack-header-to-content` | `24px` |
 | `tabs-to-content` | `--lp-space-stack-tabs-to-content` | `16px` |
 | `section-heading-to-intro` | `--lp-space-stack-section-heading-to-intro` | `4px` |
@@ -64,44 +65,60 @@
 | `--lp-color-surface-l0` | `#FFFFFF` | `#0F1A22` |
 | `--lp-color-surface-l1` | `#F5F6F7` | `#16232D` |
 | `--lp-color-surface-l2` | `#EBEFF2` | `#1E2E3B` |
+| `--lp-color-surface-canvas` | `#FFFFFF` | `#0F1A22` |
+| `--lp-color-surface-raised` | `#FFFFFF` | `#16232D` |
+| `--lp-color-surface-sunken` | `#EEF1F3` | `#0B141B` |
+| `--lp-color-surface-overlay` | `#F5F6F7` | `#16232D` |
 | `--lp-color-surface-control` | `#EBEFF2` | `#1E2E3B` |
 | `--lp-color-surface-control-hover` | `#E1E6EA` | `#273847` |
 | `--lp-color-surface-control-active` | `#D2D9DF` | `#314557` |
 | `--lp-color-surface-control-selected` | `#EEF1FF` | `#1A244D` |
 | `--lp-color-surface-disabled` | `#EEF1F3` | `#16232D` |
 | `--lp-color-surface-scrim` | `rgba(15, 26, 34, 0.45)` | `rgba(0, 0, 0, 0.6)` |
+| `--lp-color-fill-neutral-tint-1` | `#EEF1F3` | `#1E2E3B` |
+| `--lp-color-fill-neutral-tint-2` | `#E1E6EA` | `#273847` |
+| `--lp-color-fill-neutral-tint-3` | `#D2D9DF` | `#314557` |
+| `--lp-color-fill-accent-tint-1` | `#EEF1FF` | `#1A244D` |
+| `--lp-color-fill-accent-tint-2` | `#DCE2FF` | `#243266` |
 | `--lp-color-text-1` | `#14202A` | `#E6ECEF` |
 | `--lp-color-text-2` | `#4B5A66` | `#A3B2BD` |
 | `--lp-color-text-3` | `#63727E` | `#8A99A6` |
 | `--lp-color-text-on-accent` | `#FFFFFF` | `#0F1A22` |
+| `--lp-color-border-hairline` | `#CBD3D8` | `#2A3946` |
 | `--lp-color-border-subtle` | `#CBD3D8` | `#2A3946` |
-| `--lp-color-border-control` | `#6B7B88` | `#7E8F9C` |
+| `--lp-color-border-control` | `#7E8D9A` | `#607280` |
+| `--lp-color-border-strong` | `#3A4FD0` | `#9AA8FF` |
 | `--lp-color-border-overlay` | `#CBD3D8` | `#334656` |
 | `--lp-color-accent-default` | `#3A4FD0` | `#9AA8FF` |
 | `--lp-color-accent-hover` | `#1E329E` | `#C5CEFF` |
 | `--lp-color-accent-active` | `#1A244D` | `#EEF1FF` |
 | `--lp-color-accent-focus-ring` | `#3A4FD0` | `#9AA8FF` |
+| `--lp-color-status-success` | `#1E7E5A` | `#4CC38A` |
+| `--lp-color-status-warning` | `#B45309` | `#E5A93C` |
+| `--lp-color-status-danger` | `#C8281D` | `#F97066` |
+| `--lp-color-status-info` | `#2A63B8` | `#6EA8FE` |
+| `--lp-color-status-neutral` | `#546471` | `#8A99A6` |
 | `--lp-color-role-action-fg` | `#1E329E` | `#C5CEFF` |
 | `--lp-color-role-action-bg` | `#EEF1FF` | `#1A244D` |
 | `--lp-color-role-action-border` | `#3A4FD0` | `#9AA8FF` |
 | `--lp-color-role-neutral-fg` | `#2D3B45` | `#D5DEE4` |
 | `--lp-color-role-neutral-bg` | `#EEF1F3` | `#1E2C38` |
-| `--lp-color-role-neutral-border` | `#6B7B88` | `#7E8F9C` |
+| `--lp-color-role-neutral-border` | `#7E8D9A` | `#607280` |
 | `--lp-color-role-success-fg` | `#145940` | `#8CE0BC` |
 | `--lp-color-role-success-bg` | `#E8F5E9` | `#122B22` |
-| `--lp-color-role-success-border` | `#1F7A5A` | `#6FCBA3` |
+| `--lp-color-role-success-border` | `#1E7E5A` | `#4CC38A` |
 | `--lp-color-role-warning-fg` | `#6E4700` | `#F7D070` |
 | `--lp-color-role-warning-bg` | `#FFF8E1` | `#2B210D` |
-| `--lp-color-role-warning-border` | `#9A6A00` | `#E2B34A` |
+| `--lp-color-role-warning-border` | `#B45309` | `#E5A93C` |
 | `--lp-color-role-danger-fg` | `#8E1B12` | `#FDA29B` |
 | `--lp-color-role-danger-bg` | `#FFEBEE` | `#2E1515` |
-| `--lp-color-role-danger-border` | `#B42318` | `#F97066` |
+| `--lp-color-role-danger-border` | `#C8281D` | `#F97066` |
 | `--lp-color-role-info-fg` | `#1D437A` | `#A9CBF4` |
 | `--lp-color-role-info-bg` | `#EAF2FC` | `#15263D` |
-| `--lp-color-role-info-border` | `#2F5FA8` | `#8DB4EA` |
-| `--lp-color-passage-goal` | `#2F5FA8` | `#8DB4EA` |
+| `--lp-color-role-info-border` | `#2A63B8` | `#6EA8FE` |
+| `--lp-color-passage-goal` | `#2A63B8` | `#8DB4EA` |
 | `--lp-color-passage-approach` | `#5A5F6B` | `#B4B9C4` |
-| `--lp-color-passage-friction` | `#9A6A00` | `#E2B34A` |
+| `--lp-color-passage-friction` | `#9A6A00` | `#E5A93C` |
 | `--lp-color-passage-decision` | `#5B3FA0` | `#B9A4EE` |
 | `--lp-color-passage-outcome` | `#1F7A5A` | `#6FCBA3` |
 | `--lp-color-passage-lesson` | `#A13A6B` | `#EE9CC2` |
@@ -195,13 +212,14 @@
 | `--lp-editor-min-h` | `60vh` |
 | `--lp-elevation-e1-offset-y` | `4px` |
 | `--lp-elevation-e2-offset-y` | `8px` |
+| `--lp-radius-none` | `0px` |
 | `--lp-radius-r1` | `4px` |
 | `--lp-radius-r2` | `8px` |
 | `--lp-radius-control` | `8px` |
-| `--lp-radius-container` | `8px` |
-| `--lp-radius-overlay` | `8px` |
+| `--lp-radius-container` | `12px` |
+| `--lp-radius-overlay` | `12px` |
 | `--lp-radius-chip` | `4px` |
-| `--lp-radius-card` | `8px` |
+| `--lp-radius-card` | `12px` |
 | `--lp-radius-full` | `999px` |
 | `--lp-border-hairline` | `1px` |
 | `--lp-border-focus` | `2px` |
@@ -214,6 +232,7 @@
 | `--lp-z-modal` | `500` |
 | `--lp-z-toast` | `600` |
 | `--lp-z-skip` | `1000` |
+| `--lp-motion-duration-0` | `0ms` |
 | `--lp-motion-duration-fast` | `80ms` |
 | `--lp-motion-duration-base` | `160ms` |
 | `--lp-motion-duration-slow` | `240ms` |
@@ -238,7 +257,11 @@
 | `--lp-font-line-32` | `32px` |
 | `--lp-font-line-reading` | `1.65` |
 | `--lp-font-letter-normal` | `0em` |
+| `--lp-font-letter-tight` | `-0.01em` |
 | `--lp-font-letter-wide` | `0.03em` |
+| `--lp-icon-stroke-width` | `1.75` |
+| `--lp-line-clamp-2` | `2` |
+| `--lp-line-clamp-3` | `3` |
 | `--lp-color-border-subtle-ring` | `rgba(0, 0, 0, 0.1)` |
 | `--lp-elevation-e1-blur` | `16px` |
 | `--lp-elevation-e2-blur` | `32px` |
@@ -291,8 +314,8 @@
 | `radius.chip` | `radius.r1` | Chip and tag corner radius role |
 | `radius.control` | `radius.r2` | Interactive control corner radius role |
 | `radius.container` | `radius.r2` | Container surface corner radius role |
-| `radius.overlay` | `radius.r2` | Overlay surface corner radius role |
-| `radius.card` | `radius.r2` | Card surface corner radius role |
+| `radius.overlay` | `radius.container` | Overlay surface corner radius role |
+| `radius.card` | `radius.container` | Card surface corner radius role |
 | `font.line-16` | `font.size-16` | Line-height step distinct from font-size property |
 | `font.line-20` | `font.size-20` | Line-height step distinct from font-size property |
 | `font.line-24` | `font.size-24` | Line-height step distinct from font-size property |

@@ -8,7 +8,7 @@
 .lp-choice-legend {
   font-size: var(--lp-font-size-14);
   line-height: var(--lp-size-icon-md);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   color: var(--text);
 }
 
@@ -22,7 +22,7 @@
   flex-direction: column;
 }
 
-@media (min-width: 640px) {
+@media (min-width: __LP_BP_SM__) {
   .lp-choice-variant-button .lp-choice-list {
     flex-direction: row;
     flex-wrap: wrap;
@@ -37,19 +37,19 @@
   padding: var(--lp-space-inset-item-y) var(--lp-space-inset-section);
   min-height: var(--lp-size-target-min);
   border: var(--lp-border-hairline) solid var(--border-control);
-  border-radius: var(--lp-radius-control);
-  background: var(--lp-color-surface-l0);
+  border-radius: var(--lp-radius-container);
+  background: var(--lp-color-surface-canvas);
   color: var(--text);
   cursor: pointer;
-  transition: border-color var(--lp-motion-duration-base) var(--lp-motion-easing-out), background-color var(--lp-motion-duration-base) var(--lp-motion-easing-out);
+  transition: border-color var(--lp-motion-duration-base) var(--lp-motion-easing-standard), background-color var(--lp-motion-duration-base) var(--lp-motion-easing-standard);
 }
 
 .lp-choice:hover:not(.is-disabled) {
-  background: var(--lp-color-surface-control-hover);
+  background: var(--lp-color-fill-neutral-tint-2);
 }
 
 .lp-choice:active:not(.is-disabled) {
-  background: var(--lp-color-surface-control-active);
+  background: var(--lp-color-fill-neutral-tint-3);
 }
 
 .lp-choice:has(.lp-choice-input:focus-visible) {
@@ -59,8 +59,13 @@
 
 .lp-choice.is-selected,
 .lp-choice:has(.lp-choice-input:checked) {
-  border-color: var(--accent);
-  background: var(--role-action-bg);
+  border-color: var(--lp-color-border-strong);
+  background: var(--lp-color-fill-accent-tint-1);
+}
+
+.lp-choice.is-selected:hover:not(.is-disabled),
+.lp-choice:has(.lp-choice-input:checked):hover:not(.is-disabled) {
+  background: var(--lp-color-fill-accent-tint-2);
 }
 
 .lp-choice.is-disabled {
@@ -142,12 +147,12 @@
 
 .lp-choice-card-title {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: var(--lp-line-clamp-2);
   -webkit-box-orient: vertical;
   overflow: hidden;
   font-size: var(--lp-font-size-14);
   line-height: var(--lp-size-icon-md);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   color: var(--text);
 }
 
@@ -160,5 +165,5 @@
 .lp-choice-btn-label {
   font-size: var(--lp-font-size-14);
   line-height: var(--lp-size-icon-md);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
 }

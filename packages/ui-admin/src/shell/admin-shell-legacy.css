@@ -6,7 +6,7 @@
 }
 
 /* Tablet 2-pane mode (768px - 1279px) */
-@media (min-width: 768px) and (max-width: 1279px) {
+@media (min-width: __LP_BP_MD__) and (max-width: __LP_BP_XL_MAX__) {
   .admin-shell {
     grid-template-columns: 1fr var(--lp-size-admin-inspector-width);
     align-items: start;
@@ -14,7 +14,7 @@
 }
 
 /* Desktop 3-pane mode (>= 1280px) */
-@media (min-width: 1280px) {
+@media (min-width: __LP_BP_XL__) {
   .admin-shell {
     grid-template-columns: var(--lp-size-admin-nav-width) 1fr var(--lp-size-admin-inspector-width);
     align-items: start;
@@ -81,7 +81,7 @@
   border-radius: 0 0 var(--lp-radius-control) var(--lp-radius-control);
   background: var(--surface-raised);
   color: var(--text);
-  line-height: 1.6;
+  line-height: var(--lp-font-line-reading);
   resize: vertical;
 }
 
@@ -113,7 +113,7 @@
 .level-step[data-active="true"] {
   border-color: var(--accent);
   color: var(--text);
-  font-weight: 700;
+  font-weight: var(--lp-font-weight-700);
   background: var(--surface-page);
 }
 
@@ -132,7 +132,7 @@
   border-bottom: var(--lp-border-focus) solid transparent;
   padding: var(--lp-space-inset-item-x) var(--lp-space-inset-section);
   font-size: var(--lp-font-size-14);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   color: var(--text-muted);
   cursor: pointer;
   white-space: nowrap;
@@ -165,7 +165,7 @@
   padding: var(--lp-space-inset-track) var(--lp-space-inset-section);
   border-radius: var(--lp-radius-chip);
   font-size: var(--lp-font-size-14);
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   color: var(--text-muted);
   background: var(--surface-page);
 }
@@ -193,7 +193,7 @@
   padding: var(--lp-border-hairline) var(--lp-space-proximity-2);
   font-size: var(--lp-font-size-13);
   font-family: var(--lp-font-family-code);
-  font-weight: 700;
+  font-weight: var(--lp-font-weight-700);
   background: var(--surface-raised);
   border: var(--lp-border-hairline) solid var(--rule);
   border-radius: var(--lp-radius-chip);
@@ -207,7 +207,7 @@
   padding: var(--lp-space-inset-item-x);
   margin: 0;
   background: var(--surface-raised);
-  transition: border-color var(--lp-motion-duration-fast) ease;
+  transition: border-color var(--lp-motion-duration-fast) var(--lp-motion-easing-standard);
 }
 
 .triage-card.selected {
@@ -220,7 +220,7 @@
 }
 
 .triage-card.status-skipped {
-  opacity: 0.5;
+  opacity: var(--lp-opacity-disabled);
   border-left: var(--lp-border-role-rule) solid var(--text-muted);
 }
 
@@ -234,10 +234,10 @@
   padding: var(--lp-space-inset-item-x) var(--lp-space-inset-section);
   z-index: var(--lp-z-skip);
   text-decoration: none;
-  font-weight: 700;
+  font-weight: var(--lp-font-weight-700);
   border: var(--lp-border-focus) solid var(--accent);
   border-radius: var(--lp-radius-control);
-  transition: top var(--lp-motion-duration-fast) ease;
+  transition: top var(--lp-motion-duration-fast) var(--lp-motion-easing-standard);
 }
 
 .skip-link:focus {
@@ -333,7 +333,7 @@ button[type="submit"] {
 .claim-text {
   font-family: var(--lp-font-family-reading);
   font-size: var(--lp-font-size-14));
-  line-height: 1.5;
+  line-height: var(--lp-font-line-20);
 }
 
 /* §12.3 & §12.4 Role Markers & Sections (Findings 20261020-UI-08, 20261020-UI-09) */
@@ -344,7 +344,7 @@ button[type="submit"] {
   padding: var(--lp-space-inset-tag-y) var(--lp-space-inset-item-x);
   font-family: var(--lp-font-family-ui);
   font-size: var(--lp-font-size-14));
-  font-weight: 600;
+  font-weight: var(--lp-font-weight-600);
   border-radius: var(--lp-radius-chip);
   border-left: var(--lp-border-role-rule) solid var(--accent);
   background: var(--surface-raised);
@@ -356,7 +356,7 @@ button[type="submit"] {
   margin: 0;
   padding-left: var(--lp-space-inset-section);
   border-left: var(--lp-border-role-rule) solid var(--accent);
-  transition: border-color var(--lp-motion-duration-fast) ease;
+  transition: border-color var(--lp-motion-duration-fast) var(--lp-motion-easing-standard);
 }
 
 .role-marker.role-goal, .role-section.role-goal { border-left-color: var(--lp-color-passage-goal); }
@@ -383,7 +383,7 @@ button[type="submit"] {
 
 /* §12.7 Choreographed Micro-Transitions */
 .btn {
-  transition: background-color var(--lp-motion-duration-fast) ease,
+  transition: background-color var(--lp-motion-duration-fast) var(--lp-motion-easing-standard),
               border-color var(--lp-motion-duration-fast) ease,
               color var(--lp-motion-duration-fast) ease,
               transform var(--lp-motion-duration-fast) ease;
@@ -394,7 +394,7 @@ button[type="submit"] {
 }
 
 .chip {
-  transition: background-color var(--lp-motion-duration-fast) ease,
+  transition: background-color var(--lp-motion-duration-fast) var(--lp-motion-easing-standard),
               border-color var(--lp-motion-duration-fast) ease,
               color var(--lp-motion-duration-fast) ease;
 }
@@ -420,8 +420,8 @@ button[type="submit"] {
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration: 0s !important;
-    transition-duration: 0s !important;
+    animation-duration: var(--lp-motion-duration-0) !important;
+    transition-duration: var(--lp-motion-duration-0) !important;
     transform: none !important;
   }
   .lp-icon-spin {

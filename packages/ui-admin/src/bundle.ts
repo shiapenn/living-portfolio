@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { THEME_CSS } from '@living-portfolio/design-tokens';
+import { THEME_CSS, BREAKPOINTS } from '@living-portfolio/design-tokens';
 import { hashCss } from '@living-portfolio/ui-core';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -10,8 +10,27 @@ const SRC_ROOT = resolve(__dirname, '../src');
 const LAYER_ORDER =
   '@layer reset, tokens, base, primitives, components, patterns, templates, pages, utilities, user-theme;';
 
+const BP_MAP: Record<string, string> = {
+  __LP_BP_COMPACT__: `${BREAKPOINTS.container.compact}px`,
+  __LP_BP_COMPACT_MAX__: `${BREAKPOINTS.container.compact - 1}px`,
+  __LP_BP_REGULAR__: `${(BREAKPOINTS.container as Record<string, number>).regular ?? 480}px`,
+  __LP_BP_REGULAR_MAX__: `${((BREAKPOINTS.container as Record<string, number>).regular ?? 480) - 1}px`,
+  __LP_BP_SM__: `${BREAKPOINTS.viewport.sm}px`,
+  __LP_BP_SM_MAX__: `${BREAKPOINTS.viewport.sm - 1}px`,
+  __LP_BP_MD__: `${BREAKPOINTS.viewport.md}px`,
+  __LP_BP_MD_MAX__: `${BREAKPOINTS.viewport.md - 1}px`,
+  __LP_BP_LG__: `${BREAKPOINTS.viewport.lg}px`,
+  __LP_BP_LG_MAX__: `${BREAKPOINTS.viewport.lg - 1}px`,
+  __LP_BP_XL__: `${BREAKPOINTS.viewport.xl}px`,
+  __LP_BP_XL_MAX__: `${BREAKPOINTS.viewport.xl - 1}px`,
+};
+
+function expandBreakpoints(css: string): string {
+  return css.replace(/__LP_BP_[A-Z_]+__/g, (tok) => BP_MAP[tok] ?? tok);
+}
+
 function readCss(rel: string): string {
-  return readFileSync(resolve(SRC_ROOT, rel), 'utf8').trim();
+  return expandBreakpoints(readFileSync(resolve(SRC_ROOT, rel), 'utf8').trim());
 }
 
 /**

@@ -180,6 +180,17 @@ items:
     acceptance: Page archetypes (docs/design/archetypes.md + data-archetype on every route, D1), complete D2 relation table (heading->first S3 always, Item rows S1, Item->ActionBar S3, merged 2-line Bookings meta), closed-world adjacency audit across 100% of single route-and-state manifest (D3, D4, K22, K23, K27), interaction conventions tonal ladder + unified unclipped focus ring + distinct disabled fill/text (docs/design/interaction.md, D5, K25), Item navigable chevron + whole-row hit target (D6, K24), single-container Credential header replacing Notice+Credential + ADR-025 scenario 4 amendment (D7, K26), Contradictions header/eyebrow/equal-date labels (D8, K26), Booking detail Decision bar under header + single definition list + humanised keys/values (D9, K26), Account Security section grouping (D10); K22-K27 failing on da622d0 canary, contact-sheet zip; CI + CodeQL green
     status: done
 
+  - id: WP-17.15
+    title: Visual system pass (WP-17 visual exit gate, FINAL; V1-V8, L7, K28-K35)
+    track: admin
+    type: visual
+    depends_on: [WP-17.14]
+    size: L
+    expected_minutes: 90
+    gate: L-review
+    acceptance: Shape language V1 (no partial-border + radius, zero divider/indicator radius, 8/12/999 tokens), Tabs redesigned V2 (baseline hairline, weight-stable 500, 0-radius accent bar, inset focus ring), token ladders V3 (surface/border/fill/elevation/motion/icons; control border 3.0-3.5:1, hairline ~1.5:1), Button/Field/Choice/Tab distinct signatures V4, PageHeader slots V5 (title-row action >=480px, S4 compact), unified OKLCH status colour family V6 (Pending on warning ramp), typography polish V7 (tabular-nums, balance/pretty, 68ch cap, tight title tracking), inset Item hover/pressed surfaces V8, hard-coded value audit L7 zero outside tokens (allowlist <= 10, build-time breakpoints), K28-K35 failing on 25e95c6 canary, 1x+2x contact-sheet zip + ladder specimen; CI + CodeQL green
+    status: done
+
   # ── WP-18: Authoring canvas, media, storage & import (Report §7.9 + P004) ──
   - id: WP-18.1
     title: Authoring canvas layout (UI-02; covered by WP-16.L L2)
@@ -207,7 +218,7 @@ items:
     title: Media API (POST /media, GET /media/:id, storage adapter, limits, content sniffing; D-06, D-STORAGE)
     track: functional
     type: functional
-    depends_on: [WP-17.14]
+    depends_on: [WP-17.15]
     size: M
     expected_minutes: 50
     gate: none
