@@ -6,7 +6,7 @@
 | Date | 2026-11-26 |
 | Author | A (Implementer) |
 | Task ID | `WP-17.12` |
-| Evidence SHA | `53905f177c28f4ccc80c1027f1bf1d8deeb6f0bd` |
+| Evidence SHA | `cf85e3b57bc1b6bda5569c76999096eb0b8163cd` |
 | CI run | pending PR #281 CI |
 
 ---
@@ -74,6 +74,7 @@
 - `docs/design/tokens.md`
 - `docs/doc-registry.json`
 - `docs/execution-reports/A182-wp-1711-feedback-model-credential-item-accent.md`
+- `docs/execution-reports/A183-wp-1712-hierarchy-and-workflow-pass.md`
 - `docs/plans/backlog.yml`
 - `docs/plans/wp17-progress.md`
 - `packages/core/src/algorithms/topology.ts`
@@ -110,8 +111,8 @@ $ pnpm receipt:check A183
 === Validating Receipt A183-wp-1712-hierarchy-and-workflow-pass.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA '53905f177c28f4ccc80c1027f1bf1d8deeb6f0bd' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff 1d1979e573c74067a47d7230b5477e39cc1b8481..53905f177c28f4ccc80c1027f1bf1d8deeb6f0bd (47 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA 'cf85e3b57bc1b6bda5569c76999096eb0b8163cd' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 1d1979e573c74067a47d7230b5477e39cc1b8481..cf85e3b57bc1b6bda5569c76999096eb0b8163cd (48 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A183-wp-1712-hierarchy-and-workflow-pass.md.
 Found 0 section(s) marked verbatim.
 
