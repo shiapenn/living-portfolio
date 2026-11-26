@@ -53,6 +53,7 @@ export function createAuditRoutes(repo: IPortfolioRepository, answerCache?: Answ
           entry_id: entry.id,
           entry_title: entry.title,
           entry_slug: entry.slug,
+          entry_date: (entry as any).published_at || (entry as any).updated_at || (entry as any).created_at || cl.recorded_at,
         });
       }
     }

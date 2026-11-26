@@ -44,7 +44,7 @@ export { renderAdminInboxPage } from "./pages/admin/inbox.js";
 export { renderAdminAuditRulesPage } from "./pages/admin/audit.js";
 export { renderAdminCalibrationPage } from "./pages/admin/calibration.js";
 export { renderAdminStructurePage } from "./pages/admin/structure.js";
-export { renderAdminBookingsPage } from "./pages/admin/bookings.js";
+export { renderAdminBookingsPage, renderAdminBookingDetailPage } from "./pages/admin/bookings.js";
 export { renderAdminVenturesPage } from "./pages/admin/ventures.js";
 export { renderAdminPagesEditorPage } from "./pages/admin/pages.js";
 export { renderAdminSettingsPage, renderAdminSettingsModulePage } from "./pages/admin/settings.js";

@@ -137,7 +137,7 @@ items:
     status: done
 
   - id: WP-17.11
-    title: Feedback model, Credential display, Item v2, accent coverage (WP-17 exit gate, last; C1-C5, K1-K5, ADR-025)
+    title: Feedback model, Credential display, Item v2, accent coverage (WP-17 exit gate; C1-C5, K1-K5, ADR-025)
     track: admin
     type: visual
     depends_on: [WP-17.10]
@@ -145,6 +145,17 @@ items:
     expected_minutes: 75
     gate: L-review
     acceptance: Extract registered Credential component (C1), implement ADR-025 9-scenario feedback model + feedback.md across all admin screens (C2), implement Item v2 480px container-query compact/regular anatomy + atomic meta + single-status omission + Contradiction layout (C3), full derived accent coverage across all roles in light/dark (C4), verify 320/1280/1920 widths (C5), K1-K5 checks failing on 40f87ad canary, extended J3/J7, contact-sheet zip; CI + CodeQL green
+    status: done
+
+  - id: WP-17.12
+    title: Hierarchy and workflow pass (WP-17 exit gate, last; A1-A6, B1-B5, Part C, K6-K13)
+    track: admin
+    type: visual
+    depends_on: [WP-17.11]
+    size: L
+    expected_minutes: 90
+    gate: L-review
+    acceptance: Credential 1/2-col nowrap + Copy inside surface + TOTP manual key under QR (A1), fixed 5-part State panel order across all 6 Contradictions states (A2), Contradictions side-by-side >=640px / stacked with vs + Older/Newer dates + edit links (A3), Bookings list date+timezone + new detail route with visitor behaviour helper (A4), Item trailing chevron when status omitted + unclamped content titles + Active tokens single-status (A5), content.md text roles (A6), B1-B5 rhythm/type/mobile-16px normalisation + specimen, Part C screen-brief gate + retroactive briefs + C2 owner sweep + decision-completeness journeys, K6-K13 checks failing on cd6a3d1 canary, contact-sheet zip; CI + CodeQL green
     status: done
 
   # ── WP-18: Authoring canvas, media, storage & import (Report §7.9 + P004) ──
@@ -174,7 +185,7 @@ items:
     title: Media API (POST /media, GET /media/:id, storage adapter, limits, content sniffing; D-06, D-STORAGE)
     track: functional
     type: functional
-    depends_on: [WP-17.11]
+    depends_on: [WP-17.12]
     size: M
     expected_minutes: 50
     gate: none

@@ -290,7 +290,20 @@ export function renderFoundationsTokensSection(): string {
     PUBLIC_DARK_VALUES['--pub-color-surface-canvas']
   );
 
-  return `<section id="gallery-foundations-tokens" class="lp-gallery-section" data-component="FoundationsTokens">
+  return `<section id="gallery-type-specimen" class="lp-gallery-section" data-component="TypeSpecimen">
+    ${renderSectionHeader({ title: 'Type Specimen (B3 — 8 Admin Roles)' })}
+    <div class="lp-stack lp-gap-related">
+      <div class="lp-stack lp-gap-tight"><span class="lp-caption">page-title · 24 / 700 / text-1</span><div class="lp-page-title">Settings</div></div>
+      <div class="lp-stack lp-gap-tight"><span class="lp-caption">section-title · 18 / 600 / text-1</span><div class="lp-section-title">Answering thresholds</div></div>
+      <div class="lp-stack lp-gap-tight"><span class="lp-caption">item-title · 16 / 500 / text-1</span><div class="lp-item-title">Advisory locks in PostgreSQL</div></div>
+      <div class="lp-stack lp-gap-tight"><span class="lp-caption">label · 14 / 500 / text-2</span><label class="lp-field-label">Direct answer threshold</label></div>
+      <div class="lp-stack lp-gap-tight"><span class="lp-caption">body · 14 / 400 / text-1</span><p class="lp-body">Answers quote directly from your published entries.</p></div>
+      <div class="lp-stack lp-gap-tight"><span class="lp-caption">secondary · 12 / 500 / text-2</span><p class="lp-description">Controls when questions escalate to Inbox.</p></div>
+      <div class="lp-stack lp-gap-tight"><span class="lp-caption">meta/helper · 12 / 400 / text-3</span><p class="lp-field-help">Recommended 0.82. Higher sends more questions to Inbox.</p></div>
+      <div class="lp-stack lp-gap-tight"><span class="lp-caption">mono · 12 / 400 / text-1</span><code class="lp-credential-single">JBSW Y3DP EHPK 3PXP</code></div>
+    </div>
+  </section>
+  <section id="gallery-foundations-tokens" class="lp-gallery-section" data-component="FoundationsTokens">
     ${renderSectionHeader({ title: 'Foundations: Design Tokens (Admin & Public Packs)' })}
     ${renderText({ variant: 'description', text: 'Generated directly from packages/design-tokens/packs/*.json (D-M2 scale rules, proximity tiers, contrast ratios).' })}
     ${renderList({

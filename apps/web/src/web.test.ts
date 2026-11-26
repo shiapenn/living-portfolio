@@ -591,10 +591,11 @@ console.log(x);
     });
 
     it('2. Multi-tier design tokens define D-MIN primitives, semantics, scale, and layout-max (20261020-UI-02, D-MIN)', () => {
-      // D-MIN 8 Scale {12, 14, 16, 24}
-      expect(TYPE_ROLES.caption.size).toBe(12);
+      // WP-17.12 B3 8-role admin type scale {12, 14, 16, 18, 24}
+      expect(TYPE_ROLES.meta.size).toBe(12);
       expect(TYPE_ROLES.body.size).toBe(14);
-      expect(TYPE_ROLES['section-title'].size).toBe(16);
+      expect(TYPE_ROLES['item-title'].size).toBe(16);
+      expect(TYPE_ROLES['section-title'].size).toBe(18);
       expect(TYPE_ROLES['page-title'].size).toBe(24);
       expect(COMPONENT_TOKEN_VALUES['--lp-radius-r1']).toBe('4px');
       expect(COMPONENT_TOKEN_VALUES['--lp-radius-r2']).toBe('8px');

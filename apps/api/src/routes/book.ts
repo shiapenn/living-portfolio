@@ -52,7 +52,12 @@ export function createBookRoutes(repo: IPortfolioRepository) {
     }
     const booking = await repo.getBooking(id);
     if (!booking) return c.json({ error: 'Booking not found' }, 404);
+    const history: Array<{ status: string; at: string }> = Array.isArray((booking as any).status_history)
+      ? (booking as any).status_history
+      : [{ status: String(booking.status || 'pending'), at: String((booking as any).created_at || new Date().toISOString()) }];
+    history.push({ status, at: new Date().toISOString() });
     (booking as any).status = status;
+    (booking as any).status_history = history;
     return c.json({ updated: true, booking });
   });
 

@@ -55,11 +55,13 @@ export async function renderAdminInboxPage(
           .map((item) => {
             const id = String(item.id);
             const due = getDueBadge(item);
-            const dateLabel = item.created_at ? formatAdminDate(item.created_at) : '';
+            const rawDate = item.created_at || item.at || item.asked_at || item.updated_at;
+            const dateLabel = rawDate ? formatAdminDate(rawDate) : '';
             return renderItem({
               href: `/admin/inbox/${encodeURIComponent(id)}`,
               title: String(item.question || 'Untitled question'),
-              meta: dateLabel || undefined,
+              titleVariant: 'content',
+              meta: dateLabel ? `Received ${dateLabel}` : undefined,
               showChevron: true,
               attributes: `data-inbox-row="${escapeHtml(id)}"`,
             });
@@ -69,7 +71,7 @@ export async function renderAdminInboxPage(
     : renderEmptyState({ id: 'inbox-empty', headingTag: 'h2', title: INBOX_STRINGS.inbox.emptyTitle, body: INBOX_STRINGS.inbox.emptyBody });
 
   const detailHtml = selectedItem
-    ? `<section id="inbox-detail-card" class="lp-stack-md" data-escalation-id="${escapeHtml(String(selectedItem.id))}">
+    ? `<section id="inbox-detail-card" class="lp-stack lp-gap-group" data-escalation-id="${escapeHtml(String(selectedItem.id))}">
         <div>${renderStatusDot({ label: getDueBadge(selectedItem).label, tone: getDueBadge(selectedItem).tone === 'danger' ? 'danger' : getDueBadge(selectedItem).tone === 'warn' ? 'warn' : getDueBadge(selectedItem).tone === 'ok' ? 'ok' : 'neutral' })}</div>
         ${renderSectionHeader({ title: INBOX_STRINGS.inbox.questionHeading })}
         ${renderText({ variant: 'body', text: String(selectedItem.question || '') })}
@@ -87,7 +89,7 @@ export async function renderAdminInboxPage(
           primary: { id: 'inbox-btn-reply', label: INBOX_STRINGS.inbox.sendReply, variant: 'primary', size: 'sm' },
           secondary: { id: 'inbox-btn-decline', label: INBOX_STRINGS.inbox.declineButton, variant: 'secondary', size: 'sm' },
         })}
-        <div id="inbox-make-rule-card" class="lp-stack-sm" hidden>
+        <div id="inbox-make-rule-card" class="lp-stack lp-gap-related" hidden>
           ${renderSectionHeader({ title: INBOX_STRINGS.inbox.makeRuleTitle, headingTag: 'h3' })}
           ${renderText({ variant: 'caption', className: 'lp-help-text', text: INBOX_STRINGS.inbox.makeRuleBody })}
           <input id="inbox-rule-text" type="text" class="lp-input" placeholder="${escapeHtml(INBOX_STRINGS.inbox.makeRulePlaceholder)}" value="${escapeHtml(String(selectedItem.question || ''))}" />

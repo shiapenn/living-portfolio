@@ -11,6 +11,7 @@ import {
   renderAdminCalibrationPage,
   renderAdminStructurePage,
   renderAdminBookingsPage,
+  renderAdminBookingDetailPage,
   renderAdminVenturesPage,
   renderAdminPagesEditorPage,
   renderAdminEntriesListPage,
@@ -156,6 +157,13 @@ export function mountBundledWeb(
         })
       )
     );
+    app.get('/admin/bookings/:id', auth.requireAdminMiddleware(), async (c) => {
+      const html = await renderAdminBookingDetailPage(repo, c.req.param('id') || '', {
+        answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+      });
+      if (!html) return c.text('Booking not found', 404);
+      return c.html(html);
+    });
     app.get('/admin/ventures', auth.requireAdminMiddleware(), async (c) =>
       c.html(
         await renderAdminVenturesPage(repo, {

@@ -17,26 +17,36 @@ body { background: var(--surface-l0); color: var(--text-1); }
   background: var(--surface-l2);
 }
 
-/* Native controls styled from tokens (D-FINAL #4) */
+/* Native controls styled from tokens (D-FINAL #4, WP-17.12 B4 >=16px at compact) */
 select.lp-input, select.lp-select, input.lp-input, textarea.lp-input, textarea.lp-textarea, input.lp-choice-input {
   background-color: var(--surface-input);
   color: var(--text-1);
   border: var(--lp-border-hairline) solid var(--border-control);
   color-scheme: inherit;
 }
+select.lp-input, select.lp-select, input.lp-input, textarea.lp-input, textarea.lp-textarea {
+  font-size: var(--lp-font-size-16);
+}
+@media (min-width: 640px) {
+  select.lp-input, select.lp-select, input.lp-input, textarea.lp-input, textarea.lp-textarea {
+    font-size: var(--lp-font-size-14);
+  }
+}
 select.lp-input option, select.lp-select option, select.lp-input optgroup, select.lp-select optgroup {
   background-color: var(--surface-l1);
   color: var(--text-1);
 }
 
-/* 7 Type Roles (D-FINAL #8) */
-.lp-page-title { font-size: var(--lp-font-size-24); font-weight: var(--lp-font-weight-600); color: var(--text-1); line-height: var(--lp-font-line-32); letter-spacing: var(--lp-font-letter-normal); }
-.lp-section-title, .lp-form-section-title, .lp-section-header-title { font-size: var(--lp-font-size-16); font-weight: 600; color: var(--text-1); line-height: var(--lp-font-line-24); }
-.lp-item-title, .lp-field-label { font-size: var(--lp-font-size-14); font-weight: 600; color: var(--text-1); line-height: var(--lp-size-icon-md); }
+/* 8 Type Roles (WP-17.12 B3: >=2 axes between neighbouring roles) */
+.lp-page-title { font-size: var(--lp-font-size-24); font-weight: var(--lp-font-weight-700); color: var(--text-1); line-height: var(--lp-font-line-32); letter-spacing: var(--lp-font-letter-normal); }
+.lp-section-title, .lp-form-section-title, .lp-section-header-title { font-size: var(--lp-font-size-18); font-weight: var(--lp-font-weight-600); color: var(--text-1); line-height: var(--lp-font-line-24); }
+.lp-item-title { font-size: var(--lp-font-size-16); font-weight: var(--lp-font-weight-500); color: var(--text-1); line-height: var(--lp-font-line-24); }
+.lp-field-label { font-size: var(--lp-font-size-14); font-weight: var(--lp-font-weight-500); color: var(--text-2); line-height: var(--lp-font-line-20); }
 .lp-body, .lp-item-body { font-size: var(--lp-font-size-14); font-weight: var(--lp-font-weight-400); color: var(--text-1); line-height: var(--lp-font-line-20); margin: 0; }
 .lp-line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.lp-description, .lp-page-description, .lp-form-section-desc { font-size: var(--lp-font-size-14); font-weight: 400; color: var(--text-2); line-height: var(--lp-size-icon-md); margin: 0; }
-.lp-caption, .lp-item-subtitle, .lp-item-meta, .lp-field-help, .lp-item-segment-heading { font-size: var(--lp-font-size-12); font-weight: 400; color: var(--text-2); line-height: var(--lp-font-line-16); margin: 0; }
+.lp-description, .lp-page-description, .lp-form-section-desc, .lp-item-subtitle { font-size: var(--lp-font-size-12); font-weight: var(--lp-font-weight-500); color: var(--text-2); line-height: var(--lp-font-line-16); margin: 0; }
+.lp-caption, .lp-item-meta, .lp-field-help, .lp-help-text, .lp-item-segment-heading { font-size: var(--lp-font-size-12); font-weight: var(--lp-font-weight-400); color: var(--text-3); line-height: var(--lp-font-line-16); margin: 0; }
+code, pre { font-family: var(--lp-font-family-code); font-size: var(--lp-font-size-12); font-weight: var(--lp-font-weight-400); color: var(--text-1); line-height: var(--lp-font-line-20); }
 .lp-prose { margin: 0; }
 .lp-input::placeholder, .lp-textarea::placeholder, :disabled { color: var(--text-3); }
 

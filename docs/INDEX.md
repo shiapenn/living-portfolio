@@ -293,4 +293,6 @@
 | `L057` | Admin Content Standard | `active` | [content.md](design/content.md) | — |
 | `L058` | ADR-025: Feedback Placement and Timing | `active` | [ADR-025-feedback-placement-and-timing.md](adr/ADR-025-feedback-placement-and-timing.md) | — |
 | `L059` | Admin Feedback Placement & Timing | `active` | [feedback.md](design/feedback.md) | — |
+| `L060` | Admin Rhythm, Type & Mobile Input Standard | `active` | [rhythm-type.md](design/rhythm-type.md) | — |
+| `L061` | Admin Screen Brief Gate (Part C) | `active` | [screen-brief.md](design/screen-brief.md) | — |
 

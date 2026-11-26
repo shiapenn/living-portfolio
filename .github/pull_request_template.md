@@ -17,7 +17,15 @@
 ### 2. Token Statement (`D-M2`)
 - **New/changed tokens:** `none` (or list token name, pack, and the declared scale rule it follows).
 
-### 3. Verification Checklist
+### 3. Screen Brief (`docs/design/screen-brief.md`, required for any new route, list-item type, or state panel)
+- **JTBD:**
+- **Decision & required data:**
+- **Primary action & consequence:**
+- **Hierarchy ranking (`1..n`):**
+- **States (`empty`, `error`, `loading`, `one`, `many`, `long text`):**
+- **Compact (`< 480px`) behaviour:**
+
+### 4. Verification Checklist
 - [ ] Co-located `*.gallery.ts` sample updated and `node scripts/generate-registry` run (if UI touched)
 - [ ] Unit, conformance, and Playwright E2E tests added/updated
 - [ ] `pnpm verify:fast` and `node scripts/verify-design-boundaries` pass

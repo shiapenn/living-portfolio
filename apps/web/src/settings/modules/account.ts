@@ -65,15 +65,19 @@ export const accountModule: SettingsModuleManifest<AccountConfig> = {
         title: 'Authenticator app',
         description: 'Current authenticator stays active until you confirm a new code.',
         fieldsHtml: `
-          <div id="account-totp-reenrol-box" class="lp-stack lp-gap-related lp-is-hidden">
-            <div id="account-totp-qr"></div>
-            ${renderCredential({
-              id: 'account-totp-manual-cred',
-              variant: 'single',
-              value: '',
-              groupBy4: true,
-              hidden: true,
-            })}
+          <div id="account-totp-reenrol-box" class="lp-stack lp-gap-group lp-is-hidden">
+            <div class="lp-stack lp-gap-related">
+              <div id="account-totp-qr"></div>
+              ${renderCredential({
+                id: 'account-totp-manual-cred',
+                variant: 'single',
+                value: '',
+                groupBy4: true,
+                showNotice: false,
+                helperText: "Enter this key if you can't scan the code.",
+                hidden: true,
+              })}
+            </div>
             ${renderField({
               kind: 'input',
               id: 'account-totp-code',

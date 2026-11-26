@@ -228,8 +228,8 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
         ${renderSectionHeader({ title: 'Text' })}
         <div id="gallery-text-sample" class="lp-stack lp-gap-related">
           ${renderText({ variant: 'body', text: `Body text role (${TYPE_ROLES.body.size}/${TYPE_ROLES.body.lineHeight}, text-1).` })}
-          ${renderText({ variant: 'description', text: `Description text role (${TYPE_ROLES.description.size}/${TYPE_ROLES.description.lineHeight}, text-2).` })}
-          ${renderText({ variant: 'caption', text: `Caption text role (${TYPE_ROLES.caption.size}/${TYPE_ROLES.caption.lineHeight}, text-2).` })}
+          ${renderText({ variant: 'description', text: `Secondary text role (${TYPE_ROLES.secondary.size}/${TYPE_ROLES.secondary.lineHeight}, text-2).` })}
+          ${renderText({ variant: 'caption', text: `Meta/helper text role (${TYPE_ROLES.meta.size}/${TYPE_ROLES.meta.lineHeight}, text-3).` })}
           ${renderText({ variant: 'prose', text: 'Prose text role for structured multi-paragraph copy.' })}
         </div>
       </section>

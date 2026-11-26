@@ -107,7 +107,8 @@ test.describe.serial('WP-17.9 / WP-17.10 Self-Test User Journeys (J1–J8)', () 
     await page.click('#account-token-created-copy-btn');
     await expect(page.locator('#account-token-created-copied')).toHaveText('Copied');
     const tokenItem = page.locator('#account-tokens-container [data-c="Item"]', { hasText: 'journey-j3-token' }).first();
-    await expect(tokenItem.locator('.lp-status-dot')).toBeVisible();
+    await expect(tokenItem.locator('[data-c="StatusLabel"]')).toHaveCount(0);
+    await expect(tokenItem).toContainText('Created ');
     await tokenItem.locator('button[data-revoke-token]').click();
     await expect(page.locator('#account-tokens-list-notice.lp-status-line-ok')).toContainText('Token revoked.');
   });
@@ -174,17 +175,21 @@ test.describe.serial('WP-17.9 / WP-17.10 Self-Test User Journeys (J1–J8)', () 
     const detRes = await page.request.post('/api/audit/topology-conflicts/detect', { headers, data: {} });
     expect(detRes.status()).toBe(200);
 
-    // Load Contradictions tab -> state is 'found' with >= 2 contradictions quoting claims
+    // Load Contradictions tab -> state is 'found' with >= 2 contradictions (Part C decision-completeness)
     await page.goto('/admin/audit?status=contradictions');
     await expect(page.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', 'found');
     const rows = page.locator('#audit-conflicts-list [data-conflict-row]');
     const initialCount = await rows.count();
     expect(initialCount).toBeGreaterThanOrEqual(2);
+    await expect(rows.first().locator('.lp-item-claim-eyebrow')).toHaveCount(2);
+    await expect(rows.first().locator('.lp-item-quote')).toHaveCount(2);
+    await expect(rows.first().locator('a.lp-item-link')).toHaveCount(2);
 
-    // Supersede first contradiction -> item removed, count updates
+    // Supersede first contradiction -> item removed, count updates, StatusLine confirms "Resolved"
     await rows.first().locator('button[data-conflict-res="supersedes"]').click();
     await expect(rows).toHaveCount(initialCount - 1);
     await expect(page.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', 'resolved');
+    await expect(page.locator('#audit-conflicts-resolved-status.lp-status-line-ok')).toHaveText('Resolved');
 
     // Dismiss remaining contradictions until clean
     while ((await rows.count()) > 0) {
@@ -192,16 +197,16 @@ test.describe.serial('WP-17.9 / WP-17.10 Self-Test User Journeys (J1–J8)', () 
       await page.waitForTimeout(100);
     }
     await expect(page.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', 'clean');
-    await expect(page.locator('#audit-conflicts-empty .lp-empty-body')).toContainText('No contradictions found.');
+    await expect(page.locator('#audit-state-headline')).toContainText('No contradictions found');
 
-    // Error state via failing detect endpoint -> Retry button shown
+    // Error state via failing detect endpoint -> danger Notice below ActionBar
     await page.route('**/api/audit/topology-conflicts/detect', (route) =>
       route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Injected failure' }) })
     );
     await page.click('#btn-detect-conflicts');
     await expect(page.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', 'error');
     await expect(page.locator('#audit-conflicts-error')).toBeVisible();
-    await expect(page.locator('#btn-detect-conflicts')).toHaveText('Retry');
+    await expect(page.locator('#btn-detect-conflicts')).toHaveText(/Run check|Check again/);
 
     // Unroute & Retry -> succeeds (clean) with formatted timestamp
     await page.unroute('**/api/audit/topology-conflicts/detect');
@@ -312,11 +317,22 @@ test.describe.serial('WP-17.9 / WP-17.10 Self-Test User Journeys (J1–J8)', () 
 
     await page.goto('/admin/bookings');
     const rowConfirm = page.locator('#bookings-list [data-c="Item"]', { hasText: 'J8 Confirm Topic' }).first();
+    // Part C decision-completeness for Bookings confirm: slot (date+tz), requester name, received date all present before action
+    await expect(rowConfirm.locator('[data-booking-slot]')).toContainText(/UTC|GMT|your time/i);
+    await expect(rowConfirm.locator('[data-booking-requester]')).toHaveText('Alice');
+    await expect(rowConfirm.locator('[data-booking-received]')).toContainText('Received ');
     await Promise.all([
       page.waitForNavigation({ waitUntil: 'load' }),
       rowConfirm.locator('button[data-booking-status="confirmed"]').click(),
     ]);
     await expect(page.locator('#bookings-list [data-c="Item"]', { hasText: 'J8 Confirm Topic' }).first()).toContainText('Confirmed');
+
+    // Verify Inbox decision-completeness (Part C): full unclamped question + received date present on Inbox list
+    await page.goto('/admin/inbox');
+    const inboxRow = page.locator('#inbox-list [data-c="Item"]').first();
+    await expect(inboxRow.locator('.lp-item-title[data-title-variant="content"]')).toBeVisible();
+    await expect(inboxRow).toContainText('Received ');
+    await page.goto('/admin/bookings');
 
     const rowDecline = page.locator('#bookings-list [data-c="Item"]', { hasText: 'J8 Decline Topic' }).first();
     await Promise.all([

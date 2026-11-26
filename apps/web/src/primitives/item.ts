@@ -13,6 +13,7 @@ export interface ItemBodySegment {
 export interface ItemMetaField {
   text: string;
   breakable?: boolean;
+  strong?: boolean;
 }
 
 export interface ItemProps {
@@ -20,10 +21,14 @@ export interface ItemProps {
   href?: string;
   leadingIcon?: IconName;
   title: string;
+  /** 'entity' (default) clamps to 3 lines in lists; 'content' (questions, rules, claims) never clamps (A5). */
+  titleVariant?: 'entity' | 'content';
   titleClamp2?: boolean;
   subtitle?: string;
   body?: string;
   segments?: ItemBodySegment[];
+  /** Optional custom raw HTML body (e.g. Contradiction side-by-side claim blocks). */
+  customBodyHtml?: string;
   meta?: string;
   metaFields?: ItemMetaField[];
   statusLabel?: string;
@@ -57,12 +62,20 @@ export function renderItem(props: ItemProps): string {
     ? `<span class="lp-item-leading" aria-hidden="true">${renderIcon(props.leadingIcon, 16)}</span>`
     : '';
 
-  const titleCls = props.titleClamp2 ? 'lp-item-title lp-item-title-clamp-2' : 'lp-item-title';
-  const titleHtml = `<div data-rel="title" class="${titleCls}">${leadingHtml}<span>${escapeHtml(props.title)}</span></div>`;
+  const titleCls = [
+    'lp-item-title',
+    props.titleVariant === 'content' ? 'lp-item-title-content' : '',
+    props.titleClamp2 ? 'lp-item-title-clamp-2' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  const titleHtml = `<div data-rel="title" class="${titleCls}"${props.titleVariant === 'content' ? ' data-title-variant="content"' : ''}>${leadingHtml}<span>${escapeHtml(props.title)}</span></div>`;
   const subtitleHtml = props.subtitle ? `<div class="lp-item-subtitle">${escapeHtml(props.subtitle)}</div>` : '';
 
   let bodyHtml = '';
-  if (props.segments && props.segments.length > 0) {
+  if (props.customBodyHtml) {
+    bodyHtml = `<div data-rel="itembody" class="lp-item-segments">${props.customBodyHtml}</div>`;
+  } else if (props.segments && props.segments.length > 0) {
     bodyHtml = `<div data-rel="itembody" class="lp-item-segments">${props.segments
       .map((seg) => {
         const headingInner = seg.heading
@@ -88,11 +101,11 @@ export function renderItem(props: ItemProps): string {
         props.showChevron ? `<span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span>` : ''
       }</div>`
     : props.trailingValue
-      ? `<div class="lp-item-status"><span class="lp-body">${escapeHtml(props.trailingValue)}</span>${
+      ? `<div class="lp-item-status"><span class="lp-caption">${escapeHtml(props.trailingValue)}</span>${
           props.showChevron ? `<span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span>` : ''
         }</div>`
       : props.showChevron
-        ? `<div class="lp-item-status"><span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span></div>`
+        ? `<div class="lp-item-status lp-item-chevron-only"><span class="lp-item-chevron" aria-hidden="true">${renderIcon('chevron-right', 16)}</span></div>`
         : '';
 
   const metaHtml =
@@ -101,7 +114,7 @@ export function renderItem(props: ItemProps): string {
           .filter((f) => f.text.trim().length > 0)
           .map(
             (f) =>
-              `<span class="lp-item-meta-field${f.breakable ? ' lp-item-meta-break' : ''}">${escapeHtml(f.text)}</span>`
+              `<span class="lp-item-meta-field${f.breakable ? ' lp-item-meta-break' : ''}${f.strong ? ' lp-item-meta-strong' : ''}">${escapeHtml(f.text)}</span>`
           )
           .join('')}</div>`
       : props.meta
