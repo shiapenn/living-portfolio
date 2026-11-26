@@ -6,7 +6,7 @@
 | Date | 2026-11-26 |
 | Author | A (Implementer) |
 | Task ID | `WP-17.13` |
-| Evidence SHA | `b5bbfc94ce5db5a495894f62a127cea5787f53d9` |
+| Evidence SHA | `603df00c2dcad779e0d3ac5133cd68c31e718e44` |
 | CI run | pending PR #282 CI |
 
 ---
@@ -83,6 +83,7 @@
 - `docs/design/tokens.md`
 - `docs/doc-registry.json`
 - `docs/execution-reports/A183-wp-1712-hierarchy-and-workflow-pass.md`
+- `docs/execution-reports/A184-wp-1713-spacing-purposes-audit.md`
 - `docs/plans/backlog.yml`
 - `package.json`
 - `packages/core/src/algorithms/topology.ts`
@@ -111,6 +112,9 @@
 - `packages/ui-admin/src/templates/dghl-polish.css`
 - `scripts/design-audit`
 - `scripts/wp16n-verify`
+- `tests/e2e/census-helpers.ts`
+- `tests/e2e/wp16-c-component-census.spec.ts`
+- `tests/e2e/wp16-g-census.spec.ts`
 - `tests/e2e/wp17-12-hierarchy-workflow-census.spec.ts`
 - `tests/e2e/wp17-13-design-audit.spec.ts`
 - `tests/e2e/wp17-contact-sheets.spec.ts`
@@ -134,8 +138,8 @@ $ pnpm receipt:check A184
 === Validating Receipt A184-wp-1713-spacing-purposes-audit.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA 'b5bbfc94ce5db5a495894f62a127cea5787f53d9' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff 4a78c71f6db9ce98962be6c0d1af412503e66b71..b5bbfc94ce5db5a495894f62a127cea5787f53d9 (71 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA '603df00c2dcad779e0d3ac5133cd68c31e718e44' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 4a78c71f6db9ce98962be6c0d1af412503e66b71..603df00c2dcad779e0d3ac5133cd68c31e718e44 (75 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A184-wp-1713-spacing-purposes-audit.md.
 Found 0 section(s) marked verbatim.
 
