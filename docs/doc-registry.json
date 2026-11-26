@@ -2209,5 +2209,13 @@
     "path": "docs/design/interaction.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A185",
+    "title": "wp-1714-archetypes-closed-world-audit",
+    "class": "A",
+    "path": "docs/execution-reports/A185-wp-1714-archetypes-closed-world-audit.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

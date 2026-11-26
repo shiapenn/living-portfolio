@@ -190,6 +190,7 @@
 | `A182` | WP-17.11 feedback model credential item accent | `active` | [A182-wp-1711-feedback-model-credential-item-accent.md](execution-reports/A182-wp-1711-feedback-model-credential-item-accent.md) | — |
 | `A183` | WP-17.12 hierarchy and workflow pass | `active` | [A183-wp-1712-hierarchy-and-workflow-pass.md](execution-reports/A183-wp-1712-hierarchy-and-workflow-pass.md) | — |
 | `A184` | WP-17.13 spacing ownership, text purposes, token integrity, design audit | `active` | [A184-wp-1713-spacing-purposes-audit.md](execution-reports/A184-wp-1713-spacing-purposes-audit.md) | — |
+| `A185` | wp-1714-archetypes-closed-world-audit | `active` | [A185-wp-1714-archetypes-closed-world-audit.md](execution-reports/A185-wp-1714-archetypes-closed-world-audit.md) | — |
 
 ## Handover Snapshots (Class H)
 
