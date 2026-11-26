@@ -119,7 +119,7 @@ export async function renderAdminAuditRulesPage(
       <div id="audit-contradictions-panel" data-contradictions-state="${initialState}" class="lp-stack lp-gap-group">
         <div id="audit-conflicts-section" class="lp-stack lp-gap-group">
           <div class="lp-stack lp-gap-tight">
-            <div id="audit-state-headline" class="lp-item-title" aria-live="polite">${escapeHtml(initialHeadline)}</div>
+            <div id="audit-state-headline" data-c="Text" class="lp-item-title" aria-live="polite">${escapeHtml(initialHeadline)}</div>
             <p id="audit-last-checked" data-c="Text" data-variant="caption" class="lp-field-help">${escapeHtml(initialMeta)}</p>
           </div>
           <div class="lp-stack lp-gap-related">

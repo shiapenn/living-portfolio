@@ -292,7 +292,7 @@ export function renderFoundationsTokensSection(): string {
 
   return `<section id="gallery-type-specimen" class="lp-gallery-section" data-component="TypeSpecimen">
     ${renderSectionHeader({ title: 'Type Specimen (B3 — 8 Admin Roles)' })}
-    <div class="lp-stack lp-gap-related">
+    <div data-c="Text" class="lp-stack lp-gap-related">
       <div class="lp-stack lp-gap-tight"><span class="lp-caption">page-title · 24 / 700 / text-1</span><div class="lp-page-title">Settings</div></div>
       <div class="lp-stack lp-gap-tight"><span class="lp-caption">section-title · 18 / 600 / text-1</span><div class="lp-section-title">Answering thresholds</div></div>
       <div class="lp-stack lp-gap-tight"><span class="lp-caption">item-title · 16 / 500 / text-1</span><div class="lp-item-title">Advisory locks in PostgreSQL</div></div>

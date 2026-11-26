@@ -53,4 +53,4 @@ Specimen rendered at `/admin/_gallery#gallery-type-specimen` and captured at `32
 
 ## B4 Mobile Inputs (Compact Floor)
 
-All `<input>` (text/email/password/number/search/url/date), `<select>`, and `<textarea>` elements render using `var(--lp-font-size-16)` below the `sm` breakpoint so iOS Safari never auto-zooms on focus, stepping to `var(--lp-font-size-14)` at the `sm` viewport breakpoint in `dfinal-system.css` (`K13`).
+All `<input>` (text/email/password/number/search/url/date), `<select>`, and `<textarea>` elements render using `var(--lp-font-size-16)` uniformly across compact and desktop widths so iOS Safari never auto-zooms on focus and control type signatures remain uniform (`K13`).

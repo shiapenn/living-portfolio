@@ -27,11 +27,6 @@ select.lp-input, select.lp-select, input.lp-input, textarea.lp-input, textarea.l
 select.lp-input, select.lp-select, input.lp-input, textarea.lp-input, textarea.lp-textarea {
   font-size: var(--lp-font-size-16);
 }
-@media (min-width: 640px) {
-  select.lp-input, select.lp-select, input.lp-input, textarea.lp-input, textarea.lp-textarea {
-    font-size: var(--lp-font-size-14);
-  }
-}
 select.lp-input option, select.lp-select option, select.lp-input optgroup, select.lp-select optgroup {
   background-color: var(--surface-l1);
   color: var(--text-1);
