@@ -51,7 +51,7 @@
 | --- | --- | --- | --- | --- |
 | `page-title` | `24px` | `700` | `32px` | `--lp-color-text-1` |
 | `section-title` | `18px` | `600` | `24px` | `--lp-color-text-1` |
-| `item-title` | `16px` | `500` | `24px` | `--lp-color-text-1` |
+| `item-title` | `16px` | `500` | `20px` | `--lp-color-text-1` |
 | `label` | `14px` | `500` | `20px` | `--lp-color-text-2` |
 | `body` | `14px` | `400` | `20px` | `--lp-color-text-1` |
 | `secondary` | `12px` | `500` | `16px` | `--lp-color-text-2` |

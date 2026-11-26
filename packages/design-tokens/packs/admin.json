@@ -901,7 +901,7 @@
       "family": "{primitive.font.family-ui}",
       "size": "{primitive.font.size-16}",
       "weight": "{primitive.font.weight-500}",
-      "lineHeight": "{primitive.font.line-24}",
+      "lineHeight": "{primitive.font.line-20}",
       "letterSpacing": "{primitive.font.letter-normal}",
       "color": "{semantic.color.text.1}"
     },

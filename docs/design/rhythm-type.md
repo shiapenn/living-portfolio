@@ -42,7 +42,7 @@ Every neighbouring role differs by at least **two** of: size step (`>= 2` scale 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | `page-title` | `.lp-page-title` | `24px` | `700` | `text-1` | `32px` | — |
 | 2 | `section-title` | `.lp-section-title`, `.lp-form-section-title` | `18px` | `600` | `text-1` | `24px` | `-6` (`>=4`), `-100` (2 axes) |
-| 3 | `item-title` | `.lp-item-title` | `16px` | `500` | `text-1` | `24px` | `-2`, `-100` (2 axes) |
+| 3 | `item-title` | `.lp-item-title` | `16px` | `500` | `text-1` | `20px` | `-2`, `-100` (2 axes) |
 | 4 | `label` | `.lp-field-label` | `14px` | `500` | `text-2` | `20px` | `-2`, `text-2` (2 axes; 3 axes lighter than `section-title`) |
 | 5 | `body` | `.lp-body`, `.lp-item-body`, `body` | `14px` | `400` | `text-1` | `20px` | `-100`, `text-1` (2 axes; 2 axes below `item-title`) |
 | 6 | `secondary` | `.lp-page-description`, `.lp-form-section-desc`, `.lp-description`, `.lp-item-subtitle` | `12px` | `500` | `text-2` | `16px` | `-2`, `+100`, `text-2` (3 axes) |

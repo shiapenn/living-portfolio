@@ -35,7 +35,7 @@ select.lp-input option, select.lp-select option, select.lp-input optgroup, selec
 /* 8 Type Roles (WP-17.12 B3: >=2 axes between neighbouring roles) */
 .lp-page-title { font-size: var(--lp-font-size-24); font-weight: var(--lp-font-weight-700); color: var(--text-1); line-height: var(--lp-font-line-32); letter-spacing: var(--lp-font-letter-normal); }
 .lp-section-title, .lp-form-section-title, .lp-section-header-title { font-size: var(--lp-font-size-18); font-weight: var(--lp-font-weight-600); color: var(--text-1); line-height: var(--lp-font-line-24); }
-.lp-item-title { font-size: var(--lp-font-size-16); font-weight: var(--lp-font-weight-500); color: var(--text-1); line-height: var(--lp-font-line-24); }
+.lp-item-title { font-size: var(--lp-font-size-16); font-weight: var(--lp-font-weight-500); color: var(--text-1); line-height: var(--lp-font-line-20); }
 .lp-field-label { font-size: var(--lp-font-size-14); font-weight: var(--lp-font-weight-500); color: var(--text-2); line-height: var(--lp-font-line-20); }
 .lp-body, .lp-item-body { font-size: var(--lp-font-size-14); font-weight: var(--lp-font-weight-400); color: var(--text-1); line-height: var(--lp-font-line-20); margin: 0; }
 .lp-line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }

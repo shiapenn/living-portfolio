@@ -516,7 +516,7 @@ export const TYPE_ROLES = {
     "family": "'Atkinson Hyperlegible Next', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Noto Sans CJK SC', 'Source Han Sans SC', sans-serif",
     "size": 16,
     "weight": 500,
-    "lineHeight": 24,
+    "lineHeight": 20,
     "letterSpacing": "0em",
     "colorToken": "--lp-color-text-1"
   },

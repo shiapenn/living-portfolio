@@ -34,7 +34,7 @@ a.lp-item:hover {
   align-items: flex-start;
   gap: var(--lp-space-stack-label-to-control);
   font-size: var(--lp-font-size-16);
-  line-height: var(--lp-font-line-24);
+  line-height: var(--lp-font-line-20);
   font-weight: var(--lp-font-weight-500);
   color: var(--text);
 }
