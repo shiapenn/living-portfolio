@@ -6,7 +6,7 @@
 | Date | 2026-11-26 |
 | Author | A (Implementer) |
 | Task ID | `WP-17.14` |
-| Evidence SHA | `ee739dc94c6e840cc471b6620388028fdabcafa5` |
+| Evidence SHA | `23f9201f47c55047e65284d143013078e47148ee` |
 | CI run | pending PR CI |
 
 ---
@@ -81,6 +81,7 @@
 - `docs/design/tokens.md`
 - `docs/doc-registry.json`
 - `docs/execution-reports/A184-wp-1713-spacing-purposes-audit.md`
+- `docs/execution-reports/A185-wp-1714-archetypes-closed-world-audit.md`
 - `docs/plans/backlog.yml`
 - `packages/design-tokens/packs/admin.json`
 - `packages/design-tokens/src/generated.ts`
@@ -98,10 +99,13 @@
 - `packages/ui-admin/src/templates/dfinal-system.css`
 - `packages/ui-core/src/theme/theme-pack.ts`
 - `scripts/design-audit`
+- `tests/e2e/census-helpers.ts`
+- `tests/e2e/wp16-s-system-census.spec.ts`
 - `tests/e2e/wp17-12-hierarchy-workflow-census.spec.ts`
 - `tests/e2e/wp17-13-design-audit.spec.ts`
 - `tests/e2e/wp17-14-closed-world-audit.spec.ts`
 - `tests/e2e/wp17-9-content-and-ink-census.spec.ts`
+- `tests/e2e/wp17-9-self-test-journeys.spec.ts`
 - `tests/e2e/wp17-contact-sheets.spec.ts`
 - `tests/e2e/wp17-manifest.ts`
 
@@ -125,8 +129,8 @@ $ pnpm receipt:check A185
 === Validating Receipt A185-wp-1714-archetypes-closed-world-audit.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA 'ee739dc94c6e840cc471b6620388028fdabcafa5' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff 5ed0f7545c804c3c196664260389cdf8122d56ab..ee739dc94c6e840cc471b6620388028fdabcafa5 (56 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA '23f9201f47c55047e65284d143013078e47148ee' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 5ed0f7545c804c3c196664260389cdf8122d56ab..23f9201f47c55047e65284d143013078e47148ee (60 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A185-wp-1714-archetypes-closed-world-audit.md.
 Found 0 section(s) marked verbatim.
 
