@@ -2185,5 +2185,13 @@
     "path": "docs/design/audit-protocol.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A184",
+    "title": "WP-17.13 spacing ownership, text purposes, token integrity, design audit",
+    "class": "A",
+    "path": "docs/execution-reports/A184-wp-1713-spacing-purposes-audit.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
