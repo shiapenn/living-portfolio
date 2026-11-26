@@ -30,6 +30,7 @@
   --lp-color-surface-control-hover: #E1E6EA;
   --lp-color-surface-control-active: #D2D9DF;
   --lp-color-surface-control-selected: var(--lp-core-accent-50, #EEF1FF);
+  --lp-color-surface-disabled: #EEF1F3;
   --lp-color-surface-scrim: rgba(15, 26, 34, 0.45);
   --lp-color-text-1: #14202A;
   --lp-color-text-2: #4B5A66;
@@ -39,6 +40,8 @@
   --lp-color-border-control: #6B7B88;
   --lp-color-border-overlay: #CBD3D8;
   --lp-color-accent-default: var(--lp-core-accent-600, #3A4FD0);
+  --lp-color-accent-hover: #1E329E;
+  --lp-color-accent-active: #1A244D;
   --lp-color-accent-focus-ring: var(--lp-core-accent-600, #3A4FD0);
   --lp-color-role-action-fg: var(--lp-core-accent-800, #1E329E);
   --lp-color-role-action-bg: var(--lp-core-accent-50, #EEF1FF);
@@ -94,7 +97,7 @@
   --lp-space-stack-dialog-title-to-body: 16px;
   --lp-space-stack-subsection-to-subsection: 24px;
   --lp-space-stack-header-to-content: 24px;
-  --lp-space-stack-item-body-to-actionbar: 24px;
+  --lp-space-stack-item-body-to-actionbar: 16px;
   --lp-space-stack-action-bar-after-control: 24px;
   --lp-space-stack-dialog-body-to-actionbar: 24px;
   --lp-space-stack-section-to-section: 40px;
@@ -263,6 +266,7 @@
     --lp-color-surface-control-hover: #273847;
     --lp-color-surface-control-active: #314557;
     --lp-color-surface-control-selected: var(--lp-core-accent-900, #1A244D);
+    --lp-color-surface-disabled: #16232D;
     --lp-color-surface-scrim: rgba(0, 0, 0, 0.6);
     --lp-color-text-1: #E6ECEF;
     --lp-color-text-2: #A3B2BD;
@@ -272,6 +276,8 @@
     --lp-color-border-control: #7E8F9C;
     --lp-color-border-overlay: #334656;
     --lp-color-accent-default: var(--lp-core-accent-300, #9AA8FF);
+    --lp-color-accent-hover: #C5CEFF;
+    --lp-color-accent-active: #EEF1FF;
     --lp-color-accent-focus-ring: var(--lp-core-accent-300, #9AA8FF);
     --lp-color-role-action-fg: var(--lp-core-accent-200, #C5CEFF);
     --lp-color-role-action-bg: var(--lp-core-accent-900, #1A244D);
@@ -317,6 +323,7 @@
   --lp-color-surface-control-hover: #273847;
   --lp-color-surface-control-active: #314557;
   --lp-color-surface-control-selected: var(--lp-core-accent-900, #1A244D);
+  --lp-color-surface-disabled: #16232D;
   --lp-color-surface-scrim: rgba(0, 0, 0, 0.6);
   --lp-color-text-1: #E6ECEF;
   --lp-color-text-2: #A3B2BD;
@@ -326,6 +333,8 @@
   --lp-color-border-control: #7E8F9C;
   --lp-color-border-overlay: #334656;
   --lp-color-accent-default: var(--lp-core-accent-300, #9AA8FF);
+  --lp-color-accent-hover: #C5CEFF;
+  --lp-color-accent-active: #EEF1FF;
   --lp-color-accent-focus-ring: var(--lp-core-accent-300, #9AA8FF);
   --lp-color-role-action-fg: var(--lp-core-accent-200, #C5CEFF);
   --lp-color-role-action-bg: var(--lp-core-accent-900, #1A244D);

@@ -167,6 +167,7 @@ export function renderFixturePatternPage(): string {
   const body = renderPageTemplate({
     title: 'Pattern Fixture',
     description: 'Verifies all primitives and patterns compose without custom page CSS.',
+    archetype: 'form',
     bodyHtml: renderStack({
       gap: 'group',
       childrenHtml:

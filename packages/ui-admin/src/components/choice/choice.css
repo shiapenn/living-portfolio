@@ -38,14 +38,18 @@
   min-height: var(--lp-size-target-min);
   border: var(--lp-border-hairline) solid var(--border-control);
   border-radius: var(--lp-radius-control);
-  background: var(--surface);
+  background: var(--lp-color-surface-l0);
   color: var(--text);
   cursor: pointer;
   transition: border-color var(--lp-motion-duration-base) var(--lp-motion-easing-out), background-color var(--lp-motion-duration-base) var(--lp-motion-easing-out);
 }
 
 .lp-choice:hover:not(.is-disabled) {
-  background: var(--surface-subtle);
+  background: var(--lp-color-surface-control-hover);
+}
+
+.lp-choice:active:not(.is-disabled) {
+  background: var(--lp-color-surface-control-active);
 }
 
 .lp-choice:has(.lp-choice-input:focus-visible) {
@@ -60,8 +64,17 @@
 }
 
 .lp-choice.is-disabled {
-  opacity: 0.5;
+  background: var(--lp-color-surface-disabled);
+  border-color: var(--border-subtle);
+  color: var(--text-3);
+  opacity: 1;
   cursor: not-allowed;
+}
+
+.lp-choice.is-disabled .lp-choice-card-title,
+.lp-choice.is-disabled .lp-choice-card-desc,
+.lp-choice.is-disabled .lp-choice-btn-label {
+  color: var(--text-3);
 }
 
 .lp-choice > .lp-choice-input {

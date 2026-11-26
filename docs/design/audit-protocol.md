@@ -31,4 +31,6 @@ Measured across 20 admin routes × `320 / 1280` × `light / dark` (`80` captures
 ## Target & Exemptions
 
 - **Shrinking-only exemption budget:** `0` across `L0`–`L6`.
-- Run statically via `pnpm design:audit` (wired into `pnpm wp16n:verify`) and live across all routes via `pnpm exec playwright test tests/e2e/wp17-13-design-audit.spec.ts`.
+- **Single manifest (`WP-17.14 D4`):** `tests/e2e/wp17-manifest.ts` feeds `pnpm design:audit`, the closed-world adjacency and archetype checks (`K22`–`K27` in `tests/e2e/wp17-14-closed-world-audit.spec.ts`), the content/ink census, and the contact-sheet harness. Coverage below `100%` of the manifest fails (`K27`).
+- **Generic checks only:** No check may hard-code a route or sample name; every check iterates `WP17_MANIFEST`.
+- Run statically via `pnpm design:audit` (wired into `pnpm wp16n:verify`) and live across 100% of the manifest via `pnpm exec playwright test tests/e2e/wp17-14-closed-world-audit.spec.ts`.

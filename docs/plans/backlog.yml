@@ -169,6 +169,17 @@ items:
     acceptance: Zero component outer margins + relation-based box-gap spacing ownership S1-S5 (D1), closed data-purpose text roles + ban section intros + full route text table in content.md (D2), merged 13px secondary role with >=7:1 contrast and zero text <13px (D3), single-row <=2 action groups + Authenticator progressive reveal + remove Email requester button (D4), Booking detail definition List variant + header status + consequence note + 1-line history (D5), Contradictions recorded_at tie-break + same-date disabled Keep newer + unified 2 link styles (D6), D7 dark first-paint root cause & fix + palette-membership & parity census + state-matrix gallery + pointer off-page harness, D8 audit-protocol.md + pnpm design:audit in wp16n:verify, K14-K21 failing on e29cc38 canary, contact-sheet zip; CI + CodeQL green
     status: done
 
+  - id: WP-17.14
+    title: Archetypes, closed-world audit, interaction conventions (WP-17 exit gate, last; D1-D10, K22-K27)
+    track: admin
+    type: visual
+    depends_on: [WP-17.13]
+    size: L
+    expected_minutes: 90
+    gate: L-review
+    acceptance: Page archetypes (docs/design/archetypes.md + data-archetype on every route, D1), complete D2 relation table (heading->first S3 always, Item rows S1, Item->ActionBar S3, merged 2-line Bookings meta), closed-world adjacency audit across 100% of single route-and-state manifest (D3, D4, K22, K23, K27), interaction conventions tonal ladder + unified unclipped focus ring + distinct disabled fill/text (docs/design/interaction.md, D5, K25), Item navigable chevron + whole-row hit target (D6, K24), single-container Credential header replacing Notice+Credential + ADR-025 scenario 4 amendment (D7, K26), Contradictions header/eyebrow/equal-date labels (D8, K26), Booking detail Decision bar under header + single definition list + humanised keys/values (D9, K26), Account Security section grouping (D10); K22-K27 failing on da622d0 canary, contact-sheet zip; CI + CodeQL green
+    status: done
+
   # ── WP-18: Authoring canvas, media, storage & import (Report §7.9 + P004) ──
   - id: WP-18.1
     title: Authoring canvas layout (UI-02; covered by WP-16.L L2)
@@ -196,7 +207,7 @@ items:
     title: Media API (POST /media, GET /media/:id, storage adapter, limits, content sniffing; D-06, D-STORAGE)
     track: functional
     type: functional
-    depends_on: [WP-17.13]
+    depends_on: [WP-17.14]
     size: M
     expected_minutes: 50
     gate: none

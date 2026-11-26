@@ -94,6 +94,7 @@ export async function renderAdminStructurePage(
 
   const content = renderPageTemplate({
     title: 'Structure',
+    archetype: 'form',
     bodyHtml,
   });
 

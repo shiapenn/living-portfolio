@@ -288,10 +288,12 @@ export function isDefaultThemePackV2(pack?: Partial<ThemePackV2> | null): boolea
  */
 function accentRoleVars(ramp: Record<number, string>, mode: 'light' | 'dark'): string[] {
   const fg = mode === 'light' ? ramp[600] : ramp[300];
+  const hover = mode === 'light' ? ramp[800] : ramp[200];
+  const active = mode === 'light' ? ramp[900] : ramp[50];
   const actionFg = mode === 'light' ? ramp[800] : ramp[200];
   const bg = mode === 'light' ? ramp[50] : ramp[900];
   return [
-    `--lp-color-accent-default: ${fg};`, `--lp-color-accent-focus-ring: ${fg};`,
+    `--lp-color-accent-default: ${fg};`, `--lp-color-accent-hover: ${hover};`, `--lp-color-accent-active: ${active};`, `--lp-color-accent-focus-ring: ${fg};`,
     `--lp-color-role-action-fg: ${actionFg};`, `--lp-color-role-action-bg: ${bg};`,
     `--lp-color-role-action-border: ${fg};`, `--lp-color-surface-control-selected: ${bg};`,
     `--accent: ${fg};`, `--focus-ring: ${fg};`,

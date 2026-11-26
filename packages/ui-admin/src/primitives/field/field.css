@@ -11,7 +11,7 @@
 
 .lp-field-label {
   font-family: var(--lp-font-family-ui);
-  font-size: var(--lp-font-size-14));
+  font-size: var(--lp-font-size-14);
   font-weight: 600;
   color: var(--text);
 }
@@ -87,7 +87,7 @@ input[type="date"].lp-input {
   gap: var(--lp-space-stack-label-to-control);
   min-height: var(--lp-size-target-min);
   font-family: var(--lp-font-family-ui);
-  font-size: var(--lp-font-size-14));
+  font-size: var(--lp-font-size-14);
   color: var(--text);
   cursor: pointer;
 }

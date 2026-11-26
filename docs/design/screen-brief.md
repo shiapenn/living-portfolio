@@ -5,6 +5,7 @@
 ## Required Brief Template
 
 One concise block per screen:
+- **Archetype (`D1`):** One of `form`, `list`, `detail`, `review`, or `dashboard` (emitted via `data-archetype` on `.lp-page-column`).
 - **Job to be done (JTBD):** What the owner is here to accomplish.
 - **Decision & required data:** The decision the owner makes and the exact fields needed on screen to make it.
 - **Primary action & consequence:** The main action and what changes (including whether visitors/external systems are affected).

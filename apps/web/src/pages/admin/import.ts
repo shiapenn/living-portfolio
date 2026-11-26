@@ -114,6 +114,7 @@ ${options.nonce ? `<script type="module" src="/assets/client/import-page.js" non
   const content = renderPageTemplate({
     title: 'Import & Triage',
     description: 'Connect or paste existing material, plan processing budget, and triage with confidence sorting.',
+    archetype: 'form',
     bodyHtml,
   });
   return renderAdminShell('Import & Triage', '/admin/import', content, { nonce: options.nonce });

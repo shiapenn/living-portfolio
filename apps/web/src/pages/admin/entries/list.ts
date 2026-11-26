@@ -135,6 +135,7 @@ ${renderButton({ id: 'btn-entries-delete-confirm', label: ENTRIES_LIST_STRINGS.d
   const content = renderPageTemplate({
     title: ENTRIES_LIST_STRINGS.heading,
     description: ENTRIES_LIST_STRINGS.lead,
+    archetype: 'list',
     actionsHtml: `<a href="/admin/entries/new" class="lp-btn lp-btn-primary lp-btn-sm">${escapeHtml(ENTRIES_LIST_STRINGS.newEntryLabel)}</a>`,
     bodyHtml,
   });

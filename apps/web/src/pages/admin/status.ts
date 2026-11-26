@@ -193,6 +193,7 @@ export async function renderAdminStatusPage(
   const content = renderPageTemplate({
     title: 'Status',
     description: 'Site build, automated answering, backups and providers.',
+    archetype: 'dashboard',
     bodyHtml,
   });
 

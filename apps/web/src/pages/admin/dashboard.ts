@@ -182,6 +182,7 @@ export async function renderAdminDashboardPage(
   const content = renderPageTemplate({
     title: DASHBOARD_STRINGS.heading,
     description: DASHBOARD_STRINGS.lead,
+    archetype: 'dashboard',
     bodyHtml,
   });
 

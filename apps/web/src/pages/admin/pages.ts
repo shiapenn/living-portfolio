@@ -137,6 +137,7 @@ export async function renderAdminPagesEditorPage(
   const content = renderPageTemplate({
     title: 'Pages',
     description: 'Edit About, Now, and Uses pages.',
+    archetype: 'list',
     tabsHtml,
     bodyHtml,
   });

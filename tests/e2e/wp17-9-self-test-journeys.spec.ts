@@ -183,10 +183,10 @@ test.describe.serial('WP-17.9 / WP-17.10 Self-Test User Journeys (J1–J8)', () 
     expect(initialCount).toBeGreaterThanOrEqual(2);
     await expect(rows.first().locator('.lp-item-claim-eyebrow')).toHaveCount(2);
     await expect(rows.first().locator('.lp-item-quote')).toHaveCount(2);
-    await expect(rows.first().locator('a.lp-item-link')).toHaveCount(2);
+    await expect(rows.first().locator('a.lp-item-claim-link')).toHaveCount(2);
 
-    // Supersede first contradiction -> item removed, count updates, StatusLine confirms "Resolved"
-    await rows.first().locator('button[data-conflict-res="supersedes"]').click();
+    // Supersede first resolvable (distinct-date) contradiction -> item removed, count updates, StatusLine confirms "Resolved"
+    await rows.locator('button[data-conflict-res="supersedes"]:not([disabled])').first().click();
     await expect(rows).toHaveCount(initialCount - 1);
     await expect(page.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', 'resolved');
     await expect(page.locator('#audit-conflicts-resolved-status.lp-status-line-ok')).toHaveText('Resolved');

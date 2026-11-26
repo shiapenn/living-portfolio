@@ -203,6 +203,7 @@ export async function renderEntryHistoryPage(
   const content = renderPageTemplate({
     title: INSPECTOR_STRINGS.historyPage.titlePrefix,
     description: String(entry.title || 'Untitled'),
+    archetype: 'list',
     backHref: `/admin/entries/${encodeURIComponent(entryId)}`,
     backLabel: INSPECTOR_STRINGS.historyPage.backToEntry,
     bodyHtml,

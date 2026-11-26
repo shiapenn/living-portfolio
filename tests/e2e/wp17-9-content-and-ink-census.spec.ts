@@ -552,7 +552,8 @@ test.describe('WP-17.11 Content, Item v2, Overflow, Feedback, Accent & Credentia
     await page.fill('#account-token-label', 'k5-credential-check-token');
     await page.click('#btn-create-token');
     await expect(page.locator('#account-token-created[data-c="Credential"]')).toBeVisible();
-    await expect(page.locator('#account-token-created .lp-notice-warn')).toBeVisible();
+    await expect(page.locator('#account-token-created .lp-credential-header')).toBeVisible();
+    await expect(page.locator('#account-token-created .lp-notice')).toHaveCount(0);
     await page.click('#account-token-created-copy-btn');
     await expect(page.locator('#account-token-created-copied')).toHaveText('Copied');
 

@@ -85,14 +85,26 @@ for (const f of cssFiles) {
   }
 }
 
-// L5: Check admin-shell.ts does not hard-code data-theme="light" defeating prefers-color-scheme
+// L5: Check admin-shell.ts does not hard-code data-theme="light" defeating prefers-color-scheme and emits data-archetype
 const shellSrc = readFileSync(resolve(ROOT, 'apps/web/src/layouts/admin-shell.ts'), 'utf8');
 results.L5.measured++;
 if (!shellSrc.includes('data-theme-switching') && !shellSrc.includes('prefers-color-scheme: dark')) {
   results.L5.violations.push('apps/web/src/layouts/admin-shell.ts missing head anti-FOUC dark first-paint script');
 }
+results.L1.measured++;
+if (!shellSrc.includes('data-archetype=')) {
+  results.L1.violations.push('apps/web/src/layouts/admin-shell.ts missing data-archetype emission');
+}
 
-console.log('=== WP-17.13 Design Audit Summary (L0–L6) ===');
+// L4/D4: Manifest coverage check (WP-17.14)
+const manifestSrc = readFileSync(resolve(ROOT, 'tests/e2e/wp17-manifest.ts'), 'utf8');
+const manifestEntries = (manifestSrc.match(/\bid:\s*'/g) || []).length;
+results.L4.measured += manifestEntries;
+if (manifestEntries < 20) {
+  results.L4.violations.push(`tests/e2e/wp17-manifest.ts has only ${manifestEntries} entries (expected >= 20)`);
+}
+
+console.log('=== WP-17.14 Design Audit Summary (L0–L6, Manifest=' + manifestEntries + ' states) ===');
 console.log('| Level | Name | Measured | Violations |');
 console.log('| --- | --- | ---: | ---: |');
 let totalViolations = 0;
@@ -102,7 +114,7 @@ for (const [k, v] of Object.entries(results)) {
 }
 
 if (process.argv.includes('--live')) {
-  execSync('pnpm exec playwright test tests/e2e/wp17-13-design-audit.spec.ts --reporter=list', {
+  execSync('pnpm exec playwright test tests/e2e/wp17-14-closed-world-audit.spec.ts --reporter=list', {
     cwd: ROOT,
     stdio: 'inherit',
   });
