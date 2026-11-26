@@ -2145,5 +2145,13 @@
     "path": "docs/design/feedback.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A182",
+    "title": "WP-17.11 feedback model credential item accent",
+    "class": "A",
+    "path": "docs/execution-reports/A182-wp-1711-feedback-model-credential-item-accent.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
