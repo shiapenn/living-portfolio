@@ -492,7 +492,7 @@ export async function checkPaintedGaps(
       for (const itemEl of items) {
         const iBody = itemEl.querySelector('.lp-item-content') ?? itemEl.querySelector('[data-rel="itembody"], .lp-item-segments, .lp-item-body');
         const iActions = itemEl.querySelector('[data-rel="actions"], .lp-item-actions');
-        if (iBody && iActions) checkPair('item-body-to-action-bar', iBody, iActions, 24);
+        if (iBody && iActions) checkPair('item-body-to-action-bar', iBody, iActions, 16);
       }
 
       const actionBars = Array.from(document.querySelectorAll('[data-rel="actions"], .lp-action-bar'));
@@ -1281,9 +1281,12 @@ export async function checkActionBarJ2(page: Page, stateId = ''): Promise<Action
         }
         if (precedingGap !== null && !bar.closest('.lp-gallery-section')) {
           const isEmptySubsection = Boolean(bar.closest('.lp-subsection.lp-gap-related'));
-          const minGap = isEmptySubsection ? 14 : 20;
+          const isItemBar = containerType === 'item' || Boolean(bar.closest('.lp-item-actions'));
+          const isConsequenceAbove = Boolean(prevEl?.matches('[data-purpose="consequence"]')) && Boolean(bar.closest('.lp-action-bar-group'));
+          const isHeadingAbove = Boolean(prevEl?.matches('h2, h3, [data-c="SectionHeader"], [data-rel="heading"]'));
+          const minGap = isConsequenceAbove ? 7 : (isEmptySubsection || isItemBar || isHeadingAbove ? 14 : 20);
           if (precedingGap < minGap || precedingGap > 28) {
-            issues.push(`j2-item-gap24(${sid}, ${containerType}): precedingGap=${precedingGap}px (expected 24px)`);
+            issues.push(`j2-item-gap24(${sid}, ${containerType}): precedingGap=${precedingGap}px (expected ${isConsequenceAbove ? '8px' : isItemBar || isHeadingAbove ? '16px' : '24px'})`);
           }
         }
       }

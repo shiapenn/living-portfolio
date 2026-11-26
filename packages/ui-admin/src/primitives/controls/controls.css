@@ -152,6 +152,13 @@
   cursor: not-allowed;
 }
 
+.lp-btn.lp-btn-text:disabled:not([aria-busy="true"]),
+.lp-btn-text:disabled:not([aria-busy="true"]) {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-3);
+}
+
 .lp-icon-btn:disabled:not([aria-busy="true"]),
 .lp-switch:disabled,
 .lp-input:disabled,
