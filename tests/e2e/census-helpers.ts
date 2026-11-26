@@ -294,6 +294,8 @@ export async function checkColoursAndNativeControls(page: Page, theme: ThemeMode
 
     const tokenNames = [
       '--surface-page', '--surface', '--surface-l0', '--surface-l1', '--surface-l2',
+      '--lp-color-surface-canvas', '--lp-color-surface-raised', '--lp-color-surface-sunken',
+      '--lp-color-surface-overlay', '--lp-color-surface-disabled',
       '--surface-input', '--surface-subtle', '--bg-subtle', '--text', '--text-1',
       '--text-2', '--text-3', '--text-muted', '--text-on-accent', '--accent',
       '--accent-tint', '--border-subtle', '--border-control', '--focus-ring',

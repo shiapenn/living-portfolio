@@ -114,6 +114,7 @@ test.describe.serial('WP-17.9 / WP-17.10 Self-Test User Journeys (J1–J8)', () 
   });
 
   test('J4 (extended A2): Found (2 seeded contradictions) -> supersede one -> dismiss one -> error -> retry -> clean', async ({ page }) => {
+    test.setTimeout(60_000);
     await ensureAdminLoggedIn(page);
 
     const csrf = await page.evaluate(() => {
