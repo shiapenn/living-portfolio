@@ -6,7 +6,7 @@
 | Date | 2026-11-26 |
 | Author | A (Implementer) |
 | Task ID | `WP-17.15` |
-| Evidence SHA | `d7e4b6fe1ae8eb384e7b9c34a56220090c0ec193` |
+| Evidence SHA | `712f760cc6b26367923ed867262b6edc9f21d6dc` |
 | CI run | pending PR CI |
 
 ---
@@ -103,6 +103,7 @@
 - `tests/e2e/wp17-14-closed-world-audit.spec.ts`
 - `tests/e2e/wp17-15-visual-system-audit.spec.ts`
 - `tests/e2e/wp17-9-content-and-ink-census.spec.ts`
+- `tests/e2e/wp17-9-self-test-journeys.spec.ts`
 - `tests/e2e/wp17-contact-sheets.spec.ts`
 
 ## 5. Register and Backlog Changes
@@ -125,8 +126,8 @@ $ pnpm receipt:check A186
 === Validating Receipt A186-wp-1715-visual-system-pass.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA 'd7e4b6fe1ae8eb384e7b9c34a56220090c0ec193' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff 23f9201f47c55047e65284d143013078e47148ee..d7e4b6fe1ae8eb384e7b9c34a56220090c0ec193 (59 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA '712f760cc6b26367923ed867262b6edc9f21d6dc' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 23f9201f47c55047e65284d143013078e47148ee..712f760cc6b26367923ed867262b6edc9f21d6dc (60 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A186-wp-1715-visual-system-pass.md.
 Found 0 section(s) marked verbatim.
 
