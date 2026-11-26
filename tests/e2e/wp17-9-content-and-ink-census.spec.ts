@@ -291,6 +291,7 @@ test.describe('WP-17.11 Content, Item v2, Overflow, Feedback, Accent & Credentia
                 const statusEl = item.querySelector('.lp-item-status');
                 const chevronEl = item.querySelector('.lp-item-chevron');
                 if (!titleEl || !statusEl || !isVisible(titleEl) || !isVisible(statusEl)) return null;
+                if (statusEl.classList.contains('lp-item-chevron-only')) return null;
                 const titleRect = titleEl.getBoundingClientRect();
                 const titleInk = textInkRect(titleEl);
                 const statusInk = textInkRect(statusEl);
@@ -555,14 +556,14 @@ test.describe('WP-17.11 Content, Item v2, Overflow, Feedback, Accent & Credentia
     await page.click('#account-token-created-copy-btn');
     await expect(page.locator('#account-token-created-copied')).toHaveText('Copied');
 
-    // List Credential (2 cols at 320px, 4 cols at 1280px)
+    // List Credential (1 col at 320px, 2 cols at 1280px per WP-17.12 A1)
     await page.click('#btn-regen-recovery');
     await expect(page.locator('#account-recovery-output[data-c="Credential"] .lp-credential-cell')).toHaveCount(8);
     const cols320 = await page.evaluate(() => getComputedStyle(document.querySelector('#account-recovery-output .lp-credential-list')!).gridTemplateColumns.split(' ').length);
-    expect(cols320).toBe(2);
+    expect(cols320).toBe(1);
     await page.setViewportSize({ width: 1280, height: 800 });
     const cols1280 = await page.evaluate(() => getComputedStyle(document.querySelector('#account-recovery-output .lp-credential-list')!).gridTemplateColumns.split(' ').length);
-    expect(cols1280).toBe(4);
+    expect(cols1280).toBe(2);
     await page.click('#account-recovery-output-copy-btn');
     await expect(page.locator('#account-recovery-output-copied')).toHaveText('Copied');
 

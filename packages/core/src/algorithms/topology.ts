@@ -9,6 +9,7 @@ export interface ClaimWithContext extends Claim {
   entry_id?: string;
   entry_title?: string;
   entry_slug?: string;
+  entry_date?: string;
 }
 
 /**
@@ -145,10 +146,14 @@ export function detectTopologyConflicts(
       }
 
       if (conflictDetected && confidence >= minConfidence) {
-        // Determine earlier vs later claim
-        const timeA = claimA.recorded_at ? new Date(claimA.recorded_at).getTime() : 0;
-        const timeB = claimB.recorded_at ? new Date(claimB.recorded_at).getTime() : 0;
+        // Determine earlier vs later claim (prefer entry published/updated date, fallback to claim.recorded_at)
+        const dateA = claimA.entry_date || claimA.recorded_at || '';
+        const dateB = claimB.entry_date || claimB.recorded_at || '';
+        const timeA = dateA ? new Date(dateA).getTime() : 0;
+        const timeB = dateB ? new Date(dateB).getTime() : 0;
         const [earlier, later] = timeA <= timeB ? [claimA, claimB] : [claimB, claimA];
+        const earlierDate = earlier.entry_date || earlier.recorded_at || undefined;
+        const laterDate = later.entry_date || later.recorded_at || undefined;
 
         // Compute overlap record
         const overlap: Record<string, any> = {};
@@ -176,8 +181,10 @@ export function detectTopologyConflicts(
           claim_b_text: later.text,
           entry_a_id: earlier.entry_id,
           entry_a_title: earlier.entry_title,
+          entry_a_date: earlierDate,
           entry_b_id: later.entry_id,
           entry_b_title: later.entry_title,
+          entry_b_date: laterDate,
         });
       }
     }

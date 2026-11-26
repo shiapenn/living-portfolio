@@ -12,8 +12,12 @@ export interface CredentialProps {
   values?: string[];
   /** Group a single value into blocks of 4 characters (for TOTP manual keys). */
   groupBy4?: boolean;
+  /** Whether to show the warning Notice above the surface (default true; false for TOTP manual key). */
+  showNotice?: boolean;
   /** Optional warning notice copy (defaults to "Shown once. Save it now."). */
   warningText?: string;
+  /** Optional helper line above the surface when showNotice is false (e.g. TOTP manual key). */
+  helperText?: string;
   /** Hide the entire Credential block until revealed client-side. */
   hidden?: boolean;
   className?: string;
@@ -28,11 +32,12 @@ export function formatManualKeyGroups(raw: string): string {
 }
 
 /**
- * Renders the registered Credential component (C1 / ADR-025):
- * Warning Notice ("Shown once. Save it now.") above a bordered monospace Credential surface,
- * with a single Copy / Copy all button and a polite "Copied" StatusLine.
+ * Renders the registered Credential component (C1 / WP-17.12 A1):
+ * Optional warning Notice ("Shown once. Save it now.") or helper line above a bordered
+ * monospace Credential surface, with Copy / Copy all inside the surface footer row.
  */
 export function renderCredential(props: CredentialProps): string {
+  const showNotice = props.showNotice !== false;
   const warning = props.warningText ?? 'Shown once. Save it now.';
   const hiddenClass = props.hidden ? ' lp-is-hidden' : '';
   const classes = ['lp-credential', hiddenClass.trim(), props.className].filter(Boolean).join(' ');
@@ -51,19 +56,27 @@ export function renderCredential(props: CredentialProps): string {
         .join('')}</div>`
     : `<div class="lp-credential-single" data-credential-value>${escapeHtml(displaySingle)}</div>`;
 
+  const leadHtml = showNotice
+    ? `<div data-c="Notice" class="lp-notice lp-notice-warn">${escapeHtml(warning)}</div>`
+    : props.helperText
+      ? `<p data-c="Text" data-variant="caption" class="lp-field-help">${escapeHtml(props.helperText)}</p>`
+      : '';
+
   return `<div id="${escapeHtml(props.id)}" data-c="Credential" data-variant="${props.variant}" class="${escapeHtml(classes)}" data-copy-value="${escapeHtml(copyPayload)}">
-  <div data-c="Notice" class="lp-notice lp-notice-warn">${escapeHtml(warning)}</div>
-  <div class="lp-credential-surface">${surfaceInner}</div>
-  <div class="lp-credential-actions">
-    ${renderButton({
-      id: `${props.id}-copy-btn`,
-      label: copyLabel,
-      variant: 'secondary',
-      size: 'sm',
-      type: 'button',
-      dataAttrs: { 'credential-copy': props.id },
-    })}
-    <span id="${escapeHtml(props.id)}-copied" class="lp-credential-copied" aria-live="polite"></span>
+  ${leadHtml}
+  <div class="lp-credential-surface">
+    ${surfaceInner}
+    <div class="lp-credential-footer">
+      ${renderButton({
+        id: `${props.id}-copy-btn`,
+        label: copyLabel,
+        variant: 'secondary',
+        size: 'sm',
+        type: 'button',
+        dataAttrs: { 'credential-copy': props.id },
+      })}
+      <span id="${escapeHtml(props.id)}-copied" class="lp-credential-copied" aria-live="polite"></span>
+    </div>
   </div>
 </div>`;
 }

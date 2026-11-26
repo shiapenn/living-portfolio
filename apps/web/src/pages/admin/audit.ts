@@ -1,10 +1,15 @@
-import { ADMIN_DATETIME_FORMATTER_SCRIPT, formatAdminDateTime } from '@living-portfolio/ui-core';
+import { ADMIN_DATETIME_FORMATTER_SCRIPT, formatAdminDate, formatAdminDateTime } from '@living-portfolio/ui-core';
 import { escapeHtml } from '../../lib/html.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { renderActionBar, renderItem, renderList, renderText } from '../../primitives/index.js';
 import { renderEmptyState, renderStatusLine } from '../../components/index.js';
 import { INBOX_STRINGS } from '../../strings/admin/inbox.js';
+
+function formatClaimEyebrow(role: 'Older' | 'Newer' | 'Same date', iso?: string): string {
+  const d = iso ? formatAdminDate(iso) : '';
+  return d ? `${role} · ${d}` : role;
+}
 
 export async function renderAdminAuditRulesPage(
   clientOrRepo: any,
@@ -44,8 +49,19 @@ export async function renderAdminAuditRulesPage(
   if (activeStatus === 'contradictions') {
     const activeConflicts = conflicts.filter((c) => c.status !== 'dismissed' && c.status !== 'resolved');
     const initialState = activeConflicts.length > 0 ? 'found' : options.lastCheckedAt ? 'clean' : 'idle';
-    const conflictBodyHtml = activeConflicts.length > 0
-      ? renderList({
+    const initialHeadline = initialState === 'found'
+      ? (activeConflicts.length === 1 ? '1 possible contradiction' : `${activeConflicts.length} possible contradictions`)
+      : initialState === 'clean'
+        ? 'No contradictions found'
+        : 'Not checked yet';
+    const initialMeta = options.lastCheckedAt
+      ? `Last checked ${formatAdminDateTime(options.lastCheckedAt)}`
+      : 'Not run yet';
+    const initialBtnLabel = options.lastCheckedAt || activeConflicts.length > 0 ? 'Check again' : 'Run check';
+
+    const conflictResultsHtml = activeConflicts.length > 0
+      ? `<p id="audit-conflicts-intro" data-c="Text" data-variant="description" class="lp-description">Keep newer stops answers using the older claim. Keep both leaves both.</p>` +
+        renderList({
           id: 'audit-conflicts-list',
           variant: 'plain',
           itemsHtml: activeConflicts.map((c) => {
@@ -53,16 +69,41 @@ export async function renderAdminAuditRulesPage(
             const claimB = String(c.claim_b_text || c.claim_b || 'Claim B');
             const titleA = String(c.entry_a_title || 'Earlier entry');
             const titleB = String(c.entry_b_title || 'Later entry');
-            const hrefA = c.entry_a_id ? `/admin/entries/${encodeURIComponent(String(c.entry_a_id))}` : undefined;
-            const hrefB = c.entry_b_id ? `/admin/entries/${encodeURIComponent(String(c.entry_b_id))}` : undefined;
+            const dateA = c.entry_a_date ? String(c.entry_a_date) : '';
+            const dateB = c.entry_b_date ? String(c.entry_b_date) : '';
+            const sameDate = Boolean(dateA && dateB && formatAdminDate(dateA) === formatAdminDate(dateB));
+            const eyebrowA = formatClaimEyebrow(sameDate ? 'Same date' : 'Older', dateA);
+            const eyebrowB = formatClaimEyebrow(sameDate ? 'Same date' : 'Newer', dateB);
+            const hrefA = c.entry_a_id ? `/admin/entries/${encodeURIComponent(String(c.entry_a_id))}` : '';
+            const hrefB = c.entry_b_id ? `/admin/entries/${encodeURIComponent(String(c.entry_b_id))}` : '';
+            const topicTitle = (c.overlap && typeof c.overlap.topic === 'string' && c.overlap.topic.trim())
+              ? c.overlap.topic.trim()
+              : 'Possible contradiction';
+            const pct = Math.round((Number(c.confidence) || 0.8) * 100);
+            const linkA = hrefA
+              ? `<a href="${escapeHtml(hrefA)}" class="lp-item-link lp-caption">From ${escapeHtml(titleA)}</a>`
+              : `<span class="lp-caption">From ${escapeHtml(titleA)}</span>`;
+            const linkB = hrefB
+              ? `<a href="${escapeHtml(hrefB)}" class="lp-item-link lp-caption">From ${escapeHtml(titleB)}</a>`
+              : `<span class="lp-caption">From ${escapeHtml(titleB)}</span>`;
+            const claimsHtml = `<div class="lp-item-claims-grid" data-claims-grid="true">
+              <div class="lp-item-claim-card" data-claim-side="older">
+                <div class="lp-item-claim-eyebrow">${escapeHtml(eyebrowA)}</div>
+                <blockquote data-c="Text" data-variant="quote" class="lp-item-quote">${escapeHtml(claimA)}</blockquote>
+                <div>${linkA}</div>
+              </div>
+              <div class="lp-item-claims-vs" aria-hidden="true">vs</div>
+              <div class="lp-item-claim-card" data-claim-side="newer">
+                <div class="lp-item-claim-eyebrow">${escapeHtml(eyebrowB)}</div>
+                <blockquote data-c="Text" data-variant="quote" class="lp-item-quote">${escapeHtml(claimB)}</blockquote>
+                <div>${linkB}</div>
+              </div>
+            </div>`;
             return renderItem({
-              title: `${titleA} vs ${titleB}`,
-              titleClamp2: true,
-              meta: `${Math.round((Number(c.confidence) || 0.8) * 100)}% confidence`,
-              segments: [
-                { heading: titleA, headingHref: hrefA, body: claimA, quote: true },
-                { heading: titleB, headingHref: hrefB, body: claimB, quote: true },
-              ],
+              title: topicTitle,
+              titleVariant: 'content',
+              trailingValue: `${pct}% likely conflict`,
+              customBodyHtml: claimsHtml,
               actions: {
                 level: 'item',
                 secondary: { label: 'Keep newer', variant: 'secondary', size: 'sm', dataAttrs: { 'conflict-id': String(c.id), 'conflict-res': 'supersedes' } },
@@ -72,29 +113,28 @@ export async function renderAdminAuditRulesPage(
             });
           }).join(''),
         })
-      : renderEmptyState({
-          id: 'audit-conflicts-empty',
-          body: initialState === 'clean' ? 'No contradictions found.' : 'Not checked yet.',
-        });
-
-    const checkedMetaHtml = options.lastCheckedAt
-      ? renderText({ id: 'audit-last-checked', variant: 'caption', text: `Last checked ${formatAdminDateTime(options.lastCheckedAt)}` })
-      : `<p id="audit-last-checked" data-c="Text" data-variant="caption" class="lp-caption lp-is-hidden"></p>`;
+      : '';
 
     mainContentHtml = `
       <div id="audit-contradictions-panel" data-contradictions-state="${initialState}" class="lp-stack lp-gap-group">
         <div id="audit-conflicts-section" class="lp-stack lp-gap-group">
-          ${renderActionBar({
-            level: 'item',
-            secondary: { id: 'btn-detect-conflicts', label: 'Run check', variant: 'secondary', type: 'button', size: 'sm' },
-          })}
-          <div id="audit-conflicts-error" data-c="Notice" class="lp-notice lp-notice-danger lp-is-hidden" aria-live="assertive">
-            Could not run contradiction check.
+          <div class="lp-stack lp-gap-tight">
+            <div id="audit-state-headline" data-c="Text" class="lp-item-title" aria-live="polite">${escapeHtml(initialHeadline)}</div>
+            <p id="audit-last-checked" data-c="Text" data-variant="caption" class="lp-field-help">${escapeHtml(initialMeta)}</p>
           </div>
-          <div id="audit-conflicts-region" aria-live="polite" class="lp-stack lp-gap-related">
-            ${conflictBodyHtml}
-            ${checkedMetaHtml}
+          <div class="lp-stack lp-gap-related">
+            ${renderActionBar({
+              level: 'item',
+              secondary: { id: 'btn-detect-conflicts', label: initialBtnLabel, variant: 'secondary', type: 'button', size: 'sm' },
+            })}
+            <div id="audit-conflicts-error" data-c="Notice" class="lp-notice lp-notice-danger lp-is-hidden" aria-live="assertive">
+              Could not run contradiction check.
+            </div>
+            ${renderStatusLine({ id: 'audit-conflicts-resolved-status' })}
           </div>
+        </div>
+        <div id="audit-conflicts-region" aria-live="polite" class="lp-stack lp-gap-related">
+          ${conflictResultsHtml}
         </div>
       </div>
     `;
@@ -124,6 +164,7 @@ export async function renderAdminAuditRulesPage(
                   : 'Answer rule');
               return renderItem({
                 title: String(summary),
+                titleVariant: 'content',
                 subtitle: scopeText,
                 segments: quote && quote.trim() !== String(summary).trim() ? [{ heading: 'From your reply', body: quote }] : undefined,
                 actions: activeStatus === 'revoked'
@@ -174,49 +215,50 @@ export async function renderAdminAuditRulesPage(
         }
         var panel = document.getElementById('audit-contradictions-panel');
         var detectBtn = document.getElementById('btn-detect-conflicts');
+        var headlineEl = document.getElementById('audit-state-headline');
         var region = document.getElementById('audit-conflicts-region');
         var errBox = document.getElementById('audit-conflicts-error');
         var lastCheckedEl = document.getElementById('audit-last-checked');
+        var resolvedStatusEl = document.getElementById('audit-conflicts-resolved-status');
+        var lastKnownHeadline = headlineEl ? headlineEl.textContent : 'Not checked yet';
+        var hasRun = false;
+
         var runCheck = async function () {
           if (!detectBtn || !panel) return;
           panel.setAttribute('data-contradictions-state', 'running');
           panel.setAttribute('aria-busy', 'true');
           detectBtn.disabled = true;
           detectBtn.textContent = 'Checking…';
+          if (headlineEl) headlineEl.textContent = 'Checking…';
           if (errBox) errBox.classList.add('lp-is-hidden');
+          if (resolvedStatusEl) { resolvedStatusEl.textContent = ''; resolvedStatusEl.className = 'lp-status-line'; }
           try {
             var res = await apiClient('/api/audit/topology-conflicts/detect', { method: 'POST', body: '{}' });
             if (!res || !res.ok) throw new Error('Check failed');
             var data = await res.json().catch(function () { return {}; });
             var count = Number(data.detected || 0);
             var nowStr = lpFormatAdminDateTime(new Date());
+            hasRun = true;
+            if (lastCheckedEl) lastCheckedEl.textContent = 'Last checked ' + nowStr;
             if (count > 0) {
               panel.setAttribute('data-contradictions-state', 'found');
-              if (statusEl) statusEl.textContent = '';
+              lastKnownHeadline = count === 1 ? '1 possible contradiction' : count + ' possible contradictions';
+              if (headlineEl) headlineEl.textContent = lastKnownHeadline;
               window.location.reload();
               return;
             }
             panel.setAttribute('data-contradictions-state', 'clean');
-            if (region) {
-              var emptyP = region.querySelector('#audit-conflicts-empty .lp-empty-body');
-              if (emptyP) emptyP.textContent = 'No contradictions found.';
-            }
-            if (lastCheckedEl) {
-              lastCheckedEl.textContent = 'Last checked ' + nowStr;
-              lastCheckedEl.classList.remove('lp-is-hidden');
-            }
-            if (statusEl) statusEl.textContent = '';
+            lastKnownHeadline = 'No contradictions found';
+            if (headlineEl) headlineEl.textContent = lastKnownHeadline;
+            if (region) region.innerHTML = '';
           } catch {
             panel.setAttribute('data-contradictions-state', 'error');
+            if (headlineEl) headlineEl.textContent = lastKnownHeadline || 'Not checked yet';
             if (errBox) errBox.classList.remove('lp-is-hidden');
-            if (statusEl) statusEl.textContent = '';
-            detectBtn.textContent = 'Retry';
           } finally {
             panel.removeAttribute('aria-busy');
             detectBtn.disabled = false;
-            if (panel.getAttribute('data-contradictions-state') !== 'error') {
-              detectBtn.textContent = 'Run check';
-            }
+            detectBtn.textContent = hasRun ? 'Check again' : 'Run check';
           }
         };
         if (detectBtn) detectBtn.addEventListener('click', runCheck);
@@ -238,14 +280,20 @@ export async function renderAdminAuditRulesPage(
               if (row) row.remove();
               var remaining = conflictList.querySelectorAll('[data-conflict-row]').length;
               if (panel) panel.setAttribute('data-contradictions-state', remaining === 0 ? 'clean' : 'resolved');
-              if (remaining === 0 && region) {
-                region.innerHTML = '<div id="audit-conflicts-empty" class="lp-empty-state"><p data-c="Text" data-variant="description" class="lp-empty-body">No contradictions found.</p></div>';
-                if (statusEl) statusEl.textContent = '';
-              } else if (statusEl) {
-                statusEl.textContent = remaining === 1 ? '1 contradiction remaining.' : remaining + ' contradictions remaining.';
+              lastKnownHeadline = remaining === 0
+                ? 'No contradictions found'
+                : (remaining === 1 ? '1 possible contradiction' : remaining + ' possible contradictions');
+              if (headlineEl) headlineEl.textContent = lastKnownHeadline;
+              if (remaining === 0 && region) region.innerHTML = '';
+              if (resolvedStatusEl) {
+                resolvedStatusEl.textContent = 'Resolved';
+                resolvedStatusEl.className = 'lp-status-line lp-status-line-ok';
               }
             } else {
-              if (statusEl) statusEl.textContent = 'Could not resolve contradiction.';
+              if (errBox) {
+                errBox.textContent = 'Could not resolve contradiction.';
+                errBox.classList.remove('lp-is-hidden');
+              }
               btn.disabled = false;
             }
           });

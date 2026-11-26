@@ -83,8 +83,8 @@
   --lp-space-stack-none: 0px;
   --lp-space-stack-label-to-control: 8px;
   --lp-space-stack-tint-clearance: 8px;
-  --lp-space-stack-page-title-to-description: 8px;
-  --lp-space-stack-section-heading-to-intro: 8px;
+  --lp-space-stack-page-title-to-description: 4px;
+  --lp-space-stack-section-heading-to-intro: 4px;
   --lp-space-stack-field-to-field: 16px;
   --lp-space-stack-heading-to-first: 16px;
   --lp-space-stack-heading-to-list-plain: 16px;
@@ -182,9 +182,12 @@
   --lp-font-size-12: 12px;
   --lp-font-size-14: 14px;
   --lp-font-size-16: 16px;
+  --lp-font-size-18: 18px;
   --lp-font-size-24: 24px;
   --lp-font-weight-400: 400;
+  --lp-font-weight-500: 500;
   --lp-font-weight-600: 600;
+  --lp-font-weight-700: 700;
   --lp-font-line-16: 16px;
   --lp-font-line-20: 20px;
   --lp-font-line-24: 24px;

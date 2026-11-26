@@ -49,6 +49,15 @@ All rendered timestamps use the single formatter in `@living-portfolio/ui-core` 
 - **Date only:** `25 Nov 2026`
 - ISO-like date strings (`YYYY-MM-DD`) are **banned** in rendered admin text.
 
+## Text Roles & Label-Free Value Clarity (A6)
+
+Every value shown to the owner must carry its own clear, label-free meaning — never bare fields separated only by spaces:
+- **Date / time:** include a contextual prefix when ambiguous (e.g. `Received 24 Nov`, `Created 24 Nov 2026`, `Last checked 26 Nov 2026, 11:44`).
+- **Timezone:** scheduled slots always show both date and timezone (e.g. `Tue 3 Dec, 10:00 UTC · 18:00 your time`).
+- **Who:** requester name or author stands on its own line/slot, separate from email or timestamps.
+- **What:** topic, question, or claim is distinct from its source (`From {Entry title}`) and its likelihood/confidence (`84% likely conflict`).
+- **Never** concatenate unrelated bare values with spaces (e.g. `Alex alex@example.com Tue 10am`). Use explicit rows, `·` separators with context, or dedicated detail fields.
+
 ## Static Prose Word Metric Definition
 
 The census word-budget metric counts visible static prose words inside `<main>` on the default state of each route (desktop light), defined as the union of these rendered roles/selectors:

@@ -34,6 +34,8 @@
 - Architecture Decision Records: `docs/adr/ADR-*.md`
 - Admin Content Standard: `docs/design/content.md` (`ADR-024`)
 - Admin Feedback Placement & Timing: `docs/design/feedback.md` (`ADR-025`)
+- Admin Rhythm, Type & Mobile Input Standard: `docs/design/rhythm-type.md` (B1–B4)
+- Admin Screen Brief Gate: `docs/design/screen-brief.md` (Part C)
 - Generated Decisions Index: `docs/design/decisions.md` (run `node scripts/generate-decisions`)
 - Generated Effective Rules: `docs/design/rules.md` (run `node scripts/generate-rules`)
 - Generated Tokens Reference: `docs/design/tokens.md` (run `node packages/design-tokens/generate.mjs`)

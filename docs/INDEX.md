@@ -188,6 +188,7 @@
 | `A180` | WP-17.9 polish states and content standard | `active` | [A180-wp-179-polish-states-and-content-standard.md](execution-reports/A180-wp-179-polish-states-and-content-standard.md) | — |
 | `A181` | WP-17.10 exit gate fixes | `active` | [A181-wp-1710-exit-gate-fixes.md](execution-reports/A181-wp-1710-exit-gate-fixes.md) | — |
 | `A182` | WP-17.11 feedback model credential item accent | `active` | [A182-wp-1711-feedback-model-credential-item-accent.md](execution-reports/A182-wp-1711-feedback-model-credential-item-accent.md) | — |
+| `A183` | WP-17.12 hierarchy and workflow pass | `active` | [A183-wp-1712-hierarchy-and-workflow-pass.md](execution-reports/A183-wp-1712-hierarchy-and-workflow-pass.md) | — |
 
 ## Handover Snapshots (Class H)
 
@@ -293,4 +294,6 @@
 | `L057` | Admin Content Standard | `active` | [content.md](design/content.md) | — |
 | `L058` | ADR-025: Feedback Placement and Timing | `active` | [ADR-025-feedback-placement-and-timing.md](adr/ADR-025-feedback-placement-and-timing.md) | — |
 | `L059` | Admin Feedback Placement & Timing | `active` | [feedback.md](design/feedback.md) | — |
+| `L060` | Admin Rhythm, Type & Mobile Input Standard | `active` | [rhythm-type.md](design/rhythm-type.md) | — |
+| `L061` | Admin Screen Brief Gate (Part C) | `active` | [screen-brief.md](design/screen-brief.md) | — |
 

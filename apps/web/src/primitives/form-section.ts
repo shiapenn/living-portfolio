@@ -70,7 +70,7 @@ export function renderFormSection(props: FormSectionProps): string {
       : `<h2 data-rel="section-title" class="lp-form-section-title">${escapeHtml(props.title)}</h2>`;
 
   const headerHtml = descHtml
-    ? `<div class="lp-stack lp-gap-8">${titleOrSectionHeader}${descHtml}</div>`
+    ? `<div class="lp-form-section-header">${titleOrSectionHeader}${descHtml}</div>`
     : titleOrSectionHeader;
 
   return `<section${idAttr}${extraAttr} data-c="FormSection" data-rel="section" class="${escapeHtml(classes)} lp-stack lp-gap-group">

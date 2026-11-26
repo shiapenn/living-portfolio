@@ -1,409 +1,208 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { join } from 'node:path';
 import { ensureAdminLoggedIn } from './helpers.js';
 
-const OUT_DIR = resolve(process.cwd(), 'test-results/wp17-11-contact-sheets');
+const OUT_DIR = join(process.cwd(), 'test-results', 'wp17-12-contact-sheets');
 
-type Variant = { width: 320 | 1280 | 1920; theme: 'light' | 'dark' };
-const THREE_VARIANTS: Variant[] = [
-  { width: 320, theme: 'dark' },
-  { width: 1280, theme: 'light' },
-  { width: 1920, theme: 'light' },
+type ShotSpec = { width: number; height: number; theme: 'light' | 'dark' };
+const SHOTS_FULL: ShotSpec[] = [
+  { width: 320, height: 640, theme: 'dark' },
+  { width: 320, height: 640, theme: 'light' },
+  { width: 1280, height: 800, theme: 'light' },
+  { width: 1920, height: 900, theme: 'light' },
 ];
-const FOUR_VARIANTS_WITH_320_LIGHT: Variant[] = [
-  { width: 320, theme: 'light' },
-  { width: 320, theme: 'dark' },
-  { width: 1280, theme: 'light' },
-  { width: 1920, theme: 'light' },
+const SHOTS_B3: ShotSpec[] = [
+  { width: 320, height: 640, theme: 'dark' },
+  { width: 320, height: 640, theme: 'light' },
+  { width: 1280, height: 800, theme: 'light' },
 ];
 
-async function setTheme(page: Page, theme: 'light' | 'dark') {
-  await page.evaluate(async (t) => {
-    document.documentElement.setAttribute('data-theme', t);
-    try { localStorage.setItem('strata-theme', t); } catch {}
-    void document.body.offsetHeight;
-    await Promise.all(document.getAnimations().map((a) => a.finished.catch(() => {})));
-  }, theme);
-}
+test.describe('WP-17.12 Contact Sheets Capture', () => {
+  test.skip(process.env.CAPTURE_WP17_SHEETS !== '1', 'Run with CAPTURE_WP17_SHEETS=1 to capture contact sheets');
 
-async function stampMarker(page: Page, stripText: string) {
-  await page.evaluate((text) => {
-    let el = document.getElementById('wp17-harness-strip');
-    if (!el) {
-      el = document.createElement('div');
-      el.id = 'wp17-harness-strip';
-      el.setAttribute('data-harness-marker', 'true');
-      el.style.cssText = 'position:relative;z-index:9999;font-family:monospace;font-size:11px;padding:4px 8px;background:#111827;color:#F9FAFB;border-bottom:1px solid #374151;';
-      document.body.prepend(el);
-    }
-    el.textContent = text;
-  }, stripText);
-}
+  test('seeds fixtures and captures all required WP-17.12 states across 320/1280/1920', async ({ page }) => {
+    test.setTimeout(300_000);
+    mkdirSync(OUT_DIR, { recursive: true });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await ensureAdminLoggedIn(page);
 
-test.describe('WP-17.11 Deterministic Contact Sheet Capture (C1–C5)', () => {
-  if (process.env.CAPTURE_WP17_SHEETS === '1') {
-    test('seeds deterministic fixtures and captures all required WP-17.11 states across 320/1280/1920', async ({ page }) => {
-      test.setTimeout(420_000);
-      mkdirSync(OUT_DIR, { recursive: true });
-      await page.emulateMedia({ reducedMotion: 'reduce' });
-      await ensureAdminLoggedIn(page);
+    const csrf = await page.evaluate(() => {
+      const m = document.cookie.match(/(?:^|;\s*)lp_csrf=([^;]+)/);
+      return m ? decodeURIComponent(m[1]) : (sessionStorage.getItem('lp_csrf_token') || '');
+    });
+    const headers = { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf };
+    const manifest: Array<{ file: string; state: string; assertion: string }> = [];
 
-      const csrf = await page.evaluate(() => {
-        const m = document.cookie.match(/(?:^|;\s*)lp_csrf=([^;]+)/);
-        return m ? decodeURIComponent(m[1]) : (sessionStorage.getItem('lp_csrf_token') || '');
-      });
-      const headers = { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf };
-
-      // 1. Seed 4 bookings (Pending, Confirmed, Declined, Cancelled)
-      const b1 = await (await page.request.post('/api/book', {
-        data: { visitor_name: 'Elena Rostova', visitor_contact: 'elena.rostova@distributed-systems.example.com', topic: 'Architecture review', preferred_time: 'Tue 10:00 UTC' },
-      })).json();
-      const b2 = await (await page.request.post('/api/book', {
-        data: { visitor_name: 'Marcus Vance', visitor_contact: 'marcus@example.com', topic: 'Postgres migration', preferred_time: 'Wed 14:00 UTC' },
-      })).json();
-      const b3 = await (await page.request.post('/api/book', {
-        data: { visitor_name: 'Priya Nair', visitor_contact: 'priya@example.com', topic: 'Design systems audit', preferred_time: 'Thu 16:00 UTC' },
-      })).json();
-      const b4 = await (await page.request.post('/api/book', {
-        data: { visitor_name: 'David Chen', visitor_contact: 'david@example.com', topic: 'API versioning workshop', preferred_time: 'Fri 09:00 UTC' },
-      })).json();
-      if (b2?.booking?.id || b2?.id) await page.request.patch(`/api/book/${b2.booking?.id || b2.id}`, { headers, data: { status: 'confirmed' } });
-      if (b3?.booking?.id || b3?.id) await page.request.patch(`/api/book/${b3.booking?.id || b3.id}`, { headers, data: { status: 'declined' } });
-      if (b4?.booking?.id || b4?.id) {
-        await page.request.patch(`/api/book/${b4.booking?.id || b4.id}`, { headers, data: { status: 'confirmed' } });
-        await page.request.patch(`/api/book/${b4.booking?.id || b4.id}`, { headers, data: { status: 'cancelled' } });
-      }
-      void b1;
-
-      // 2. Seed API tokens
-      await page.request.post('/api/auth/tokens', { headers, data: { label: 'ci-deploy-bot' } });
-      await page.request.post('/api/auth/tokens', { headers, data: { label: 'backup-sync' } });
-
-      // 3. Seed 3 pages with 2 revisions each
-      for (const slug of ['about', 'now', 'uses'] as const) {
-        await page.request.put(`/api/settings/pages/${slug}`, { headers, data: { body_md: `${slug.toUpperCase()} revision 1 content.` } });
-        await page.request.put(`/api/settings/pages/${slug}`, { headers, data: { body_md: `${slug.toUpperCase()} revision 2 current content.` } });
-      }
-
-      // 4. Seed venture
-      await page.request.post('/api/structure/ventures', {
-        headers,
-        data: { name: 'Strata CLI', description: 'Deterministic verification toolkit.', status: 'launched' },
-      });
-
-      const indexRows: string[] = [
-        '# WP-17.11 Contact Sheets Index',
-        '',
-        'Every sheet carries a top harness marker strip (`route | state | theme | viewport | assertion`).',
-        '',
-        '| State | Route | Assertion | Files |',
-        '| --- | --- | --- | --- |',
-      ];
-
-      async function captureState(opts: {
-        stateId: string;
-        route: string;
-        variants: Variant[];
-        assertion: string;
-        setup?: (p: Page) => Promise<string | void>;
-      }) {
-        const files: string[] = [];
-        for (const v of opts.variants) {
-          const height = v.width === 320 ? 640 : v.width === 1920 ? 1080 : 800;
-          await page.setViewportSize({ width: v.width, height });
-          await page.goto(opts.route);
-          await setTheme(page, v.theme);
-          const extra = opts.setup ? await opts.setup(page) : undefined;
-          const markerAssertion = extra ? `${opts.assertion} (${extra})` : opts.assertion;
-          await stampMarker(page, `${opts.route} | ${opts.stateId} | ${v.theme} | ${v.width}px | PASS: ${markerAssertion}`);
-          const file = `${opts.stateId}-${v.width}px-${v.theme}.png`;
-          await page.screenshot({ path: resolve(OUT_DIR, file), fullPage: true });
-          files.push(file);
-        }
-        indexRows.push(`| \`${opts.stateId}\` | \`${opts.route}\` | ${opts.assertion} | ${files.map((f) => `\`${f}\``).join(', ')} |`);
-      }
-
-      // ── Account (C1 Credential + C2 Feedback) ──
-      await captureState({
-        stateId: 'account-creds-error',
-        route: '/admin/settings/account',
-        variants: THREE_VARIANTS,
-        assertion: 'K2 Scenario 2: danger Notice below ActionBar in Sign-in credentials section, full width',
-        setup: async (p) => {
-          await p.fill('#account-current-password', 'wrong-pass');
-          await p.fill('#account-new-password', 'NewValidPassphrase123!');
-          await p.click('#btn-update-credentials');
-          await expect(p.locator('#account-creds-notice.lp-notice-danger')).toBeVisible();
-        },
-      });
-      await captureState({
-        stateId: 'account-totp-credential',
-        route: '/admin/settings/account',
-        variants: THREE_VARIANTS,
-        assertion: 'C1/K5: QR <= 192px + manual key in Credential (4-char blocks) + section-local error below ActionBar',
-        setup: async (p) => {
-          await p.click('#btn-reenrol-totp');
-          await expect(p.locator('#account-totp-manual-cred[data-c="Credential"]')).toBeVisible();
-          await p.fill('#account-totp-code', '000000');
-          await p.click('#btn-confirm-totp');
-          await expect(p.locator('#account-totp-notice.lp-notice-danger')).toBeVisible();
-        },
-      });
-      await captureState({
-        stateId: 'account-recovery-codes',
-        route: '/admin/settings/account',
-        variants: THREE_VARIANTS,
-        assertion: 'C1/K5: 8 recovery codes in Credential list grid (2-col compact / 4-col regular) + Copy all',
-        setup: async (p) => {
-          await p.click('#btn-regen-recovery');
-          await expect(p.locator('#account-recovery-output[data-c="Credential"] .lp-credential-cell')).toHaveCount(8);
-        },
-      });
-      await captureState({
-        stateId: 'account-token-created',
-        route: '/admin/settings/account',
-        variants: THREE_VARIANTS,
-        assertion: 'C1/K1/K5: API token in Credential single (overflow-wrap:anywhere, zero 320px overflow) + Copy',
-        setup: async (p) => {
-          await p.fill('#account-token-label', 'sheet-release-bot');
-          await p.click('#btn-create-token');
-          await expect(p.locator('#account-token-created[data-c="Credential"]')).toBeVisible();
-          const sw = await p.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
-          expect(sw).toBe(true);
-        },
-      });
-      await captureState({
-        stateId: 'account-token-revoked',
-        route: '/admin/settings/account',
-        variants: THREE_VARIANTS,
-        assertion: 'C2 Scenario 3: Token revoked shows StatusLine (not green Notice) + Revoked status',
-        setup: async (p) => {
-          const btn = p.locator('#account-tokens-container button[data-revoke-token]').first();
-          if (await btn.count()) {
-            await btn.click();
-            await expect(p.locator('#account-tokens-list-notice.lp-status-line-ok')).toBeVisible();
+    const shoot = async (slug: string, state: string, assertion: string, shots: ShotSpec[], fullPage = true) => {
+      for (const s of shots) {
+        await page.setViewportSize({ width: s.width, height: s.height });
+        await page.evaluate(({ theme, strip }) => {
+          document.documentElement.setAttribute('data-theme', theme);
+          let bar = document.getElementById('wp17-marker-strip');
+          if (!bar) {
+            bar = document.createElement('div');
+            bar.id = 'wp17-marker-strip';
+            bar.style.cssText = 'position:static;margin-top:24px;background:#14202A;color:#E6ECEF;font:11px/16px monospace;padding:4px 8px;pointer-events:none;';
+            document.body.appendChild(bar);
           }
-        },
-      });
+          bar.textContent = strip;
+        }, { theme: s.theme, strip: `${slug} | ${state} | ${s.width}px ${s.theme} | ${assertion}` });
+        const file = `${slug}-${s.width}px-${s.theme}.png`;
+        await page.screenshot({ path: join(OUT_DIR, file), fullPage });
+        manifest.push({ file, state: `${slug} (${s.width}px ${s.theme})`, assertion });
+      }
+      await page.evaluate(() => document.getElementById('wp17-marker-strip')?.remove());
+    };
 
-      // ── Answering drift (C2 Scenario 5) ──
-      await captureState({
-        stateId: 'answering-drift',
-        route: '/admin/settings/answering',
-        variants: THREE_VARIANTS,
-        assertion: 'C2 Scenario 5: State-derived warning Notice directly above Restore recommended ActionBar',
-        setup: async (p) => {
-          await p.fill('#setting-tier1-floor', '0.90');
-          await expect(p.locator('#tier1-warning')).toBeVisible();
-        },
-      });
+    // 1. B3 After-sheets: Settings index, Answering, Account (320/1280)
+    await page.goto('/admin/settings', { waitUntil: 'networkidle' });
+    await shoot('settings-index-after', 'B3 type & B2 rhythm normalised', 'K12: 8 type roles & S1-S5 spacing', SHOTS_B3);
 
-      // ── Appearance (C2 + C4) ──
-      await captureState({
-        stateId: 'appearance-aa-reject',
-        route: '/admin/settings/appearance',
-        variants: THREE_VARIANTS,
-        assertion: 'AA contrast failure disables Save and shows full-width danger Notice',
-        setup: async (p) => {
-          await p.fill('#setting-theme-accent-seed', '#CCCCCC');
-          await expect(p.locator('#appearance-aa-error')).toBeVisible();
-          await expect(p.locator('#btn-save-settings-module')).toBeDisabled();
-        },
-      });
-      await captureState({
-        stateId: 'appearance-import-error',
-        route: '/admin/settings/appearance',
-        variants: THREE_VARIANTS,
-        assertion: 'C2: Mapped concise validation Notice (<=3 lines, <=12 words each, full width) below Import ActionBar',
-        setup: async (p) => {
-          await p.fill('#setting-theme-import-json', '{"version":1,"customCss":"body{}"}');
-          await p.click('#btn-import-theme-pack');
-          await expect(p.locator('#appearance-import-feedback.lp-notice-danger')).toBeVisible();
-        },
-      });
-      await captureState({
-        stateId: 'appearance-import-ok',
-        route: '/admin/settings/appearance',
-        variants: THREE_VARIANTS,
-        assertion: 'C2/C4: Import ok shows polite StatusLine (not green Notice) below ActionBar + teal accent on Save & Export pack',
-        setup: async (p) => {
-          await p.selectOption('#setting-theme-pack', 'editorial-slate');
-          await p.click('#btn-export-theme-pack');
-          await p.click('#btn-import-theme-pack');
-          await expect(p.locator('#appearance-import-feedback.lp-status-line-ok')).toBeVisible();
-        },
-      });
-      // Non-default pack (editorial-slate teal) active on /admin/audit with tabs & links visible!
-      await captureState({
-        stateId: 'appearance-nondefault-audit-tabs',
-        route: '/admin/audit?status=proposed',
-        variants: THREE_VARIANTS,
-        assertion: 'C4: Non-default pack (editorial-slate) applied to Audit tabs & links across all roles',
-      });
-      // Restore quiet-default before remaining sheets
-      await page.request.patch('/api/settings/appearance-v2', {
-        headers,
-        data: {
-          scope: 'admin',
-          pack: {
-            version: 2, id: 'quiet-default', name: 'Quiet default', packId: 'quiet-default',
-            accent: { light: '#3A4FD0', dark: '#A5B4FC' },
-            density: 'comfortable', radiusScale: 'default', fontFamily: 'system',
-          },
-        },
-      });
+    await page.goto('/admin/settings/answering', { waitUntil: 'networkidle' });
+    await shoot('settings-answering-after', 'B3 type, B2 rhythm, B4 16px mobile inputs', 'K12 + K13: inputs >=16px at 320px', SHOTS_B3);
 
-      // ── Audit (Pending, Active, Discarded + Contradictions idle/running/clean/error/found) ──
-      await captureState({
-        stateId: 'audit-pending',
-        route: '/admin/audit?status=proposed',
-        variants: FOUR_VARIANTS_WITH_320_LIGHT,
-        assertion: 'C3: Single-status Pending tab has zero StatusLabel nodes',
-      });
-      await captureState({
-        stateId: 'audit-active',
-        route: '/admin/audit?status=confirmed',
-        variants: THREE_VARIANTS,
-        assertion: 'C3: Single-status Active tab has zero StatusLabel nodes',
-      });
-      await captureState({
-        stateId: 'audit-discarded',
-        route: '/admin/audit?status=revoked',
-        variants: THREE_VARIANTS,
-        assertion: 'C3: Single-status Discarded tab has zero StatusLabel nodes',
-      });
-      await captureState({
-        stateId: 'contradictions-idle',
-        route: '/admin/audit?status=contradictions',
-        variants: THREE_VARIANTS,
-        assertion: 'C3: Run check at top under tablist, idle EmptyState below',
-      });
-      await captureState({
-        stateId: 'contradictions-running',
-        route: '/admin/audit?status=contradictions',
-        variants: THREE_VARIANTS,
-        assertion: 'C2/C3: Run check disabled Checking…, aria-busy=true, data-contradictions-state=running',
-        setup: async (p) => {
-          let release!: () => void;
-          const hold = new Promise<void>((r) => { release = r; });
-          await p.route('**/api/audit/topology-conflicts/detect', async (route) => {
-            await hold;
-            try { await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ detected: 0, conflicts: [] }) }); } catch {}
-          });
-          await p.click('#btn-detect-conflicts');
-          await expect(p.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', 'running');
-          setTimeout(() => release(), 300);
-          return 'data-contradictions-state=running';
-        },
-      });
-      await page.unroute('**/api/audit/topology-conflicts/detect');
-      await captureState({
-        stateId: 'contradictions-clean',
-        route: '/admin/audit?status=contradictions',
-        variants: THREE_VARIANTS,
-        assertion: 'C3: Clean state with single No contradictions found. line + formatted local Last checked',
-        setup: async (p) => {
-          await p.click('#btn-detect-conflicts');
-          await expect(p.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', 'clean');
-          return 'data-contradictions-state=clean';
-        },
-      });
-      await captureState({
-        stateId: 'contradictions-error',
-        route: '/admin/audit?status=contradictions',
-        variants: THREE_VARIANTS,
-        assertion: 'C2: Error Notice directly below Run check/Retry ActionBar',
-        setup: async (p) => {
-          await p.route('**/api/audit/topology-conflicts/detect', (route) =>
-            route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Injected failure' }) })
-          );
-          await p.click('#btn-detect-conflicts');
-          await expect(p.locator('#audit-conflicts-error')).toBeVisible();
-          await p.unroute('**/api/audit/topology-conflicts/detect');
-          return 'data-contradictions-state=error';
-        },
-      });
+    await page.goto('/admin/settings/account', { waitUntil: 'networkidle' });
+    await shoot('settings-account-after', 'B3 type & Active tokens single-status', 'A5: Active tokens hide status + show Created date', SHOTS_B3);
 
-      // Seed 2 real contradictions for 'found'
-      const ce1 = await (await page.request.post('/api/entries', {
-        headers,
-        data: { title: 'Sheet Caching A', slug: `sheet11-a-${Date.now()}`, body_md: 'Recommend Redis caching.', visibility: 'private', valid_from: '2025-02-01T00:00:00.000Z' },
-      })).json();
-      const ce2 = await (await page.request.post('/api/entries', {
-        headers,
-        data: { title: 'Sheet Caching B', slug: `sheet11-b-${Date.now()}`, body_md: 'Avoid Redis caching.', visibility: 'private', valid_from: '2026-02-01T00:00:00.000Z' },
-      })).json();
-      await page.request.post('/api/structure/claims', {
-        headers,
-        data: { revision_id: ce1.revision?.id, text: 'We recommend Redis caching for API gateway responses.', kind: 'decision', scope: { domain: 's11-redis' }, status: 'accepted' },
-      });
-      await page.request.post('/api/structure/claims', {
-        headers,
-        data: { revision_id: ce2.revision?.id, text: 'We avoid Redis caching for API gateway responses.', kind: 'decision', scope: { domain: 's11-redis' }, status: 'accepted' },
-      });
-      await page.request.post('/api/audit/topology-conflicts/detect', { headers, data: {} });
+    // 2. Type Specimen (/admin/_gallery#gallery-type-specimen)
+    await page.goto('/admin/_gallery', { waitUntil: 'networkidle' });
+    for (const s of [
+      { width: 320, height: 640, theme: 'light' as const },
+      { width: 320, height: 640, theme: 'dark' as const },
+      { width: 1280, height: 800, theme: 'light' as const },
+    ]) {
+      await page.setViewportSize({ width: s.width, height: s.height });
+      await page.evaluate((theme) => document.documentElement.setAttribute('data-theme', theme), s.theme);
+      const file = `type-specimen-${s.width}px-${s.theme}.png`;
+      await page.locator('#gallery-type-specimen').screenshot({ path: join(OUT_DIR, file) });
+      manifest.push({ file, state: `type-specimen (${s.width}px ${s.theme})`, assertion: 'B3: 8 closed roles with >=2-axis separation' });
+    }
 
-      await captureState({
-        stateId: 'contradictions-found',
-        route: '/admin/audit?status=contradictions',
-        variants: THREE_VARIANTS,
-        assertion: 'C3: "{Entry A} vs {Entry B}" title, meta confidence, quote Text blocks with entry links (no Entry: prefix), Keep newer / Keep both, zero status',
-        setup: async (p) => {
-          await expect(p.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', 'found');
-          return 'data-contradictions-state=found';
-        },
-      });
+    // 3. Today, Entries, Inbox
+    await page.goto('/admin', { waitUntil: 'networkidle' });
+    await shoot('today', 'Today workspace', 'A5 + K11: trailing chevron on row 1 when status omitted', SHOTS_FULL);
 
-      // ── Core lists: Inbox, Entries, Today, Bookings, Ventures, Pages revisions, Settings index ──
-      await captureState({
-        stateId: 'inbox',
-        route: '/admin/inbox',
-        variants: FOUR_VARIANTS_WITH_320_LIGHT,
-        assertion: 'C3: Single-status Inbox tab omits status label; Item v2 compact/regular anatomy',
-      });
-      await captureState({
-        stateId: 'entries',
-        route: '/admin/entries',
-        variants: FOUR_VARIANTS_WITH_320_LIGHT,
-        assertion: 'C3: All-states Entries keeps status; compact (<480px) puts status + chevron on row 2 below full-width title',
-      });
-      await captureState({
-        stateId: 'today',
-        route: '/admin',
-        variants: FOUR_VARIANTS_WITH_320_LIGHT,
-        assertion: 'C3: Today Item v2 compact/regular anatomy across 320/1280/1920',
-      });
-      await captureState({
-        stateId: 'bookings',
-        route: '/admin/bookings',
-        variants: FOUR_VARIANTS_WITH_320_LIGHT,
-        assertion: 'C3: Bookings atomic meta fields (no dotted string) + closed vocabulary statuses',
-      });
-      await captureState({
-        stateId: 'ventures',
-        route: '/admin/ventures',
-        variants: THREE_VARIANTS,
-        assertion: 'C3: Ventures Item v2 anatomy',
-      });
-      await captureState({
-        stateId: 'pages-revisions',
-        route: '/admin/pages?section=about',
-        variants: THREE_VARIANTS,
-        assertion: 'C3/A6: Pages revisions (Current on newest, none on older, local timestamps)',
-      });
-      await captureState({
-        stateId: 'settings-index',
-        route: '/admin/settings',
-        variants: THREE_VARIANTS,
-        assertion: 'C3: Settings index Item v2 compact (<480px) vs regular (>=480px)',
-      });
+    await page.goto('/admin/entries', { waitUntil: 'networkidle' });
+    await shoot('entries', 'Entries list', 'C2: human profile subtitle + Updated date', SHOTS_FULL);
 
-      writeFileSync(resolve(OUT_DIR, 'INDEX.md'), indexRows.join('\n') + '\n', 'utf8');
+    await page.goto('/admin/inbox', { waitUntil: 'networkidle' });
+    await shoot('inbox', 'Inbox list', 'A5 + K11: unclamped content title + row-1 chevron + Received date', SHOTS_FULL);
+
+    // 4. Account: Recovery codes, TOTP, Token created, Active tokens
+    await page.goto('/admin/settings/account', { waitUntil: 'networkidle' });
+    await page.click('#btn-regen-recovery');
+    await expect(page.locator('#account-recovery-output .lp-credential-cell')).toHaveCount(8);
+    await shoot('account-recovery-codes', 'Recovery codes (1/2 col nowrap + Copy all inside surface)', 'A1 + K6 + K7', SHOTS_FULL);
+
+    await page.goto('/admin/settings/account', { waitUntil: 'networkidle' });
+    await page.click('#btn-reenrol-totp');
+    await expect(page.locator('#account-totp-manual-cred')).toBeVisible();
+    await shoot('account-totp', 'TOTP QR + manual key helper (no Notice) + 6-digit field', 'A1 + K7', SHOTS_FULL);
+
+    await page.goto('/admin/settings/account', { waitUntil: 'networkidle' });
+    await page.fill('#account-token-label', 'sheet-deploy-token');
+    await page.click('#btn-create-token');
+    await expect(page.locator('#account-token-created')).toBeVisible();
+    await shoot('account-token-created', 'API token created (wrapping Credential + Copy inside surface)', 'A1 + K1 + K7', SHOTS_FULL);
+
+    await page.goto('/admin/settings/account', { waitUntil: 'networkidle' });
+    await shoot('account-active-tokens', 'Active tokens (no status, Created date)', 'A5: single-status token list', SHOTS_FULL);
+
+    // 5. Bookings list + detail (Pending, Confirmed, Declined)
+    const bPend = await (await page.request.post('/api/book', {
+      data: { topic: 'Distributed Locking Architecture Review', visitor_name: 'Maya Chen', visitor_contact: 'maya@acme.dev', facets: { scale: 'high_volume', stack: 'postgres' }, preferred_time: '2026-12-03T10:00:00Z', notes: 'Comparing Redis vs Postgres advisory locks.' },
+    })).json();
+    const bConf = await (await page.request.post('/api/book', {
+      data: { topic: 'API Gateway Migration Strategy', visitor_name: 'David Park', visitor_contact: 'david@northstar.io', facets: { cloud: 'aws' }, preferred_time: '2026-12-05T14:00:00Z', notes: 'Planning phased rollout.' },
+    })).json();
+    const bDecl = await (await page.request.post('/api/book', {
+      data: { topic: 'Frontend Framework Selection', visitor_name: 'Sam Patel', visitor_contact: 'sam@startup.co', preferred_time: '2026-12-06T09:00:00Z', notes: 'General advisory chat.' },
+    })).json();
+    await page.request.patch(`/api/book/${bConf.booking.id}`, { headers, data: { status: 'confirmed' } });
+    await page.request.patch(`/api/book/${bDecl.booking.id}`, { headers, data: { status: 'declined' } });
+
+    await page.goto('/admin/bookings', { waitUntil: 'networkidle' });
+    await shoot('bookings-list', 'Bookings list (date+tz slot, requester, Received, no email)', 'A4 + K10', SHOTS_FULL);
+
+    await page.goto(`/admin/bookings/${bPend.booking.id}`, { waitUntil: 'networkidle' });
+    await shoot('booking-detail-pending', 'Booking detail (Pending)', 'A4 + K10: all fields, mailto, history, visitor helper', SHOTS_FULL);
+
+    await page.goto(`/admin/bookings/${bConf.booking.id}`, { waitUntil: 'networkidle' });
+    await shoot('booking-detail-confirmed', 'Booking detail (Confirmed)', 'A4 + K10: Cancel + Email requester + history', SHOTS_FULL);
+
+    await page.goto(`/admin/bookings/${bDecl.booking.id}`, { waitUntil: 'networkidle' });
+    await shoot('booking-detail-declined', 'Booking detail (Declined)', 'A4 + K10: Email requester + history', SHOTS_FULL);
+
+    // 6. Contradictions: all 6 states (idle, running, clean, error, found with older/newer dates, resolved)
+    await page.goto('/admin/audit?status=contradictions', { waitUntil: 'networkidle' });
+    await shoot('contradictions-idle', 'state=idle', 'A2 + K8: fixed 5-part order, ActionBar top stable', SHOTS_FULL);
+
+    let releaseRun!: () => void;
+    const runGate = new Promise<void>((r) => { releaseRun = r; });
+    await page.route('**/api/audit/topology-conflicts/detect', async (route) => {
+      await runGate;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ detected: 0, conflicts: [] }) });
     });
-  } else {
-    test('skipped unless CAPTURE_WP17_SHEETS=1', () => {
-      test.skip();
+    const clickP = page.click('#btn-detect-conflicts');
+    await expect(page.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', 'running');
+    await shoot('contradictions-running', 'state=running', 'A2 + K8: Checking… + disabled button at same top', SHOTS_FULL);
+    releaseRun();
+    await clickP;
+    await expect(page.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', 'clean');
+    await shoot('contradictions-clean', 'state=clean', 'A2 + K8: No contradictions found + Last checked + Check again', SHOTS_FULL);
+    await page.unroute('**/api/audit/topology-conflicts/detect');
+
+    await page.route('**/api/audit/topology-conflicts/detect', (route) =>
+      route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Check failed' }) })
+    );
+    await page.click('#btn-detect-conflicts');
+    await expect(page.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', 'error');
+    await shoot('contradictions-error', 'state=error', 'A2 + K8: keeps last headline, danger Notice below ActionBar', SHOTS_FULL);
+    await page.unroute('**/api/audit/topology-conflicts/detect');
+
+    // Seed 2 dated contradictions for found & resolved
+    const entriesData = await (await page.request.get('/api/entries?visibility=all&limit=5', { headers })).json();
+    const list = entriesData.entries || [];
+    const e1 = await (await page.request.get(`/api/entries/${encodeURIComponent(list[0].id)}`, { headers })).json();
+    const e2 = await (await page.request.get(`/api/entries/${encodeURIComponent(list[1].id)}`, { headers })).json();
+    const rev1Id = e1.revision?.id || e1.revisions?.[0]?.id;
+    const rev2Id = e2.revision?.id || e2.revisions?.[0]?.id;
+    await page.request.post('/api/structure/claims', {
+      headers,
+      data: { revision_id: rev1Id, text: 'We recommend Redis locks for webhook coordination across workers.', kind: 'decision', scope: { domain: 'sheet-locks' }, status: 'accepted' },
     });
-  }
+    await page.request.post('/api/structure/claims', {
+      headers,
+      data: { revision_id: rev2Id, text: 'We avoid Redis locks for webhook coordination due to failovers.', kind: 'decision', scope: { domain: 'sheet-locks' }, status: 'accepted' },
+    });
+    await page.request.post('/api/structure/claims', {
+      headers,
+      data: { revision_id: rev1Id, text: 'We prefer GraphQL federation for internal service APIs.', kind: 'decision', scope: { domain: 'sheet-gql' }, status: 'accepted' },
+    });
+    await page.request.post('/api/structure/claims', {
+      headers,
+      data: { revision_id: rev2Id, text: 'We avoid GraphQL federation because it fails under burst load.', kind: 'decision', scope: { domain: 'sheet-gql' }, status: 'accepted' },
+    });
+    await page.request.post('/api/audit/topology-conflicts/detect', { headers, data: {} });
+
+    await page.goto('/admin/audit?status=contradictions', { waitUntil: 'networkidle' });
+    await expect(page.locator('#audit-contradictions-panel')).toHaveAttribute('data-contradictions-state', 'found');
+    await shoot('contradictions-found', 'state=found (Older/Newer + dates, >=640 side-by-side, <640 stacked+vs)', 'A3 + K9', SHOTS_FULL);
+
+    await page.locator('[data-conflict-row] button[data-conflict-res="supersedes"]').first().click();
+    await expect(page.locator('#audit-conflicts-resolved-status.lp-status-line-ok')).toHaveText('Resolved');
+    await shoot('contradictions-resolved', 'state=resolved (StatusLine Resolved, count updated)', 'A2 + A3 + K8', SHOTS_FULL);
+
+    const idxLines = [
+      '# WP-17.12 Contact Sheets Index',
+      '',
+      '| File | State | Assertion |',
+      '| --- | --- | --- |',
+      ...manifest.map((m) => `| \`${m.file}\` | ${m.state} | ${m.assertion} |`),
+      '',
+    ];
+    writeFileSync(join(OUT_DIR, 'INDEX.md'), idxLines.join('\n'), 'utf8');
+    console.log(`Captured ${manifest.length} WP-17.12 contact sheets.`);
+  });
 });

@@ -2153,5 +2153,29 @@
     "path": "docs/execution-reports/A182-wp-1711-feedback-model-credential-item-accent.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L060",
+    "title": "Admin Rhythm, Type & Mobile Input Standard",
+    "class": "L",
+    "path": "docs/design/rhythm-type.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "L061",
+    "title": "Admin Screen Brief Gate (Part C)",
+    "class": "L",
+    "path": "docs/design/screen-brief.md",
+    "status": "active",
+    "supersedes": null
+  },
+  {
+    "id": "A183",
+    "title": "WP-17.12 hierarchy and workflow pass",
+    "class": "A",
+    "path": "docs/execution-reports/A183-wp-1712-hierarchy-and-workflow-pass.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

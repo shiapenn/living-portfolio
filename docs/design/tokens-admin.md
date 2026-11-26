@@ -5,9 +5,9 @@
 | Source | `packages/design-tokens/packs/admin.json` |
 | Naming | `--lp-<category>-<role>[-<variant>][-<state>]` |
 | Version | `3.0.0` |
-| Primitive | 191 |
+| Primitive | 193 |
 | Semantic (per theme) | 47 |
-| Component | 126 |
+| Component | 129 |
 | Responsive | 2 |
 
 ## Breakpoints
@@ -24,10 +24,10 @@
 
 | Relation | Token | Value |
 | --- | --- | --- |
-| `page-title-to-description` | `--lp-space-stack-page-title-to-description` | `8px` |
+| `page-title-to-description` | `--lp-space-stack-page-title-to-description` | `4px` |
 | `header-to-content` | `--lp-space-stack-header-to-content` | `24px` |
 | `tabs-to-content` | `--lp-space-stack-tabs-to-content` | `16px` |
-| `section-heading-to-intro` | `--lp-space-stack-section-heading-to-intro` | `8px` |
+| `section-heading-to-intro` | `--lp-space-stack-section-heading-to-intro` | `4px` |
 | `heading-to-first` | `--lp-space-stack-heading-to-first` | `16px` |
 | `heading-to-list-plain` | `--lp-space-stack-heading-to-list-plain` | `16px` |
 | `heading-to-list-interactive` | `--lp-space-stack-heading-to-list-interactive` | `16px` |
@@ -49,14 +49,14 @@
 
 | Role | Size | Weight | Line Height | Color Token |
 | --- | --- | --- | --- | --- |
-| `page-title` | `24px` | `600` | `32px` | `--lp-color-text-1` |
-| `section-title` | `16px` | `600` | `24px` | `--lp-color-text-1` |
-| `item-title` | `14px` | `600` | `20px` | `--lp-color-text-1` |
+| `page-title` | `24px` | `700` | `32px` | `--lp-color-text-1` |
+| `section-title` | `18px` | `600` | `24px` | `--lp-color-text-1` |
+| `item-title` | `16px` | `500` | `20px` | `--lp-color-text-1` |
+| `label` | `14px` | `500` | `20px` | `--lp-color-text-2` |
 | `body` | `14px` | `400` | `20px` | `--lp-color-text-1` |
-| `description` | `14px` | `400` | `20px` | `--lp-color-text-2` |
-| `caption` | `12px` | `400` | `16px` | `--lp-color-text-2` |
-| `placeholder` | `14px` | `400` | `20px` | `--lp-color-text-3` |
-| `control-label` | `14px` | `600` | `20px` | `--lp-color-text-1` |
+| `secondary` | `12px` | `500` | `16px` | `--lp-color-text-2` |
+| `meta` | `12px` | `400` | `16px` | `--lp-color-text-3` |
+| `mono` | `12px` | `400` | `20px` | `--lp-color-text-1` |
 
 ## Semantic Tokens (Theme-Switched)
 
@@ -125,8 +125,8 @@
 | `--lp-space-stack-none` | `0px` |
 | `--lp-space-stack-label-to-control` | `8px` |
 | `--lp-space-stack-tint-clearance` | `8px` |
-| `--lp-space-stack-page-title-to-description` | `8px` |
-| `--lp-space-stack-section-heading-to-intro` | `8px` |
+| `--lp-space-stack-page-title-to-description` | `4px` |
+| `--lp-space-stack-section-heading-to-intro` | `4px` |
 | `--lp-space-stack-field-to-field` | `16px` |
 | `--lp-space-stack-heading-to-first` | `16px` |
 | `--lp-space-stack-heading-to-list-plain` | `16px` |
@@ -224,9 +224,12 @@
 | `--lp-font-size-12` | `12px` |
 | `--lp-font-size-14` | `14px` |
 | `--lp-font-size-16` | `16px` |
+| `--lp-font-size-18` | `18px` |
 | `--lp-font-size-24` | `24px` |
 | `--lp-font-weight-400` | `400` |
+| `--lp-font-weight-500` | `500` |
 | `--lp-font-weight-600` | `600` |
+| `--lp-font-weight-700` | `700` |
 | `--lp-font-line-16` | `16px` |
 | `--lp-font-line-20` | `20px` |
 | `--lp-font-line-24` | `24px` |
@@ -250,8 +253,8 @@
 | `space.inset.track` | `space.proximity.1` | D-L4 inset relation: segmented track padding |
 | `space.stack.label-to-control` | `space.proximity.2` | D-L4 stack relation: label to control |
 | `space.stack.tint-clearance` | `space.proximity.2` | D-L4 stack relation: tinted row clearance |
-| `space.stack.page-title-to-description` | `space.proximity.2` | D-L4 stack relation: page title to subtitle |
-| `space.stack.section-heading-to-intro` | `space.proximity.2` | D-L4 stack relation: section heading to intro |
+| `space.stack.page-title-to-description` | `space.proximity.1` | B2 S1 inside-element relation: page title to subtitle |
+| `space.stack.section-heading-to-intro` | `space.proximity.1` | B2 S1 inside-element relation: section heading to intro |
 | `space.inline.icon-text` | `space.proximity.2` | D-L4 inline relation: icon to label |
 | `space.inline.button-button` | `space.proximity.2` | D-L4 inline relation: peer buttons |
 | `space.inline.tag-tag` | `space.proximity.2` | D-L4 inline relation: peer tags |

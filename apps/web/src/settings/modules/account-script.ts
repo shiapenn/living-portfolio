@@ -155,23 +155,30 @@ export const ACCOUNT_SCRIPT = `
       var res = await apiClient('/api/auth/tokens', { method: 'GET' });
       if (!res.ok) return;
       var data = await res.json().catch(function() { return { tokens: [] }; });
-      var list = Array.isArray(data.tokens) ? data.tokens : [];
+      var list = Array.isArray(data.tokens) ? data.tokens.filter(function(t) { return !t.revokedAt; }) : [];
       if (list.length === 0) {
-        tokensContainer.innerHTML = '<div class="lp-empty-state"><p data-c="Text" data-variant="description" class="lp-empty-body">No API tokens created yet.</p></div>';
+        tokensContainer.innerHTML = '<div class="lp-empty-state"><p data-c="Text" data-variant="description" class="lp-empty-body">No active API tokens.</p></div>';
         tokensContainer.classList.remove('lp-is-empty');
         return;
       }
       tokensContainer.classList.remove('lp-is-empty');
+      var fmtTokenDate = function(iso) {
+        if (!iso) return '';
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return '';
+        var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+        return d.getDate() + ' ' + m + ' ' + d.getFullYear();
+      };
       var items = list.map(function(t) {
-        var status = t.revokedAt ? 'Revoked' : 'Active';
-        var tone = t.revokedAt ? 'neutral' : 'ok';
         var titleHtml = '<div data-rel="title" class="lp-item-title"><span>' + (t.label || 'Token') + '</span></div>';
-        var statusHtml = '<div class="lp-item-status"><span data-c="StatusLabel" class="lp-status-indicator"><span class="lp-status-dot lp-status-dot-' + tone + '" aria-hidden="true"></span><span class="lp-status-label">' + status + '</span></span></div>';
-        if (t.revokedAt) {
-          return '<div data-c="Item" data-rel="item" class="lp-item" data-token-id="' + t.id + '">' + titleHtml + statusHtml + '</div>';
-        }
+        var created = fmtTokenDate(t.createdAt || t.created_at);
+        var lastUsed = fmtTokenDate(t.lastUsedAt || t.last_used_at);
+        var metaParts = [];
+        if (created) metaParts.push('<span class="lp-item-meta-field">Created ' + created + '</span>');
+        if (lastUsed) metaParts.push('<span class="lp-item-meta-field">Last used ' + lastUsed + '</span>');
+        var metaHtml = metaParts.length > 0 ? '<div class="lp-item-meta">' + metaParts.join('') + '</div>' : '';
         var actionsHtml = '<div data-rel="actions" class="lp-item-actions"><div data-c="ActionBar" data-level="item" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-sm" data-revoke-token="' + t.id + '">Revoke</button></div></div>';
-        return '<div data-c="Item" data-rel="item" class="lp-item lp-item-has-actions" data-token-id="' + t.id + '"><div class="lp-item-content">' + titleHtml + statusHtml + '</div>' + actionsHtml + '</div>';
+        return '<div data-c="Item" data-rel="item" class="lp-item lp-item-has-actions" data-token-id="' + t.id + '"><div class="lp-item-content">' + titleHtml + metaHtml + '</div>' + actionsHtml + '</div>';
       }).join('');
       tokensContainer.innerHTML = items;
     };

@@ -156,6 +156,8 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
           return cs.position !== 'fixed' && cs.position !== 'absolute';
         });
         for (let i = 1; i < kids.length; i++) {
+          // A5 (R-024-5): when status is omitted, trailing chevron stays on row 1 alongside title
+          if (kids[i - 1].classList.contains('lp-item-title') && kids[i].classList.contains('lp-item-chevron-only')) continue;
           const prev = kids[i - 1].getBoundingClientRect();
           const curr = kids[i].getBoundingClientRect();
           if (curr.top < prev.bottom - 2) {
@@ -253,7 +255,7 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
         const curr = kids[i];
         const expected =
           prev.matches('h2, h3, .lp-form-section-title') && curr.matches('p, .lp-form-section-desc')
-            ? [8]
+            ? [4, 8]
             : curr.classList.contains('lp-action-bar')
               ? [16, 24]
               : [16];
@@ -268,7 +270,7 @@ async function scanDCompOnPage(page: Page, vpWidth: number, vpHeight: number, is
       for (let i = 1; i < kids.length; i++) {
         if (kids[i].getBoundingClientRect().top < kids[i - 1].getBoundingClientRect().top) continue;
         if (kids[i].classList.contains('lp-page-header-action') && kids[i - 1].tagName === 'H1') continue;
-        pairs.push([kids[i - 1], kids[i], [8, 16]]);
+        pairs.push([kids[i - 1], kids[i], [4, 8, 16]]);
       }
       rhythmChecks.push({ el: ph, pairs });
     }

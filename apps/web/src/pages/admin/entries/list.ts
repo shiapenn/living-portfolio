@@ -3,6 +3,7 @@ import { renderButton, renderField, renderIcon, renderItem, renderList, renderTe
 import { renderDialog, renderEmptyState, renderPageNotice } from '../../../components/index.js';
 import { adaptDataSource, type WebDataClient } from '../../../lib/data-source.js';
 import { escapeHtml } from '../../../lib/html.js';
+import { formatAdminDate } from '@living-portfolio/ui-core';
 import { ENTRIES_LIST_STRINGS } from '../../../strings/admin/entries-list.js';
 import { ENTRIES_LIST_SCRIPT } from './list-script.js';
 
@@ -38,7 +39,10 @@ export async function renderAdminEntriesListPage(
       renderItem({
         href: `/admin/entries/${encodeURIComponent(entry.id)}`,
         title: entry.title || 'Untitled',
-        subtitle: entry.profile || 'freeform',
+        subtitle: (entry.profile || 'freeform')
+          .replace(/-/g, ' ')
+          .replace(/^\w/, (ch: string) => ch.toUpperCase()),
+        meta: (entry as any).updated_at ? `Updated ${formatAdminDate((entry as any).updated_at)}` : undefined,
         statusLabel: visibilityLabel(entry.visibility),
         statusTone: entry.visibility === 'public' ? 'ok' : entry.visibility === 'unlisted' ? 'warn' : 'neutral',
         showChevron: true,
