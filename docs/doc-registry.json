@@ -2273,5 +2273,13 @@
     "path": "docs/execution-reports/A191-wp-185-columns-container-directive.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A192",
+    "title": "WP-18.6 Import Stepper Polish",
+    "class": "A",
+    "path": "docs/execution-reports/A192-wp-186-import-stepper-polish.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
