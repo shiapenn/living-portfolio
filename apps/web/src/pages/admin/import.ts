@@ -3,6 +3,7 @@ import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
 import {
   renderActionBar,
+  renderBackLink,
   renderButton,
   renderChoiceGroup,
   renderItem,
@@ -168,10 +169,9 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
 
           ${doneNextStepsHtml}
 
-          ${renderActionBar({
-            level: 'page',
-            primary: { id: 'btn-import-return-today', label: 'Back to Today', variant: 'primary', href: '/admin' },
-          })}
+          <div class="lp-action-bar lp-action-bar-page">
+            ${renderBackLink({ id: 'btn-import-return-today', href: '/admin', destination: 'Today' })}
+          </div>
         </section>
       </div>
     </div>

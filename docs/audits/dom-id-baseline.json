@@ -2,6 +2,11 @@
   "version": 1,
   "allowlist": {
     "removedIds": [
+      "btn-key-accept",
+      "btn-key-date",
+      "btn-key-reassign",
+      "btn-key-skip",
+      "plan-paid-est",
       "ref-btn-close-entries",
       "ref-btn-close-structure",
       "ref-btn-structure",
