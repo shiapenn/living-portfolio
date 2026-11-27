@@ -193,6 +193,7 @@
 | `A185` | wp-1714-archetypes-closed-world-audit | `active` | [A185-wp-1714-archetypes-closed-world-audit.md](execution-reports/A185-wp-1714-archetypes-closed-world-audit.md) | — |
 | `A186` | wp-1715-visual-system-pass | `active` | [A186-wp-1715-visual-system-pass.md](execution-reports/A186-wp-1715-visual-system-pass.md) | — |
 | `A187` | wp-1716-alignment-form-actions | `active` | [A187-wp-1716-alignment-form-actions.md](execution-reports/A187-wp-1716-alignment-form-actions.md) | — |
+| `A188` | wp-183-media-api | `active` | [A188-wp-183-media-api.md](execution-reports/A188-wp-183-media-api.md) | — |
 
 ## Handover Snapshots (Class H)
 

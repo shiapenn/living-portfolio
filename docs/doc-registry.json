@@ -2233,5 +2233,13 @@
     "path": "docs/execution-reports/A187-wp-1716-alignment-form-actions.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A188",
+    "title": "wp-183-media-api",
+    "class": "A",
+    "path": "docs/execution-reports/A188-wp-183-media-api.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
