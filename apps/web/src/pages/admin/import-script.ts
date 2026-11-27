@@ -67,6 +67,8 @@ export const IMPORT_SCRIPT = `
           });
         }
 
+        // File upload handler wired in client/admin/import-page.ts
+
         const generatePlanBtn = document.getElementById('btn-generate-plan');
         if (generatePlanBtn) {
           generatePlanBtn.addEventListener('click', async function() {

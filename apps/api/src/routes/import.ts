@@ -13,11 +13,16 @@ import {
 } from '@living-portfolio/core';
 import { scanForConfidentialData } from '@living-portfolio/ai';
 import { AuthManager, sha256Hex } from '../auth/security.js';
+import type { AppConfig } from '@living-portfolio/config';
+import type { MediaStorageAdapter } from '../media/storage.js';
+import { registerImportFileRoutes } from './import-files.js';
 
 export function createImportRoutes(
   repo: IPortfolioRepository,
   auth: AuthManager,
-  deploymentClass?: string
+  deploymentClass?: string,
+  mediaStorage?: MediaStorageAdapter,
+  cfg?: AppConfig
 ) {
   const router = new Hono();
 
@@ -35,6 +40,9 @@ export function createImportRoutes(
     router.all('/', disabledHandler);
     return router;
   }
+
+  // 0. Real file import (WP-18.7: multipart md/txt/html/docx/pdf/zip)
+  registerImportFileRoutes(router, repo, mediaStorage, cfg);
 
   // Core connectors registry (§14)
   const connectors = {

@@ -103,10 +103,20 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
       <!-- Step 1: Add Material -->
       <div id="import-step-add" class="lp-stack lp-gap-group">
         <section class="lp-stack lp-gap-group">
-          <div data-c="Field" data-rel="field" class="lp-field">
-            <label class="lp-field-label" for="import-paste-area">Markdown or text</label>
-            <textarea id="import-paste-area" rows="10" class="lp-input lp-textarea lp-editor-source-textarea" placeholder="# Migrating to Postgres Advisory Locks&#10;&#10;In 2024 we eliminated lock contention by migrating to PostgreSQL 15 advisory locks...&#10;&#10;---&#10;&#10;# Edge Microservice Architecture&#10;&#10;Designed multi-region edge gateways on Cloudflare Workers..."></textarea>
-            <p class="lp-field-help">Separate several entries with <code>---</code>.</p>
+          <div class="lp-stack lp-gap-related">
+            <div data-c="Field" data-rel="field" class="lp-field lp-field-file">
+              <label class="lp-field-label" for="import-files-input">Upload files</label>
+              <div class="lp-field-file-row">
+                <input id="import-files-input" type="file" multiple accept=".md,.markdown,.txt,.html,.htm,.docx,.pdf,.zip" class="lp-field-file-input" />
+                <label class="lp-btn lp-btn-secondary lp-field-file-trigger" for="import-files-input">Choose files</label>
+                <span id="import-files-status" class="lp-field-file-name">Markdown, text, HTML, DOCX, PDF, or ZIP</span>
+              </div>
+            </div>
+            <div data-c="Field" data-rel="field" class="lp-field">
+              <label class="lp-field-label" for="import-paste-area">Markdown or text</label>
+              <textarea id="import-paste-area" rows="10" class="lp-input lp-textarea lp-editor-source-textarea" placeholder="# Migrating to Postgres Advisory Locks&#10;&#10;In 2024 we eliminated lock contention by migrating to PostgreSQL 15 advisory locks...&#10;&#10;---&#10;&#10;# Edge Microservice Architecture&#10;&#10;Designed multi-region edge gateways on Cloudflare Workers..."></textarea>
+              <p class="lp-field-help">Separate several entries with <code>---</code>.</p>
+            </div>
           </div>
 
           ${renderActionBar({

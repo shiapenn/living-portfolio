@@ -3,14 +3,8 @@ import { createHash, createCipheriv, createDecipheriv, randomBytes, pbkdf2Sync }
 import { readdirSync, readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve, basename, join } from 'node:path';
 import { QRXP_SCHEMA_VERSION } from '../migrate.js';
-import type {
-  BackupMetadata,
-  BackupRetentionPolicy,
-  CreateBackupOptions,
-  RestoreDrillOptions,
-  RestoreDrillResult,
-  BackupFreshnessStatus,
-} from './types.js';
+import { exportMediaArchivePayload, restoreMediaArchivePayload } from './media-archive.js';
+import type { BackupMetadata, BackupRetentionPolicy, CreateBackupOptions, RestoreDrillOptions, RestoreDrillResult, BackupFreshnessStatus } from './types.js';
 
 export const DEFAULT_RETENTION_POLICY: BackupRetentionPolicy = {
   daily: 7,
@@ -146,17 +140,8 @@ export async function createDatabaseBackup(options: CreateBackupOptions = {}): P
       }
     }
 
-    payloadText = JSON.stringify(
-      {
-        schemaVersion: QRXP_SCHEMA_VERSION,
-        timestamp,
-        ventures,
-        relations,
-        entries: entryDetails,
-      },
-      null,
-      2
-    );
+    const media = await exportMediaArchivePayload(options.repo, options.mediaDir);
+    payloadText = JSON.stringify({ schemaVersion: QRXP_SCHEMA_VERSION, timestamp, ventures, relations, entries: entryDetails, media }, null, 2);
   } else if (options.databaseUrl && hasPgDumpCli()) {
     databaseKind = 'postgres';
     payloadText = execFileSync(
@@ -260,26 +245,18 @@ export async function runRestoreDrill(options: RestoreDrillOptions): Promise<Res
   if (scratch) {
     try {
       const data = JSON.parse(decryptedBuf.toString('utf8'));
+      await restoreMediaArchivePayload(data.media, scratch, options.restoreMediaDir);
       if (Array.isArray(data.entries)) {
         for (const item of data.entries) {
           const entryRecord = item.entry || item;
           const currentRev = item.currentRevision || (item.revisions && item.revisions[0]) || { body_md: 'Restored' };
+          const bodyMd = currentRev.body_md || 'Restored';
           await scratch.createEntry(
-            {
-              slug: entryRecord.slug,
-              title: entryRecord.title,
-              profile: entryRecord.profile,
-              view: entryRecord.view,
-              visibility: entryRecord.visibility,
-            },
-            {
-              body_md: currentRev.body_md || 'Restored',
-              written_at: currentRev.written_at || new Date().toISOString(),
-            }
+            { slug: entryRecord.slug, title: entryRecord.title, profile: entryRecord.profile, view: entryRecord.view, visibility: entryRecord.visibility },
+            { body_md: bodyMd, written_at: currentRev.written_at || new Date().toISOString() }
           );
           restoredCounts.entries++;
-          if (item.revisions) restoredCounts.revisions += item.revisions.length;
-          else restoredCounts.revisions++;
+          restoredCounts.revisions += item.revisions ? item.revisions.length : 1;
           if (item.spans) restoredCounts.chunks += item.spans.length;
         }
       }
