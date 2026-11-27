@@ -108,3 +108,16 @@ One concise block per screen:
 - **Hierarchy (`1..n`):** `1` Page title -> `2` Stepper -> `3` Step section heading -> `4` Choice cards / Review list / Next steps list -> `5` `ActionBar[page]` -> `6` Error `Notice` (`S3` below).
 - **States:** `add`, `plan` (local-only & external-provider radio cards), `review` (`N of M reviewed`), `done` (3 next steps + 1 return link), `error`.
 - **Compact:** Single-column cards and review items at compact width; per-item `ActionBar` and `Field` controls stack cleanly with zero horizontal overflow.
+
+### 11. Quick Log Capture Route (`WP-18.8`, `/admin/quick-log` & `/quick-log`)
+- **Archetype (`D1`):** `form` (owner-only mobile-first capture page; zero new `data-c` components: `Field[textarea]`, `Field[select]`, `ActionBar[page]`, `StatusLine`, `Notice[danger]`).
+- **JTBD:** Capture a structured work-log draft from a phone in under 30 seconds without opening the full editor.
+- **Decision & required data:**
+  - `What happened` (`Field[textarea]`, required)
+  - `What was decided` (`Field[textarea]`, optional)
+  - `What was learned` (`Field[textarea]`, optional)
+  - `Venture` (`Field[select]`, optional; defaults to `None`)
+- **Primary action & consequence:** Single primary `Save` button (`ActionBar[page]`) creates a private draft entry (`profile: work-log`) and resets the form with a `StatusLine` link to open the draft.
+- **Hierarchy (`1..n`):** `1` Page title (`Quick Log`) -> `2` 4 stacked `Field` controls (`S3` between fields, `S2` label->control) -> `3` `ActionBar[page]` (`S4` above) -> `4` `StatusLine` or danger `Notice` (`S3` below).
+- **States:** `idle`, `saving` (`aria-busy="true"`), `saved` (`StatusLine`), `field-invalid` (empty `What happened`), `error` (`Notice[danger]`).
+- **Compact:** Single-column form at compact mobile width, full-width inputs and primary `Save` button, zero horizontal overflow.

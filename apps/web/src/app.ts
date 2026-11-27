@@ -331,6 +331,28 @@ export function createWebApp(options?: WebAppOptions) {
     c.html(await renderAdminPagesEditorPage(client, { section: c.req.query('section'), siteName: cfg.PUBLIC_SITE_NAME }))
   );
   app.get('/admin/import', async (c) => c.html(await renderAdminImportPage(client)));
+  app.get('/admin/quick-log', async (c) => {
+    const { renderAdminQuickLogPage } = await import('./pages/admin/quick-log.js');
+    return c.html(await renderAdminQuickLogPage(client, { siteName: cfg.PUBLIC_SITE_NAME }));
+  });
+  app.get('/quick-log', (c) => c.redirect('/admin/quick-log', 302));
+  app.get('/manifest.webmanifest', (c) => {
+    c.header('Content-Type', 'application/manifest+json; charset=utf-8');
+    return c.json({
+      name: cfg.PUBLIC_SITE_NAME,
+      short_name: cfg.PUBLIC_SITE_NAME,
+      start_url: '/admin',
+      display: 'standalone',
+      shortcuts: [
+        {
+          name: 'Quick Log',
+          short_name: 'Quick Log',
+          description: 'Capture a quick work log draft',
+          url: '/admin/quick-log',
+        },
+      ],
+    });
+  });
   app.get('/admin/status', async (c) => {
     const { renderAdminStatusPage } = await import('./pages/admin/status.js');
     return c.html(await renderAdminStatusPage(client, { siteName: cfg.PUBLIC_SITE_NAME }));

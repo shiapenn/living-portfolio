@@ -186,6 +186,28 @@ export function mountBundledWeb(
     app.get('/admin/import', auth.requireAdminMiddleware(), async (c) =>
       c.html(await renderAdminImportPage(repo))
     );
+    app.get('/admin/quick-log', auth.requireAdminMiddleware(), async (c) => {
+      const { renderAdminQuickLogPage } = await import('@living-portfolio/web');
+      return c.html(await renderAdminQuickLogPage(repo));
+    });
+    app.get('/quick-log', auth.requireAdminMiddleware(), (c) => c.redirect('/admin/quick-log', 302));
+    app.get('/manifest.webmanifest', (c) => {
+      c.header('Content-Type', 'application/manifest+json; charset=utf-8');
+      return c.json({
+        name: 'Living Portfolio',
+        short_name: 'Portfolio',
+        start_url: '/admin',
+        display: 'standalone',
+        shortcuts: [
+          {
+            name: 'Quick Log',
+            short_name: 'Quick Log',
+            description: 'Capture a quick work log draft',
+            url: '/admin/quick-log',
+          },
+        ],
+      });
+    });
     app.get('/admin/status', auth.requireAdminMiddleware(), async (c) =>
       c.html(
         await renderAdminStatusPage(repo, {
