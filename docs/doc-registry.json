@@ -2281,5 +2281,13 @@
     "path": "docs/execution-reports/A192-wp-186-import-stepper-polish.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A193",
+    "title": "WP-18.7 Real File Import And Backup Media Inclusion",
+    "class": "A",
+    "path": "docs/execution-reports/A193-wp-187-real-file-import-and-backup-media.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
