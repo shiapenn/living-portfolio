@@ -6,7 +6,7 @@
 | Date | 2026-11-27 |
 | Author | A (Implementer) |
 | Task ID | `WP-18.3` |
-| Evidence SHA | `3436ca830355d9e0e79323733c2864a66db428d7` |
+| Evidence SHA | `752d3aa378c5bf6c50b2d85aa83e8e8e64aa27f4` |
 | CI run | Pending PR CI (local `verify:fast`, `wp16n:verify` 11/11, `design:audit`, `--self-test`, `audit:check`, `docs:check`, `hardcode:check`, `openapi:drift`, and 9/9 WP-18.3 security conformance tests green) |
 
 ---
@@ -48,7 +48,10 @@ Delivered `WP-18.3` — Media API (API-only slice, zero UI changes, zero `data-c
 - `apps/api/src/media/sniff.ts`
 - `apps/api/src/media/storage.ts`
 - `apps/api/src/routes/media.ts`
+- `docs/INDEX.md`
+- `docs/doc-registry.json`
 - `docs/execution-reports/A187-wp-1716-alignment-form-actions.md`
+- `docs/execution-reports/A188-wp-183-media-api.md`
 - `docs/plans/backlog.yml`
 - `packages/config/src/index.ts`
 - `packages/config/src/media.ts`
@@ -82,8 +85,8 @@ $ pnpm receipt:check A188
 === Validating Receipt A188-wp-183-media-api.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA '3436ca830355d9e0e79323733c2864a66db428d7' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff 2689c1c44b7d09ab161be03a0dc86d555275bca5..3436ca830355d9e0e79323733c2864a66db428d7 (19 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA '752d3aa378c5bf6c50b2d85aa83e8e8e64aa27f4' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 2689c1c44b7d09ab161be03a0dc86d555275bca5..752d3aa378c5bf6c50b2d85aa83e8e8e64aa27f4 (22 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A188-wp-183-media-api.md.
 Found 0 section(s) marked verbatim.
 
