@@ -6,7 +6,7 @@
 | Date | 2026-11-27 |
 | Author | A (Implementer) |
 | Task ID | WP-18.9 |
-| Evidence SHA | `44790a26acdead4391f05cd340fab3d5fd007d26` |
+| Evidence SHA | `5222f5b57b2b903a1f3c4bc87ec9816523f63117` |
 | CI run | https://github.com/shiapenn/living-portfolio/pull/293 |
 
 ## 1. Scope
@@ -45,6 +45,7 @@
 - `docs/design/screen-brief.md`
 - `docs/doc-registry.json`
 - `docs/execution-reports/A194-wp-188-quick-log-capture-route.md`
+- `docs/execution-reports/A195-wp-189-settings-storage-module.md`
 - `docs/plans/backlog.yml`
 - `tests/e2e/wp17-manifest.ts`
 - `tests/e2e/wp18-9-storage.spec.ts`
