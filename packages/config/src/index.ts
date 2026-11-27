@@ -2,6 +2,7 @@ import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve, isAbsolute } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
+import { MEDIA_DEPLOY_SETTINGS_METADATA, MEDIA_SECRET_SETTINGS_METADATA, MEDIA_CONFIG_SCHEMA_SHAPE, resolveMediaDirFrom } from './media.js';
 
 export type SettingCategory = 'deploy' | 'secrets' | 'branding';
 
@@ -162,6 +163,7 @@ export const CONFIG_SETTINGS_METADATA: readonly SettingMetadata[] = [
     secret: false,
     public: false,
   },
+  ...MEDIA_DEPLOY_SETTINGS_METADATA,
   {
     key: 'G4_SIGNOFF_PATH',
     category: 'deploy',
@@ -300,6 +302,7 @@ export const CONFIG_SETTINGS_METADATA: readonly SettingMetadata[] = [
     secret: true,
     public: false,
   },
+  ...MEDIA_SECRET_SETTINGS_METADATA,
 ] as const;
 
 export const CalibrationConfigSchema = z
@@ -350,6 +353,7 @@ export const AppConfigSchema = z
     NTFY_TOPIC: z.string().default(''),
     AGE_PUBLIC_KEY: z.string().default(''),
     S3_BACKUP_BUCKET: z.string().default(''),
+    ...MEDIA_CONFIG_SCHEMA_SHAPE,
     DATA_DIR: z.string().default(''),
     BACKUP_DIR: z.string().default(''),
     G4_SIGNOFF_PATH: z.string().default(''),
@@ -435,36 +439,21 @@ export function resolveDataDir(customDataDir?: string, startDir = process.cwd())
   const resolved = raw && raw.trim() !== ''
     ? (isAbsolute(raw.trim()) ? raw.trim() : resolve(root, raw.trim()))
     : resolve(root, 'data');
-  if (!existsSync(resolved)) {
-    try {
-      mkdirSync(resolved, { recursive: true });
-    } catch {
-      // In restricted filesystems caller handles
-    }
-  }
+  if (!existsSync(resolved)) { try { mkdirSync(resolved, { recursive: true }); } catch {} }
   return resolved;
 }
 
 export function resolveBackupDir(customBackupDir?: string, customDataDir?: string, startDir = process.cwd()): string {
   const root = findRepoRoot(startDir);
   const raw = customBackupDir || process.env.BACKUP_DIR;
-  if (raw && raw.trim() !== '') {
-    const resolved = isAbsolute(raw.trim()) ? raw.trim() : resolve(root, raw.trim());
-    if (!existsSync(resolved)) {
-      try {
-        mkdirSync(resolved, { recursive: true });
-      } catch {}
-    }
-    return resolved;
-  }
-  const dataDir = resolveDataDir(customDataDir, startDir);
-  const backupDir = resolve(dataDir, 'backups');
-  if (!existsSync(backupDir)) {
-    try {
-      mkdirSync(backupDir, { recursive: true });
-    } catch {}
-  }
-  return backupDir;
+  const target = raw && raw.trim() !== ''
+    ? (isAbsolute(raw.trim()) ? raw.trim() : resolve(root, raw.trim()))
+    : resolve(resolveDataDir(customDataDir, startDir), 'backups');
+  if (!existsSync(target)) { try { mkdirSync(target, { recursive: true }); } catch {} }
+  return target;
+}
+export function resolveMediaDir(customMediaDir?: string, customDataDir?: string, startDir = process.cwd()): string {
+  return resolveMediaDirFrom(findRepoRoot, resolveDataDir, customMediaDir, customDataDir, startDir);
 }
 
 export function findG4SignoffPath(): string {

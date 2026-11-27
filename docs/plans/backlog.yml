@@ -234,7 +234,7 @@ items:
     expected_minutes: 50
     gate: none
     acceptance: Auth+CSRF media upload/serve endpoints, local volume/S3 adapter, config-driven limits, sniffing, SVG rejection/sanitisation, migration + conformance tests
-    status: ready
+    status: done
 
   - id: WP-18.4
     title: Images and video in editor and public Markdown rendering (D-06, D-STORAGE)

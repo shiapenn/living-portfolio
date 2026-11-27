@@ -6,6 +6,7 @@ import {
   timestamp,
   boolean,
   integer,
+  bigint,
   real,
   customType,
 } from 'drizzle-orm/pg-core';
@@ -143,11 +144,17 @@ export const mediaAssets = pgTable('media_assets', {
   entry_id: uuid('entry_id').references(() => entries.id, { onDelete: 'cascade' }),
   mime_type: text('mime_type').notNull(),
   uri: text('uri').notNull(),
+  storage_key: text('storage_key'),
+  original_filename: text('original_filename'),
+  size_bytes: bigint('size_bytes', { mode: 'number' }),
+  sha256: text('sha256'),
+  visibility: text('visibility').notNull().default('private'),
   alt_text: text('alt_text'),
   caption: text('caption'),
   ocr_text: text('ocr_text'),
   transcript: jsonb('transcript'),
   duration_sec: integer('duration_sec'),
+  created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
 export const embeddingSets = pgTable('embedding_sets', {

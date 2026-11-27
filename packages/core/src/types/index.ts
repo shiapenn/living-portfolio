@@ -148,17 +148,7 @@ export interface Evidence {
   verified_at?: string | null;
 }
 
-export interface MediaAsset {
-  id: string;
-  entry_id?: string | null;
-  mime_type: string;
-  uri: string;
-  alt_text?: string | null;
-  caption?: string | null;
-  ocr_text?: string | null;
-  transcript?: any | null;
-  duration_sec?: number | null;
-}
+export type { MediaAsset } from './media.js';
 
 export interface EmbeddingSet {
   id: string;

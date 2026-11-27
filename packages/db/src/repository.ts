@@ -19,6 +19,7 @@ import type {
   Visibility,
 } from '@living-portfolio/core';
 import { isTemporallyValid } from '@living-portfolio/core';
+import { InMemoryMediaStore } from './media-helpers.js';
 
 export interface SearchResult {
   span: Span;
@@ -83,6 +84,9 @@ export interface IPortfolioRepository {
   // Media
   saveMedia(m: Omit<MediaAsset, 'id'>): Promise<MediaAsset>;
   getMedia(id: string): Promise<MediaAsset | null>;
+  listMedia(): Promise<MediaAsset[]>;
+  deleteMedia(id: string): Promise<boolean>;
+  getTotalMediaBytes(): Promise<number>;
 
   // Operational: Escalations, Calibration, Logs, Bookings
   saveEscalation(esc: Omit<Escalation, 'id' | 'at'>): Promise<Escalation>;
@@ -181,7 +185,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   private claims = new Map<string, Claim>();
   private relations = new Map<string, Relation>();
   private evidence = new Map<string, Evidence>();
-  private media = new Map<string, MediaAsset>();
+  private media = new InMemoryMediaStore();
   private escalations = new Map<string, Escalation>();
   private bookings = new Map<string, BookingRequest>();
   private correctionLogs = new Map<string, CorrectionLog>();
@@ -541,16 +545,11 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     return Array.from(this.evidence.values()).filter((e) => e.entry_id === entry_id);
   }
 
-  async saveMedia(m: Omit<MediaAsset, 'id'>): Promise<MediaAsset> {
-    const id = (m as any).id ?? crypto.randomUUID();
-    const asset: MediaAsset = { ...m, id };
-    this.media.set(id, asset);
-    return asset;
-  }
-
-  async getMedia(id: string): Promise<MediaAsset | null> {
-    return this.media.get(id) || null;
-  }
+  async saveMedia(m: Omit<MediaAsset, 'id'>): Promise<MediaAsset> { return this.media.save(m); }
+  async getMedia(id: string): Promise<MediaAsset | null> { return this.media.get(id); }
+  async listMedia(): Promise<MediaAsset[]> { return this.media.list(); }
+  async deleteMedia(id: string): Promise<boolean> { return this.media.delete(id); }
+  async getTotalMediaBytes(): Promise<number> { return this.media.totalBytes(); }
 
   async saveEscalation(esc: Omit<Escalation, 'id' | 'at'>): Promise<Escalation> {
     const id = (esc as any).id ?? crypto.randomUUID();

@@ -711,19 +711,19 @@ export class DualWritePortfolioRepository implements IPortfolioRepository {
 
   // --- Media ---
   async saveMedia(m: Omit<MediaAsset, 'id'>): Promise<MediaAsset> {
-    return this.executeWrite(
-      'saveMedia',
-      () => this.primary.saveMedia(m),
-      (res) => this.shadow.saveMedia({ ...m, id: res.id } as any)
-    );
+    return this.executeWrite('saveMedia', () => this.primary.saveMedia(m), (res) => this.shadow.saveMedia({ ...m, id: res.id } as any));
   }
-
   async getMedia(id: string): Promise<MediaAsset | null> {
-    return this.executeRead(
-      'getMedia',
-      () => this.primary.getMedia(id),
-      () => this.shadow.getMedia(id)
-    );
+    return this.executeRead('getMedia', () => this.primary.getMedia(id), () => this.shadow.getMedia(id));
+  }
+  async listMedia(): Promise<MediaAsset[]> {
+    return this.executeRead('listMedia', () => this.primary.listMedia(), () => this.shadow.listMedia());
+  }
+  async deleteMedia(id: string): Promise<boolean> {
+    return this.executeWrite('deleteMedia', () => this.primary.deleteMedia(id), () => this.shadow.deleteMedia(id));
+  }
+  async getTotalMediaBytes(): Promise<number> {
+    return this.executeRead('getTotalMediaBytes', () => this.primary.getTotalMediaBytes(), () => this.shadow.getTotalMediaBytes());
   }
 
   // --- Operational: Escalations, Calibration, Logs ---
