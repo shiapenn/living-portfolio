@@ -2241,5 +2241,13 @@
     "path": "docs/execution-reports/A188-wp-183-media-api.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A189",
+    "title": "wp-183a-media-hardening",
+    "class": "A",
+    "path": "docs/execution-reports/A189-wp-183a-media-hardening.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

@@ -194,6 +194,7 @@
 | `A186` | wp-1715-visual-system-pass | `active` | [A186-wp-1715-visual-system-pass.md](execution-reports/A186-wp-1715-visual-system-pass.md) | — |
 | `A187` | wp-1716-alignment-form-actions | `active` | [A187-wp-1716-alignment-form-actions.md](execution-reports/A187-wp-1716-alignment-form-actions.md) | — |
 | `A188` | wp-183-media-api | `active` | [A188-wp-183-media-api.md](execution-reports/A188-wp-183-media-api.md) | — |
+| `A189` | wp-183a-media-hardening | `active` | [A189-wp-183a-media-hardening.md](execution-reports/A189-wp-183a-media-hardening.md) | — |
 
 ## Handover Snapshots (Class H)
 
