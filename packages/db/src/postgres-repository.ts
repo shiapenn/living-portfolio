@@ -19,6 +19,7 @@ import type {
   Visibility,
 } from '@living-portfolio/core';
 import { isTemporallyValid } from '@living-portfolio/core';
+import { pgSaveMedia, pgGetMedia, pgListMedia, pgDeleteMedia, pgGetTotalMediaBytes } from './media-helpers.js';
 import { eq, inArray, desc, and, or, sql } from 'drizzle-orm';
 import type { IPortfolioRepository, SearchResult, TemporalExpandOptions, ChunkVectorRecord, GovernorLedgerEntry } from './repository.js';
 import { createDrizzleDb, getDefaultDb, type LivingPortfolioDb } from './connection.js';
@@ -165,20 +166,6 @@ function mapEvidence(row: typeof schema.evidence.$inferSelect): Evidence {
     media_id: row.media_id ?? undefined,
     verification: (row.verification as any) ?? undefined,
     verified_at: toIso(row.verified_at),
-  };
-}
-
-function mapMedia(row: typeof schema.mediaAssets.$inferSelect): MediaAsset {
-  return {
-    id: row.id,
-    entry_id: row.entry_id ?? undefined,
-    mime_type: row.mime_type,
-    uri: row.uri,
-    alt_text: row.alt_text ?? undefined,
-    caption: row.caption ?? undefined,
-    ocr_text: row.ocr_text ?? undefined,
-    transcript: (row.transcript as any) ?? undefined,
-    duration_sec: row.duration_sec ?? undefined,
   };
 }
 
@@ -864,28 +851,11 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
   }
 
   // --- Media Assets ---
-  async saveMedia(m: Omit<MediaAsset, 'id'>): Promise<MediaAsset> {
-    const [row] = await this.db
-      .insert(schema.mediaAssets)
-      .values({
-        id: (m as any).id ?? undefined,
-        entry_id: m.entry_id ?? null,
-        mime_type: m.mime_type,
-        uri: m.uri,
-        alt_text: m.alt_text ?? null,
-        caption: m.caption ?? null,
-        ocr_text: m.ocr_text ?? null,
-        transcript: m.transcript ?? null,
-        duration_sec: m.duration_sec ?? null,
-      })
-      .returning();
-    return mapMedia(row);
-  }
-
-  async getMedia(id: string): Promise<MediaAsset | null> {
-    const rows = await this.db.select().from(schema.mediaAssets).where(eq(schema.mediaAssets.id, id));
-    return rows.length > 0 ? mapMedia(rows[0]) : null;
-  }
+  saveMedia(m: Omit<MediaAsset, 'id'>): Promise<MediaAsset> { return pgSaveMedia(this.db, m); }
+  getMedia(id: string): Promise<MediaAsset | null> { return pgGetMedia(this.db, id); }
+  listMedia(): Promise<MediaAsset[]> { return pgListMedia(this.db); }
+  deleteMedia(id: string): Promise<boolean> { return pgDeleteMedia(this.db, id); }
+  getTotalMediaBytes(): Promise<number> { return pgGetTotalMediaBytes(this.db); }
 
   // --- Operational ---
   async saveEscalation(esc: Omit<Escalation, 'id' | 'at'>): Promise<Escalation> {

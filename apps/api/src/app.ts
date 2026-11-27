@@ -25,6 +25,8 @@ import { createImportRoutes } from './routes/import.js';
 import { createBookRoutes } from './routes/book.js';
 import { createSettingsRoutes, type RuntimeSettingsState } from './routes/settings.js';
 import { createPublishRoutes } from './routes/publish.js';
+import { createMediaRoutes } from './routes/media.js';
+import { createMediaStorageAdapter, type MediaStorageAdapter } from './media/storage.js';
 import { PortfolioWorker, type WorkerQueueManager } from '@living-portfolio/worker';
 
 export function createApp(
@@ -44,6 +46,7 @@ export function createApp(
     bundledWebAdapter?: (app: Hono, repo: IPortfolioRepository, runtimeState?: any, auth?: AuthManager) => void;
     worker?: PortfolioWorker;
     queueManager?: WorkerQueueManager;
+    mediaStorage?: MediaStorageAdapter;
   }
 ) {
   const app = new Hono();
@@ -269,6 +272,10 @@ export function createApp(
   // Consultation booking routes (§6.1, UX-11) - public POST, admin GET
   apiV1.use('/book', (c, next) => (c.req.method === 'GET' ? auth.requireAdminMiddleware()(c, next) : next()));
   apiV1.route('/book', createBookRoutes(repo));
+
+  // Media API routes (WP-18.3, D-06, D-STORAGE) - POST/DELETE/GET-list admin+CSRF, GET /:id visibility-enforced
+  const mediaStorage = options?.mediaStorage ?? createMediaStorageAdapter(cfg);
+  apiV1.route('/media', createMediaRoutes(repo, auth, mediaStorage, cfg));
 
   // Shadow verification & metrics endpoints (WP-2.4, Fix 8, Fix 10, OSR-15)
   apiV1.get('/admin/metrics/shadow', auth.requireAdminMiddleware(), (c) => {
