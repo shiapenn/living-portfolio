@@ -6,7 +6,7 @@
 | Date | 2026-11-27 |
 | Author | A (Implementer) |
 | Task ID | WP-18.7 |
-| Evidence SHA | `711e2f0bbc8ab1f7286edd34b725e6cf444d2b5c` |
+| Evidence SHA | `e43a6e6096b9e76b714688eb4d4a284da76f6ae0` |
 | CI run | https://github.com/shiapenn/living-portfolio/pull/291 |
 
 ## 1. Scope
@@ -42,11 +42,18 @@
 - `apps/web/src/client/admin/import-page.ts`
 - `apps/web/src/pages/admin/import-script.ts`
 - `apps/web/src/pages/admin/import.ts`
+- `docs/INDEX.md`
+- `docs/design/health-history.json`
+- `docs/design/health.md`
+- `docs/doc-registry.json`
 - `docs/execution-reports/A192-wp-186-import-stepper-polish.md`
+- `docs/execution-reports/A193-wp-187-real-file-import-and-backup-media.md`
 - `docs/plans/backlog.yml`
 - `packages/db/src/backup/engine.ts`
 - `packages/db/src/backup/media-archive.ts`
 - `packages/db/src/backup/types.ts`
+- `packages/ui-admin/src/primitives/field/field.css`
+- `tests/e2e/wp16-r-style-census.spec.ts`
 - `tests/e2e/wp18-7-real-file-import.spec.ts`
 
 ## 5. Register and Backlog Changes
