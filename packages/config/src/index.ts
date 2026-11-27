@@ -2,7 +2,8 @@ import { readFileSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve, isAbsolute } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
-import { MEDIA_DEPLOY_SETTINGS_METADATA, MEDIA_SECRET_SETTINGS_METADATA, MEDIA_CONFIG_SCHEMA_SHAPE, resolveMediaDirFrom } from './media.js';
+import { MEDIA_DEPLOY_SETTINGS_METADATA, MEDIA_SECRET_SETTINGS_METADATA, MEDIA_CONFIG_SCHEMA_SHAPE, resolveMediaDirFrom, parseEmbedAllowedHosts, isAllowedEmbedUrl, buildEmbedFrameSrc } from './media.js';
+export { parseEmbedAllowedHosts, isAllowedEmbedUrl, buildEmbedFrameSrc };
 
 export type SettingCategory = 'deploy' | 'secrets' | 'branding';
 

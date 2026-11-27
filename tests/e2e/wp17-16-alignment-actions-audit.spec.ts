@@ -47,6 +47,7 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
     const ha3Violations: string[] = [];
     const ha4Violations: string[] = [];
     const ha5Violations: string[] = [];
+    const haCounts = { HA1: 0, HA2: 0, HA3: 0, HA4: 0, HA5: 0 };
 
     for (const entry of WP17_MANIFEST) {
       await navigateToManifestEntry(page, entry, fixtures);
@@ -61,6 +62,7 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
           const ha3: string[] = [];
           const ha4: string[] = [];
           const ha5: string[] = [];
+          const counts = { HA1: 0, HA2: 0, HA3: 0, HA4: 0, HA5: 0 };
 
           const isVis = (el: Element | null): el is HTMLElement => {
             if (!el || !(el instanceof HTMLElement)) return false;
@@ -70,21 +72,27 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
             return r.width > 0 && r.height > 0;
           };
 
-          const col = document.querySelector<HTMLElement>('.lp-page-column');
-          if (!col || !isVis(col)) return { ha1, ha2, ha3, ha4, ha5 };
+          const openDialog = document.querySelector<HTMLElement>('[data-c="Overlay"]:not([hidden]) .lp-dialog-panel');
+          const col =
+            (openDialog && isVis(openDialog) ? openDialog : null) ||
+            document.querySelector<HTMLElement>('.lp-page-column') ||
+            document.querySelector<HTMLElement>('.lp-editor-writing-col') ||
+            document.querySelector<HTMLElement>('.reading-column');
+          if (!col || !isVis(col)) return { ha1, ha2, ha3, ha4, ha5, counts };
           const colSt = getComputedStyle(col);
           const colRect = col.getBoundingClientRect();
           const contentLeft = colRect.left + parseFloat(colSt.paddingLeft || '0');
           const contentRight = colRect.right - parseFloat(colSt.paddingRight || '0');
           const contentWidth = contentRight - contentLeft;
 
-          // HA1: Header title and description left edge = content-left (+/-1px) & text-align start/left
-          const header = col.querySelector<HTMLElement>('.lp-page-header');
+          // HA1: Header / dialog / media title left edge = content-left (+/-1.5px) & text-align start/left
+          const header = col.querySelector<HTMLElement>('.lp-page-header, .lp-dialog-header');
           if (header && isVis(header)) {
-            const title = header.querySelector<HTMLElement>('.lp-page-header-title, h1');
+            const title = header.querySelector<HTMLElement>('.lp-page-header-title, .lp-dialog-title, h1, h2');
             const desc = header.querySelector<HTMLElement>('.lp-page-description');
             const main = header.querySelector<HTMLElement>('.lp-page-header-main');
             if (title && isVis(title)) {
+              counts.HA1++;
               const tr = title.getBoundingClientRect();
               const tst = getComputedStyle(title);
               if (Math.abs(tr.left - contentLeft) > 1.5) {
@@ -95,6 +103,7 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
               }
             }
             if (desc && isVis(desc)) {
+              counts.HA1++;
               const dr = desc.getBoundingClientRect();
               const dst = getComputedStyle(desc);
               if (Math.abs(dr.left - contentLeft) > 1.5) {
@@ -105,17 +114,25 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
               }
             }
             if (main && isVis(main) && width < 480) {
+              counts.HA1++;
               const mr = main.getBoundingClientRect();
               if (Math.abs(mr.width - contentWidth) > 2) {
                 ha1.push(`${id}@${width}: .lp-page-header-main width=${mr.width.toFixed(1)} != contentWidth=${contentWidth.toFixed(1)}`);
               }
             }
           }
+          // Public / editor media left edge check under HA1
+          for (const mediaFig of Array.from(col.querySelectorAll<HTMLElement>('.pub-media, .lp-editor-media-block')).filter(isVis)) {
+            counts.HA1++;
+            const mr = mediaFig.getBoundingClientRect();
+            if (Math.abs(mr.left - contentLeft) > 1.5) {
+              ha1.push(`${id}@${width}: media figure left=${mr.left.toFixed(1)} != contentLeft=${contentLeft.toFixed(1)}`);
+            }
+          }
 
           // HA2 & HA3: Every visible List and its Items
           const lists = Array.from(col.querySelectorAll<HTMLElement>('.lp-list')).filter(isVis);
           for (const list of lists) {
-            // Skip gallery sample containers that intentionally sit inside bordered demo frames
             if (list.closest('#gallery-state-matrix, .lp-gallery-overlay-sample')) continue;
             const listRect = list.getBoundingClientRect();
             const listSt = getComputedStyle(list);
@@ -127,6 +144,7 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
             for (const item of items) {
               const title = item.querySelector<HTMLElement>('.lp-item-title');
               if (title && isVis(title)) {
+                counts.HA3++;
                 const tr = title.getBoundingClientRect();
                 if (Math.abs(tr.left - listLeft) > 1.5) {
                   ha3.push(`${id}@${width}: item title "${(title.textContent || '').trim().slice(0, 24)}" left=${tr.left.toFixed(1)} != listLeft=${listLeft.toFixed(1)}`);
@@ -134,6 +152,7 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
               }
               const sub = item.querySelector<HTMLElement>('.lp-item-subtitle');
               if (sub && isVis(sub)) {
+                counts.HA3++;
                 const sr = sub.getBoundingClientRect();
                 if (Math.abs(sr.left - listLeft) > 1.5) {
                   ha3.push(`${id}@${width}: item subtitle left=${sr.left.toFixed(1)} != listLeft=${listLeft.toFixed(1)}`);
@@ -141,6 +160,7 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
               }
               const trailing = item.querySelector<HTMLElement>('.lp-item-status, .lp-item-trailing');
               if (trailing && isVis(trailing)) {
+                counts.HA2++;
                 const tr = trailing.getBoundingClientRect();
                 trailingRights.push(tr.right);
                 if (width >= 480 && Math.abs(tr.right - listRight) > 1.5) {
@@ -157,27 +177,29 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
             }
           }
 
-          // HA4: Sibling controls — page-level ActionBar vertical full-width stack & Pager equal-width buttons on one row
-          const pageBars = Array.from(col.querySelectorAll<HTMLElement>('.lp-action-bar-page')).filter(isVis);
+          // HA4: Sibling controls — page/dialog ActionBar vertical full-width stack (at compact) & Pager equal-width buttons on one row
+          const pageBars = Array.from(col.querySelectorAll<HTMLElement>('.lp-action-bar-page, .lp-action-bar-dialog')).filter(isVis);
           for (const bar of pageBars) {
             if (bar.closest('#gallery-state-matrix')) continue;
             const barRect = bar.getBoundingClientRect();
+            const isDialogBar = bar.classList.contains('lp-action-bar-dialog');
             const btns = Array.from(bar.querySelectorAll<HTMLElement>(':scope > .lp-btn:not(.lp-btn-text), :scope > a.lp-btn:not(.lp-btn-text)')).filter(isVis);
             let prevBottom = -Infinity;
             const widths: number[] = [];
             for (const btn of btns) {
+              counts.HA4++;
               const br = btn.getBoundingClientRect();
               widths.push(br.width);
-              if (Math.abs(br.width - barRect.width) > 2) {
-                ha4.push(`${id}@${width}: page ActionBar btn "${(btn.textContent || '').trim()}" width=${br.width.toFixed(1)} != container=${barRect.width.toFixed(1)}`);
+              if ((!isDialogBar || width < 480) && Math.abs(br.width - barRect.width) > 2) {
+                ha4.push(`${id}@${width}: ActionBar btn "${(btn.textContent || '').trim()}" width=${br.width.toFixed(1)} != container=${barRect.width.toFixed(1)}`);
               }
               if (prevBottom > -Infinity && br.top < prevBottom - 1) {
-                ha4.push(`${id}@${width}: page ActionBar btn "${(btn.textContent || '').trim()}" not stacked vertically (top=${br.top.toFixed(1)} < prevBottom=${prevBottom.toFixed(1)})`);
+                ha4.push(`${id}@${width}: ActionBar btn "${(btn.textContent || '').trim()}" not stacked vertically (top=${br.top.toFixed(1)} < prevBottom=${prevBottom.toFixed(1)})`);
               }
               prevBottom = br.bottom;
             }
             if (widths.length >= 2 && Math.max(...widths) - Math.min(...widths) > 1.5) {
-              ha4.push(`${id}@${width}: page ActionBar sibling widths unequal (${widths.map((w) => w.toFixed(1)).join(', ')})`);
+              ha4.push(`${id}@${width}: ActionBar sibling widths unequal (${widths.map((w) => w.toFixed(1)).join(', ')})`);
             }
           }
 
@@ -185,6 +207,7 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
           for (const pager of pagers) {
             const btns = Array.from(pager.querySelectorAll<HTMLElement>('button')).filter(isVis);
             if (btns.length === 2) {
+              counts.HA4++;
               const r0 = btns[0].getBoundingClientRect();
               const r1 = btns[1].getBoundingClientRect();
               if (Math.abs(r0.width - r1.width) > 1.5) {
@@ -196,14 +219,15 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
             }
           }
 
-          // HA5: No primary content/item/header/QR left edge in (contentLeft, contentLeft + 8px)
+          // HA5: No primary content/item/header/dialog/media left edge in (contentLeft, contentLeft + 8px)
           const candidates = Array.from(
             col.querySelectorAll<HTMLElement>(
-              '.lp-page-header-title, .lp-page-description, .lp-section-title, .lp-subsection-title, .lp-item-title, #account-totp-qr'
+              '.lp-page-header-title, .lp-page-description, .lp-section-title, .lp-subsection-title, .lp-item-title, #account-totp-qr, .lp-dialog-title, .lp-field-label, .pub-media, .pub-embed-gate, .lp-editor-media-block'
             )
           ).filter(isVis);
           for (const el of candidates) {
             if (el.closest('#gallery-state-matrix, .lp-gallery-overlay-sample, .lp-gallery-panel-sample')) continue;
+            counts.HA5++;
             const er = el.getBoundingClientRect();
             const dx = er.left - contentLeft;
             if (dx > 1.5 && dx < 8.5) {
@@ -211,7 +235,7 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
             }
           }
 
-          return { ha1, ha2, ha3, ha4, ha5 };
+          return { ha1, ha2, ha3, ha4, ha5, counts };
         }, { id: entry.id, width: vp.width });
 
         ha1Violations.push(...res.ha1);
@@ -219,8 +243,20 @@ test.describe('WP-17.16 Horizontal Alignment, Form Actions, Pager, Credential & 
         ha3Violations.push(...res.ha3);
         ha4Violations.push(...res.ha4);
         ha5Violations.push(...res.ha5);
+        haCounts.HA1 += res.counts.HA1;
+        haCounts.HA2 += res.counts.HA2;
+        haCounts.HA3 += res.counts.HA3;
+        haCounts.HA4 += res.counts.HA4;
+        haCounts.HA5 += res.counts.HA5;
       }
     }
+
+    console.log('=== WP-17.16/18 HA1-HA5 PAIR COUNTS ===', JSON.stringify(haCounts));
+    expect(haCounts.HA1).toBeGreaterThan(0);
+    expect(haCounts.HA2).toBeGreaterThan(0);
+    expect(haCounts.HA3).toBeGreaterThan(0);
+    expect(haCounts.HA4).toBeGreaterThan(0);
+    expect(haCounts.HA5).toBeGreaterThan(0);
 
     expect(ha1Violations, `K36 (HA1) Header alignment violations:\n${ha1Violations.slice(0, 20).join('\n')}`).toEqual([]);
     expect(ha2Violations, `K37 (HA2) Trailing-cluster right-edge violations:\n${ha2Violations.slice(0, 20).join('\n')}`).toEqual([]);

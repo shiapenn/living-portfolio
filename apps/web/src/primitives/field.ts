@@ -12,11 +12,13 @@ export interface SelectOptionGroup {
 }
 
 export interface FieldProps {
-  kind: 'input' | 'textarea' | 'select' | 'checkbox' | 'radio';
+  kind: 'input' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'file';
   id: string;
   name: string;
   label: string;
   inputType?: 'text' | 'password' | 'email' | 'url' | 'date' | 'search' | 'number';
+  accept?: string;
+  buttonLabel?: string;
   value?: string;
   placeholder?: string;
   rows?: number;
@@ -60,6 +62,22 @@ export function renderField(props: FieldProps): string {
   }
 
   const extraAttrs = props.attributes ? ` ${props.attributes}` : '';
+  if (props.kind === 'file') {
+    const acceptAttr = props.accept ? ` accept="${escapeHtml(props.accept)}"` : '';
+    const fileLabel = props.buttonLabel ?? 'Choose file';
+    const fileName = props.value || 'No file chosen';
+    return `<div data-c="Field" data-variant="file" data-rel="field" class="${escapeHtml(wrapperClass)}">
+  <label class="lp-field-label" for="${escapeHtml(props.id)}" data-rel="label" data-purpose="label">${escapeHtml(props.label)}${props.required ? ' <span class="lp-field-required" aria-hidden="true">*</span>' : ''}</label>
+  <div data-rel="control" class="lp-field-file-row">
+    <input type="file" id="${escapeHtml(props.id)}" name="${escapeHtml(props.name)}" class="lp-sr-only lp-field-file-input"${acceptAttr}${requiredAttr}${disabledAttr}${invalidAttr}${describedByAttr}${extraAttrs} />
+    <label for="${escapeHtml(props.id)}" class="lp-btn lp-btn-secondary lp-field-file-trigger"><span>${escapeHtml(fileLabel)}</span></label>
+    <span id="${escapeHtml(props.id)}-filename" class="lp-caption lp-field-file-name">${escapeHtml(fileName)}</span>
+  </div>
+  ${props.help ? `<p data-rel="help" data-purpose="helper" class="lp-field-help" id="${escapeHtml(helpId)}">${escapeHtml(props.help)}</p>` : ''}
+  ${props.error ? `<p class="lp-field-error" data-purpose="feedback" id="${escapeHtml(errorId)}" role="alert">${escapeHtml(props.error)}</p>` : ''}
+</div>`;
+  }
+
   let controlHtml = '';
   if (props.kind === 'textarea') {
     const rows = Math.max(6, props.rows ?? 6);

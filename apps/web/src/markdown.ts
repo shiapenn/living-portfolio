@@ -5,12 +5,10 @@
  * fenced code blocks, lists, blockquotes, tables, and inline syntax.
  */
 
+import { extractInlineImages, parseStandaloneImageLine, renderMarkdownImage, renderVideoDirectiveBlock, type MarkdownMediaOptions } from './markdown-media.js';
+
 function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function sanitizeUrl(rawUrl: string): string | null {
@@ -180,18 +178,12 @@ export function sanitizeHtml(html: string): string {
 /**
  * Renders inline markdown constructs (bold, italic, code, links, images).
  */
-export function renderInlineMarkdown(text: string): string {
-  let out = escapeHtml(text);
+export function renderInlineMarkdown(text: string, options?: MarkdownOptions): string {
+  const { raw, imgTokens } = extractInlineImages(text, options);
+  let out = escapeHtml(raw);
 
   // Fenced inline code `code`
   out = out.replace(/`([^`]+)`/g, (_m, code) => `<code class="inline-code">${code}</code>`);
-
-  // Images: ![alt](url)
-  out = out.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_m, alt, rawUrl) => {
-    const safe = sanitizeUrl(rawUrl);
-    if (!safe) return escapeHtml(alt);
-    return `<img src="${escapeHtml(safe)}" alt="${escapeHtml(alt)}" loading="lazy" class="reading-image" />`;
-  });
 
   // Links: [text](url)
   out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label, rawUrl) => {
@@ -212,10 +204,13 @@ export function renderInlineMarkdown(text: string): string {
   out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
   out = out.replace(/\b_([^_]+)_\b/g, '<em>$1</em>');
 
+  for (let idx = 0; idx < imgTokens.length; idx++) {
+    out = out.replace(`\u0000IMG${idx}\u0000`, imgTokens[idx]);
+  }
   return out;
 }
 
-export interface MarkdownOptions {
+export interface MarkdownOptions extends MarkdownMediaOptions {
   /**
    * Whether to demote headings so the entry body never overrides page h1:
    * # -> h2, ## -> h3, ### -> h4, etc. Defaults to true.
@@ -239,6 +234,28 @@ export function renderMarkdown(md: string, options?: MarkdownOptions): string {
 
     // Empty line
     if (!line.trim()) {
+      i++;
+      continue;
+    }
+
+    // 0a. Video container directive: :::video{...} ... :::
+    if (line.trim().startsWith(':::video{')) {
+      const header = line;
+      i++;
+      while (i < lines.length && lines[i].trim() !== ':::') {
+        i++;
+      }
+      if (i < lines.length && lines[i].trim() === ':::') i++;
+      const renderedVideo = renderVideoDirectiveBlock(header, options);
+      if (renderedVideo) blocks.push(renderedVideo);
+      continue;
+    }
+
+    // 0b. Standalone Markdown image: ![alt](url "caption")
+    const imgMatch = parseStandaloneImageLine(line);
+    if (imgMatch) {
+      const rendered = renderMarkdownImage(imgMatch.alt, imgMatch.url, imgMatch.caption, options, false);
+      blocks.push(rendered.startsWith('<figure') ? rendered : `<p>${rendered}</p>`);
       i++;
       continue;
     }
@@ -347,6 +364,8 @@ export function renderMarkdown(md: string, options?: MarkdownOptions): string {
     while (
       i < lines.length &&
       lines[i].trim() &&
+      !lines[i].trim().startsWith(':::video{') &&
+      !parseStandaloneImageLine(lines[i]) &&
       !lines[i].trim().startsWith('```') &&
       !lines[i].match(/^#{1,6}\s+/) &&
       !lines[i].trim().startsWith('>') &&
@@ -359,7 +378,7 @@ export function renderMarkdown(md: string, options?: MarkdownOptions): string {
     }
     if (paraLines.length > 0) {
       const paraText = paraLines.join(' ');
-      blocks.push(`<p>${renderInlineMarkdown(paraText)}</p>`);
+      blocks.push(`<p>${renderInlineMarkdown(paraText, options)}</p>`);
     }
   }
 

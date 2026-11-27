@@ -111,6 +111,37 @@ input[type="date"].lp-input {
   color: var(--lp-color-role-danger-fg);
 }
 
+.lp-field-file-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--lp-space-inline-button-button);
+  margin: 0;
+}
+
+.lp-field-file-trigger {
+  min-width: var(--lp-size-btn-action-min);
+}
+
+.lp-field-file-row:has(.lp-field-file-input:focus-visible) .lp-field-file-trigger {
+  outline: var(--lp-border-focus) solid var(--focus-ring);
+  outline-offset: var(--lp-border-focus);
+}
+
+.lp-field-file-name {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@container (max-width: __LP_BP_COMPACT_MAX__) {
+  .lp-field-file-trigger {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 .lp-gallery {
   display: flex;
   flex-direction: column;

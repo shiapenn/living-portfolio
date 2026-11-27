@@ -20,6 +20,7 @@ import {
 } from '../../../components/index.js';
 import { type StructureInspectorData } from '../../../patterns/structure-panel.js';
 import { EDITOR_STRINGS } from '../../../strings/admin/editor.js';
+import { renderEditorMediaDialog } from './editor-media-dialog.js';
 
 export function renderDraftAndOfflineBanners(): string {
   return `<div id="admin-offline-banner" data-c="Notice" class="lp-notice lp-notice-warn" hidden>
@@ -146,6 +147,7 @@ ${renderTabs({
       secondary: { id: 'ref-delete-cancel', label: EDITOR_STRINGS.deleteDialog.cancel, variant: 'secondary', dataAttrs: { 'lp-dialog-close': 'true' } },
     }),
   })}
+  ${renderEditorMediaDialog()}
   ${renderDrawer({
     id: 'ref-structure-drawer',
     title: EDITOR_STRINGS.structureDrawer.title,

@@ -165,6 +165,26 @@ ${footerSlotHtml}    <div class="pub-footer-row">
           try { localStorage.setItem('strata-theme', currentTheme); } catch (_) {}
         });
       }
+
+      document.addEventListener('click', function(ev) {
+        const target = ev.target && ev.target.closest ? ev.target.closest('.pub-embed-load-btn') : null;
+        if (!target) return;
+        const gate = target.closest('.pub-embed-gate');
+        if (!gate || gate.getAttribute('data-embed-state') === 'loaded') return;
+        const src = gate.getAttribute('data-embed-src');
+        const label = gate.getAttribute('data-embed-title') || 'Embedded video';
+        if (!src) return;
+        const iframe = document.createElement('iframe');
+        iframe.className = 'pub-embed-frame';
+        iframe.setAttribute('src', src);
+        iframe.setAttribute('title', label);
+        iframe.setAttribute('referrerpolicy', 'no-referrer');
+        iframe.setAttribute('allow', 'fullscreen');
+        iframe.setAttribute('allowfullscreen', '');
+        gate.innerHTML = '';
+        gate.setAttribute('data-embed-state', 'loaded');
+        gate.appendChild(iframe);
+      });
     })();
   </script>
 ${options?.clientScript ? `  <script type="module" src="${escapeHtml(options.clientScript)}"${nonceAttr}></script>\n` : ''}</body>

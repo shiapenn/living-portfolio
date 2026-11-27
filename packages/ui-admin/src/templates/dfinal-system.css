@@ -94,13 +94,17 @@ html[data-theme-switching], html[data-theme-switching] * { transition: none !imp
 .lp-dialog-panel {
   container-type: inline-size;
   padding: var(--lp-space-inset-dialog);
+  max-height: calc(100vh - var(--lp-size-control-xs));
+  overflow-y: auto;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: var(--lp-space-stack-dialog-body-to-actionbar);
 }
 .lp-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: var(--lp-space-stack-label-to-control); padding: 0; }
 .lp-dialog-body { padding: 0; }
-.lp-dialog-footer, .lp-dialog-panel .lp-action-bar { display: flex; flex-direction: column; align-items: flex-start; gap: var(--lp-space-inline-button-button); width: 100%; }
+.lp-dialog-footer { display: flex; flex-direction: column; align-items: stretch; gap: var(--lp-space-proximity-3); width: 100%; }
+.lp-dialog-panel .lp-action-bar { display: flex; flex-direction: column; align-items: flex-start; gap: var(--lp-space-inline-button-button); width: 100%; }
 .lp-dialog-footer .lp-btn, .lp-dialog-panel .lp-action-bar .lp-btn {
   width: auto;
   min-width: var(--lp-size-btn-action-min);

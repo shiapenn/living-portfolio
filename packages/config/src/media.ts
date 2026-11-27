@@ -58,6 +58,15 @@ export const MEDIA_DEPLOY_SETTINGS_METADATA = [
     public: false,
   },
   {
+    key: 'MEDIA_EMBED_ALLOWED_HOSTS',
+    category: 'deploy' as const,
+    description: 'Comma-separated allowlist of external video embed hosts gated behind click consent (WP-18.4)',
+    defaultValue: 'youtube-nocookie.com,player.vimeo.com',
+    exampleValue: 'youtube-nocookie.com,player.vimeo.com',
+    secret: false,
+    public: false,
+  },
+  {
     key: 'MEDIA_S3_BUCKET',
     category: 'deploy' as const,
     description: 'S3-compatible bucket name when MEDIA_STORAGE_BACKEND=s3 (D-STORAGE)',
@@ -116,6 +125,9 @@ export const MEDIA_CONFIG_SCHEMA_SHAPE = {
   MEDIA_ALLOWED_MIME_TYPES: z
     .string()
     .default('image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm'),
+  MEDIA_EMBED_ALLOWED_HOSTS: z
+    .string()
+    .default('youtube-nocookie.com,player.vimeo.com'),
   MEDIA_S3_BUCKET: z.string().default(''),
   MEDIA_S3_ENDPOINT: z.string().default(''),
   MEDIA_S3_REGION: z.string().default('auto'),
@@ -144,4 +156,57 @@ export function resolveMediaDirFrom(
     } catch {}
   }
   return target;
+}
+
+export function parseEmbedAllowedHosts(raw?: string): string[] {
+  const source = typeof raw === 'string' && raw.trim() ? raw : 'youtube-nocookie.com,player.vimeo.com';
+  return Array.from(
+    new Set(
+      source
+        .split(',')
+        .map((h) => h.trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+}
+
+export function isAllowedEmbedUrl(rawUrl: string, allowedHosts?: readonly string[]): { ok: boolean; url: string; host: string } {
+  try {
+    const parsed = new URL(rawUrl.trim());
+    const host = parsed.hostname.toLowerCase();
+    const isLocalHost = host === '127.0.0.1' || host === 'localhost';
+    if (parsed.protocol !== 'https:' && !(isLocalHost && parsed.protocol === 'http:')) {
+      return { ok: false, url: '', host };
+    }
+    const hosts = allowedHosts ?? parseEmbedAllowedHosts();
+    const bareHost = host.replace(/^www\./, '');
+    const matched = hosts.some((allowed) => {
+      const clean = allowed.toLowerCase().replace(/^https?:\/\//, '').split('/')[0];
+      const cleanHostname = clean.split(':')[0];
+      if (clean.includes(':')) return parsed.host.toLowerCase() === clean;
+      return host === cleanHostname || bareHost === cleanHostname;
+    });
+    return { ok: matched, url: matched ? parsed.toString() : '', host };
+  } catch {
+    return { ok: false, url: '', host: '' };
+  }
+}
+
+export function buildEmbedFrameSrc(rawHosts?: string): string {
+  const hosts = parseEmbedAllowedHosts(rawHosts);
+  if (hosts.length === 0) return "'none'";
+  const sources = new Set<string>();
+  for (const h of hosts) {
+    const clean = h.replace(/^https?:\/\//, '').split('/')[0];
+    if (clean.startsWith('127.0.0.1') || clean.startsWith('localhost')) {
+      sources.add(`http://${clean}`);
+      sources.add(`https://${clean}`);
+    } else {
+      sources.add(`https://${clean}`);
+      if (!clean.startsWith('www.') && clean.split('.').length === 2) {
+        sources.add(`https://www.${clean}`);
+      }
+    }
+  }
+  return Array.from(sources).join(' ');
 }

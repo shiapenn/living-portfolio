@@ -45,9 +45,95 @@ export function parseInlineMarkdown(text: string): PMJsonNode[] {
   return nodes;
 }
 
+const MEDIA_PATH_RE = /^\/api\/media\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function unescapeMdQuoted(val: string): string {
+  let out = '';
+  for (let i = 0; i < val.length; i++) {
+    if (val[i] === '\\' && i + 1 < val.length) {
+      out += val[i + 1];
+      i++;
+    } else {
+      out += val[i];
+    }
+  }
+  return out;
+}
+
+/** Linear O(n) parser for standalone Markdown images: ![alt](url) or ![alt](url "caption"). */
+export function parseStandaloneImageLine(
+  line: string
+): { alt: string; url: string; caption?: string } | null {
+  const s = line.trim();
+  if (!s.startsWith('![') || !s.endsWith(')')) return null;
+  let i = 2;
+  let altRaw = '';
+  while (i < s.length) {
+    if (s[i] === '\\' && i + 1 < s.length) {
+      altRaw += s[i] + s[i + 1];
+      i += 2;
+      continue;
+    }
+    if (s[i] === ']') break;
+    altRaw += s[i];
+    i++;
+  }
+  if (i >= s.length - 2 || s[i] !== ']' || s[i + 1] !== '(') return null;
+  const inner = s.slice(i + 2, s.length - 1).trim();
+  if (!inner) return null;
+  let urlEnd = 0;
+  while (urlEnd < inner.length && inner.charCodeAt(urlEnd) > 32) urlEnd++;
+  const url = inner.slice(0, urlEnd);
+  if (!url) return null;
+  const rest = inner.slice(urlEnd).trim();
+  if (!rest) {
+    return { alt: unescapeMdQuoted(altRaw), url };
+  }
+  if (rest.length >= 2 && rest.startsWith('"') && rest.endsWith('"')) {
+    return { alt: unescapeMdQuoted(altRaw), url, caption: unescapeMdQuoted(rest.slice(1, -1)) };
+  }
+  return null;
+}
+
+/** Linear O(n) parser for directive attributes: key="value". */
+export function parseDirectiveAttrs(attrBlock: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  let i = 0;
+  const len = attrBlock.length;
+  while (i < len) {
+    while (i < len && attrBlock.charCodeAt(i) <= 32) i++;
+    const keyStart = i;
+    while (i < len && /[a-zA-Z0-9_-]/.test(attrBlock[i])) i++;
+    const key = attrBlock.slice(keyStart, i);
+    if (!key) {
+      i++;
+      continue;
+    }
+    while (i < len && attrBlock.charCodeAt(i) <= 32) i++;
+    if (i >= len || attrBlock[i] !== '=') continue;
+    i++;
+    while (i < len && attrBlock.charCodeAt(i) <= 32) i++;
+    if (i >= len || attrBlock[i] !== '"') continue;
+    i++;
+    let val = '';
+    while (i < len && attrBlock[i] !== '"') {
+      if (attrBlock[i] === '\\' && i + 1 < len) {
+        val += attrBlock[i + 1];
+        i += 2;
+      } else {
+        val += attrBlock[i];
+        i++;
+      }
+    }
+    if (i < len && attrBlock[i] === '"') i++;
+    out[key] = val;
+  }
+  return out;
+}
+
 /**
  * Parse Markdown into a Tiptap/ProseMirror JSON document.
- * Preserves future `:::columns` directives, callouts, tables, code blocks, lists, quotes, headings, and paragraphs losslessly.
+ * Preserves future `:::columns` directives, video directives, media images, callouts, tables, code blocks, lists, quotes, headings, and paragraphs losslessly.
  */
 export function markdownToTiptapDoc(md: string): PMJsonNode {
   const norm = normalizeMarkdown(md);
@@ -67,8 +153,9 @@ export function markdownToTiptapDoc(md: string): PMJsonNode {
       continue;
     }
 
-    // 1. Container directive (:::columns ... :::)
+    // 1. Container directive (:::video or :::columns ... :::)
     if (line.startsWith(':::')) {
+      const videoHeader = /^:::video\{(.*)\}\s*$/.exec(line.trim());
       const dirLines: string[] = [line];
       let depth = 1;
       i++;
@@ -82,7 +169,38 @@ export function markdownToTiptapDoc(md: string): PMJsonNode {
         }
         i++;
       }
+      if (videoHeader && dirLines.length >= 2) {
+        const attrs = parseDirectiveAttrs(videoHeader[1]);
+        const isEmbed = Boolean(attrs.embed);
+        blocks.push({
+          type: 'mediaVideo',
+          attrs: {
+            mode: isEmbed ? 'embed' : 'upload',
+            src: isEmbed ? '' : (attrs.src ?? ''),
+            embedUrl: isEmbed ? (attrs.embed ?? '') : '',
+            description: attrs.description ?? '',
+            caption: attrs.caption ?? '',
+          },
+        });
+        continue;
+      }
       blocks.push({ type: 'directiveBlock', attrs: { rawMd: dirLines.join('\n') } });
+      continue;
+    }
+
+    // 1b. Standalone /api/media/:id image block
+    const imgMatch = parseStandaloneImageLine(line);
+    if (imgMatch && MEDIA_PATH_RE.test(imgMatch.url)) {
+      blocks.push({
+        type: 'mediaImage',
+        attrs: {
+          src: imgMatch.url,
+          alt: imgMatch.alt,
+          caption: imgMatch.caption ?? '',
+          decorative: imgMatch.alt === '',
+        },
+      });
+      i++;
       continue;
     }
 
@@ -204,6 +322,7 @@ export function markdownToTiptapDoc(md: string): PMJsonNode {
       i < lines.length &&
       lines[i].trim() !== '' &&
       !lines[i].startsWith(':::') &&
+      !(() => { const m = parseStandaloneImageLine(lines[i]); return Boolean(m && MEDIA_PATH_RE.test(m.url)); })() &&
       !lines[i].startsWith('```') &&
       !lines[i].startsWith('>') &&
       !/^(#{1,3})\s+/.test(lines[i]) &&

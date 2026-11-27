@@ -256,7 +256,7 @@ items:
     expected_minutes: 55
     gate: none
     acceptance: Paste/drop/pick image upload, alt-text prompt, captions, lazy loading, consent-gated video embeds, CSP from config, public rendering + E2E
-    status: ready
+    status: done
 
   - id: WP-18.5
     title: Columns container directive in parser, renderer and editor (D-EDITOR-3)
@@ -492,14 +492,14 @@ items:
     status: ready
 
   - id: WP-20.3
-    title: Accessibility sweep (axe across every route, keyboard-only journeys, shortcut toggle; UX-24)
+    title: Accessibility sweep (axe across every route, keyboard-only journeys, shortcut toggle, video .vtt captions track; UX-24)
     track: core
     type: functional
     depends_on: [WP-20.2]
     size: M
     expected_minutes: 50
     gate: none
-    acceptance: Zero serious/critical axe violations across all routes, keyboard-only journeys pass, triage single-key shortcut toggle (UX-24) + E2E
+    acceptance: Zero serious/critical axe violations across all routes, keyboard-only journeys pass, triage single-key shortcut toggle (UX-24), deferred WP-18.4 video .vtt captions track support + E2E
     status: ready
 
   - id: WP-20.4

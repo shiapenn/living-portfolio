@@ -195,6 +195,7 @@
 | `A187` | wp-1716-alignment-form-actions | `active` | [A187-wp-1716-alignment-form-actions.md](execution-reports/A187-wp-1716-alignment-form-actions.md) | — |
 | `A188` | wp-183-media-api | `active` | [A188-wp-183-media-api.md](execution-reports/A188-wp-183-media-api.md) | — |
 | `A189` | wp-183a-media-hardening | `active` | [A189-wp-183a-media-hardening.md](execution-reports/A189-wp-183a-media-hardening.md) | — |
+| `A190` | WP-18.4 Editor Media And Public Rendering | `active` | [A190-wp-184-editor-media-and-public-rendering.md](execution-reports/A190-wp-184-editor-media-and-public-rendering.md) | — |
 
 ## Handover Snapshots (Class H)
 
@@ -305,4 +306,5 @@
 | `L062` | Admin Design Audit Protocol (D8) | `active` | [audit-protocol.md](design/audit-protocol.md) | — |
 | `L063` | Admin Page Archetypes (D1) | `active` | [archetypes.md](design/archetypes.md) | — |
 | `L064` | Admin Interaction Conventions (D5) | `active` | [interaction.md](design/interaction.md) | — |
+| `L065` | Public Media and Consent-Gated Embed Briefs | `active` | [public-media-brief.md](design/public-media-brief.md) | — |
 
