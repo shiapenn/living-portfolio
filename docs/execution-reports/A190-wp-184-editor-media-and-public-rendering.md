@@ -6,7 +6,7 @@
 | Date | 2026-11-27 |
 | Author | A (Implementer) |
 | Task ID | `WP-18.4` |
-| Evidence SHA | `214f8cac7df0b1122b38973be83eed73cb7095f2` |
+| Evidence SHA | `4ee586f871f8bb91891eea0acadec91dbcc03420` |
 | CI run | Pending PR CI (local `pnpm verify` 16/16, `wp16n:verify` 11/11, `design:audit`, `--self-test`, K22 872 pairs / 0 drift, HA1-HA5 0 violations, `wp18-4-editor-media.spec.ts` 2/2 green; 7/7 behavioural canaries proven failing on `8a9d6bd` in isolated worktree) |
 
 ---
@@ -60,6 +60,7 @@ Delivered `WP-18.4` — Images and video in editor + public Markdown rendering:
 - `apps/web/src/client/admin/editor-page.ts`
 - `apps/web/src/client/admin/tiptap-editor.ts`
 - `apps/web/src/client/admin/tiptap-nodes.ts`
+- `apps/web/src/components/feedback.ts`
 - `apps/web/src/editor/block-registry.ts`
 - `apps/web/src/editor/markdown-bridge.ts`
 - `apps/web/src/editor/wp18-4-media.test.ts`
@@ -82,6 +83,7 @@ Delivered `WP-18.4` — Images and video in editor + public Markdown rendering:
 - `docs/design/screen-brief.md`
 - `docs/doc-registry.json`
 - `docs/execution-reports/A189-wp-183a-media-hardening.md`
+- `docs/execution-reports/A190-wp-184-editor-media-and-public-rendering.md`
 - `docs/plans/backlog.yml`
 - `packages/config/src/index.ts`
 - `packages/config/src/media.ts`
