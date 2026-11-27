@@ -2265,5 +2265,13 @@
     "path": "docs/execution-reports/A190-wp-184-editor-media-and-public-rendering.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A191",
+    "title": "WP-18.5 Columns Container Directive",
+    "class": "A",
+    "path": "docs/execution-reports/A191-wp-185-columns-container-directive.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

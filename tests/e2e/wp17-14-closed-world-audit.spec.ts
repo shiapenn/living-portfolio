@@ -178,6 +178,9 @@ test.describe('WP-17.14 Generic Closed-World Audit (K22–K27)', () => {
             if (parent.classList.contains('lp-gap-group')) return 'sibling->action-group';
             if (parent.classList.contains('lp-gap-related')) return 'field->field';
             if (parent.classList.contains('lp-gap-tight')) return 'label->control';
+            if (parent.classList.contains('lp-editor-columns') || parent.classList.contains('pub-columns')) {
+              return 'field->field';
+            }
             if (parent.classList.contains('lp-entries-toolbar') || parent.classList.contains('lp-filter-bar') || parent.querySelector('[data-c="Field"]')) return 'field->field';
             return null;
           };

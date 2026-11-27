@@ -19,3 +19,9 @@ Public entry rendering operates in expressive mode on `@living-portfolio/ui-publ
 - **Zero-Request Invariant:** Before click (`data-embed-state="unloaded"`), SSR HTML contains **zero** `<iframe>`, **zero** remote thumbnail `<img>`, and **zero** provider `<script>`. No network request leaves the browser to any third-party host until `.pub-embed-load-btn` is activated.
 - **Activation Behaviour:** Clicking `Load video` (`Enter`/`Space`/pointer) replaces the placeholder contents with `<iframe class="pub-embed-frame" src="..." title="..." loading="lazy" referrerpolicy="no-referrer" allow="fullscreen" allowfullscreen>` and sets `data-embed-state="loaded"`. CSP `frame-src` is derived strictly from `MEDIA_EMBED_ALLOWED_HOSTS`.
 - **Tokens used:** `--pub-color-surface-paper`, `--pub-border-hairline`, `--pub-color-border-rule`, `--pub-radius-card`, `--pub-space-card-pad`, `--pub-space-stack-sm`, `--pub-space-stack-md`, `--pub-font-family-display`, `--pub-font-family-ui`, `--pub-font-size-heading-sm`, `--pub-font-size-caption`, `--pub-color-text-primary`, `--pub-color-text-secondary`.
+
+## 3. `.pub-columns` and `.pub-column` (`WP-18.5`)
+
+- **Purpose:** Expressive-mode multi-column reading container rendered from `:::columns{cols=2..4}` and nested `:::column` directives.
+- **Responsive & Accessibility:** Mobile-first single-column grid (`grid-template-columns: minmax(0, 1fr)`) expanding to 2, 3, or 4 equal columns on wider viewports while preserving strict DOM source reading order. Supports nested `.pub-columns` grids.
+- **Tokens used:** `--pub-space-stack-lg`, `--pub-space-stack-md`, `--pub-space-stack-sm`.

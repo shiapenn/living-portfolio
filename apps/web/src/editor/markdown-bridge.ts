@@ -4,6 +4,7 @@ import {
   type PMJsonMark,
   type PMJsonNode,
 } from './block-registry.js';
+import { consumeContainerDirective, parseColumnsHeader, splitColumnsDirectiveLines } from './columns-parser.js';
 
 export function normalizeMarkdown(md: string): string {
   return md.replace(/\r\n/g, '\n').replace(/\n+$/, '').trimEnd();
@@ -156,19 +157,9 @@ export function markdownToTiptapDoc(md: string): PMJsonNode {
     // 1. Container directive (:::video or :::columns ... :::)
     if (line.startsWith(':::')) {
       const videoHeader = /^:::video\{(.*)\}\s*$/.exec(line.trim());
-      const dirLines: string[] = [line];
-      let depth = 1;
-      i++;
-      while (i < lines.length && depth > 0) {
-        const cur = lines[i];
-        dirLines.push(cur);
-        if (cur.trim() === ':::') {
-          depth--;
-        } else if (cur.trim().startsWith(':::')) {
-          depth++;
-        }
-        i++;
-      }
+      const colsHeader = parseColumnsHeader(line);
+      const { rawLines: dirLines, nextIdx } = consumeContainerDirective(lines, i);
+      i = nextIdx;
       if (videoHeader && dirLines.length >= 2) {
         const attrs = parseDirectiveAttrs(videoHeader[1]);
         const isEmbed = Boolean(attrs.embed);
@@ -183,6 +174,25 @@ export function markdownToTiptapDoc(md: string): PMJsonNode {
           },
         });
         continue;
+      }
+      if (colsHeader && dirLines.length >= 2) {
+        const inner = dirLines.slice(1, dirLines[dirLines.length - 1].trim() === ':::' ? -1 : undefined);
+        const colSections = splitColumnsDirectiveLines(inner);
+        if (colSections.length > 0) {
+          const columnNodes: PMJsonNode[] = colSections.map((colLines) => {
+            const parsed = markdownToTiptapDoc(colLines.join('\n'));
+            return {
+              type: 'column',
+              content: parsed.content?.length ? parsed.content : [{ type: 'paragraph', content: [] }],
+            };
+          });
+          blocks.push({
+            type: 'columns',
+            attrs: { cols: colsHeader.cols },
+            content: columnNodes,
+          });
+          continue;
+        }
       }
       blocks.push({ type: 'directiveBlock', attrs: { rawMd: dirLines.join('\n') } });
       continue;

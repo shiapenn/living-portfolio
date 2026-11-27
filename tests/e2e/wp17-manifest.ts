@@ -362,6 +362,16 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     markerSelector: '.lp-editor-media-block[data-media-node="image"]',
   },
   {
+    id: 'public-entry-columns',
+    route: '/work/:slug',
+    archetype: 'detail',
+    stateLabel: 'Public entry with columns (.pub-columns)',
+    assertion: 'Public columns directive renders responsive .pub-columns grid preserving reading order',
+    checkIds: ['K22', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
+    fixtureKey: 'mediaEntrySlug',
+    markerSelector: '[data-pub-columns="true"]',
+  },
+  {
     id: 'public-entry-image',
     route: '/work/:slug',
     archetype: 'detail',
@@ -542,6 +552,8 @@ export async function seedManifestFixtures(page: Page): Promise<ManifestFixtures
     `:::video{src="/api/media/${mediaVideoId}" description="Synthetic deployment walkthrough" caption="Local clip"}\n:::`,
     '',
     ':::video{embed="https://stub.invalid/embed/demo" description="Consent-gated stub talk" caption="Stub host demo"}\n:::',
+    '',
+    ':::columns{cols=2}\n:::column\nColumn one summary.\n:::\n:::column\nColumn two summary.\n:::\n:::',
   ].join('\n');
 
   let mediaEntryId = '';
