@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, resolve, sep } from 'node:path';
 
 export interface ArchivedMediaRecord {
   id: string;
@@ -44,10 +44,11 @@ export async function exportMediaArchivePayload(
 
   if (mediaDir && existsSync(mediaDir)) {
     const root = resolve(mediaDir);
+    const rootPrefix = root.endsWith(sep) ? root : `${root}${sep}`;
     for (const asset of assets) {
       if (!asset.storage_key || blobs[asset.storage_key]) continue;
       const fullPath = resolve(root, asset.storage_key);
-      if (!fullPath.startsWith(root)) continue;
+      if (!fullPath.startsWith(rootPrefix)) continue;
       if (existsSync(fullPath)) {
         blobs[asset.storage_key] = readFileSync(fullPath).toString('base64');
       }
@@ -92,12 +93,13 @@ export async function restoreMediaArchivePayload(
 
   if (restoreMediaDir && payload.blobs && typeof payload.blobs === 'object') {
     const root = resolve(restoreMediaDir);
+    const rootPrefix = root.endsWith(sep) ? root : `${root}${sep}`;
     mkdirSync(root, { recursive: true });
     for (const [storageKey, b64] of Object.entries(payload.blobs)) {
       const cleanKey = storageKey.replace(/^\/+/, '');
       if (cleanKey.includes('..')) continue;
       const dest = resolve(root, cleanKey);
-      if (!dest.startsWith(root)) continue;
+      if (!dest.startsWith(rootPrefix)) continue;
       mkdirSync(dirname(dest), { recursive: true });
       writeFileSync(dest, Buffer.from(b64, 'base64'));
       blobCount++;

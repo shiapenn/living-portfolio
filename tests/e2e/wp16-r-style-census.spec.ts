@@ -263,6 +263,7 @@ test.describe('WP-16.L D-LAYOUT & D-MIN Style/Layout Census (every admin page & 
           }
           const rect = el.getBoundingClientRect();
           if (rect.width === 0 || rect.height === 0) continue;
+          if (el.classList.contains('lp-sr-only')) continue;
           const cs = getComputedStyle(el);
           if (cs.display === 'none' || cs.visibility === 'hidden') continue;
           els++;

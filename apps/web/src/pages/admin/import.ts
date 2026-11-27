@@ -107,7 +107,7 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
             <div data-c="Field" data-rel="field" class="lp-field lp-field-file">
               <label class="lp-field-label" for="import-files-input">Upload files</label>
               <div class="lp-field-file-row">
-                <input id="import-files-input" type="file" multiple accept=".md,.markdown,.txt,.html,.htm,.docx,.pdf,.zip" class="lp-field-file-input" />
+                <input id="import-files-input" type="file" multiple accept=".md,.markdown,.txt,.html,.htm,.docx,.pdf,.zip" class="lp-sr-only lp-field-file-input" />
                 <label class="lp-btn lp-btn-secondary lp-field-file-trigger" for="import-files-input">Choose files</label>
                 <span id="import-files-status" class="lp-field-file-name">Markdown, text, HTML, DOCX, PDF, or ZIP</span>
               </div>

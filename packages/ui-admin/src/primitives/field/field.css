@@ -112,12 +112,18 @@ input[type="date"].lp-input {
 }
 
 .lp-field-file-row {
+  position: relative;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--lp-space-inline-button-button);
   margin: 0;
+}
+
+.lp-field-file-input {
+  top: 0;
+  left: 0;
 }
 
 .lp-field-file-trigger {

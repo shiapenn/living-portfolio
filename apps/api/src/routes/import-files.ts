@@ -114,10 +114,10 @@ export function registerImportFileRoutes(
             }
           }
 
-          // Rewrite relative image references from ZIP bundles to uploaded /api/media/:id URIs
+          // Rewrite relative image references from ZIP bundles to uploaded /api/media/:id URIs (linear, no dynamic RegExp)
           for (const [imgName, uri] of mediaMap.entries()) {
-            const escName = imgName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            bodyMd = bodyMd.replace(new RegExp(`\\((?:[^)\\s]*/)?${escName}\\)`, 'g'), `(${uri})`);
+            bodyMd = bodyMd.split(`(${imgName})`).join(`(${uri})`);
+            bodyMd = bodyMd.split(`/${imgName})`).join(`(${uri})`);
           }
 
           documents.push({
