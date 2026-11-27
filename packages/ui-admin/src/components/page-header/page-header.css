@@ -3,19 +3,24 @@
  * ========================================================= */
 
 
-/* PageHeader (D-COMP #2, WP-17.15 V5) */
+/* PageHeader (D-COMP #2, WP-17.15 V5, WP-17.16 H1) */
 .lp-page-header-dcomp {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: var(--lp-space-proximity-4);
   margin: 0;
+  width: 100%;
 }
 
 .lp-page-header-main {
   display: flex;
   flex-direction: column;
   gap: var(--lp-space-stack-page-title-to-description);
+  width: 100%;
   min-width: 0;
+  align-self: stretch;
+  text-align: start;
 }
 
 .lp-page-header-back {

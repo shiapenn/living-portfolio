@@ -177,24 +177,30 @@
 }
 .lp-item {
   position: relative;
-  padding: var(--item-pad-y, var(--lp-space-inset-item-y)) var(--lp-space-inset-item-x);
+  padding: var(--item-pad-y, var(--lp-space-inset-item-y)) 0;
   border: 0;
 }
 .lp-item::before {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: var(--lp-radius-r2);
+  inset: 0 calc(-1 * var(--lp-space-inset-item-x));
+  border-radius: var(--lp-radius-container);
   background: transparent;
   z-index: var(--lp-z-base);
   pointer-events: none;
   transition: background-color var(--lp-motion-duration-fast) var(--lp-motion-easing-standard);
 }
+[data-theme-switching="true"] .lp-item::before {
+  transition: none;
+}
 .lp-item > * { position: relative; z-index: var(--lp-z-raised); }
-.lp-item:hover::before,
+.lp-item:hover::before {
+  background: var(--lp-color-fill-neutral-tint-2);
+  border-radius: var(--lp-radius-container);
+}
 .lp-item.is-selected::before {
-  background: var(--surface-control);
-  border-radius: var(--lp-radius-r2);
+  background: var(--lp-color-fill-accent-tint-1);
+  border-radius: var(--lp-radius-container);
 }
 
 /* D-SYS #2: Empty message regions take 0 height and 0 margin; remove stray hairlines */

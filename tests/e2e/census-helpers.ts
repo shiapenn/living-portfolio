@@ -874,7 +874,7 @@ export async function checkControlsRadiusTextButtonsSrOnly(page: Page): Promise<
 
     const controls = Array.from(
       document.querySelectorAll(
-        'button.lp-btn:not(.lp-btn-text), a.lp-btn:not(.lp-btn-text), input.lp-input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select.lp-select, .lp-segmented-control, .lp-choice-variant-segmented .lp-choice-list'
+        'button.lp-btn:not(.lp-btn-text):not(.lp-btn-icon), a.lp-btn:not(.lp-btn-text):not(.lp-btn-icon), input.lp-input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select.lp-select, .lp-segmented-control, .lp-choice-variant-segmented .lp-choice-list'
       )
     ).filter(isVis);
     for (const c of controls) {
@@ -1196,8 +1196,8 @@ export async function checkItemGeometryI8(page: Page, stateId = ''): Promise<{ p
       if (Math.abs(ir.left - lr.left) > 1 || Math.abs(ir.right - lr.right) > 1) {
         issues.push(`i8-item-bleed(${sid}): item=[${Math.round(ir.left)}..${Math.round(ir.right)}] list=[${Math.round(lr.left)}..${Math.round(lr.right)}]`);
       }
-      const isPlain = list.getAttribute('data-variant') === 'plain' || list.classList.contains('lp-list-plain');
-      const expectedInset = isPlain ? 0 : 8;
+      // WP-17.16 H3: All list items align text flush with the list content edge; hover/pressed bleeds outward via ::before
+      const expectedInset = 0;
       const title = item.querySelector<HTMLElement>('.lp-item-title');
       if (title) {
         const tr = title.getBoundingClientRect();
@@ -1779,8 +1779,9 @@ export async function checkListVariantsAndTextEdgesL2(page: Page, stateId = ''):
               listIssues.push(`l2-plain-not-flush(${sid}, ${listId}): titleLeft=${Math.round(tr.left)} expected=${Math.round(lr.left)}`);
             }
           } else if (variant === 'interactive') {
-            if (Math.abs(tr.left - (lr.left + 8)) > 1.5) {
-              listIssues.push(`l2-interactive-title-inset(${sid}, ${listId}): titleLeft=${Math.round(tr.left)} expected=${Math.round(lr.left + 8)}`);
+            // WP-17.16 H3: interactive item text aligns flush with list content edge; hover/pressed bleeds outward via ::before
+            if (Math.abs(tr.left - lr.left) > 1.5) {
+              listIssues.push(`l2-interactive-title-inset(${sid}, ${listId}): titleLeft=${Math.round(tr.left)} expected=${Math.round(lr.left)}`);
             }
           }
         }

@@ -7,7 +7,9 @@ export type ManifestStateAction =
   | 'account-recovery-codes'
   | 'account-totp-reenrol'
   | 'account-token-created'
-  | 'contradictions-found';
+  | 'contradictions-found'
+  | 'entries-paged-middle'
+  | 'entries-paged-last';
 
 export interface ManifestEntry {
   id: string;
@@ -51,6 +53,30 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     stateLabel: 'Entries list',
     assertion: 'List archetype with navigable Items, S1 internal rows, S3 padding',
     checkIds: ['K22', 'K23', 'K24', 'K27'],
+  },
+  {
+    id: 'entries-paged-first',
+    route: '/admin/entries?page=1',
+    archetype: 'list',
+    stateLabel: 'Entries list (Paged: first page)',
+    assertion: 'Pager on single row, prev disabled, next enabled, regular/compact tabular summary',
+    checkIds: ['K36', 'K37', 'K38', 'K39', 'K40', 'K41'],
+  },
+  {
+    id: 'entries-paged-middle',
+    route: '/admin/entries?page=2',
+    archetype: 'list',
+    stateLabel: 'Entries list (Paged: middle page)',
+    assertion: 'Pager on single row, prev enabled, next enabled, regular/compact tabular summary',
+    checkIds: ['K36', 'K37', 'K38', 'K39', 'K40', 'K41'],
+  },
+  {
+    id: 'entries-paged-last',
+    route: '/admin/entries?page=3',
+    archetype: 'list',
+    stateLabel: 'Entries list (Paged: last page)',
+    assertion: 'Pager on single row, prev enabled, next disabled, regular/compact tabular summary',
+    checkIds: ['K36', 'K37', 'K38', 'K39', 'K40', 'K41'],
   },
   {
     id: 'inbox',
@@ -305,10 +331,28 @@ export async function seedManifestFixtures(page: Page): Promise<ManifestFixtures
   await page.request.patch(`/api/book/${bConf.booking.id}`, { headers, data: { status: 'confirmed' } });
   await page.request.patch(`/api/book/${bDecl.booking.id}`, { headers, data: { status: 'declined' } });
 
-  // Get existing entries and seed dated contradictions so Contradictions (Found) is populated
-  const entriesRes = await page.request.get('/api/entries?visibility=all&limit=5', { headers });
+  // Ensure at least 25 entries exist so pagination has >= 3 pages (first, middle, last) for H5/K41
+  const entriesRes = await page.request.get('/api/entries?visibility=all&limit=50', { headers });
   const entriesData = await entriesRes.json().catch(() => ({ entries: [] }));
-  const list = entriesData.entries || [];
+  let list = entriesData.entries || [];
+  if (list.length < 25) {
+    const needed = 25 - list.length;
+    for (let i = 0; i < needed; i++) {
+      const idx = list.length + i + 1;
+      await page.request.post('/api/entries', {
+        headers,
+        data: {
+          title: `Architecture Note ${idx}`,
+          slug: `architecture-note-${idx}-${Date.now()}-${i}`,
+          profile: i % 3 === 0 ? 'work' : i % 3 === 1 ? 'note' : 'venture',
+          visibility: 'private',
+          body_md: `# Architecture Note ${idx}\n\nSeeded entry for multi-page pagination verification.`,
+        },
+      });
+    }
+    const refreshed = await (await page.request.get('/api/entries?visibility=all&limit=50', { headers })).json().catch(() => ({ entries: [] }));
+    list = refreshed.entries || list;
+  }
   const entryId = String(list[0]?.id || '');
 
   const existingConflicts = await (await page.request.get('/api/audit/topology-conflicts', { headers })).json().catch(() => ({ conflicts: [] }));
@@ -370,6 +414,22 @@ export async function navigateToManifestEntry(
         await btn.click();
         await page.waitForTimeout(800);
       }
+    }
+  } else if (entry.action === 'entries-paged-middle') {
+    const nextBtn = page.locator('#btn-entries-next');
+    if ((await nextBtn.isVisible()) && !(await nextBtn.isDisabled())) {
+      const summaryBefore = await page.locator('#entries-page-summary').textContent();
+      if (summaryBefore && /Page 1 of/.test(summaryBefore)) {
+        await nextBtn.click();
+        await page.waitForTimeout(400);
+      }
+    }
+  } else if (entry.action === 'entries-paged-last') {
+    const nextBtn = page.locator('#btn-entries-next');
+    for (let hop = 0; hop < 10; hop++) {
+      if (!(await nextBtn.isVisible()) || (await nextBtn.isDisabled())) break;
+      await nextBtn.click();
+      await page.waitForTimeout(300);
     }
   }
 }

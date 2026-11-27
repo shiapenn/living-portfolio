@@ -28,20 +28,6 @@
   max-width: none;
 }
 
-@media (min-width: __LP_BP_REGULAR__) {
-  .lp-action-bar-page {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  .lp-action-bar-page .lp-btn:not(.lp-btn-text) {
-    width: auto;
-    min-width: var(--lp-size-btn-action-min);
-  }
-}
-
 .lp-action-bar-page .lp-btn-text,
 .lp-action-bar-dialog .lp-btn-text,
 .lp-dialog-footer .lp-btn-text,

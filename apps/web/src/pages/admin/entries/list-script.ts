@@ -21,8 +21,8 @@ export const ENTRIES_LIST_SCRIPT = `<script>
   const delConfirmBtn = document.getElementById('btn-entries-delete-confirm');
   const delCancelBtn = document.getElementById('entries-delete-cancel');
 
-  let currentPage = 1;
-  let totalPages = 1;
+  let currentPage = Math.max(1, Number(paginationEl && paginationEl.getAttribute('data-current-page')) || 1);
+  let totalPages = Math.max(1, Number(paginationEl && paginationEl.getAttribute('data-total-pages')) || 1);
   let pendingDeleteId = '';
 
   const syncOffline = () => {
@@ -90,15 +90,33 @@ export const ENTRIES_LIST_SCRIPT = `<script>
       const params = new URLSearchParams({ visibility: vis, page: String(currentPage), limit: '10' });
       if (type) params.set('type', type);
       if (q) params.set('q', q);
-      const data = await apiClient('/api/entries?' + params.toString());
-      totalPages = data.totalPages || 1;
-      renderRows(data.entries || []);
+      const res = await apiClient('/api/entries?' + params.toString());
+      const data = res && typeof res.json === 'function' ? await res.json() : (res || {});
+      const entriesArr = Array.isArray(data.entries) ? data.entries : [];
+      const totalCount = typeof data.total === 'number' ? data.total : entriesArr.length;
+      totalPages = Math.max(1, data.totalPages || Math.ceil(totalCount / 10) || 1);
+      const resolvedPage = data.page || currentPage || 1;
+      renderRows(entriesArr);
       if (pageSummaryEl) {
-        pageSummaryEl.textContent = 'Page ' + (data.page || 1) + ' of ' + totalPages + ' (' + (data.total || 0) + ' total)';
+        const regEl = pageSummaryEl.querySelector('.lp-entries-pagination-regular');
+        const cmpEl = pageSummaryEl.querySelector('.lp-entries-pagination-compact');
+        if (regEl) regEl.textContent = 'Page ' + resolvedPage + ' of ' + totalPages + ' · ' + totalCount + ' total';
+        if (cmpEl) cmpEl.textContent = resolvedPage + ' / ' + totalPages;
+        if (!regEl && !cmpEl) pageSummaryEl.textContent = 'Page ' + resolvedPage + ' of ' + totalPages + ' · ' + totalCount + ' total';
       }
       if (prevBtn) prevBtn.disabled = currentPage <= 1;
       if (nextBtn) nextBtn.disabled = currentPage >= totalPages;
-      if (paginationEl) paginationEl.removeAttribute('hidden');
+      if (paginationEl) {
+        paginationEl.setAttribute('data-current-page', String(resolvedPage));
+        paginationEl.setAttribute('data-total-pages', String(totalPages));
+        if (totalPages <= 1) {
+          paginationEl.setAttribute('hidden', '');
+          paginationEl.classList.add('lp-is-hidden');
+        } else {
+          paginationEl.removeAttribute('hidden');
+          paginationEl.classList.remove('lp-is-hidden');
+        }
+      }
     } catch (_err) {
       if (errorEl) errorEl.removeAttribute('hidden');
     } finally {

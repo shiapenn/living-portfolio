@@ -305,7 +305,11 @@ export function createWebApp(options?: WebAppOptions) {
       })
     );
   });
-  app.get('/admin/entries', async (c) => c.html(await renderAdminEntriesListPage(client, { siteName: cfg.PUBLIC_SITE_NAME })));
+  app.get('/admin/entries', async (c) => {
+    const rawPage = Number(c.req.query('page') || 1);
+    const page = Number.isFinite(rawPage) && rawPage >= 1 ? Math.floor(rawPage) : 1;
+    return c.html(await renderAdminEntriesListPage(client, { siteName: cfg.PUBLIC_SITE_NAME, page }));
+  });
   app.get('/admin/entries/new', async (c) => {
     const html = await renderDedicatedEditorPage(client, { isNew: true, siteName: cfg.PUBLIC_SITE_NAME });
     return html ? c.html(html) : c.html(renderNotFoundPage(), 404);

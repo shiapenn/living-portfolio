@@ -365,6 +365,10 @@ export function renderComponentGalleryPage(options: GalleryOptions = {}): string
         })}
       </section>
 
+      <section id="gallery-pager-sample" class="lp-gallery-section">${renderSectionHeader({ title: 'Pagination (all states)' })}<div id="gallery-closeups-pager" class="lp-stack lp-gap-related">${[
+          [1, 5, true, false], [2, 5, false, false], [5, 5, false, true],
+        ].map(([p, t, dPrev, dNext]) => `<nav aria-label="Pagination page ${p}" class="lp-entries-pagination"><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-icon" aria-label="Previous page"${dPrev ? ' disabled' : ''}>${renderIcon('chevron-left', 20)}</button><span data-c="Text" data-variant="description" class="lp-entries-pagination-summary"><span class="lp-entries-pagination-regular">Page ${p} of ${t} · 48 total</span><span class="lp-entries-pagination-compact">${p} / ${t}</span></span><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-icon" aria-label="Next page"${dNext ? ' disabled' : ''}>${renderIcon('chevron-right', 20)}</button></nav>`).join('')}</div></section>
+
       <section id="gallery-credential-sample" class="lp-gallery-section" data-component="Credential">
         ${renderSectionHeader({ title: 'Credential (single | list)' })}
         <div class="lp-stack lp-gap-related">

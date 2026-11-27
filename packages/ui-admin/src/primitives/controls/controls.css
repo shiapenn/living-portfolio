@@ -206,7 +206,16 @@
   font-size: var(--lp-font-size-14);
   line-height: var(--lp-font-line-16);
   cursor: pointer;
-  var(--lp-motion-easing-standard), transform var(--lp-motion-duration-base) ease;
+  transition: background var(--lp-motion-duration-fast) var(--lp-motion-easing-standard), transform var(--lp-motion-duration-base) var(--lp-motion-easing-standard);
+}
+
+.lp-btn-icon {
+  width: var(--lp-size-hit-area);
+  height: var(--lp-size-hit-area);
+  min-width: var(--lp-size-hit-area);
+  min-height: var(--lp-size-hit-area);
+  padding: 0;
+  flex-shrink: 0;
 }
 
 .lp-icon-btn-ghost {
@@ -333,13 +342,20 @@ button.lp-chip.is-hover {
 }
 
 #account-totp-qr {
-  max-width: var(--lp-size-grid-card-min);
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  padding: var(--lp-space-proximity-3);
+  background: var(--lp-color-surface-raised);
+  border: var(--lp-border-hairline) solid var(--lp-color-border-hairline);
+  border-radius: var(--lp-radius-container);
 }
 
 #account-totp-qr svg {
   display: block;
-  width: 100%;
-  max-width: var(--lp-size-grid-card-min);
+  width: var(--lp-size-grid-card-min);
+  max-width: 100%;
   height: auto;
 }
 

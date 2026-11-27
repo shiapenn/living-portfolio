@@ -123,11 +123,14 @@ ${renderButton({ id: 'btn-entries-delete-confirm', label: ENTRIES_LIST_STRINGS.d
     ${renderList({ id: 'entries-list-region', variant: 'interactive', itemsHtml: rowsHtml })}
   </div>
 
-  <div id="entries-pagination" class="lp-entries-pagination">
-    ${renderButton({ id: 'btn-entries-prev', label: ENTRIES_LIST_STRINGS.pagination.prev, variant: 'secondary', size: 'sm', disabled: page <= 1 })}
-    ${renderText({ id: 'entries-page-summary', variant: 'caption', tag: 'span', className: 'lp-field-help', text: ENTRIES_LIST_STRINGS.pagination.summary(page, totalPages, total) })}
-    ${renderButton({ id: 'btn-entries-next', label: ENTRIES_LIST_STRINGS.pagination.next, variant: 'secondary', size: 'sm', disabled: page >= totalPages })}
-  </div>
+  <nav id="entries-pagination" aria-label="Pagination" data-current-page="${page}" data-total-pages="${totalPages}" class="lp-entries-pagination${totalPages <= 1 ? ' lp-is-hidden' : ''}"${totalPages <= 1 ? ' hidden' : ''}>
+    <button type="button" id="btn-entries-prev" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-icon" aria-label="${escapeHtml(ENTRIES_LIST_STRINGS.pagination.prev)}" title="${escapeHtml(ENTRIES_LIST_STRINGS.pagination.prev)}"${page <= 1 ? ' disabled' : ''}>${renderIcon('chevron-left', 20)}</button>
+    <span id="entries-page-summary" data-c="Text" data-variant="description" class="lp-entries-pagination-summary">
+      <span class="lp-entries-pagination-regular">${escapeHtml(ENTRIES_LIST_STRINGS.pagination.summary(page, totalPages, total))}</span>
+      <span class="lp-entries-pagination-compact">${escapeHtml(ENTRIES_LIST_STRINGS.pagination.compactSummary(page, totalPages))}</span>
+    </span>
+    <button type="button" id="btn-entries-next" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-icon" aria-label="${escapeHtml(ENTRIES_LIST_STRINGS.pagination.next)}" title="${escapeHtml(ENTRIES_LIST_STRINGS.pagination.next)}"${page >= totalPages ? ' disabled' : ''}>${renderIcon('chevron-right', 20)}</button>
+  </nav>
 
   ${deleteDialogHtml}
   ${ENTRIES_LIST_SCRIPT}`;

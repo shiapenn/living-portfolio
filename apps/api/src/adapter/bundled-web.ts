@@ -76,13 +76,16 @@ export function mountBundledWeb(
     };
     app.get('/admin', auth.requireAdminMiddleware(), async (c) => c.html(await renderTodayHandler(c)));
     app.get('/admin/today', auth.requireAdminMiddleware(), async (c) => c.html(await renderTodayHandler(c)));
-    app.get('/admin/entries', auth.requireAdminMiddleware(), async (c) =>
-      c.html(
+    app.get('/admin/entries', auth.requireAdminMiddleware(), async (c) => {
+      const rawPage = Number(c.req.query('page') || 1);
+      const page = Number.isFinite(rawPage) && rawPage >= 1 ? Math.floor(rawPage) : 1;
+      return c.html(
         await renderAdminEntriesListPage(repo, {
           answeringEnabled: runtimeState?.automatedAnsweringEnabled,
+          page,
         })
-      )
-    );
+      );
+    });
     app.get('/admin/entries/new', auth.requireAdminMiddleware(), async (c) => {
       const html = await renderDedicatedEditorPage(repo, {
         isNew: true,

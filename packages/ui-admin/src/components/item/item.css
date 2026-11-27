@@ -36,23 +36,55 @@
   gap: var(--lp-space-proximity-1);
 }
 
+/* H3: Text & hairlines align flush with content edge; hover/pressed/selected surface bleeds 8px outward via ::before */
 a.lp-item,
 .lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link),
 .lp-item.lp-state-hover,
 .lp-item.lp-state-active,
-.lp-item.lp-state-focus {
-  padding-inline: var(--lp-space-inset-item-x);
+.lp-item.lp-state-focus,
+.lp-item.is-selected {
+  isolation: isolate;
 }
 
-a.lp-item:hover,
-.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):hover,
-.lp-item.lp-state-hover {
+a.lp-item::before,
+.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link)::before,
+.lp-item.lp-state-hover::before,
+.lp-item.lp-state-active::before,
+.lp-item.lp-state-focus::before,
+.lp-item.is-selected::before {
+  content: '';
+  position: absolute;
+  inset: 0 calc(-1 * var(--lp-space-inset-item-x));
+  border-radius: var(--lp-radius-container);
+  background: transparent;
+  pointer-events: none;
+  z-index: var(--lp-z-base);
+  transition: background var(--lp-motion-duration-fast) var(--lp-motion-easing-standard);
+}
+
+[data-theme-switching="true"] .lp-item::before {
+  transition: none;
+}
+
+a.lp-item > *,
+.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link) > *,
+.lp-item.lp-state-hover > *,
+.lp-item.lp-state-active > *,
+.lp-item.lp-state-focus > *,
+.lp-item.is-selected > * {
+  position: relative;
+  z-index: var(--lp-z-raised);
+}
+
+a.lp-item:hover::before,
+.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):hover::before,
+.lp-item.lp-state-hover::before {
   background: var(--lp-color-fill-neutral-tint-2);
 }
 
-a.lp-item:active,
-.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):active,
-.lp-item.lp-state-active {
+a.lp-item:active::before,
+.lp-item:has(> .lp-item-content > .lp-item-status > .lp-item-row-link):active::before,
+.lp-item.lp-state-active::before {
   background: var(--lp-color-fill-neutral-tint-3);
 }
 
@@ -69,9 +101,8 @@ a.lp-item:active::after,
   background: transparent;
 }
 
-.lp-item.is-selected {
+.lp-item.is-selected::before {
   background: var(--lp-color-fill-accent-tint-1);
-  border-radius: var(--lp-radius-container);
 }
 
 .lp-item.lp-item-has-actions {
@@ -374,7 +405,7 @@ a.lp-item:active::after,
 }
 
 @container (min-width: __LP_BP_REGULAR__) {
-  .lp-item:not(.lp-item-has-actions),
+  .lp-item:not(.lp-item-has-actions):not(:has(> .lp-item-content)),
   .lp-item-content {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -392,6 +423,7 @@ a.lp-item:active::after,
     grid-column: 2;
     grid-row: 1;
     width: auto;
+    margin-inline-start: auto;
     justify-self: end;
     justify-content: flex-end;
     align-self: start;

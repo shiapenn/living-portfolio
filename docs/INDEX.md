@@ -192,6 +192,7 @@
 | `A184` | WP-17.13 spacing ownership, text purposes, token integrity, design audit | `active` | [A184-wp-1713-spacing-purposes-audit.md](execution-reports/A184-wp-1713-spacing-purposes-audit.md) | — |
 | `A185` | wp-1714-archetypes-closed-world-audit | `active` | [A185-wp-1714-archetypes-closed-world-audit.md](execution-reports/A185-wp-1714-archetypes-closed-world-audit.md) | — |
 | `A186` | wp-1715-visual-system-pass | `active` | [A186-wp-1715-visual-system-pass.md](execution-reports/A186-wp-1715-visual-system-pass.md) | — |
+| `A187` | wp-1716-alignment-form-actions | `active` | [A187-wp-1716-alignment-form-actions.md](execution-reports/A187-wp-1716-alignment-form-actions.md) | — |
 
 ## Handover Snapshots (Class H)
 

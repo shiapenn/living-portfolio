@@ -5,8 +5,9 @@
  * Run with `--live` to also execute Playwright DOM audits.
  * Run with `--l7-json` to emit machine-readable L7 counts per category.
  */
-import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { resolve, relative, join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { execSync } from 'node:child_process';
 
 const ROOT = resolve(new URL('..', import.meta.url).pathname);
@@ -150,11 +151,8 @@ function recordL7(category, file, line, snippet) {
   results.L7.violations.push(`[${category}] ${file}:${line}: ${clean}`);
 }
 
-const l7CssFiles = walk(resolve(ROOT, 'packages/ui-admin/src'), ['.css']);
-for (const f of l7CssFiles) {
-  const rel = relative(ROOT, f);
-  if (rel.includes('canary')) continue; // synthetic canary files test intentional breaks
-  const lines = readFileSync(f, 'utf8').split('\n');
+function scanL7CssFile(filePath, rel, onRecord) {
+  const lines = readFileSync(filePath, 'utf8').split('\n');
   let inComment = false;
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
@@ -172,20 +170,20 @@ for (const f of l7CssFiles) {
 
     // 1. Breakpoints (@media / @container with raw px/em/rem)
     if (/^@(?:media|container)\b/.test(line) && /\b\d+(?:\.\d+)?(?:px|rem|em)\b/.test(line)) {
-      recordL7('breakpoint', rel, i + 1, line);
+      onRecord('breakpoint', rel, i + 1, line);
       continue;
     }
 
     // 2. Colour literals (hex, rgb/rgba, hsl/hsla, oklch)
     if (/#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch)\s*\(/.test(line)) {
-      recordL7('colour', rel, i + 1, line);
+      onRecord('colour', rel, i + 1, line);
     }
 
     // 3. Border-radius literal (non-zero, non-var)
     if (/^border(?:-[a-z]+)?-radius\s*:/.test(line) && !line.includes('var(')) {
       const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
       if (val !== '0' && val !== '0px' && val !== 'inherit' && val !== 'none') {
-        recordL7('border-radius', rel, i + 1, line);
+        onRecord('border-radius', rel, i + 1, line);
       }
     }
 
@@ -193,7 +191,7 @@ for (const f of l7CssFiles) {
     if (/^box-shadow\s*:/.test(line) && !line.includes('var(')) {
       const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
       if (val !== 'none' && val !== 'inherit') {
-        recordL7('box-shadow', rel, i + 1, line);
+        onRecord('box-shadow', rel, i + 1, line);
       }
     }
 
@@ -201,14 +199,14 @@ for (const f of l7CssFiles) {
     if (/^opacity\s*:/.test(line) && !line.includes('var(')) {
       const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
       if (val !== '0' && val !== '1' && val !== 'inherit') {
-        recordL7('opacity', rel, i + 1, line);
+        onRecord('opacity', rel, i + 1, line);
       }
     }
 
     // 6. Motion durations & easings (ms/s or cubic-bezier/ease literals)
     if (/^(?:transition|animation)(?:-[a-z-]+)?\s*:/.test(line)) {
       if (/\b\d+(?:\.\d+)?m?s\b/.test(line) || /\b(?:cubic-bezier\(|ease-in-out|ease-in|ease-out|\bease\b)\b/.test(line)) {
-        recordL7('motion', rel, i + 1, line);
+        onRecord('motion', rel, i + 1, line);
       }
     }
 
@@ -216,7 +214,7 @@ for (const f of l7CssFiles) {
     if (/^z-index\s*:/.test(line) && !line.includes('var(')) {
       const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
       if (val !== 'auto' && val !== 'inherit' && val !== '0') {
-        recordL7('z-index', rel, i + 1, line);
+        onRecord('z-index', rel, i + 1, line);
       }
     }
 
@@ -224,7 +222,7 @@ for (const f of l7CssFiles) {
     if (/^(?:font-size|font-weight|line-height|letter-spacing)\s*:/.test(line) && !line.includes('var(')) {
       const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
       if (!['inherit', 'normal', '0', 'initial', 'unset'].includes(val)) {
-        recordL7('typography', rel, i + 1, line);
+        onRecord('typography', rel, i + 1, line);
       }
     }
 
@@ -232,7 +230,7 @@ for (const f of l7CssFiles) {
     if (/^(?:-webkit-)?line-clamp\s*:/.test(line) && !line.includes('var(')) {
       const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
       if (val !== 'unset' && val !== 'none') {
-        recordL7('line-clamp', rel, i + 1, line);
+        onRecord('line-clamp', rel, i + 1, line);
       }
     }
 
@@ -240,16 +238,16 @@ for (const f of l7CssFiles) {
     if (/^outline-offset\s*:/.test(line) && !line.includes('var(')) {
       const val = line.split(':')[1]?.replace(/;$/, '').trim() || '';
       if (val !== '0' && val !== '0px') {
-        recordL7('outline-offset', rel, i + 1, line);
+        onRecord('outline-offset', rel, i + 1, line);
       }
     }
 
     // 11. max-width in ch/px literal
     if (/^max-width\s*:/.test(line) && !line.includes('var(') && /\b\d+(?:\.\d+)?(?:px|ch|rem|em)\b/.test(line)) {
-      recordL7('max-width', rel, i + 1, line);
+      onRecord('max-width', rel, i + 1, line);
     }
 
-    // 12. General px/rem/em lengths outside already-counted properties (except 0, 1px hairline)
+    // 12. General px/rem/em lengths outside already-counted properties
     if (
       !/^(?:border(?:-[a-z]+)?-radius|box-shadow|font-size|line-height|letter-spacing|outline-offset|max-width|@)/.test(line) &&
       line.includes(':') &&
@@ -259,10 +257,75 @@ for (const f of l7CssFiles) {
       const units = rhs.match(/\b(\d+(?:\.\d+)?)(px|rem|em)\b/g) || [];
       const bad = units.filter((u) => u !== '0px' && u !== '0rem' && u !== '0em');
       if (bad.length > 0) {
-        recordL7('length', rel, i + 1, line);
+        onRecord('length', rel, i + 1, line);
       }
     }
   }
+}
+
+function scanL7TsFile(filePath, rel, onRecord) {
+  const lines = readFileSync(filePath, 'utf8').split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('//') || line.startsWith('*')) continue;
+    if (/\bstyle\s*=\s*["'`]/.test(line) && !rel.includes('appearance')) {
+      onRecord('inline-style', rel, i + 1, line);
+    }
+    if (/\.style\.(?:color|background|backgroundColor|border|borderColor|borderRadius|padding|margin|fontSize|fontWeight|opacity|boxShadow|gap|width|height)\s*=/.test(line) && !rel.includes('appearance')) {
+      onRecord('inline-style', rel, i + 1, line);
+    }
+  }
+}
+
+if (process.argv.includes('--self-test')) {
+  const tmpDir = mkdtempSync(join(tmpdir(), 'lp-l7-selftest-'));
+  try {
+    const cssFixture = join(tmpDir, 'fixture.css');
+    const tsFixture = join(tmpDir, 'fixture.ts');
+    writeFileSync(
+      cssFixture,
+      [
+        '@media (min-width: 768px) {',
+        '  .probe {',
+        '    color: #ff00aa;',
+        '    padding: 12px;',
+        '    border-radius: 6px;',
+        '    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);',
+        '    opacity: 0.65;',
+        '    transition: color 150ms ease-in-out;',
+        '    z-index: 42;',
+        '    font-size: 15px;',
+        '    -webkit-line-clamp: 2;',
+        '    outline-offset: 3px;',
+        '    max-width: 64ch;',
+        '  }',
+        '}',
+      ].join('\n'),
+      'utf8'
+    );
+    writeFileSync(
+      tsFixture,
+      'export const html = `<div style="padding: 8px">probe</div>`;\n',
+      'utf8'
+    );
+    const detected = Object.fromEntries(Object.keys(l7Categories).map((k) => [k, 0]));
+    const onHit = (cat) => { detected[cat] = (detected[cat] || 0) + 1; };
+    scanL7CssFile(cssFixture, 'selftest/fixture.css', onHit);
+    scanL7TsFile(tsFixture, 'selftest/fixture.ts', onHit);
+    const missed = Object.entries(detected).filter(([, c]) => c === 0).map(([k]) => k);
+    const passed = missed.length === 0;
+    console.log(JSON.stringify({ passed, missed, detected }, null, 2));
+    process.exit(passed ? 0 : 1);
+  } finally {
+    rmSync(tmpDir, { recursive: true, force: true });
+  }
+}
+
+const l7CssFiles = walk(resolve(ROOT, 'packages/ui-admin/src'), ['.css']);
+for (const f of l7CssFiles) {
+  const rel = relative(ROOT, f);
+  if (rel.includes('canary')) continue; // synthetic canary files test intentional breaks
+  scanL7CssFile(f, rel, recordL7);
 }
 
 // Scan admin TS/SVG files for inline style= attributes and el.style.* mutations
@@ -276,17 +339,7 @@ const l7TsFiles = [
 for (const f of l7TsFiles) {
   const rel = relative(ROOT, f);
   if (rel.endsWith('.test.ts') || rel.includes('canary')) continue;
-  const lines = readFileSync(f, 'utf8').split('\n');
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (line.startsWith('//') || line.startsWith('*')) continue;
-    if (/\bstyle\s*=\s*["'`]/.test(line) && !rel.includes('appearance')) {
-      recordL7('inline-style', rel, i + 1, line);
-    }
-    if (/\.style\.(?:color|background|backgroundColor|border|borderColor|borderRadius|padding|margin|fontSize|fontWeight|opacity|boxShadow|gap|width|height)\s*=/.test(line) && !rel.includes('appearance')) {
-      recordL7('inline-style', rel, i + 1, line);
-    }
-  }
+  scanL7TsFile(f, rel, recordL7);
 }
 
 if (process.argv.includes('--l7-json')) {
