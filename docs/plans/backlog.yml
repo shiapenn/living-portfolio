@@ -289,7 +289,7 @@ items:
     expected_minutes: 60
     gate: none
     acceptance: Multipart import across all D-11 formats, embedded images via Media API, per-file errors, backup/drill/export media inclusion conformance test + E2E
-    status: ready
+    status: done
 
   - id: WP-18.8
     title: Quick Log capture route (/admin/quick-log, /quick-log; UX-18, A-06, D-17)

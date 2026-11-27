@@ -26,6 +26,7 @@ export interface CreateBackupOptions {
   databaseUrl?: string;
   agePublicKey?: string;
   destinationDir?: string;
+  mediaDir?: string;
   repo?: any;
   retentionPolicy?: Partial<BackupRetentionPolicy>;
   nowMs?: number;
@@ -36,6 +37,7 @@ export interface RestoreDrillOptions {
   backupFile: string;
   identityKey?: string;
   targetDatabaseUrl?: string;
+  restoreMediaDir?: string;
   scratchRepo?: any;
 }
 

@@ -265,7 +265,8 @@ export function createApp(
   apiV1.route('/inbox', createInboxRoutes(repo));
   apiV1.route('/calibration', createCalibrationRoutes(repo, runtimeState));
   apiV1.route('/audit', createAuditRoutes(repo, answerCache));
-  apiV1.route('/import', createImportRoutes(repo, auth, cfg.DEPLOYMENT_CLASS));
+  const mediaStorage = options?.mediaStorage ?? createMediaStorageAdapter(cfg);
+  apiV1.route('/import', createImportRoutes(repo, auth, cfg.DEPLOYMENT_CLASS, mediaStorage, cfg));
   apiV1.use('/settings', auth.requireAdminMiddleware());
   apiV1.use('/settings/*', auth.requireAdminMiddleware());
   apiV1.route('/settings', createSettingsRoutes(repo, runtimeState, auth, governor, providers));
@@ -275,7 +276,7 @@ export function createApp(
   apiV1.route('/book', createBookRoutes(repo));
 
   // Media API routes (WP-18.3, D-06, D-STORAGE) - POST/DELETE/GET-list admin+CSRF, GET /:id visibility-enforced
-  const mediaStorage = options?.mediaStorage ?? createMediaStorageAdapter(cfg);
+  // Mount media routes using the shared mediaStorage adapter
   apiV1.route('/media', createMediaRoutes(repo, auth, mediaStorage, cfg));
 
   // Shadow verification & metrics endpoints (WP-2.4, Fix 8, Fix 10, OSR-15)

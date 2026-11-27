@@ -198,6 +198,7 @@
 | `A190` | WP-18.4 Editor Media And Public Rendering | `active` | [A190-wp-184-editor-media-and-public-rendering.md](execution-reports/A190-wp-184-editor-media-and-public-rendering.md) | — |
 | `A191` | WP-18.5 Columns Container Directive | `active` | [A191-wp-185-columns-container-directive.md](execution-reports/A191-wp-185-columns-container-directive.md) | — |
 | `A192` | WP-18.6 Import Stepper Polish | `active` | [A192-wp-186-import-stepper-polish.md](execution-reports/A192-wp-186-import-stepper-polish.md) | — |
+| `A193` | WP-18.7 Real File Import And Backup Media Inclusion | `active` | [A193-wp-187-real-file-import-and-backup-media.md](execution-reports/A193-wp-187-real-file-import-and-backup-media.md) | — |
 
 ## Handover Snapshots (Class H)
 
