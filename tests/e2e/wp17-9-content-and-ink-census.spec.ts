@@ -544,6 +544,7 @@ test.describe('WP-17.11 Content, Item v2, Overflow, Feedback, Accent & Credentia
   });
 
   test('K5: Credential component (single token, recovery list 2/4 cols, manual key blocks of 4)', async ({ page }) => {
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
     await ensureAdminLoggedIn(page);
     await page.setViewportSize({ width: 320, height: 640 });
     await page.goto('/admin/settings/account');

@@ -35,7 +35,7 @@ function renderGroupedManualKeyHtml(raw: string): string {
   const clean = raw.replace(/\s+/g, '');
   if (!clean) return '';
   const groups = clean.match(/.{1,4}/g) || [];
-  return groups.map((g) => `<span class="lp-credential-group">${escapeHtml(g)}</span>`).join('');
+  return groups.map((g) => `<span class="lp-credential-group">${escapeHtml(g)}</span>`).join(' ');
 }
 
 /**
@@ -78,28 +78,28 @@ export function renderCredential(props: CredentialProps): string {
     <div class="lp-credential-panel">
       ${panelInner}
     </div>
-    <div id="${escapeHtml(props.id)}-copy-error" class="lp-notice lp-notice-danger lp-is-hidden" aria-live="assertive">Could not copy to clipboard. Select the value and copy manually.</div>
+    <div id="${escapeHtml(props.id)}-copy-error" class="lp-is-hidden" aria-live="assertive"></div>
   </div>
 </div>`;
 }
 
-const COPY_ICON_SVG = renderIcon('copy', 20).replace(/'/g, "\\'");
-const CHECK_ICON_SVG = renderIcon('check', 20).replace(/'/g, "\\'");
+const COPY_ICON_SVG_LITERAL = JSON.stringify(renderIcon('copy', 20));
+const CHECK_ICON_SVG_LITERAL = JSON.stringify(renderIcon('check', 20));
 
 /**
  * Client helper to wire icon-only Copy / Copy all buttons on Credential components and
  * populate Credential blocks dynamically.
  */
 export const CREDENTIAL_CLIENT_SCRIPT = `
-var lpCopyIconSvg = '${COPY_ICON_SVG}';
-var lpCheckIconSvg = '${CHECK_ICON_SVG}';
+var lpCopyIconSvg = ${COPY_ICON_SVG_LITERAL};
+var lpCheckIconSvg = ${CHECK_ICON_SVG_LITERAL};
 var lpGroupBy4Html = function (raw) {
   var clean = String(raw || '').replace(/\\s+/g, '');
   if (!clean) return '';
   var groups = clean.match(/.{1,4}/g) || [];
   return groups.map(function (g) {
     return '<span class="lp-credential-group">' + g.replace(/</g, '&lt;') + '</span>';
-  }).join('');
+  }).join(' ');
 };
 var lpSetCredentialSingle = function (id, value, groupBy4) {
   var root = document.getElementById(id);
@@ -166,7 +166,11 @@ document.addEventListener('click', async function (e) {
     } catch {}
   }
   if (ok) {
-    if (errEl) errEl.classList.add('lp-is-hidden');
+    if (errEl) {
+      errEl.className = 'lp-is-hidden';
+      errEl.removeAttribute('data-c');
+      errEl.textContent = '';
+    }
     btn.setAttribute('data-icon-name', 'check');
     btn.innerHTML = lpCheckIconSvg;
     var copied = document.getElementById(cid + '-copied');
@@ -178,6 +182,7 @@ document.addEventListener('click', async function (e) {
     }, 2000);
   } else if (errEl) {
     errEl.setAttribute('data-c', 'Notice');
-    errEl.classList.remove('lp-is-hidden');
+    errEl.className = 'lp-notice lp-notice-danger';
+    errEl.textContent = 'Could not copy to clipboard. Select the value and copy manually.';
   }
 });`;

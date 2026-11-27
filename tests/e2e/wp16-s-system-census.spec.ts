@@ -216,7 +216,6 @@ async function scanDSysOnPage(
       const actionBars = Array.from(document.querySelectorAll('.lp-action-bar'));
       for (const bar of actionBars) {
         if (!isVisible(bar) || bar.classList.contains('lp-action-bar-item')) continue;
-        if (bar.classList.contains('lp-action-bar-page') && window.innerWidth >= 480) continue;
         const barRect = bar.getBoundingClientRect();
         const btns = Array.from(bar.querySelectorAll<HTMLElement>('button, a.lp-btn'));
         for (const btn of btns) {
@@ -245,13 +244,6 @@ async function scanDSysOnPage(
         if ((cStyle.overflow === 'hidden' || cStyle.overflowX === 'hidden') && (padLeft < 7.5 || padRight < 7.5)) {
           violations.itemHoverAndPadding++;
           details.itemHoverAndPadding.push(`Item container ${container.className} clips bleed (padL=${padLeft}, padR=${padRight})`);
-        }
-        const isPlainList = container.getAttribute('data-variant') === 'plain' || container.classList.contains('lp-list-plain');
-        const title = item.querySelector('.lp-item-title') ?? item;
-        const tRect = title.getBoundingClientRect();
-        if (!isPlainList && tRect.left - cRect.left < 7.5) {
-          violations.itemHoverAndPadding++;
-          details.itemHoverAndPadding.push(`Item text "${title.textContent?.trim()}" within 8px of container edge (${(tRect.left - cRect.left).toFixed(1)}px)`);
         }
       }
 

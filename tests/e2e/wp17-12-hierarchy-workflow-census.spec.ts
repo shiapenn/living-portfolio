@@ -70,7 +70,7 @@ test.describe('WP-17.12 Hierarchy & Workflow Checks (K6–K13)', () => {
     const totpCheck = await page.evaluate(() => {
       const root = document.getElementById('account-totp-manual-cred')!;
       const noticeCount = root.querySelectorAll('.lp-notice').length;
-      const helper = (root.querySelector('.lp-field-help')?.textContent || '').trim();
+      const helper = (root.querySelector('.lp-credential-header [data-purpose="helper"], .lp-field-help')?.textContent || '').trim();
       const copyBtn = document.getElementById('account-totp-manual-cred-copy-btn')!;
       const surface = root.querySelector('.lp-credential-surface')!;
       const codeField = document.getElementById('account-totp-code')?.closest('.lp-field') as HTMLElement | null;
