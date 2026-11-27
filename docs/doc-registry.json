@@ -2225,5 +2225,13 @@
     "path": "docs/execution-reports/A186-wp-1715-visual-system-pass.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A187",
+    "title": "wp-1716-alignment-form-actions",
+    "class": "A",
+    "path": "docs/execution-reports/A187-wp-1716-alignment-form-actions.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
