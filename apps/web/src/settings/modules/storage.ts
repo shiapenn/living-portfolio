@@ -240,17 +240,16 @@ export const storageModule: SettingsModuleManifest<StorageConfig> = {
               const dateStr = (m.created_at || '').slice(0, 10) || 'Unknown date';
               const blocked = pubCount > 0;
               const actionHtml = blocked
-                ? '<div class="lp-type-meta" data-media-blocked="true">Used in a published entry. Remove it from the entry before deleting.</div>'
-                : '<div data-c="ActionBar" data-level="inline" class="lp-action-bar lp-action-bar-inline"><button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" data-storage-delete="' + esc(m.id) + '" data-storage-name="' + esc(m.original_filename || m.id) + '">Delete</button></div>';
-              return '<div data-c="Item" class="lp-item lp-item-has-actions" data-media-id="' + esc(m.id) + '">' +
-                '<div class="lp-item-main">' +
-                  '<div class="lp-item-head">' +
-                    '<span class="lp-item-title">' + esc(m.original_filename || m.id) + '</span>' +
-                    '<span class="lp-item-status">' + esc(refText) + '</span>' +
-                  '</div>' +
+                ? '<div class="lp-item-body" data-media-blocked="true">Used in a published entry. Remove it from the entry before deleting.</div>'
+                : '<div data-rel="actions" class="lp-item-actions"><div data-c="ActionBar" data-level="inline" class="lp-action-bar lp-action-bar-inline"><button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" data-storage-delete="' + esc(m.id) + '" data-storage-name="' + esc(m.original_filename || m.id) + '">Delete</button></div></div>';
+              return '<div data-c="Item" class="lp-item ' + (blocked ? '' : 'lp-item-has-actions') + '" data-media-id="' + esc(m.id) + '">' +
+                '<div class="lp-item-content">' +
+                  '<div class="lp-item-title">' + esc(m.original_filename || m.id) + '</div>' +
+                  '<div class="lp-item-status"><span class="lp-caption">' + esc(refText) + '</span></div>' +
                   '<div class="lp-item-subtitle">' + esc(fmtBytes(m.size_bytes)) + ' · ' + esc(dateStr) + '</div>' +
-                  actionHtml +
+                  (blocked ? actionHtml : '') +
                 '</div>' +
+                (blocked ? '' : actionHtml) +
               '</div>';
             }).join('');
 
