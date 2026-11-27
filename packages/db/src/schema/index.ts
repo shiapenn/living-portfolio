@@ -8,6 +8,7 @@ import {
   integer,
   bigint,
   real,
+  primaryKey,
   customType,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
@@ -147,6 +148,8 @@ export const mediaAssets = pgTable('media_assets', {
   storage_key: text('storage_key'),
   original_filename: text('original_filename'),
   size_bytes: bigint('size_bytes', { mode: 'number' }),
+  width: integer('width'),
+  height: integer('height'),
   sha256: text('sha256'),
   visibility: text('visibility').notNull().default('private'),
   alt_text: text('alt_text'),
@@ -156,6 +159,21 @@ export const mediaAssets = pgTable('media_assets', {
   duration_sec: integer('duration_sec'),
   created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const mediaReferences = pgTable(
+  'media_references',
+  {
+    media_id: uuid('media_id').notNull(),
+    entry_id: uuid('entry_id')
+      .notNull()
+      .references(() => entries.id, { onDelete: 'cascade' }),
+    revision_id: uuid('revision_id')
+      .notNull()
+      .references(() => entryRevisions.id, { onDelete: 'cascade' }),
+    created_at: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.media_id, t.revision_id] })]
+);
 
 export const embeddingSets = pgTable('embedding_sets', {
   id: uuid('id').primaryKey().defaultRandom(),

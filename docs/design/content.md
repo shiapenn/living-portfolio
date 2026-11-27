@@ -84,6 +84,10 @@ The following must **never** appear in rendered admin DOM text:
 - Implementation artifacts: source/asset filenames (`.css`, `.ts`, `.json`), API paths (`/api/...`), raw internal IDs
 - Raw ISO date strings: `\d{4}-\d{2}-\d{2}`
 
+## Media Metadata Privacy Limitation (WP-18.3a)
+
+Uploaded JPEG, PNG, and WebP images have EXIF, GPS, IPTC, and XMP metadata stripped automatically without re-encoding. **Video metadata is not stripped on upload** — this limitation is surfaced as a consequence line (`Video metadata isn't removed on upload.`) directly above the `ActionBar` in the video upload dialog.
+
 ## Closed Text Purposes (WP-17.13 D2)
 
 Every visible text node on admin screens carries an explicit `data-purpose` from the closed set:

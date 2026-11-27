@@ -236,11 +236,22 @@ items:
     acceptance: Auth+CSRF media upload/serve endpoints, local volume/S3 adapter, config-driven limits, sniffing, SVG rejection/sanitisation, migration + conformance tests
     status: done
 
+  - id: WP-18.3a
+    title: Media API hardening (refcounted delete, EXIF/GPS/XMP strip, Range 206/416, dimensions & migration 0005, pre-buffer streaming limit, derived visibility index, zero fallback secrets)
+    track: functional
+    type: functional
+    depends_on: [WP-18.3]
+    size: M
+    expected_minutes: 50
+    gate: none
+    acceptance: Refcounted storage delete, lossless JPEG/PNG/WebP metadata strip, HTTP Range 206/416 on local+S3, width/height in migration 0005 + 415 unparseable, streaming pre-buffer 413, derived visibility from published entry reference index, zero fallback secrets + behavioural 437f6b4 canaries
+    status: done
+
   - id: WP-18.4
     title: Images and video in editor and public Markdown rendering (D-06, D-STORAGE)
     track: admin
     type: functional
-    depends_on: [WP-18.3]
+    depends_on: [WP-18.3a]
     size: M
     expected_minutes: 55
     gate: none

@@ -385,6 +385,13 @@ export const AppConfigSchema = z
     OPENAI_API_KEY: z.string().default(''),
   })
   .superRefine((cfg, ctx) => {
+    if (cfg.MEDIA_STORAGE_BACKEND === 's3') {
+      for (const k of ['MEDIA_S3_BUCKET', 'MEDIA_S3_ENDPOINT', 'MEDIA_S3_ACCESS_KEY_ID', 'MEDIA_S3_SECRET_ACCESS_KEY'] as const) {
+        if (!cfg[k] || cfg[k].trim() === '') {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: [k], message: `${k} is required when MEDIA_STORAGE_BACKEND=s3` });
+        }
+      }
+    }
     if (cfg.DEPLOYMENT_CLASS === 'production') {
       if (!cfg.DATABASE_URL || cfg.DATABASE_URL.trim() === '') {
         ctx.addIssue({

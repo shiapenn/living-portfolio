@@ -3,6 +3,7 @@ import { MIGRATION_0001_INIT_NAME, MIGRATION_0001_INIT_SQL } from './migrations/
 import { MIGRATION_0002_GOVERNOR_LEDGER_NAME, MIGRATION_0002_GOVERNOR_LEDGER_SQL } from './migrations/0002_governor_ledger.js';
 import { MIGRATION_0003_BOOKINGS_NAME, MIGRATION_0003_BOOKINGS_SQL } from './migrations/0003_bookings_and_receipts.js';
 import { MIGRATION_0004_MEDIA_ASSETS_NAME, MIGRATION_0004_MEDIA_ASSETS_SQL } from './migrations/0004_media_assets_metadata.js';
+import { MIGRATION_0005_MEDIA_HARDENING_NAME, MIGRATION_0005_MEDIA_HARDENING_SQL } from './migrations/0005_media_dimensions_and_references.js';
 
 /**
  * Authoritative QRXP schema version tracked in schema_info table (§9, §19).
@@ -35,6 +36,11 @@ export const MIGRATIONS: MigrationStep[] = [
     name: MIGRATION_0004_MEDIA_ASSETS_NAME,
     version: QRXP_SCHEMA_VERSION,
     sql: MIGRATION_0004_MEDIA_ASSETS_SQL,
+  },
+  {
+    name: MIGRATION_0005_MEDIA_HARDENING_NAME,
+    version: QRXP_SCHEMA_VERSION,
+    sql: MIGRATION_0005_MEDIA_HARDENING_SQL,
   },
 ];
 

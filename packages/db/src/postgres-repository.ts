@@ -19,7 +19,16 @@ import type {
   Visibility,
 } from '@living-portfolio/core';
 import { isTemporallyValid } from '@living-portfolio/core';
-import { pgSaveMedia, pgGetMedia, pgListMedia, pgDeleteMedia, pgGetTotalMediaBytes } from './media-helpers.js';
+import {
+  pgSaveMedia,
+  pgUpdateMedia,
+  pgGetMedia,
+  pgListMedia,
+  pgDeleteMedia,
+  pgGetTotalMediaBytes,
+  pgSyncRevisionMediaReferences,
+  pgSyncEntryMediaReferences,
+} from './media-helpers.js';
 import { eq, inArray, desc, and, or, sql } from 'drizzle-orm';
 import type { IPortfolioRepository, SearchResult, TemporalExpandOptions, ChunkVectorRecord, GovernorLedgerEntry } from './repository.js';
 import { createDrizzleDb, getDefaultDb, type LivingPortfolioDb } from './connection.js';
@@ -371,7 +380,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
       .update(schema.entries)
       .set({ current_revision_id: revRow.id })
       .where(eq(schema.entries.id, entryRow.id));
-
+    await pgSyncRevisionMediaReferences(this.db, entryRow.id, revRow.id, rev.body_md);
     entryRow.current_revision_id = revRow.id;
     return {
       entry: mapEntry(entryRow),
@@ -440,6 +449,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
       .set(updatesObj)
       .where(eq(schema.entries.id, id))
       .returning();
+    if (updated) await pgSyncEntryMediaReferences(this.db, id);
     return updated ? mapEntry(updated) : null;
   }
 
@@ -542,7 +552,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
       .update(schema.entries)
       .set({ current_revision_id: row.id })
       .where(eq(schema.entries.id, entry_id));
-
+    await pgSyncRevisionMediaReferences(this.db, entry_id, row.id, rev.body_md);
     return mapRevision(row);
   }
 
@@ -852,6 +862,7 @@ export class PostgresPortfolioRepository implements IPortfolioRepository {
 
   // --- Media Assets ---
   saveMedia(m: Omit<MediaAsset, 'id'>): Promise<MediaAsset> { return pgSaveMedia(this.db, m); }
+  updateMedia(id: string, updates: { alt_text?: string | null; caption?: string | null }): Promise<MediaAsset | null> { return pgUpdateMedia(this.db, id, updates); }
   getMedia(id: string): Promise<MediaAsset | null> { return pgGetMedia(this.db, id); }
   listMedia(): Promise<MediaAsset[]> { return pgListMedia(this.db); }
   deleteMedia(id: string): Promise<boolean> { return pgDeleteMedia(this.db, id); }
