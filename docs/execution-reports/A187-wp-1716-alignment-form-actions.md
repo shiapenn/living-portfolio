@@ -6,7 +6,7 @@
 | Date | 2026-11-27 |
 | Author | A (Implementer) |
 | Task ID | `WP-17.16` |
-| Evidence SHA | `19ceac2ab27f66e4b732b76689f5b7a16f15b333` |
+| Evidence SHA | `2689c1c44b7d09ab161be03a0dc86d555275bca5` |
 | CI run | Pending PR creation (local `verify:fast`, `design:audit`, `--self-test`, `wp16n:verify` 11/11, `K22`–`K43` green) |
 
 ---
@@ -63,7 +63,10 @@ Delivered `WP-17.16` — Alignment and form-action standardisation (WP-17 visual
 - `docs/design/health-history.json`
 - `docs/design/health.md`
 - `docs/design/interaction.md`
+- `docs/doc-registry.json`
 - `docs/execution-reports/A186-wp-1715-visual-system-pass.md`
+- `docs/execution-reports/A187-wp-1716-alignment-form-actions.md`
+- `docs/INDEX.md`
 - `docs/plans/backlog.yml`
 - `packages/ui-admin/src/components/credential/credential.css`
 - `packages/ui-admin/src/components/item/item.css`
@@ -74,8 +77,12 @@ Delivered `WP-17.16` — Alignment and form-action standardisation (WP-17 visual
 - `packages/ui-admin/src/shell/workspace-shell.css`
 - `packages/ui-admin/src/templates/dghl-polish.css`
 - `scripts/design-audit`
+- `tests/e2e/census-helpers.ts`
+- `tests/e2e/wp16-s-system-census.spec.ts`
+- `tests/e2e/wp17-12-hierarchy-workflow-census.spec.ts`
 - `tests/e2e/wp17-14-closed-world-audit.spec.ts`
 - `tests/e2e/wp17-16-alignment-actions-audit.spec.ts`
+- `tests/e2e/wp17-9-content-and-ink-census.spec.ts`
 - `tests/e2e/wp17-contact-sheets.spec.ts`
 - `tests/e2e/wp17-manifest.ts`
 
@@ -97,8 +104,8 @@ $ pnpm receipt:check A187
 === Validating Receipt A187-wp-1716-alignment-form-actions.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA '19ceac2ab27f66e4b732b76689f5b7a16f15b333' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff 712f760cc6b26367923ed867262b6edc9f21d6dc..19ceac2ab27f66e4b732b76689f5b7a16f15b333 (27 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA '2689c1c44b7d09ab161be03a0dc86d555275bca5' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 712f760cc6b26367923ed867262b6edc9f21d6dc..2689c1c44b7d09ab161be03a0dc86d555275bca5 (34 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A187-wp-1716-alignment-form-actions.md.
 Found 0 section(s) marked verbatim.
 
