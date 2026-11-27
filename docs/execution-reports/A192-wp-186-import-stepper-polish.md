@@ -6,7 +6,7 @@
 | Date | 2026-11-27 |
 | Author | A (Implementer) |
 | Task ID | WP-18.6 |
-| Evidence SHA | `b9fe12d5d0af792b8c7ba6169d08a5e9cc494be8` |
+| Evidence SHA | `f8fe3bf22393e3868319bd3f89ccaed7580f01c5` |
 | CI run | https://github.com/shiapenn/living-portfolio/pull/290 |
 
 ## 1. Scope
@@ -40,9 +40,11 @@
 - `apps/web/src/pages/admin/wp18-6-import-polish.test.ts`
 - `apps/web/src/web.test.ts`
 - `docs/INDEX.md`
+- `docs/audits/dom-id-baseline.json`
 - `docs/design/screen-brief.md`
 - `docs/doc-registry.json`
 - `docs/execution-reports/A191-wp-185-columns-container-directive.md`
+- `docs/execution-reports/A192-wp-186-import-stepper-polish.md`
 - `docs/plans/backlog.yml`
 - `tests/e2e/structure-import.spec.ts`
 - `tests/e2e/wp17-manifest.ts`
