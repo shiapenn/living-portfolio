@@ -111,3 +111,56 @@
   border-right: var(--lp-border-hairline) solid var(--border-overlay);
   box-shadow: none;
 }
+
+/* WP-18.4 Editor media blocks (no drag handles, zero outer margin, tokens only) */
+.lp-editor-surface-wrap.is-drop-active {
+  outline: var(--lp-border-focus) dashed var(--focus-ring);
+  outline-offset: var(--lp-border-focus);
+  border-radius: var(--lp-radius-r2);
+}
+
+.lp-editor-media-block {
+  margin: 0;
+  padding: var(--lp-space-inset-section);
+  border: var(--lp-border-hairline) solid var(--lp-color-border-hairline);
+  border-radius: var(--lp-radius-container);
+  background: var(--lp-color-surface-raised);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-proximity-2);
+}
+
+.lp-editor-media-img,
+.lp-editor-media-video {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--lp-radius-r2);
+  background: var(--lp-color-surface-sunken);
+}
+
+.lp-editor-media-embed-card {
+  padding: var(--lp-space-inset-section);
+  border: var(--lp-border-hairline) solid var(--lp-color-border-hairline);
+  border-radius: var(--lp-radius-r2);
+  background: var(--lp-color-surface-sunken);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-proximity-1);
+}
+
+.lp-editor-media-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--lp-space-proximity-2);
+}
+
+.lp-editor-media-caption {
+  margin: 0;
+  font-size: var(--lp-font-size-13);
+  line-height: var(--lp-font-line-20);
+  color: var(--text-2);
+}

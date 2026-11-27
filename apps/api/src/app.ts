@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { loadConfig, type AppConfig } from '@living-portfolio/config';
+import { loadConfig, buildEmbedFrameSrc, type AppConfig } from '@living-portfolio/config';
 import {
   InMemoryPortfolioRepository,
   PostgresPortfolioRepository,
@@ -148,10 +148,11 @@ export function createApp(
     const duration = Date.now() - start;
     metricsCollector.recordRequest(c.res.status, duration);
   });
+  const frameSrc = buildEmbedFrameSrc(cfg.MEDIA_EMBED_ALLOWED_HOSTS);
   app.use('*', async (c, next) => {
     c.header(
       'Content-Security-Policy',
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; frame-ancestors 'none'; base-uri 'self'"
+      `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self'; frame-src ${frameSrc}; frame-ancestors 'none'; base-uri 'self'`
     );
     c.header('X-Content-Type-Options', 'nosniff');
     c.header('X-Frame-Options', 'DENY');

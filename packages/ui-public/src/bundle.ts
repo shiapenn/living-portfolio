@@ -9,10 +9,12 @@ const SRC_ROOT = resolve(__dirname, '../src');
 
 export function buildPublicBundleCss(extraPublicCss = ''): string {
   const shellCss = readFileSync(resolve(SRC_ROOT, 'components/shell/shell.css'), 'utf8');
+  const mediaCss = readFileSync(resolve(SRC_ROOT, 'components/media/media.css'), 'utf8');
   const parts = [
     '@layer reset, tokens, base, primitives, components, patterns, templates, pages, utilities, user-theme;',
     `@layer tokens {\n${PUBLIC_FONT_FACE_CSS}\n\n${PUBLIC_THEME_CSS.trim()}\n}`,
     shellCss.trim(),
+    mediaCss.trim(),
   ];
   if (extraPublicCss.trim()) {
     parts.push(`@layer pages {\n${extraPublicCss.trim()}\n}`);

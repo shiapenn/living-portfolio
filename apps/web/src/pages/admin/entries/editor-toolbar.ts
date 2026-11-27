@@ -58,6 +58,8 @@ export function renderEditorFormattingBar(): string {
   ${renderIconButton({ id: 'ref-fmt-bullet', ariaLabel: 'Bullet list', title: 'Bullet list', icon: 'list', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { format: 'list' } })}
   ${renderIconButton({ id: 'ref-fmt-quote', ariaLabel: 'Quote', title: 'Quote', icon: 'quote', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { format: 'quote' } })}
   ${renderIconButton({ id: 'ref-fmt-code', ariaLabel: 'Code block', title: 'Code block', icon: 'code', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { format: 'code' } })}
+  ${renderIconButton({ id: 'ref-fmt-image', ariaLabel: 'Insert image', title: 'Insert image', icon: 'image', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { format: 'image' } })}
+  ${renderIconButton({ id: 'ref-fmt-video', ariaLabel: 'Insert video', title: 'Insert video', icon: 'video', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { format: 'video' } })}
   ${renderIconButton({ id: 'ref-btn-source-toggle', ariaLabel: 'Markdown source', title: 'Markdown source', icon: 'source', iconSize: 16, variant: 'quiet', size: 'sm', dataAttrs: { 'aria-pressed': 'false', format: 'source' } })}
 </div>`;
 }

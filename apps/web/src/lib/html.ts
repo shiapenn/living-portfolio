@@ -1,4 +1,4 @@
-import { renderMarkdown } from "../markdown.js";
+import { renderMarkdown, type MarkdownOptions } from "../markdown.js";
 
 export function escapeHtml(str: string): string {
   return String(str)
@@ -25,9 +25,9 @@ export function sanitizeHttpUrl(rawUrl?: string | null): string | null {
   }
 }
 
-export function renderMarkdownToHtml(md: string): string {
+export function renderMarkdownToHtml(md: string, options?: MarkdownOptions): string {
   if (!md || typeof md !== 'string') return '';
-  return renderMarkdown(md, { demoteHeadings: true });
+  return renderMarkdown(md, { demoteHeadings: true, ...options });
 }
 
 export interface AsOfDateInfo {

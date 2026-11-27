@@ -7,7 +7,9 @@ import {
   type Revision,
 } from "@living-portfolio/core";
 import { adaptDataSource, type WebDataClient } from "../../lib/data-source.js";
+import { loadConfig, parseEmbedAllowedHosts } from "@living-portfolio/config";
 import { escapeHtml, parseAsOfDate, renderMarkdownToHtml, sanitizeHttpUrl } from "../../lib/html.js";
+import { extractInternalMediaIds, type MediaDimension } from "../../markdown-media.js";
 import { renderLayout } from "../../layouts/public-shell.js";
 import { renderNotFoundPage } from "./not-found.js";
 import { formatOutcome, renderStrataDateGlyph } from "../../components/index.js";
@@ -104,6 +106,28 @@ export async function renderEntryDetailPage(
   const qualifiesForStructured = structureLevel === 'L2' || structureLevel === 'L3';
   const activeView = requestedView === 'article' ? 'article' : requestedView === 'structured' ? 'structured' : qualifiesForStructured && entry.view === 'structured' ? 'structured' : 'article';
 
+  // WP-18.4: Resolve stored width/height for referenced /api/media/:id images to prevent CLS
+  const rawBodyMd = rev.body_md || (rev as any).body || '';
+  const mediaDimensions: Record<string, MediaDimension> = { ...((result as any).mediaDimensions || {}) };
+  const referencedMediaIds = extractInternalMediaIds(rawBodyMd);
+  if (referencedMediaIds.length > 0 && typeof (repo as any).getMedia === 'function') {
+    await Promise.all(
+      referencedMediaIds.map(async (mid) => {
+        if (mediaDimensions[mid]) return;
+        try {
+          const asset = await (repo as any).getMedia(mid);
+          if (asset && typeof asset.width === 'number' && typeof asset.height === 'number' && asset.width > 0 && asset.height > 0) {
+            mediaDimensions[mid] = { width: asset.width, height: asset.height };
+          }
+        } catch {}
+      })
+    );
+  }
+  const mdOpts = {
+    mediaDimensions,
+    embedAllowedHosts: parseEmbedAllowedHosts(loadConfig().MEDIA_EMBED_ALLOWED_HOSTS),
+  };
+
   let bodyHtml = '';
   if (activeView === 'structured' && profile.roles.length > 0) {
     if (spans.length > 0) {
@@ -147,7 +171,7 @@ export async function renderEntryDetailPage(
       }
 
       const renderedSections = blocks.map((block) => {
-        const combinedText = block.texts.map((t) => renderMarkdownToHtml(t)).join('\n');
+        const combinedText = block.texts.map((t) => renderMarkdownToHtml(t, mdOpts)).join('\n');
         if (block.roleId && block.roleLabel) {
           const roleClass = `role-${escapeHtml(block.roleId)}`;
           return `<section class="role-section ${roleClass}" data-role="${escapeHtml(block.roleId)}">
@@ -160,10 +184,10 @@ export async function renderEntryDetailPage(
 
       bodyHtml = renderedSections.join('\n');
     } else {
-      bodyHtml = `<div class="reading-column">${renderMarkdownToHtml(rev.body_md || (rev as any).body || '')}</div>`;
+      bodyHtml = `<div class="reading-column">${renderMarkdownToHtml(rawBodyMd, mdOpts)}</div>`;
     }
   } else {
-    bodyHtml = `<div class="reading-column">${renderMarkdownToHtml(rev.body_md || (rev as any).body || '')}</div>`;
+    bodyHtml = `<div class="reading-column">${renderMarkdownToHtml(rawBodyMd, mdOpts)}</div>`;
   }
 
   const happenedDate = (rev.valid_from || rev.written_at).slice(0, 10);

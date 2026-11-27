@@ -2249,5 +2249,13 @@
     "path": "docs/execution-reports/A189-wp-183a-media-hardening.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "L065",
+    "title": "Public Media and Consent-Gated Embed Briefs",
+    "class": "L",
+    "path": "docs/design/public-media-brief.md",
+    "status": "active",
+    "supersedes": null
   }
 ]

@@ -80,3 +80,19 @@ One concise block per screen:
 - **Hierarchy:** `1` Page title -> `2` Section title -> `3` Label + Control + Helper -> `4` State warning Notice (above ActionBar) -> `5` ActionBar -> `6` Feedback (`StatusLine` or danger `Notice`).
 - **States:** default, dirty, state-warning (drift/AA fail), field-invalid (`aria-invalid`), action-error, action-success (`StatusLine`), empty.
 - **Compact:** All inputs meet the compact mobile size floor, single-column sections, full-width Notices, horizontally scrollable Tabs.
+
+---
+
+## Forward Screen Briefs (WP-18)
+
+### 9. Editor — Insert / Edit Media Dialog (`WP-18.4`, `Overlay` on `/admin/entries/:id`)
+- **Archetype (`D1`):** System-mode `Overlay` dialog (`dialog` variant) inside the fullscreen entry editor; zero new `data-c` components (variants only: `Field[file]`, `Field[text]`, `Choice`, `ActionBar[dialog]`, `Notice[danger]`, `StatusLine`, `Text[caption]`).
+- **JTBD:** Insert or edit an image, uploaded video, or consent-gated external video embed in an entry with accessible descriptions and privacy-preserving storage references (`/api/media/:id`).
+- **Decision & required data:**
+  - *Image:* File (`Field` file variant styled as Secondary button), Alt text (`Field`, required unless Decorative `Choice` is checked), Decorative image (`Choice` single checkbox), Caption (`Field`, optional). Decorative round-trips as `![](/api/media/:id "caption")`.
+  - *Video:* Mode `Choice` (`Upload` / `Embed URL`), File (`Field` file variant) or Embed URL (`Field` url, host validated against config allowlist `MEDIA_EMBED_ALLOWED_HOSTS`, default `youtube-nocookie.com` and `player.vimeo.com`), Description (`Field`, required; becomes accessible name), Caption (`Field`, optional). Poster and `.vtt` captions track are omitted in `WP-18.4` (`.vtt` deferred to `WP-20.3`).
+- **Primary action & consequence:** `Insert` (add mode) or `Save` (edit mode) inserts/updates the media block in the entry; `Cancel` (`Text` button) closes without changes; `Remove` (`text-danger` button, edit mode only, last) deletes the block immediately with no confirmation dialog because editor undo restores it. Consequence line (`S2` above `ActionBar`): `"Visitors must click to load this video."` (Embed URL mode) / `"Video metadata isn't removed on upload."` (Video upload mode).
+- **Entry points:** Formatting bar (`Image` and `Video` buttons), `/image` and `/video` slash commands, clipboard `paste`, and editor-surface `drop` (no drop zone inside the dialog; paste/drop upload immediately then open the dialog for required alt text / description).
+- **Hierarchy (`1..n`):** `1` Dialog title (`Insert image` / `Edit image` / `Insert video` / `Edit video`) -> `2` Mode `Choice` (video) & File / URL `Field` -> `3` Alt text / Description `Field` + Decorative `Choice` -> `4` Caption `Field` -> `5` Consequence line (`S2`) + `ActionBar` (`Insert`/`Save`, `Cancel`, `Remove`) -> `6` Upload `StatusLine` (`> 1s`) or danger `Notice` (`S3` below `ActionBar`).
+- **States:** `idle`, `uploading` (`aria-busy="true"` on primary button, `StatusLine` after `1s`), `error-oversize`, `error-quota`, `error-network` / type / SVG (`Notice[danger]` under `ActionBar`), `field-invalid` (missing alt/description or disallowed embed host), `edit`, `inserted`.
+- **Compact:** At compact container width, dialog surface fills the viewport gutter with dialog inset padding; file trigger, inputs, choices, stacked `ActionBar` buttons, and `Notice` align flush on the dialog content column with zero horizontal overflow.

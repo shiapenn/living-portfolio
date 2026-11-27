@@ -7,6 +7,7 @@ export interface ActionBarProps {
   primary?: ButtonProps | string;
   secondary?: ButtonProps | string;
   textAction?: ButtonProps | string;
+  dangerTextAction?: ButtonProps | string;
   level?: ActionBarLevel;
   pageLevel?: boolean;
   id?: string;
@@ -58,6 +59,7 @@ export function renderActionBar(props: ActionBarProps): string {
     if (props.primary) slots.push(renderActionSlot(props.primary, 'primary'));
     if (props.secondary) slots.push(renderActionSlot(props.secondary, 'secondary'));
     if (props.textAction) slots.push(renderActionSlot(props.textAction, 'text'));
+    if (props.dangerTextAction) slots.push(renderActionSlot(props.dangerTextAction, 'text'));
   }
 
   return `<div${idAttr} data-c="ActionBar" data-level="${level}" data-rel="${relAttr}" class="${escapeHtml(classes)}">${slots.join('')}</div>`;

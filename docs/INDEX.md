@@ -305,4 +305,5 @@
 | `L062` | Admin Design Audit Protocol (D8) | `active` | [audit-protocol.md](design/audit-protocol.md) | — |
 | `L063` | Admin Page Archetypes (D1) | `active` | [archetypes.md](design/archetypes.md) | — |
 | `L064` | Admin Interaction Conventions (D5) | `active` | [interaction.md](design/interaction.md) | — |
+| `L065` | Public Media and Consent-Gated Embed Briefs | `active` | [public-media-brief.md](design/public-media-brief.md) | — |
 

@@ -7,6 +7,7 @@ import {
 import { resolveEntrySection } from '@living-portfolio/core/sections';
 import { EDITOR_STRINGS } from '../../strings/admin/editor.js';
 import { mountTiptapEditor, type MountedTiptapController } from './tiptap-editor.js';
+import { initEditorMedia } from './editor-media.js';
 import { formatActionableError } from '../../strings/formatters.js';
 
 type Visibility = 'draft' | 'unlisted' | 'public';
@@ -222,14 +223,9 @@ function bootEditorPage(): void {
   const slashMenuEl = document.getElementById('ref-slash-menu');
   let tiptapCtrl: MountedTiptapController | null = null;
   if (tiptapMountEl && bodyInput) {
-    tiptapCtrl = mountTiptapEditor({
-      mountEl: tiptapMountEl,
-      textareaEl: bodyInput,
-      slashMenuEl,
-      onMarkdownChange: () => {
-        markDirty();
-      },
-    });
+    tiptapCtrl = mountTiptapEditor({ mountEl: tiptapMountEl, textareaEl: bodyInput, slashMenuEl, onMarkdownChange: () => { markDirty(); } });
+    const mediaCtrl = initEditorMedia(tiptapCtrl);
+    tiptapCtrl.setMediaHandlers({ onOpenMediaDialog: mediaCtrl.openAddDialog, onEditMediaNode: mediaCtrl.openEditDialog, onUploadFile: mediaCtrl.handleDroppedOrPastedFile });
   }
 
   // Formatting toolbar buttons & Source toggle

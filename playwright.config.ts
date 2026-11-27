@@ -25,7 +25,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'PORT=3100 ENABLE_BUNDLED_WEB=true SEED_DEMO=true SITE_ORIGIN=http://127.0.0.1:3100 ADMIN_ORIGIN=http://127.0.0.1:3100 pnpm --filter @living-portfolio/api exec tsx src/server.ts',
+    command: 'PORT=3100 ENABLE_BUNDLED_WEB=true SEED_DEMO=true SITE_ORIGIN=http://127.0.0.1:3100 ADMIN_ORIGIN=http://127.0.0.1:3100 MEDIA_EMBED_ALLOWED_HOSTS=youtube-nocookie.com,player.vimeo.com,stub.invalid pnpm --filter @living-portfolio/api exec tsx src/server.ts',
     url: 'http://127.0.0.1:3100/healthz',
     reuseExistingServer: !process.env.CI,
     timeout: 30000,
@@ -35,6 +35,7 @@ export default defineConfig({
       SEED_DEMO: 'true',
       SITE_ORIGIN: 'http://127.0.0.1:3100',
       ADMIN_ORIGIN: 'http://127.0.0.1:3100',
+      MEDIA_EMBED_ALLOWED_HOSTS: 'youtube-nocookie.com,player.vimeo.com,stub.invalid',
       NO_PROXY: '127.0.0.1,localhost',
       no_proxy: '127.0.0.1,localhost',
     },

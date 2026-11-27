@@ -1,59 +1,9 @@
-import { Editor, Node, mergeAttributes } from '@tiptap/core';
+import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import { markdownToTiptapDoc, tiptapDocToMarkdown } from '../../editor/markdown-bridge.js';
 import type { PMJsonNode } from '../../editor/block-registry.js';
-
-const CalloutNode = Node.create({
-  name: 'callout',
-  group: 'block',
-  content: 'inline*',
-  addAttributes() {
-    return {
-      kind: { default: 'NOTE' },
-    };
-  },
-  parseHTML() {
-    return [{ tag: 'aside.lp-callout' }];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ['aside', mergeAttributes(HTMLAttributes, { class: 'lp-callout' }), 0];
-  },
-});
-
-const TableBlockNode = Node.create({
-  name: 'table',
-  group: 'block',
-  atom: true,
-  addAttributes() {
-    return {
-      rawMd: { default: '' },
-    };
-  },
-  parseHTML() {
-    return [{ tag: 'div.lp-table-block' }];
-  },
-  renderHTML({ node }) {
-    return ['div', { class: 'lp-table-block', contenteditable: 'false' }, ['pre', {}, String(node.attrs.rawMd || '')]];
-  },
-});
-
-const DirectiveBlockNode = Node.create({
-  name: 'directiveBlock',
-  group: 'block',
-  atom: true,
-  addAttributes() {
-    return {
-      rawMd: { default: '' },
-    };
-  },
-  parseHTML() {
-    return [{ tag: 'div.lp-directive-block' }];
-  },
-  renderHTML({ node }) {
-    return ['div', { class: 'lp-directive-block', contenteditable: 'false' }, ['pre', {}, String(node.attrs.rawMd || '')]];
-  },
-});
+import { CalloutNode, DirectiveBlockNode, MediaImageNode, MediaVideoNode, TableBlockNode } from './tiptap-nodes.js';
 
 export interface SlashCommandItem {
   id: string;
@@ -70,6 +20,8 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
   { id: 'quote', label: 'Quote', run: (ed) => ed.chain().focus().toggleBlockquote().run() },
   { id: 'code', label: 'Code block', run: (ed) => ed.chain().focus().toggleCodeBlock().run() },
   { id: 'divider', label: 'Divider', run: (ed) => ed.chain().focus().setHorizontalRule().run() },
+  { id: 'image', label: 'Image', run: () => {} },
+  { id: 'video', label: 'Video', run: () => {} },
 ];
 
 export interface MountedTiptapController {
@@ -78,6 +30,11 @@ export interface MountedTiptapController {
   setSourceMode: (source: boolean) => void;
   setMarkdown: (md: string) => void;
   getMarkdown: () => string;
+  setMediaHandlers: (handlers: {
+    onOpenMediaDialog: (kind: 'image' | 'video', triggerEl?: HTMLElement | null) => void;
+    onEditMediaNode: (target: { pos: number; nodeType: 'mediaImage' | 'mediaVideo'; attrs: Record<string, unknown> }, triggerEl?: HTMLElement | null) => void;
+    onUploadFile: (file: File) => void;
+  }) => void;
   destroy: () => void;
 }
 
@@ -92,6 +49,11 @@ export function mountTiptapEditor(opts: {
   let dirtyFromInitial = false;
   let initialRawMd = opts.textareaEl.value;
   let suppressUpdate = false;
+  let mediaHandlers: {
+    onOpenMediaDialog: (kind: 'image' | 'video', triggerEl?: HTMLElement | null) => void;
+    onEditMediaNode: (target: { pos: number; nodeType: 'mediaImage' | 'mediaVideo'; attrs: Record<string, unknown> }, triggerEl?: HTMLElement | null) => void;
+    onUploadFile: (file: File) => void;
+  } | null = null;
 
   const editor = new Editor({
     element: opts.mountEl,
@@ -105,6 +67,8 @@ export function mountTiptapEditor(opts: {
       CalloutNode,
       TableBlockNode,
       DirectiveBlockNode,
+      MediaImageNode,
+      MediaVideoNode,
     ],
     content: markdownToTiptapDoc(initialRawMd) as any,
     editorProps: {
@@ -115,6 +79,15 @@ export function mountTiptapEditor(opts: {
         'aria-multiline': 'true',
       },
       handlePaste: (_view, event) => {
+        const files = event.clipboardData?.files;
+        if (files && files.length > 0 && mediaHandlers) {
+          const mediaFile = Array.from(files).find((f) => f.type.startsWith('image/') || f.type.startsWith('video/'));
+          if (mediaFile) {
+            event.preventDefault();
+            mediaHandlers.onUploadFile(mediaFile);
+            return true;
+          }
+        }
         const text = event.clipboardData?.getData('text/plain');
         const html = event.clipboardData?.getData('text/html');
         if (text && !html && /(^#{1,3}\s|^[-*+]\s|^\d+\.\s|^>\s|^```)/m.test(text)) {
@@ -124,6 +97,17 @@ export function mountTiptapEditor(opts: {
             editor.commands.insertContent(parsed.content as any);
           }
           return true;
+        }
+        return false;
+      },
+      handleKeyDown: (_view, event) => {
+        if (event.key === 'Enter' && opts.slashMenuEl && !opts.slashMenuEl.hasAttribute('hidden')) {
+          const firstVisible = opts.slashMenuEl.querySelector<HTMLButtonElement>('button[data-slash-cmd]:not([hidden])');
+          if (firstVisible) {
+            event.preventDefault();
+            firstVisible.click();
+            return true;
+          }
         }
         return false;
       },
@@ -142,16 +126,35 @@ export function mountTiptapEditor(opts: {
     },
   });
 
+  const getSlashQuery = (ed: Editor): string | null => {
+    const { $from } = ed.state.selection;
+    const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
+    const m = /(?:^|\s)\/([a-z0-9]*)$/i.exec(textBefore);
+    return m ? m[1].toLowerCase() : null;
+  };
+
   const updateSlashMenu = (ed: Editor) => {
     const menu = opts.slashMenuEl;
     if (!menu) return;
-    const { $from } = ed.state.selection;
-    const textBefore = $from.parent.textBetween(0, $from.parentOffset, undefined, '\ufffc');
-    if (textBefore === '/' || /\s\/$/.test(textBefore)) {
-      menu.removeAttribute('hidden');
-    } else {
+    const query = getSlashQuery(ed);
+    if (query === null) {
       menu.setAttribute('hidden', '');
+      return;
     }
+    let visibleCount = 0;
+    menu.querySelectorAll<HTMLButtonElement>('button[data-slash-cmd]').forEach((btn) => {
+      const id = (btn.getAttribute('data-slash-cmd') || '').toLowerCase();
+      const label = (btn.textContent || '').toLowerCase();
+      const match = !query || id.startsWith(query) || label.includes(query);
+      if (match) {
+        btn.removeAttribute('hidden');
+        visibleCount++;
+      } else {
+        btn.setAttribute('hidden', '');
+      }
+    });
+    if (visibleCount > 0) menu.removeAttribute('hidden');
+    else menu.setAttribute('hidden', '');
   };
 
   if (opts.slashMenuEl) {
@@ -167,12 +170,67 @@ export function mountTiptapEditor(opts: {
       const cmdId = btn.getAttribute('data-slash-cmd');
       const cmd = SLASH_COMMANDS.find((c) => c.id === cmdId);
       if (!cmd) return;
+      const query = getSlashQuery(editor) ?? '';
       const { from } = editor.state.selection;
-      editor.chain().focus().deleteRange({ from: Math.max(1, from - 1), to: from }).run();
-      cmd.run(editor);
+      editor.chain().focus().deleteRange({ from: Math.max(1, from - query.length - 1), to: from }).run();
       opts.slashMenuEl?.setAttribute('hidden', '');
+      if (cmdId === 'image' || cmdId === 'video') {
+        mediaHandlers?.onOpenMediaDialog(cmdId, opts.mountEl);
+      } else {
+        cmd.run(editor);
+      }
     });
   }
+
+  // Drop target is the editor surface (never inside the dialog)
+  const surfaceWrap = opts.mountEl.parentElement;
+  if (surfaceWrap) {
+    surfaceWrap.addEventListener('dragover', (e) => {
+      if (e.dataTransfer?.types?.includes('Files')) {
+        e.preventDefault();
+        surfaceWrap.classList.add('is-drop-active');
+      }
+    });
+    surfaceWrap.addEventListener('dragleave', () => {
+      surfaceWrap.classList.remove('is-drop-active');
+    });
+    surfaceWrap.addEventListener('drop', (e) => {
+      surfaceWrap.classList.remove('is-drop-active');
+      const files = e.dataTransfer?.files;
+      if (!files || files.length === 0 || !mediaHandlers) return;
+      const mediaFile = Array.from(files).find((f) => f.type.startsWith('image/') || f.type.startsWith('video/'));
+      if (!mediaFile) return;
+      e.preventDefault();
+      mediaHandlers.onUploadFile(mediaFile);
+    });
+  }
+
+  // Clicking Edit button (or figure) on an inserted media block opens the unified dialog in Edit mode
+  opts.mountEl.addEventListener('click', (e) => {
+    const targetEl = e.target as HTMLElement | null;
+    const editBtn = targetEl?.closest<HTMLElement>('[data-media-edit="true"]');
+    const figureEl = targetEl?.closest<HTMLElement>('figure[data-media-node]');
+    if (!editBtn && !figureEl) return;
+    if (!mediaHandlers || !figureEl) return;
+    e.preventDefault();
+    const pos = editor.view.posAtDOM(figureEl, 0);
+    let resolvedPos = pos;
+    let node = editor.state.doc.nodeAt(resolvedPos);
+    if (!node || (node.type.name !== 'mediaImage' && node.type.name !== 'mediaVideo')) {
+      resolvedPos = Math.max(0, pos - 1);
+      node = editor.state.doc.nodeAt(resolvedPos);
+    }
+    if (node && (node.type.name === 'mediaImage' || node.type.name === 'mediaVideo')) {
+      mediaHandlers.onEditMediaNode(
+        {
+          pos: resolvedPos,
+          nodeType: node.type.name as 'mediaImage' | 'mediaVideo',
+          attrs: { ...node.attrs },
+        },
+        editBtn || figureEl
+      );
+    }
+  });
 
   const applyVisibility = () => {
     if (sourceMode) {
@@ -223,6 +281,9 @@ export function mountTiptapEditor(opts: {
       if (!dirtyFromInitial) return initialRawMd;
       if (sourceMode) return opts.textareaEl.value;
       return tiptapDocToMarkdown(editor.getJSON() as PMJsonNode);
+    },
+    setMediaHandlers: (handlers) => {
+      mediaHandlers = handlers;
     },
     destroy: () => editor.destroy(),
   };

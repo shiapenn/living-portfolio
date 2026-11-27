@@ -45,9 +45,26 @@ export function parseInlineMarkdown(text: string): PMJsonNode[] {
   return nodes;
 }
 
+const MEDIA_PATH_RE = /^\/api\/media\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const STANDALONE_IMG_RE = /^!\[((?:\\.|[^\]])*)\]\(([^\s")]+)(?:\s+"((?:\\.|[^"])*)")?\)\s*$/;
+
+function unescapeMdQuoted(val: string): string {
+  return val.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+}
+
+export function parseDirectiveAttrs(attrBlock: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  const re = /([a-zA-Z0-9_-]+)="((?:\\.|[^"])*)"/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(attrBlock)) !== null) {
+    out[m[1]] = unescapeMdQuoted(m[2]);
+  }
+  return out;
+}
+
 /**
  * Parse Markdown into a Tiptap/ProseMirror JSON document.
- * Preserves future `:::columns` directives, callouts, tables, code blocks, lists, quotes, headings, and paragraphs losslessly.
+ * Preserves future `:::columns` directives, video directives, media images, callouts, tables, code blocks, lists, quotes, headings, and paragraphs losslessly.
  */
 export function markdownToTiptapDoc(md: string): PMJsonNode {
   const norm = normalizeMarkdown(md);
@@ -67,8 +84,9 @@ export function markdownToTiptapDoc(md: string): PMJsonNode {
       continue;
     }
 
-    // 1. Container directive (:::columns ... :::)
+    // 1. Container directive (:::video or :::columns ... :::)
     if (line.startsWith(':::')) {
+      const videoHeader = /^:::video\{(.*)\}\s*$/.exec(line.trim());
       const dirLines: string[] = [line];
       let depth = 1;
       i++;
@@ -82,7 +100,41 @@ export function markdownToTiptapDoc(md: string): PMJsonNode {
         }
         i++;
       }
+      if (videoHeader && dirLines.length >= 2) {
+        const attrs = parseDirectiveAttrs(videoHeader[1]);
+        const isEmbed = Boolean(attrs.embed);
+        blocks.push({
+          type: 'mediaVideo',
+          attrs: {
+            mode: isEmbed ? 'embed' : 'upload',
+            src: isEmbed ? '' : (attrs.src ?? ''),
+            embedUrl: isEmbed ? (attrs.embed ?? '') : '',
+            description: attrs.description ?? '',
+            caption: attrs.caption ?? '',
+          },
+        });
+        continue;
+      }
       blocks.push({ type: 'directiveBlock', attrs: { rawMd: dirLines.join('\n') } });
+      continue;
+    }
+
+    // 1b. Standalone /api/media/:id image block
+    const imgMatch = STANDALONE_IMG_RE.exec(line);
+    if (imgMatch && MEDIA_PATH_RE.test(imgMatch[2])) {
+      const alt = imgMatch[1].replace(/\\\]/g, ']');
+      const src = imgMatch[2];
+      const caption = imgMatch[3] !== undefined ? unescapeMdQuoted(imgMatch[3]) : '';
+      blocks.push({
+        type: 'mediaImage',
+        attrs: {
+          src,
+          alt,
+          caption,
+          decorative: alt === '',
+        },
+      });
+      i++;
       continue;
     }
 
@@ -204,6 +256,7 @@ export function markdownToTiptapDoc(md: string): PMJsonNode {
       i < lines.length &&
       lines[i].trim() !== '' &&
       !lines[i].startsWith(':::') &&
+      !(STANDALONE_IMG_RE.test(lines[i]) && MEDIA_PATH_RE.test(STANDALONE_IMG_RE.exec(lines[i])?.[2] ?? '')) &&
       !lines[i].startsWith('```') &&
       !lines[i].startsWith('>') &&
       !/^(#{1,3})\s+/.test(lines[i]) &&

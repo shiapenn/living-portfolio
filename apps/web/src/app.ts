@@ -1,36 +1,11 @@
 import { Hono } from 'hono';
-import {
-  CORE_BUNDLE_CSS,
-  CORE_CSS_FILENAME,
-  DEFAULT_ACCENT_CSS,
-  DEFAULT_ACCENT_CSS_FILENAME,
-  FONT_ASSETS,
-  BUILTIN_THEME_PACKS_V2,
-  buildThemePreviewCss,
-  deriveAccentPairFromSeed,
-  resolveAdminThemeCssAsset,
-  type DensityChoice,
-  type RadiusScaleChoice,
-  type ThemePackId,
-  type ThemePackV2,
-  type VettedFontChoice,
-} from '@living-portfolio/ui-core';
-import {
-  ADMIN_BASE_CSS,
-  ADMIN_CSS_FILENAME,
-  ADMIN_EDITOR_CSS,
-  ADMIN_EDITOR_CSS_FILENAME,
-  ADMIN_GALLERY_CSS,
-  ADMIN_GALLERY_CSS_FILENAME,
-} from '@living-portfolio/ui-admin';
-import {
-  PUBLIC_BUNDLE_CSS,
-  PUBLIC_CSS_FILENAME,
-} from '@living-portfolio/ui-public';
+import { CORE_BUNDLE_CSS, CORE_CSS_FILENAME, DEFAULT_ACCENT_CSS, DEFAULT_ACCENT_CSS_FILENAME, FONT_ASSETS, BUILTIN_THEME_PACKS_V2, buildThemePreviewCss, deriveAccentPairFromSeed, resolveAdminThemeCssAsset, type DensityChoice, type RadiusScaleChoice, type ThemePackId, type ThemePackV2, type VettedFontChoice } from '@living-portfolio/ui-core';
+import { ADMIN_BASE_CSS, ADMIN_CSS_FILENAME, ADMIN_EDITOR_CSS, ADMIN_EDITOR_CSS_FILENAME, ADMIN_GALLERY_CSS, ADMIN_GALLERY_CSS_FILENAME } from '@living-portfolio/ui-admin';
+import { PUBLIC_BUNDLE_CSS, PUBLIC_CSS_FILENAME } from '@living-portfolio/ui-public';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { readFileSync, existsSync } from 'node:fs';
-import { loadConfig } from '@living-portfolio/config';
+import { loadConfig, buildEmbedFrameSrc } from '@living-portfolio/config';
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 import {
@@ -79,6 +54,8 @@ export function createWebApp(options?: WebAppOptions) {
   const app = new Hono();
   app.use('*', deliveryMiddleware);
   const cfg = loadConfig();
+  const cspHeader = `default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; media-src 'self'; frame-src ${buildEmbedFrameSrc(cfg.MEDIA_EMBED_ALLOWED_HOSTS)}; frame-ancestors 'none'; base-uri 'self'`;
+  app.use('*', async (c, next) => { if (!c.res.headers.get('Content-Security-Policy')) c.header('Content-Security-Policy', cspHeader); await next(); });
   const primarySiteOrigin = cfg.SITE_ORIGIN.split(',')[0].trim();
 
   const defaultPort = process.env.API_PORT || process.env.PORT || '4000';

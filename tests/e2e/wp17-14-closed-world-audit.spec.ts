@@ -133,6 +133,14 @@ test.describe('WP-17.14 Generic Closed-World Audit (K22–K27)', () => {
             if (ac === 'FormSection' && bc === 'FormSection') return 'section->section';
             if (ac === 'FormSection' && bIsActionGroup) return 'section->page-action-bar';
             if (ac === 'Subsection' && bc === 'Subsection') return 'subsection->subsection';
+            if (parent.classList.contains('lp-dialog-panel') && b.classList.contains('lp-dialog-footer')) return 'sibling->action-group';
+            if (parent.classList.contains('lp-dialog-footer') && (a.classList.contains('lp-action-bar-group') || ac === 'ActionBar')) return 'action-bar->feedback';
+            if (a.classList.contains('lp-dialog-header') && b.classList.contains('lp-dialog-body')) return 'heading->first';
+            if (parent.classList.contains('lp-choice-group') && a.classList.contains('lp-choice-legend')) return 'label->control';
+            if (parent.classList.contains('lp-editor-media-embed-card')) return 'item-row->item-row';
+            if (parent.classList.contains('lp-editor-media-block') || parent.classList.contains('pub-media')) return 'label->control';
+            if (parent.classList.contains('pub-embed-gate')) return 'field->field';
+            if (parent.classList.contains('ProseMirror')) return 'field->field';
             if (parent.classList.contains('lp-action-bar-group') && ap === 'consequence') return 'consequence->action-bar';
             if (parent.classList.contains('lp-credential-list')) return 'credential-cell->credential-cell';
             if (parent.getAttribute('data-c') === 'Credential') return 'helper->credential';
@@ -174,14 +182,21 @@ test.describe('WP-17.14 Generic Closed-World Audit (K22–K27)', () => {
             return null;
           };
 
-          const root = document.querySelector('main .lp-page-column') || document.querySelector('main');
+          const openDialogPanel = document.querySelector('[data-c="Overlay"]:not([hidden]) .lp-dialog-panel');
+          const root =
+            openDialogPanel ||
+            document.querySelector('main .lp-page-column') ||
+            document.querySelector('main .lp-editor-writing-col') ||
+            document.querySelector('main .reading-column') ||
+            document.querySelector('main');
           if (!root) return { pairs: [], unclassified: [] };
 
-          const containers = [root, ...Array.from(root.querySelectorAll('section, form, div, dl'))].filter((el) => {
+          const containers = [root, ...Array.from(root.querySelectorAll('section, form, div, dl, figure'))].filter((el) => {
             if (!isVisible(el)) return false;
             if (el.closest('[data-c="List"][data-variant="plain"] > [data-c="Item"] .lp-item-claims-grid')) return false;
             if (el.classList.contains('lp-list-plain') || el.classList.contains('lp-list-interactive')) return false;
             if (el.classList.contains('lp-action-bar') || el.classList.contains('lp-tabs') || el.classList.contains('lp-item-meta')) return false;
+            if (el.classList.contains('lp-editor-writing-col') || el.classList.contains('lp-editor-title-wrap')) return false;
             const cs = getComputedStyle(el);
             return cs.display === 'flex' && cs.flexDirection === 'column' || cs.display === 'grid';
           });

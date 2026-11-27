@@ -126,6 +126,7 @@
         "date",
         "password",
         "code",
+        "file",
         "error"
       ],
       "gallerySampleId": "gallery-form-section-sample",

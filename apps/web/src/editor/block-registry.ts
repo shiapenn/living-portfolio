@@ -278,6 +278,81 @@ registerBlock({
 });
 
 registerBlock({
+  id: 'mediaImage',
+  label: 'Image',
+  nodeType: 'mediaImage',
+  schema: { attrs: { src: '', alt: '', caption: '', decorative: false } },
+  editorView: 'MediaImageExtension',
+  markdownSerialiser: (node) => {
+    const src = String(node.attrs?.src ?? '');
+    const decorative = Boolean(node.attrs?.decorative);
+    const alt = decorative ? '' : String(node.attrs?.alt ?? '').replace(/\]/g, '\\]');
+    const caption = String(node.attrs?.caption ?? '');
+    const capPart = caption ? ` "${caption.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"` : '';
+    return `![${alt}](${src}${capPart})`;
+  },
+  publicRenderer: (node) => {
+    const src = escapeHtml(String(node.attrs?.src ?? ''));
+    const decorative = Boolean(node.attrs?.decorative);
+    const alt = decorative ? '' : escapeHtml(String(node.attrs?.alt ?? ''));
+    const caption = String(node.attrs?.caption ?? '');
+    return `<figure class="pub-media" data-pub-media="image"><img src="${src}" alt="${alt}" loading="lazy" />${caption ? `<figcaption class="pub-media-caption">${escapeHtml(caption)}</figcaption>` : ''}</figure>`;
+  },
+  exportRule: (node) => {
+    const src = String(node.attrs?.src ?? '');
+    const decorative = Boolean(node.attrs?.decorative);
+    const alt = decorative ? '' : String(node.attrs?.alt ?? '').replace(/\]/g, '\\]');
+    const caption = String(node.attrs?.caption ?? '');
+    const capPart = caption ? ` "${caption.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"` : '';
+    return `![${alt}](${src}${capPart})`;
+  },
+});
+
+registerBlock({
+  id: 'mediaVideo',
+  label: 'Video',
+  nodeType: 'mediaVideo',
+  schema: { attrs: { mode: 'upload', src: '', embedUrl: '', description: '', caption: '' } },
+  editorView: 'MediaVideoExtension',
+  markdownSerialiser: (node) => {
+    const mode = String(node.attrs?.mode ?? 'upload') === 'embed' ? 'embed' : 'upload';
+    const escAttr = (v: string) => v.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    const desc = escAttr(String(node.attrs?.description ?? ''));
+    const cap = String(node.attrs?.caption ?? '');
+    const capAttr = cap ? ` caption="${escAttr(cap)}"` : '';
+    if (mode === 'embed') {
+      const embed = escAttr(String(node.attrs?.embedUrl ?? ''));
+      return `:::video{embed="${embed}" description="${desc}"${capAttr}}\n:::`;
+    }
+    const src = escAttr(String(node.attrs?.src ?? ''));
+    return `:::video{src="${src}" description="${desc}"${capAttr}}\n:::`;
+  },
+  publicRenderer: (node) => {
+    const mode = String(node.attrs?.mode ?? 'upload') === 'embed' ? 'embed' : 'upload';
+    const desc = escapeHtml(String(node.attrs?.description ?? ''));
+    const cap = String(node.attrs?.caption ?? '');
+    const capHtml = cap ? `<figcaption class="pub-media-caption">${escapeHtml(cap)}</figcaption>` : '';
+    if (mode === 'embed') {
+      const embed = escapeHtml(String(node.attrs?.embedUrl ?? ''));
+      return `<figure class="pub-media" data-pub-media="embed"><div class="pub-embed-gate" data-embed-state="unloaded" data-embed-src="${embed}" data-embed-title="${desc}"><p class="pub-embed-gate-title">${desc}</p><button type="button" class="btn btn-primary pub-embed-load-btn">Load video</button></div>${capHtml}</figure>`;
+    }
+    const src = escapeHtml(String(node.attrs?.src ?? ''));
+    return `<figure class="pub-media" data-pub-media="video"><video src="${src}" controls preload="metadata" aria-label="${desc}"></video>${capHtml}</figure>`;
+  },
+  exportRule: (node) => {
+    const mode = String(node.attrs?.mode ?? 'upload') === 'embed' ? 'embed' : 'upload';
+    const escAttr = (v: string) => v.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    const desc = escAttr(String(node.attrs?.description ?? ''));
+    const cap = String(node.attrs?.caption ?? '');
+    const capAttr = cap ? ` caption="${escAttr(cap)}"` : '';
+    if (mode === 'embed') {
+      return `:::video{embed="${escAttr(String(node.attrs?.embedUrl ?? ''))}" description="${desc}"${capAttr}}\n:::`;
+    }
+    return `:::video{src="${escAttr(String(node.attrs?.src ?? ''))}" description="${desc}"${capAttr}}\n:::`;
+  },
+});
+
+registerBlock({
   id: 'directiveBlock',
   label: 'Container directive',
   nodeType: 'directiveBlock',
