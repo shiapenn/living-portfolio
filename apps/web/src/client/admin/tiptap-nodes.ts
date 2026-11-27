@@ -82,6 +82,43 @@ export const MediaImageNode = Node.create({
   },
 });
 
+export const ColumnNode = Node.create({
+  name: 'column',
+  content: 'block+',
+  isolating: true,
+  parseHTML() {
+    return [{ tag: 'div.lp-editor-column' }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ['div', mergeAttributes(HTMLAttributes, { class: 'lp-editor-column' }), 0];
+  },
+});
+
+export const ColumnsNode = Node.create({
+  name: 'columns',
+  group: 'block',
+  content: 'column+',
+  addAttributes() {
+    return {
+      cols: {
+        default: 2,
+        parseHTML: (el) => {
+          const n = Number.parseInt(el.getAttribute('data-cols') || '2', 10);
+          return n === 3 ? 3 : n === 4 ? 4 : 2;
+        },
+      },
+    };
+  },
+  parseHTML() {
+    return [{ tag: 'div.lp-editor-columns' }];
+  },
+  renderHTML({ node, HTMLAttributes }) {
+    const rawCols = Number(node.attrs.cols ?? 2);
+    const cols = rawCols === 3 ? 3 : rawCols === 4 ? 4 : 2;
+    return ['div', mergeAttributes(HTMLAttributes, { class: 'lp-editor-columns', 'data-cols': String(cols) }), 0];
+  },
+});
+
 export const MediaVideoNode = Node.create({
   name: 'mediaVideo',
   group: 'block',

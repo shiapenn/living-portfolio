@@ -3,7 +3,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import { markdownToTiptapDoc, tiptapDocToMarkdown } from '../../editor/markdown-bridge.js';
 import type { PMJsonNode } from '../../editor/block-registry.js';
-import { CalloutNode, DirectiveBlockNode, MediaImageNode, MediaVideoNode, TableBlockNode } from './tiptap-nodes.js';
+import { CalloutNode, ColumnNode, ColumnsNode, DirectiveBlockNode, MediaImageNode, MediaVideoNode, TableBlockNode } from './tiptap-nodes.js';
 
 export interface SlashCommandItem {
   id: string;
@@ -22,6 +22,60 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
   { id: 'divider', label: 'Divider', run: (ed) => ed.chain().focus().setHorizontalRule().run() },
   { id: 'image', label: 'Image', run: () => {} },
   { id: 'video', label: 'Video', run: () => {} },
+  {
+    id: 'columns',
+    label: '2 columns',
+    run: (ed) =>
+      ed
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'columns',
+          attrs: { cols: 2 },
+          content: [
+            { type: 'column', content: [{ type: 'paragraph' }] },
+            { type: 'column', content: [{ type: 'paragraph' }] },
+          ],
+        })
+        .run(),
+  },
+  {
+    id: 'columns3',
+    label: '3 columns',
+    run: (ed) =>
+      ed
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'columns',
+          attrs: { cols: 3 },
+          content: [
+            { type: 'column', content: [{ type: 'paragraph' }] },
+            { type: 'column', content: [{ type: 'paragraph' }] },
+            { type: 'column', content: [{ type: 'paragraph' }] },
+          ],
+        })
+        .run(),
+  },
+  {
+    id: 'columns4',
+    label: '4 columns',
+    run: (ed) =>
+      ed
+        .chain()
+        .focus()
+        .insertContent({
+          type: 'columns',
+          attrs: { cols: 4 },
+          content: [
+            { type: 'column', content: [{ type: 'paragraph' }] },
+            { type: 'column', content: [{ type: 'paragraph' }] },
+            { type: 'column', content: [{ type: 'paragraph' }] },
+            { type: 'column', content: [{ type: 'paragraph' }] },
+          ],
+        })
+        .run(),
+  },
 ];
 
 export interface MountedTiptapController {
@@ -65,6 +119,8 @@ export function mountTiptapEditor(opts: {
         openOnClick: false,
       }),
       CalloutNode,
+      ColumnNode,
+      ColumnsNode,
       TableBlockNode,
       DirectiveBlockNode,
       MediaImageNode,
@@ -201,6 +257,16 @@ export function mountTiptapEditor(opts: {
       const mediaFile = Array.from(files).find((f) => f.type.startsWith('image/') || f.type.startsWith('video/'));
       if (!mediaFile) return;
       e.preventDefault();
+      // Drop-to-columns: if dropped onto a .lp-editor-column, place cursor inside that column before inserting
+      const dropTarget = (e.target as HTMLElement | null)?.closest?.('.lp-editor-column') as HTMLElement | null;
+      if (dropTarget) {
+        try {
+          const colPos = editor.view.posAtDOM(dropTarget, 0);
+          editor.commands.setTextSelection(Math.min(colPos + 1, editor.state.doc.content.size));
+        } catch {
+          // Fallback to current selection
+        }
+      }
       mediaHandlers.onUploadFile(mediaFile);
     });
   }

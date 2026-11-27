@@ -6,6 +6,7 @@
  */
 
 import { extractInlineImages, parseStandaloneImageLine, renderMarkdownImage, renderVideoDirectiveBlock, type MarkdownMediaOptions } from './markdown-media.js';
+import { parseColumnsHeader, renderColumnsDirective } from './editor/columns-parser.js';
 
 function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -251,6 +252,14 @@ export function renderMarkdown(md: string, options?: MarkdownOptions): string {
       continue;
     }
 
+    // 0a2. Columns container directive: :::columns{cols=2..4} ... :::
+    const colsRendered = renderColumnsDirective(lines, i, (innerMd) => renderMarkdown(innerMd, options));
+    if (colsRendered) {
+      blocks.push(colsRendered.html);
+      i = colsRendered.nextIdx;
+      continue;
+    }
+
     // 0b. Standalone Markdown image: ![alt](url "caption")
     const imgMatch = parseStandaloneImageLine(line);
     if (imgMatch) {
@@ -365,6 +374,7 @@ export function renderMarkdown(md: string, options?: MarkdownOptions): string {
       i < lines.length &&
       lines[i].trim() &&
       !lines[i].trim().startsWith(':::video{') &&
+      !parseColumnsHeader(lines[i]) &&
       !parseStandaloneImageLine(lines[i]) &&
       !lines[i].trim().startsWith('```') &&
       !lines[i].match(/^#{1,6}\s+/) &&

@@ -277,36 +277,39 @@ registerBlock({
   exportRule: (node) => `[${String(node.attrs?.label ?? node.attrs?.url ?? '')}](${String(node.attrs?.url ?? '')})`,
 });
 
+const serialiseMediaImage = (node: PMJsonNode): string => {
+  const src = String(node.attrs?.src ?? '');
+  const alt = node.attrs?.decorative ? '' : String(node.attrs?.alt ?? '').replace(/\\/g, '\\\\').replace(/\]/g, '\\]');
+  const caption = String(node.attrs?.caption ?? '');
+  return `![${alt}](${src}${caption ? ` "${caption.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"` : ''})`;
+};
+
 registerBlock({
   id: 'mediaImage',
   label: 'Image',
   nodeType: 'mediaImage',
   schema: { attrs: { src: '', alt: '', caption: '', decorative: false } },
   editorView: 'MediaImageExtension',
-  markdownSerialiser: (node) => {
-    const src = String(node.attrs?.src ?? '');
-    const decorative = Boolean(node.attrs?.decorative);
-    const alt = decorative ? '' : String(node.attrs?.alt ?? '').replace(/\\/g, '\\\\').replace(/\]/g, '\\]');
-    const caption = String(node.attrs?.caption ?? '');
-    const capPart = caption ? ` "${caption.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"` : '';
-    return `![${alt}](${src}${capPart})`;
-  },
+  markdownSerialiser: serialiseMediaImage,
   publicRenderer: (node) => {
     const src = escapeHtml(String(node.attrs?.src ?? ''));
-    const decorative = Boolean(node.attrs?.decorative);
-    const alt = decorative ? '' : escapeHtml(String(node.attrs?.alt ?? ''));
+    const alt = node.attrs?.decorative ? '' : escapeHtml(String(node.attrs?.alt ?? ''));
     const caption = String(node.attrs?.caption ?? '');
     return `<figure class="pub-media" data-pub-media="image"><img src="${src}" alt="${alt}" loading="lazy" />${caption ? `<figcaption class="pub-media-caption">${escapeHtml(caption)}</figcaption>` : ''}</figure>`;
   },
-  exportRule: (node) => {
-    const src = String(node.attrs?.src ?? '');
-    const decorative = Boolean(node.attrs?.decorative);
-    const alt = decorative ? '' : String(node.attrs?.alt ?? '').replace(/\\/g, '\\\\').replace(/\]/g, '\\]');
-    const caption = String(node.attrs?.caption ?? '');
-    const capPart = caption ? ` "${caption.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"` : '';
-    return `![${alt}](${src}${capPart})`;
-  },
+  exportRule: serialiseMediaImage,
 });
+
+const serialiseMediaVideo = (node: PMJsonNode): string => {
+  const mode = String(node.attrs?.mode ?? 'upload') === 'embed' ? 'embed' : 'upload';
+  const esc = (v: string) => v.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  const desc = esc(String(node.attrs?.description ?? ''));
+  const cap = String(node.attrs?.caption ?? '');
+  const capAttr = cap ? ` caption="${esc(cap)}"` : '';
+  return mode === 'embed'
+    ? `:::video{embed="${esc(String(node.attrs?.embedUrl ?? ''))}" description="${desc}"${capAttr}}\n:::`
+    : `:::video{src="${esc(String(node.attrs?.src ?? ''))}" description="${desc}"${capAttr}}\n:::`;
+};
 
 registerBlock({
   id: 'mediaVideo',
@@ -314,19 +317,7 @@ registerBlock({
   nodeType: 'mediaVideo',
   schema: { attrs: { mode: 'upload', src: '', embedUrl: '', description: '', caption: '' } },
   editorView: 'MediaVideoExtension',
-  markdownSerialiser: (node) => {
-    const mode = String(node.attrs?.mode ?? 'upload') === 'embed' ? 'embed' : 'upload';
-    const escAttr = (v: string) => v.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    const desc = escAttr(String(node.attrs?.description ?? ''));
-    const cap = String(node.attrs?.caption ?? '');
-    const capAttr = cap ? ` caption="${escAttr(cap)}"` : '';
-    if (mode === 'embed') {
-      const embed = escAttr(String(node.attrs?.embedUrl ?? ''));
-      return `:::video{embed="${embed}" description="${desc}"${capAttr}}\n:::`;
-    }
-    const src = escAttr(String(node.attrs?.src ?? ''));
-    return `:::video{src="${src}" description="${desc}"${capAttr}}\n:::`;
-  },
+  markdownSerialiser: serialiseMediaVideo,
   publicRenderer: (node) => {
     const mode = String(node.attrs?.mode ?? 'upload') === 'embed' ? 'embed' : 'upload';
     const desc = escapeHtml(String(node.attrs?.description ?? ''));
@@ -336,20 +327,44 @@ registerBlock({
       const embed = escapeHtml(String(node.attrs?.embedUrl ?? ''));
       return `<figure class="pub-media" data-pub-media="embed"><div class="pub-embed-gate" data-embed-state="unloaded" data-embed-src="${embed}" data-embed-title="${desc}"><p class="pub-embed-gate-title">${desc}</p><button type="button" class="btn btn-primary pub-embed-load-btn">Load video</button></div>${capHtml}</figure>`;
     }
-    const src = escapeHtml(String(node.attrs?.src ?? ''));
-    return `<figure class="pub-media" data-pub-media="video"><video src="${src}" controls preload="metadata" aria-label="${desc}"></video>${capHtml}</figure>`;
+    return `<figure class="pub-media" data-pub-media="video"><video src="${escapeHtml(String(node.attrs?.src ?? ''))}" controls preload="metadata" aria-label="${desc}"></video>${capHtml}</figure>`;
   },
-  exportRule: (node) => {
-    const mode = String(node.attrs?.mode ?? 'upload') === 'embed' ? 'embed' : 'upload';
-    const escAttr = (v: string) => v.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-    const desc = escAttr(String(node.attrs?.description ?? ''));
-    const cap = String(node.attrs?.caption ?? '');
-    const capAttr = cap ? ` caption="${escAttr(cap)}"` : '';
-    if (mode === 'embed') {
-      return `:::video{embed="${escAttr(String(node.attrs?.embedUrl ?? ''))}" description="${desc}"${capAttr}}\n:::`;
-    }
-    return `:::video{src="${escAttr(String(node.attrs?.src ?? ''))}" description="${desc}"${capAttr}}\n:::`;
+  exportRule: serialiseMediaVideo,
+});
+
+const serialiseColumns = (node: PMJsonNode, h: SerialiseHelpers): string => {
+  const rawCols = Number(node.attrs?.cols ?? (node.content?.length || 2));
+  const cols = rawCols === 3 ? 3 : rawCols === 4 ? 4 : 2;
+  return `:::columns{cols=${cols}}\n${(node.content ?? []).map((col) => h.serialiseBlock(col)).join('\n')}\n:::`;
+};
+
+const serialiseColumn = (node: PMJsonNode, h: SerialiseHelpers): string =>
+  `:::column\n${(node.content ?? []).map((child) => h.serialiseBlock(child)).join('\n\n').trimEnd()}\n:::`;
+
+registerBlock({
+  id: 'columns',
+  label: 'Columns',
+  nodeType: 'columns',
+  schema: { attrs: { cols: 2 }, content: 'column+' },
+  editorView: 'ColumnsNode',
+  markdownSerialiser: serialiseColumns,
+  publicRenderer: (node, h) => {
+    const rawCols = Number(node.attrs?.cols ?? (node.content?.length || 2));
+    const cols = rawCols === 3 ? 3 : rawCols === 4 ? 4 : 2;
+    return `<div class="pub-columns" data-cols="${cols}" data-pub-columns="true">${(node.content ?? []).map((col) => h.renderBlock(col)).join('')}</div>`;
   },
+  exportRule: serialiseColumns,
+});
+
+registerBlock({
+  id: 'column',
+  label: 'Column',
+  nodeType: 'column',
+  schema: { content: 'block+' },
+  editorView: 'ColumnNode',
+  markdownSerialiser: serialiseColumn,
+  publicRenderer: (node, h) => `<div class="pub-column">${(node.content ?? []).map((c) => h.renderBlock(c)).join('')}</div>`,
+  exportRule: serialiseColumn,
 });
 
 registerBlock({

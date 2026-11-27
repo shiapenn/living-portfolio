@@ -267,7 +267,7 @@ items:
     expected_minutes: 50
     gate: none
     acceptance: 2-4 columns directive with responsive collapse, source reading order, nested columns & drop-to-columns, 100% Markdown round-trip + E2E
-    status: ready
+    status: done
 
   - id: WP-18.6
     title: Import stepper polish (Plan conditional provider cards, Review per-item actions, Done screen; UX-35)
