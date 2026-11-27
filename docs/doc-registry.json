@@ -2289,5 +2289,13 @@
     "path": "docs/execution-reports/A193-wp-187-real-file-import-and-backup-media.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A194",
+    "title": "WP-18.8 Quick Log Capture Route",
+    "class": "A",
+    "path": "docs/execution-reports/A194-wp-188-quick-log-capture-route.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
