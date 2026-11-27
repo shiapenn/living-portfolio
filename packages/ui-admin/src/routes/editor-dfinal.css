@@ -69,12 +69,16 @@
   right: 0;
   margin: 0 auto;
   width: fit-content;
+  max-width: calc(100% - var(--lp-space-proximity-4));
+  box-sizing: border-box;
   z-index: var(--lp-z-overlay);
   background: var(--surface-l1);
   box-shadow: var(--lp-elevation-e2);
   border-radius: var(--lp-radius-r2);
   padding: var(--lp-space-inset-track) var(--lp-space-inset-item-x);
   display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
   gap: var(--lp-space-proximity-1);
 }

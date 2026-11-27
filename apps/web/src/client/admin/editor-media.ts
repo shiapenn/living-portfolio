@@ -72,10 +72,12 @@ export function initEditorMedia(tiptapCtrl: MountedTiptapController): {
     if (!errorNoticeEl || !errorNoticeText) return;
     if (msg) {
       errorNoticeText.textContent = msg;
+      errorNoticeEl.setAttribute('role', 'alert');
       errorNoticeEl.removeAttribute('hidden');
       dlgEl.setAttribute('data-media-state', 'error');
     } else {
       errorNoticeText.textContent = '';
+      errorNoticeEl.removeAttribute('role');
       errorNoticeEl.setAttribute('hidden', '');
     }
   };

@@ -1,4 +1,6 @@
-import { parseDirectiveAttrs } from './editor/markdown-bridge.js';
+import { parseDirectiveAttrs, parseStandaloneImageLine } from './editor/markdown-bridge.js';
+
+export { parseStandaloneImageLine };
 
 export interface MediaDimension {
   width: number;
@@ -12,7 +14,6 @@ export interface MarkdownMediaOptions {
 
 export const DEFAULT_EMBED_ALLOWED_HOSTS = ['youtube-nocookie.com', 'player.vimeo.com'];
 export const INTERNAL_MEDIA_RE = /^\/api\/media\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
-export const STANDALONE_IMAGE_RE = /^!\[((?:\\.|[^\]])*)\]\(([^\s")]+)(?:\s+"((?:\\.|[^"])*)")?\)\s*$/;
 
 function checkEmbedUrl(rawUrl: string, allowedHosts: readonly string[]): { ok: boolean; url: string; host: string } {
   try {
@@ -106,6 +107,30 @@ export function renderMarkdownImage(
   const caption = rawCaption !== undefined ? unescapeQuoted(rawCaption) : '';
   const capHtml = caption ? `<figcaption class="pub-media-caption">${escHtml(caption)}</figcaption>` : '';
   return `<figure class="pub-media" data-pub-media="image">${imgTag}${capHtml}</figure>`;
+}
+
+export function extractInlineImages(
+  text: string,
+  options?: MarkdownMediaOptions
+): { raw: string; imgTokens: string[] } {
+  const imgTokens: string[] = [];
+  let raw = '';
+  let pos = 0;
+  while (pos < text.length) {
+    const start = text.indexOf('![', pos);
+    if (start === -1) { raw += text.slice(pos); break; }
+    const closeBracket = text.indexOf(']', start + 2);
+    if (closeBracket === -1 || text[closeBracket + 1] !== '(') { raw += text.slice(pos, start + 2); pos = start + 2; continue; }
+    const closeParen = text.indexOf(')', closeBracket + 2);
+    if (closeParen === -1) { raw += text.slice(pos, start + 2); pos = start + 2; continue; }
+    const parsed = parseStandaloneImageLine(text.slice(start, closeParen + 1));
+    if (!parsed) { raw += text.slice(pos, start + 2); pos = start + 2; continue; }
+    raw += text.slice(pos, start);
+    raw += `\u0000IMG${imgTokens.length}\u0000`;
+    imgTokens.push(renderMarkdownImage(parsed.alt, parsed.url, parsed.caption, options, true));
+    pos = closeParen + 1;
+  }
+  return { raw, imgTokens };
 }
 
 export function renderVideoDirectiveBlock(

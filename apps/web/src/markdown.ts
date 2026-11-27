@@ -5,7 +5,7 @@
  * fenced code blocks, lists, blockquotes, tables, and inline syntax.
  */
 
-import { renderMarkdownImage, renderVideoDirectiveBlock, STANDALONE_IMAGE_RE, type MarkdownMediaOptions } from './markdown-media.js';
+import { extractInlineImages, parseStandaloneImageLine, renderMarkdownImage, renderVideoDirectiveBlock, type MarkdownMediaOptions } from './markdown-media.js';
 
 function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -179,20 +179,11 @@ export function sanitizeHtml(html: string): string {
  * Renders inline markdown constructs (bold, italic, code, links, images).
  */
 export function renderInlineMarkdown(text: string, options?: MarkdownOptions): string {
-  let out = escapeHtml(text);
+  const { raw, imgTokens } = extractInlineImages(text, options);
+  let out = escapeHtml(raw);
 
   // Fenced inline code `code`
   out = out.replace(/`([^`]+)`/g, (_m, code) => `<code class="inline-code">${code}</code>`);
-
-  // Images: ![alt](url) or ![alt](url "caption")
-  // WP-18.4 privacy rule: non-/api/media/:id images render as plain link text, never <img>.
-  out = out.replace(
-    /!\[([^\]]*)\]\(([^\s")]+)(?:\s+&quot;((?:\\.|[^&])*)&quot;)?\)/g,
-    (_m, alt, rawUrl, rawCaption) => {
-      const unesc = (s: string) => s.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-      return renderMarkdownImage(unesc(alt), unesc(rawUrl), rawCaption !== undefined ? unesc(rawCaption) : undefined, options, true);
-    }
-  );
 
   // Links: [text](url)
   out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label, rawUrl) => {
@@ -213,6 +204,9 @@ export function renderInlineMarkdown(text: string, options?: MarkdownOptions): s
   out = out.replace(/\*([^*]+)\*/g, '<em>$1</em>');
   out = out.replace(/\b_([^_]+)_\b/g, '<em>$1</em>');
 
+  for (let idx = 0; idx < imgTokens.length; idx++) {
+    out = out.replace(`\u0000IMG${idx}\u0000`, imgTokens[idx]);
+  }
   return out;
 }
 
@@ -258,9 +252,9 @@ export function renderMarkdown(md: string, options?: MarkdownOptions): string {
     }
 
     // 0b. Standalone Markdown image: ![alt](url "caption")
-    const imgMatch = STANDALONE_IMAGE_RE.exec(line.trim());
+    const imgMatch = parseStandaloneImageLine(line);
     if (imgMatch) {
-      const rendered = renderMarkdownImage(imgMatch[1], imgMatch[2], imgMatch[3], options, false);
+      const rendered = renderMarkdownImage(imgMatch.alt, imgMatch.url, imgMatch.caption, options, false);
       blocks.push(rendered.startsWith('<figure') ? rendered : `<p>${rendered}</p>`);
       i++;
       continue;
@@ -371,7 +365,7 @@ export function renderMarkdown(md: string, options?: MarkdownOptions): string {
       i < lines.length &&
       lines[i].trim() &&
       !lines[i].trim().startsWith(':::video{') &&
-      !STANDALONE_IMAGE_RE.test(lines[i].trim()) &&
+      !parseStandaloneImageLine(lines[i]) &&
       !lines[i].trim().startsWith('```') &&
       !lines[i].match(/^#{1,6}\s+/) &&
       !lines[i].trim().startsWith('>') &&

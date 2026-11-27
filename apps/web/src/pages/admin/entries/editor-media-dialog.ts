@@ -100,6 +100,7 @@ export function renderEditorMediaDialog(): string {
 ${renderPageNotice({
   id: 'ref-media-error-notice',
   tone: 'danger',
+  role: 'none',
   message: '',
   hidden: true,
 })}`;

@@ -286,7 +286,7 @@ registerBlock({
   markdownSerialiser: (node) => {
     const src = String(node.attrs?.src ?? '');
     const decorative = Boolean(node.attrs?.decorative);
-    const alt = decorative ? '' : String(node.attrs?.alt ?? '').replace(/\]/g, '\\]');
+    const alt = decorative ? '' : String(node.attrs?.alt ?? '').replace(/\\/g, '\\\\').replace(/\]/g, '\\]');
     const caption = String(node.attrs?.caption ?? '');
     const capPart = caption ? ` "${caption.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"` : '';
     return `![${alt}](${src}${capPart})`;
@@ -301,7 +301,7 @@ registerBlock({
   exportRule: (node) => {
     const src = String(node.attrs?.src ?? '');
     const decorative = Boolean(node.attrs?.decorative);
-    const alt = decorative ? '' : String(node.attrs?.alt ?? '').replace(/\]/g, '\\]');
+    const alt = decorative ? '' : String(node.attrs?.alt ?? '').replace(/\\/g, '\\\\').replace(/\]/g, '\\]');
     const caption = String(node.attrs?.caption ?? '');
     const capPart = caption ? ` "${caption.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"` : '';
     return `![${alt}](${src}${capPart})`;

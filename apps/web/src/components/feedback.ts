@@ -11,7 +11,7 @@ export interface PageNoticeProps {
   actionId?: string;
   actionHtml?: string;
   dismissible?: boolean;
-  role?: 'status' | 'alert';
+  role?: 'status' | 'alert' | 'none';
   hidden?: boolean;
   className?: string;
 }
@@ -40,6 +40,7 @@ const TONE_ICONS: Record<NoticeTone, IconName> = {
 export function renderPageNotice(props: PageNoticeProps): string {
   const tone = props.tone ?? 'info';
   const role = props.role ?? (tone === 'danger' ? 'alert' : 'status');
+  const roleAttrs = role === 'none' ? '' : ` role="${role}" aria-live="${role === 'alert' ? 'assertive' : 'polite'}"`;
   const classes = ['lp-notice', `lp-notice-${tone}`, props.className].filter(Boolean).join(' ');
   const idAttr = props.id ? ` id="${escapeHtml(props.id)}"` : '';
   const hiddenAttr = props.hidden ? ' hidden' : '';
@@ -61,7 +62,7 @@ export function renderPageNotice(props: PageNoticeProps): string {
       })
     : '';
 
-  return `<div data-c="Notice" class="${escapeHtml(classes)}" role="${role}" aria-live="${role === 'alert' ? 'assertive' : 'polite'}"${idAttr}${hiddenAttr}>
+  return `<div data-c="Notice" class="${escapeHtml(classes)}"${roleAttrs}${idAttr}${hiddenAttr}>
   <div class="lp-notice-main">
     ${toneIcon}
     <div class="lp-notice-content">
