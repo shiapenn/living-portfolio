@@ -215,7 +215,7 @@ describe('WP-18.3 Media API — Security Regression, Limits, Sniffing & Storage 
     });
     expect(noCsrf.status).toBe(403);
 
-    // Cookie with valid X-CSRF-Token -> 201
+    // Cookie with valid X-CSRF-Token -> 201 (visibility is derived from entry references, not upload form)
     const withCsrf = await app.request('/api/v1/media', {
       method: 'POST',
       headers: {
@@ -224,13 +224,42 @@ describe('WP-18.3 Media API — Security Regression, Limits, Sniffing & Storage 
       },
       body: buildUploadForm(SYNTHETIC_PNG, 'diagram.png', 'image/png', {
         alt_text: 'System diagram',
-        visibility: 'public',
       }),
     });
     expect(withCsrf.status).toBe(201);
     const created = (await withCsrf.json()) as any;
 
-    // Public media is readable without auth
+    // Publish a public entry referencing this asset -> publicly readable without auth
+    const bodyMd = `Published diagram ![System diagram](/api/media/${created.id})`;
+    const previewRes = await app.request('/api/v1/entries/redaction-preview', {
+      method: 'POST',
+      headers: {
+        Cookie: `lp_session=${session.id}`,
+        'X-CSRF-Token': session.csrfToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ entryId: 'draft', text: bodyMd }),
+    });
+    const preview = (await previewRes.json()) as any;
+    const entryRes = await app.request('/api/v1/entries', {
+      method: 'POST',
+      headers: {
+        Cookie: `lp_session=${session.id}`,
+        'X-CSRF-Token': session.csrfToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        slug: 'csrf-media-entry',
+        title: 'CSRF Media Entry',
+        profile: 'case-study',
+        view: 'article',
+        visibility: 'public',
+        body_md: bodyMd,
+        redactionPreviewToken: preview.redactionPreviewToken,
+      }),
+    });
+    expect(entryRes.status).toBe(201);
+
     const pubGet = await app.request(`/api/v1/media/${created.id}`);
     expect(pubGet.status).toBe(200);
     expect(pubGet.headers.get('content-type')).toBe('image/png');

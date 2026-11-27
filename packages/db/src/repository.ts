@@ -83,6 +83,7 @@ export interface IPortfolioRepository {
 
   // Media
   saveMedia(m: Omit<MediaAsset, 'id'>): Promise<MediaAsset>;
+  updateMedia?(id: string, updates: { alt_text?: string | null; caption?: string | null }): Promise<MediaAsset | null>;
   getMedia(id: string): Promise<MediaAsset | null>;
   listMedia(): Promise<MediaAsset[]>;
   deleteMedia(id: string): Promise<boolean>;
@@ -197,19 +198,12 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
   private governorLedgers = new Map<string, GovernorLedgerEntry>();
 
   async createVenture(v: Omit<Venture, 'id'>): Promise<Venture> {
-    const id = (v as any).id ?? crypto.randomUUID();
-    const venture: Venture = { ...v, id };
-    this.ventures.set(id, venture);
+    const venture: Venture = { ...v, id: (v as any).id ?? crypto.randomUUID() };
+    this.ventures.set(venture.id, venture);
     return venture;
   }
-
-  async getVenture(id: string): Promise<Venture | null> {
-    return this.ventures.get(id) || null;
-  }
-
-  async listVentures(): Promise<Venture[]> {
-    return Array.from(this.ventures.values());
-  }
+  async getVenture(id: string): Promise<Venture | null> { return this.ventures.get(id) || null; }
+  async listVentures(): Promise<Venture[]> { return Array.from(this.ventures.values()); }
 
   async createEntry(
     e: Omit<Entry, 'id' | 'created_at'>,
@@ -247,7 +241,7 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
       created_at: (e as any).created_at ?? writtenAt,
     };
     this.entries.set(entryId, entry);
-
+    this.media.syncRevision(entryId, revId, revision.body_md);
     return { entry, revision };
   }
 
@@ -285,6 +279,10 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     if (!existing) return null;
     const updated = { ...existing, ...updates, id };
     this.entries.set(id, updated);
+    if (updated.current_revision_id) {
+      const curRev = this.revisions.get(updated.current_revision_id);
+      if (curRev) this.media.syncRevision(id, curRev.id, curRev.body_md);
+    }
     return updated;
   }
 
@@ -343,11 +341,9 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     }
 
     for (const [evId, ev] of this.evidence.entries()) {
-      if (ev.entry_id === id) {
-        this.evidence.delete(evId);
-      }
+      if (ev.entry_id === id) this.evidence.delete(evId);
     }
-
+    this.media.removeEntry(id);
     this.entries.delete(id);
     return { deletedRevisions, deletedSpans, deletedClaims, deletedRelations, deletedFacets };
   }
@@ -377,11 +373,9 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
       is_hindsight: rev.is_hindsight ?? false,
     };
     this.revisions.set(revId, revision);
-
     const entry = this.entries.get(entry_id);
-    if (entry) {
-      entry.current_revision_id = revId;
-    }
+    if (entry) entry.current_revision_id = revId;
+    this.media.syncRevision(entry_id, revId, revision.body_md);
     return revision;
   }
 
@@ -545,9 +539,10 @@ export class InMemoryPortfolioRepository implements IPortfolioRepository {
     return Array.from(this.evidence.values()).filter((e) => e.entry_id === entry_id);
   }
 
-  async saveMedia(m: Omit<MediaAsset, 'id'>): Promise<MediaAsset> { return this.media.save(m); }
-  async getMedia(id: string): Promise<MediaAsset | null> { return this.media.get(id); }
-  async listMedia(): Promise<MediaAsset[]> { return this.media.list(); }
+  async saveMedia(m: Omit<MediaAsset, 'id'>): Promise<MediaAsset> { return this.media.save(m, this.entries); }
+  async updateMedia(id: string, updates: { alt_text?: string | null; caption?: string | null }): Promise<MediaAsset | null> { return this.media.update(id, updates, this.entries); }
+  async getMedia(id: string): Promise<MediaAsset | null> { return this.media.get(id, this.entries); }
+  async listMedia(): Promise<MediaAsset[]> { return this.media.list(this.entries); }
   async deleteMedia(id: string): Promise<boolean> { return this.media.delete(id); }
   async getTotalMediaBytes(): Promise<number> { return this.media.totalBytes(); }
 

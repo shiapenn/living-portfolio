@@ -41,15 +41,13 @@ export interface RedactionPreviewTokenPayload {
   exp: number;
 }
 
-export function computeRecoveryCodeHash(code: string, salt: string, key = 'lp-recovery-secret'): string {
+export function computeRecoveryCodeHash(code: string, salt: string, key: string): string {
+  if (!key || key.trim() === '') throw new Error('Recovery code HMAC key is required; fallback secrets are forbidden.');
   return createHmac('sha256', key).update(`${salt}:${code}`).digest('hex');
 }
 
-export function generateRecoveryCodes(
-  count = 8,
-  key = 'lp-recovery-secret',
-  options?: { legacyFormat?: boolean }
-): { rawCodes: string[]; hashedCodes: string[] } {
+export function generateRecoveryCodes(count = 8, key: string, options?: { legacyFormat?: boolean }): { rawCodes: string[]; hashedCodes: string[] } {
+  if (!options?.legacyFormat && (!key || key.trim() === '')) throw new Error('Recovery code HMAC key is required; fallback secrets are forbidden.');
   const rawCodes: string[] = [];
   const hashedCodes: string[] = [];
   for (let i = 0; i < count; i++) {
@@ -136,25 +134,21 @@ export class AuthManager {
   private consumedPreviewTokens = new Set<string>();
 
   constructor(options?: AuthManagerOptions) {
-    this.signingKey = options?.signingKey || process.env.SESSION_SECRET || randomBytes(32).toString('hex');
+    const explicitSigningKey = options?.signingKey || process.env.SESSION_SECRET;
+    if ((!explicitSigningKey || explicitSigningKey.trim().length < 16) && process.env.DEPLOYMENT_CLASS === 'production') {
+      throw new Error('SESSION_SECRET (min 16 chars) is required in production; fallback signing secrets are forbidden.');
+    }
+    this.signingKey = explicitSigningKey || randomBytes(32).toString('hex');
     this.dailyIpSalt = `${new Date().toISOString().slice(0, 10)}:${this.signingKey}`;
     this.storagePath = options?.storagePath || process.env.AUTH_STATE_FILE;
-
     if (this.storagePath && existsSync(this.storagePath)) {
       try {
-        const raw = readFileSync(this.storagePath, 'utf8');
-        const data = JSON.parse(raw);
-        if (data.account) {
-          this.account = data.account;
-        }
+        const data = JSON.parse(readFileSync(this.storagePath, 'utf8'));
+        if (data.account) this.account = data.account;
         if (Array.isArray(data.bearerTokens)) {
-          for (const token of data.bearerTokens) {
-            this.bearerTokens.set(token.id, token);
-          }
+          for (const token of data.bearerTokens) this.bearerTokens.set(token.id, token);
         }
-      } catch {
-        // Fall back gracefully
-      }
+      } catch {}
     }
 
     if (options?.bootstrapAdminToken && !this.account) {
@@ -427,7 +421,7 @@ export class AuthManager {
 
       let usedRecoveryCode = false;
       let matchedIndex = -1;
-      const key = this.signingKey || 'lp-recovery-secret';
+      const key = this.signingKey;
       if (this.account.recoveryCodeHashes && this.account.recoveryCodeHashes.length > 0) {
         for (let i = 0; i < this.account.recoveryCodeHashes.length; i++) {
           const entry = this.account.recoveryCodeHashes[i];

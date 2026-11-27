@@ -1,5 +1,5 @@
 import { createHash, createHmac } from 'node:crypto';
-import { mkdir, readFile, stat, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, resolve, sep } from 'node:path';
 import { resolveMediaDir, type AppConfig } from '@living-portfolio/config';
 
@@ -7,6 +7,8 @@ export interface MediaStorageAdapter {
   readonly kind: 'local' | 's3';
   put(key: string, data: Uint8Array, contentType: string): Promise<{ key: string; sizeBytes: number }>;
   get(key: string): Promise<{ data: Uint8Array; sizeBytes: number } | null>;
+  head?(key: string): Promise<{ sizeBytes: number } | null>;
+  getRange?(key: string, start: number, end: number): Promise<{ data: Uint8Array; totalBytes: number } | null>;
   delete(key: string): Promise<boolean>;
   exists(key: string): Promise<boolean>;
 }
@@ -21,7 +23,7 @@ export function assertValidStorageKey(key: string): void {
 
 /**
  * Local volume media storage adapter (default backend per D-STORAGE).
- * Enforces strict content-addressed keys and containment within baseDir.
+ * Enforces strict content-addressed keys, containment within baseDir, and positional Range reads.
  */
 export class LocalVolumeMediaStorageAdapter implements MediaStorageAdapter {
   readonly kind = 'local' as const;
@@ -56,6 +58,47 @@ export class LocalVolumeMediaStorageAdapter implements MediaStorageAdapter {
     } catch (err: any) {
       if (err?.code === 'ENOENT') return null;
       throw err;
+    }
+  }
+
+  async head(key: string): Promise<{ sizeBytes: number } | null> {
+    const fullPath = this.resolveSafePath(key);
+    try {
+      const st = await stat(fullPath);
+      return { sizeBytes: st.size };
+    } catch (err: any) {
+      if (err?.code === 'ENOENT') return null;
+      throw err;
+    }
+  }
+
+  async getRange(
+    key: string,
+    start: number,
+    end: number
+  ): Promise<{ data: Uint8Array; totalBytes: number } | null> {
+    const fullPath = this.resolveSafePath(key);
+    let fh: Awaited<ReturnType<typeof open>> | null = null;
+    try {
+      fh = await open(fullPath, 'r');
+      const st = await fh.stat();
+      if (start < 0 || start >= st.size || end < start) return null;
+      const clampedEnd = Math.min(end, st.size - 1);
+      const length = clampedEnd - start + 1;
+      const buf = Buffer.allocUnsafe(length);
+      const { bytesRead } = await fh.read(buf, 0, length, start);
+      const slice = buf.subarray(0, bytesRead);
+      return {
+        data: new Uint8Array(slice.buffer, slice.byteOffset, slice.byteLength),
+        totalBytes: st.size,
+      };
+    } catch (err: any) {
+      if (err?.code === 'ENOENT') return null;
+      throw err;
+    } finally {
+      if (fh) {
+        await fh.close().catch(() => {});
+      }
     }
   }
 
@@ -109,7 +152,9 @@ export class S3CompatibleMediaStorageAdapter implements MediaStorageAdapter {
 
   constructor(cfg: S3StorageConfig) {
     if (!cfg.bucket || !cfg.endpoint || !cfg.region || !cfg.accessKeyId || !cfg.secretAccessKey) {
-      throw new Error('S3CompatibleMediaStorageAdapter requires bucket, endpoint, region, accessKeyId, and secretAccessKey');
+      throw new Error(
+        'S3CompatibleMediaStorageAdapter requires bucket, endpoint, region, accessKeyId, and secretAccessKey'
+      );
     }
     this.cfg = cfg;
     this.fetchFn = cfg.fetchImpl ?? fetch;
@@ -133,16 +178,19 @@ export class S3CompatibleMediaStorageAdapter implements MediaStorageAdapter {
     const region = this.cfg.region;
     const service = 's3';
 
+    const normalizedExtra: Record<string, string> = {};
+    for (const [k, v] of Object.entries(extraHeaders)) {
+      normalizedExtra[k.toLowerCase()] = v;
+    }
+
     const headers: Record<string, string> = {
       host: url.host,
       'x-amz-content-sha256': payloadHash,
       'x-amz-date': amzDate,
-      ...extraHeaders,
+      ...normalizedExtra,
     };
 
-    const sortedKeys = Object.keys(headers)
-      .map((k) => k.toLowerCase())
-      .sort();
+    const sortedKeys = Object.keys(headers).sort();
     const canonicalHeaders = sortedKeys.map((k) => `${k}:${headers[k].trim()}\n`).join('');
     const signedHeaders = sortedKeys.join(';');
 
@@ -202,6 +250,53 @@ export class S3CompatibleMediaStorageAdapter implements MediaStorageAdapter {
     const ab = await res.arrayBuffer();
     const data = new Uint8Array(ab);
     return { data, sizeBytes: data.byteLength };
+  }
+
+  async head(key: string): Promise<{ sizeBytes: number } | null> {
+    const url = this.buildObjectUrl(key);
+    const payloadHash = sha256Hex('');
+    const headers = this.signRequest('HEAD', url, payloadHash);
+    const res = await this.fetchFn(url.toString(), { method: 'HEAD', headers });
+    if (res.status === 404) return null;
+    if (!res.ok) {
+      throw new Error(`S3 media head failed with status ${res.status}`);
+    }
+    const lenHeader = res.headers.get('content-length');
+    if (lenHeader !== null && Number.isFinite(Number(lenHeader))) {
+      return { sizeBytes: Number(lenHeader) };
+    }
+    const fallback = await this.get(key);
+    return fallback ? { sizeBytes: fallback.sizeBytes } : null;
+  }
+
+  async getRange(
+    key: string,
+    start: number,
+    end: number
+  ): Promise<{ data: Uint8Array; totalBytes: number } | null> {
+    const url = this.buildObjectUrl(key);
+    const payloadHash = sha256Hex('');
+    const headers = this.signRequest('GET', url, payloadHash, {
+      range: `bytes=${start}-${end}`,
+    });
+    const res = await this.fetchFn(url.toString(), { method: 'GET', headers });
+    if (res.status === 404) return null;
+    if (res.status === 206) {
+      const ab = await res.arrayBuffer();
+      const data = new Uint8Array(ab);
+      const cr = res.headers.get('content-range') ?? '';
+      const totalMatch = /\/(\d+)$/.exec(cr);
+      const totalBytes = totalMatch ? Number(totalMatch[1]) : start + data.byteLength;
+      return { data, totalBytes };
+    }
+    if (res.ok) {
+      const ab = await res.arrayBuffer();
+      const full = new Uint8Array(ab);
+      if (start >= full.byteLength) return null;
+      const clampedEnd = Math.min(end, full.byteLength - 1);
+      return { data: full.subarray(start, clampedEnd + 1), totalBytes: full.byteLength };
+    }
+    throw new Error(`S3 media range fetch failed with status ${res.status}`);
   }
 
   async delete(key: string): Promise<boolean> {
