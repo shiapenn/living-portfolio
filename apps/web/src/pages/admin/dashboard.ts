@@ -16,6 +16,7 @@ export interface DashboardOptions {
   buildFailed?: boolean;
   backupOverdue?: boolean;
   legacyRecoveryUsed?: boolean;
+  storageUsagePct?: number;
 }
 
 interface AttentionItem {
@@ -94,6 +95,25 @@ export async function renderAdminDashboardPage(
       badge: 'Backup',
       summary: DASHBOARD_STRINGS.attention.backupOverdueLabel,
       actionHref: '/admin/settings/backups',
+    });
+  }
+  let storageUsagePct = options.storageUsagePct;
+  if (storageUsagePct === undefined && typeof (client as any).getTotalMediaBytes === 'function') {
+    try {
+      const used = await (client as any).getTotalMediaBytes();
+      const quota = Number(process.env.MEDIA_MAX_TOTAL_BYTES || 5 * 1024 * 1024 * 1024);
+      if (quota > 0) storageUsagePct = Math.round((used / quota) * 100);
+    } catch {
+      // Ignore optional media usage probe
+    }
+  }
+  if (typeof storageUsagePct === 'number' && storageUsagePct >= 80) {
+    items.push({
+      id: 'att-storage-quota',
+      tone: storageUsagePct >= 95 ? 'danger' : 'warn',
+      badge: 'Storage',
+      summary: `Storage is ${storageUsagePct}% full · Manage storage`,
+      actionHref: '/admin/settings/storage',
     });
   }
 
