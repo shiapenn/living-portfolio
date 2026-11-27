@@ -40,7 +40,6 @@ test.describe.serial('WP-4.1: Structure Review Loop, Import Triage, and Visitor 
     await page.click('#btn-generate-plan');
     await expect(page.locator('#import-step-plan')).toBeVisible();
     await expect(page.locator('#plan-free-est')).toContainText('within free limits');
-    await expect(page.locator('#plan-paid-est')).toContainText('Finish in minutes');
 
     // Proceed to Triage -> Step 3
     await page.click('#btn-proceed-triage');
@@ -69,11 +68,11 @@ test.describe.serial('WP-4.1: Structure Review Loop, Import Triage, and Visitor 
     await page.click('#btn-key-next');
     await expect(cards.nth(1)).toHaveClass(/selected/);
 
-    // Commit batch
+    // Commit batch -> dedicated Done screen (WP-18.6)
     await page.click('#btn-commit-batch');
-    const banner = page.locator('#import-status-banner');
-    await expect(banner).toBeVisible();
-    await expect(banner).toContainText('Successfully imported');
+    const doneStep = page.locator('#import-step-done');
+    await expect(doneStep).toBeVisible();
+    await expect(doneStep).toContainText('Successfully imported');
   });
 
   test('3. Visitor Ask states, scope chips, and accessibility mechanics (20261020-CP-04, UX-10, UX-15)', async ({ page }) => {

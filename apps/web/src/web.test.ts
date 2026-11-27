@@ -145,11 +145,11 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     expect(importHtml).toContain('Step 1 of 3 · Add material');
     expect(importHtml).toContain('Markdown or text');
 
-    // Add & Plan controls
+    // Add & Plan controls (WP-18.6: paid cloud option only shown when external provider configured)
     expect(importHtml).toContain('id="import-paste-area"');
     expect(importHtml).toContain('id="btn-generate-plan"');
     expect(importHtml).toContain('id="plan-free-est"');
-    expect(importHtml).toContain('id="plan-paid-est"');
+    expect(importHtml).toContain('id="plan-local-summary"');
 
     // Triage controls and keyboard legend
     expect(importHtml).toContain('triage-keys-legend');
@@ -162,10 +162,8 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
 
     expect(importHtml).toContain('id="btn-key-prev"');
     expect(importHtml).toContain('id="btn-key-next"');
-    expect(importHtml).toContain('id="btn-key-accept"');
-    expect(importHtml).toContain('id="btn-key-reassign"');
-    expect(importHtml).toContain('id="btn-key-date"');
-    expect(importHtml).toContain('id="btn-key-skip"');
+    expect(importHtml).toContain('id="import-review-counter"');
+    expect(importHtml).toContain('id="import-step-done"');
     expect(importHtml).toContain('id="btn-commit-batch"');
   });
 

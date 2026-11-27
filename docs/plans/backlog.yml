@@ -278,7 +278,7 @@ items:
     expected_minutes: 45
     gate: none
     acceptance: Real radio Plan cards when external provider configured, Review Include/Leave out/Change type/Set date, Done screen with next steps + E2E
-    status: ready
+    status: done
 
   - id: WP-18.7
     title: Real file import (POST /import/files multipart md/txt/html/docx/pdf/zip + backup/export media inclusion; UX-36, D-11)
