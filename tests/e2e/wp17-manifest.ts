@@ -302,6 +302,15 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     checkIds: ['K22', 'K23', 'K27'],
   },
   {
+    id: 'settings-storage',
+    route: '/admin/settings/storage',
+    archetype: 'form',
+    stateLabel: 'Settings — Storage',
+    assertion: 'Storage usage vs quota, backend, editable limits, media list with reference counts, and guarded delete dialogs',
+    checkIds: ['K22', 'K23', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
+    markerSelector: '#storage-usage-summary',
+  },
+  {
     id: 'settings-backups',
     route: '/admin/settings/backups',
     archetype: 'form',

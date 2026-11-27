@@ -200,6 +200,7 @@
 | `A192` | WP-18.6 Import Stepper Polish | `active` | [A192-wp-186-import-stepper-polish.md](execution-reports/A192-wp-186-import-stepper-polish.md) | — |
 | `A193` | WP-18.7 Real File Import And Backup Media Inclusion | `active` | [A193-wp-187-real-file-import-and-backup-media.md](execution-reports/A193-wp-187-real-file-import-and-backup-media.md) | — |
 | `A194` | WP-18.8 Quick Log Capture Route | `active` | [A194-wp-188-quick-log-capture-route.md](execution-reports/A194-wp-188-quick-log-capture-route.md) | — |
+| `A195` | WP-18.9 Settings Storage Module | `active` | [A195-wp-189-settings-storage-module.md](execution-reports/A195-wp-189-settings-storage-module.md) | — |
 
 ## Handover Snapshots (Class H)
 

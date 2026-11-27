@@ -311,7 +311,7 @@ items:
     expected_minutes: 50
     gate: none
     acceptance: Registered Storage settings module with quota bar, backend config, editable upload limits, media list with reference counts, guarded delete, Remove unused, 80% quota warning on Today + E2E
-    status: ready
+    status: done
 
   # ── WP-19: Design framework unification & Public frame (ADR-023 + Report §7.10) ──
   - id: P-1

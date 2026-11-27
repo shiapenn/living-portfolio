@@ -184,4 +184,48 @@ export function registerWp17SettingsRoutes(router: Hono, state: RuntimeSettingsS
       'Content-Disposition': `attachment; filename="living-portfolio-theme-${scope}.json"`,
     });
   });
+
+  // Storage settings (WP-18.9, D-STORAGE, UX-125)
+  const ensureStorageState = () => {
+    const s = (state as any).storage;
+    if (!s || typeof s !== 'object') {
+      (state as any).storage = {
+        maxImageMb: 10,
+        maxVideoMb: 100,
+        quotaGb: 5,
+      };
+    }
+    return (state as any).storage as { maxImageMb: number; maxVideoMb: number; quotaGb: number };
+  };
+
+  router.get('/storage', (c) => {
+    return c.json({ storage: ensureStorageState() });
+  });
+
+  router.patch('/storage', async (c) => {
+    const body = await c.req.json().catch(() => ({}));
+    const st = ensureStorageState();
+    if (body.maxImageMb !== undefined) {
+      const v = Number(body.maxImageMb);
+      if (!Number.isFinite(v) || v < 1 || v > 100) {
+        return c.json({ error: 'Max image size must be between 1 and 100 MB.' }, 400);
+      }
+      st.maxImageMb = Math.round(v);
+    }
+    if (body.maxVideoMb !== undefined) {
+      const v = Number(body.maxVideoMb);
+      if (!Number.isFinite(v) || v < 1 || v > 1000) {
+        return c.json({ error: 'Max video size must be between 1 and 1000 MB.' }, 400);
+      }
+      st.maxVideoMb = Math.round(v);
+    }
+    if (body.quotaGb !== undefined) {
+      const v = Number(body.quotaGb);
+      if (!Number.isFinite(v) || v < 1 || v > 500) {
+        return c.json({ error: 'Total quota must be between 1 and 500 GB.' }, 400);
+      }
+      st.quotaGb = Math.round(v);
+    }
+    return c.json({ updated: true, storage: st });
+  });
 }

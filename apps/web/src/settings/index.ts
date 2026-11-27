@@ -7,6 +7,7 @@ import { backupsModule } from './modules/backups.js';
 import { visibilityModule } from './modules/visibility.js';
 import { accountModule } from './modules/account.js';
 import { homeModule } from './modules/home.js';
+import { storageModule } from './modules/storage.js';
 
 export {
   registerSettingsModule,
@@ -39,6 +40,7 @@ export function ensureBuiltinSettingsModulesRegistered(): void {
   registerSettingsModule(visibilityModule);
   registerSettingsModule(accountModule);
   registerSettingsModule(homeModule);
+  registerSettingsModule(storageModule);
 }
 
 ensureBuiltinSettingsModulesRegistered();

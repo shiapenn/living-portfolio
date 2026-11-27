@@ -121,3 +121,14 @@ One concise block per screen:
 - **Hierarchy (`1..n`):** `1` Page title (`Quick Log`) -> `2` 4 stacked `Field` controls (`S3` between fields, `S2` label->control) -> `3` `ActionBar[page]` (`S4` above) -> `4` `StatusLine` or danger `Notice` (`S3` below).
 - **States:** `idle`, `saving` (`aria-busy="true"`), `saved` (`StatusLine`), `field-invalid` (empty `What happened`), `error` (`Notice[danger]`).
 - **Compact:** Single-column form at compact mobile width, full-width inputs and primary `Save` button, zero horizontal overflow.
+
+### 12. Settings — Storage (`WP-18.9`, `/admin/settings/storage`)
+- **Archetype (`D1`):** `form` (registered Settings module; admin system mode; zero new `data-c` components: `FormSection`, `List[definition|plain]`, `Item`, `Field[number]`, `ActionBar[page|item|inline|dialog]`, `Overlay[dialog]`, `Notice[danger]`, `StatusLine`, `Text`).
+- **JTBD:** Monitor media storage usage against quota, inspect the active storage backend, configure upload limits, and safely delete unused media while preventing broken links on published entries.
+- **Decision & required data:**
+  - *Storage usage:* `List[definition]` showing `Active backend` (`Local volume` / `S3-compatible`) and `Usage` (`X of Y (N%)`). At `80%` or above, `Today` (`/admin`) also surfaces a `Needs attention` item linking to `/admin/settings/storage`.
+  - *Upload limits:* `Max image size (MB)` (default `10`), `Max video size (MB)` (default `100`), `Total storage quota (GB)` (default `5`), saved via `ActionBar[page]` (`Save`).
+  - *Uploaded media:* `List[plain]` of `Item`s with filename, size, date, and reference count (`Used in N entries` / `Unused`). Unreferenced items expose a `Delete` action opening a confirmation `Overlay` dialog; items referenced by a published entry are blocked (`409 MEDIA_IN_USE`) with an inline explanation. `Remove unused` opens a confirmation `Overlay` dialog showing item count and freed space (ADR-025).
+- **Hierarchy (`1..n`):** `1` Page title (`Storage`) -> `2` Storage usage `FormSection` -> `3` Upload limits `FormSection` + `ActionBar[page]` (`Save`) + feedback -> `4` Uploaded media `FormSection` (`Remove unused` + media `List`) -> `5` Confirmation `Overlay` dialogs.
+- **States:** `default` (empty or populated media list), `saving`, `saved` (`StatusLine`), `delete-confirm` (`Overlay`), `prune-confirm` (`Overlay`), `delete-blocked` (inline explanation for published-referenced asset), `error` (`Notice[danger]`).
+- **Compact:** Single-column definition rows, inputs, media items, and stacked dialog buttons at compact width with zero horizontal overflow.
