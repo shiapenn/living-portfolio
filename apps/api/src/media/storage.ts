@@ -108,8 +108,8 @@ export class S3CompatibleMediaStorageAdapter implements MediaStorageAdapter {
   private readonly fetchFn: typeof fetch;
 
   constructor(cfg: S3StorageConfig) {
-    if (!cfg.bucket || !cfg.endpoint || !cfg.accessKeyId || !cfg.secretAccessKey) {
-      throw new Error('S3CompatibleMediaStorageAdapter requires bucket, endpoint, accessKeyId, and secretAccessKey');
+    if (!cfg.bucket || !cfg.endpoint || !cfg.region || !cfg.accessKeyId || !cfg.secretAccessKey) {
+      throw new Error('S3CompatibleMediaStorageAdapter requires bucket, endpoint, region, accessKeyId, and secretAccessKey');
     }
     this.cfg = cfg;
     this.fetchFn = cfg.fetchImpl ?? fetch;
@@ -130,7 +130,7 @@ export class S3CompatibleMediaStorageAdapter implements MediaStorageAdapter {
     const now = new Date();
     const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
     const dateStamp = amzDate.slice(0, 8);
-    const region = this.cfg.region || 'auto';
+    const region = this.cfg.region;
     const service = 's3';
 
     const headers: Record<string, string> = {

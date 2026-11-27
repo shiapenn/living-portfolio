@@ -13,6 +13,7 @@
  * - Migration 0004_media_assets_metadata registered and idempotent
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { randomBytes } from 'node:crypto';
 import { mkdtempSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -76,7 +77,7 @@ const SYNTHETIC_HTML = new TextEncoder().encode(
   '<!DOCTYPE html><html><body><script>alert(1)</script></body></html>'
 );
 
-const TEST_ADMIN_TOKEN = 'lp_pat_wp18_3_media_conformance_token_001';
+const TEST_ADMIN_TOKEN = `lp_pat_${randomBytes(16).toString('hex')}`;
 
 function buildUploadForm(
   bytes: Uint8Array,
@@ -426,9 +427,9 @@ describe('WP-18.3 Media API — Security Regression, Limits, Sniffing & Storage 
     const s3 = new S3CompatibleMediaStorageAdapter({
       bucket: 'portfolio-media-test',
       endpoint: 'https://s3.example.invalid',
-      region: 'auto',
-      accessKeyId: 'AKIA_SYNTHETIC_TEST_KEY',
-      secretAccessKey: 'SYNTHETIC_TEST_SECRET_VALUE_0001',
+      region: `region-${randomBytes(3).toString('hex')}`,
+      accessKeyId: `AKIA_${randomBytes(8).toString('hex')}`,
+      secretAccessKey: randomBytes(24).toString('hex'),
       fetchImpl: mockFetch,
     });
 
