@@ -234,6 +234,15 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     markerSelector: '#import-step-done:not(.lp-is-hidden) #import-done-next-steps',
   },
   {
+    id: 'quick-log',
+    route: '/admin/quick-log',
+    archetype: 'form',
+    stateLabel: 'Quick Log capture',
+    assertion: 'Mobile-first 4-field form archetype with single primary Save button',
+    checkIds: ['K22', 'K23', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
+    markerSelector: '#quick-log-form #btn-ql-save',
+  },
+  {
     id: 'settings-index',
     route: '/admin/settings',
     archetype: 'list',

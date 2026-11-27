@@ -300,7 +300,7 @@ items:
     expected_minutes: 35
     gate: none
     acceptance: Mobile-first 4-field Quick Log route, 390px viewport capture in under 30s + E2E
-    status: ready
+    status: done
 
   - id: WP-18.9
     title: Storage settings module (/admin/settings/storage; D-STORAGE, UX-125)
