@@ -43,9 +43,11 @@ export const ENTRIES_LIST_STRINGS = {
     cancelLabel: 'Cancel',
   },
   pagination: {
-    prev: 'Previous',
-    next: 'Next',
+    prev: 'Previous page',
+    next: 'Next page',
     summary: (page: number, totalPages: number, total: number) =>
-      `Page ${page} of ${totalPages} (${total} total)`,
+      `Page ${page} of ${totalPages} · ${total} total`,
+    compactSummary: (page: number, totalPages: number) =>
+      `${page} / ${totalPages}`,
   },
 } as const;

@@ -21,7 +21,7 @@ describe('WP-16.3 Admin Entries List Page', () => {
     const html = await renderAdminEntriesListPage(mockClient, { page: 1, limit: 1 });
     expect(html).toContain('data-entry-row="e1"');
     expect(html).not.toContain('data-entry-row="e2"');
-    expect(html).toContain('Page 1 of 2 (2 total)');
+    expect(html).toContain('Page 1 of 2 · 2 total');
     expect(html).not.toContain('class="lp-structure-meter"');
     expect(html).not.toContain('class="lp-row-menu-btn"');
     expect(html).toContain('id="entries-delete-dialog"');

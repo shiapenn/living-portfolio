@@ -16,7 +16,7 @@
   width: 100%;
   box-sizing: border-box;
   margin: 0;
-  padding: var(--item-pad-y, var(--lp-space-inset-item-y)) var(--lp-space-inset-item-x);
+  padding: var(--item-pad-y, var(--lp-space-inset-item-y)) 0;
   row-gap: var(--lp-space-proximity-1);
   column-gap: var(--lp-space-inset-item-y);
   align-items: start;
@@ -114,7 +114,7 @@
 }
 .lp-list.lp-list-interactive > .lp-item,
 .lp-list[data-variant="interactive"] > .lp-item {
-  padding: var(--item-pad-y) var(--item-pad-x);
+  padding: var(--item-pad-y) 0;
 }
 .lp-list.lp-list-interactive > .lp-item:first-child,
 .lp-list[data-variant="interactive"] > .lp-item:first-child {

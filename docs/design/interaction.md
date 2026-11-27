@@ -21,7 +21,7 @@ Every focusable element (`Button`, `Link`, `Choice`, `Field`, `Tab`, `Item`) use
 - **Zero** `box-shadow` focus rings (no double rings).
 - **Radius inherits** the element's `border-radius` (`.lp-tab`, `.lp-item-link`, `.lp-back-link`, `.lp-item` declare non-zero radius via `--lp-radius-r1` / `--lp-radius-control` so focus rings are never zero-radius squares).
 - **Focus ring (`V2` Tab override):** Tabs use an inset focus ring (`outline-offset: calc(-1 * var(--lp-border-focus))`, `border-radius: var(--lp-radius-control)`) so the ring stays inside the tab bounds and is never clipped by the horizontal scroll container.
-- **Secondary button (`V4`):** Uses tonal neutral fill (`--lp-color-fill-neutral-tint-1`) with no outline, stepping to `--lp-color-fill-neutral-tint-2` (hover) and `--lp-color-fill-neutral-tint-3` (active).
+- **Secondary button (`V4`):** Uses tonal neutral fill (`--lp-color-fill-neutral-tint-1`) with no outline, stepping to `--lp-color-fill-neutral-tint-2` (hover) and `--lp-color-fill-neutral-tint-3` (active). Page-level `ActionBar` buttons stack vertically at full container width at every viewport (`H4`, reversing the regular-width auto-width portion of `V4`); inline/section/dialog actions remain auto width.
 - **Never clipped:** scroll containers such as `.lp-tabs[role="tablist"]` keep focus rings unclipped on all four sides.
 
 ## 3. Disabled & Busy States

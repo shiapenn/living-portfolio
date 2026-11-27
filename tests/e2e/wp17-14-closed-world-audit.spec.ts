@@ -111,8 +111,7 @@ test.describe('WP-17.14 Generic Closed-World Audit (K22–K27)', () => {
             if (el.classList.contains('lp-item-actions')) return 'ItemActions';
             if (el.classList.contains('lp-list-def-row')) return 'DefRow';
             if (el.classList.contains('lp-credential-header')) return 'CredHeader';
-            if (el.classList.contains('lp-credential-footer')) return 'CredFooter';
-            if (el.classList.contains('lp-credential-list') || el.classList.contains('lp-credential-single')) return 'CredBody';
+            if (el.classList.contains('lp-credential-panel') || el.classList.contains('lp-credential-list') || el.classList.contains('lp-credential-single')) return 'CredBody';
             if (dp) return `${el.tagName.toLowerCase()}[${dp}]`;
             if (dr) return `${el.tagName.toLowerCase()}[rel=${dr}]`;
             if (/^H[1-6]$/.test(el.tagName)) return 'Heading';
@@ -457,8 +456,20 @@ test.describe('WP-17.14 Generic Closed-World Audit (K22–K27)', () => {
           choiceDefaultText: colorOf('[data-state-group="Choice"] .lp-choice:not(.lp-state-hover):not(.is-selected):not(.lp-state-focus):not(.is-disabled) .lp-choice-card-title'),
           choiceDisabledText: colorOf('[data-state-group="Choice"] .lp-choice.is-disabled .lp-choice-card-title'),
           itemDefaultBg: bgOf('[data-state-group="Item"] .lp-item:not(.lp-state-hover):not(.lp-state-focus):not(.lp-state-active)'),
-          itemHoverBg: bgOf('[data-state-group="Item"] .lp-item.lp-state-hover'),
-          itemActiveBg: bgOf('[data-state-group="Item"] .lp-item.lp-state-active'),
+          itemHoverBg: (() => {
+            const el = root.querySelector('[data-state-group="Item"] .lp-item.lp-state-hover');
+            if (!el) return '';
+            const beforeBg = getComputedStyle(el, '::before').backgroundColor;
+            if (beforeBg && beforeBg !== 'rgba(0, 0, 0, 0)' && beforeBg !== 'transparent') return beforeBg;
+            return bgOf('[data-state-group="Item"] .lp-item.lp-state-hover');
+          })(),
+          itemActiveBg: (() => {
+            const el = root.querySelector('[data-state-group="Item"] .lp-item.lp-state-active');
+            if (!el) return '';
+            const beforeBg = getComputedStyle(el, '::before').backgroundColor;
+            if (beforeBg && beforeBg !== 'rgba(0, 0, 0, 0)' && beforeBg !== 'transparent') return beforeBg;
+            return bgOf('[data-state-group="Item"] .lp-item.lp-state-active');
+          })(),
           focuses: {
             button: focusOf('[data-state-group="Button"] .lp-btn-primary.lp-state-focus'),
             field: focusOf('[data-state-group="Field"] .lp-input.lp-state-focus'),

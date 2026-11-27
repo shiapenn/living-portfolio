@@ -191,6 +191,17 @@ items:
     acceptance: Shape language V1 (no partial-border + radius, zero divider/indicator radius, 8/12/999 tokens), Tabs redesigned V2 (baseline hairline, weight-stable 500, 0-radius accent bar, inset focus ring), token ladders V3 (surface/border/fill/elevation/motion/icons; control border 3.0-3.5:1, hairline ~1.5:1), Button/Field/Choice/Tab distinct signatures V4, PageHeader slots V5 (title-row action >=480px, S4 compact), unified OKLCH status colour family V6 (Pending on warning ramp), typography polish V7 (tabular-nums, balance/pretty, 68ch cap, tight title tracking), inset Item hover/pressed surfaces V8, hard-coded value audit L7 zero outside tokens (allowlist <= 10, build-time breakpoints), K28-K35 failing on 25e95c6 canary, 1x+2x contact-sheet zip + ladder specimen; CI + CodeQL green
     status: done
 
+  - id: WP-17.16
+    title: Alignment and form-action standardisation (WP-17 visual exit gate, FINAL; H1-H8, K36-K43)
+    track: admin
+    type: visual
+    depends_on: [WP-17.15]
+    size: M
+    expected_minutes: 75
+    gate: L-review
+    acceptance: Header full-width start-aligned on every route/width (H1, K36), trailing-cluster right-edge alignment across all Item states including Declined (H2, K37), Item text and hairlines flush with content edge with 8px outward hover/pressed bleed (H3, K38), page-level ActionBar vertical full-width stack at every width reversing V4 regular auto-width (H4, K39), Pagination component hidden when pages<=1 and single-row 44x44 icon buttons + compact/regular tabular summary + paged manifest states (H5, K41), Credential icon-only trailing Copy in header + inner sunken value panel + TOTP QR quiet-zone box alignment (H6, K42), horizontal closed-world audit HA1-HA5 across 100% of manifest (H7, K36-K40), L7 scanner --self-test proving every property class detects planted literals (H8, K43); K36-K43 failing on 48ffbee canary, 1x+2x contact-sheet zip; CI + CodeQL green
+    status: done
+
   # ── WP-18: Authoring canvas, media, storage & import (Report §7.9 + P004) ──
   - id: WP-18.1
     title: Authoring canvas layout (UI-02; covered by WP-16.L L2)
@@ -218,7 +229,7 @@ items:
     title: Media API (POST /media, GET /media/:id, storage adapter, limits, content sniffing; D-06, D-STORAGE)
     track: functional
     type: functional
-    depends_on: [WP-17.15]
+    depends_on: [WP-17.16]
     size: M
     expected_minutes: 50
     gate: none

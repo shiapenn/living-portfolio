@@ -314,10 +314,38 @@
 
 .lp-entries-pagination {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--lp-space-stack-label-to-control);
+  gap: var(--lp-space-proximity-3);
+  width: 100%;
+}
+
+.lp-entries-pagination-summary {
+  font-size: var(--lp-font-size-13);
+  line-height: var(--lp-font-line-20);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  min-width: 0;
+}
+
+.lp-entries-pagination-regular {
+  display: none;
+}
+
+.lp-entries-pagination-compact {
+  display: inline;
+}
+
+@media (min-width: __LP_BP_REGULAR__) {
+  .lp-entries-pagination-regular {
+    display: inline;
+  }
+
+  .lp-entries-pagination-compact {
+    display: none;
+  }
 }
 
 /* WP-16.R R2 Unified Admin Page & Auth Primitives (D-MIN) */
@@ -329,7 +357,7 @@
 .lp-page-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
   flex-wrap: wrap;
   gap: var(--lp-space-stack-field-to-field);
   margin: 0;
