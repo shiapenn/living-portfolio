@@ -1,18 +1,30 @@
-import { loadConfig } from "@living-portfolio/config";
-import { adaptDataSource, type WebDataClient } from "../../lib/data-source.js";
-import { renderAdminShell, renderPageTemplate } from "../../layouts/admin-shell.js";
-import { renderActionBar, renderButton, renderStepper } from "../../primitives/index.js";
-import { renderPageNotice } from "../../components/index.js";
+import { loadConfig } from '@living-portfolio/config';
+import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
+import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
+import {
+  renderActionBar,
+  renderBackLink,
+  renderButton,
+  renderChoiceGroup,
+  renderItem,
+  renderList,
+  renderSectionHeader,
+  renderStepper,
+} from '../../primitives/index.js';
+import { renderPageNotice } from '../../components/index.js';
 import { IMPORT_SCRIPT } from './import-script.js';
 
 export async function renderAdminImportPage(repo: WebDataClient, options: { nonce?: string } = {}): Promise<string> {
   repo = adaptDataSource(repo);
   const cfg = loadConfig();
+  const hasExternalProvider = Boolean(cfg.GEMINI_API_KEY?.trim() || cfg.OPENAI_API_KEY?.trim());
+
   const stagingNoticeHtml =
     cfg.DEPLOYMENT_CLASS === 'staging'
       ? `<div data-banner="staging-import-disabled">${renderPageNotice({
           tone: 'warn',
-          message: 'Import Disabled on Staging: Import connectors and ingestion pipelines are strictly disabled in staging environments to enforce synthetic data isolation.',
+          message:
+            'Import Disabled on Staging: Import connectors and ingestion pipelines are strictly disabled in staging environments to enforce synthetic data isolation.',
         })}</div>`
       : '';
 
@@ -23,11 +35,70 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
     stepTitle: 'Add material',
   });
 
+  const planTierHtml = hasExternalProvider
+    ? renderChoiceGroup({
+        id: 'import-plan-choice',
+        name: 'import_plan_tier',
+        mode: 'single',
+        variant: 'card',
+        legend: 'Processing mode',
+        options: [
+          {
+            id: 'plan-tier-free',
+            value: 'free',
+            label: 'Local / Free limits',
+            description: 'Zero cost within local quotas.',
+            checked: true,
+          },
+          {
+            id: 'plan-tier-paid',
+            value: 'paid',
+            label: 'Fast cloud acceleration',
+            description: 'Parallel external provider with estimated cost.',
+            checked: false,
+          },
+        ],
+      }) +
+      `<div class="lp-stack lp-gap-tight">
+        <div id="plan-free-est" class="lp-type-meta">Calculating local estimate...</div>
+        <div id="plan-paid-est" class="lp-type-meta">Calculating cloud estimate...</div>
+      </div>`
+    : `<div id="plan-local-summary" class="lp-stack lp-gap-tight">
+        <div class="lp-type-body">Local processing</div>
+        <div id="plan-free-est" class="lp-type-meta">Calculating local estimate...</div>
+      </div>`;
+
+  const doneNextStepsHtml = renderList({
+    id: 'import-done-next-steps',
+    variant: 'interactive',
+    itemsHtml: [
+      renderItem({
+        href: '/admin/entries',
+        title: 'Review imported entries',
+        subtitle: 'Edit drafts and publish when ready.',
+        showChevron: true,
+      }),
+      renderItem({
+        href: '/admin/audit',
+        title: 'Check for contradictions',
+        subtitle: 'Scan newly imported claims against existing entries.',
+        showChevron: true,
+      }),
+      renderItem({
+        id: 'btn-import-another',
+        href: '#import-again',
+        title: 'Import more material',
+        subtitle: 'Start a fresh import batch.',
+        showChevron: true,
+      }),
+    ].join(''),
+  });
+
   const bodyHtml = `
     ${stagingNoticeHtml}
     <div class="lp-stack lp-gap-related">
       ${stepperHtml}
-      <div id="import-status-banner" role="status" aria-live="polite" hidden></div>
+      ${renderPageNotice({ id: 'import-status-banner', tone: 'danger', message: '', role: 'none', hidden: true })}
 
       <!-- Step 1: Add Material -->
       <div id="import-step-add" class="lp-stack lp-gap-group">
@@ -45,67 +116,64 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
           })}
         </section>
       </div>
-    </div>
 
-    <!-- Step 2: Import Planner -->
-    <div id="import-step-plan" class="lp-stack-md lp-is-hidden">
-      <section class="lp-section-block lp-stack-md">
-        <h2 class="lp-section-title">Import Processing Planner</h2>
-        <p class="lp-body-sm-muted">
-          Estimated token workload and turnaround schedule based on detected document length.
-        </p>
-
-        <div class="lp-section-grid">
-          <div class="lp-stack-sm">
-            <h3 class="lp-section-title">Free Limits (Zero Cost)</h3>
-            <div id="plan-free-est" class="lp-body-sm">Calculating...</div>
-            <p class="lp-help-text">
-              Runs within local or free-tier quotas. Enrichment throttles across daily allocation.
-            </p>
+      <!-- Step 2: Plan -->
+      <div id="import-step-plan" class="lp-stack lp-gap-group lp-is-hidden" data-has-provider="${hasExternalProvider ? 'true' : 'false'}">
+        <section class="lp-stack lp-gap-group">
+          <div class="lp-stack lp-gap-related">
+            ${renderSectionHeader({ title: 'Processing plan' })}
+            ${planTierHtml}
           </div>
-          <div class="lp-stack-sm">
-            <h3 class="lp-section-title">Fast Cloud Acceleration</h3>
-            <div id="plan-paid-est" class="lp-body-sm">Calculating...</div>
-            <p class="lp-help-text">
-              Parallel execution via external LLM provider. Clearly labeled cost without default selection.
-            </p>
-          </div>
-        </div>
-
-        ${renderActionBar({
-          level: 'page',
-          primary: { id: 'btn-proceed-triage', label: 'Proceed to triage', variant: 'primary' },
-          secondary: { id: 'btn-back-add', label: 'Previous', variant: 'secondary' },
-        })}
-      </section>
-    </div>
-
-    <!-- Step 3: Triage & Review -->
-    <div id="import-step-triage" class="lp-stack-md lp-is-hidden">
-      <div class="triage-keys-legend lp-row-wrap lp-help-text" aria-label="Keyboard Shortcuts">
-        <span><kbd>J</kbd> / <kbd>K</kbd> Navigate items</span>
-        <span><kbd>A</kbd> Accept</span>
-        <span><kbd>R</kbd> Reassign profile</span>
-        <span><kbd>D</kbd> Set date</span>
-        <span><kbd>S</kbd> Skip</span>
+          ${renderActionBar({
+            level: 'page',
+            primary: { id: 'btn-proceed-triage', label: 'Proceed to review', variant: 'primary' },
+            secondary: { id: 'btn-back-add', label: 'Previous', variant: 'secondary' },
+          })}
+        </section>
       </div>
 
-      <div class="lp-row-between">
-        <div class="lp-row-wrap">
-          ${renderButton({ id: 'btn-key-prev', label: 'K Prev', variant: 'secondary' })}
-          ${renderButton({ id: 'btn-key-next', label: 'J Next', variant: 'secondary' })}
-          ${renderButton({ id: 'btn-key-accept', label: 'A Accept', variant: 'secondary' })}
-          ${renderButton({ id: 'btn-key-reassign', label: 'R Reassign', variant: 'secondary' })}
-          ${renderButton({ id: 'btn-key-date', label: 'D Set Date', variant: 'secondary' })}
-          ${renderButton({ id: 'btn-key-skip', label: 'S Skip', variant: 'secondary' })}
-        </div>
-        <div class="lp-row-wrap">
-          ${renderButton({ id: 'btn-bulk-accept', label: 'Bulk Accept All High-Confidence', variant: 'secondary' })}
-          ${renderButton({ id: 'btn-commit-batch', label: 'Commit Accepted Items', variant: 'primary' })}
-        </div>
+      <!-- Step 3: Review -->
+      <div id="import-step-triage" class="lp-stack lp-gap-group lp-is-hidden">
+        <section class="lp-stack lp-gap-group">
+          <div class="lp-stack lp-gap-related">
+            ${renderSectionHeader({ title: 'Review items' })}
+            <div class="lp-stack lp-gap-tight">
+              <div id="import-review-counter" class="lp-type-meta">0 of 0 reviewed</div>
+              <div class="triage-keys-legend lp-type-meta" aria-label="Keyboard Shortcuts"><kbd>J</kbd> / <kbd>K</kbd> Navigate items · <kbd>A</kbd> Include · <kbd>S</kbd> Leave out · <kbd>R</kbd> Change type · <kbd>D</kbd> Set date</div>
+            </div>
+          </div>
+
+          <div class="lp-action-bar lp-action-bar-inline">
+            ${renderButton({ id: 'btn-key-prev', label: 'Previous item', variant: 'secondary', size: 'sm' })}
+            ${renderButton({ id: 'btn-key-next', label: 'Next item', variant: 'secondary', size: 'sm' })}
+            ${renderButton({ id: 'btn-bulk-accept', label: 'Include all high-confidence', variant: 'secondary', size: 'sm' })}
+          </div>
+
+          <div id="triage-cards-container" data-c="List" data-variant="plain" class="lp-list lp-list-plain"></div>
+
+          ${renderActionBar({
+            level: 'page',
+            primary: { id: 'btn-commit-batch', label: 'Import included', variant: 'primary' },
+            secondary: { id: 'btn-back-plan', label: 'Previous', variant: 'secondary' },
+          })}
+        </section>
       </div>
 
-      <div id="triage-cards-container" class="lp-stack-md"></div>
+      <!-- Done Screen -->
+      <div id="import-step-done" class="lp-stack lp-gap-group lp-is-hidden">
+        <section class="lp-stack lp-gap-group">
+          <div class="lp-stack lp-gap-related">
+            ${renderSectionHeader({ title: 'Import complete' })}
+            <div id="import-done-summary" class="lp-type-body">Imported entries are saved as private drafts.</div>
+          </div>
+
+          ${doneNextStepsHtml}
+
+          <div class="lp-action-bar lp-action-bar-page">
+            ${renderBackLink({ id: 'btn-import-return-today', href: '/admin', destination: 'Today' })}
+          </div>
+        </section>
+      </div>
     </div>
 
 ${IMPORT_SCRIPT}
@@ -113,7 +181,7 @@ ${options.nonce ? `<script type="module" src="/assets/client/import-page.js" non
   `;
   const content = renderPageTemplate({
     title: 'Import & Triage',
-    description: 'Connect or paste existing material, plan processing budget, and triage with confidence sorting.',
+    description: 'Paste existing material, review the processing plan, and choose which entries to import.',
     archetype: 'form',
     bodyHtml,
   });

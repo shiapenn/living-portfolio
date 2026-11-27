@@ -17,7 +17,10 @@ export type ManifestStateAction =
   | 'editor-media-error-network'
   | 'editor-media-edit'
   | 'editor-media-inserted'
-  | 'public-embed-gate-loaded';
+  | 'public-embed-gate-loaded'
+  | 'import-plan'
+  | 'import-review'
+  | 'import-done';
 
 export interface ManifestEntry {
   id: string;
@@ -196,9 +199,39 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     id: 'import',
     route: '/admin/import',
     archetype: 'form',
-    stateLabel: 'Import entries',
+    stateLabel: 'Import entries (Step 1: Add)',
     assertion: 'Form archetype with S3 heading->first',
     checkIds: ['K22', 'K23', 'K27'],
+  },
+  {
+    id: 'import-plan',
+    route: '/admin/import',
+    archetype: 'form',
+    stateLabel: 'Import entries (Step 2: Plan)',
+    assertion: 'Plan step shows local summary or conditional Choice radio cards',
+    checkIds: ['K22', 'K23', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
+    action: 'import-plan',
+    markerSelector: '#import-step-plan:not(.lp-is-hidden)',
+  },
+  {
+    id: 'import-review',
+    route: '/admin/import',
+    archetype: 'form',
+    stateLabel: 'Import entries (Step 3: Review)',
+    assertion: 'Review step shows N of M reviewed counter and per-item Include/Leave out/Change type/Set date',
+    checkIds: ['K22', 'K23', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
+    action: 'import-review',
+    markerSelector: '#import-step-triage:not(.lp-is-hidden) #import-review-counter',
+  },
+  {
+    id: 'import-done',
+    route: '/admin/import',
+    archetype: 'form',
+    stateLabel: 'Import entries (Done screen)',
+    assertion: 'Dedicated Done screen with 3 next steps and 1 return link to Today',
+    checkIds: ['K22', 'K23', 'K24', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
+    action: 'import-done',
+    markerSelector: '#import-step-done:not(.lp-is-hidden) #import-done-next-steps',
   },
   {
     id: 'settings-index',
@@ -619,6 +652,7 @@ export async function navigateToManifestEntry(
     releasePendingUpload = null;
   }
   await page.unroute('**/api/media').catch(() => {});
+  await page.unroute('**/api/import/batch').catch(() => {});
   await page.unroute('https://stub.invalid/**').catch(() => {});
   const url = resolveManifestUrl(entry, fixtures);
   await page.goto(url, { waitUntil: 'networkidle' });
@@ -727,6 +761,32 @@ export async function navigateToManifestEntry(
     });
     await page.locator('.pub-embed-gate .pub-embed-load-btn').first().click();
     await page.locator('.pub-embed-gate[data-embed-state="loaded"] iframe.pub-embed-frame').first().waitFor({ state: 'visible', timeout: 5000 });
+  } else if (entry.action === 'import-plan') {
+    await page.click('#btn-load-sample');
+    await page.click('#btn-generate-plan');
+    await page.locator('#import-step-plan:not(.lp-is-hidden)').waitFor({ state: 'visible', timeout: 5000 });
+  } else if (entry.action === 'import-review') {
+    await page.click('#btn-load-sample');
+    await page.click('#btn-generate-plan');
+    await page.locator('#import-step-plan:not(.lp-is-hidden)').waitFor({ state: 'visible', timeout: 5000 });
+    await page.click('#btn-proceed-triage');
+    await page.locator('#import-step-triage:not(.lp-is-hidden)').waitFor({ state: 'visible', timeout: 5000 });
+  } else if (entry.action === 'import-done') {
+    await page.route('**/api/import/batch', async (route) => {
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({ importedCount: 1, entries: [] }),
+      });
+    });
+    await page.click('#btn-load-sample');
+    await page.click('#btn-generate-plan');
+    await page.locator('#import-step-plan:not(.lp-is-hidden)').waitFor({ state: 'visible', timeout: 5000 });
+    await page.click('#btn-proceed-triage');
+    await page.locator('#import-step-triage:not(.lp-is-hidden)').waitFor({ state: 'visible', timeout: 5000 });
+    await page.locator('[data-item-action="include"][data-index="0"]').click();
+    await page.click('#btn-commit-batch');
+    await page.locator('#import-step-done:not(.lp-is-hidden)').waitFor({ state: 'visible', timeout: 5000 });
   }
   if (entry.markerSelector) {
     await page.locator(entry.markerSelector).first().waitFor({ state: 'attached', timeout: 5000 });

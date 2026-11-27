@@ -96,3 +96,15 @@ One concise block per screen:
 - **Hierarchy (`1..n`):** `1` Dialog title (`Insert image` / `Edit image` / `Insert video` / `Edit video`) -> `2` Mode `Choice` (video) & File / URL `Field` -> `3` Alt text / Description `Field` + Decorative `Choice` -> `4` Caption `Field` -> `5` Consequence line (`S2`) + `ActionBar` (`Insert`/`Save`, `Cancel`, `Remove`) -> `6` Upload `StatusLine` (`> 1s`) or danger `Notice` (`S3` below `ActionBar`).
 - **States:** `idle`, `uploading` (`aria-busy="true"` on primary button, `StatusLine` after `1s`), `error-oversize`, `error-quota`, `error-network` / type / SVG (`Notice[danger]` under `ActionBar`), `field-invalid` (missing alt/description or disallowed embed host), `edit`, `inserted`.
 - **Compact:** At compact container width, dialog surface fills the viewport gutter with dialog inset padding; file trigger, inputs, choices, stacked `ActionBar` buttons, and `Notice` align flush on the dialog content column with zero horizontal overflow.
+
+### 10. Import — Plan, Review & Done Steps (`WP-18.6`, `/admin/import`)
+- **Archetype (`D1`):** `form` (3-step `Stepper` plus dedicated `Done` completion view; zero new `data-c` components: `Stepper`, `Field`, `Choice[card]`, `List[plain|interactive]`, `Item`, `ActionBar[page|inline]`, `Notice[danger]`, `StatusLine`, `Text`).
+- **JTBD:** Paste or upload material, review the processing plan (choosing local vs cloud only when an external provider is configured), decide per item what to include/leave out/retype/date, and land on a clear completion screen with next steps.
+- **Decision & required data:**
+  - *Step 1 (Add material):* Markdown/text `Field` + `ActionBar[page]` (`Generate plan`, `Load sample entries`).
+  - *Step 2 (Plan):* When `GEMINI_API_KEY` or `OPENAI_API_KEY` is configured, real `Choice[card]` radio group (`Local / Free limits` checked by default; `Fast cloud acceleration` unchecked). When no external provider is configured, local summary only (paid option hidden). `ActionBar[page]` (`Proceed to review`, `Previous`).
+  - *Step 3 (Review):* Live `"N of M reviewed"` counter, `List[plain]` of review `Item`s with per-item `Include`, `Leave out`, `Change type` (`Field[select]`), and `Set date` (`Field[date]`), plus keyboard shortcuts (`J`/`K`/`A`/`S`/`R`/`D`), `Accept all high-confidence`, and primary `Import included` in `ActionBar[page]`.
+  - *Done screen:* Replaces the old in-place status banner. Shows completion summary, 3 next-step `Item`s in a `List[interactive]` (`Review imported entries`, `Check for contradictions`, `Import more material`), and 1 return action (`Back to Today`).
+- **Hierarchy (`1..n`):** `1` Page title -> `2` Stepper -> `3` Step section heading -> `4` Choice cards / Review list / Next steps list -> `5` `ActionBar[page]` -> `6` Error `Notice` (`S3` below).
+- **States:** `add`, `plan` (local-only & external-provider radio cards), `review` (`N of M reviewed`), `done` (3 next steps + 1 return link), `error`.
+- **Compact:** Single-column cards and review items at compact width; per-item `ActionBar` and `Field` controls stack cleanly with zero horizontal overflow.
