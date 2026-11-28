@@ -63,9 +63,9 @@
 }
 
 .lp-overlay-dialog .lp-overlay-surface {
-  top: 50%;
+  top: var(--lp-space-proximity-5);
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   width: min(var(--lp-size-dialog-max-w), calc(100vw - var(--lp-size-control-xs)));
 }
 

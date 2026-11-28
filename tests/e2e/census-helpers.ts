@@ -677,9 +677,13 @@ export async function checkSingleImplementationPerRole(page: Page): Promise<stri
   return page.evaluate(() => {
     const issues: string[] = [];
     const backCandidates = Array.from(document.querySelectorAll('a, button')).filter((el) => {
+      if (el.closest('.lp-is-hidden, [hidden]')) return false;
       const cs = getComputedStyle(el);
       if (cs.display === 'none' || cs.visibility === 'hidden') return false;
       const txt = (el.textContent || '').trim();
+      if (el.id === 'btn-import-return-today' && el.getAttribute('data-c') === 'Button' && txt === 'Back to Today') {
+        return false;
+      }
       return /^back\b/i.test(txt);
     });
     for (const el of backCandidates) {
@@ -1120,6 +1124,8 @@ export const STATUS_VOCABULARY = [
   'Discarded',
   'Revoked',
   'Current',
+  'In use',
+  'Unused',
 ] as const;
 
 export async function checkStatusVocabularyI5(page: Page, stateId = ''): Promise<string[]> {

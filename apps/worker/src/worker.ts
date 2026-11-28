@@ -417,7 +417,7 @@ export class PortfolioWorker {
     }
 
     // 3d. Evidence discovery (links/commits in markdown)
-    const urlRegex = /https?:\/\/[^\s)]+/g;
+    const urlRegex = /https?:\/\/[^\s)"'<>]+/g;
     const discoveredUrls = full.currentRevision.body_md.match(urlRegex) ?? [];
     const savedEvidence = [];
     for (const url of discoveredUrls) {

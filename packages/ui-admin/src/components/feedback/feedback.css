@@ -196,12 +196,14 @@
   z-index: var(--lp-z-overlay);
   background: var(--lp-color-surface-scrim);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: var(--lp-space-inset-section);
+  padding: var(--lp-space-proximity-5) var(--lp-space-inset-section);
+  overflow-y: auto;
 }
 
 .lp-drawer-backdrop {
+  align-items: stretch;
   justify-content: flex-end;
   padding: 0;
 }

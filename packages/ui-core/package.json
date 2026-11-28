@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./plural": {
+      "types": "./dist/format/plural.d.ts",
+      "import": "./dist/format/plural.js"
     }
   },
   "scripts": {

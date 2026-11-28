@@ -10,7 +10,7 @@ export { renderField } from './field.js';
 export type { FieldProps, SelectOption, SelectOptionGroup } from './field.js';
 export { renderPageHeader } from './page-header.js';
 export type { PageHeaderProps } from './page-header.js';
-export { renderItem, renderList } from './item.js';
+export { renderItem, renderList, ITEM_CLIENT_SCRIPT } from './item.js';
 export type { ItemBodySegment, ItemProps, ListProps, ListVariant } from './item.js';
 export { renderActionBar } from './action-bar.js';
 export type { ActionBarLevel, ActionBarProps } from './action-bar.js';

@@ -191,7 +191,7 @@ export const ACCOUNT_SCRIPT = `
         if (created) metaParts.push('<span class="lp-item-meta-field">Created ' + created + '</span>');
         if (lastUsed) metaParts.push('<span class="lp-item-meta-field">Last used ' + lastUsed + '</span>');
         var metaHtml = metaParts.length > 0 ? '<div data-purpose="meta" class="lp-item-meta">' + metaParts.join('') + '</div>' : '';
-        var actionsHtml = '<div data-rel="actions" class="lp-item-actions"><div data-c="ActionBar" data-level="item" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-sm" data-revoke-token="' + t.id + '">Revoke</button></div></div>';
+        var actionsHtml = '<div data-rel="actions" class="lp-item-actions"><div data-c="ActionBar" data-level="item" class="lp-action-bar lp-action-bar-item"><button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-text-danger lp-btn-sm" data-destructive="true" data-revoke-token="' + t.id + '">Revoke</button></div></div>';
         return '<div data-c="Item" data-rel="item" class="lp-item lp-item-has-actions" data-token-id="' + t.id + '"><div class="lp-item-content">' + titleHtml + metaHtml + '</div>' + actionsHtml + '</div>';
       }).join('');
       tokensContainer.innerHTML = items;

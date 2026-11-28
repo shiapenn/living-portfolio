@@ -64,6 +64,7 @@ const BANNED_PATTERNS: Array<{ name: string; re: RegExp }> = [
 const ENTITY_STATUS_VOCAB: Record<string, ReadonlySet<string>> = {
   bookings: new Set(['Pending', 'Confirmed', 'Declined', 'Cancelled']),
   'settings-account': new Set(['Active', 'Revoked']),
+  'settings-storage': new Set(['In use', 'Unused']),
 };
 
 function wordCount(text: string): number {

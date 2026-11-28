@@ -54,13 +54,15 @@ export async function renderAdminQuickLogPage(
         })}
       </div>
 
-      ${renderActionBar({
-        level: 'page',
-        primary: { id: 'btn-ql-save', label: 'Save', variant: 'primary', type: 'submit' },
-      })}
+      <div class="lp-stack lp-gap-related">
+        ${renderActionBar({
+          level: 'page',
+          primary: { id: 'btn-ql-save', label: 'Save', variant: 'primary', type: 'submit' },
+        })}
 
-      ${renderStatusLine({ id: 'ql-status', message: '', className: 'lp-is-hidden' })}
-      ${renderPageNotice({ id: 'ql-error', tone: 'danger', message: '', role: 'none', hidden: true })}
+        ${renderStatusLine({ id: 'ql-status', message: '', className: 'lp-is-hidden' })}
+        ${renderPageNotice({ id: 'ql-error', tone: 'danger', message: '', role: 'none', hidden: true })}
+      </div>
     </form>
 
     <script${options.nonce ? ` nonce="${escapeHtml(options.nonce)}"` : ''}>

@@ -26,6 +26,8 @@ export const STATUS_VOCABULARY = [
   'Discarded',
   'Revoked',
   'Current',
+  'In use',
+  'Unused',
 ] as const;
 
 export interface ChipProps {

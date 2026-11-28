@@ -34,7 +34,7 @@ export function renderDraftAndOfflineBanners(): string {
   <div class="lp-notice-main">
     <div class="lp-notice-content">
       <span class="lp-notice-text">${escapeHtml(EDITOR_STRINGS.safety.draftRestored)}</span>
-      <button type="button" id="btn-discard-draft-buffer" class="lp-notice-action-link">${escapeHtml(EDITOR_STRINGS.safety.draftDiscard)}</button>
+      <button type="button" id="btn-discard-draft-buffer" class="lp-notice-action-link lp-btn-text-danger" data-destructive="true">${escapeHtml(EDITOR_STRINGS.safety.draftDiscard)}</button>
     </div>
   </div>
 </div>`;
