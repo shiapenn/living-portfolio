@@ -2305,5 +2305,13 @@
     "path": "docs/execution-reports/A195-wp-189-settings-storage-module.md",
     "status": "active",
     "supersedes": null
+  },
+  {
+    "id": "A196",
+    "title": "WP-18.10 Corrective Slice",
+    "class": "A",
+    "path": "docs/execution-reports/A196-wp-1810-corrective-slice.md",
+    "status": "active",
+    "supersedes": null
   }
 ]
