@@ -22,7 +22,7 @@ test.describe('WP-18.7 Real file import UI E2E', () => {
       },
     ]);
 
-    await expect(page.locator('#import-files-status')).toContainText('1 document(s) parsed, 1 error(s)');
+    await expect(page.locator('#import-files-status')).toContainText('1 document parsed, 1 error');
     await expect(page.locator('#import-status-banner')).toContainText('corrupt.pdf');
     expect(await page.locator('#import-paste-area').inputValue()).toContain('Uploaded Architecture Note');
 

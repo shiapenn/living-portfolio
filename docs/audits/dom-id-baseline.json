@@ -4,6 +4,8 @@
     "removedIds": [
       "btn-key-accept",
       "btn-key-date",
+      "btn-key-next",
+      "btn-key-prev",
       "btn-key-reassign",
       "btn-key-skip",
       "plan-paid-est",

@@ -3,7 +3,6 @@ import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
 import {
   renderActionBar,
-  renderBackLink,
   renderButton,
   renderChoiceGroup,
   renderItem,
@@ -179,7 +178,7 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
           </div>
 
           <div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item">
-            ${renderBackLink({ id: 'btn-import-return-today', href: '/admin', destination: 'Today', label: 'Back to Today' })}
+            ${renderButton({ id: 'btn-import-return-today', href: '/admin', label: 'Back to Today', variant: 'text' })}
           </div>
         </section>
       </div>
