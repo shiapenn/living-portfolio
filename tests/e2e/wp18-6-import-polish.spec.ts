@@ -39,7 +39,7 @@ test.describe('WP-18.6 Import stepper polish E2E', () => {
     await page.click('#btn-commit-batch');
     await expect(page.locator('#import-step-done')).toBeVisible();
     await expect(page.locator('#import-step-triage')).toBeHidden();
-    await expect(page.locator('#import-done-summary')).toContainText('Successfully imported 1 entries');
+    await expect(page.locator('#import-done-summary')).toContainText('Imported 1 entry as a private draft.');
 
     // 3 next steps + 1 return link
     const nextItems = page.locator('#import-done-next-steps [data-c="Item"]');

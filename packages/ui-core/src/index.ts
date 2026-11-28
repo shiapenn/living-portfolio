@@ -77,3 +77,7 @@ export {
   formatAdminDateTime,
   ADMIN_DATETIME_FORMATTER_SCRIPT,
 } from './format/datetime.js';
+export {
+  pluralize,
+  ADMIN_PLURAL_HELPER_SCRIPT,
+} from './format/plural.js';

@@ -192,7 +192,7 @@ export async function renderAdminAuditRulesPage(
                     ? {
                         level: 'item',
                         secondary: { label: INBOX_STRINGS.audit.confirmRule, variant: 'secondary', size: 'sm', dataAttrs: { 'rule-id': id, 'rule-action': 'confirmed' } },
-                        textAction: { label: 'Discard', variant: 'text', size: 'sm', dataAttrs: { 'rule-id': id, 'rule-action': 'revoked' } },
+                        textAction: { label: 'Discard', variant: 'text-danger', size: 'sm', dataAttrs: { 'rule-id': id, 'rule-action': 'revoked' } },
                       }
                     : { level: 'item', secondary: { label: INBOX_STRINGS.audit.revokeRule, variant: 'secondary', size: 'sm', dataAttrs: { 'rule-id': id, 'rule-action': 'revoked' } } },
                 attributes: `data-rule-row="${escapeHtml(id)}"`,

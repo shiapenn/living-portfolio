@@ -1,8 +1,10 @@
 import { ADMIN_API_CLIENT_SCRIPT } from '../../../lib/admin-api-client.js';
+import { ITEM_CLIENT_SCRIPT } from '../../../primitives/item.js';
 
 export const ENTRIES_LIST_SCRIPT = `<script>
 (function() {
   ${ADMIN_API_CLIENT_SCRIPT}
+  ${ITEM_CLIENT_SCRIPT}
   const stateEl = document.getElementById('entries-filter-state');
   const typeEl = document.getElementById('entries-filter-type');
   const searchEl = document.getElementById('entries-search');
@@ -54,16 +56,16 @@ export const ENTRIES_LIST_SCRIPT = `<script>
     if (emptyEl) emptyEl.setAttribute('hidden', '');
     regionEl.innerHTML = entries.map((e) => {
       const visLabel = e.visibility === 'private' ? 'Draft' : e.visibility === 'unlisted' ? 'Unlisted' : 'Public';
-      const visState = e.visibility === 'private' ? 'draft' : e.visibility === 'unlisted' ? 'unlisted' : 'public';
-      return '<li class="lp-entries-row" data-entry-row="' + escapeHtml(e.id) + '">' +
-        '<div class="lp-entries-row-main">' +
-          '<a href="/admin/entries/' + encodeURIComponent(e.id) + '" class="lp-entries-row-title">' + escapeHtml(e.title || 'Untitled') + '</a>' +
-          '<div class="lp-entries-row-meta">' +
-            '<span class="lp-state-label lp-state-' + visState + '"><span class="lp-state-dot" aria-hidden="true"></span>' + escapeHtml(visLabel) + '</span>' +
-            '<span class="lp-chip">' + escapeHtml(e.profile || 'work') + '</span>' +
-          '</div>' +
-        '</div>' +
-      '</li>';
+      const visTone = e.visibility === 'private' ? 'neutral' : e.visibility === 'unlisted' ? 'warn' : 'ok';
+      return lpRenderItem({
+        href: '/admin/entries/' + encodeURIComponent(e.id),
+        title: e.title || 'Untitled',
+        statusLabel: visLabel,
+        statusTone: visTone,
+        meta: e.profile || 'work',
+        showChevron: true,
+        attributes: 'data-entry-row="' + escapeHtml(e.id) + '"',
+      });
     }).join('');
     bindRowClicks();
   };

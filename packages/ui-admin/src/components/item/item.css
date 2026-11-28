@@ -105,6 +105,23 @@ a.lp-item:active::after,
   background: var(--lp-color-fill-accent-tint-1);
 }
 
+.lp-item.lp-item-review.is-selected::before {
+  left: calc(-1 * var(--lp-space-inset-item-x));
+  right: auto;
+  top: var(--lp-space-proximity-3);
+  bottom: var(--lp-space-proximity-3);
+  width: var(--lp-border-focus);
+  border-radius: var(--lp-radius-none);
+  background: var(--accent);
+}
+
+.lp-item-body-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: var(--lp-line-clamp-2);
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .lp-item.lp-item-has-actions {
   gap: var(--lp-space-stack-item-body-to-actionbar);
 }

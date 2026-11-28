@@ -144,22 +144,20 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
 
       <!-- Step 3: Review -->
       <div id="import-step-triage" class="lp-stack lp-gap-group lp-is-hidden">
-        <section class="lp-stack lp-gap-group">
+        <section data-c="FormSection" data-rel="section" class="lp-form-section lp-stack lp-gap-group">
           <div class="lp-stack lp-gap-related">
             ${renderSectionHeader({ title: 'Review items' })}
-            <div class="lp-stack lp-gap-tight">
-              <div id="import-review-counter" class="lp-type-meta">0 of 0 reviewed</div>
-              <div class="triage-keys-legend lp-type-meta" aria-label="Keyboard Shortcuts"><kbd>J</kbd> / <kbd>K</kbd> Navigate items · <kbd>A</kbd> Include · <kbd>S</kbd> Leave out · <kbd>R</kbd> Change type · <kbd>D</kbd> Set date</div>
+            <div class="lp-stack lp-gap-group">
+              <div class="lp-stack lp-gap-tight">
+                <div id="import-review-counter" data-c="Text" data-purpose="meta" class="lp-type-meta">0 of 0 reviewed</div>
+                <p class="triage-keys-legend" data-c="Text" data-purpose="helper" aria-label="Keyboard shortcuts">Keys: <kbd>J</kbd> / <kbd>K</kbd> next or previous · <kbd>A</kbd> include · <kbd>S</kbd> leave out · <kbd>R</kbd> change type · <kbd>D</kbd> set date</p>
+              </div>
+              <div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item">
+                ${renderButton({ id: 'btn-bulk-accept', label: 'Include all high-confidence', variant: 'secondary', size: 'sm' })}
+              </div>
+              <div id="triage-cards-container" data-c="List" data-variant="plain" class="lp-list lp-list-plain"></div>
             </div>
           </div>
-
-          <div class="lp-action-bar lp-action-bar-inline">
-            ${renderButton({ id: 'btn-key-prev', label: 'Previous item', variant: 'secondary', size: 'sm' })}
-            ${renderButton({ id: 'btn-key-next', label: 'Next item', variant: 'secondary', size: 'sm' })}
-            ${renderButton({ id: 'btn-bulk-accept', label: 'Include all high-confidence', variant: 'secondary', size: 'sm' })}
-          </div>
-
-          <div id="triage-cards-container" data-c="List" data-variant="plain" class="lp-list lp-list-plain"></div>
 
           ${renderActionBar({
             level: 'page',
@@ -171,16 +169,17 @@ export async function renderAdminImportPage(repo: WebDataClient, options: { nonc
 
       <!-- Done Screen -->
       <div id="import-step-done" class="lp-stack lp-gap-group lp-is-hidden">
-        <section class="lp-stack lp-gap-group">
+        <section data-c="FormSection" data-rel="section" class="lp-form-section lp-stack lp-gap-group">
           <div class="lp-stack lp-gap-related">
             ${renderSectionHeader({ title: 'Import complete' })}
-            <div id="import-done-summary" class="lp-type-body">Imported entries are saved as private drafts.</div>
+            <div class="lp-stack lp-gap-related">
+              <div id="import-done-summary" data-c="Text" data-purpose="value" class="lp-type-body">Imported entries are saved as private drafts.</div>
+              ${doneNextStepsHtml}
+            </div>
           </div>
 
-          ${doneNextStepsHtml}
-
-          <div class="lp-action-bar lp-action-bar-page">
-            ${renderBackLink({ id: 'btn-import-return-today', href: '/admin', destination: 'Today' })}
+          <div data-c="ActionBar" data-level="item" data-rel="actions" class="lp-action-bar lp-action-bar-item">
+            ${renderBackLink({ id: 'btn-import-return-today', href: '/admin', destination: 'Today', label: 'Back to Today' })}
           </div>
         </section>
       </div>

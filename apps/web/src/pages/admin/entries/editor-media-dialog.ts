@@ -52,7 +52,7 @@ export function renderEditorMediaDialog(): string {
       id: 'ref-media-alt',
       name: 'altText',
       label: 'Alt text',
-      placeholder: 'Describe what the image shows',
+      placeholder: 'Describe the image',
       required: true,
     })}
   </div>

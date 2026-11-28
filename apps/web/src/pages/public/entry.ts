@@ -204,9 +204,10 @@ export async function renderEntryDetailPage(
     evidence.length > 0
       ? evidence
           .map((ev) => {
-            const safeUrl = sanitizeHttpUrl(ev.url);
+            const rawEvUrl = typeof ev.url === 'string' ? ev.url.replace(/["']+$/, '') : ev.url;
+            const safeUrl = sanitizeHttpUrl(rawEvUrl);
             if (!safeUrl) return '';
-            const linkMarkup = `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">${escapeHtml(ev.url || ev.kind)}</a>`;
+            const linkMarkup = `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener">${escapeHtml(rawEvUrl || ev.kind)}</a>`;
             return `<div class="pub-mb-md">
               ${linkMarkup}
               ${

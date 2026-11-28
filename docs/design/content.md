@@ -41,6 +41,7 @@ Every `StatusLabel` (`data-c="StatusLabel"`) on an entity must come from that en
 | **API Token** (`/admin/settings/account`) | `Active`, `Revoked` |
 | **Answer Rule** (`/admin/audit`) | `Pending`, `Active`, `Discarded` |
 | **Page Revision** (`/admin/pages`) | Newest revision labelled `Current`; older revisions show **no** status |
+| **Media Asset** (`/admin/settings/storage`) | `In use`, `Unused` |
 
 ## Date & Time Format
 

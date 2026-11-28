@@ -1,4 +1,6 @@
 import type { Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 export type PageArchetype = 'form' | 'list' | 'detail' | 'review' | 'dashboard';
 
@@ -8,6 +10,7 @@ export type ManifestStateAction =
   | 'account-totp-reenrol'
   | 'account-token-created'
   | 'contradictions-found'
+  | 'entries-filtered-public'
   | 'entries-paged-middle'
   | 'entries-paged-last'
   | 'editor-media-idle'
@@ -17,10 +20,18 @@ export type ManifestStateAction =
   | 'editor-media-error-network'
   | 'editor-media-edit'
   | 'editor-media-inserted'
+  | 'editor-columns-inserted'
   | 'public-embed-gate-loaded'
   | 'import-plan'
   | 'import-review'
-  | 'import-done';
+  | 'import-done'
+  | 'import-file-errors'
+  | 'quick-log-saved'
+  | 'quick-log-error'
+  | 'today-storage-warning'
+  | 'settings-storage'
+  | 'storage-delete-confirm'
+  | 'storage-error-in-use';
 
 export interface ManifestEntry {
   id: string;
@@ -31,9 +42,21 @@ export interface ManifestEntry {
   checkIds: string[];
   action?: ManifestStateAction;
   /** Whether this entry requires seeded fixture IDs. */
-  fixtureKey?: 'bookingPendingId' | 'bookingConfirmedId' | 'bookingDeclinedId' | 'entryId' | 'mediaEntryId' | 'mediaEntrySlug';
+  fixtureKey?:
+    | 'bookingPendingId'
+    | 'bookingConfirmedId'
+    | 'bookingDeclinedId'
+    | 'entryId'
+    | 'mediaEntryId'
+    | 'mediaEntrySlug'
+    | 'embedEntrySlug'
+    | 'columnsEntryId';
   /** Optional CSS selector marker proving the state renders what it claims. */
   markerSelector?: string;
+  /** Optional additional DOM markers for merged states (e.g. public-entry-media). */
+  extraMarkers?: string[];
+  /** Whether this state captures an open modal dialog (viewport-sized full-scrim capture, V12/K52). */
+  isDialog?: boolean;
 }
 
 export interface ManifestFixtures {
@@ -43,8 +66,11 @@ export interface ManifestFixtures {
   entryId: string;
   mediaEntryId: string;
   mediaEntrySlug: string;
+  embedEntrySlug: string;
+  columnsEntryId: string;
   mediaImageId: string;
   mediaVideoId: string;
+  unusedMediaId: string;
 }
 
 /**
@@ -64,12 +90,23 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     checkIds: ['K22', 'K23', 'K24', 'K27'],
   },
   {
+    id: 'today-storage-warning',
+    route: '/admin',
+    archetype: 'dashboard',
+    stateLabel: 'Today workspace (Storage >= 80% warning)',
+    assertion: 'Needs attention surfaces storage quota warning item linking to /admin/settings/storage',
+    checkIds: ['K22', 'K23', 'K24', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
+    action: 'today-storage-warning',
+    markerSelector: '#att-storage-quota[href="/admin/settings/storage"]',
+  },
+  {
     id: 'entries',
     route: '/admin/entries',
     archetype: 'list',
-    stateLabel: 'Entries list',
-    assertion: 'List archetype with navigable Items, S1 internal rows, S3 padding',
+    stateLabel: 'Entries list (Public filter)',
+    assertion: 'List archetype with navigable Items, S1 internal rows, S3 padding, filtered to Published',
     checkIds: ['K22', 'K23', 'K24', 'K27'],
+    action: 'entries-filtered-public',
   },
   {
     id: 'entries-paged-first',
@@ -234,6 +271,16 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     markerSelector: '#import-step-done:not(.lp-is-hidden) #import-done-next-steps',
   },
   {
+    id: 'import-file-errors',
+    route: '/admin/import',
+    archetype: 'form',
+    stateLabel: 'Import entries (Per-file upload errors)',
+    assertion: 'Per-file import errors render in danger Notice with pluralised file status',
+    checkIds: ['K22', 'K23', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
+    action: 'import-file-errors',
+    markerSelector: '#import-status-banner[role="alert"]:not([hidden])',
+  },
+  {
     id: 'quick-log',
     route: '/admin/quick-log',
     archetype: 'form',
@@ -241,6 +288,26 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     assertion: 'Mobile-first 4-field form archetype with single primary Save button',
     checkIds: ['K22', 'K23', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
     markerSelector: '#quick-log-form #btn-ql-save',
+  },
+  {
+    id: 'quick-log-saved',
+    route: '/admin/quick-log',
+    archetype: 'form',
+    stateLabel: 'Quick Log (Saved StatusLine)',
+    assertion: 'Saving quick log resets fields and shows StatusLine below ActionBar',
+    checkIds: ['K22', 'K23', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
+    action: 'quick-log-saved',
+    markerSelector: '#ql-status:not(.lp-is-hidden)',
+  },
+  {
+    id: 'quick-log-error',
+    route: '/admin/quick-log',
+    archetype: 'form',
+    stateLabel: 'Quick Log (Validation error)',
+    assertion: 'Submitting empty What happened marks aria-invalid and shows danger Notice below ActionBar',
+    checkIds: ['K22', 'K23', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
+    action: 'quick-log-error',
+    markerSelector: '#ql-error[role="alert"]:not([hidden])',
   },
   {
     id: 'settings-index',
@@ -306,9 +373,32 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     route: '/admin/settings/storage',
     archetype: 'form',
     stateLabel: 'Settings — Storage',
-    assertion: 'Storage usage vs quota, backend, editable limits, media list with reference counts, and guarded delete dialogs',
+    assertion: 'Storage rows as Item with In use/Unused status, ui-core date, danger-text Delete & Remove N unused files',
     checkIds: ['K22', 'K23', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
-    markerSelector: '#storage-usage-summary',
+    action: 'settings-storage',
+    markerSelector: '#storage-media-list[data-storage-loaded="true"] [data-c="Item"]',
+  },
+  {
+    id: 'storage-delete-confirm',
+    route: '/admin/settings/storage',
+    archetype: 'form',
+    stateLabel: 'Settings — Storage (Delete confirmation dialog)',
+    assertion: 'Top-anchored ADR-025 Overlay dialog confirming permanent deletion of an unused media file',
+    checkIds: ['K22', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
+    action: 'storage-delete-confirm',
+    markerSelector: '#storage-delete-dialog:not([hidden]) #btn-storage-delete-confirm',
+    isDialog: true,
+  },
+  {
+    id: 'storage-error-in-use',
+    route: '/admin/settings/storage',
+    archetype: 'form',
+    stateLabel: 'Settings — Storage (Delete blocked: in use)',
+    assertion: 'Deleting a published-referenced media file surfaces 409 danger Notice inside confirmation dialog',
+    checkIds: ['K22', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
+    action: 'storage-error-in-use',
+    markerSelector: '#storage-delete-error[role="alert"]:not([hidden])',
+    isDialog: true,
   },
   {
     id: 'settings-backups',
@@ -334,17 +424,18 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     assertion: 'Tonal hover/active ladder, unified unclipped focus ring, distinct disabled Choice',
     checkIds: ['K25', 'K27'],
   },
-  // WP-18.4 Editor Media Dialog & Public Media States
+  // WP-18.4 / WP-18.10 Editor Media Dialog, Columns & Public Media States
   {
     id: 'editor-media-idle',
     route: '/admin/entries/:id',
     archetype: 'form',
     stateLabel: 'Editor media dialog (Idle)',
-    assertion: 'Unified Overlay dialog with Field[file], Alt text, Decorative Choice, Caption, Insert->Cancel ActionBar',
+    assertion: 'Top-anchored Overlay dialog with Field[file], Alt text, Decorative Choice, Caption, Insert->Cancel ActionBar',
     checkIds: ['K22', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
     action: 'editor-media-idle',
     fixtureKey: 'mediaEntryId',
     markerSelector: '#ref-media-dialog[data-media-state="idle"]:not([hidden])',
+    isDialog: true,
   },
   {
     id: 'editor-media-uploading',
@@ -356,6 +447,7 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     action: 'editor-media-uploading',
     fixtureKey: 'mediaEntryId',
     markerSelector: '#ref-media-dialog[data-media-state="uploading"] #ref-media-submit[aria-busy="true"]',
+    isDialog: true,
   },
   {
     id: 'editor-media-error-oversize',
@@ -367,6 +459,7 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     action: 'editor-media-error-oversize',
     fixtureKey: 'mediaEntryId',
     markerSelector: '#ref-media-error-notice:not([hidden])',
+    isDialog: true,
   },
   {
     id: 'editor-media-error-quota',
@@ -378,6 +471,7 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     action: 'editor-media-error-quota',
     fixtureKey: 'mediaEntryId',
     markerSelector: '#ref-media-error-notice:not([hidden])',
+    isDialog: true,
   },
   {
     id: 'editor-media-error-network',
@@ -389,6 +483,7 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     action: 'editor-media-error-network',
     fixtureKey: 'mediaEntryId',
     markerSelector: '#ref-media-error-notice:not([hidden])',
+    isDialog: true,
   },
   {
     id: 'editor-media-edit',
@@ -400,6 +495,7 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     action: 'editor-media-edit',
     fixtureKey: 'mediaEntryId',
     markerSelector: '#ref-media-dialog[data-media-mode="edit"] #ref-media-remove:not(.lp-is-hidden)',
+    isDialog: true,
   },
   {
     id: 'editor-media-inserted',
@@ -413,34 +509,29 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     markerSelector: '.lp-editor-media-block[data-media-node="image"]',
   },
   {
-    id: 'public-entry-columns',
-    route: '/work/:slug',
-    archetype: 'detail',
-    stateLabel: 'Public entry with columns (.pub-columns)',
-    assertion: 'Public columns directive renders responsive .pub-columns grid preserving reading order',
+    id: 'editor-columns-inserted',
+    route: '/admin/entries/:id',
+    archetype: 'form',
+    stateLabel: 'Editor with inserted columns directive',
+    assertion: 'Inserted 2-column directive renders editable .lp-editor-columns grid in editor canvas',
     checkIds: ['K22', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
-    fixtureKey: 'mediaEntrySlug',
-    markerSelector: '[data-pub-columns="true"]',
+    action: 'editor-columns-inserted',
+    fixtureKey: 'columnsEntryId',
+    markerSelector: '.ProseMirror .lp-editor-columns[data-cols="2"] > .lp-editor-column',
   },
   {
-    id: 'public-entry-image',
+    id: 'public-entry-media',
     route: '/work/:slug',
     archetype: 'detail',
-    stateLabel: 'Public entry with image (.pub-media)',
-    assertion: 'Public image renders in .pub-media with stored width/height, loading=lazy, and figcaption',
+    stateLabel: 'Public entry with image, video & columns',
+    assertion: 'Real synthetic image, playable MP4 video, and responsive .pub-columns grid render with distinct DOM markers',
     checkIds: ['K22', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
     fixtureKey: 'mediaEntrySlug',
     markerSelector: '.pub-media[data-pub-media="image"] img[width][height][loading="lazy"]',
-  },
-  {
-    id: 'public-entry-video',
-    route: '/work/:slug',
-    archetype: 'detail',
-    stateLabel: 'Public entry with uploaded video (.pub-media)',
-    assertion: 'Public uploaded video renders with controls, preload=metadata, aria-label, and figcaption',
-    checkIds: ['K22', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
-    fixtureKey: 'mediaEntrySlug',
-    markerSelector: '.pub-media[data-pub-media="video"] video[controls][preload="metadata"][aria-label]',
+    extraMarkers: [
+      '.pub-media[data-pub-media="video"] video[controls][preload="metadata"][aria-label]',
+      '[data-pub-columns="true"]',
+    ],
   },
   {
     id: 'public-embed-gate-unloaded',
@@ -449,7 +540,7 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     stateLabel: 'Public embed gate (Unloaded)',
     assertion: 'Static placeholder with zero iframe/third-party requests before click',
     checkIds: ['K22', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
-    fixtureKey: 'mediaEntrySlug',
+    fixtureKey: 'embedEntrySlug',
     markerSelector: '.pub-embed-gate[data-embed-state="unloaded"] .pub-embed-load-btn',
   },
   {
@@ -460,7 +551,7 @@ export const WP17_MANIFEST: ManifestEntry[] = [
     assertion: 'Clicking Load video creates iframe pointed at configured stub host',
     checkIds: ['K22', 'K27', 'K36', 'K37', 'K38', 'K39', 'K40'],
     action: 'public-embed-gate-loaded',
-    fixtureKey: 'mediaEntrySlug',
+    fixtureKey: 'embedEntrySlug',
     markerSelector: '.pub-embed-gate[data-embed-state="loaded"] iframe.pub-embed-frame',
   },
 ];
@@ -570,69 +661,84 @@ export async function seedManifestFixtures(page: Page): Promise<ManifestFixtures
     }
   }
 
-  // WP-18.4: Seed synthetic PNG image, minimal MP4 video, and a published public entry referencing both + stub embed
-  const tinyPng = Buffer.from(
-    '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000100000500010d0a2db40000000049454e44ae426082',
-    'hex'
-  );
-  const tinyMp4 = Buffer.concat([
-    Buffer.from([0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x6d, 0x70, 0x34, 0x32, 0x00, 0x00, 0x00, 0x00, 0x6d, 0x70, 0x34, 0x32, 0x69, 0x73, 0x6f, 0x6d]),
-    Buffer.alloc(32),
-  ]);
+  // WP-18.10 V14: Seed real synthetic PNG (<=20 KB), playable synthetic MP4 (<=100 KB), and deterministic public entries
+  const syntheticPng = readFileSync(join(process.cwd(), 'tests', 'e2e', 'fixtures', 'synthetic-diagram.png'));
+  const syntheticMp4 = readFileSync(join(process.cwd(), 'tests', 'e2e', 'fixtures', 'synthetic-clip.mp4'));
   const csrfOnly = { 'X-CSRF-Token': headers['X-CSRF-Token'] };
-  const imgUp = await (
-    await page.request.post('/api/media', {
-      headers: csrfOnly,
-      multipart: { file: { name: 'diagram.png', mimeType: 'image/png', buffer: tinyPng }, alt_text: 'Synthetic architecture diagram' },
-    })
-  ).json();
-  const vidUp = await (
-    await page.request.post('/api/media', {
-      headers: csrfOnly,
-      multipart: { file: { name: 'walkthrough.mp4', mimeType: 'video/mp4', buffer: tinyMp4 }, alt_text: 'Synthetic deployment walkthrough' },
-    })
-  ).json();
-  const mediaImageId = String(imgUp.id || imgUp.asset?.id || '');
-  const mediaVideoId = String(vidUp.id || vidUp.asset?.id || '');
+
+  const existingMediaRes = await page.request.get('/api/media', { headers });
+  const existingMediaData = await existingMediaRes.json().catch(() => ({ items: [] }));
+  const existingMediaItems: any[] = Array.isArray(existingMediaData.items) ? existingMediaData.items : [];
+
+  const ensureMedia = async (name: string, mimeType: string, buffer: Buffer, altText: string): Promise<string> => {
+    const found = existingMediaItems.find((m) => m.original_filename === name);
+    if (found?.id) return String(found.id);
+    const up = await (
+      await page.request.post('/api/media', {
+        headers: csrfOnly,
+        multipart: { file: { name, mimeType, buffer }, alt_text: altText },
+      })
+    ).json();
+    return String(up.id || up.asset?.id || '');
+  };
+
+  const mediaImageId = await ensureMedia('diagram.png', 'image/png', syntheticPng, 'Synthetic architecture diagram');
+  const mediaVideoId = await ensureMedia('walkthrough.mp4', 'video/mp4', syntheticMp4, 'Synthetic deployment walkthrough');
+  const unusedMediaId = await ensureMedia('unused-scratch-diagram.png', 'image/png', syntheticPng, 'Unused scratch diagram');
+
   const mediaEntrySlug = 'wp18-4-media-showcase';
   const mediaBodyMd = [
-    'This entry demonstrates privacy-first images, uploaded video, and consent-gated embeds.',
+    'This entry demonstrates privacy-first images, uploaded video, and responsive columns.',
     '',
     `![Synthetic architecture diagram](/api/media/${mediaImageId} "Request routing topology")`,
     '',
     `:::video{src="/api/media/${mediaVideoId}" description="Synthetic deployment walkthrough" caption="Local clip"}\n:::`,
     '',
-    ':::video{embed="https://stub.invalid/embed/demo" description="Consent-gated stub talk" caption="Stub host demo"}\n:::',
-    '',
     ':::columns{cols=2}\n:::column\nColumn one summary.\n:::\n:::column\nColumn two summary.\n:::\n:::',
   ].join('\n');
 
-  let mediaEntryId = '';
-  const existingMediaEntry = list.find((e: any) => e.slug === mediaEntrySlug);
-  if (existingMediaEntry) {
-    mediaEntryId = String(existingMediaEntry.id);
-  } else {
+  const embedEntrySlug = 'wp18-4-embed-showcase';
+  const embedBodyMd = [
+    'This entry demonstrates consent-gated external video embeds with zero third-party requests before click.',
+    '',
+    ':::video{embed="https://stub.invalid/embed/demo" description="Consent-gated stub talk" caption="Stub host demo"}\n:::',
+  ].join('\n');
+
+  const columnsEntrySlug = 'wp18-5-columns-showcase';
+  const columnsBodyMd = [
+    'Structured two-column layout in the authoring canvas.',
+    '',
+    ':::columns{cols=2}\n:::column\nLeft column narrative explaining architecture trade-offs.\n:::\n:::column\nRight column narrative comparing latency and throughput.\n:::\n:::',
+  ].join('\n');
+
+  const ensurePublicEntry = async (slug: string, title: string, bodyMd: string): Promise<string> => {
+    const found = list.find((e: any) => e.slug === slug);
+    if (found) return String(found.id);
     const previewRes = await (
       await page.request.post('/api/entries/redaction-preview', {
         headers,
-        data: { entryId: 'draft', text: mediaBodyMd },
+        data: { entryId: 'draft', text: bodyMd },
       })
     ).json();
-    const createdMediaEntry = await (
+    const created = await (
       await page.request.post('/api/entries', {
         headers,
         data: {
-          title: 'Media & Embed Showcase',
-          slug: mediaEntrySlug,
+          title,
+          slug,
           profile: 'case-study',
           visibility: 'public',
-          body_md: mediaBodyMd,
+          body_md: bodyMd,
           redactionPreviewToken: previewRes.redactionPreviewToken,
         },
       })
     ).json();
-    mediaEntryId = String(createdMediaEntry.entry?.id || entryId);
-  }
+    return String(created.entry?.id || entryId);
+  };
+
+  const mediaEntryId = await ensurePublicEntry(mediaEntrySlug, 'Media & Columns Showcase', mediaBodyMd);
+  await ensurePublicEntry(embedEntrySlug, 'Consent-Gated Embed Showcase', embedBodyMd);
+  const columnsEntryId = await ensurePublicEntry(columnsEntrySlug, 'Columns Layout Showcase', columnsBodyMd);
 
   return {
     bookingPendingId: String(bPend.booking.id),
@@ -641,8 +747,11 @@ export async function seedManifestFixtures(page: Page): Promise<ManifestFixtures
     entryId,
     mediaEntryId,
     mediaEntrySlug,
+    embedEntrySlug,
+    columnsEntryId,
     mediaImageId,
     mediaVideoId,
+    unusedMediaId,
   };
 }
 
@@ -653,10 +762,7 @@ export function resolveManifestUrl(entry: ManifestEntry, fixtures: ManifestFixtu
     .replace(':slug', encodeURIComponent(fixtures[entry.fixtureKey]));
 }
 
-const SYNTHETIC_PNG_BYTES = Buffer.from(
-  '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000a49444154789c63000100000500010d0a2db40000000049454e44ae426082',
-  'hex'
-);
+const SYNTHETIC_PNG_BYTES = readFileSync(join(process.cwd(), 'tests', 'e2e', 'fixtures', 'synthetic-diagram.png'));
 
 let releasePendingUpload: (() => void) | null = null;
 
@@ -670,11 +776,90 @@ export async function navigateToManifestEntry(
     releasePendingUpload = null;
   }
   await page.unroute('**/api/media').catch(() => {});
+  await page.unroute('**/api/media/**').catch(() => {});
   await page.unroute('**/api/import/batch').catch(() => {});
+  await page.unroute('**/api/import/files').catch(() => {});
+  await page.unroute('**/api/entries').catch(() => {});
   await page.unroute('https://stub.invalid/**').catch(() => {});
+
+  // Pre-navigation routes for states that intercept initial GET calls
+  if (entry.action === 'today-storage-warning') {
+    await page.route('**/api/media', async (route) => {
+      if (route.request().method() === 'GET') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            items: [],
+            total_bytes: 4_500_000_000,
+            quota_bytes: 5_000_000_000,
+            backend: 'local',
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+  }
+
   const url = resolveManifestUrl(entry, fixtures);
   await page.goto(url, { waitUntil: 'networkidle' });
-  if (entry.action === 'account-recovery-codes') {
+  if (entry.action === 'today-storage-warning') {
+    await page.locator('#att-storage-quota').waitFor({ state: 'visible', timeout: 5000 });
+  } else if (entry.action === 'settings-storage') {
+    await page.locator('#storage-media-list[data-storage-loaded="true"]').waitFor({ state: 'attached', timeout: 5000 });
+  } else if (entry.action === 'storage-delete-confirm') {
+    await page.locator('#storage-media-list[data-storage-loaded="true"]').waitFor({ state: 'attached', timeout: 5000 });
+    await page.locator('[data-storage-delete]:not([data-storage-in-use])').first().click();
+    await page.locator('#storage-delete-dialog:not([hidden])').waitFor({ state: 'visible', timeout: 5000 });
+  } else if (entry.action === 'storage-error-in-use') {
+    await page.locator('#storage-media-list[data-storage-loaded="true"]').waitFor({ state: 'attached', timeout: 5000 });
+    await page.locator('[data-storage-delete][data-storage-in-use="true"]').first().click();
+    await page.locator('#storage-delete-dialog:not([hidden])').waitFor({ state: 'visible', timeout: 5000 });
+    await page.click('#btn-storage-delete-confirm');
+    await page.locator('#storage-delete-error:not([hidden])').waitFor({ state: 'visible', timeout: 5000 });
+  } else if (entry.action === 'quick-log-saved') {
+    await page.route('**/api/entries', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          status: 201,
+          contentType: 'application/json',
+          body: JSON.stringify({ entry: { id: 'ql-stub-1', title: 'Shipped media verification pass' } }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+    await page.fill('#ql-happened', 'Shipped media verification pass');
+    await page.fill('#ql-decided', 'Standardised danger-text actions across storage and audit.');
+    await page.click('#btn-ql-save');
+    await page.locator('#ql-status:not(.lp-is-hidden)').waitFor({ state: 'visible', timeout: 5000 });
+  } else if (entry.action === 'quick-log-error') {
+    await page.fill('#ql-happened', '');
+    await page.click('#btn-ql-save');
+    await page.locator('#ql-error:not([hidden])').waitFor({ state: 'visible', timeout: 5000 });
+  } else if (entry.action === 'import-file-errors') {
+    await page.route('**/api/import/files', async (route) => {
+      if (route.request().method() === 'POST') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            documents: [],
+            errors: [{ filename: 'broken.pdf', error: 'Unable to parse PDF content.' }],
+          }),
+        });
+      } else {
+        await route.continue();
+      }
+    });
+    await page.setInputFiles('#import-files-input', {
+      name: 'broken.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('%PDF-1.4 broken'),
+    });
+    await page.locator('#import-status-banner:not([hidden])').waitFor({ state: 'visible', timeout: 5000 });
+  } else if (entry.action === 'account-recovery-codes') {
     await page.click('#btn-regen-recovery');
     await page.locator('#account-recovery-output .lp-credential-cell').first().waitFor({ state: 'visible', timeout: 5000 });
   } else if (entry.action === 'account-totp-reenrol') {
@@ -693,6 +878,9 @@ export async function navigateToManifestEntry(
         await page.waitForTimeout(800);
       }
     }
+  } else if (entry.action === 'entries-filtered-public') {
+    await page.selectOption('#entries-filter-state', 'public');
+    await page.waitForTimeout(400);
   } else if (entry.action === 'entries-paged-middle') {
     const nextBtn = page.locator('#btn-entries-next');
     if ((await nextBtn.isVisible()) && !(await nextBtn.isDisabled())) {
@@ -769,6 +957,8 @@ export async function navigateToManifestEntry(
     await page.locator('#ref-media-dialog[data-media-mode="edit"]:not([hidden])').waitFor({ state: 'visible', timeout: 5000 });
   } else if (entry.action === 'editor-media-inserted') {
     await page.locator('.lp-editor-media-block[data-media-node="image"]').first().waitFor({ state: 'visible', timeout: 5000 });
+  } else if (entry.action === 'editor-columns-inserted') {
+    await page.locator('.ProseMirror .lp-editor-columns[data-cols="2"] > .lp-editor-column').first().waitFor({ state: 'visible', timeout: 5000 });
   } else if (entry.action === 'public-embed-gate-loaded') {
     await page.route('https://stub.invalid/**', async (route) => {
       await route.fulfill({
@@ -808,5 +998,10 @@ export async function navigateToManifestEntry(
   }
   if (entry.markerSelector) {
     await page.locator(entry.markerSelector).first().waitFor({ state: 'attached', timeout: 5000 });
+  }
+  if (entry.extraMarkers) {
+    for (const sel of entry.extraMarkers) {
+      await page.locator(sel).first().waitFor({ state: 'attached', timeout: 5000 });
+    }
   }
 }

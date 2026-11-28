@@ -1,13 +1,14 @@
 import { z } from '@living-portfolio/core';
+import { ADMIN_DATETIME_FORMATTER_SCRIPT, ADMIN_PLURAL_HELPER_SCRIPT } from '@living-portfolio/ui-core';
 import {
+  ITEM_CLIENT_SCRIPT,
   renderActionBar,
   renderField,
   renderFormSection,
   renderList,
-  renderOverlay,
   renderText,
 } from '../../primitives/index.js';
-import { renderPageNotice, renderStatusLine } from '../../components/index.js';
+import { renderDialog, renderPageNotice, renderStatusLine } from '../../components/index.js';
 import type { SettingsModuleManifest } from '../registry.js';
 
 export const StorageConfigSchema = z.object({
@@ -54,38 +55,38 @@ export const storageModule: SettingsModuleManifest<StorageConfig> = {
       ],
     });
 
-    const deleteDialogHtml = renderOverlay({
+    const deleteDialogHtml = renderDialog({
       id: 'storage-delete-dialog',
-      kind: 'dialog',
       title: 'Delete media file?',
       bodyHtml: `
         <div class="lp-stack lp-gap-related">
-          <div id="storage-delete-filename" class="lp-type-body">Selected file</div>
-          <div class="lp-type-meta">This removes the file permanently from storage.</div>
-          ${renderPageNotice({ id: 'storage-delete-error', tone: 'danger', message: '', role: 'none', hidden: true })}
+          <div id="storage-delete-filename" data-c="Text" data-purpose="value" class="lp-type-body">Selected file</div>
+          <div data-c="Text" data-purpose="helper" class="lp-type-meta">This removes the file permanently from storage.</div>
         </div>
       `,
-      footerHtml: renderActionBar({
-        level: 'dialog',
-        primary: { id: 'btn-storage-delete-confirm', label: 'Delete', variant: 'danger', type: 'button' },
-        textAction: { id: 'btn-storage-delete-cancel', label: 'Cancel', variant: 'quiet', type: 'button' },
-      }),
+      footerHtml: `
+        ${renderActionBar({
+          level: 'dialog',
+          primary: { id: 'btn-storage-delete-confirm', label: 'Delete', variant: 'danger', type: 'button' },
+          textAction: { id: 'btn-storage-delete-cancel', label: 'Cancel', variant: 'text', type: 'button', dataAttrs: { 'lp-dialog-close': 'true' } },
+        })}
+        ${renderPageNotice({ id: 'storage-delete-error', tone: 'danger', message: '', role: 'none', hidden: true })}
+      `,
     });
 
-    const pruneDialogHtml = renderOverlay({
+    const pruneDialogHtml = renderDialog({
       id: 'storage-prune-dialog',
-      kind: 'dialog',
       title: 'Remove unused files?',
       bodyHtml: `
         <div class="lp-stack lp-gap-related">
-          <div id="storage-prune-summary" class="lp-type-body">No unused files selected.</div>
-          <div class="lp-type-meta">Files referenced by published entries are never removed.</div>
+          <div id="storage-prune-summary" data-c="Text" data-purpose="value" class="lp-type-body">No unused files selected.</div>
+          <div data-c="Text" data-purpose="helper" class="lp-type-meta">Files referenced by published entries are never removed.</div>
         </div>
       `,
       footerHtml: renderActionBar({
         level: 'dialog',
         primary: { id: 'btn-storage-prune-confirm', label: 'Remove unused', variant: 'danger', type: 'button' },
-        textAction: { id: 'btn-storage-prune-cancel', label: 'Cancel', variant: 'quiet', type: 'button' },
+        textAction: { id: 'btn-storage-prune-cancel', label: 'Cancel', variant: 'text', type: 'button', dataAttrs: { 'lp-dialog-close': 'true' } },
       }),
     });
 
@@ -130,27 +131,28 @@ export const storageModule: SettingsModuleManifest<StorageConfig> = {
               help: 'Default 5 GB across all uploaded media.',
             })}
           `,
+          actionBarHtml: renderActionBar({
+            level: 'page',
+            primary: { id: 'btn-save-storage-settings', label: 'Save', variant: 'primary', type: 'button' },
+          }),
+          feedbackHtml: `
+            ${renderStatusLine({ id: 'storage-save-status', message: '', className: 'lp-is-hidden' })}
+            ${renderPageNotice({ id: 'storage-save-error', tone: 'danger', message: '', role: 'none', hidden: true })}
+          `,
         })}
 
-        <div class="lp-stack lp-gap-related">
-          ${renderActionBar({
-            pageLevel: true,
-            primary: { id: 'btn-save-storage-settings', label: 'Save', variant: 'primary', type: 'button' },
-          })}
-          ${renderStatusLine({ id: 'storage-save-status', message: '', className: 'lp-is-hidden' })}
-          ${renderPageNotice({ id: 'storage-save-error', tone: 'danger', message: '', role: 'none', hidden: true })}
-        </div>
-
         ${renderFormSection({
+          id: 'storage-media-section',
           title: 'Uploaded media',
           fieldsHtml: `
+            <p id="storage-media-helper" data-c="Text" data-variant="caption" data-purpose="helper" class="lp-field-help">Files in use by published entries cannot be deleted until removed from the entry.</p>
             <div id="storage-media-list" data-c="List" data-variant="plain" class="lp-list lp-list-plain">
               <div class="lp-type-meta">Loading media assets...</div>
             </div>
           `,
           actionBarHtml: renderActionBar({
             level: 'item',
-            secondary: { id: 'btn-storage-remove-unused', label: 'Remove unused', variant: 'secondary', type: 'button', size: 'sm' },
+            textAction: { id: 'btn-storage-remove-unused', label: 'Remove unused files', variant: 'text-danger', type: 'button', size: 'sm' },
           }),
         })}
       </form>
@@ -158,6 +160,9 @@ export const storageModule: SettingsModuleManifest<StorageConfig> = {
       ${pruneDialogHtml}
       <script>
         (function() {
+          ${ADMIN_DATETIME_FORMATTER_SCRIPT}
+          ${ADMIN_PLURAL_HELPER_SCRIPT}
+          ${ITEM_CLIENT_SCRIPT}
           const listEl = document.getElementById('storage-media-list');
           const usageEl = document.getElementById('storage-usage-summary');
           const backendEl = document.getElementById('storage-backend-value');
@@ -229,29 +234,41 @@ export const storageModule: SettingsModuleManifest<StorageConfig> = {
 
           function renderMediaList() {
             if (!listEl) return;
+            const unusedCount = mediaItems.filter(function(m) {
+              return Number(m.reference_count || 0) === 0 && Number(m.public_reference_count || 0) === 0;
+            }).length;
+            if (removeUnusedBtn) {
+              const labelSpan = removeUnusedBtn.querySelector('span') || removeUnusedBtn;
+              labelSpan.textContent = unusedCount > 0
+                ? 'Remove ' + lpPluralize(unusedCount, 'unused file', 'unused files')
+                : 'Remove unused files';
+              removeUnusedBtn.disabled = unusedCount === 0;
+            }
             if (mediaItems.length === 0) {
-              listEl.innerHTML = '<div class="lp-type-meta">No media files uploaded yet.</div>';
+              listEl.innerHTML = '<div class="lp-empty-state"><p data-c="Text" data-variant="description" data-purpose="empty" class="lp-empty-body">No media files uploaded yet.</p></div>';
+              listEl.setAttribute('data-storage-loaded', 'true');
               return;
             }
             listEl.innerHTML = mediaItems.map(function(m) {
               const refCount = Number(m.reference_count || 0);
               const pubCount = Number(m.public_reference_count || 0);
-              const refText = refCount > 0 ? ('Used in ' + refCount + (refCount === 1 ? ' entry' : ' entries')) : 'Unused';
-              const dateStr = (m.created_at || '').slice(0, 10) || 'Unknown date';
-              const blocked = pubCount > 0;
-              const actionHtml = blocked
-                ? '<div class="lp-item-body" data-media-blocked="true">Used in a published entry. Remove it from the entry before deleting.</div>'
-                : '<div data-rel="actions" class="lp-item-actions"><div data-c="ActionBar" data-level="inline" class="lp-action-bar lp-action-bar-inline"><button type="button" class="lp-btn lp-btn-secondary lp-btn-sm" data-storage-delete="' + esc(m.id) + '" data-storage-name="' + esc(m.original_filename || m.id) + '">Delete</button></div></div>';
-              return '<div data-c="Item" class="lp-item ' + (blocked ? '' : 'lp-item-has-actions') + '" data-media-id="' + esc(m.id) + '">' +
-                '<div class="lp-item-content">' +
-                  '<div class="lp-item-title">' + esc(m.original_filename || m.id) + '</div>' +
-                  '<div class="lp-item-status"><span class="lp-caption">' + esc(refText) + '</span></div>' +
-                  '<div class="lp-item-subtitle">' + esc(fmtBytes(m.size_bytes)) + ' · ' + esc(dateStr) + '</div>' +
-                  (blocked ? actionHtml : '') +
-                '</div>' +
-                (blocked ? '' : actionHtml) +
-              '</div>';
+              const inUse = refCount > 0 || pubCount > 0;
+              const statusLabel = inUse ? 'In use' : 'Unused';
+              const statusTone = inUse ? 'ok' : 'neutral';
+              const dateStr = lpFormatAdminDate(m.created_at) || 'Unknown date';
+              const metaText = fmtBytes(m.size_bytes) + ' · ' + dateStr;
+              const deleteBtnHtml =
+                '<button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-text-danger lp-btn-sm" data-destructive="true" data-storage-delete="' + esc(m.id) + '" data-storage-name="' + esc(m.original_filename || m.id) + '"' + (pubCount > 0 ? ' data-storage-in-use="true"' : '') + '><span>Delete</span></button>';
+              return lpRenderItem({
+                attributes: 'data-media-id="' + esc(m.id) + '"' + (pubCount > 0 ? ' data-media-in-use="true"' : ''),
+                title: m.original_filename || m.id,
+                statusLabel: statusLabel,
+                statusTone: statusTone,
+                meta: metaText,
+                actionsHtml: deleteBtnHtml,
+              });
             }).join('');
+            listEl.setAttribute('data-storage-loaded', 'true');
 
             listEl.querySelectorAll('[data-storage-delete]').forEach(function(btn) {
               btn.addEventListener('click', function() {
@@ -265,10 +282,10 @@ export const storageModule: SettingsModuleManifest<StorageConfig> = {
 
           if (delCancel) delCancel.addEventListener('click', function() { closeModal(delDialog); });
           if (pruneCancel) pruneCancel.addEventListener('click', function() { closeModal(pruneDialog); });
-          document.querySelectorAll('#storage-delete-dialog [data-overlay-close], #storage-delete-dialog .lp-overlay-close').forEach(function(el) {
+          document.querySelectorAll('#storage-delete-dialog [data-overlay-close], #storage-delete-dialog [data-lp-dialog-close], #storage-delete-dialog .lp-overlay-close').forEach(function(el) {
             el.addEventListener('click', function() { closeModal(delDialog); });
           });
-          document.querySelectorAll('#storage-prune-dialog [data-overlay-close], #storage-prune-dialog .lp-overlay-close').forEach(function(el) {
+          document.querySelectorAll('#storage-prune-dialog [data-overlay-close], #storage-prune-dialog [data-lp-dialog-close], #storage-prune-dialog .lp-overlay-close').forEach(function(el) {
             el.addEventListener('click', function() { closeModal(pruneDialog); });
           });
 
@@ -299,7 +316,7 @@ export const storageModule: SettingsModuleManifest<StorageConfig> = {
               const totalFreed = unused.reduce(function(acc, m) { return acc + Number(m.size_bytes || 0); }, 0);
               if (pruneSummary) {
                 pruneSummary.textContent = unused.length > 0
-                  ? ('Remove ' + unused.length + ' unused ' + (unused.length === 1 ? 'file' : 'files') + ' and free ' + fmtBytes(totalFreed) + '?')
+                  ? ('Remove ' + lpPluralize(unused.length, 'unused file', 'unused files') + ' and free ' + fmtBytes(totalFreed) + '?')
                   : 'There are no unused files to remove.';
               }
               if (pruneConfirm) pruneConfirm.disabled = unused.length === 0;

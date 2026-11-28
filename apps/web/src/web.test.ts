@@ -160,8 +160,9 @@ describe('Strata Public Site & Admin Workspace Renderer (§5, §12, §18.1)', ()
     expect(importHtml).toContain('>D<');
     expect(importHtml).toContain('>S<');
 
-    expect(importHtml).toContain('id="btn-key-prev"');
-    expect(importHtml).toContain('id="btn-key-next"');
+    expect(importHtml).not.toContain('id="btn-key-prev"');
+    expect(importHtml).not.toContain('id="btn-key-next"');
+    expect(importHtml).toContain('id="btn-bulk-accept"');
     expect(importHtml).toContain('id="import-review-counter"');
     expect(importHtml).toContain('id="import-step-done"');
     expect(importHtml).toContain('id="btn-commit-batch"');

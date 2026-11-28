@@ -45,34 +45,34 @@ test.describe.serial('WP-4.1: Structure Review Loop, Import Triage, and Visitor 
     await page.click('#btn-proceed-triage');
     await expect(page.locator('#import-step-triage')).toBeVisible();
 
-    // Keyboard legend present
+    // Keyboard legend present at regular width
     const legend = page.locator('.triage-keys-legend');
     await expect(legend).toBeVisible();
-    await expect(legend).toContainText('Navigate items');
+    await expect(legend).toContainText('J / K');
 
-    // Triage cards rendered
-    const cards = page.locator('.triage-card');
+    // Triage cards rendered as Item
+    const cards = page.locator('#triage-cards-container [data-c="Item"]');
     await expect(cards).toHaveCount(3);
-    await expect(cards.first()).toHaveClass(/selected/);
+    await expect(cards.first()).toHaveClass(/is-selected/);
 
     // Press 'A' to accept first item
     await page.keyboard.press('a');
     await expect(cards.first()).toHaveClass(/status-accepted/);
 
     // Second card should now be selected
-    await expect(cards.nth(1)).toHaveClass(/selected/);
+    await expect(cards.nth(1)).toHaveClass(/is-selected/);
 
-    // Use on-screen Next / Prev buttons
-    await page.click('#btn-key-prev');
-    await expect(cards.first()).toHaveClass(/selected/);
-    await page.click('#btn-key-next');
-    await expect(cards.nth(1)).toHaveClass(/selected/);
+    // Use J / K keyboard navigation (Previous/Next buttons removed in WP-18.10 V10)
+    await page.keyboard.press('k');
+    await expect(cards.first()).toHaveClass(/is-selected/);
+    await page.keyboard.press('j');
+    await expect(cards.nth(1)).toHaveClass(/is-selected/);
 
-    // Commit batch -> dedicated Done screen (WP-18.6)
+    // Commit batch -> dedicated Done screen (WP-18.6 / WP-18.10 V13)
     await page.click('#btn-commit-batch');
     const doneStep = page.locator('#import-step-done');
     await expect(doneStep).toBeVisible();
-    await expect(doneStep).toContainText('Successfully imported');
+    await expect(doneStep).toContainText('Imported 1 entry as a private draft.');
   });
 
   test('3. Visitor Ask states, scope chips, and accessibility mechanics (20261020-CP-04, UX-10, UX-15)', async ({ page }) => {

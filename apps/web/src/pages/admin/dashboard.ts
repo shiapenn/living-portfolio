@@ -1,5 +1,5 @@
 import { renderAdminShell, renderPageTemplate } from '../../layouts/admin-shell.js';
-import { renderFormSection, renderIconButton, renderItem, renderList, renderText } from '../../primitives/index.js';
+import { renderFormSection, renderIconButton, renderItem, renderList, renderText, ITEM_CLIENT_SCRIPT } from '../../primitives/index.js';
 import { adaptDataSource, type WebDataClient } from '../../lib/data-source.js';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
 import { escapeHtml } from '../../lib/html.js';
@@ -180,6 +180,7 @@ export async function renderAdminDashboardPage(
 <script>
 (function() {
   ${ADMIN_API_CLIENT_SCRIPT}
+  ${ITEM_CLIENT_SCRIPT}
   const dismissBtn = document.getElementById('btn-dismiss-today-checklist');
   const card = document.getElementById('today-checklist-card');
   if (dismissBtn && card) {
@@ -195,6 +196,38 @@ export async function renderAdminDashboardPage(
         dismissBtn.disabled = false;
       }
     });
+  }
+  if (!document.getElementById('att-storage-quota')) {
+    apiClient('/api/media', { method: 'GET' }).then(function(res) {
+      if (!res || !res.ok) return null;
+      return res.json();
+    }).then(function(data) {
+      if (!data) return;
+      var used = Number(data.total_bytes || 0);
+      var quota = Number(data.quota_bytes || 0);
+      if (quota <= 0) return;
+      var pct = Math.round((used / quota) * 100);
+      if (pct < 80) return;
+      var listEl = document.getElementById('today-attention-list');
+      if (!listEl) return;
+      var itemHtml = lpRenderItem({
+        id: 'att-storage-quota',
+        href: '/admin/settings/storage',
+        title: 'Storage is ' + pct + '% full · Manage storage',
+        showChevron: true,
+      });
+      if (listEl.getAttribute('data-c') === 'List') {
+        listEl.insertAdjacentHTML('beforeend', itemHtml);
+      } else {
+        var wrap = document.createElement('div');
+        wrap.id = 'today-attention-list';
+        wrap.setAttribute('data-c', 'List');
+        wrap.setAttribute('data-variant', 'interactive');
+        wrap.className = 'lp-list lp-list-interactive';
+        wrap.innerHTML = itemHtml;
+        listEl.replaceWith(wrap);
+      }
+    }).catch(function() {});
   }
 })();
 </script>`;

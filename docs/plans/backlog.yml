@@ -313,6 +313,17 @@ items:
     acceptance: Registered Storage settings module with quota bar, backend config, editable upload limits, media list with reference counts, guarded delete, Remove unused, 80% quota warning on Today + E2E
     status: done
 
+  - id: WP-18.10
+    title: WP-18 corrective slice (V9-V16, K44-K54; Import review, Storage, Dialog, Content, Public media fixtures, Manifest states)
+    track: admin
+    type: visual
+    depends_on: [WP-18.9]
+    size: L
+    expected_minutes: 90
+    gate: L-review
+    acceptance: "Import review cards as Item with stripped 2-line excerpt and leading accent bar + auto-width Include/Leave out + no Prev/Next buttons + regular-width legend (V10), Storage rows as Item with In use/Unused status (ADR-024) + ui-core date/plural + danger-text Delete and Remove N unused files S4 below list + hand-built .lp-item-* deleted (V11), Dialog top-anchored + Choice visible selected state + Describe the image placeholder + viewport-sized full-scrim sheets with body focus and off-page pointer (V12), ui-core plural helper + Import Done copy and Back to Today link + no stray URL quote (V13), public-entry-media merged with real <=20KB PNG and playable <=100KB MP4 fixtures + WP-19 intake & WP-20 captions exit blocker recorded (V14), 7 new manifest states with DOM markers and sheets (V15), freshly seeded DB per state capture (V16), K44-K54 failing on de379ba canary and green on HEAD, 1x+2x+before/after contact-sheet zip + PIL measurements; CI + CodeQL green"
+    status: done
+
   # ── WP-19: Design framework unification & Public frame (ADR-023 + Report §7.10) ──
   - id: P-1
     title: Build chosen public direction (decided in ADR-007; delivered by WP-16.N N3)
@@ -329,11 +340,11 @@ items:
     title: Design framework review and unification (ADR-023 token contract, ui-core shared components, public rhythm/role checks, visible public defect fixes)
     track: core
     type: visual
-    depends_on: [WP-16.N]
+    depends_on: [WP-16.N, WP-18.10]
     size: L
     expected_minutes: 90
     gate: L-review
-    acceptance: Audit both packs against ADR-023 contract, define contract schema implemented by admin & public packs, extract shared components into ui-core, systematise public type/space/radius/colour scales + rhythm relation tokens & census checks, fix visible public defects (UX-218..UX-226; timeline component P-4 out of scope)
+    acceptance: "Audit both packs against ADR-023 contract, define contract schema implemented by admin & public packs, extract shared components into ui-core, systematise public type/space/radius/colour scales + rhythm relation tokens & census checks, fix visible public defects (UX-218..UX-226; WP-18.10 intake: meta line +8px stray left edge x=32 vs 24 at 320 and 72 vs 64 at 1280, heading->input gap ~2px, extend HA checks to cover public pages; timeline component P-4 out of scope)"
     status: ready
 
   - id: WP-19.1
@@ -499,7 +510,7 @@ items:
     size: M
     expected_minutes: 50
     gate: none
-    acceptance: Zero serious/critical axe violations across all routes, keyboard-only journeys pass, triage single-key shortcut toggle (UX-24), deferred WP-18.4 video .vtt captions track support + E2E
+    acceptance: Zero serious/critical axe violations across all routes, keyboard-only journeys pass, triage single-key shortcut toggle (UX-24), WP-20 exit blocker — deferred WP-18.4 video .vtt captions track support + E2E
     status: ready
 
   - id: WP-20.4

@@ -59,7 +59,7 @@
 
 .lp-choice.is-selected,
 .lp-choice:has(.lp-choice-input:checked) {
-  border-color: var(--lp-color-border-strong);
+  border-color: var(--accent);
   background: var(--lp-color-fill-accent-tint-1);
 }
 

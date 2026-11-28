@@ -1,3 +1,4 @@
+import { pluralize } from '@living-portfolio/ui-core/plural';
 import { mountTiptapEditor } from './tiptap-editor.js';
 
 function initImportFileUpload(): void {
@@ -25,7 +26,7 @@ function initImportFileUpload(): void {
   fileInput.addEventListener('change', async () => {
     const files = fileInput.files;
     if (!files || files.length === 0) return;
-    if (fileStatusEl) fileStatusEl.textContent = `Parsing ${files.length} file(s)...`;
+    if (fileStatusEl) fileStatusEl.textContent = `Parsing ${pluralize(files.length, 'file')}...`;
     setBanner('');
     try {
       const fd = new FormData();
@@ -53,7 +54,7 @@ function initImportFileUpload(): void {
       }
       if (fileStatusEl) {
         fileStatusEl.textContent =
-          `${parsedDocs.length} document(s) parsed` + (errs.length ? `, ${errs.length} error(s)` : '');
+          `${pluralize(parsedDocs.length, 'document')} parsed` + (errs.length ? `, ${pluralize(errs.length, 'error')}` : '');
       }
       if (errs.length > 0) {
         setBanner(errs.map((e) => `${e.filename}: ${e.error}`).join(' | '));

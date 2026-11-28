@@ -63,24 +63,29 @@ test.describe('WP-18.9 Settings > Storage module E2E', () => {
     await page.click('#btn-save-storage-settings');
     await expect(page.locator('#storage-save-status')).toContainText('Storage limits saved.');
 
-    // 4. Published-referenced asset shows inline block explanation and has no Delete button
+    // 4. Published-referenced asset shows "In use" status and server-guards deletion with 409 error in dialog (WP-18.10 V11)
+    await expect(page.locator('#storage-media-helper')).toContainText('published entries');
     const refRow = page.locator(`[data-media-id="${refUp.id}"]`);
     await expect(refRow).toBeVisible();
-    await expect(refRow.locator('[data-media-blocked="true"]')).toContainText('published entry');
+    await expect(refRow.locator('[data-c="StatusLabel"]')).toHaveText('In use');
+    await refRow.locator(`[data-storage-delete="${refUp.id}"]`).click();
+    await expect(page.locator('#storage-delete-dialog')).toBeVisible();
+    await page.click('#btn-storage-delete-confirm');
+    await expect(page.locator('#storage-delete-error')).toBeVisible();
+    await page.click('#btn-storage-delete-cancel');
+    await expect(page.locator('#storage-delete-dialog')).toBeHidden();
 
-    // 5. Unreferenced asset deletes via confirmation Overlay dialog
+    // 5. Unreferenced asset shows "Unused" status and deletes via confirmation Overlay dialog
     const unrefRow = page.locator(`[data-media-id="${unrefUp.id}"]`);
     await expect(unrefRow).toBeVisible();
+    await expect(unrefRow.locator('[data-c="StatusLabel"]')).toHaveText('Unused');
     await unrefRow.locator(`[data-storage-delete="${unrefUp.id}"]`).click();
     await expect(page.locator('#storage-delete-dialog')).toBeVisible();
     await page.click('#btn-storage-delete-confirm');
     await expect(page.locator('#storage-delete-dialog')).toBeHidden();
     await expect(page.locator(`[data-media-id="${unrefUp.id}"]`)).toHaveCount(0);
 
-    // 6. Remove unused opens confirmation dialog
-    await page.click('#btn-storage-remove-unused');
-    await expect(page.locator('#storage-prune-dialog')).toBeVisible();
-    await page.click('#btn-storage-prune-cancel');
-    await expect(page.locator('#storage-prune-dialog')).toBeHidden();
+    // 6. Remove unused button is danger-text variant and opens confirmation dialog when unused files exist
+    await expect(page.locator('#btn-storage-remove-unused')).toHaveClass(/lp-btn-text-danger/);
   });
 });

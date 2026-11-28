@@ -1,9 +1,13 @@
+import { ADMIN_PLURAL_HELPER_SCRIPT } from '@living-portfolio/ui-core';
 import { ADMIN_API_CLIENT_SCRIPT } from '../../lib/admin-api-client.js';
+import { ITEM_CLIENT_SCRIPT } from '../../primitives/item.js';
 
 export const IMPORT_SCRIPT = `
     <script>
       (function() {
         ${ADMIN_API_CLIENT_SCRIPT}
+        ${ADMIN_PLURAL_HELPER_SCRIPT}
+        ${ITEM_CLIENT_SCRIPT}
 
         const banner = document.getElementById('import-status-banner');
         function setBanner(text) {
@@ -173,6 +177,12 @@ export const IMPORT_SCRIPT = `
           }
         }
 
+        function stripMarkdownExcerpt(md, title) {
+          var lines = String(md || '').replace(/\\r\\n/g, '\\n').split('\\n').map(function(l) { return l.trim(); }).filter(Boolean);
+          if (lines.length > 1 && lines[0].replace(/^#+\\s*/, '').trim() === String(title || '').trim()) lines = lines.slice(1);
+          return lines.join(' ').replace(/^#+\\s+/g, '').replace(/(^|\\s)#+\\s+/g, '$1').replace(/!\\[([^\\]]*)\\]\\([^)]*\\)/g, '$1').replace(/\\[([^\\]]+)\\]\\([^)]*\\)/g, '$1').replace(/[*_\`~]+/g, '').replace(/^>\\s*/gm, '').replace(/\\s+/g, ' ').trim();
+        }
+
         function renderTriageCards() {
           const container = document.getElementById('triage-cards-container');
           if (!container) return;
@@ -181,35 +191,40 @@ export const IMPORT_SCRIPT = `
             const isSelected = idx === selectedIndex;
             const statusClass = item.status === 'accepted' ? 'status-accepted' : (item.status === 'skipped' ? 'status-skipped' : '');
             const statusLabel = item.status === 'accepted' ? 'Included' : (item.status === 'skipped' ? 'Left out' : 'Pending');
-            const includeClass = item.status === 'accepted' ? 'lp-btn lp-btn-primary lp-btn-sm' : 'lp-btn lp-btn-secondary lp-btn-sm';
-            const leaveClass = item.status === 'skipped' ? 'lp-btn lp-btn-primary lp-btn-sm' : 'lp-btn lp-btn-secondary lp-btn-sm';
-            return '<div data-c="Item" class="lp-item lp-item-has-actions triage-card ' + (isSelected ? 'selected is-selected ' : '') + statusClass + '" data-index="' + idx + '" id="triage-card-' + idx + '">' +
-              '<div class="lp-item-main">' +
-                '<div class="lp-item-head">' +
-                  '<span class="lp-item-title">' + escapeClientHtml(item.title) + '</span>' +
-                  '<span class="lp-item-status">' + Math.round(item.confidence * 100) + '% · ' + statusLabel + '</span>' +
-                '</div>' +
-                '<p class="lp-item-body">' + escapeClientHtml(item.body_md.slice(0, 140)) + '...</p>' +
-                '<div class="lp-stack lp-gap-related">' +
-                  '<div data-c="Field" data-rel="field" class="lp-field">' +
-                    '<label class="lp-field-label" for="triage-profile-' + idx + '">Change type</label>' +
-                    '<select id="triage-profile-' + idx + '" class="lp-input lp-select triage-profile" data-index="' + idx + '">' +
-                      '<option value="case-study"' + (item.profile === 'case-study' ? ' selected' : '') + '>Case study</option>' +
-                      '<option value="decision-record"' + (item.profile === 'decision-record' ? ' selected' : '') + '>Decision record</option>' +
-                      '<option value="how-to"' + (item.profile === 'how-to' ? ' selected' : '') + '>How-to</option>' +
-                    '</select>' +
-                  '</div>' +
-                  '<div data-c="Field" data-rel="field" class="lp-field">' +
-                    '<label class="lp-field-label" for="triage-date-' + idx + '">Set date</label>' +
-                    '<input id="triage-date-' + idx + '" type="date" class="lp-input triage-date" data-index="' + idx + '" value="' + escapeClientHtml(item.valid_from) + '" />' +
-                  '</div>' +
-                '</div>' +
-                '<div data-c="ActionBar" data-level="inline" class="lp-action-bar lp-action-bar-inline">' +
-                  '<button type="button" class="' + includeClass + '" data-item-action="include" data-index="' + idx + '">Include</button>' +
-                  '<button type="button" class="' + leaveClass + '" data-item-action="leave-out" data-index="' + idx + '">Leave out</button>' +
+            const statusTone = item.status === 'accepted' ? 'ok' : (item.status === 'skipped' ? 'warn' : 'neutral');
+            const excerpt = stripMarkdownExcerpt(item.body_md, item.title);
+            const fieldsHtml =
+              '<div data-c="Field" data-rel="field" class="lp-field">' +
+                '<label class="lp-field-label" data-rel="label" data-purpose="label" for="triage-profile-' + idx + '">Change type</label>' +
+                '<div data-c="Select" data-rel="control" class="lp-select-wrap">' +
+                  '<select id="triage-profile-' + idx + '" class="lp-input lp-select triage-profile" data-index="' + idx + '">' +
+                    '<option value="case-study"' + (item.profile === 'case-study' ? ' selected' : '') + '>Case study</option>' +
+                    '<option value="decision-record"' + (item.profile === 'decision-record' ? ' selected' : '') + '>Decision record</option>' +
+                    '<option value="how-to"' + (item.profile === 'how-to' ? ' selected' : '') + '>How-to</option>' +
+                  '</select>' +
                 '</div>' +
               '</div>' +
-            '</div>';
+              '<div data-c="Field" data-rel="field" class="lp-field">' +
+                '<label class="lp-field-label" data-rel="label" data-purpose="label" for="triage-date-' + idx + '">Set date</label>' +
+                '<input id="triage-date-' + idx + '" type="date" data-rel="control" class="lp-input triage-date" data-index="' + idx + '" value="' + escapeClientHtml(item.valid_from) + '" />' +
+              '</div>';
+            const actionsHtml =
+              '<button type="button" data-c="Button" class="lp-btn lp-btn-secondary lp-btn-sm" data-item-action="include" data-index="' + idx + '" aria-pressed="' + (item.status === 'accepted' ? 'true' : 'false') + '"><span>Include</span></button>' +
+              '<button type="button" data-c="Button" class="lp-btn lp-btn-text lp-btn-sm" data-item-action="leave-out" data-index="' + idx + '" aria-pressed="' + (item.status === 'skipped' ? 'true' : 'false') + '"><span>Leave out</span></button>';
+            return lpRenderItem({
+              id: 'triage-card-' + idx,
+              variant: 'review',
+              className: ('triage-card ' + statusClass).trim(),
+              selected: isSelected,
+              attributes: 'data-index="' + idx + '" data-review-status="' + escapeClientHtml(item.status) + '"',
+              title: item.title,
+              statusLabel: statusLabel,
+              statusTone: statusTone,
+              body: excerpt,
+              bodyClamp2: true,
+              customBodyHtml: fieldsHtml,
+              actionsHtml: actionsHtml,
+            });
           }).join('');
 
           container.querySelectorAll('.triage-card').forEach(function(card) {
@@ -300,8 +315,6 @@ export const IMPORT_SCRIPT = `
           if (inp) inp.focus();
         }
 
-        document.getElementById('btn-key-prev')?.addEventListener('click', function() { selectTriageCard(selectedIndex - 1); });
-        document.getElementById('btn-key-next')?.addEventListener('click', function() { selectTriageCard(selectedIndex + 1); });
         document.getElementById('btn-bulk-accept')?.addEventListener('click', function() {
           triageItems.forEach(function(item) {
             if (item.confidence >= 0.8) item.status = 'accepted';
@@ -352,7 +365,8 @@ export const IMPORT_SCRIPT = `
                 const data = await res.json();
                 const summaryEl = document.getElementById('import-done-summary');
                 if (summaryEl) {
-                  summaryEl.textContent = 'Successfully imported ' + data.importedCount + ' entries as private drafts.';
+                  const n = Number(data.importedCount || 0);
+                  summaryEl.textContent = 'Imported ' + lpPluralize(n, 'entry', 'entries') + ' as ' + (n === 1 ? 'a private draft.' : 'private drafts.');
                 }
                 setBanner('');
                 setStep('done');

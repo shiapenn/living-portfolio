@@ -176,16 +176,17 @@
 }
 
 .triage-keys-legend {
-  display: flex;
-  gap: var(--lp-space-stack-field-to-field);
-  align-items: center;
-  flex-wrap: wrap;
-  padding: var(--lp-space-inset-item-x) var(--lp-space-inset-section);
-  background: var(--surface-page);
-  border: var(--lp-border-hairline) solid var(--rule);
-  border-radius: var(--lp-radius-control);
-  font-size: var(--lp-font-size-13);
-  margin: 0;
+  display: none;
+}
+
+@media (min-width: __LP_BP_REGULAR__) {
+  .triage-keys-legend {
+    display: block;
+    font-size: var(--lp-font-size-13);
+    line-height: var(--lp-font-line-20);
+    color: var(--text-2);
+    margin: 0;
+  }
 }
 
 .key-badge {
@@ -199,29 +200,6 @@
   border-radius: var(--lp-radius-chip);
   box-shadow: 0 var(--lp-border-hairline) 0 var(--lp-color-border-subtle-ring);
   color: var(--text);
-}
-
-.triage-card {
-  border: var(--lp-border-hairline) solid var(--rule);
-  border-radius: var(--lp-radius-control);
-  padding: var(--lp-space-inset-item-x);
-  margin: 0;
-  background: var(--surface-raised);
-  transition: border-color var(--lp-motion-duration-fast) var(--lp-motion-easing-standard);
-}
-
-.triage-card.selected {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 var(--lp-border-focus) var(--focus-ring);
-}
-
-.triage-card.status-accepted {
-  border-left: var(--lp-border-role-rule) solid var(--lp-color-passage-outcome);
-}
-
-.triage-card.status-skipped {
-  opacity: var(--lp-opacity-disabled);
-  border-left: var(--lp-border-role-rule) solid var(--text-muted);
 }
 
 /* Accessibility Skip Link (UX-15) */

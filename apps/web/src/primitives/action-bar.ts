@@ -16,8 +16,9 @@ export interface ActionBarProps {
 
 function renderActionSlot(item: ButtonProps | string, defaultVariant: 'primary' | 'secondary' | 'text', forceVariant = false): string {
   if (typeof item === 'string') return item;
+  const isDangerText = item.variant === 'text-danger' || (item.variant === 'text' && Boolean(item.destructive));
   const resolvedVariant = forceVariant
-    ? defaultVariant === 'text' && (item.variant === 'text-danger' || item.variant === 'danger' || item.destructive)
+    ? isDangerText || (defaultVariant === 'text' && (item.variant === 'danger' || item.destructive))
       ? 'text-danger'
       : defaultVariant
     : item.variant ?? defaultVariant;
