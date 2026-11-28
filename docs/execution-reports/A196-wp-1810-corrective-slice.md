@@ -6,7 +6,7 @@
 | Date | 2026-11-28 |
 | Author | A (Implementer) |
 | Task ID | `WP-18.10` |
-| Evidence SHA | `db9e91f8ee9807c7749f93adedb5a8ea9d074769` |
+| Evidence SHA | `48a23cd18a29e6b4c59b6b1c2903a98927578fbb` |
 | CI run | Pending PR creation (local `verify:fast`, `design:audit`, `--self-test`, `wp16n:verify` 11/11, `K22`–`K27`, `K36`–`K43`, `K44`–`K54` green) |
 
 ---
@@ -75,12 +75,16 @@ Delivered `WP-18.10` — WP-18 corrective slice (zero new screens, zero new `dat
 - `apps/web/src/settings/modules/storage.ts`
 - `apps/web/src/web.test.ts`
 - `apps/worker/src/worker.ts`
+- `docs/INDEX.md`
 - `docs/adr/ADR-024-content-standard.md`
+- `docs/audits/dom-id-baseline.json`
 - `docs/design/content.md`
 - `docs/design/health-history.json`
 - `docs/design/health.md`
 - `docs/design/rules.md`
+- `docs/doc-registry.json`
 - `docs/execution-reports/A195-wp-189-settings-storage-module.md`
+- `docs/execution-reports/A196-wp-1810-corrective-slice.md`
 - `docs/plans/backlog.yml`
 - `packages/ui-admin/src/components/choice/choice.css`
 - `packages/ui-admin/src/components/feedback/feedback.css`
@@ -92,6 +96,7 @@ Delivered `WP-18.10` — WP-18 corrective slice (zero new screens, zero new `dat
 - `packages/ui-core/src/format/plural.test.ts`
 - `packages/ui-core/src/format/plural.ts`
 - `packages/ui-core/src/index.ts`
+- `tests/e2e/census-helpers.ts`
 - `tests/e2e/fixtures/synthetic-clip.mp4`
 - `tests/e2e/fixtures/synthetic-diagram.png`
 - `tests/e2e/structure-import.spec.ts`
@@ -100,6 +105,7 @@ Delivered `WP-18.10` — WP-18 corrective slice (zero new screens, zero new `dat
 - `tests/e2e/wp17-manifest.ts`
 - `tests/e2e/wp18-10-corrective-audit.spec.ts`
 - `tests/e2e/wp18-6-import-polish.spec.ts`
+- `tests/e2e/wp18-7-real-file-import.spec.ts`
 - `tests/e2e/wp18-9-storage.spec.ts`
 
 ## 5. Register and Backlog Changes
@@ -123,8 +129,8 @@ $ pnpm receipt:check A196
 === Validating Receipt A196-wp-1810-corrective-slice.md ===
 
 ✓ [HEADER-CHECK] Mandatory headers verified (6/6 present).
-✓ [ANCESTOR-CHECK] Evidence SHA 'db9e91f8ee9807c7749f93adedb5a8ea9d074769' is an ancestor of HEAD.
-✓ [FILES-TOUCHED] Matches git diff 5222f5b57b2b903a1f3c4bc87ec9816523f63117..db9e91f8ee9807c7749f93adedb5a8ea9d074769 (45 files verified).
+✓ [ANCESTOR-CHECK] Evidence SHA '48a23cd18a29e6b4c59b6b1c2903a98927578fbb' is an ancestor of HEAD.
+✓ [FILES-TOUCHED] Matches git diff 5222f5b57b2b903a1f3c4bc87ec9816523f63117..48a23cd18a29e6b4c59b6b1c2903a98927578fbb (51 files verified).
 ✓ [SECTIONS-CHECK] Mandatory sections 1 through 9 verified for A196-wp-1810-corrective-slice.md.
 Found 0 section(s) marked verbatim.
 
